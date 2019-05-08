@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Weapons>
+    <Weapon>
+      <Id>
+        <TypeId>WeaponDefinition</TypeId>
+        <SubtypeId>PDCTurret</SubtypeId>
+      </Id>
+	  <ProjectileAmmoData RateOfFire="57600" ShootSoundName="PDC_Shot" ShotsInBurst="1"/>
+    <DeviateShotAngle>0.9</DeviateShotAngle>
+    <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
+    <UseDefaultMuzzleFlash>false</UseDefaultMuzzleFlash>
+	  <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
+    <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
+      <AmmoMagazines>
+        <AmmoMagazine Subtype="CustomCharge" />
+      </AmmoMagazines>
+    <ReloadTime>1</ReloadTime>
+    </Weapon>
+  </Weapons>
+
+  <Ammos>
+  	<Ammo xsi:type="MyObjectBuilder_ProjectileAmmoDefinition">
+      <Id>
+        <TypeId>AmmoDefinition</TypeId>
+        <SubtypeId>CustomCharge</SubtypeId>
+      </Id>
+      <BasicProperties>
+        <DesiredSpeed>10</DesiredSpeed>
+        <SpeedVariance>0</SpeedVariance>
+        <MaxTrajectory>0</MaxTrajectory>
+        <BackkickForce>0</BackkickForce>
+        <PhysicalMaterial>ProjectileTrailLine</PhysicalMaterial>
+      </BasicProperties>
+      <ProjectileProperties>
+        <ProjectileHitImpulse>0.0001</ProjectileHitImpulse>
+        <ProjectileMassDamage>1</ProjectileMassDamage>
+        <ProjectileHealthDamage>1</ProjectileHealthDamage>
+		<ProjectileTrailScale>0</ProjectileTrailScale>
+		<ProjectileTrailColor x="0.08" y="0.08" z="2.1" />
+		<ProjectileTrailProbability>0</ProjectileTrailProbability>
+      </ProjectileProperties>
+    </Ammo>
+  </Ammos>
+  <AmmoMagazines>
+	<AmmoMagazine>
+      <Id>
+        <TypeId>AmmoMagazine</TypeId>
+        <SubtypeId>CustomCharge</SubtypeId>
+      </Id>
+      <DisplayName>Class 1 CustomCharge</DisplayName>
+      <Size>
+        <X>0.25</X>
+        <Y>0.2</Y>
+        <Z>0.2</Z>
+      </Size>
+      <Mass>35</Mass>
+      <Volume>16</Volume>
+      <Model>Models\Weapons\Ammo_Box.mwm</Model>
+      <PhysicalMaterial>Ammo</PhysicalMaterial>
+      <Capacity>1</Capacity>
+      <AmmoDefinitionId Subtype="CustomCharge" />
+    </AmmoMagazine>
+  </AmmoMagazines>
+  <Blueprints>   
+   <Blueprint>
+      <Id>
+        <TypeId>BlueprintDefinition</TypeId>
+        <SubtypeId>DeU_25x184mm</SubtypeId>
+      </Id>
+      <DisplayName>25x184mm Depleted Uranium</DisplayName>
+      <Icon>Textures\GUI\Icons\ammo\DeURounds.dds</Icon>
+      <Prerequisites>
+        <Item Amount="8" TypeId="Ingot" SubtypeId="Magnesium" />
+		<Item Amount="2" TypeId="Ingot" SubtypeId="Nickel" />
+		<Item Amount="10" TypeId="Ingot" SubtypeId="Uranium" />
+      </Prerequisites>
+      <Result Amount="1" TypeId="AmmoMagazine" SubtypeId="DeU_25x184mm" />
+      <BaseProductionTimeInSeconds>60</BaseProductionTimeInSeconds>
+    </Blueprint>
+  </Blueprints>
+</Definitions>
