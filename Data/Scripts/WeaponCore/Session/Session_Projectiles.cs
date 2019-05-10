@@ -26,9 +26,9 @@ namespace WeaponCore
             lock (_projectiles) _projectiles.FiredBeams.Add(fireBeam);
         }
 
-        private void GenerateBolts(Logic logic)
+        private void GenerateBolts(Logic logic, int slot)
         {
-            var barrels = logic.Platform.BeamSlot[0];
+            var barrels = logic.Platform.BeamSlot[slot];
             var firedMissile = new Projectiles.FiredProjectile(logic, _linePool.Get());
 
             foreach (var barrelInfo in barrels)

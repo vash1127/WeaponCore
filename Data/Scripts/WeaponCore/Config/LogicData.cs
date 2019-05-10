@@ -89,7 +89,6 @@ namespace WeaponCore
         internal bool LoadSettings()
         {
             if (Logic.Storage == null) return false;
-
             string rawData;
             bool loadedSomething = false;
 
@@ -104,7 +103,7 @@ namespace WeaponCore
                     Value = loadedSettings;
                     loadedSomething = true;
                 }
-                if (Session.Enforced.Debug == 3) Log.Line($"Loaded -LogicId [{Logic.EntityId}]:\n{Value.ToString()}");
+                //if (Session.Enforced.Debug == 3) Log.Line($"Loaded -LogicId [{Logic.EntityId}]:\n{Value.ToString()}");
             }
             return loadedSomething;
         }

@@ -59,9 +59,16 @@ namespace WeaponCore
                 for (int i = 0; i < Logic.Count; i++)
                 {
                     var logic = Logic[i];
-                    if (logic.ShotsFired)
+                    if (logic.State.Value.Online)
                     {
-                        logic.ShotsFired = false;
+                        for (int j = 0; j < logic.Platform.Weapons.Length; j++)
+                        {
+                            var w = logic.Platform.Weapons[j];
+                            if (w.TrackTarget && w.TargetSwap) w.SelectTarget();
+                            if (w.TurretMode && w.Target != null) w.Rotate();
+                            if (w.TrackTarget && w.ReadyToTrack) w.BaseTurret.TrackTarget(w.Target);
+                            if (w.ReadyToShoot) w.Shoot();
+                        }
                         var structure = logic.Platform.Structure;
                         switch (structure.WeaponSystems[structure.PartNames[0]].WeaponType.Ammo)
                         {

@@ -20,7 +20,7 @@ namespace WeaponCore
 
             Session.Instance.Logic.Add(this);
             _subTypeIdHash = MyStringHash.GetOrCompute(Turret.BlockDefinition.SubtypeId);
-            Platform = new MyWeaponPlatform(_subTypeIdHash, Entity);
+            Platform = new MyWeaponPlatform(_subTypeIdHash, Entity, this);
             InitPower();
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
             MainInit = true;
@@ -64,7 +64,6 @@ namespace WeaponCore
         private void StorageSetup()
         {
             var isServer = MyAPIGateway.Multiplayer.IsServer;
-
             if (Set == null) Set = new LogicSettings(Turret);
             if (State == null) State = new LogicState(Turret);
 
@@ -75,6 +74,7 @@ namespace WeaponCore
                 var enforcement = Enforcements.LoadEnforcement(Turret);
                 if (enforcement != null) Session.Enforced = enforcement;
             }
+
             Set.LoadSettings();
             if (!State.LoadState() && !isServer) _clientNotReady = true;
             UpdateSettings(Set.Value);
@@ -83,9 +83,6 @@ namespace WeaponCore
                 State.Value.Overload = false;
                 State.Value.Heat = 0;
             }
-            Set.LoadSettings();
-            State.LoadState();
-            StorageInit = true;
         }
 
         private void InitPower()

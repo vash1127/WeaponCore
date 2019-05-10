@@ -7,9 +7,9 @@ using static WeaponCore.Support.WeaponDefinition;
 namespace WeaponCore.Support
 {
 
-    public class TurretDefinition
+    public struct TurretDefinition
     {
-       public Dictionary<string, TurretParts> TurretMap { get; set; } = new Dictionary<string, TurretParts>();
+        public Dictionary<string, TurretParts> TurretMap;
     }
 
     public struct TurretParts
@@ -24,12 +24,12 @@ namespace WeaponCore.Support
         }
     }
     
-    public class BarrelGroup
+    public struct BarrelGroup
     {
-        public List<string> Barrels { get; set; } = new List<string>();
+        public List<string> Barrels;
     }
 
-    public class WeaponDefinition
+    public struct WeaponDefinition
     {
         internal enum AmmoType
         {
@@ -64,12 +64,14 @@ namespace WeaponCore.Support
             Kinetic
         }
 
+        internal bool TurretMode;
+        internal bool TrackTarget;
         internal bool IsExplosive;
         internal bool UseRandomizedRange;
         internal bool ShieldHitDraw;
         internal bool Trail;
         internal uint MaxTicks;
-        internal int RotateAxis; 
+        internal int RotateBarrelAxis; 
         internal int ReloadTime;
         internal int RateOfFire;
         internal int HeatPerRoF;
@@ -127,7 +129,6 @@ namespace WeaponCore.Support
 
         public WeaponStructure(KeyValuePair<string, TurretDefinition> tDef, Dictionary<string, WeaponDefinition> wDef, Dictionary<string, BarrelGroup> bDef)
         {
-
             var map = tDef.Value.TurretMap;
             var numOfParts = map.Count;
             MultiParts = numOfParts > 1;
@@ -156,7 +157,6 @@ namespace WeaponCore.Support
                     barrelStrings[i] = myBarrels[i];
                 var weaponTypeName = w.Value.WeaponType;
                 var weaponDef = wDef[weaponTypeName];
-                Log.Line($"partName:{myNameHash.String} - WeaponType:{weaponTypeName} - selectedAxis:{weaponDef.RotateAxis} - DefAxis:{wDef[weaponTypeName].RotateAxis}");
                 WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName, barrelStrings));
 
                 mapIndex++;
@@ -165,7 +165,6 @@ namespace WeaponCore.Support
             WeaponOnBase = weaponFoundOnbase;
         }
     }
-
 
     public struct WeaponHit
     {
@@ -182,5 +181,4 @@ namespace WeaponCore.Support
             Effect = effect;
         }
     }
-
 }

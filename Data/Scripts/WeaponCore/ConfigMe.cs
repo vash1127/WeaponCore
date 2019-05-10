@@ -115,8 +115,10 @@ namespace WeaponCore
                 UseRandomizedRange = true,
                 ShieldHitDraw = true,
                 Trail = true,
+                TurretMode = true,
+                TrackTarget = true,
                 MaxTicks = 180,
-                RotateAxis = 0,
+                RotateBarrelAxis = 0,
                 ReloadTime = 10,
                 RateOfFire = 60,
                 HeatPerRoF = 1,
@@ -150,12 +152,14 @@ namespace WeaponCore
 
             //Weapon2SubTyeId is the second SubtypeId in your block.sbc
             ["LargeGatling"] = new WeaponDefinition() {
+                TurretMode = true,
+                TrackTarget = true,
                 IsExplosive = false,
                 UseRandomizedRange = true,
                 ShieldHitDraw = true,
                 Trail = true,
                 MaxTicks = 180,
-                RotateAxis = 3,
+                RotateBarrelAxis = 3,
                 ReloadTime = 10,
                 RateOfFire = 3600,
                 HeatPerRoF = 1,
@@ -190,12 +194,14 @@ namespace WeaponCore
             //Weapon3SubTyeId is the second SubtypeId in your block.sbc
             ["LargeMissile"] = new WeaponDefinition()
             {
+                TurretMode = false,
+                TrackTarget = false,
                 IsExplosive = false,
                 UseRandomizedRange = true,
                 ShieldHitDraw = true,
                 Trail = true,
                 MaxTicks = 180,
-                RotateAxis = 0,
+                RotateBarrelAxis = 0,
                 ReloadTime = 10,
                 RateOfFire = 60,
                 HeatPerRoF = 1,
@@ -234,8 +240,10 @@ namespace WeaponCore
                 UseRandomizedRange = true,
                 ShieldHitDraw = true,
                 Trail = true,
+                TurretMode = true,
+                TrackTarget = true,
                 MaxTicks = 180,
-                RotateAxis = 0,
+                RotateBarrelAxis = 0,
                 ReloadTime = 10,
                 RateOfFire = 60,
                 HeatPerRoF = 1,
@@ -270,20 +278,8 @@ namespace WeaponCore
 
         internal void Init()
         {
-            foreach (var w in WeaponDefinitions)
-            {
-                Log.Line($"{w.Value.RotateAxis}");
-            }
             foreach (var def in TurretDefinitions)
                 Session.Instance.WeaponStructure.Add(MyStringHash.GetOrCompute(def.Key), new WeaponStructure(def, WeaponDefinitions, BarrelDefinitions));
-        }
-
-        internal ConfigMe()
-        {
-            /*
-            foreach (var def in TurretDefinitions)
-                Session.Instance.WeaponStructure.Add(MyStringHash.GetOrCompute(def.Key), new WeaponStructure(TurretDefinitions, WeaponDefinitions, BarrelDefinitions));
-            */
         }
     }
 }

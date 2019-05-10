@@ -1,9 +1,12 @@
-﻿using Sandbox.Game.Entities;
+﻿using System;
+using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.Game.Weapons;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ObjectBuilders.Definitions;
 using VRage.ModAPI;
@@ -17,6 +20,8 @@ namespace WeaponCore
         private const int SyncCount = 60;
 
         private readonly MyDefinitionId _gId = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Electricity");
+        internal readonly List<MyEntity> TargetBlocks = new List<MyEntity>();
+
 
         private uint _lastTargetTick;
         private uint _lastShootTick;
@@ -28,11 +33,7 @@ namespace WeaponCore
         private long _currentShootTime;
         private long _lastShootTime;
 
-        private float _step = 0.01f;
-        private double _azimuth;
-        private double _elevation;
 
-        private bool _trackingUpdate;
         private bool _aInit;
         private bool _allInited;
         private bool _containerInited;
@@ -47,12 +48,10 @@ namespace WeaponCore
         private bool _firstSync;
         private bool _bInit;
         private bool _wasOnline;
-        //private List<SerializableDefinitionId> _chargeDefinitionIds;
-        //private List<MyObjectBuilder_AmmoMagazine> _chargeObjectBuilders;
+
 
         private MyStringHash _subTypeIdHash;
         private DSUtils Dsutil1 { get; set; } = new DSUtils();
-
         internal MyResourceSinkInfo ResourceInfo;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.Instance.LastTerminalId == Turret.EntityId;
@@ -84,7 +83,6 @@ namespace WeaponCore
             }
         }
 
-        internal bool StorageInit { get; set; }
         internal bool ShotsFired { get; set; }
         internal bool MainInit { get; set; }
         internal bool SettingsUpdated { get; set; }

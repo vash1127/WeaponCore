@@ -50,7 +50,8 @@
       <ElevationSpeed>0.006</ElevationSpeed>
       <IdlePower>1</IdlePower>
       <AiEnabled>false</AiEnabled>
-	  <UsePower>10</UsePower>
+      <IdleRotation>true</IdleRotation>
+      <UsePower>10</UsePower>
       <MinFov>0.1</MinFov>
       <MaxFov>1.04719755</MaxFov>
       <EmissiveColorPreset>Default</EmissiveColorPreset>

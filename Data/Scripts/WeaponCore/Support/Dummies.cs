@@ -28,7 +28,6 @@ namespace WeaponCore.Support
         private bool _failed = true;
         private void Update()
         {
-            Log.Line("updating dummy");
             _cachedModel = _entity.Model;
             _cachedSubpart = _entity;
             _cachedSubpartModel = _cachedSubpart?.Model;

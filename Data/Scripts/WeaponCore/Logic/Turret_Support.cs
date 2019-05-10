@@ -11,51 +11,6 @@ namespace WeaponCore
 {
     public partial class Logic
     {
-
-        bool sameSign(float num1, double num2)
-        {
-            if (num1 > 0 && num2 < 0)
-                return false;
-            if (num1 < 0 && num2 > 0)
-                return false;
-            return true;
-        }
-
-        void GetTurretAngles(ref Vector3D targetPositionWorld, ref Vector3D turretPivotPointWorld, ref MatrixD turretWorldMatrix, out double azimuth, out double elevation)
-        {
-            Vector3D localTargetPosition = targetPositionWorld - turretPivotPointWorld;
-            GetRotationAngles(ref localTargetPosition, ref turretWorldMatrix, out azimuth, out elevation);
-        }
-
-        /*
-        /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
-        Dependencies: AngleBetween
-        */
-        void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
-        {
-            var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
-            var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
-            yaw = AngleBetween(Vector3D.Forward, flattenedTargetVector) * -Math.Sign(localTargetVector.X); //right is negative
-            //Log.Line($"localTargetVec:{localTargetVector} - FlatTargetVec:{flattenedTargetVector} - yaw:{yaw}");
-            //if (Math.Abs(yaw) < 1E-6 && localTargetVector.Z > 0) yaw = Math.PI;
-
-            if (Vector3D.IsZero(flattenedTargetVector)) //check for straight up case
-                pitch = MathHelper.PiOver2 * Math.Sign(localTargetVector.Y);
-            else
-                pitch = AngleBetween(localTargetVector, flattenedTargetVector) * Math.Sign(localTargetVector.Y); //up is positive
-        }
-
-        /// <summary>
-        /// Computes angle between 2 vectors
-        /// </summary>
-        public static double AngleBetween(Vector3D a, Vector3D b) //returns radians
-        {
-            if (Vector3D.IsZero(a) || Vector3D.IsZero(b))
-                return 0;
-            else
-                return Math.Acos(MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
-        }
-
         public enum PlayerNotice
         {
             EmitterInit,

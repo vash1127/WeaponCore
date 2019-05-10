@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
@@ -32,7 +34,7 @@ namespace WeaponCore
             }
             else if (!State.Value.Online) return Status.Offline;
 
-            Online();
+            State.Value.Online = true;
             return Status.Online;
         }
 
@@ -43,7 +45,6 @@ namespace WeaponCore
 
         private bool WarmingUp()
         {
-
             return false;
         }
 
@@ -67,90 +68,10 @@ namespace WeaponCore
             _currentShootTime = Gun.GunBase.LastShootTime.Ticks;
             if ((_currentShootTime != _lastShootTime))
             {
-                //Log.Line($"Shotting on Tick:{_tick} - ShootInv:{Gun.GunBase.ShootIntervalInMiliseconds} - {Gun.GunBase.GetMuzzleWorldPosition()}");
                 Gun.GunBase.CurrentAmmo += 1;
                 ShotsFired = true;
                 _lastShootTick = _tick;
                 _lastShootTime = _currentShootTime;
-            }
-
-            Turret.TrackTarget(MyAPIGateway.Session.Player.Character);
-
-            if (Turret.HasTarget)
-            {
-                var targetPos = Turret.Target.PositionComp.WorldAABB.Center;
-
-                var myPivotPos = Turret.WorldAABB.Center;
-                //var upOffset = -(Vector3D.Normalize(Turret.WorldMatrix.Down - Turret.WorldMatrix.Up) * 1.04848f);
-                //myPivotPos += upOffset;
-                //var forwardOffset = (Vector3D.Normalize(Turret.WorldMatrix.Left - Turret.WorldMatrix.Right) * 0.37814f);
-                //myPivotPos += forwardOffset;
-                var len = Platform.Weapons[0].UpPivotOffsetLen;
-                myPivotPos -= Vector3D.Normalize(Turret.WorldMatrix.Down - Turret.WorldMatrix.Up) * len;
-
-                var myMatrix = Turret.WorldMatrix;
-                GetTurretAngles(ref targetPos, ref myPivotPos, ref myMatrix, out _azimuth, out _elevation);
-                var currentAz = Turret.Azimuth;
-                var currentEl = Turret.Elevation;
-
-                var stepaz = sameSign(currentAz, _azimuth);
-                var stepel = sameSign(currentEl, _elevation);
-                if (stepaz)
-                {
-                    var diffAz = MathHelper.Clamp(_azimuth - currentAz, -_step, _step);
-                    Turret.Azimuth += (float)diffAz;
-                }
-                else Turret.Azimuth = (float)_azimuth;
-                if (stepel)
-                {
-                    var diffEl = MathHelper.Clamp(_elevation - currentEl, -_step, _step);
-                    Turret.Elevation += (float)diffEl;
-                }
-                else Turret.Elevation = (float)_elevation;
-            }
-
-            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = Targeting.TargetBlocks;
-            foreach (var targets in allTargets)
-            {
-                if (targets.Key != null)
-                {
-                    foreach (var b in targets.Value)
-                    {
-                        // Log.Line($"{b.DebugName}");
-                    }
-                }
-            }
-            var parts = Platform.Weapons;
-            for (int i = 0; i < parts.Length; i++)
-            {
-                //Dsutil1.Sw.Restart();
-                var weapon = parts[i];
-
-                if (ShotsFired && weapon.WeaponSystem.WeaponType.RotateAxis == 3) weapon.MovePart(0.3f, -1, false, false, true);
-                if (weapon.PosChangedTick > weapon.PosUpdatedTick)
-                {
-                    for (int j = 0; j < weapon.Muzzles.Length; j++)
-                    {
-                        var dummy = weapon.Dummies[j];
-                        var newInfo = dummy.Info;
-                        weapon.Muzzles[j].Direction = newInfo.Direction;
-                        weapon.Muzzles[j].Position = newInfo.Position;
-                        weapon.Muzzles[j].LastPosUpdate = _tick;
-                    }
-                }
-
-                if (_tick - weapon.PosChangedTick > 10)
-                    weapon.PosUpdatedTick = _tick;
-                //Dsutil1.StopWatchReport("test", -1);
-                var cc = 0;
-                foreach (var m in weapon.Muzzles)
-                {
-                    var color = Color.Red;
-                    if (cc % 2 == 0) color = Color.Blue;
-                    //Log.Line($"{m.Position} - {m.Direction}");
-                    if (i == 0) DsDebugDraw.DrawLine(m.Position, m.Position + (m.Direction * 1000), color, 0.02f);
-                    cc++;
-                }
             }
         }
 
