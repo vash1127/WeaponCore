@@ -6,60 +6,80 @@
         <TypeId>WeaponDefinition</TypeId>
         <SubtypeId>PDCTurret</SubtypeId>
       </Id>
-	  <ProjectileAmmoData RateOfFire="57600" ShootSoundName="PDC_Shot" ShotsInBurst="1"/>
-    <DeviateShotAngle>0.9</DeviateShotAngle>
-    <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
-    <UseDefaultMuzzleFlash>false</UseDefaultMuzzleFlash>
-	  <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
-    <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
+      <MissileAmmoData RateOfFire="1337" ShootSoundName="PDC_Shot" />
+      <ReleaseTimeAfterFire>204</ReleaseTimeAfterFire>
+	    <DeviateShotAngle>0.01</DeviateShotAngle>
+      <MuzzleFlashLifeSpan>40</MuzzleFlashLifeSpan>
+      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
+      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
       <AmmoMagazines>
-        <AmmoMagazine Subtype="CustomCharge" />
+		
+        <AmmoMagazine Subtype="DeU_25x184mm" />
       </AmmoMagazines>
-    <ReloadTime>1</ReloadTime>
+      <ReloadTime>6000</ReloadTime>
     </Weapon>
-  </Weapons>
+    <Weapon>
+      <Id>
+        <TypeId>WeaponDefinition</TypeId>
+        <SubtypeId>MultiTurret</SubtypeId>
+      </Id>
+      <MissileAmmoData RateOfFire="400" ShootSoundName="PDC_Shot" />
+      <ReleaseTimeAfterFire>204</ReleaseTimeAfterFire>
+	    <DeviateShotAngle>0</DeviateShotAngle>
+      <MuzzleFlashLifeSpan>40</MuzzleFlashLifeSpan>
+      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
+      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
+      <AmmoMagazines>
+		
+        <AmmoMagazine Subtype="DeU_25x184mm" />
+      </AmmoMagazines>
+      <ReloadTime>1000</ReloadTime>
+    </Weapon>
 
+  </Weapons>
   <Ammos>
-  	<Ammo xsi:type="MyObjectBuilder_ProjectileAmmoDefinition">
+    <Ammo xsi:type="MyObjectBuilder_MissileAmmoDefinition">
       <Id>
         <TypeId>AmmoDefinition</TypeId>
-        <SubtypeId>CustomCharge</SubtypeId>
+        <SubtypeId>DeU_25x184mm</SubtypeId>
       </Id>
       <BasicProperties>
-        <DesiredSpeed>10</DesiredSpeed>
+        <DesiredSpeed>400</DesiredSpeed>
         <SpeedVariance>0</SpeedVariance>
-        <MaxTrajectory>0</MaxTrajectory>
-        <BackkickForce>0</BackkickForce>
-        <PhysicalMaterial>ProjectileTrailLine</PhysicalMaterial>
+        <MaxTrajectory>800</MaxTrajectory>
+        <IsExplosive>true</IsExplosive>
+        <BackkickForce>10</BackkickForce>
+        <PhysicalMaterial>Missile</PhysicalMaterial>
       </BasicProperties>
-      <ProjectileProperties>
-        <ProjectileHitImpulse>0.0001</ProjectileHitImpulse>
-        <ProjectileMassDamage>1</ProjectileMassDamage>
-        <ProjectileHealthDamage>1</ProjectileHealthDamage>
-		<ProjectileTrailScale>0</ProjectileTrailScale>
-		<ProjectileTrailColor x="0.08" y="0.08" z="2.1" />
-		<ProjectileTrailProbability>0</ProjectileTrailProbability>
-      </ProjectileProperties>
+      <MissileProperties>
+        <MissileMass>45</MissileMass>
+        <MissileExplosionRadius>10</MissileExplosionRadius>
+        <MissileModelName>Models\Weapons\Torpedo_Test.mwm</MissileModelName>
+        <MissileAcceleration>600</MissileAcceleration>
+        <MissileInitialSpeed>10</MissileInitialSpeed>
+        <MissileSkipAcceleration>false</MissileSkipAcceleration>
+        <MissileExplosionDamage>10</MissileExplosionDamage>
+      </MissileProperties>
     </Ammo>
   </Ammos>
   <AmmoMagazines>
-	<AmmoMagazine>
+   <AmmoMagazine>
       <Id>
         <TypeId>AmmoMagazine</TypeId>
-        <SubtypeId>CustomCharge</SubtypeId>
+        <SubtypeId>DeU_25x184mm</SubtypeId>
       </Id>
-      <DisplayName>Class 1 CustomCharge</DisplayName>
+      <DisplayName>25x184mm Depleted Uranium</DisplayName>
+      <Icon>Textures\GUI\Icons\ammo\DeURounds.dds</Icon>
       <Size>
         <X>0.25</X>
         <Y>0.2</Y>
         <Z>0.2</Z>
       </Size>
-      <Mass>35</Mass>
-      <Volume>16</Volume>
-      <Model>Models\Weapons\Ammo_Box.mwm</Model>
-      <PhysicalMaterial>Ammo</PhysicalMaterial>
-      <Capacity>1</Capacity>
-      <AmmoDefinitionId Subtype="CustomCharge" />
+      <Mass>70.25</Mass>
+      <Volume>32.33</Volume>
+      <Model>Models\Ammo\DeURounds.mwm</Model>
+      <Capacity>500</Capacity>
+      <AmmoDefinitionId Subtype="DeU_25x184mm" />
     </AmmoMagazine>
   </AmmoMagazines>
   <Blueprints>   

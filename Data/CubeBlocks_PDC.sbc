@@ -4,7 +4,7 @@
     <Definition xsi:type="MyObjectBuilder_LargeTurretBaseDefinition">
       <Id>
         <TypeId>LargeMissileTurret</TypeId>
-        <SubtypeId>PDCTurretLB</SubtypeId>
+        <SubtypeId>PDCTurretLB_moddable</SubtypeId>
       </Id>
       <DisplayName>Point Defense Cannon</DisplayName>
       <Icon>Textures\GUI\Icons\Cubes\PDC_turret.dds</Icon>
@@ -33,7 +33,7 @@
         <Model BuildPercentUpperBound="0.66" File="Models\Cubes\PDCTurretLB_Constr2.mwm" />
         <Model BuildPercentUpperBound="1.00" File="Models\Cubes\PDCTurretLB_Constr3.mwm" />
       </BuildProgressModels>
-      <BlockPairName>PDCTurrets</BlockPairName>
+      <BlockPairName>PDCTurrets_Moddable</BlockPairName>
       <Description>Point Defense Cannon with faster rotations, capability of firing depleted uranium rounds and standard gatling ammo.</Description>
       <MirroringY>Z</MirroringY>
       <MirroringZ>Y</MirroringZ>
@@ -49,9 +49,65 @@
       <RotationSpeed>0.006</RotationSpeed>
       <ElevationSpeed>0.006</ElevationSpeed>
       <IdlePower>1</IdlePower>
-      <AiEnabled>false</AiEnabled>
-      <IdleRotation>true</IdleRotation>
-      <UsePower>10</UsePower>
+	  <UsePower>10</UsePower>
+      <MinFov>0.1</MinFov>
+      <MaxFov>1.04719755</MaxFov>
+      <EmissiveColorPreset>Default</EmissiveColorPreset>
+      <MaxRangeMeters>800</MaxRangeMeters>
+      <PCU>225</PCU>
+    </Definition>
+	
+<!-- Multi Turret Platform -->
+
+    <Definition xsi:type="MyObjectBuilder_LargeTurretBaseDefinition">
+      <Id>
+        <TypeId>LargeMissileTurret</TypeId>
+        <SubtypeId>MultiTurretLB_moddable</SubtypeId>
+      </Id>
+      <DisplayName>Multi Turret Test Platform</DisplayName>
+      <Icon>Textures\GUI\Icons\Cubes\PDC_turret.dds</Icon>
+      <CubeSize>Large</CubeSize>
+      <BlockTopology>TriangleMesh</BlockTopology>
+      <Size x="1" y="1" z="1" />
+      <ModelOffset x="0" y="0" z="0" />
+      <Model>Models\Cubes\MultiTurretLB.mwm</Model>
+      <UseModelIntersection>true</UseModelIntersection>
+      <Components>
+        <Component Subtype="SteelPlate" Count="30" />
+        <Component Subtype="Construction" Count="10" />
+        <Component Subtype="LargeTube" Count="3" />
+		<Component Subtype="MetalGrid" Count="4" />
+        <Component Subtype="Motor" Count="8" />
+        <Component Subtype="Computer" Count="300" />
+        <Component Subtype="Construction" Count="10" />
+        <Component Subtype="SteelPlate" Count="10" />
+      </Components>
+      <CriticalComponent Subtype="Computer" Index="0" />
+      <MountPoints>
+        <MountPoint Side="Bottom" StartX="0" StartY="0" EndX="1" EndY="1" />
+      </MountPoints>
+      <BuildProgressModels>
+        <Model BuildPercentUpperBound="0.33" File="Models\Cubes\PDCTurretLB_Constr1.mwm" />
+        <Model BuildPercentUpperBound="0.66" File="Models\Cubes\PDCTurretLB_Constr2.mwm" />
+        <Model BuildPercentUpperBound="1.00" File="Models\Cubes\PDCTurretLB_Constr3.mwm" />
+      </BuildProgressModels>
+      <BlockPairName>MultiTurretBase</BlockPairName>
+      <Description>Experimental</Description>
+      <MirroringY>Z</MirroringY>
+      <MirroringZ>Y</MirroringZ>
+      <EdgeType>Light</EdgeType>
+	  <EmissiveColorPreset>Extended</EmissiveColorPreset>
+      <BuildTimeSeconds>30</BuildTimeSeconds>
+      <WeaponDefinitionId Subtype="MultiTurret" />
+      <InventoryMaxVolume>0.384</InventoryMaxVolume>
+      <MinElevationDegrees>-9</MinElevationDegrees>
+      <MaxElevationDegrees>65</MaxElevationDegrees>
+      <MinAzimuthDegrees>-180</MinAzimuthDegrees>
+      <MaxAzimuthDegrees>180</MaxAzimuthDegrees>
+      <RotationSpeed>0.006</RotationSpeed>
+      <ElevationSpeed>0.006</ElevationSpeed>
+      <IdlePower>1</IdlePower>
+	  <UsePower>10</UsePower>
       <MinFov>0.1</MinFov>
       <MaxFov>1.04719755</MaxFov>
       <EmissiveColorPreset>Default</EmissiveColorPreset>
@@ -62,7 +118,7 @@
     <Definition xsi:type="MyObjectBuilder_LargeTurretBaseDefinition">
       <Id>
         <TypeId>LargeMissileTurret</TypeId>
-        <SubtypeId>PDCTurretSB</SubtypeId>
+        <SubtypeId>PDCTurretSB_moddable</SubtypeId>
       </Id>
       <DisplayName>Point Defense Cannon</DisplayName>
       <Icon>Textures\GUI\Icons\Cubes\PDC_turret.dds</Icon>
@@ -91,7 +147,7 @@
         <Model BuildPercentUpperBound="0.66" File="Models\Cubes\PDCTurretLB_Constr2.mwm" />
         <Model BuildPercentUpperBound="1.00" File="Models\Cubes\PDCTurretLB_Constr3.mwm" />
       </BuildProgressModels>
-      <BlockPairName>PDCTurrets</BlockPairName>
+      <BlockPairName>PDCTurrets_Moddable</BlockPairName>
       <Description>Point Defense Cannon with faster rotations, capability of firing depleted uranium rounds and standard gatling ammo.</Description>
       <MirroringY>Z</MirroringY>
       <MirroringZ>Y</MirroringZ>
@@ -117,8 +173,8 @@
   </CubeBlocks>
   <BlueprintClassEntries>
    
-    <Entry Class="LargeBlocks" BlueprintSubtypeId="LargeMissileTurret/PDCTurretLB" />
-    <Entry Class="SmallBlocks" BlueprintSubtypeId="LargeMissileTurret/PDCTurretSB" />
-    <Entry Class="Ammo" BlueprintSubtypeId="CustomCharge" />
+    <Entry Class="LargeBlocks" BlueprintSubtypeId="LargeGatlingTurret/PDCTurretLB" />
+    <Entry Class="SmallBlocks" BlueprintSubtypeId="LargeGatlingTurret/PDCTurretSB" />
+    <Entry Class="Ammo" BlueprintSubtypeId="DeU_25x184mm" />
   </BlueprintClassEntries>
 </Definitions>
