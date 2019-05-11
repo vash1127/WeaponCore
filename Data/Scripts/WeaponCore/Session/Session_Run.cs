@@ -63,25 +63,25 @@ namespace WeaponCore
                     {
                         for (int j = 0; j < logic.Platform.Weapons.Length; j++)
                         {
+                            if (j != 0) continue;
                             var w = logic.Platform.Weapons[j];
                             if (w.TrackTarget && w.TargetSwap) w.SelectTarget();
                             if (w.TurretMode && w.Target != null) w.Rotate();
-                            if (w.TrackTarget && w.ReadyToTrack) w.BaseTurret.TrackTarget(w.Target);
+                            if (w.TrackTarget && w.ReadyToTrack) logic.Turret.TrackTarget(w.Target);
                             if (w.ReadyToShoot) w.Shoot();
-                        }
-                        var structure = logic.Platform.Structure;
-                        switch (structure.WeaponSystems[structure.PartNames[0]].WeaponType.Ammo)
-                        {
-                            case AmmoType.Beam:
-                                GenerateBeams(logic);
-                                BeamOn = true;
-                                continue;
-                            case AmmoType.Bolt:
-                                GenerateBolts(logic);
-                                continue;
-                            case AmmoType.Missile:
-                                GenerateMissiles(logic);
-                                continue;
+                            switch (w.WeaponType.Ammo)
+                            {
+                                case AmmoType.Beam:
+                                    GenerateBeams(logic);
+                                    BeamOn = true;
+                                    continue;
+                                case AmmoType.Bolt:
+                                    GenerateBolts(logic, j);
+                                    continue;
+                                case AmmoType.Missile:
+                                    GenerateMissiles(logic);
+                                    continue;
+                            }
                         }
                     }
                 }

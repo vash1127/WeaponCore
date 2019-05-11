@@ -74,10 +74,11 @@ namespace WeaponCore.Support
         internal int RotateBarrelAxis; 
         internal int ReloadTime;
         internal int RateOfFire;
+        internal int BarrelsPerShot;
+        internal int ShotsPerBarrel;
         internal int HeatPerRoF;
         internal int MaxHeat;
         internal int HeatSinkRate;
-        internal int ShotsInBurst;
         internal int MuzzleFlashLifeSpan;
         internal float ShieldDmgMultiplier;
         internal float Mass;

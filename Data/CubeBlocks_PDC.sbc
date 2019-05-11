@@ -4,7 +4,7 @@
     <Definition xsi:type="MyObjectBuilder_LargeTurretBaseDefinition">
       <Id>
         <TypeId>LargeMissileTurret</TypeId>
-        <SubtypeId>PDCTurretLB_moddable</SubtypeId>
+        <SubtypeId>PDCTurretLB</SubtypeId>
       </Id>
       <DisplayName>Point Defense Cannon</DisplayName>
       <Icon>Textures\GUI\Icons\Cubes\PDC_turret.dds</Icon>
@@ -33,7 +33,7 @@
         <Model BuildPercentUpperBound="0.66" File="Models\Cubes\PDCTurretLB_Constr2.mwm" />
         <Model BuildPercentUpperBound="1.00" File="Models\Cubes\PDCTurretLB_Constr3.mwm" />
       </BuildProgressModels>
-      <BlockPairName>PDCTurrets_Moddable</BlockPairName>
+      <BlockPairName>PDCTurrets</BlockPairName>
       <Description>Point Defense Cannon with faster rotations, capability of firing depleted uranium rounds and standard gatling ammo.</Description>
       <MirroringY>Z</MirroringY>
       <MirroringZ>Y</MirroringZ>
@@ -62,7 +62,7 @@
     <Definition xsi:type="MyObjectBuilder_LargeTurretBaseDefinition">
       <Id>
         <TypeId>LargeMissileTurret</TypeId>
-        <SubtypeId>MultiTurretLB_moddable</SubtypeId>
+        <SubtypeId>MultiTurretLB</SubtypeId>
       </Id>
       <DisplayName>Multi Turret Test Platform</DisplayName>
       <Icon>Textures\GUI\Icons\Cubes\PDC_turret.dds</Icon>
@@ -118,7 +118,7 @@
     <Definition xsi:type="MyObjectBuilder_LargeTurretBaseDefinition">
       <Id>
         <TypeId>LargeMissileTurret</TypeId>
-        <SubtypeId>PDCTurretSB_moddable</SubtypeId>
+        <SubtypeId>PDCTurretSB</SubtypeId>
       </Id>
       <DisplayName>Point Defense Cannon</DisplayName>
       <Icon>Textures\GUI\Icons\Cubes\PDC_turret.dds</Icon>
@@ -147,7 +147,7 @@
         <Model BuildPercentUpperBound="0.66" File="Models\Cubes\PDCTurretLB_Constr2.mwm" />
         <Model BuildPercentUpperBound="1.00" File="Models\Cubes\PDCTurretLB_Constr3.mwm" />
       </BuildProgressModels>
-      <BlockPairName>PDCTurrets_Moddable</BlockPairName>
+      <BlockPairName>PDCTurrets</BlockPairName>
       <Description>Point Defense Cannon with faster rotations, capability of firing depleted uranium rounds and standard gatling ammo.</Description>
       <MirroringY>Z</MirroringY>
       <MirroringZ>Y</MirroringZ>

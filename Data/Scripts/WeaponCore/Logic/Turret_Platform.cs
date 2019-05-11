@@ -15,12 +15,20 @@ namespace WeaponCore
 {
     public class Weapon
     {
-        public Weapon(IMyEntity entity)
+        public Weapon(IMyEntity entity, WeaponSystem weaponSystem)
         {
             EntityPart = entity;
-            LocalTranslation = entity.LocalMatrix.Translation;
-            PivotOffsetVec = (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) - entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
-            UpPivotOffsetLen = PivotOffsetVec.Length();
+            _localTranslation = entity.LocalMatrix.Translation;
+            _pivotOffsetVec = (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) - entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
+            _upPivotOffsetLen = _pivotOffsetVec.Length();
+
+            WeaponSystem = weaponSystem;
+            WeaponType = weaponSystem.WeaponType;
+            TurretMode = WeaponType.TurretMode;
+            TrackTarget = WeaponType.TrackTarget;
+            _ticksPerShot = (uint)(3600 / WeaponType.RateOfFire);
+            _timePerShot = (3600d / WeaponType.RateOfFire);
+            _numOfBarrels = WeaponSystem.Barrels.Length;
         }
 
         public IMyEntity EntityPart;
@@ -30,103 +38,121 @@ namespace WeaponCore
         public Muzzle[] Muzzles;
         public Logic Logic;
         public MyEntity Target { get; set; }
-        public IMyLargeTurretBase BaseTurret;
         public Random Rnd = new Random(902138212);
 
-        public uint PosUpdatedTick = uint.MinValue;
-        public uint PosChangedTick = 1;
-        public MatrixD WeaponMatrix;
-        public MatrixD OldWeaponMatrix;
-        public Vector3D WeaponPosition;
-        public Vector3D OldWeaponPosition;
-        public Vector3 LocalTranslation;
-        public Vector3 PivotOffsetVec;
-        public float UpPivotOffsetLen;
-        public bool TurretMode;
-        public bool TrackTarget;
-        public bool FirstRun = true;
-        internal uint TargetTick;
-        private double _step = 0.05d;
+        private readonly Vector3 _localTranslation;
+        private readonly float _upPivotOffsetLen;
 
-        public bool ReadyToTrack => Target != null && BaseTurret.Target != Target && _azOk && _elOk;
-        public bool ReadyToShoot => Target != null && BaseTurret.Target == Target;
-        //public bool TargetSwap => (Target != null || !BaseTurret.HasTarget) && TargetTick++ > 240;
-        public bool TargetSwap
-        {
-            get { return (Target != null || !BaseTurret.HasTarget) && TargetTick++ > 240 || FirstRun; }
-        }
+        private MatrixD _weaponMatrix;
+        private MatrixD _oldWeaponMatrix;
+        private Vector3D _weaponPosition;
+        private Vector3D _oldWeaponPosition;
+        private Vector3 _pivotOffsetVec;
+
+        private int _rotationTime;
+        private int _numOfBarrels;
+        private int _nextMuzzle;
+        private uint _posUpdatedTick = uint.MinValue;
+        private uint _posChangedTick = 1;
+        private uint _targetTick;
+        private uint _ticksPerShot;
+        private uint _shotCounter;
+        private double _timePerShot;
+        private double _step = 0.05d;
         private double _azimuth;
         private double _elevation;
         private double _desiredAzimuth;
         private double _desiredElevation;
+
+        private bool _firstRun = true;
+        private bool _weaponReady = true;
         private bool _azOk;
         private bool _elOk;
 
+        internal bool TurretMode { get; set; }
+        internal bool TrackTarget { get; set; }
+        internal bool ReadyToTrack => Target != null && Logic.Turret.Target != Target && _azOk && _elOk;
+        internal bool ReadyToShoot => _weaponReady && Target != null && Logic.Turret.Target == Target;
+        internal bool TargetSwap => (Target != null || !Logic.Turret.HasTarget) && _targetTick++ > 240 || _firstRun;
+
         public void PositionChanged(MyPositionComponentBase pComp)
         {
-            PosChangedTick = Session.Instance.Tick;
+            _posChangedTick = Session.Instance.Tick;
         }
-
-        private int RotationTime { get; set; }
 
         internal void Shoot()
         {
             var tick = Session.Instance.Tick;
-            if (WeaponType.RotateBarrelAxis == 3) MovePart(0.2f, -1, false, false, true);
-            if (PosChangedTick > PosUpdatedTick)
+            var rotateAxis = WeaponType.RotateBarrelAxis;
+            var radiansPerShot = (2 * Math.PI / _numOfBarrels);
+            var radiansPerTick = radiansPerShot / _timePerShot;
+            if (_shotCounter == 0 && _nextMuzzle == 0) _rotationTime = 0;
+
+            if (_shotCounter++ >= _ticksPerShot - 1) _shotCounter = 0;
+            var bps = WeaponType.BarrelsPerShot;
+            if (rotateAxis != 0) MovePart(radiansPerTick, -1 * bps, rotateAxis == 1, rotateAxis == 2, rotateAxis == 3);
+
+            if (_shotCounter != 0) return;
+
+            var updatePos = _posChangedTick > _posUpdatedTick;
+            var muzzlesFired = 0;
+            for (int j = 0; j < _numOfBarrels; j++)
             {
-                for (int j = 0; j < Muzzles.Length; j++)
+                var muzzle = Muzzles[j];
+                if (updatePos)
                 {
                     var dummy = Dummies[j];
                     var newInfo = dummy.Info;
-                    Muzzles[j].Direction = newInfo.Direction;
-                    Muzzles[j].Position = newInfo.Position;
-                    Muzzles[j].LastPosUpdate = tick;
+                    muzzle.Direction = newInfo.Direction;
+                    muzzle.Position = newInfo.Position;
+                    muzzle.LastPosUpdate = tick;
                 }
-            }
 
-            if (tick - PosChangedTick > 10) PosUpdatedTick = tick;
+                if (j == _nextMuzzle && muzzlesFired < bps)
+                {
+                    muzzle.LastFireTick = Session.Instance.Tick;
+                    if (_nextMuzzle + 1 != _numOfBarrels) _nextMuzzle++;
+                    else _nextMuzzle = 0;
+                    muzzlesFired++;
+                    var color = Color.Red;
+                    if (j % 2 == 0) color = Color.Blue;
+                    DsDebugDraw.DrawLine(muzzle.Position, muzzle.Position + (muzzle.Direction * 1000), color, 0.02f);
+                }
 
-            var cc = 0;
-            foreach (var m in Muzzles)
-            {
-                var color = Color.Red;
-                if (cc % 2 == 0) color = Color.Blue;
-                //Log.Line($"{m.Position} - {m.Direction}");
-                DsDebugDraw.DrawLine(m.Position, m.Position + (m.Direction * 1000), color, 0.02f);
-                cc++;
+                if (muzzlesFired >= bps && !updatePos) break;
             }
+            if (tick - _posChangedTick > 10) _posUpdatedTick = tick;
         }
 
-        public void MovePart(float radians, int time, bool xAxis, bool yAxis, bool zAxis)
+        public void MovePart(double radians, int time, bool xAxis, bool yAxis, bool zAxis)
         {
             MatrixD rotationMatrix;
-            if (xAxis) rotationMatrix = MatrixD.CreateRotationX(radians * RotationTime);
-            else if (yAxis) rotationMatrix = MatrixD.CreateRotationY(radians * RotationTime);
-            else if (zAxis) rotationMatrix = MatrixD.CreateRotationZ(radians * RotationTime);
+            if (xAxis) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
+            else if (yAxis) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
+            else if (zAxis) rotationMatrix = MatrixD.CreateRotationZ(radians * _rotationTime);
             else return;
 
-            RotationTime += time;
-            rotationMatrix.Translation = LocalTranslation;
+            _rotationTime += time;
+            rotationMatrix.Translation = _localTranslation;
             EntityPart.PositionComp.LocalMatrix = rotationMatrix;
         }
 
         internal void SelectTarget()
         {
-            if (Target == null) BaseTurret.ResetTargetingToDefault();
+            if (Target == null) Logic.Turret.ResetTargetingToDefault();
 
-            TargetTick = 0;
+            _targetTick = 0;
 
             Target = GetTarget();
 
             if (Target != null)
             {
-                FirstRun = false;
+                _firstRun = false;
                 var grid = Target as MyCubeGrid;
                 if (grid == null)
                 {
-                    Log.Line($"found entityL {Target.DebugName}");
-                    BaseTurret.TrackTarget(Target);
+                    //Log.Line($"found entityL {Target.DebugName}");
+                    Logic.Turret.TrackTarget(Target);
                 }
                 else
                 {
@@ -138,8 +164,8 @@ namespace WeaponCore
                         if (!Logic.TargetBlocks[next].MarkedForClose)
                         {
                             Target = Logic.TargetBlocks[next];
-                            BaseTurret.TrackTarget(Target);
-                            Log.Line($"found block - Block:{Logic.TargetBlocks[next].DebugName} - Target:{Target.DebugName} - random:{next} - bCount:{bCount}");
+                            Logic.Turret.TrackTarget(Target);
+                            //Log.Line($"found block - Block:{Logic.TargetBlocks[next].DebugName} - Target:{Target.DebugName} - random:{next} - bCount:{bCount}");
                             found = true;
                         }
                     }
@@ -154,18 +180,16 @@ namespace WeaponCore
             var targetPos = Target.PositionComp.WorldAABB.Center;
             var myPivotPos = myCube.PositionComp.WorldAABB.Center;
 
-            myPivotPos -= Vector3D.Normalize(myMatrix.Down - myMatrix.Up) * UpPivotOffsetLen;
+            myPivotPos -= Vector3D.Normalize(myMatrix.Down - myMatrix.Up) * _upPivotOffsetLen;
 
-            GetTurretAngles(ref targetPos, ref myPivotPos, BaseTurret, _step, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
+            GetTurretAngles(ref targetPos, ref myPivotPos, Logic.Turret, _step, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
             var azDiff = 100 * (_desiredAzimuth - _azimuth) / _azimuth;
             var elDiff = 100 * (_desiredElevation - _elevation) / _elevation;
 
             _azOk = azDiff > -101 && azDiff < -99 || azDiff > -1 && azDiff < 1;
             _elOk = elDiff > -101 && elDiff < -99 || elDiff > -1 && elDiff < 1;
-            //Log.Line($"[{azDiff}]({_elOk}) - [{elDiff}]({_azOk})");
-
-            BaseTurret.Azimuth = (float)_azimuth;
-            BaseTurret.Elevation = (float)_elevation;
+            Logic.Turret.Azimuth = (float)_azimuth;
+            Logic.Turret.Elevation = (float)_elevation;
         }
 
         internal void GetTurretAngles(ref Vector3D targetPositionWorld, ref Vector3D turretPivotPointWorld, IMyLargeTurretBase turret, double maxAngularStep, out double azimuth, out double elevation, out double desiredAzimuth, out double desiredElevation)
@@ -269,6 +293,29 @@ namespace WeaponCore
             return f > 0;
         }
 
+        /// <summary>
+        /// Returns if the normalized dot product between two vectors is greater than the tolerance.
+        /// This is helpful for determining if two vectors are "more parallel" than the tolerance.
+        /// </summary>
+        /// <param name="a">First vector</param>
+        /// <param name="b">Second vector</param>
+        /// <param name="tolerance">Cosine of maximum angle</param>
+        /// <returns></returns>
+        public static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
+        {
+            double dot = Vector3D.Dot(a, b);
+            double num = a.LengthSquared() * b.LengthSquared() * tolerance * Math.Sign(tolerance);
+            return Math.Sign(dot) * dot > num;
+        }
+
+        bool sameSign(float num1, double num2)
+        {
+            if (num1 > 0 && num2 < 0)
+                return false;
+            if (num1 < 0 && num2 > 0)
+                return false;
+            return true;
+        }
     }
 
     public class Muzzle
@@ -303,15 +350,10 @@ namespace WeaponCore
                 IMyEntity subPartEntity;
                 SubParts.NameToEntity.TryGetValue(Structure.PartNames[i].String, out subPartEntity);
                 BeamSlot[i] = new uint[barrelCount];
-                Weapons[i] = new Weapon(subPartEntity)
+                Weapons[i] = new Weapon(subPartEntity, Structure.WeaponSystems[Structure.PartNames[i]])
                 {
                     Muzzles = new Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
-                    WeaponSystem = Structure.WeaponSystems[Structure.PartNames[i]],
-                    WeaponType = Structure.WeaponSystems[Structure.PartNames[i]].WeaponType,
-                    TurretMode = Structure.WeaponSystems[Structure.PartNames[i]].WeaponType.TurretMode,
-                    TrackTarget = Structure.WeaponSystems[Structure.PartNames[i]].WeaponType.TrackTarget,
-                    BaseTurret = entity as IMyLargeTurretBase,
                     Logic = logic,
                 };
             }
