@@ -8,33 +8,34 @@ namespace WeaponCore.Support
     class Projectile
     {
         private static int _checkIntersectionCnt = 0;
-        private ProjectileState _state;
+        public ProjectileState State;
         private Vector3D _origin;
         private Vector3D _velocity_Projectile;
         private Vector3D _velocity_Combined;
-        private Vector3D _directionNormalized;
+        public Vector3D Direction;
         private float _speed;
         private float _maxTrajectory;
-        private Vector3D _position;
+        public Vector3D Position;
         private bool _positionChecked;
         private int _checkIntersectionIndex;
         private double _lengthMultiplier;
-        private Weapon _weapon;
+        public Weapon Weapon;
 
-        internal void Start(LineD fired, Weapon weapon)
+        internal void Start(Projectiles.Shot fired, Weapon weapon)
         {
             //var initVel = Vector3D.One;
             //_projectileAmmoDefinition = ammoDefinition;
-            _weapon = weapon;
-            _maxTrajectory = 5000;
-            _state = ProjectileState.Alive;
-            _directionNormalized = -fired.Direction;
-            _origin = fired.From + (3 * _directionNormalized);
-            _position = _origin;
-            _speed = 250f;// * MyUtils.GetRandomFloat(1f, 1.5f);
+            Weapon = weapon;
+            var wDef = weapon.WeaponType;
+            _maxTrajectory = wDef.MaxTrajectory;
+            State = ProjectileState.Alive;
+            Direction = fired.Direction;
+            _origin = fired.Position;
+            Position = _origin;
+            _speed = wDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
             _lengthMultiplier = 1f;//MyUtils.GetRandomFloat(1f, 1.7f);
             //_speed = ammoDefinition.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
-            _velocity_Projectile = _directionNormalized * _speed;
+            _velocity_Projectile = Direction * _speed;
             //_velocity_Combined = initVel + _velocity_Projectile;
             _velocity_Combined = _velocity_Projectile;
             // _maxTrajectory = ammoDefinition.MaxTrajectory;
@@ -46,27 +47,28 @@ namespace WeaponCore.Support
 
         internal bool Update()
         {
-            if (_state != ProjectileState.Alive)
+            if (State != ProjectileState.Alive)
                 return false;
-            var position = _position;
+            var position = Position;
             var speed = _velocity_Combined * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS * 1f;
-            _position += speed;
-            var lastPos = (_position - _origin);
+            Position += speed;
+            var lastPos = (Position - _origin);
             if (Vector3D.Dot(lastPos, lastPos) >= _maxTrajectory * _maxTrajectory)
             {
                 Close();
-                _state = ProjectileState.Dead;
+                State = ProjectileState.Dead;
                 return false;
             }
+
             _checkIntersectionIndex = ++_checkIntersectionIndex % 5;
             if (_checkIntersectionIndex != 0 && _positionChecked)
                 return true;
             //var to = position + (2 * _lengthMultiplier) * (speed);
-            var to = position + (speed * _directionNormalized);
+            var to = position + (speed * Direction);
             var newLine = new LineD(position, to);
             _positionChecked = true;
             //_effect1.SetTranslation(_position);
-            Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(_weapon, 0, newLine, _velocity_Projectile, Vector3D.Zero, null, true));
+            //Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(_weapon, 0, newLine, _velocity_Projectile, Vector3D.Zero, null, true));
             return true;
         }
 
@@ -97,9 +99,9 @@ namespace WeaponCore.Support
         private void ProjectileParticleStart()
         {
             var color = new Vector4(255, 255, 255, 128f); // comment out to use beam color
-            var speed = (_velocity_Combined * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS * 1f);
-            var pos = _position;
-            var to = (pos + speed) + 1 * speed;
+            //var speed = (_velocity_Combined * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS * 1f);
+            var pos = Position;
+            var to = pos;
             var mainParticle = 32;
             var matrix = MatrixD.CreateTranslation(to);
             MyParticlesManager.TryCreateParticleEffect(mainParticle, out _effect1, ref matrix, ref to, uint.MaxValue, true); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
@@ -116,7 +118,7 @@ namespace WeaponCore.Support
             _effect1.Close(true, false);
         }
 
-        private enum ProjectileState
+        public enum ProjectileState
         {
             Alive,
             Dead,

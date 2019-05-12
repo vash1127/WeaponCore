@@ -6,57 +6,51 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
-
+using static WeaponCore.Support.Projectiles;
 namespace WeaponCore
 {
     public partial class Session
     {
         private void GenerateBeams(Weapon weapon)
         {
-            var barrels = weapon.BeamSlot;
-            var fireBeam = new Projectiles.FiredBeam(weapon, _linePool.Get());
-            foreach (var barrelInfo in barrels)
+            var barrels = weapon.Muzzles;
+            var fireBeam = new FiredBeam(weapon, _linePool.Get());
+            foreach (var m in barrels)
             {
-                /*
-                var back = barrelInfo.SubPart.PositionComp.WorldMatrix.Backward;
-                var forward = barrelInfo.SubPart.PositionComp.WorldMatrix.Forward;
-                var barrel = new LineD(back, forward);
-                fireBeam.Beams.Add(new LineD(barrel.To, barrel.To + barrel.Direction * 1000));
-                */
+                if (Tick == m.LastShot)
+                {
+                    fireBeam.Beams.Add(new LineD(m.Position, m.Direction));
+                }
             }
             lock (_projectiles) _projectiles.FiredBeams.Add(fireBeam);
         }
 
         private void GenerateBolts(Weapon weapon)
         {
-            var barrels = weapon.BeamSlot;
-            var firedMissile = new Projectiles.FiredProjectile(weapon, _linePool.Get());
+            var barrels = weapon.Muzzles;
+            var firedBolt = new FiredProjectile(weapon, _shotPool.Get());
 
-            foreach (var barrelInfo in barrels)
+            foreach (var m in barrels)
             {
-                /*
-                var back = barrelInfo.SubPart.PositionComp.WorldMatrix.Backward;
-                var forward = barrelInfo.SubPart.PositionComp.WorldMatrix.Forward;
-                var barrel = new LineD(back, forward);
-                firedMissile.Projectiles.Add(barrel);
-                */
+                if (Tick == m.LastShot)
+                {
+                    firedBolt.Projectiles.Add(new Shot(m.Position, m.Direction));
+                }
             }
-            lock (_projectiles) _projectiles.Add(firedMissile);
+            lock (_projectiles) _projectiles.Add(firedBolt);
         }
 
         private void GenerateMissiles(Weapon weapon)
         {
-            var barrels = weapon.BeamSlot;
-            var firedMissile = new Projectiles.FiredProjectile(weapon, _linePool.Get());
+            var barrels = weapon.Muzzles;
+            var firedMissile = new FiredProjectile(weapon, _shotPool.Get());
 
-            foreach (var barrelInfo in barrels)
+            foreach (var m in barrels)
             {
-                /*
-                var back = barrelInfo.SubPart.PositionComp.WorldMatrix.Backward;
-                var forward = barrelInfo.SubPart.PositionComp.WorldMatrix.Forward;
-                var barrel = new LineD(back, forward);
-                firedMissile.Projectiles.Add(barrel);
-                */
+                if (Tick == m.LastShot)
+                {
+                    firedMissile.Projectiles.Add(new Shot(m.Position, m.Direction));
+                }
             }
             lock (_projectiles) _projectiles.Add(firedMissile);
         }
@@ -150,7 +144,8 @@ namespace WeaponCore
         }
 
         private MyParticleEffect _effect1 = new MyParticleEffect();
-        private void BeamParticleStart(IMyEntity ent, Vector3D pos, Vector4 color)
+
+        internal void BeamParticleStart(IMyEntity ent, Vector3D pos, Vector4 color)
         {
             color = new Vector4(255, 10, 0, 1f); // comment out to use beam color
             var dist = Vector3D.Distance(MyAPIGateway.Session.Camera.Position, pos);

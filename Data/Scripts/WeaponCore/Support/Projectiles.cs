@@ -46,6 +46,24 @@ namespace WeaponCore.Support
                     projectile.Close();
                     _projectiles.MarkForDeallocate(projectile); ;
                 }
+                var fired = new FiredBeam(projectile.Weapon, new List<LineD>());
+                var beam = new LineD(projectile.Position, projectile.Position + projectile.Direction * 4);
+                var checkEnts = _checkPool.Get();
+
+                GetAllEntitiesInLine(checkEnts, fired, beam);
+                var hitInfo = GetHitEntities(checkEnts, beam);
+                if (GetProjectileDamageInfo(fired, beam, hitInfo))
+                {
+                    UtilsStatic.CreateFakeSmallExplosion(hitInfo.HitPos);
+                    Log.Line("test");
+                    projectile.Close();
+                    projectile.State = Projectile.ProjectileState.Dead;
+                    _projectiles.MarkForDeallocate(projectile); 
+                }
+
+                checkEnts.Clear();
+                _checkPool.Return(checkEnts);
+                ProjectileDamageEntities(fired);
             }
             _projectiles.DeallocateAllMarked();
         }
@@ -63,18 +81,18 @@ namespace WeaponCore.Support
 
                         GetAllEntitiesInLine(checkEnts, fired, beam);
                         var hitInfo = GetHitEntities(checkEnts, beam);
-                        GetDamageInfo(fired, beam, hitInfo, i);
+                        GetBeamDamageInfo(fired, beam, hitInfo, i);
 
                         checkEnts.Clear();
                         _checkPool.Return(checkEnts);
                     }
-                    DamageEntities(fired);
+                    BeamDamageEntities(fired);
                 });
                 FiredBeams.Clear();
             }
         }
 
-        private void GetDamageInfo(FiredBeam fired, LineD beam, HitInfo hitInfo, int beamId)
+        private void GetBeamDamageInfo(FiredBeam fired, LineD beam, HitInfo hitInfo, int beamId)
         {
             DamageInfo damageInfo = null;
             if (hitInfo.HitPos != Vector3D.Zero)
@@ -97,7 +115,31 @@ namespace WeaponCore.Support
             if (!Session.Instance.DedicatedServer && damageInfo == null) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
         }
 
-        private void DamageEntities(FiredBeam fired)
+        private bool GetProjectileDamageInfo(FiredBeam fired, LineD beam, HitInfo hitInfo)
+        {
+            if (hitInfo.HitPos != Vector3D.Zero)
+            {
+                DamageInfo damageInfo = null;
+                if (hitInfo.Slim != null)
+                {
+                    _hitBlocks.TryGetValue(hitInfo.Slim, out damageInfo);
+                    if (damageInfo == null) damageInfo = _damagePool.Get();
+                    damageInfo.Update(0, hitInfo.NewBeam, null, hitInfo.Slim, hitInfo.HitPos, 1);
+                    _hitBlocks[hitInfo.Slim] = damageInfo;
+                }
+                else
+                {
+                    _hitEnts.TryGetValue(hitInfo.Entity, out damageInfo);
+                    if (damageInfo == null) damageInfo = _damagePool.Get();
+                    damageInfo.Update(0, hitInfo.NewBeam, hitInfo.Entity, null, hitInfo.HitPos, 1);
+                    _hitEnts[hitInfo.Entity] = damageInfo;
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private void BeamDamageEntities(FiredBeam fired)
         {
             foreach (var pair in _hitBlocks)
             {
@@ -126,6 +168,41 @@ namespace WeaponCore.Support
                 info.HitPos /= info.HitCount;
                 if (!Session.Instance.DedicatedServer)
                     foreach (var bPair in info.AllBeams) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Weapon, bPair.Key, bPair.Value, Vector3D.Zero, info.HitPos, parentEnt, info.PrimaryBeam()));
+
+                if (Session.Instance.IsServer)
+                {
+                    if (shield != null) Hits.Enqueue(new TurretShieldEvent(shield, Session.Instance.SApi, info.HitPos / info.HitCount, info.HitCount, fired.Weapon));
+                    if (voxel != null) Hits.Enqueue(new TurretVoxelEvent());
+                    if (destroyable != null) Hits.Enqueue(new TurretDestroyableEvent(destroyable, fired.Weapon));
+                }
+                info.Clean();
+                _damagePool.Return(info);
+            }
+            _hitBlocks.Clear();
+            _hitEnts.Clear();
+        }
+
+        private void ProjectileDamageEntities(FiredBeam fired)
+        {
+            foreach (var pair in _hitBlocks)
+            {
+                var info = pair.Value;
+                info.HitPos /= info.HitCount;
+
+                if (Session.Instance.IsServer) Hits.Enqueue(new TurretGridEvent(pair.Key, pair.Value.HitCount, fired.Weapon));
+                info.Clean();
+                _damagePool.Return(info);
+            }
+
+            foreach (var pair in _hitEnts)
+            {
+                var ent = pair.Key;
+                var shield = ent as IMyTerminalBlock;
+                var voxel = ent as MyVoxelBase;
+                var destroyable = ent as IMyDestroyableObject;
+
+                var info = pair.Value;
+                info.HitPos /= info.HitCount;
 
                 if (Session.Instance.IsServer)
                 {
@@ -247,15 +324,28 @@ namespace WeaponCore.Support
 
         internal struct FiredProjectile
         {
-            public readonly List<LineD> Projectiles;
+            public readonly List<Shot> Projectiles;
             public readonly Weapon Weapon;
 
-            public FiredProjectile(Weapon weapon, List<LineD> projectiles)
+            public FiredProjectile(Weapon weapon, List<Shot> projectiles)
             {
                 Weapon = weapon;
                 Projectiles = projectiles;
             }
         }
+
+        internal struct Shot
+        {
+            public readonly Vector3D Position;
+            public readonly Vector3D Direction;
+
+            public Shot(Vector3D position, Vector3D direction)
+            {
+                Position = position;
+                Direction = direction;
+            }
+        }
+
         internal struct HitInfo
         {
             public readonly Vector3D HitPos;

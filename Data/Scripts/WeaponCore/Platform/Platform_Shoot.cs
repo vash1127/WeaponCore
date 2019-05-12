@@ -50,17 +50,18 @@ namespace WeaponCore.Platform
             for (int i = 0; i < bps; i++)
             {
                 var current = _nextMuzzle;
-                var muzzle = Muzzles[current];
+                Muzzles[current].LastShot = tick;
+
                 if (i == bps - 1) _nextMuzzle++;
                 _nextMuzzle = (_nextMuzzle + (skipAhead + 1)) % (endBarrel + 1);
                 /*
                 if (_nextMuzzle + 1 > endBarrel) _nextMuzzle = 0;
                 else _nextMuzzle = _nextMuzzle + 1;
-                */
                 //Log.Line($"current:{current} - next:{_nextMuzzle} - skip:{skipAhead} - inter:{i}");
                 var color = Color.Red;
                 if (current % 2 == 0) color = Color.Blue;
                 DsDebugDraw.DrawLine(muzzle.Position, muzzle.Position + (muzzle.Direction * 1000), color, 0.02f);
+                */
             }
 
             if (tick - _posChangedTick > 10) _posUpdatedTick = tick;

@@ -86,6 +86,7 @@ namespace WeaponCore.Platform
         {
             public Vector3D Position;
             public Vector3D Direction;
+            public uint LastShot;
             public uint LastPosUpdate;
         }
     }

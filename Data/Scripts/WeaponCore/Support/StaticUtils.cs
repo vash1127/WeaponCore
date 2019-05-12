@@ -395,7 +395,7 @@ namespace WeaponCore.Support
             {
                 PlayerDamage = 0.0f,
                 Damage = 0f,
-                ExplosionType = MyExplosionTypeEnum.WARHEAD_EXPLOSION_02,
+                ExplosionType = MyExplosionTypeEnum.MISSILE_EXPLOSION,
                 ExplosionSphere = new BoundingSphereD(position, 0d),
                 LifespanMiliseconds = 0,
                 ParticleScale = 1f,

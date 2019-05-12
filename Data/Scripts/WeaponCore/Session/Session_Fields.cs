@@ -22,6 +22,7 @@ namespace WeaponCore
         private double _syncDistSqr;
 
         private readonly MyConcurrentPool<List<LineD>> _linePool = new MyConcurrentPool<List<LineD>>();
+        private readonly MyConcurrentPool<List<Projectiles.Shot>> _shotPool = new MyConcurrentPool<List<Projectiles.Shot>>();
 
         private MyEntity3DSoundEmitter SoundEmitter { get; set; } = new MyEntity3DSoundEmitter(null)
         {
