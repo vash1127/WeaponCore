@@ -10,6 +10,7 @@ using VRage.Game.ModAPI.Interfaces;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -32,7 +33,7 @@ namespace WeaponCore.Support
             {
                 Projectile projectile;
                 _projectiles.AllocateOrCreate(out projectile);
-                projectile.Start(f, fired.Logic);
+                projectile.Start(f, fired.Weapon);
             }
         }
 
@@ -93,7 +94,7 @@ namespace WeaponCore.Support
                     _hitEnts[hitInfo.Entity] = damageInfo;
                 }
             }
-            if (!Session.Instance.DedicatedServer && damageInfo == null) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Logic, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
+            if (!Session.Instance.DedicatedServer && damageInfo == null) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
         }
 
         private void DamageEntities(FiredBeam fired)
@@ -105,9 +106,9 @@ namespace WeaponCore.Support
                 info.HitPos /= info.HitCount;
 
                 if (!Session.Instance.DedicatedServer)
-                    foreach (var bPair in info.AllBeams) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Logic, bPair.Key, bPair.Value, Vector3D.Zero, info.HitPos, ent.CubeGrid, info.PrimaryBeam()));
+                    foreach (var bPair in info.AllBeams) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Weapon, bPair.Key, bPair.Value, Vector3D.Zero, info.HitPos, ent.CubeGrid, info.PrimaryBeam()));
 
-                if (Session.Instance.IsServer) Hits.Enqueue(new TurretGridEvent(pair.Key, pair.Value.HitCount, fired.Logic));
+                if (Session.Instance.IsServer) Hits.Enqueue(new TurretGridEvent(pair.Key, pair.Value.HitCount, fired.Weapon));
                 info.Clean();
                 _damagePool.Return(info);
             }
@@ -124,13 +125,13 @@ namespace WeaponCore.Support
                 var info = pair.Value;
                 info.HitPos /= info.HitCount;
                 if (!Session.Instance.DedicatedServer)
-                    foreach (var bPair in info.AllBeams) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Logic, bPair.Key, bPair.Value, Vector3D.Zero, info.HitPos, parentEnt, info.PrimaryBeam()));
+                    foreach (var bPair in info.AllBeams) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Weapon, bPair.Key, bPair.Value, Vector3D.Zero, info.HitPos, parentEnt, info.PrimaryBeam()));
 
                 if (Session.Instance.IsServer)
                 {
-                    if (shield != null) Hits.Enqueue(new TurretShieldEvent(shield, Session.Instance.SApi, info.HitPos / info.HitCount, info.HitCount, fired.Logic));
+                    if (shield != null) Hits.Enqueue(new TurretShieldEvent(shield, Session.Instance.SApi, info.HitPos / info.HitCount, info.HitCount, fired.Weapon));
                     if (voxel != null) Hits.Enqueue(new TurretVoxelEvent());
-                    if (destroyable != null) Hits.Enqueue(new TurretDestroyableEvent(destroyable, fired.Logic));
+                    if (destroyable != null) Hits.Enqueue(new TurretDestroyableEvent(destroyable, fired.Weapon));
                 }
                 info.Clean();
                 _damagePool.Return(info);
@@ -146,7 +147,7 @@ namespace WeaponCore.Support
             foreach (var result in segmentList)
             {
                 var ent = result.Element;
-                if (ent == fired.Logic.MyCube || ent == fired.Logic.Turret.CubeGrid) continue;
+                if (ent == fired.Weapon.Logic.MyCube || ent == fired.Weapon.Logic.Turret.CubeGrid) continue;
 
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
@@ -235,11 +236,11 @@ namespace WeaponCore.Support
         internal struct FiredBeam
         {
             public readonly List<LineD> Beams;
-            public readonly Logic Logic;
+            public readonly Weapon Weapon;
 
-            public FiredBeam(Logic logic, List<LineD> beams)
+            public FiredBeam(Weapon weapon, List<LineD> beams)
             {
-                Logic = logic;
+                Weapon = weapon;
                 Beams = beams;
             }
         }
@@ -247,11 +248,11 @@ namespace WeaponCore.Support
         internal struct FiredProjectile
         {
             public readonly List<LineD> Projectiles;
-            public readonly Logic Logic;
+            public readonly Weapon Weapon;
 
-            public FiredProjectile(Logic logic, List<LineD> projectiles)
+            public FiredProjectile(Weapon weapon, List<LineD> projectiles)
             {
-                Logic = logic;
+                Weapon = weapon;
                 Projectiles = projectiles;
             }
         }
@@ -328,21 +329,21 @@ namespace WeaponCore.Support
             public readonly ShieldApi SApi;
             public readonly Vector3D HitPos;
             public readonly int Hits;
-            public readonly Logic Logic;
-            public TurretShieldEvent(IMyTerminalBlock shield, ShieldApi sApi, Vector3D hitPos, int hits, Logic logic)
+            public readonly Weapon Weapon;
+            public TurretShieldEvent(IMyTerminalBlock shield, ShieldApi sApi, Vector3D hitPos, int hits, Weapon weapon)
             {
                 Shield = shield;
                 SApi = sApi;
                 HitPos = hitPos;
                 Hits = hits;
-                Logic = logic;
+                Weapon = weapon;
             }
 
             public void Execute()
             {
-                if (Shield == null || Logic == null || SApi == null) return;
+                if (Shield == null || Weapon == null || SApi == null) return;
                 var damage = 100 * Hits;
-                SApi.PointAttackShield(Shield, HitPos, Logic.Turret.EntityId, damage, true, false);
+                SApi.PointAttackShield(Shield, HitPos, Weapon.Logic.Turret.EntityId, damage, true, false);
             }
         }
 
@@ -350,20 +351,20 @@ namespace WeaponCore.Support
         {
             public readonly IMySlimBlock Block;
             public readonly int Hits;
-            public readonly Logic Logic;
+            public readonly Weapon Weapon;
             public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
-            public TurretGridEvent(IMySlimBlock block, int hits, Logic logic)
+            public TurretGridEvent(IMySlimBlock block, int hits, Weapon weapon)
             {
                 Block = block;
                 Hits = hits;
-                Logic = logic;
+                Weapon = weapon;
             }
 
             public void Execute()
             {
                 if (Block == null || Block.IsDestroyed || Block.CubeGrid.MarkedForClose) return;
                 var damage = 1 * Hits;
-                Block.DoDamage(damage, TestDamage, true, null, Logic.Turret.EntityId);
+                Block.DoDamage(damage, TestDamage, true, null, Weapon.Logic.Turret.EntityId);
             }
         }
 
@@ -371,19 +372,19 @@ namespace WeaponCore.Support
         {
             public readonly IMyDestroyableObject DestObj;
             public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
-            public readonly Logic Logic;
+            public readonly Weapon Weapon;
 
-            internal TurretDestroyableEvent(IMyDestroyableObject destObj, Logic logic)
+            internal TurretDestroyableEvent(IMyDestroyableObject destObj, Weapon weapon)
             {
                 DestObj = destObj;
-                Logic = logic;
+                Weapon = weapon;
             }
 
             public void Execute()
             {
                 if (DestObj == null) return;
                 var damage = 100;
-                DestObj.DoDamage(damage, TestDamage, true, null, Logic.Turret.EntityId);
+                DestObj.DoDamage(damage, TestDamage, true, null, Weapon.Logic.Turret.EntityId);
             }
         }
 

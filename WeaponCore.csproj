@@ -218,9 +218,11 @@
     <Compile Include="Data\Scripts\WeaponCore\Config\LogicData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Config\SerializeDataClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Config\SerializedValues.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_Platform.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Platform\Platform_Main.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Controls\WepUi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_State.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Platform\Platform_Shoot.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Platform\Platform_Tracking.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\CustomTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_Events.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_Fields.cs" />

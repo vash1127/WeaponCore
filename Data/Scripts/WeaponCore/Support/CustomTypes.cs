@@ -75,6 +75,7 @@ namespace WeaponCore.Support
         internal int ReloadTime;
         internal int RateOfFire;
         internal int BarrelsPerShot;
+        internal int SkipBarrels;
         internal int ShotsPerBarrel;
         internal int HeatPerRoF;
         internal int MaxHeat;
@@ -125,7 +126,6 @@ namespace WeaponCore.Support
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly MyStringHash[] PartNames;
-        public readonly bool WeaponOnBase;
         public readonly bool MultiParts;
 
         public WeaponStructure(KeyValuePair<string, TurretDefinition> tDef, Dictionary<string, WeaponDefinition> wDef, Dictionary<string, BarrelGroup> bDef)
@@ -135,21 +135,10 @@ namespace WeaponCore.Support
             MultiParts = numOfParts > 1;
 
             var names = new MyStringHash[numOfParts];
-            var hasWeaponOnbase = map.ContainsKey("TurretBase");
-            var weaponFoundOnbase = false;
-            var mapIndex = hasWeaponOnbase ? 1 : 0;
+            var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             foreach (var w in map)
             {
-                if (hasWeaponOnbase)
-                {
-                    var isBase = w.Key == "TurretBase";
-                    if (isBase)
-                    {
-                        weaponFoundOnbase = true;
-                        mapIndex = 0;
-                    }
-                }
                 var myNameHash = MyStringHash.GetOrCompute(w.Key);
                 names[mapIndex] = myNameHash;
                 var myBarrels = bDef[w.Value.BarrelGroup].Barrels;
@@ -163,7 +152,6 @@ namespace WeaponCore.Support
                 mapIndex++;
             }
             PartNames = names;
-            WeaponOnBase = weaponFoundOnbase;
         }
     }
 

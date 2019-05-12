@@ -29,9 +29,9 @@ namespace WeaponCore
                     DrawProjectile pInfo;
                     while (DrawProjectiles.TryDequeue(out pInfo))
                     {
-                        if (pInfo.Logic == null) continue;
-                        var structure = pInfo.Logic.Platform.Structure;
-                        switch (structure.WeaponSystems[structure.PartNames[0]].WeaponType.Ammo)
+                        if (pInfo.Weapon == null) continue;
+                        var weapon = pInfo.Weapon;
+                        switch (weapon.WeaponType.Ammo)
                         {
                             case AmmoType.Beam:
                                 DrawBeam(pInfo);
@@ -72,14 +72,14 @@ namespace WeaponCore
                             switch (w.WeaponType.Ammo)
                             {
                                 case AmmoType.Beam:
-                                    GenerateBeams(logic);
+                                    GenerateBeams(w);
                                     BeamOn = true;
                                     continue;
                                 case AmmoType.Bolt:
-                                    GenerateBolts(logic, j);
+                                    GenerateBolts(w);
                                     continue;
                                 case AmmoType.Missile:
-                                    GenerateMissiles(logic);
+                                    GenerateMissiles(w);
                                     continue;
                             }
                         }

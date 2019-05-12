@@ -8,6 +8,7 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -117,7 +118,7 @@ namespace WeaponCore
 
         internal struct DrawProjectile
         {
-            internal readonly Logic Logic;
+            internal readonly Weapon Weapon;
             internal readonly int ProjectileId;
             internal readonly LineD Projectile;
             internal readonly Vector3D Speed;
@@ -125,9 +126,9 @@ namespace WeaponCore
             internal readonly IMyEntity Entity;
             internal readonly bool PrimeProjectile;
 
-            internal DrawProjectile(Logic logic, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity entity, bool primeProjectile)
+            internal DrawProjectile(Weapon weapon, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity entity, bool primeProjectile)
             {
-                Logic = logic;
+                Weapon = weapon;
                 ProjectileId = projectileId;
                 Projectile = projectile;
                 Speed = speed;

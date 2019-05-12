@@ -3,6 +3,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.ModAPI;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
@@ -10,10 +11,10 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private void GenerateBeams(Logic logic)
+        private void GenerateBeams(Weapon weapon)
         {
-            var barrels = logic.Platform.BeamSlot[0];
-            var fireBeam = new Projectiles.FiredBeam(logic, _linePool.Get());
+            var barrels = weapon.BeamSlot;
+            var fireBeam = new Projectiles.FiredBeam(weapon, _linePool.Get());
             foreach (var barrelInfo in barrels)
             {
                 /*
@@ -26,10 +27,10 @@ namespace WeaponCore
             lock (_projectiles) _projectiles.FiredBeams.Add(fireBeam);
         }
 
-        private void GenerateBolts(Logic logic, int slot)
+        private void GenerateBolts(Weapon weapon)
         {
-            var barrels = logic.Platform.BeamSlot[slot];
-            var firedMissile = new Projectiles.FiredProjectile(logic, _linePool.Get());
+            var barrels = weapon.BeamSlot;
+            var firedMissile = new Projectiles.FiredProjectile(weapon, _linePool.Get());
 
             foreach (var barrelInfo in barrels)
             {
@@ -43,10 +44,10 @@ namespace WeaponCore
             lock (_projectiles) _projectiles.Add(firedMissile);
         }
 
-        private void GenerateMissiles(Logic logic)
+        private void GenerateMissiles(Weapon weapon)
         {
-            var barrels = logic.Platform.BeamSlot[0];
-            var firedMissile = new Projectiles.FiredProjectile(logic, _linePool.Get());
+            var barrels = weapon.BeamSlot;
+            var firedMissile = new Projectiles.FiredProjectile(weapon, _linePool.Get());
 
             foreach (var barrelInfo in barrels)
             {
@@ -74,10 +75,9 @@ namespace WeaponCore
             {
                 var matrix = MatrixD.CreateFromDir(pInfo.Projectile.Direction);
                 matrix.Translation = pInfo.Projectile.From;
-                var weapons = pInfo.Logic.Platform;
-                var structure = weapons.Structure;
-                var beamSlot = weapons.BeamSlot[0];
-                var rgb = structure.WeaponSystems[structure.PartNames[0]].WeaponType.TrailColor;
+                var weapon = pInfo.Weapon;
+                var beamSlot = weapon.BeamSlot;
+                var rgb = weapon.WeaponType.TrailColor;
                 var radius = 0.15f;
                 if (Tick % 6 == 0) radius = 0.14f;
                 var mainBeam = new Vector4(rgb[0], rgb[1], rgb[2], 1f);
@@ -110,10 +110,9 @@ namespace WeaponCore
                 var matrix = MatrixD.CreateFromDir(pInfo.Projectile.Direction);
                 matrix.Translation = pInfo.Projectile.From;
 
-                var weapons = pInfo.Logic.Platform;
-                var structure = weapons.Structure;
-                var beamSlot = weapons.BeamSlot[0];
-                var rgb = structure.WeaponSystems[structure.PartNames[0]].WeaponType.TrailColor;
+                var weapon = pInfo.Weapon;
+                var beamSlot = weapon.BeamSlot;
+                var rgb = weapon.WeaponType.TrailColor;
                 var radius = 0.15f;
                 if (Tick % 6 == 0) radius = 0.14f;
                 var mainBeam = new Vector4(rgb[0], rgb[1], rgb[2], 1f);
@@ -143,8 +142,8 @@ namespace WeaponCore
             {
                 var matrix = MatrixD.CreateFromDir(pInfo.Projectile.Direction);
                 matrix.Translation = pInfo.Projectile.From;
-                var structure = pInfo.Logic.Platform.Structure;
-                var rgb = structure.WeaponSystems[structure.PartNames[0]].WeaponType.TrailColor;
+                var weapon = pInfo.Weapon;
+                var rgb = weapon.WeaponType.TrailColor;
                 Vector4 mainBeam = new Vector4(255, 255, 255, 255);
                 MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, ProjectileMaterial, ref mainBeam, 0.2f);
             }

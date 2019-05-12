@@ -1,6 +1,7 @@
 ﻿using System;
 using VRage.Game;
 using VRageMath;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -18,13 +19,13 @@ namespace WeaponCore.Support
         private bool _positionChecked;
         private int _checkIntersectionIndex;
         private double _lengthMultiplier;
-        private Logic _turret;
+        private Weapon _weapon;
 
-        internal void Start(LineD fired, Logic turret)
+        internal void Start(LineD fired, Weapon weapon)
         {
             //var initVel = Vector3D.One;
             //_projectileAmmoDefinition = ammoDefinition;
-            _turret = turret;
+            _weapon = weapon;
             _maxTrajectory = 5000;
             _state = ProjectileState.Alive;
             _directionNormalized = -fired.Direction;
@@ -65,7 +66,7 @@ namespace WeaponCore.Support
             var newLine = new LineD(position, to);
             _positionChecked = true;
             //_effect1.SetTranslation(_position);
-            Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(_turret, 0, newLine, _velocity_Projectile, Vector3D.Zero, null, true));
+            Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(_weapon, 0, newLine, _velocity_Projectile, Vector3D.Zero, null, true));
             return true;
         }
 
