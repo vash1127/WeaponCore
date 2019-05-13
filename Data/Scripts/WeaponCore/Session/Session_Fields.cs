@@ -10,6 +10,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
+using static WeaponCore.Projectiles.Projectiles;
 
 namespace WeaponCore
 {
@@ -22,7 +23,7 @@ namespace WeaponCore
         private double _syncDistSqr;
 
         private readonly MyConcurrentPool<List<LineD>> _linePool = new MyConcurrentPool<List<LineD>>();
-        private readonly MyConcurrentPool<List<Projectiles.Shot>> _shotPool = new MyConcurrentPool<List<Projectiles.Shot>>();
+        private readonly MyConcurrentPool<List<Shot>> _shotPool = new MyConcurrentPool<List<Shot>>();
 
         private MyEntity3DSoundEmitter SoundEmitter { get; set; } = new MyEntity3DSoundEmitter(null)
         {
@@ -30,7 +31,7 @@ namespace WeaponCore
         };
 
         private readonly Stopwatch _sw = new Stopwatch();
-        private readonly Projectiles _projectiles = new Projectiles();
+        private readonly Projectiles.Projectiles _projectiles = new Projectiles.Projectiles();
         private readonly MonitorWork _workData = new MonitorWork();
         private DsPulseEvent _autoResetEvent = new DsPulseEvent();
 

@@ -6,7 +6,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
-using static WeaponCore.Support.Projectiles;
+using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore
 {
     public partial class Session
@@ -54,7 +54,6 @@ namespace WeaponCore
             }
             lock (_projectiles) _projectiles.Add(firedMissile);
         }
-
 
         private void DrawBeam(DrawProjectile pInfo)
         {
@@ -109,20 +108,17 @@ namespace WeaponCore
                 var rgb = weapon.WeaponType.TrailColor;
                 var radius = 0.15f;
                 if (Tick % 6 == 0) radius = 0.14f;
-                var mainBeam = new Vector4(rgb[0], rgb[1], rgb[2], 1f);
+
+                var mainBeam = new Vector4(255, 0, 0, 175);
                 if (pInfo.PrimeProjectile && Tick > beamSlot[pInfo.ProjectileId] && pInfo.HitPos != Vector3D.Zero)
                 {
                     beamSlot[pInfo.ProjectileId] = Tick + 20;
                     BoltParticleStart(pInfo.Entity, pInfo.HitPos, mainBeam, Vector3D.Zero);
                 }
-                if (distToBeam < 1000000)
-                {
-                    if (distToBeam > 250000) radius *= 1.5f;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, radius, radius, (float)pInfo.Projectile.Length, 6, mainBeam, mainBeam, WarpMaterial, WarpMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
-                }
-                else MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, ProjectileMaterial, ref mainBeam, 2f);
+                MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, ProjectileMaterial, ref mainBeam, 0.1f);
             }
         }
+
         private void DrawMissile(DrawProjectile pInfo)
         {
             var cameraPos = MyAPIGateway.Session.Camera.Position;

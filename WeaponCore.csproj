@@ -223,6 +223,9 @@
     <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_State.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Platform\Platform_Shoot.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Platform\Platform_Tracking.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Beams.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Common.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Damage.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\CustomTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_Events.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_Fields.cs" />
@@ -245,8 +248,8 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\GridIntersect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Log.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\ObjectPool.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Projectile.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\Projectiles.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectile.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectiles.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\RecursiveSubparts.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\ShieldApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Controls\TerminalHelpers.cs" />

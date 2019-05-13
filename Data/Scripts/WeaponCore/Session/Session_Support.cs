@@ -4,7 +4,7 @@ using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Support;
-
+using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore
 {
     public partial class Session
@@ -54,7 +54,7 @@ namespace WeaponCore
 
         internal void ProcessHits()
         {
-            Projectiles.IThreadHits hitEvent;
+            IThreadHits hitEvent;
             while (_projectiles.Hits.TryDequeue(out hitEvent)) hitEvent.Execute();
         }
 

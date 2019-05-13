@@ -54,7 +54,8 @@ namespace WeaponCore
             try
             {
                 Timings();
-                lock (_projectiles) if (!_projectiles.Hits.IsEmpty) ProcessHits();
+                //lock (_projectiles) if (!_projectiles.Hits.IsEmpty) ProcessHits();
+                if (!_projectiles.Hits.IsEmpty) ProcessHits();
 
                 for (int i = 0; i < Logic.Count; i++)
                 {
@@ -89,10 +90,15 @@ namespace WeaponCore
                 if (BeamOn)
                 {
                     Dispatched = true;
-                    lock (_projectiles) MyAPIGateway.Parallel.Start(_projectiles.RunBeams, WebDispatchDone);
+                    //lock (_projectiles) MyAPIGateway.Parallel.Start(_projectiles.RunBeams, WebDispatchDone);
+                    MyAPIGateway.Parallel.Start(_projectiles.RunBeams, WebDispatchDone);
+                    //_projectiles.RunBeams();
                     BeamOn = false;
                 }
-                lock (_projectiles) MyAPIGateway.Parallel.Start(_projectiles.Update);
+
+                //lock (_projectiles) MyAPIGateway.Parallel.Start(_projectiles.Update);
+                MyAPIGateway.Parallel.Start(_projectiles.Update);
+                //_projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

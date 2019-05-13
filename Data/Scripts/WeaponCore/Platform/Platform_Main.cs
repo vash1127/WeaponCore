@@ -75,7 +75,7 @@ namespace WeaponCore.Platform
         internal bool TrackTarget { get; set; }
         internal bool ReadyToTrack => Target != null && Logic.Turret.Target != Target && _azOk && _elOk;
         internal bool ReadyToShoot => _weaponReady && Target != null && Logic.Turret.Target == Target;
-        internal bool TargetSwap => (Target != null || !Logic.Turret.HasTarget) && _targetTick++ > 240 || _firstRun;
+        internal bool TargetSwap => (Target != null || !Logic.Turret.HasTarget) && _targetTick++ > 60 || _firstRun;
 
         public void PositionChanged(MyPositionComponentBase pComp)
         {
