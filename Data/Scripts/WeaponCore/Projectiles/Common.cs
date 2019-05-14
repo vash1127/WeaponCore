@@ -138,9 +138,9 @@ namespace WeaponCore.Projectiles
 
         internal bool GetDamageInfo(FiredBeam fired, LineD beam, HitInfo hitInfo, int beamId, bool draw)
         {
-            DamageInfo damageInfo = null;
             if (hitInfo.HitPos != Vector3D.Zero)
             {
+                DamageInfo damageInfo = null;
                 if (hitInfo.Slim != null)
                 {
                     _hitBlocks.TryGetValue(hitInfo.Slim, out damageInfo);
@@ -158,7 +158,7 @@ namespace WeaponCore.Projectiles
 
                 return true;
             }
-            if (draw && !Session.Instance.DedicatedServer && damageInfo == null) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
+            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
             return false;
         }
 

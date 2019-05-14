@@ -68,24 +68,26 @@ namespace WeaponCore
             {
                 var matrix = MatrixD.CreateFromDir(pInfo.Projectile.Direction);
                 matrix.Translation = pInfo.Projectile.From;
-                var weapon = pInfo.Weapon;
-                var beamSlot = weapon.BeamSlot;
-                var rgb = weapon.WeaponType.TrailColor;
+
                 var radius = 0.15f;
                 if (Tick % 6 == 0) radius = 0.14f;
-                var mainBeam = new Vector4(rgb[0], rgb[1], rgb[2], 1f);
+                var weapon = pInfo.Weapon;
+                var beamSlot = weapon.BeamSlot;
+                var material = weapon.WeaponType.PhysicalMaterial;
+                var trailColor = weapon.WeaponType.TrailColor;
+                var particleColor = weapon.WeaponType.ParticleColor;
                 if (pInfo.PrimeProjectile && Tick > beamSlot[pInfo.ProjectileId] && pInfo.HitPos != Vector3D.Zero)
                 {
                     beamSlot[pInfo.ProjectileId] = Tick + 20;
-                    BeamParticleStart(pInfo.Entity, pInfo.HitPos, mainBeam);
+                    BeamParticleStart(pInfo.Entity, pInfo.HitPos, particleColor);
                 }
 
                 if (distToBeam < 1000000)
                 {
                     if (distToBeam > 250000) radius *= 1.5f;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, radius, radius, (float) pInfo.Projectile.Length, 6, mainBeam, mainBeam, WarpMaterial, WarpMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, radius, radius, (float) pInfo.Projectile.Length, 6, trailColor, trailColor, WarpMaterial, WarpMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
-                else MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, ProjectileMaterial, ref mainBeam, 2f);
+                else MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, material, ref trailColor, 2f);
             }
         }
 
@@ -105,17 +107,19 @@ namespace WeaponCore
 
                 var weapon = pInfo.Weapon;
                 var beamSlot = weapon.BeamSlot;
-                var rgb = weapon.WeaponType.TrailColor;
+                var material = weapon.WeaponType.PhysicalMaterial;
+                var trailColor = weapon.WeaponType.TrailColor;
+
                 var radius = 0.15f;
                 if (Tick % 6 == 0) radius = 0.14f;
 
-                var mainBeam = new Vector4(255, 0, 0, 175);
                 if (pInfo.PrimeProjectile && Tick > beamSlot[pInfo.ProjectileId] && pInfo.HitPos != Vector3D.Zero)
                 {
+                    var particleColor = weapon.WeaponType.ParticleColor;
                     beamSlot[pInfo.ProjectileId] = Tick + 20;
-                    BoltParticleStart(pInfo.Entity, pInfo.HitPos, mainBeam, Vector3D.Zero);
+                    BoltParticleStart(pInfo.Entity, pInfo.HitPos, particleColor, Vector3D.Zero);
                 }
-                MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, ProjectileMaterial, ref mainBeam, 0.1f);
+                MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, material, ref trailColor, 0.1f);
             }
         }
 
@@ -133,9 +137,9 @@ namespace WeaponCore
                 var matrix = MatrixD.CreateFromDir(pInfo.Projectile.Direction);
                 matrix.Translation = pInfo.Projectile.From;
                 var weapon = pInfo.Weapon;
-                var rgb = weapon.WeaponType.TrailColor;
-                Vector4 mainBeam = new Vector4(255, 255, 255, 255);
-                MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, ProjectileMaterial, ref mainBeam, 0.2f);
+                var material = weapon.WeaponType.PhysicalMaterial;
+                var trailColor = weapon.WeaponType.TrailColor;
+                MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, material, ref trailColor, 0.2f);
             }
         }
 
@@ -168,13 +172,12 @@ namespace WeaponCore
 
         private void BoltParticleStart(IMyEntity ent, Vector3D pos, Vector4 color, Vector3D speed)
         {
-            color = new Vector4(255, 10, 0, 1f); // comment out to use beam color
             var dist = Vector3D.Distance(MyAPIGateway.Session.Camera.Position, pos);
             var logOfPlayerDist = Math.Log(dist);
 
             var mainParticle = 32;
 
-            var size = 20;
+            var size = 10;
             var radius = size / logOfPlayerDist;
             var vel = ent.Physics.LinearVelocity;
             var matrix = MatrixD.CreateTranslation(pos);

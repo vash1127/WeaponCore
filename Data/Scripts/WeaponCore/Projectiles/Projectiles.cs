@@ -31,54 +31,54 @@ namespace WeaponCore.Projectiles
             var test = new DSUtils();
             test.Sw.Restart();
             var c = 0;
-            foreach (var projectile in ProjectilePool.Active)
+            foreach (var p in ProjectilePool.Active)
             {
-                if (projectile.State != Projectile.ProjectileState.Alive) continue;
+                if (p.State != Projectile.ProjectileState.Alive) continue;
 
-                projectile.CurrentMagnitude = projectile.CurrentSpeed * StepConst;
-                projectile.LastPosition = projectile.Position;
-                projectile.Position += projectile.CurrentMagnitude;
+                p.CurrentMagnitude = p.CurrentSpeed * StepConst;
+                p.LastPosition = p.Position;
+                p.Position += p.CurrentMagnitude;
 
                 Vector3D? intersect = null;
                 var segmentList = _segmentPool.Get();
-                var beam = new LineD(projectile.LastPosition, projectile.Position + projectile.CurrentMagnitude);
+                var beam = new LineD(p.LastPosition, p.Position + p.CurrentMagnitude);
                 MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
                 var segCount = segmentList.Count;
-                if (segCount > 1 || segCount == 1 && segmentList[0].Element != projectile.MyGrid)
+                if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.MyGrid)
                 {
                     c++;
-                    var fired = new FiredBeam(projectile.Weapon, _linePool.Get());
-                    GetAllEntitiesInLine2(projectile.CheckList, fired, beam, segmentList);
-                    var hitInfo = GetHitEntities(projectile.CheckList, beam);
+                    var fired = new FiredBeam(p.Weapon, _linePool.Get());
+                    GetAllEntitiesInLine2(p.CheckList, fired, beam, segmentList);
+                    var hitInfo = GetHitEntities(p.CheckList, beam);
                     if (GetDamageInfo(fired, beam, hitInfo, 0, false))
                     {
-                        ProjectilePool.MarkForDeallocate(projectile);
+                        ProjectilePool.MarkForDeallocate(p);
                         intersect = hitInfo.HitPos;
                         DamageEntities(fired);
                     }
                     _linePool.Return(fired.Beams);
-                    projectile.CheckList.Clear();
+                    p.CheckList.Clear();
                     segmentList.Clear();
 
                     if (intersect != null)
                     {
-                        Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(projectile.Weapon, 0, new LineD(projectile.LastPosition, intersect.Value), projectile.CurrentMagnitude, Vector3D.Zero, null, true));
-                        projectile.Close();
+                        var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
+                        Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(p.Weapon, 0, new LineD(intersect.Value + -(p.Direction * p.Weapon.WeaponType.ShotLength), intersect.Value), p.CurrentMagnitude, hitInfo.HitPos, entity, true));
+                        p.Close();
                     }
                 }
                 _segmentPool.Return(segmentList);
                 if (intersect != null) continue;
 
-                var distTraveled = (projectile.Origin - projectile.Position);
-                if (Vector3D.Dot(distTraveled, distTraveled) >= projectile.MaxTrajectory * projectile.MaxTrajectory)
+                var distTraveled = (p.Origin - p.Position);
+                if (Vector3D.Dot(distTraveled, distTraveled) >= p.MaxTrajectory * p.MaxTrajectory)
                 {
-                    projectile.Close();
+                    p.Close();
                     continue;
                 }
-
-                var newLine = new LineD(projectile.LastPosition, projectile.Position);
-                projectile.PositionChecked = true;
-                Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(projectile.Weapon, 0, newLine, projectile.CurrentMagnitude, Vector3D.Zero, null, true));
+                var newLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
+                p.PositionChecked = true;
+                Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(p.Weapon, 0, newLine, p.CurrentMagnitude, Vector3D.Zero, null, true));
             }
             test.StopWatchReport($"test: {ProjectilePool.Active.Count} - {c}", -1);
             ProjectilePool.DeallocateAllMarked();

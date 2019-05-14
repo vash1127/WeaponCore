@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Havok;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Ingame;
 using VRage.Game;
@@ -32,8 +33,10 @@ namespace WeaponCore.Platform
                 {
                     var bCount = Logic.TargetBlocks.Count;
                     var found = false;
+                    var c = 0;
                     while (!found)
                     {
+                        if (c++ > 100) break;
                         var next = Rnd.Next(0, bCount);
                         if (!Logic.TargetBlocks[next].MarkedForClose)
                         {

@@ -93,7 +93,7 @@ namespace WeaponCore.Support
         internal float ReleaseTimeAfterFire;
         internal float RangeMultiplier;
         internal float ExplosiveYield;
-        internal MyStringHash PhysicalMaterial;
+        internal MyStringId PhysicalMaterial;
         internal Vector4 TrailColor;
         internal Vector4 ParticleColor;
         internal ShieldType ShieldDamage;

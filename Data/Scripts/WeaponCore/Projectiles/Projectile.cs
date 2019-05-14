@@ -5,7 +5,6 @@ using VRage.Game;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
-using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
 {
@@ -25,25 +24,24 @@ namespace WeaponCore.Projectiles
         internal Vector3D CurrentSpeed;
         internal Vector3D FinalSpeed;
         internal Vector3D CurrentMagnitude;
+        internal double ShotLength;
         internal float SpeedLength;
         internal float MaxTrajectory;
-        internal double _lengthMultiplier;
         internal bool PositionChecked;
         internal int _checkIntersectionIndex;
         internal MyParticleEffect Effect1 = new MyParticleEffect();
         private Projectiles _caller;
         internal void Start(Projectiles.Shot fired, Weapon weapon, Projectiles caller, List<IMyEntity> checkList)
         {
-            //var initVel = Vector3D.One;
-            //_projectileAmmoDefinition = ammoDefinition;
-            Direction = fired.Direction;
-            Origin = fired.Position;
             Weapon = weapon;
+            var wDef = weapon.WeaponType;
+            MaxTrajectory = wDef.MaxTrajectory;
+            ShotLength = wDef.ShotLength;
+            Direction = fired.Direction;
+            Origin = fired.Position + (Direction * (ShotLength - 1));
             MyGrid = weapon.Logic.MyGrid;
             CheckList = checkList;
             _caller = caller;
-            var wDef = weapon.WeaponType;
-            MaxTrajectory = wDef.MaxTrajectory;
             State = ProjectileState.Alive;
 
             Position = Origin;
