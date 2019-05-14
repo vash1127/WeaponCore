@@ -28,13 +28,10 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            var test = new DSUtils();
-            test.Sw.Restart();
             var c = 0;
             foreach (var p in ProjectilePool.Active)
             {
                 if (p.State != Projectile.ProjectileState.Alive) continue;
-
                 p.CurrentMagnitude = p.CurrentSpeed * StepConst;
                 p.LastPosition = p.Position;
                 p.Position += p.CurrentMagnitude;
@@ -76,11 +73,17 @@ namespace WeaponCore.Projectiles
                     p.Close();
                     continue;
                 }
-                var newLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
+                LineD newLine;
+                if (p.Grow)
+                {
+                    Log.Line($"grown:{p.GrowStep * p.LineReSizeLen} - stepping:{p.GrowStep}[{p.ReSizeSteps}] - growPerStep:{p.LineReSizeLen} - total:{p.ShotLength} - speed:{p.SpeedLength}[{p.SpeedLength / 60}]");
+                    newLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.LineReSizeLen)));
+                    if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
+                }
+                else newLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
                 p.PositionChecked = true;
                 Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(p.Weapon, 0, newLine, p.CurrentMagnitude, Vector3D.Zero, null, true));
             }
-            test.StopWatchReport($"test: {ProjectilePool.Active.Count} - {c}", -1);
             ProjectilePool.DeallocateAllMarked();
         }
 

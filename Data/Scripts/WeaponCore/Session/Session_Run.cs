@@ -97,8 +97,8 @@ namespace WeaponCore
                 }
 
                 //lock (_projectiles) MyAPIGateway.Parallel.Start(_projectiles.Update);
-                MyAPIGateway.Parallel.Start(_projectiles.Update);
-                //_projectiles.Update();
+                //MyAPIGateway.Parallel.Start(_projectiles.Update);
+                _projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

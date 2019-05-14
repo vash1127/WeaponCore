@@ -5,6 +5,7 @@ using VRage.Game;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
 {
@@ -28,7 +29,11 @@ namespace WeaponCore.Projectiles
         internal float SpeedLength;
         internal float MaxTrajectory;
         internal bool PositionChecked;
-        internal int _checkIntersectionIndex;
+        internal double LineReSizeLen;
+        internal int ReSizeSteps;
+        internal int GrowStep = 1;
+        internal bool Grow;
+        internal bool Shrink;
         internal MyParticleEffect Effect1 = new MyParticleEffect();
         private Projectiles _caller;
         internal void Start(Projectiles.Shot fired, Weapon weapon, Projectiles caller, List<IMyEntity> checkList)
@@ -37,22 +42,28 @@ namespace WeaponCore.Projectiles
             var wDef = weapon.WeaponType;
             MaxTrajectory = wDef.MaxTrajectory;
             ShotLength = wDef.ShotLength;
+            SpeedLength = wDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
+            LineReSizeLen = SpeedLength / 60;
+            ReSizeSteps = (int)(ShotLength / LineReSizeLen);
+            Grow = ReSizeSteps > 1;
+            Shrink = Grow;
+            Origin = fired.Position;
             Direction = fired.Direction;
-            Origin = fired.Position + (Direction * (ShotLength - 1));
+            Position = Origin;
+            DsDebugDraw.DrawSphere(new BoundingSphereD(Origin, 0.25f), Color.Blue);
             MyGrid = weapon.Logic.MyGrid;
             CheckList = checkList;
             _caller = caller;
             State = ProjectileState.Alive;
 
-            Position = Origin;
-            SpeedLength = wDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
+
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             StartSpeed = Weapon.Logic.Turret.CubeGrid.Physics.LinearVelocity;
             AddSpeed = Direction * SpeedLength;
             FinalSpeed = StartSpeed + AddSpeed;
             CurrentSpeed = FinalSpeed;
-            _checkIntersectionIndex = _checkIntersectionCnt % 5;
-            _checkIntersectionCnt += 3;
+            //_checkIntersectionIndex = _checkIntersectionCnt % 5;
+            //_checkIntersectionCnt += 3;
             PositionChecked = false;
             //ProjectileParticleStart();
         }
