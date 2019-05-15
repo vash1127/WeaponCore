@@ -22,37 +22,7 @@ namespace WeaponCore
                     fireBeam.Beams.Add(new LineD(m.Position, m.Direction));
                 }
             }
-            lock (_projectiles) _projectiles.FiredBeams.Add(fireBeam);
-        }
-
-        private void GenerateBolts(Weapon weapon)
-        {
-            var barrels = weapon.Muzzles;
-            var firedBolt = new FiredProjectile(weapon, _shotPool.Get());
-
-            foreach (var m in barrels)
-            {
-                if (Tick == m.LastShot)
-                {
-                    firedBolt.Projectiles.Add(new Shot(m.Position, m.Direction));
-                }
-            }
-            lock (_projectiles) _projectiles.Add(firedBolt);
-        }
-
-        private void GenerateMissiles(Weapon weapon)
-        {
-            var barrels = weapon.Muzzles;
-            var firedMissile = new FiredProjectile(weapon, _shotPool.Get());
-
-            foreach (var m in barrels)
-            {
-                if (Tick == m.LastShot)
-                {
-                    firedMissile.Projectiles.Add(new Shot(m.Position, m.Direction));
-                }
-            }
-            lock (_projectiles) _projectiles.Add(firedMissile);
+            _projectiles.FiredBeams.Add(fireBeam);
         }
 
         private void DrawBeam(DrawProjectile pInfo)

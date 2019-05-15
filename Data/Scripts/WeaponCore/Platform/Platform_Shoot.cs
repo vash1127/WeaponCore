@@ -13,17 +13,17 @@ namespace WeaponCore.Platform
             var rotateAxis = WeaponType.RotateBarrelAxis;
             var radiansPerShot = (2 * Math.PI / _numOfBarrels);
             var radiansPerTick = radiansPerShot / _timePerShot;
-            if (_shotCounter == 0 && _newCycle) _rotationTime = 0;
+            if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
             _newCycle = false;
 
-            if (_shotCounter++ >= _ticksPerShot - 1) _shotCounter = 0;
+            if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
 
             var bps = WeaponType.BarrelsPerShot;
             var skipAhead = WeaponType.SkipBarrels;
 
             if (rotateAxis != 0) MovePart(radiansPerTick, -1 * bps, rotateAxis == 1, rotateAxis == 2, rotateAxis == 3);
 
-            if (_shotCounter != 0) return;
+            if (ShotCounter != 0) return;
 
             var endBarrel = _numOfBarrels - 1;
             var updatePos = _posChangedTick > _posUpdatedTick;
@@ -54,14 +54,6 @@ namespace WeaponCore.Platform
 
                 if (i == bps - 1) _nextMuzzle++;
                 _nextMuzzle = (_nextMuzzle + (skipAhead + 1)) % (endBarrel + 1);
-                /*
-                if (_nextMuzzle + 1 > endBarrel) _nextMuzzle = 0;
-                else _nextMuzzle = _nextMuzzle + 1;
-                //Log.Line($"current:{current} - next:{_nextMuzzle} - skip:{skipAhead} - inter:{i}");
-                var color = Color.Red;
-                if (current % 2 == 0) color = Color.Blue;
-                DsDebugDraw.DrawLine(muzzle.Position, muzzle.Position + (muzzle.Direction * 1000), color, 0.02f);
-                */
             }
 
             if (tick - _posChangedTick > 10) _posUpdatedTick = tick;

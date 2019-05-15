@@ -11,7 +11,7 @@ namespace WeaponCore.Projectiles
 {
     internal class Projectile
     {
-        private static int _checkIntersectionCnt = 0;
+        //private static int _checkIntersectionCnt = 0;
         internal ProjectileState State;
         internal Vector3D Direction;
         internal Vector3D Position;
@@ -25,6 +25,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D CurrentSpeed;
         internal Vector3D FinalSpeed;
         internal Vector3D CurrentMagnitude;
+        internal LineD CurrentLine;
         internal double ShotLength;
         internal float SpeedLength;
         internal float MaxTrajectory;
@@ -44,7 +45,8 @@ namespace WeaponCore.Projectiles
             ShotLength = wDef.ShotLength;
             SpeedLength = wDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
             LineReSizeLen = SpeedLength / 60;
-            ReSizeSteps = (int)(ShotLength / LineReSizeLen);
+            var reSizeSteps = (int)(ShotLength / LineReSizeLen);
+            ReSizeSteps = reSizeSteps > 0 ? reSizeSteps : 1;
             Grow = ReSizeSteps > 1;
             Shrink = Grow;
             Origin = fired.Position;
@@ -53,66 +55,20 @@ namespace WeaponCore.Projectiles
             DsDebugDraw.DrawSphere(new BoundingSphereD(Origin, 0.25f), Color.Blue);
             MyGrid = weapon.Logic.MyGrid;
             CheckList = checkList;
-            _caller = caller;
-            State = ProjectileState.Alive;
-
-
-            //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             StartSpeed = Weapon.Logic.Turret.CubeGrid.Physics.LinearVelocity;
             AddSpeed = Direction * SpeedLength;
             FinalSpeed = StartSpeed + AddSpeed;
             CurrentSpeed = FinalSpeed;
+            State = ProjectileState.Alive;
+            PositionChecked = false;
+            _caller = caller;
+
+            //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
-            PositionChecked = false;
             //ProjectileParticleStart();
         }
-        /*
-        internal bool Update()
-        {
-            if (State != ProjectileState.Alive)
-                return false;
-            CurrentMagnitude = CurrentSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS * 1f;
-            LastPosition = Position;
-            Position += CurrentMagnitude;
-            var distTraveled = (Origin - Position);
-            Vector3D? intersect = null;
-            if (Vector3D.Dot(distTraveled, distTraveled) >= MaxTrajectory * MaxTrajectory || Intersect(out intersect))
-            {
-                Close();
-                State = ProjectileState.Dead;
 
-                if (intersect != null) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(Weapon, 0, new LineD(LastPosition, intersect.Value), CurrentMagnitude, Vector3D.Zero, null, true));
-                return false;
-            }
-
-            var newLine = new LineD(LastPosition, Position);
-            PositionChecked = true;
-            //Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(Weapon, 0, newLine, _currentMagnitude, Vector3D.Zero, null, true));
-            return true;
-        }
-
-        private bool Intersect(out Vector3D? hitVector)
-        {
-            var fired = new Projectiles.FiredBeam(Weapon, new List<LineD>());
-            var beam = new LineD(LastPosition, Position + CurrentMagnitude);
-            //DsDebugDraw.DrawLine(beam.From, beam.To, Color.Blue, 1);
-            _caller.GetAllEntitiesInLine(CheckList, fired, beam);
-            var hitInfo = _caller.GetHitEntities(CheckList, beam);
-            if (_caller.GetDamageInfo(fired, beam, hitInfo, 0, false))
-            {
-                _caller.ProjectilePool.MarkForDeallocate(this);
-                CheckList.Clear();
-                hitVector = hitInfo.HitPos;
-                return true;
-            }
-
-            CheckList.Clear();
-            _caller.DamageEntities(fired);
-            hitVector = hitInfo.HitPos;
-            return false;
-        }
-        */
         //Relative velocity proportional navigation
         //aka: Whip-Nav
         Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1)
@@ -151,12 +107,13 @@ namespace WeaponCore.Projectiles
             Effect1.Velocity = CurrentSpeed;
         }
 
-        public void Close()
+        public void Close(bool even)
         {
             State = ProjectileState.Dead;
             Effect1.Close(true, false);
             _caller.CheckPool.Return(CheckList);
-            _caller.ProjectilePool.MarkForDeallocate(this);
+            if (even ) _caller.ProjectilePool0.MarkForDeallocate(this);
+            else _caller.ProjectilePool1.MarkForDeallocate(this);
         }
 
         public enum ProjectileState

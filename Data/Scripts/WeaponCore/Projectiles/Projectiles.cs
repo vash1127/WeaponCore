@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
-using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -13,23 +14,74 @@ namespace WeaponCore.Projectiles
     internal partial class Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal readonly ObjectsPool<Projectile> ProjectilePool = new ObjectsPool<Projectile>(8192, (Func<Projectile>)null);
-        private readonly MyConcurrentPool<List<LineD>> _linePool = new MyConcurrentPool<List<LineD>>();
+        internal readonly ObjectsPool<Projectile> ProjectilePool0 = new ObjectsPool<Projectile>(15000, (Func<Projectile>)null);
+        internal readonly ObjectsPool<Projectile> ProjectilePool1 = new ObjectsPool<Projectile>(15000, (Func<Projectile>)null);
 
-        internal void Add(FiredProjectile fired)
+        private readonly MyConcurrentPool<List<LineD>> _linePool = new MyConcurrentPool<List<LineD>>(32000);
+
+        internal void Add(bool even)
         {
-            foreach (var f in fired.Projectiles)
+            lock (Session.Instance.Fired)
             {
-                Projectile projectile;
-                ProjectilePool.AllocateOrCreate(out projectile);
-                projectile.Start(f, fired.Weapon,this, CheckPool.Get());
+                var firedList = Session.Instance.Fired;
+                if (even)
+                {
+                    for (int i = 0; i < firedList.Count; i++)
+                    {
+                        var fired = firedList[i];
+                        for (int j = 0; j < fired.Projectiles.Count; j++)
+                        {
+                            var f = fired.Projectiles[j];
+                            Projectile projectile;
+                            ProjectilePool0.AllocateOrCreate(out projectile);
+                            projectile.Start(f, fired.Weapon, this, CheckPool.Get());
+                        }
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < firedList.Count; i++)
+                    {
+                        var fired = firedList[i];
+                        for (int j = 0; j < fired.Projectiles.Count; j++)
+                        {
+                            var f = fired.Projectiles[j];
+                            Projectile projectile;
+                            ProjectilePool1.AllocateOrCreate(out projectile);
+                            projectile.Start(f, fired.Weapon, this, CheckPool.Get());
+                        }
+                    }
+                }
+                firedList.Clear();
             }
         }
 
         internal void Update()
         {
-            var c = 0;
-            foreach (var p in ProjectilePool.Active)
+            var even = Session.Instance.Tick % 2 == 0;
+            Add(even);
+            if (even)
+            {
+                lock (ProjectilePool0)
+                {
+                    lock (Session.Instance.DrawProjectiles0) Process(ProjectilePool0, true);
+                    ProjectilePool0.DeallocateAllMarked();
+                }
+            }
+            else
+            {
+                lock (ProjectilePool1)
+                {
+                    lock (Session.Instance.DrawProjectiles1) Process(ProjectilePool1, false);
+                    ProjectilePool1.DeallocateAllMarked();
+                }
+
+            }
+        }
+
+        internal void Process(ObjectsPool<Projectile> pool, bool even)
+        {
+            foreach (var p in pool.Active)
             {
                 if (p.State != Projectile.ProjectileState.Alive) continue;
                 p.CurrentMagnitude = p.CurrentSpeed * StepConst;
@@ -43,13 +95,12 @@ namespace WeaponCore.Projectiles
                 var segCount = segmentList.Count;
                 if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.MyGrid)
                 {
-                    c++;
                     var fired = new FiredBeam(p.Weapon, _linePool.Get());
                     GetAllEntitiesInLine2(p.CheckList, fired, beam, segmentList);
                     var hitInfo = GetHitEntities(p.CheckList, beam);
                     if (GetDamageInfo(fired, beam, hitInfo, 0, false))
                     {
-                        ProjectilePool.MarkForDeallocate(p);
+                        pool.MarkForDeallocate(p);
                         intersect = hitInfo.HitPos;
                         DamageEntities(fired);
                     }
@@ -60,8 +111,8 @@ namespace WeaponCore.Projectiles
                     if (intersect != null)
                     {
                         var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                        Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(p.Weapon, 0, new LineD(intersect.Value + -(p.Direction * p.Weapon.WeaponType.ShotLength), intersect.Value), p.CurrentMagnitude, hitInfo.HitPos, entity, true));
-                        p.Close();
+                        //Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(p.Weapon, 0, new LineD(intersect.Value + -(p.Direction * p.Weapon.WeaponType.ShotLength), intersect.Value), p.CurrentMagnitude, hitInfo.HitPos, entity, true));
+                        p.Close(even);
                     }
                 }
                 _segmentPool.Return(segmentList);
@@ -70,21 +121,24 @@ namespace WeaponCore.Projectiles
                 var distTraveled = (p.Origin - p.Position);
                 if (Vector3D.Dot(distTraveled, distTraveled) >= p.MaxTrajectory * p.MaxTrajectory)
                 {
-                    p.Close();
+                    p.Close(even);
                     continue;
                 }
-                LineD newLine;
+
                 if (p.Grow)
                 {
-                    Log.Line($"grown:{p.GrowStep * p.LineReSizeLen} - stepping:{p.GrowStep}[{p.ReSizeSteps}] - growPerStep:{p.LineReSizeLen} - total:{p.ShotLength} - speed:{p.SpeedLength}[{p.SpeedLength / 60}]");
-                    newLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.LineReSizeLen)));
+                    //Log.Line($"grown:{p.GrowStep * p.LineReSizeLen} - stepping:{p.GrowStep}[{p.ReSizeSteps}] - growPerStep:{p.LineReSizeLen} - total:{p.ShotLength} - speed:{p.SpeedLength}[{p.SpeedLength / 60}]");
+                    p.CurrentLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.LineReSizeLen)));
                     if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
                 }
-                else newLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
-                p.PositionChecked = true;
-                Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(p.Weapon, 0, newLine, p.CurrentMagnitude, Vector3D.Zero, null, true));
+                else p.CurrentLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
+                var sp = new BoundingBoxD(p.CurrentLine.From, p.CurrentLine.To);
+                if (MyAPIGateway.Session.Camera.IsInFrustum(ref sp))
+                {
+                    if (even) Session.Instance.DrawProjectiles0.Add(new Session.DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, Vector3D.Zero, null, true));
+                    else Session.Instance.DrawProjectiles1.Add(new Session.DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, Vector3D.Zero, null, true));
+                }
             }
-            ProjectilePool.DeallocateAllMarked();
         }
 
         internal struct FiredProjectile

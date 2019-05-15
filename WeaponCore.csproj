@@ -250,6 +250,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\ObjectPool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectile.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectiles.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Support\ParallelExt.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\RecursiveSubparts.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\ShieldApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Controls\TerminalHelpers.cs" />

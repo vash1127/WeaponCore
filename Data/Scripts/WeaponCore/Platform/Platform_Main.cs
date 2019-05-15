@@ -57,7 +57,7 @@ namespace WeaponCore.Platform
         private uint _posChangedTick = 1;
         private uint _targetTick;
         private uint _ticksPerShot;
-        private uint _shotCounter;
+        internal uint ShotCounter;
         private double _timePerShot;
         private double _step = 0.05d;
         private double _azimuth;

@@ -1,9 +1,17 @@
 using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
+using VRage.Utils;
+using VRageMath;
+using VRageRender;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Projectiles.Projectiles;
+using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace WeaponCore
 {
@@ -24,26 +32,42 @@ namespace WeaponCore
         {
             try
             {
-                if (!DedicatedServer && !DrawProjectiles.IsEmpty)
+                if (!DedicatedServer)
                 {
-                    DrawProjectile pInfo;
-                    while (DrawProjectiles.TryDequeue(out pInfo))
+                    DsUtil.Sw.Restart();
+                    var even = Tick % 2 == 0;
+                    if (even)
                     {
-                        if (pInfo.Weapon == null) continue;
-                        var weapon = pInfo.Weapon;
-                        switch (weapon.WeaponType.Ammo)
+                        lock (DrawProjectiles1)
                         {
-                            case AmmoType.Beam:
-                                DrawBeam(pInfo);
-                                break;
-                            case AmmoType.Bolt:
-                                DrawBolt(pInfo);
-                                break;
-                            case AmmoType.Missile:
-                                DrawMissile(pInfo);
-                                break;
+                            for (int i = 0; i < DrawProjectiles1.Count; i++)
+                            {
+                                var p = DrawProjectiles1[i];
+                                var wDef = p.Weapon.WeaponType;
+                                var line = p.Projectile;
+                                MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.ShotWidth);
+                            }
+                            DrawProjectiles1.Clear();
                         }
                     }
+                    else
+                    {
+                        lock (DrawProjectiles0)
+                        {
+                            for (int i = 0; i < DrawProjectiles0.Count; i++)
+                            {
+                                var p = DrawProjectiles0[i];
+                                var wDef = p.Weapon.WeaponType;
+                                var line = p.Projectile;
+                                MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.ShotWidth);
+                            }
+                            DrawProjectiles0.Clear();
+                        }
+                    }
+                    DsUtil.StopWatchReport("test", -1);
+                    if (!DrawBeams.IsEmpty)
+                        foreach (var b in DrawBeams)
+                            DrawBeam(b);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
@@ -54,51 +78,53 @@ namespace WeaponCore
             try
             {
                 Timings();
-                //lock (_projectiles) if (!_projectiles.Hits.IsEmpty) ProcessHits();
                 if (!_projectiles.Hits.IsEmpty) ProcessHits();
-
-                for (int i = 0; i < Logic.Count; i++)
+                DsUtil.Sw.Restart();
+                lock (Fired)
                 {
-                    var logic = Logic[i];
-                    if (logic.State.Value.Online)
+                    for (int i = 0; i < Logic.Count; i++)
                     {
-                        for (int j = 0; j < logic.Platform.Weapons.Length; j++)
+                        var logic = Logic[i];
+                        if (logic.State.Value.Online)
                         {
-                            if (j != 0) continue;
-                            var w = logic.Platform.Weapons[j];
-                            if (w.TrackTarget && w.TargetSwap) w.SelectTarget();
-                            if (w.TurretMode && w.Target != null) w.Rotate();
-                            if (w.TrackTarget && w.ReadyToTrack) logic.Turret.TrackTarget(w.Target);
-                            if (w.ReadyToShoot) w.Shoot();
-                            switch (w.WeaponType.Ammo)
+                            for (int j = 0; j < logic.Platform.Weapons.Length; j++)
                             {
-                                case AmmoType.Beam:
-                                    GenerateBeams(w);
-                                    BeamOn = true;
-                                    continue;
-                                case AmmoType.Bolt:
-                                    GenerateBolts(w);
-                                    continue;
-                                case AmmoType.Missile:
-                                    GenerateMissiles(w);
-                                    continue;
+                                if (j != 0) continue;
+                                var w = logic.Platform.Weapons[j];
+                                if (w.TrackTarget && w.TargetSwap) w.SelectTarget();
+                                if (w.TurretMode && w.Target != null) w.Rotate();
+                                if (w.TrackTarget && w.ReadyToTrack) logic.Turret.TrackTarget(w.Target);
+                                if (w.ReadyToShoot) w.Shoot();
+                                if (w.ShotCounter == 0)
+                                {
+                                    switch (w.WeaponType.Ammo)
+                                    {
+                                        case AmmoType.Beam:
+                                            GenerateBeams(w);
+                                            BeamOn = true;
+                                            continue;
+                                        default:
+                                            var firedBolt = new FiredProjectile(w, _shotPool.Get());
+                                            foreach (var m in w.Muzzles)
+                                                if (Tick == m.LastShot)
+                                                    firedBolt.Projectiles.Add(new Shot(m.Position, m.Direction));
+                                            Fired.Add(firedBolt);
+                                            break;
+                                    }
+                                }
                             }
                         }
                     }
                 }
-
+                DsUtil.StopWatchReport("test", -1);
                 if (BeamOn)
                 {
                     Dispatched = true;
-                    //lock (_projectiles) MyAPIGateway.Parallel.Start(_projectiles.RunBeams, WebDispatchDone);
                     MyAPIGateway.Parallel.Start(_projectiles.RunBeams, WebDispatchDone);
-                    //_projectiles.RunBeams();
                     BeamOn = false;
                 }
 
-                //lock (_projectiles) MyAPIGateway.Parallel.Start(_projectiles.Update);
-                //MyAPIGateway.Parallel.Start(_projectiles.Update);
-                _projectiles.Update();
+                MyAPIGateway.Parallel.Start(_projectiles.Update);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

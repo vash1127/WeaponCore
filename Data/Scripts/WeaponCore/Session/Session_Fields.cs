@@ -84,13 +84,18 @@ namespace WeaponCore
 
         internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
         internal readonly List<Logic> Logic = new List<Logic>();
+        internal readonly List<FiredProjectile> Fired = new List<FiredProjectile>(); 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
-        internal readonly ConcurrentQueue<DrawProjectile> DrawProjectiles = new ConcurrentQueue<DrawProjectile>();
+        internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
+        internal readonly List<DrawProjectile> DrawProjectiles0 = new List<DrawProjectile>();
+        internal readonly List<DrawProjectile> DrawProjectiles1 = new List<DrawProjectile>();
+
         public Dictionary<MyStringHash, WeaponStructure> WeaponStructure = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal ShieldApi SApi = new ShieldApi();
         internal ConfigMe MyConfig = new ConfigMe();
         internal static WeaponEnforcement Enforcement { get; set; } = new WeaponEnforcement();
         internal FutureEvents FutureEvents { get; set; } = new FutureEvents();
+        internal DSUtils DsUtil { get; set; } = new DSUtils();
 
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {

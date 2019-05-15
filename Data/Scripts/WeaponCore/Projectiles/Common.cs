@@ -14,9 +14,9 @@ namespace WeaponCore.Projectiles
     internal partial class Projectiles
     {
         internal readonly ConcurrentQueue<IThreadHits> Hits = new ConcurrentQueue<IThreadHits>();
+        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPool = new MyConcurrentPool<List<IMyEntity>>();
 
         private readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> _segmentPool = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>();
-        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPool = new MyConcurrentPool<List<IMyEntity>>();
         private readonly MyConcurrentPool<DamageInfo> _damagePool = new MyConcurrentPool<DamageInfo>();
         private readonly Dictionary<IMySlimBlock, DamageInfo> _hitBlocks = new Dictionary<IMySlimBlock, DamageInfo>();
         private readonly Dictionary<IMyEntity, DamageInfo> _hitEnts = new Dictionary<IMyEntity, DamageInfo>();
@@ -158,7 +158,7 @@ namespace WeaponCore.Projectiles
 
                 return true;
             }
-            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawProjectiles.Enqueue(new Session.DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
+            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new Session.DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
             return false;
         }
 
