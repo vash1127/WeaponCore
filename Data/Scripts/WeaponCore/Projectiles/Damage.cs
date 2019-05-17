@@ -55,7 +55,7 @@ namespace WeaponCore.Projectiles
             public void Execute()
             {
                 if (Block == null || Block.IsDestroyed || Block.CubeGrid.MarkedForClose) return;
-                var damage = 1 * Hits;
+                var damage = 1000 * Hits;
                 Block.DoDamage(damage, TestDamage, true, null, Weapon.Logic.Turret.EntityId);
             }
         }

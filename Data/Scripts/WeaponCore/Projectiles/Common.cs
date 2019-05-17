@@ -13,13 +13,13 @@ namespace WeaponCore.Projectiles
 {
     internal partial class Projectiles
     {
-        internal readonly ConcurrentQueue<IThreadHits> Hits = new ConcurrentQueue<IThreadHits>();
-        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPool = new MyConcurrentPool<List<IMyEntity>>();
-
         private readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> _segmentPool = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>();
+        internal readonly ConcurrentQueue<IThreadHits> Hits = new ConcurrentQueue<IThreadHits>();
+
         private readonly MyConcurrentPool<DamageInfo> _damagePool = new MyConcurrentPool<DamageInfo>();
-        private readonly Dictionary<IMySlimBlock, DamageInfo> _hitBlocks = new Dictionary<IMySlimBlock, DamageInfo>();
-        private readonly Dictionary<IMyEntity, DamageInfo> _hitEnts = new Dictionary<IMyEntity, DamageInfo>();
+
+        private readonly MyConcurrentDictionary<IMySlimBlock, DamageInfo> _hitBlocks = new MyConcurrentDictionary<IMySlimBlock, DamageInfo>();
+        private readonly MyConcurrentDictionary<IMyEntity, DamageInfo> _hitEnts = new MyConcurrentDictionary<IMyEntity, DamageInfo>();
 
         internal void GetAllEntitiesInLine(List<IMyEntity> ents, FiredBeam fired, LineD beam)
         {

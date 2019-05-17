@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using Sandbox.ModAPI;
+using VRage.Collections;
+using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -8,6 +10,7 @@ namespace WeaponCore.Projectiles
     internal partial class Projectiles
     {
         internal readonly List<FiredBeam> FiredBeams = new List<FiredBeam>();
+        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPool = new MyConcurrentPool<List<IMyEntity>>();
 
         internal struct FiredBeam
         {

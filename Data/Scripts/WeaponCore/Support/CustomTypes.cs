@@ -147,7 +147,10 @@ namespace WeaponCore.Support
                 for (int i = 0; i < myBarrels.Count; i++)
                     barrelStrings[i] = myBarrels[i];
                 var weaponTypeName = w.Value.WeaponType;
+
                 var weaponDef = wDef[weaponTypeName];
+                weaponDef.DeviateShotAngle = MathHelper.ToRadians(weaponDef.DeviateShotAngle);
+
                 WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName, barrelStrings));
 
                 mapIndex++;

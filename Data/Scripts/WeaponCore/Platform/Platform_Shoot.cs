@@ -1,4 +1,5 @@
 ﻿using System;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 
@@ -44,6 +45,19 @@ namespace WeaponCore.Platform
                     muzzle.Direction = newInfo.Direction;
                     muzzle.Position = newInfo.Position;
                     muzzle.LastPosUpdate = tick;
+                    var deviatedAngle = WeaponType.DeviateShotAngle;
+                    Log.Line($"{deviatedAngle}");
+                    if (deviatedAngle > 0)
+                    {
+                        var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
+                        var randomFloat1 = MyUtils.GetRandomFloat(-deviatedAngle, deviatedAngle);
+                        var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
+                        muzzle.DeviatedDir = Vector3.TransformNormal(
+                            -new Vector3(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
+                                MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
+                                MyMath.FastCos(randomFloat1)), dirMatrix);
+                    }
+                    else muzzle.DeviatedDir = muzzle.Direction;
                 }
             }
 

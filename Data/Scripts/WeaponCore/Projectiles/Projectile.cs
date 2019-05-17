@@ -36,8 +36,7 @@ namespace WeaponCore.Projectiles
         internal bool Grow;
         internal bool Shrink;
         internal MyParticleEffect Effect1 = new MyParticleEffect();
-        private Projectiles _caller;
-        internal void Start(Projectiles.Shot fired, Weapon weapon, Projectiles caller, List<IMyEntity> checkList)
+        internal void Start(Projectiles.Shot fired, Weapon weapon, List<IMyEntity> checkList)
         {
             Weapon = weapon;
             var wDef = weapon.WeaponType;
@@ -61,7 +60,6 @@ namespace WeaponCore.Projectiles
             CurrentSpeed = FinalSpeed;
             State = ProjectileState.Alive;
             PositionChecked = false;
-            _caller = caller;
 
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
@@ -105,15 +103,6 @@ namespace WeaponCore.Projectiles
             Effect1.UserRadiusMultiplier = 1f;
             Effect1.UserEmitterScale = 1f;
             Effect1.Velocity = CurrentSpeed;
-        }
-
-        public void Close(bool even)
-        {
-            State = ProjectileState.Dead;
-            Effect1.Close(true, false);
-            _caller.CheckPool.Return(CheckList);
-            if (even ) _caller.ProjectilePool0.MarkForDeallocate(this);
-            else _caller.ProjectilePool1.MarkForDeallocate(this);
         }
 
         public enum ProjectileState

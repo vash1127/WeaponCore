@@ -22,7 +22,6 @@ namespace WeaponCore
         private readonly MyDefinitionId _gId = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Electricity");
         internal readonly List<MyEntity> TargetBlocks = new List<MyEntity>();
 
-
         private uint _lastTargetTick;
         private uint _lastShootTick;
         private uint _tick;
