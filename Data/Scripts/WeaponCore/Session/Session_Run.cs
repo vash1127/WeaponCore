@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
@@ -25,7 +26,6 @@ namespace WeaponCore
         {
             try
             {
-                _dsUtil.Sw.Restart();
                 if (!DedicatedServer)
                 {
                     lock (_projectiles.WaitA) DrawLists(DrawProjectilesA);
@@ -38,7 +38,6 @@ namespace WeaponCore
                         foreach (var b in DrawBeams)
                             DrawBeam(b);
                 }
-                _dsUtil.StopWatchReport("test", -1);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
@@ -77,6 +76,7 @@ namespace WeaponCore
         public override void LoadData()
         {
             Instance = this;
+            //MyEntities.OnEntityCreate += MyEntities_OnEntityCreate;
         }
 
         protected override void UnloadData()

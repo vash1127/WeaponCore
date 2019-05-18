@@ -45,26 +45,27 @@ namespace WeaponCore.Platform
                     muzzle.Direction = newInfo.Direction;
                     muzzle.Position = newInfo.Position;
                     muzzle.LastPosUpdate = tick;
-                    var deviatedAngle = WeaponType.DeviateShotAngle;
-                    Log.Line($"{deviatedAngle}");
-                    if (deviatedAngle > 0)
-                    {
-                        var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                        var randomFloat1 = MyUtils.GetRandomFloat(-deviatedAngle, deviatedAngle);
-                        var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
-                        muzzle.DeviatedDir = Vector3.TransformNormal(
-                            -new Vector3(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
-                                MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
-                                MyMath.FastCos(randomFloat1)), dirMatrix);
-                    }
-                    else muzzle.DeviatedDir = muzzle.Direction;
                 }
             }
 
             for (int i = 0; i < bps; i++)
             {
                 var current = _nextMuzzle;
-                Muzzles[current].LastShot = tick;
+                var muzzle = Muzzles[current];
+                muzzle.LastShot = tick;
+
+                var deviatedAngle = WeaponType.DeviateShotAngle;
+                if (deviatedAngle > 0)
+                {
+                    var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
+                    var randomFloat1 = MyUtils.GetRandomFloat(-deviatedAngle, deviatedAngle);
+                    var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
+                    muzzle.DeviatedDir = Vector3.TransformNormal(
+                        -new Vector3(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
+                            MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
+                            MyMath.FastCos(randomFloat1)), dirMatrix);
+                }
+                else muzzle.DeviatedDir = muzzle.Direction;
 
                 if (i == bps - 1) _nextMuzzle++;
                 _nextMuzzle = (_nextMuzzle + (skipAhead + 1)) % (endBarrel + 1);

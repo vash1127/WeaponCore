@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
+using VRage.Game.Models;
 using VRage.ModAPI;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
 {
@@ -118,7 +121,17 @@ namespace WeaponCore.Projectiles
                 }
                 else if (voxel != null)
                 {
-
+                    Vector3D? t;
+                    voxel.GetIntersectionWithLine(ref beam, out t, true, IntersectionFlags.DIRECT_TRIANGLES);
+                    if (t != null) Log.Line($"voxel hit: {t.Value}");
+                    /*
+                    {
+                        var hitInfoRet = new MyHitInfo
+                        {
+                            Position = t.Value,
+                        };
+                    }
+                    */
                 }
                 else if (ent is IMyDestroyableObject)
                 {

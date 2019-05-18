@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Input;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -27,10 +28,35 @@ namespace WeaponCore
                     {
                         if (j != 0) continue;
                         var w = logic.Platform.Weapons[j];
-                        if (w.TrackTarget && w.TargetSwap) w.SelectTarget();
-                        if (w.TurretMode && w.Target != null) w.Rotate();
-                        if (w.TrackTarget && w.ReadyToTrack) logic.Turret.TrackTarget(w.Target);
-                        if (w.ReadyToShoot) w.Shoot();
+                        var test = false;
+                        if (!logic.Turret.IsUnderControl)
+                        {
+                            if (w.Target != null)
+                            {
+                                DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Red, 0.2f);
+                            }
+                            //_dsUtil.Sw.Restart();
+                            if (w.TrackTarget && w.SeekTarget) w.SelectTarget();
+                            //_dsUtil.StopWatchReport("test", -1);
+                            if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);
+                            if (w.TrackTarget && w.ReadyToTrack)
+                            {
+                                //logic.Turret.TrackTarget(w.Target);
+                                //logic.Turret.EnableIdleRotation = false;
+                            }
+                        }
+                        else
+                        {
+
+                            if (MyAPIGateway.Input.IsAnyMousePressed())
+                            {
+                                var currentAmmo = logic.Gun.GunBase.CurrentAmmo;
+                                if (currentAmmo <= 1) logic.Gun.GunBase.CurrentAmmo += 1;
+                                test = true;
+                            }
+                        }
+
+                        if (w.ReadyToShoot || test) w.Shoot();
                         if (w.ShotCounter == 0)
                         {
                             switch (w.WeaponType.Ammo)

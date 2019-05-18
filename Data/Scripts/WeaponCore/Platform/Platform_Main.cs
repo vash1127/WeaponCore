@@ -59,7 +59,6 @@ namespace WeaponCore.Platform
         private uint _ticksPerShot;
         internal uint ShotCounter;
         private double _timePerShot;
-        private double _step = 0.05d;
         private double _azimuth;
         private double _elevation;
         private double _desiredAzimuth;
@@ -73,9 +72,9 @@ namespace WeaponCore.Platform
 
         internal bool TurretMode { get; set; }
         internal bool TrackTarget { get; set; }
-        internal bool ReadyToTrack => Target != null && Logic.Turret.Target != Target && _azOk && _elOk;
-        internal bool ReadyToShoot => _weaponReady && Target != null && Logic.Turret.Target == Target;
-        internal bool TargetSwap => (Target != null || !Logic.Turret.HasTarget) && _targetTick++ > 6000 || _firstRun;
+        internal bool ReadyToTrack => Target != null && _azOk && _elOk && !Target.MarkedForClose;
+        internal bool ReadyToShoot => _weaponReady && ReadyToTrack;
+        internal bool SeekTarget => Target == null && _targetTick++ > 59 || Target != null && Target.MarkedForClose;
 
         public void PositionChanged(MyPositionComponentBase pComp)
         {

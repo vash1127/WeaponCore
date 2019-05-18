@@ -87,6 +87,7 @@ namespace WeaponCore.Support
         internal float ShotLength;
         internal float ShotWidth;
         internal float DesiredSpeed;
+        internal float RotateSpeed;
         internal float SpeedVariance;
         internal float MaxTrajectory;
         internal float BackkickForce;

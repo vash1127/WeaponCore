@@ -6,87 +6,23 @@
         <TypeId>WeaponDefinition</TypeId>
         <SubtypeId>PDCTurret</SubtypeId>
       </Id>
-      <MissileAmmoData RateOfFire="1337" ShootSoundName="PDC_Shot" />
-      <ReleaseTimeAfterFire>204</ReleaseTimeAfterFire>
-	    <DeviateShotAngle>0.01</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>40</MuzzleFlashLifeSpan>
+      <ProjectileAmmoData RateOfFire="1" ShootSoundName="WepShipGatlingShot" ShotsInBurst="1" />
+      <ReleaseTimeAfterFire>100</ReleaseTimeAfterFire>
+      <DeviateShotAngle>0</DeviateShotAngle>
+      <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
       <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
       <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
       <AmmoMagazines>
-		
-        <AmmoMagazine Subtype="DeU_25x184mm" />
+        <AmmoMagazine Subtype="Blank" />
       </AmmoMagazines>
-      <ReloadTime>6000</ReloadTime>
+      <ReloadTime>0</ReloadTime>
     </Weapon>
-    <Weapon>
-      <Id>
-        <TypeId>WeaponDefinition</TypeId>
-        <SubtypeId>MultiTurret</SubtypeId>
-      </Id>
-      <MissileAmmoData RateOfFire="400" ShootSoundName="PDC_Shot" />
-      <ReleaseTimeAfterFire>204</ReleaseTimeAfterFire>
-	    <DeviateShotAngle>0</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>40</MuzzleFlashLifeSpan>
-      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
-      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
-      <AmmoMagazines>
-		
-        <AmmoMagazine Subtype="DeU_25x184mm" />
-      </AmmoMagazines>
-      <ReloadTime>1000</ReloadTime>
-    </Weapon>
-
   </Weapons>
-  <Ammos>
-    <Ammo xsi:type="MyObjectBuilder_MissileAmmoDefinition">
-      <Id>
-        <TypeId>AmmoDefinition</TypeId>
-        <SubtypeId>DeU_25x184mm</SubtypeId>
-      </Id>
-      <BasicProperties>
-        <DesiredSpeed>400</DesiredSpeed>
-        <SpeedVariance>0</SpeedVariance>
-        <MaxTrajectory>800</MaxTrajectory>
-        <IsExplosive>true</IsExplosive>
-        <BackkickForce>10</BackkickForce>
-        <PhysicalMaterial>Missile</PhysicalMaterial>
-      </BasicProperties>
-      <MissileProperties>
-        <MissileMass>45</MissileMass>
-        <MissileExplosionRadius>10</MissileExplosionRadius>
-        <MissileModelName>Models\Weapons\Torpedo_Test.mwm</MissileModelName>
-        <MissileAcceleration>600</MissileAcceleration>
-        <MissileInitialSpeed>10</MissileInitialSpeed>
-        <MissileSkipAcceleration>false</MissileSkipAcceleration>
-        <MissileExplosionDamage>10</MissileExplosionDamage>
-      </MissileProperties>
-    </Ammo>
-  </Ammos>
-  <AmmoMagazines>
-   <AmmoMagazine>
-      <Id>
-        <TypeId>AmmoMagazine</TypeId>
-        <SubtypeId>DeU_25x184mm</SubtypeId>
-      </Id>
-      <DisplayName>25x184mm Depleted Uranium</DisplayName>
-      <Icon>Textures\GUI\Icons\ammo\DeURounds.dds</Icon>
-      <Size>
-        <X>0.25</X>
-        <Y>0.2</Y>
-        <Z>0.2</Z>
-      </Size>
-      <Mass>70.25</Mass>
-      <Volume>32.33</Volume>
-      <Model>Models\Ammo\DeURounds.mwm</Model>
-      <Capacity>500</Capacity>
-      <AmmoDefinitionId Subtype="DeU_25x184mm" />
-    </AmmoMagazine>
-  </AmmoMagazines>
   <Blueprints>   
    <Blueprint>
       <Id>
         <TypeId>BlueprintDefinition</TypeId>
-        <SubtypeId>DeU_25x184mm</SubtypeId>
+        <SubtypeId>Blank</SubtypeId>
       </Id>
       <DisplayName>25x184mm Depleted Uranium</DisplayName>
       <Icon>Textures\GUI\Icons\ammo\DeURounds.dds</Icon>
@@ -95,7 +31,7 @@
 		<Item Amount="2" TypeId="Ingot" SubtypeId="Nickel" />
 		<Item Amount="10" TypeId="Ingot" SubtypeId="Uranium" />
       </Prerequisites>
-      <Result Amount="1" TypeId="AmmoMagazine" SubtypeId="DeU_25x184mm" />
+      <Result Amount="1" TypeId="AmmoMagazine" SubtypeId="Blank" />
       <BaseProductionTimeInSeconds>60</BaseProductionTimeInSeconds>
     </Blueprint>
   </Blueprints>

@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -36,6 +40,9 @@ namespace WeaponCore.Projectiles
         internal bool Grow;
         internal bool Shrink;
         internal MyParticleEffect Effect1 = new MyParticleEffect();
+        private static readonly MyTimedItemCache voxelRayCache = new MyTimedItemCache(4000);
+        private static List<MyLineSegmentOverlapResult<MyEntity>> entityRaycastResult = null;
+
         internal void Start(Projectiles.Shot fired, Weapon weapon, List<IMyEntity> checkList)
         {
             Weapon = weapon;
@@ -65,6 +72,20 @@ namespace WeaponCore.Projectiles
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
             //ProjectileParticleStart();
+        }
+
+        private void PrefetchVoxelPhysicsIfNeeded()
+        {
+            var ray = new LineD(Origin, Origin + Direction * MaxTrajectory, MaxTrajectory);
+            var lineD = new LineD(new Vector3D(Math.Floor(ray.From.X) * 0.5, Math.Floor(ray.From.Y) * 0.5, Math.Floor(ray.From.Z) * 0.5), new Vector3D(Math.Floor(Direction.X * 50.0), Math.Floor(Direction.Y * 50.0), Math.Floor(Direction.Z * 50.0)));
+            if (voxelRayCache.IsItemPresent(lineD.GetHash(), (int)MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds, true))
+                return;
+            using (MyUtils.ReuseCollection(ref entityRaycastResult))
+            {
+                MyGamePruningStructure.GetAllEntitiesInRay(ref ray, entityRaycastResult, MyEntityQueryType.Static);
+                foreach (var segmentOverlapResult in entityRaycastResult)
+                    (segmentOverlapResult.Element as MyPlanet)?.PrefetchShapeOnRay(ref ray);
+            }
         }
 
         //Relative velocity proportional navigation

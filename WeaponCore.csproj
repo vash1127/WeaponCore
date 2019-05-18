@@ -179,6 +179,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\Ammo.sbc" />
+    <None Include="Data\AmmoMag.sbc" />
     <None Include="Data\Audio_PDC.sbc" />
     <None Include="Data\BlockCategories_PDC.sbc" />
     <None Include="Data\BlueprintClasses_PDC.sbc" />

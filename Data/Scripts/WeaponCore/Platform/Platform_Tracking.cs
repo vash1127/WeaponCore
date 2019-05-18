@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using Havok;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Support;
 using IMyLargeTurretBase = Sandbox.ModAPI.IMyLargeTurretBase;
 
 namespace WeaponCore.Platform
@@ -14,37 +14,31 @@ namespace WeaponCore.Platform
     {
         internal void SelectTarget()
         {
-            if (Target == null) Logic.Turret.ResetTargetingToDefault();
-
+            //if (Target == null) Logic.Turret.ResetTargetingToDefault();
             _targetTick = 0;
-
+            _weaponReady = false;
             Target = GetTarget();
 
             if (Target != null)
             {
+                _weaponReady = true;
                 _firstRun = false;
                 var grid = Target as MyCubeGrid;
-                if (grid == null)
+                if (grid == null) return;
+
+                var bCount = Logic.TargetBlocks.Count;
+                var found = false;
+                var c = 0;
+                while (!found)
                 {
-                    //Log.Line($"found entityL {Target.DebugName}");
-                    Logic.Turret.TrackTarget(Target);
-                }
-                else
-                {
-                    var bCount = Logic.TargetBlocks.Count;
-                    var found = false;
-                    var c = 0;
-                    while (!found)
+                    if (c++ > 100) break;
+                    var next = Rnd.Next(0, bCount);
+                    if (!Logic.TargetBlocks[next].MarkedForClose)
                     {
-                        if (c++ > 100) break;
-                        var next = Rnd.Next(0, bCount);
-                        if (!Logic.TargetBlocks[next].MarkedForClose)
-                        {
-                            Target = Logic.TargetBlocks[next];
-                            Logic.Turret.TrackTarget(Target);
-                            //Log.Line($"found block - Block:{Logic.TargetBlocks[next].DebugName} - Target:{Target.DebugName} - random:{next} - bCount:{bCount}");
-                            found = true;
-                        }
+                        Target = Logic.TargetBlocks[next];
+                        //Logic.Turret.TrackTarget(Target);
+                        //Log.Line($"found block - Block:{Logic.TargetBlocks[next].DebugName} - Target:{Target.DebugName} - random:{next} - bCount:{bCount}");
+                        found = true;
                     }
                 }
             }
@@ -54,19 +48,18 @@ namespace WeaponCore.Platform
         {
             foreach (var ent in Logic.Targeting.TargetRoots)
             {
-                if (Target == ent || Target?.Parent == ent) continue;
-
+                if (ent == null || ent.MarkedForClose || Target == ent || Target?.Parent == ent) continue;
                 var entInfo = MyDetectedEntityInfoHelper.Create(ent, Logic.Turret.OwnerId);
                 if (entInfo.IsEmpty() || (entInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Owner)) continue;
                 if (entInfo.Type == MyDetectedEntityType.SmallGrid || entInfo.Type == MyDetectedEntityType.LargeGrid)
                 {
-                    if (!GetTargetBlocks(ent)) return null;
+                    if (!GetTargetBlocks(ent)) continue;
                     return ent;
                 }
                 return ent;
             }
 
-            return Target;
+            return null;
         }
 
         private bool GetTargetBlocks(MyEntity targetGrid)
@@ -93,16 +86,16 @@ namespace WeaponCore.Platform
             return f > 0;
         }
 
-        internal void Rotate()
+        internal void Rotate(float speed)
         {
             var myCube = Logic.MyCube;
             var myMatrix = myCube.PositionComp.WorldMatrix;
             var targetPos = Target.PositionComp.WorldAABB.Center;
             var myPivotPos = myCube.PositionComp.WorldAABB.Center;
+            myPivotPos += myMatrix.Up * _upPivotOffsetLen;
 
-            myPivotPos -= Vector3D.Normalize(myMatrix.Down - myMatrix.Up) * _upPivotOffsetLen;
-
-            GetTurretAngles(ref targetPos, ref myPivotPos, Logic.Turret, _step, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
+            //GetTurretAngles(ref targetPos, ref myPivotPos, Logic.Turret, speed, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
+            GetTurretAngles2(ref targetPos, ref myPivotPos, ref myMatrix, out _azimuth, out _elevation);
             var azDiff = 100 * (_desiredAzimuth - _azimuth) / _azimuth;
             var elDiff = 100 * (_desiredElevation - _elevation) / _elevation;
 
@@ -168,6 +161,32 @@ namespace WeaponCore.Platform
             else
                 return Math.Acos(MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
         }
+
+        void GetTurretAngles2(ref Vector3D targetPositionWorld, ref Vector3D turretPivotPointWorld, ref MatrixD turretWorldMatrix, out double azimuth, out double elevation)
+        {
+            Vector3D localTargetPosition = targetPositionWorld - turretPivotPointWorld;
+            GetRotationAngles2(ref localTargetPosition, ref turretWorldMatrix, out azimuth, out elevation);
+        }
+
+        /*
+        /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
+        Dependencies: AngleBetween
+        */
+        void GetRotationAngles2(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
+        {
+            var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
+            var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
+
+            yaw = AngleBetween(Vector3D.Forward, flattenedTargetVector) * -Math.Sign(localTargetVector.X); //right is negative
+            if (Math.Abs(yaw) < 1E-6 && localTargetVector.Z > 0) //check for straight back case
+                yaw = Math.PI;
+
+            if (Vector3D.IsZero(flattenedTargetVector)) //check for straight up case
+                pitch = MathHelper.PiOver2 * Math.Sign(localTargetVector.Y);
+            else
+                pitch = AngleBetween(localTargetVector, flattenedTargetVector) * Math.Sign(localTargetVector.Y); //up is positive
+        }
+
 
         /// <summary>
         /// Returns if the normalized dot product between two vectors is greater than the tolerance.
