@@ -43,7 +43,8 @@ namespace WeaponCore.Support
             None,
             Spark,
             Lance,
-            Orb
+            Orb,
+            Custom
         }
 
         internal enum GuidanceType
@@ -66,11 +67,14 @@ namespace WeaponCore.Support
 
         internal bool TurretMode;
         internal bool TrackTarget;
-        internal bool IsExplosive;
+        internal bool HasAreaEffect;
+        internal bool HasThermalEffect;
+        internal bool HasKineticEffect;
+        internal bool SkipAcceleration;
         internal bool UseRandomizedRange;
         internal bool ShieldHitDraw;
+        internal bool RealisticDamage;
         internal bool Trail;
-        internal uint MaxTicks;
         internal int RotateBarrelAxis; 
         internal int ReloadTime;
         internal int RateOfFire;
@@ -81,11 +85,12 @@ namespace WeaponCore.Support
         internal int MaxHeat;
         internal int HeatSinkRate;
         internal int MuzzleFlashLifeSpan;
-        internal float ShieldDmgMultiplier;
         internal float Mass;
         internal float Health;
         internal float ShotLength;
         internal float ShotWidth;
+        internal float InitalSpeed;
+        internal float AccelPerSec;
         internal float DesiredSpeed;
         internal float RotateSpeed;
         internal float SpeedVariance;
@@ -94,8 +99,15 @@ namespace WeaponCore.Support
         internal float DeviateShotAngle;
         internal float ReleaseTimeAfterFire;
         internal float RangeMultiplier;
-        internal float ExplosiveYield;
+        internal float ThermalDamage;
+        internal float KeenScaler;
+        internal float AreaEffectYield;
+        internal float AreaEffectRadius;
+        internal float ShieldDmgMultiplier;
+        internal float DefaultDamage;
+        internal float ComputedBaseDamage;
         internal MyStringId PhysicalMaterial;
+        internal MyStringId ModelName;
         internal Vector4 TrailColor;
         internal Vector4 ParticleColor;
         internal ShieldType ShieldDamage;
@@ -104,7 +116,7 @@ namespace WeaponCore.Support
         internal GuidanceType Guidance;
         internal MySoundPair AmmoSound;
         internal MySoundPair ReloadSound;
-        internal MySoundPair SecondarySound;
+        internal MySoundPair FiringSound;
     }
 
  
@@ -150,7 +162,18 @@ namespace WeaponCore.Support
                 var weaponTypeName = w.Value.WeaponType;
 
                 var weaponDef = wDef[weaponTypeName];
+
                 weaponDef.DeviateShotAngle = MathHelper.ToRadians(weaponDef.DeviateShotAngle);
+                weaponDef.HasAreaEffect = weaponDef.AreaEffectYield > 0 && weaponDef.AreaEffectRadius > 0;
+                weaponDef.SkipAcceleration = weaponDef.AccelPerSec > 0;
+                if (weaponDef.RealisticDamage)
+                {
+                    weaponDef.HasKineticEffect = weaponDef.Mass > 0 && weaponDef.DesiredSpeed > 0;
+                    weaponDef.HasThermalEffect = weaponDef.ThermalDamage > 0;
+                    var kinetic = ((weaponDef.Mass / 2) * (weaponDef.DesiredSpeed * weaponDef.DesiredSpeed) / 1000) * weaponDef.KeenScaler;
+                    weaponDef.ComputedBaseDamage = kinetic + weaponDef.ThermalDamage;
+                }
+                else weaponDef.ComputedBaseDamage = weaponDef.DefaultDamage; // For the unbelievers. 
 
                 WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName, barrelStrings));
 

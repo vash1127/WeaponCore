@@ -34,20 +34,24 @@ namespace WeaponCore.Projectiles
             public void Execute()
             {
                 if (Shield == null || Weapon == null || SApi == null) return;
-                var damage = 100 * Hits;
-                SApi.PointAttackShield(Shield, HitPos, Weapon.Logic.Turret.EntityId, damage, true, false);
+                var wDef = Weapon.WeaponType;
+                var baseDamage = wDef.ComputedBaseDamage;
+                var damage = (baseDamage  + wDef.AreaEffectYield) * Hits;
+                SApi.PointAttackShield(Shield, HitPos, Weapon.Logic.Turret.EntityId, damage, false, true);
             }
         }
 
         internal class TurretGridEvent : IThreadHits
         {
             public readonly IMySlimBlock Block;
+            public readonly Vector3D HitPos;
             public readonly int Hits;
             public readonly Weapon Weapon;
             public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
-            public TurretGridEvent(IMySlimBlock block, int hits, Weapon weapon)
+            public TurretGridEvent(IMySlimBlock block, Vector3D hitPos, int hits, Weapon weapon)
             {
                 Block = block;
+                HitPos = hitPos;
                 Hits = hits;
                 Weapon = weapon;
             }
@@ -55,8 +59,12 @@ namespace WeaponCore.Projectiles
             public void Execute()
             {
                 if (Block == null || Block.IsDestroyed || Block.CubeGrid.MarkedForClose) return;
-                var damage = 1000 * Hits;
+                var wDef = Weapon.WeaponType;
+                var baseDamage = wDef.ComputedBaseDamage;
+                var damage = baseDamage * Hits;
                 Block.DoDamage(damage, TestDamage, true, null, Weapon.Logic.Turret.EntityId);
+                if (wDef.HasAreaEffect)
+                    UtilsStatic.CreateExplosion(HitPos, wDef.AreaEffectRadius, wDef.AreaEffectYield);
             }
         }
 

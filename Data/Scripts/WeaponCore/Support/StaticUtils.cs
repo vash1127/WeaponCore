@@ -361,7 +361,7 @@ namespace WeaponCore.Support
             return blockCnt;
         }
 
-        public static void CreateExplosion(Vector3D position, float radius, int damage = 5000)
+        public static void CreateExplosion(Vector3D position, float radius, float damage = 5000)
         {
             MyExplosionTypeEnum explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_50;
             if (radius < 2.0)

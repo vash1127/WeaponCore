@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using Sandbox.Game;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Game;
 using VRage.Game.Components;
 using WeaponCore.Support;
 
@@ -28,30 +25,14 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
-                    lock (_projectiles.WaitA) DrawLists(DrawProjectilesA);
-                    lock (_projectiles.WaitB) DrawLists(DrawProjectilesB);
-                    lock (_projectiles.WaitC) DrawLists(DrawProjectilesC);
-                    lock (_projectiles.WaitD) DrawLists(DrawProjectilesD);
-                    lock (_projectiles.WaitE) DrawLists(DrawProjectilesE);
-                    lock (_projectiles.WaitF) DrawLists(DrawProjectilesF);
+                    for (int i = 0; i < _projectiles.Wait.Length; i++)
+                        lock (_projectiles.Wait[i]) DrawLists(_projectiles.DrawProjectiles[i]);
                     if (!DrawBeams.IsEmpty)
                         foreach (var b in DrawBeams)
                             DrawBeam(b);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
-        }
-
-        private static void DrawLists(List<DrawProjectile> drawList)
-        {
-            for (int i = 0; i < drawList.Count; i++)
-            {
-                var p = drawList[i];
-                var wDef = p.Weapon.WeaponType;
-                var line = p.Projectile;
-                MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.ShotWidth);
-            }
-            drawList.Clear();
         }
 
         public override void UpdateBeforeSimulation()
@@ -93,7 +74,6 @@ namespace WeaponCore
             Log.Line("Logging stopped.");
             Log.Close();
         }
-
     }
 }
 

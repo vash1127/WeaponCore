@@ -48,7 +48,6 @@ namespace WeaponCore
         private bool _bInit;
         private bool _wasOnline;
 
-
         private MyStringHash _subTypeIdHash;
         private DSUtils Dsutil1 { get; set; } = new DSUtils();
         internal MyResourceSinkInfo ResourceInfo;

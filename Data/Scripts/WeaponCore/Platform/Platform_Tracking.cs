@@ -94,7 +94,7 @@ namespace WeaponCore.Platform
             var myPivotPos = myCube.PositionComp.WorldAABB.Center;
             myPivotPos += myMatrix.Up * _upPivotOffsetLen;
 
-            //GetTurretAngles(ref targetPos, ref myPivotPos, Logic.Turret, speed, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
+            GetTurretAngles(ref targetPos, ref myPivotPos, Logic.Turret, speed, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
             GetTurretAngles2(ref targetPos, ref myPivotPos, ref myMatrix, out _azimuth, out _elevation);
             var azDiff = 100 * (_desiredAzimuth - _azimuth) / _azimuth;
             var elDiff = 100 * (_desiredElevation - _elevation) / _elevation;

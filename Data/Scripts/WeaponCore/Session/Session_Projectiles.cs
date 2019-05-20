@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Input;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -15,6 +14,17 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        private void DrawLists(List<DrawProjectile> drawList)
+        {
+            for (int i = 0; i < drawList.Count; i++)
+            {
+                var p = drawList[i];
+                var wDef = p.Weapon.WeaponType;
+                var line = p.Projectile;
+                MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.ShotWidth);
+            }
+            drawList.Clear();
+        }
 
         private void UpdateWeaponPlatforms()
         {
@@ -28,12 +38,12 @@ namespace WeaponCore
                     {
                         if (j != 0) continue;
                         var w = logic.Platform.Weapons[j];
-                        var test = false;
+                        var gunner = false;
                         if (!logic.Turret.IsUnderControl)
                         {
                             if (w.Target != null)
                             {
-                                DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Red, 0.2f);
+                                DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
                             }
                             //_dsUtil.Sw.Restart();
                             if (w.TrackTarget && w.SeekTarget) w.SelectTarget();
@@ -47,16 +57,15 @@ namespace WeaponCore
                         }
                         else
                         {
-
                             if (MyAPIGateway.Input.IsAnyMousePressed())
                             {
                                 var currentAmmo = logic.Gun.GunBase.CurrentAmmo;
                                 if (currentAmmo <= 1) logic.Gun.GunBase.CurrentAmmo += 1;
-                                test = true;
+                                gunner = true;
                             }
                         }
 
-                        if (w.ReadyToShoot || test) w.Shoot();
+                        if (w.ReadyToShoot || gunner) w.Shoot();
                         if (w.ShotCounter == 0)
                         {
                             switch (w.WeaponType.Ammo)
@@ -66,58 +75,21 @@ namespace WeaponCore
                                     BeamOn = true;
                                     continue;
                                 default:
-                                    foreach (var m in w.Muzzles)
+                                    for (int k = 0; k < w.Muzzles.Length; k++)
+                                    {
+                                        var m = w.Muzzles[k];
                                         if (Tick == m.LastShot)
                                         {
-                                            Projectile pro;
-                                            switch (p)
+                                            lock (_projectiles.Wait[p])
                                             {
-                                                case 0:
-                                                    lock (_projectiles.WaitA)
-                                                    {
-                                                        _projectiles.ProjectilePoolA.AllocateOrCreate(out pro);
-                                                        pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPoolA.Get());
-                                                    }
-                                                    break;
-                                                case 1:
-                                                    lock (_projectiles.WaitB)
-                                                    {
-                                                        _projectiles.ProjectilePoolB.AllocateOrCreate(out pro);
-                                                        pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPoolB.Get());
-                                                    }
-                                                    break;
-                                                case 2:
-                                                    lock (_projectiles.WaitC)
-                                                    {
-                                                        _projectiles.ProjectilePoolC.AllocateOrCreate(out pro);
-                                                        pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPoolC.Get());
-                                                    }
-                                                    break;
-                                                case 3:
-                                                    lock (_projectiles.WaitD)
-                                                    {
-                                                        _projectiles.ProjectilePoolD.AllocateOrCreate(out pro);
-                                                        pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPoolD.Get());
-                                                    }
-                                                    break;
-                                                case 4:
-                                                    lock (_projectiles.WaitE)
-                                                    {
-                                                        _projectiles.ProjectilePoolE.AllocateOrCreate(out pro);
-                                                        pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPoolE.Get());
-                                                    }
-                                                    break;
-                                                case 5:
-                                                    lock (_projectiles.WaitF)
-                                                    {
-                                                        _projectiles.ProjectilePoolF.AllocateOrCreate(out pro);
-                                                        pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPoolF.Get());
-                                                    }
-                                                    break;
+                                                Projectile pro;
+                                                _projectiles.ProjectilePool[p].AllocateOrCreate(out pro);
+                                                pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPool[p].Get());
                                             }
                                             if (p++ >= 5) p = 0;
                                         }
-                                    break;
+                                    }
+                                break;
                             }
                         }
                     }

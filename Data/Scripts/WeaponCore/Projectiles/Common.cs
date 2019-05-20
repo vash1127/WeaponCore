@@ -10,6 +10,7 @@ using VRage.Game.ModAPI.Interfaces;
 using VRage.Game.Models;
 using VRage.ModAPI;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
@@ -24,24 +25,28 @@ namespace WeaponCore.Projectiles
         private readonly MyConcurrentDictionary<IMySlimBlock, DamageInfo> _hitBlocks = new MyConcurrentDictionary<IMySlimBlock, DamageInfo>();
         private readonly MyConcurrentDictionary<IMyEntity, DamageInfo> _hitEnts = new MyConcurrentDictionary<IMyEntity, DamageInfo>();
 
-        internal void GetAllEntitiesInLine(List<IMyEntity> ents, FiredBeam fired, LineD beam)
+        internal void GetAllEntitiesInLine(List<MyEntity> ents, FiredBeam fired, LineD beam)
         {
             var segmentList = _segmentPool.Get();
             MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
             foreach (var result in segmentList)
             {
                 var ent = result.Element;
-                if (ent == fired.Weapon.Logic.MyCube || ent == fired.Weapon.Logic.Turret.CubeGrid) continue;
+                if (ent == fired.Weapon.Logic.Turret.CubeGrid) continue;
 
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
-                    if (ent.Physics == null) ents.Add(shieldBlock);
+                    if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
+
+                var speedLen = fired.Weapon.WeaponType.DesiredSpeed * 0.0166;
+                var extLen = speedLen * 3;
+                var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                 var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                if (obb.Intersects(ref beam) == null) continue;
+                if (obb.Intersects(ref extBeam) == null) continue;
 
                 if (ent.Physics != null && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                     ents.Add(ent);
@@ -50,29 +55,38 @@ namespace WeaponCore.Projectiles
             _segmentPool.Return(segmentList);
         }
 
-        internal void GetAllEntitiesInLine2(List<IMyEntity> ents, FiredBeam fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList)
+        internal void GetAllEntitiesInLine2(List<MyEntity> ents, FiredBeam fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList)
         {
-            foreach (var result in segmentList)
+            for (int i = 0; i < segmentList.Count; i++)
             {
-                var ent = result.Element;
-                if (ent == fired.Weapon.Logic.MyCube || ent == fired.Weapon.Logic.Turret.CubeGrid) continue;
+                var ent = segmentList[i].Element;
+                if (ent == fired.Weapon.Logic.Turret.CubeGrid) continue;
 
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
-                    if (ent.Physics == null) ents.Add(shieldBlock);
+                    if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
+                var speedLen = fired.Weapon.WeaponType.DesiredSpeed * 0.0166;
+                var extLen = speedLen * 3;
+                var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                 var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                if (obb.Intersects(ref beam) == null) continue;
+                if (obb.Intersects(ref extBeam) == null)
+                {
+                    //Log.Line($"fail:{ent.DebugName} - {obb.Center} - {obb.HalfExtent}");
+                    //DsDebugDraw.DrawLine(extBeam.From, extBeam.To, Color.Blue, 0.1f);
+                    continue;
+                }
+
 
                 if (ent.Physics != null && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                     ents.Add(ent);
             }
         }
 
-        internal HitInfo GetHitEntities(List<IMyEntity> ents, LineD beam)
+        internal HitInfo GetHitEntities(List<MyEntity> ents, FiredBeam fired, LineD beam)
         {
             double nearestDist = double.MaxValue;
             HitInfo nearestHit = new HitInfo();
@@ -82,12 +96,15 @@ namespace WeaponCore.Projectiles
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as IMyCubeGrid;
                 var voxel = ent as MyVoxelBase;
+                var speedLen = fired.Weapon.WeaponType.DesiredSpeed * 0.0166;
+                var extLen = speedLen * 3;
+                var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 if (shield != null)
                 {
-                    var hitPos = Session.Instance.SApi.LineIntersectShield(shield, beam);
+                    var hitPos = Session.Instance.SApi.LineIntersectShield(shield, extBeam);
                     if (hitPos != null)
                     {
-                        var dist = Vector3D.Distance(hitPos.Value, beam.From);
+                        var dist = Vector3D.Distance(hitPos.Value, extBeam.From);
                         if (dist < nearestDist)
                         {
                             nearestDist = dist;
@@ -97,7 +114,7 @@ namespace WeaponCore.Projectiles
                 }
                 else if (grid != null)
                 {
-                    var pos3I = grid.RayCastBlocks(beam.From, beam.To);
+                    var pos3I = grid.RayCastBlocks(extBeam.From, extBeam.To);
                     if (pos3I != null)
                     {
                         var firstBlock = grid.GetCubeBlock(pos3I.Value);
@@ -110,11 +127,12 @@ namespace WeaponCore.Projectiles
                         var blockBox = new BoundingBoxD(-halfExt, halfExt);
                         var rotMatrix = Quaternion.CreateFromRotationMatrix(firstBlock.CubeGrid.WorldMatrix);
                         var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
-                        var dist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, center);
+                        if (obb.Intersects(ref extBeam) == null) Log.Line("how???");
+                        var dist = obb.Intersects(ref extBeam) ?? Vector3D.Distance(extBeam.From, center);
                         if (dist < nearestDist)
                         {
                             nearestDist = dist;
-                            var hitPos = beam.From + (beam.Direction * (double)dist);
+                            var hitPos = extBeam.From + (beam.Direction * (double)dist);
                             nearestHit = new HitInfo(hitPos, new LineD(beam.From, hitPos), null, firstBlock);
                         }
                     }
@@ -122,7 +140,7 @@ namespace WeaponCore.Projectiles
                 else if (voxel != null)
                 {
                     Vector3D? t;
-                    voxel.GetIntersectionWithLine(ref beam, out t, true, IntersectionFlags.DIRECT_TRIANGLES);
+                    voxel.GetIntersectionWithLine(ref extBeam, out t, true, IntersectionFlags.DIRECT_TRIANGLES);
                     if (t != null) Log.Line($"voxel hit: {t.Value}");
                     /*
                     {
@@ -137,11 +155,11 @@ namespace WeaponCore.Projectiles
                 {
                     var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
                     var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                    var dist = obb.Intersects(ref beam);
+                    var dist = obb.Intersects(ref extBeam);
                     if (dist != null && dist < nearestDist)
                     {
                         nearestDist = dist.Value;
-                        var hitPos = beam.From + (beam.Direction * (double)dist);
+                        var hitPos = extBeam.From + (beam.Direction * (double)dist);
                         nearestHit = new HitInfo(hitPos, new LineD(beam.From, hitPos), ent, null);
                     }
                 }
@@ -171,7 +189,7 @@ namespace WeaponCore.Projectiles
 
                 return true;
             }
-            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new Session.DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
+            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
             return false;
         }
 
@@ -182,7 +200,7 @@ namespace WeaponCore.Projectiles
                 var info = pair.Value;
                 info.HitPos /= info.HitCount;
 
-                if (Session.Instance.IsServer) Hits.Enqueue(new TurretGridEvent(pair.Key, pair.Value.HitCount, fired.Weapon));
+                if (Session.Instance.IsServer) Hits.Enqueue(new TurretGridEvent(pair.Key, info.HitPos, pair.Value.HitCount, fired.Weapon));
                 info.Clean();
                 _damagePool.Return(info);
             }
@@ -208,6 +226,28 @@ namespace WeaponCore.Projectiles
             }
             _hitBlocks.Clear();
             _hitEnts.Clear();
+        }
+
+        internal struct DrawProjectile
+        {
+            internal readonly Weapon Weapon;
+            internal readonly int ProjectileId;
+            internal readonly LineD Projectile;
+            internal readonly Vector3D Speed;
+            internal readonly Vector3D HitPos;
+            internal readonly IMyEntity Entity;
+            internal readonly bool PrimeProjectile;
+
+            internal DrawProjectile(Weapon weapon, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity entity, bool primeProjectile)
+            {
+                Weapon = weapon;
+                ProjectileId = projectileId;
+                Projectile = projectile;
+                Speed = speed;
+                HitPos = hitPos;
+                Entity = entity;
+                PrimeProjectile = primeProjectile;
+            }
         }
 
         internal struct HitInfo

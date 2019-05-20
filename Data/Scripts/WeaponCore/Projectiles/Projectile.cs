@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sandbox;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.ModAPI;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
-using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
 {
@@ -21,7 +20,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D Position;
         internal Vector3D LastPosition;
         internal Weapon Weapon;
-        internal List<IMyEntity> CheckList;
+        internal List<MyEntity> CheckList;
         internal MyCubeGrid MyGrid;
         internal Vector3D Origin;
         internal Vector3D StartSpeed;
@@ -40,10 +39,10 @@ namespace WeaponCore.Projectiles
         internal bool Grow;
         internal bool Shrink;
         internal MyParticleEffect Effect1 = new MyParticleEffect();
-        private static readonly MyTimedItemCache voxelRayCache = new MyTimedItemCache(4000);
-        private static List<MyLineSegmentOverlapResult<MyEntity>> entityRaycastResult = null;
+        private static readonly MyTimedItemCache _voxelRayCache = new MyTimedItemCache(4000);
+        private static List<MyLineSegmentOverlapResult<MyEntity>> _entityRaycastResult = null;
 
-        internal void Start(Projectiles.Shot fired, Weapon weapon, List<IMyEntity> checkList)
+        internal void Start(Projectiles.Shot fired, Weapon weapon, List<MyEntity> checkList)
         {
             Weapon = weapon;
             var wDef = weapon.WeaponType;
@@ -58,7 +57,6 @@ namespace WeaponCore.Projectiles
             Origin = fired.Position;
             Direction = fired.Direction;
             Position = Origin;
-            DsDebugDraw.DrawSphere(new BoundingSphereD(Origin, 0.25f), Color.Blue);
             MyGrid = weapon.Logic.MyGrid;
             CheckList = checkList;
             StartSpeed = Weapon.Logic.Turret.CubeGrid.Physics.LinearVelocity;
@@ -78,14 +76,40 @@ namespace WeaponCore.Projectiles
         {
             var ray = new LineD(Origin, Origin + Direction * MaxTrajectory, MaxTrajectory);
             var lineD = new LineD(new Vector3D(Math.Floor(ray.From.X) * 0.5, Math.Floor(ray.From.Y) * 0.5, Math.Floor(ray.From.Z) * 0.5), new Vector3D(Math.Floor(Direction.X * 50.0), Math.Floor(Direction.Y * 50.0), Math.Floor(Direction.Z * 50.0)));
-            if (voxelRayCache.IsItemPresent(lineD.GetHash(), (int)MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds, true))
+            if (_voxelRayCache.IsItemPresent(lineD.GetHash(), (int)MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds, true))
                 return;
-            using (MyUtils.ReuseCollection(ref entityRaycastResult))
+            using (MyUtils.ReuseCollection(ref _entityRaycastResult))
             {
-                MyGamePruningStructure.GetAllEntitiesInRay(ref ray, entityRaycastResult, MyEntityQueryType.Static);
-                foreach (var segmentOverlapResult in entityRaycastResult)
+                MyGamePruningStructure.GetAllEntitiesInRay(ref ray, _entityRaycastResult, MyEntityQueryType.Static);
+                foreach (var segmentOverlapResult in _entityRaycastResult)
                     (segmentOverlapResult.Element as MyPlanet)?.PrefetchShapeOnRay(ref ray);
             }
+        }
+
+        private MyEntity GetSubpartOwner(MyEntity entity)
+        {
+            if (entity == null)
+                return null;
+            if (!(entity is MyEntitySubpart))
+                return entity;
+            var myEntity = entity;
+            while (myEntity is MyEntitySubpart)
+                myEntity = myEntity.Parent;
+            return myEntity ?? entity;
+        }
+
+        public static void ApplyProjectileForce(
+          MyEntity entity,
+          Vector3D intersectionPosition,
+          Vector3 normalizedDirection,
+          bool isPlayerShip,
+          float impulse)
+        {
+            if (entity.Physics == null || !entity.Physics.Enabled || entity.Physics.IsStatic)
+                return;
+            if (entity is IMyCharacter)
+                impulse *= 100f;
+            entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normalizedDirection * impulse, intersectionPosition, Vector3.Zero, new float?(), true, false);
         }
 
         //Relative velocity proportional navigation

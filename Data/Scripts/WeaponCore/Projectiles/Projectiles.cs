@@ -15,38 +15,26 @@ namespace WeaponCore.Projectiles
 {
     internal partial class Projectiles
     {
-        private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal readonly ObjectsPool<Projectile> ProjectilePoolA = new ObjectsPool<Projectile>(5000, (Func<Projectile>)null);
-        internal readonly ObjectsPool<Projectile> ProjectilePoolB = new ObjectsPool<Projectile>(5000, (Func<Projectile>)null);
-        internal readonly ObjectsPool<Projectile> ProjectilePoolC = new ObjectsPool<Projectile>(5000, (Func<Projectile>)null);
-        internal readonly ObjectsPool<Projectile> ProjectilePoolD = new ObjectsPool<Projectile>(5000, (Func<Projectile>)null);
-        internal readonly ObjectsPool<Projectile> ProjectilePoolE = new ObjectsPool<Projectile>(5000, (Func<Projectile>)null);
-        internal readonly ObjectsPool<Projectile> ProjectilePoolF = new ObjectsPool<Projectile>(5000, (Func<Projectile>)null);
-        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> SegmentPoolA = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(5000);
-        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> SegmentPoolB = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(5000);
-        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> SegmentPoolC = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(5000);
-        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> SegmentPoolD = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(5000);
-        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> SegmentPoolE = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(5000);
-        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> SegmentPoolF = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(5000);
-        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPoolA = new MyConcurrentPool<List<IMyEntity>>(500);
-        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPoolB = new MyConcurrentPool<List<IMyEntity>>(500);
-        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPoolC = new MyConcurrentPool<List<IMyEntity>>(500);
-        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPoolD = new MyConcurrentPool<List<IMyEntity>>(500);
-        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPoolE = new MyConcurrentPool<List<IMyEntity>>(500);
-        internal readonly MyConcurrentPool<List<IMyEntity>> CheckPoolF = new MyConcurrentPool<List<IMyEntity>>(500);
+        internal Projectiles()
+        {
+            for (int i = 0; i < Wait.Length; i++)
+            {
+                Wait[i] = new object();
+                ProjectilePool[i] = new ObjectsPool<Projectile>(5000, (Func<Projectile>)null);
+                SegmentPool[i] = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(5000);
+                CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(5000);
+                LinePool[i] = new MyConcurrentPool<List<LineD>>(5000);
+                DrawProjectiles[i] = new List<DrawProjectile>();
+            }
+        }
 
-        internal readonly MyConcurrentPool<List<LineD>> LinePoolA = new MyConcurrentPool<List<LineD>>(500);
-        internal readonly MyConcurrentPool<List<LineD>> LinePoolB = new MyConcurrentPool<List<LineD>>(500);
-        internal readonly MyConcurrentPool<List<LineD>> LinePoolC = new MyConcurrentPool<List<LineD>>(500);
-        internal readonly MyConcurrentPool<List<LineD>> LinePoolD = new MyConcurrentPool<List<LineD>>(500);
-        internal readonly MyConcurrentPool<List<LineD>> LinePoolE = new MyConcurrentPool<List<LineD>>(500);
-        internal readonly MyConcurrentPool<List<LineD>> LinePoolF = new MyConcurrentPool<List<LineD>>(500);
-        internal readonly object WaitA = new object();
-        internal readonly object WaitB = new object();
-        internal readonly object WaitC = new object();
-        internal readonly object WaitD = new object();
-        internal readonly object WaitE = new object();
-        internal readonly object WaitF = new object();
+        private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+        internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[6];
+        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[] SegmentPool = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[6];
+        internal readonly MyConcurrentPool<List<MyEntity>>[] CheckPool = new MyConcurrentPool<List<MyEntity>>[6];
+        internal readonly MyConcurrentPool<List<LineD>>[] LinePool = new MyConcurrentPool<List<LineD>>[6];
+        internal readonly List<DrawProjectile>[] DrawProjectiles = new List<DrawProjectile>[6];
+        internal readonly object[] Wait = new object[6];
 
         internal void Update()
         {
@@ -60,39 +48,39 @@ namespace WeaponCore.Projectiles
 
         private void StartPoolA()
         {
-            lock (WaitA) Process(ProjectilePoolA, Session.Instance.DrawProjectilesA, SegmentPoolA, CheckPoolA, LinePoolA);
+            lock (Wait[0]) Process(ProjectilePool[0], DrawProjectiles[0], SegmentPool[0], CheckPool[0], LinePool[0]);
         }
 
         private void StartPoolB()
         {
-            lock (WaitB) Process(ProjectilePoolB, Session.Instance.DrawProjectilesB, SegmentPoolB, CheckPoolB, LinePoolB);
+            lock (Wait[1]) Process(ProjectilePool[1], DrawProjectiles[1], SegmentPool[1], CheckPool[1], LinePool[1]);
         }
 
         private void StartPoolC()
         {
-            lock (WaitC) Process(ProjectilePoolC, Session.Instance.DrawProjectilesC, SegmentPoolC, CheckPoolC, LinePoolC);
+            lock (Wait[2]) Process(ProjectilePool[2], DrawProjectiles[2], SegmentPool[2], CheckPool[2], LinePool[2]);
         }
 
         private void StartPoolD()
         {
-            lock (WaitD) Process(ProjectilePoolD, Session.Instance.DrawProjectilesD, SegmentPoolD, CheckPoolD, LinePoolD);
+            lock (Wait[3]) Process(ProjectilePool[3], DrawProjectiles[3], SegmentPool[3], CheckPool[3], LinePool[3]);
         }
 
         private void StartPoolE()
         {
-            lock (WaitE) Process(ProjectilePoolE, Session.Instance.DrawProjectilesE, SegmentPoolE, CheckPoolE, LinePoolE);
+            lock (Wait[4]) Process(ProjectilePool[4], DrawProjectiles[4], SegmentPool[4], CheckPool[4], LinePool[4]);
         }
 
         private void StartPoolF()
         {
-            lock (WaitF) Process(ProjectilePoolF, Session.Instance.DrawProjectilesF, SegmentPoolF, CheckPoolF, LinePoolF);
+            lock (Wait[5]) Process(ProjectilePool[5], DrawProjectiles[5], SegmentPool[5], CheckPool[5], LinePool[5]);
         }
 
         private void Process(
             ObjectsPool<Projectile> pool, 
-            List<Session.DrawProjectile> drawList, 
+            List<DrawProjectile> drawList, 
             MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> segmentPool, 
-            MyConcurrentPool<List<IMyEntity>> checkPool, 
+            MyConcurrentPool<List<MyEntity>> checkPool, 
             MyConcurrentPool<List<LineD>> linePool)
         {
             foreach (var p in pool.Active)
@@ -111,7 +99,7 @@ namespace WeaponCore.Projectiles
                 {
                     var fired = new FiredBeam(p.Weapon, linePool.Get());
                     GetAllEntitiesInLine2(p.CheckList, fired, beam, segmentList);
-                    var hitInfo = GetHitEntities(p.CheckList, beam);
+                    var hitInfo = GetHitEntities(p.CheckList, fired, beam);
                     if (GetDamageInfo(fired, beam, hitInfo, 0, false))
                     {
                         intersect = hitInfo.HitPos;
@@ -124,7 +112,7 @@ namespace WeaponCore.Projectiles
                     if (intersect != null)
                     {
                         var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                        drawList.Add(new Session.DrawProjectile(p.Weapon, 0, new LineD(intersect.Value + -(p.Direction * p.Weapon.WeaponType.ShotLength), intersect.Value), p.CurrentMagnitude, hitInfo.HitPos, entity, true));
+                        drawList.Add(new DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, hitInfo.HitPos, entity, true));
                         ProjectileClose(p, pool, checkPool);
                     }
                 }
@@ -147,12 +135,12 @@ namespace WeaponCore.Projectiles
                 var bb = new BoundingBoxD(p.CurrentLine.From, p.CurrentLine.To);
 
                 if (MyAPIGateway.Session.Camera.IsInFrustum(ref bb))
-                    drawList.Add(new Session.DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, Vector3D.Zero, null, true));
+                    drawList.Add(new DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, Vector3D.Zero, null, true));
             }
             pool.DeallocateAllMarked();
         }
 
-        private void ProjectileClose(Projectile p, ObjectsPool<Projectile> pool, MyConcurrentPool<List<IMyEntity>> checkPool)
+        private void ProjectileClose(Projectile p, ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool)
         {
             p.State = Projectile.ProjectileState.Dead;
             p.Effect1.Close(true, false);

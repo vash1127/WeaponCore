@@ -187,7 +187,7 @@
     <None Include="Data\CubeBlocks_PDC.sbc" />
     <None Include="Data\EntityComponents.sbc" />
     <None Include="Data\Particles_PDC.sbc" />
-    <None Include="Data\Weapons_PDC.sbc">
+    <None Include="Data\Weapons.sbc">
       <SubType>Designer</SubType>
     </None>
     <None Include="Models\Cubes\DS_TorpBarrel.mwm" />

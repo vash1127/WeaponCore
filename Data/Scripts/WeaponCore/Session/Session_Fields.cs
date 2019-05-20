@@ -84,12 +84,15 @@ namespace WeaponCore
         internal readonly List<Logic> Logic = new List<Logic>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
+        /*
         internal readonly List<DrawProjectile> DrawProjectilesA = new List<DrawProjectile>();
         internal readonly List<DrawProjectile> DrawProjectilesB = new List<DrawProjectile>();
         internal readonly List<DrawProjectile> DrawProjectilesC = new List<DrawProjectile>();
         internal readonly List<DrawProjectile> DrawProjectilesD = new List<DrawProjectile>();
         internal readonly List<DrawProjectile> DrawProjectilesE = new List<DrawProjectile>();
         internal readonly List<DrawProjectile> DrawProjectilesF = new List<DrawProjectile>();
+        */
+
         public Dictionary<MyStringHash, WeaponStructure> WeaponStructure = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal ShieldApi SApi = new ShieldApi();
         internal ConfigMe MyConfig = new ConfigMe();
@@ -122,26 +125,5 @@ namespace WeaponCore
             }
         }
 
-        internal struct DrawProjectile
-        {
-            internal readonly Weapon Weapon;
-            internal readonly int ProjectileId;
-            internal readonly LineD Projectile;
-            internal readonly Vector3D Speed;
-            internal readonly Vector3D HitPos;
-            internal readonly IMyEntity Entity;
-            internal readonly bool PrimeProjectile;
-
-            internal DrawProjectile(Weapon weapon, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity entity, bool primeProjectile)
-            {
-                Weapon = weapon;
-                ProjectileId = projectileId;
-                Projectile = projectile;
-                Speed = speed;
-                HitPos = hitPos;
-                Entity = entity;
-                PrimeProjectile = primeProjectile;
-            }
-        }
     }
 }
