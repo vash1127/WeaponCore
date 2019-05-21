@@ -4,12 +4,10 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.ModAPI;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Projectiles.Projectiles;
-using static WeaponCore.Support.WeaponDefinition;
 namespace WeaponCore
 {
     public partial class Session
@@ -28,87 +26,58 @@ namespace WeaponCore
 
         private void UpdateWeaponPlatforms()
         {
-            var p = 0;
             for (int i = 0; i < Logic.Count; i++)
             {
                 var logic = Logic[i];
-                if (logic.State.Value.Online)
-                {
-                    for (int j = 0; j < logic.Platform.Weapons.Length; j++)
-                    {
-                        if (j != 0) continue;
-                        var w = logic.Platform.Weapons[j];
-                        var gunner = false;
-                        if (!logic.Turret.IsUnderControl)
-                        {
-                            if (w.Target != null)
-                            {
-                                DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
-                            }
-                            //_dsUtil.Sw.Restart();
-                            if (w.TrackTarget && w.SeekTarget) w.SelectTarget();
-                            //_dsUtil.StopWatchReport("test", -1);
-                            if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);
-                            if (w.TrackTarget && w.ReadyToTrack)
-                            {
-                                //logic.Turret.TrackTarget(w.Target);
-                                //logic.Turret.EnableIdleRotation = false;
-                            }
-                        }
-                        else
-                        {
-                            if (MyAPIGateway.Input.IsAnyMousePressed())
-                            {
-                                var currentAmmo = logic.Gun.GunBase.CurrentAmmo;
-                                if (currentAmmo <= 1) logic.Gun.GunBase.CurrentAmmo += 1;
-                                gunner = true;
-                            }
-                        }
+                if (!logic.State.Value.Online) continue;
 
-                        if (w.ReadyToShoot || gunner) w.Shoot();
-                        if (w.ShotCounter == 0)
+                for (int j = 0; j < logic.Platform.Weapons.Length; j++)
+                {
+                    if (j != 0) continue;
+                    var w = logic.Platform.Weapons[j];
+                    var gunner = false;
+                    if (!logic.Turret.IsUnderControl)
+                    {
+                        if (w.Target != null)
                         {
-                            switch (w.WeaponType.Ammo)
-                            {
-                                case AmmoType.Beam:
-                                    GenerateBeams(w);
-                                    BeamOn = true;
-                                    continue;
-                                default:
-                                    for (int k = 0; k < w.Muzzles.Length; k++)
-                                    {
-                                        var m = w.Muzzles[k];
-                                        if (Tick == m.LastShot)
-                                        {
-                                            lock (_projectiles.Wait[p])
-                                            {
-                                                Projectile pro;
-                                                _projectiles.ProjectilePool[p].AllocateOrCreate(out pro);
-                                                pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPool[p].Get());
-                                            }
-                                            if (p++ >= 5) p = 0;
-                                        }
-                                    }
-                                break;
-                            }
+                            DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
                         }
+                        if (w.TrackTarget && w.SeekTarget) w.SelectTarget();
+                        if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);
+                        if (w.TrackTarget && w.ReadyToTrack)
+                        {
+                            //logic.Turret.TrackTarget(w.Target);
+                            //logic.Turret.EnableIdleRotation = false;
+                        }
+                    }
+                    else
+                    {
+                        if (MyAPIGateway.Input.IsAnyMousePressed())
+                        {
+                            var currentAmmo = logic.Gun.GunBase.CurrentAmmo;
+                            if (currentAmmo <= 1) logic.Gun.GunBase.CurrentAmmo += 1;
+                            gunner = true;
+                        }
+                    }
+
+                    if (w.ReadyToShoot || gunner) w.Shoot();
+                    if (w.ShotCounter != 0) continue;
+
+                    for (int k = 0; k < w.Muzzles.Length; k++)
+                    {
+                        var m = w.Muzzles[k];
+                        if (Tick != m.LastShot) continue;
+
+                        lock (_projectiles.Wait[_pCounter])
+                        {
+                            Projectile pro;
+                            _projectiles.ProjectilePool[_pCounter].AllocateOrCreate(out pro);
+                            _projectiles.Start(pro, new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPool[_pCounter].Get());
+                        }
+                        if (_pCounter++ >= _projectiles.Wait.Length -1) _pCounter = 0;
                     }
                 }
             }
-        }
-
-        private void GenerateBeams(Weapon weapon)
-        {
-            var barrels = weapon.Muzzles;
-            var fireBeam = new FiredBeam(weapon, _linePool.Get());
-            foreach (var m in barrels)
-            {
-                if (Tick == m.LastShot)
-                {
-                    fireBeam.Beams.Add(new LineD(m.Position, m.Direction));
-                }
-            }
-            _projectiles.FiredBeams.Add(fireBeam);
         }
 
         private void DrawBeam(DrawProjectile pInfo)

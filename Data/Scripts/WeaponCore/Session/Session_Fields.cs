@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
 
@@ -19,6 +17,7 @@ namespace WeaponCore
         private int _count = -1;
         private int _lCount;
         private int _eCount;
+        private int _pCounter;
         private double _syncDistSqr;
 
         private readonly MyConcurrentPool<List<LineD>> _linePool = new MyConcurrentPool<List<LineD>>();
@@ -30,15 +29,12 @@ namespace WeaponCore
         };
 
         private readonly Projectiles.Projectiles _projectiles = new Projectiles.Projectiles();
-        private readonly MonitorWork _workData = new MonitorWork();
-        private DsPulseEvent _autoResetEvent = new DsPulseEvent();
 
         internal static Session Instance { get; private set; }
 
         internal const ushort PACKET_ID = 62519;
         internal const double TickTimeDiv = 0.0625;
 
-        internal volatile bool Monitor = true;
         internal volatile bool Dispatched;
 
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
@@ -72,7 +68,6 @@ namespace WeaponCore
         internal bool Tick1800 { get; set; }
         internal bool ShieldMod { get; set; }
         internal bool ShieldApiLoaded { get; set; }
-        internal bool BeamOn { get; set; }
 
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
         internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
@@ -84,14 +79,6 @@ namespace WeaponCore
         internal readonly List<Logic> Logic = new List<Logic>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
-        /*
-        internal readonly List<DrawProjectile> DrawProjectilesA = new List<DrawProjectile>();
-        internal readonly List<DrawProjectile> DrawProjectilesB = new List<DrawProjectile>();
-        internal readonly List<DrawProjectile> DrawProjectilesC = new List<DrawProjectile>();
-        internal readonly List<DrawProjectile> DrawProjectilesD = new List<DrawProjectile>();
-        internal readonly List<DrawProjectile> DrawProjectilesE = new List<DrawProjectile>();
-        internal readonly List<DrawProjectile> DrawProjectilesF = new List<DrawProjectile>();
-        */
 
         public Dictionary<MyStringHash, WeaponStructure> WeaponStructure = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal ShieldApi SApi = new ShieldApi();
@@ -105,25 +92,5 @@ namespace WeaponCore
             "WC-L_PowerLevel",
             "WC-L_Guidance"
         };
-
-
-        public struct ProjectileData
-        {
-            internal readonly ulong ProjectileId;
-            internal readonly Vector3D Origin;
-            internal readonly Vector3D Direction;
-            internal readonly Vector3D InitalVelocity;
-            internal readonly WeaponDefinition Weapon;
-
-            ProjectileData(ulong projectileId, Vector3D origin, Vector3D direction, Vector3D initalVelocity, WeaponDefinition weapon)
-            {
-                ProjectileId = projectileId;
-                Origin = origin;
-                Direction = direction;
-                InitalVelocity = initalVelocity;
-                Weapon = weapon;
-            }
-        }
-
     }
 }

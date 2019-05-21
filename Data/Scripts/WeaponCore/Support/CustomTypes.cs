@@ -31,13 +31,6 @@ namespace WeaponCore.Support
 
     public struct WeaponDefinition
     {
-        internal enum AmmoType
-        {
-            Beam,
-            Bolt,
-            Missile
-        }
-
         public enum EffectType
         {
             None,
@@ -111,14 +104,12 @@ namespace WeaponCore.Support
         internal Vector4 TrailColor;
         internal Vector4 ParticleColor;
         internal ShieldType ShieldDamage;
-        internal AmmoType Ammo;
         internal EffectType Effect;
         internal GuidanceType Guidance;
         internal MySoundPair AmmoSound;
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
     }
-
  
     public struct WeaponSystem
     {

@@ -4,7 +4,6 @@ using Sandbox.Game.Entities;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponDefinition.AmmoType;
 using static WeaponCore.Support.WeaponDefinition.ShieldType;
 using static WeaponCore.Support.WeaponDefinition.EffectType;
 using static WeaponCore.Support.WeaponDefinition.GuidanceType;
@@ -116,7 +115,7 @@ namespace WeaponCore
                 TrackTarget = true,
                 RotateBarrelAxis = 3, // 0 = off, 1 = xAxis, 2 = yAxis, 3 = zAxis
                 RateOfFire = 3600,
-                BarrelsPerShot = 1,
+                BarrelsPerShot = 6,
                 SkipBarrels = 0,
                 ShotsPerBarrel = 1,
                 HeatPerRoF = 1,
@@ -128,7 +127,6 @@ namespace WeaponCore
 
                 // Ammo Mag properties
                 ReloadTime = 10,
-                Ammo = Bolt,
                 ReleaseTimeAfterFire = 10f,
                 ReloadSound = new MySoundPair("cueName"),
 
@@ -137,8 +135,8 @@ namespace WeaponCore
                 DefaultDamage = 150f, 
                 InitalSpeed = 10f,
                 AccelPerSec = 10f,
-                DesiredSpeed = 60f,
-                MaxTrajectory = 1000f,
+                DesiredSpeed = 10f,
+                MaxTrajectory = 2000f,
                 ShotLength = 120f,
                 ShotWidth = 0.1f,
                 DeviateShotAngle = 2f,

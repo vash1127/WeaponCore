@@ -7,7 +7,6 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
-using VRage.Game.Models;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -25,7 +24,7 @@ namespace WeaponCore.Projectiles
         private readonly MyConcurrentDictionary<IMySlimBlock, DamageInfo> _hitBlocks = new MyConcurrentDictionary<IMySlimBlock, DamageInfo>();
         private readonly MyConcurrentDictionary<IMyEntity, DamageInfo> _hitEnts = new MyConcurrentDictionary<IMyEntity, DamageInfo>();
 
-        internal void GetAllEntitiesInLine(List<MyEntity> ents, FiredBeam fired, LineD beam)
+        internal void GetAllEntitiesInLine(List<MyEntity> ents, Fired fired, LineD beam)
         {
             var segmentList = _segmentPool.Get();
             MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
@@ -55,7 +54,7 @@ namespace WeaponCore.Projectiles
             _segmentPool.Return(segmentList);
         }
 
-        internal void GetAllEntitiesInLine2(List<MyEntity> ents, FiredBeam fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList)
+        internal void GetAllEntitiesInLine2(List<MyEntity> ents, Fired fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList)
         {
             for (int i = 0; i < segmentList.Count; i++)
             {
@@ -80,13 +79,12 @@ namespace WeaponCore.Projectiles
                     continue;
                 }
 
-
                 if (ent.Physics != null && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                     ents.Add(ent);
             }
         }
 
-        internal HitInfo GetHitEntities(List<MyEntity> ents, FiredBeam fired, LineD beam)
+        internal HitInfo GetHitEntities(List<MyEntity> ents, Fired fired, LineD beam)
         {
             double nearestDist = double.MaxValue;
             HitInfo nearestHit = new HitInfo();
@@ -167,7 +165,7 @@ namespace WeaponCore.Projectiles
             return nearestHit;
         }
 
-        internal bool GetDamageInfo(FiredBeam fired, LineD beam, HitInfo hitInfo, int beamId, bool draw)
+        internal bool GetDamageInfo(Fired fired, LineD beam, HitInfo hitInfo, int beamId, bool draw)
         {
             if (hitInfo.HitPos != Vector3D.Zero)
             {
@@ -193,7 +191,7 @@ namespace WeaponCore.Projectiles
             return false;
         }
 
-        internal void DamageEntities(FiredBeam fired)
+        internal void DamageEntities(Fired fired)
         {
             foreach (var pair in _hitBlocks)
             {
@@ -250,6 +248,18 @@ namespace WeaponCore.Projectiles
             }
         }
 
+        internal struct Shot
+        {
+            public readonly Vector3D Position;
+            public readonly Vector3D Direction;
+
+            public Shot(Vector3D position, Vector3D direction)
+            {
+                Position = position;
+                Direction = direction;
+            }
+        }
+
         internal struct HitInfo
         {
             public readonly Vector3D HitPos;
@@ -262,6 +272,18 @@ namespace WeaponCore.Projectiles
                 NewBeam = newBeam;
                 Entity = entity;
                 Slim = slim;
+            }
+        }
+
+        internal struct Fired
+        {
+            public readonly List<LineD> Shots;
+            public readonly Weapon Weapon;
+
+            public Fired(Weapon weapon, List<LineD> shots)
+            {
+                Weapon = weapon;
+                Shots = shots;
             }
         }
 

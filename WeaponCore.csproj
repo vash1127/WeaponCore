@@ -225,7 +225,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_State.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Platform\Platform_Shoot.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Platform\Platform_Tracking.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Beams.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Common.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Damage.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\CustomTypes.cs" />

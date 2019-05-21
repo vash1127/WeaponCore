@@ -27,9 +27,6 @@ namespace WeaponCore
                 {
                     for (int i = 0; i < _projectiles.Wait.Length; i++)
                         lock (_projectiles.Wait[i]) DrawLists(_projectiles.DrawProjectiles[i]);
-                    if (!DrawBeams.IsEmpty)
-                        foreach (var b in DrawBeams)
-                            DrawBeam(b);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
@@ -42,13 +39,6 @@ namespace WeaponCore
                 Timings();
                 if (!_projectiles.Hits.IsEmpty) ProcessHits();
                 UpdateWeaponPlatforms();
-                if (BeamOn)
-                {
-                    Dispatched = true;
-                    MyAPIGateway.Parallel.Start(_projectiles.RunBeams, WebDispatchDone);
-                    BeamOn = false;
-                }
-
                 MyAPIGateway.Parallel.Start(_projectiles.Update);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
