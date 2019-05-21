@@ -20,9 +20,8 @@ namespace WeaponCore
         private int _pCounter;
         private double _syncDistSqr;
 
-        private readonly MyConcurrentPool<List<LineD>> _linePool = new MyConcurrentPool<List<LineD>>();
-        private readonly MyConcurrentPool<List<Shot>> _shotPool = new MyConcurrentPool<List<Shot>>();
-
+        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
+        private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private MyEntity3DSoundEmitter SoundEmitter { get; set; } = new MyEntity3DSoundEmitter(null)
         {
             CustomMaxDistance = float.MaxValue,

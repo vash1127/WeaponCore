@@ -174,6 +174,36 @@ namespace WeaponCore.Support
         }
     }
 
+    public class Shrinking
+    {
+        internal WeaponDefinition WepDef;
+        internal LineD Line;
+        internal Vector3D Position;
+        internal Vector3D Direction;
+        internal double Length;
+        internal int ReSizeSteps;
+        internal double LineReSizeLen;
+        internal int ShrinkStep;
+
+        internal void Init(WeaponDefinition wepDef, LineD line, int reSizeSteps, double lineReSizeLen)
+        {
+            WepDef = wepDef;
+            Line = line;
+            Position = Line.To;
+            Direction = Line.Direction;
+            Length = Line.Length;
+            ReSizeSteps = reSizeSteps;
+            LineReSizeLen = lineReSizeLen;
+            ShrinkStep = 0;
+        }
+
+        internal LineD? GetLine()
+        {
+            if (ShrinkStep++ >= ReSizeSteps) return null;
+            return new LineD(Position + -(Direction * (ShrinkStep * LineReSizeLen)), Position);
+        }
+    }
+
     public struct WeaponHit
     {
         public readonly Logic Logic;

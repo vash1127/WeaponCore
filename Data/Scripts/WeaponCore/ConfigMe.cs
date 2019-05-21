@@ -114,8 +114,8 @@ namespace WeaponCore
                 TurretMode = true,
                 TrackTarget = true,
                 RotateBarrelAxis = 3, // 0 = off, 1 = xAxis, 2 = yAxis, 3 = zAxis
-                RateOfFire = 3600,
-                BarrelsPerShot = 6,
+                RateOfFire = 6,
+                BarrelsPerShot = 1,
                 SkipBarrels = 0,
                 ShotsPerBarrel = 1,
                 HeatPerRoF = 1,
@@ -132,10 +132,10 @@ namespace WeaponCore
 
                 //Ammo Properties
                 Guidance = Smart,
-                DefaultDamage = 150f, 
+                DefaultDamage = 1f, 
                 InitalSpeed = 10f,
                 AccelPerSec = 10f,
-                DesiredSpeed = 10f,
+                DesiredSpeed = 30f,
                 MaxTrajectory = 2000f,
                 ShotLength = 120f,
                 ShotWidth = 0.1f,

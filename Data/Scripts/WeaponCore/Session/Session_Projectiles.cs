@@ -14,14 +14,40 @@ namespace WeaponCore
     {
         private void DrawLists(List<DrawProjectile> drawList)
         {
+            var sFound = false;
             for (int i = 0; i < drawList.Count; i++)
             {
                 var p = drawList[i];
                 var wDef = p.Weapon.WeaponType;
                 var line = p.Projectile;
+                if (p.Shrink)
+                {
+                    sFound = true;
+                    var shrink = _shrinkPool.Get();
+                    shrink.Init(wDef, line, p.ReSizeSteps, p.LineReSizeLen);
+                    _shrinking.Add(shrink);
+                }
+
                 MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.ShotWidth);
             }
             drawList.Clear();
+            if (sFound) _shrinking.ApplyAdditions();
+        }
+
+        private void Shrink()
+        {
+            var sRemove = false;
+            foreach (var s in _shrinking)
+            {
+                var line = s.GetLine();
+                if (line.HasValue)
+                {
+                    Log.Line("test");
+                    MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.PhysicalMaterial, s.WepDef.TrailColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.ShotWidth);
+                }
+                else sRemove = true;
+            }
+            if (sRemove) _shrinking.ApplyRemovals();
         }
 
         private void UpdateWeaponPlatforms()
@@ -115,7 +141,6 @@ namespace WeaponCore
                 else MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, material, ref trailColor, 2f);
             }
         }
-
 
         private MyParticleEffect _effect1 = new MyParticleEffect();
 

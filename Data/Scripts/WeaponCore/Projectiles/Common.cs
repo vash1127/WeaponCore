@@ -187,7 +187,7 @@ namespace WeaponCore.Projectiles
 
                 return true;
             }
-            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false));
+            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false, 0,0, false));
             return false;
         }
 
@@ -235,8 +235,11 @@ namespace WeaponCore.Projectiles
             internal readonly Vector3D HitPos;
             internal readonly IMyEntity Entity;
             internal readonly bool PrimeProjectile;
+            internal readonly double LineReSizeLen;
+            internal readonly int ReSizeSteps;
+            internal readonly bool Shrink;
 
-            internal DrawProjectile(Weapon weapon, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity entity, bool primeProjectile)
+            internal DrawProjectile(Weapon weapon, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity entity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink)
             {
                 Weapon = weapon;
                 ProjectileId = projectileId;
@@ -245,6 +248,9 @@ namespace WeaponCore.Projectiles
                 HitPos = hitPos;
                 Entity = entity;
                 PrimeProjectile = primeProjectile;
+                LineReSizeLen = lineReSizeLen;
+                ReSizeSteps = reSizeSteps;
+                Shrink = shrink;
             }
         }
 

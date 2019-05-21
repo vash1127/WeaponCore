@@ -81,7 +81,7 @@ namespace WeaponCore.Projectiles
                         if (intersect != null)
                         {
                             var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                            drawList.Add(new DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, hitInfo.HitPos, entity, true));
+                            drawList.Add(new DrawProjectile(p.Weapon, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position), p.CurrentSpeed, hitInfo.HitPos, entity, true, p.LineReSizeLen, p.ReSizeSteps, p.Shrink));
                             ProjectileClose(p, pool, checkPool);
                         }
                     }
@@ -95,7 +95,7 @@ namespace WeaponCore.Projectiles
                         continue;
                     }
 
-                    if (!noDraw) continue;
+                    if (noDraw) continue;
 
                     if (p.Grow)
                     {
@@ -103,10 +103,13 @@ namespace WeaponCore.Projectiles
                         if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
                     }
                     else p.CurrentLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
-                    var bb = new BoundingBoxD(p.CurrentLine.From, p.CurrentLine.To);
+
+                    var from = p.CurrentLine.From;
+                    var to = p.CurrentLine.To;
+                    var bb = new BoundingBoxD(Vector3D.Min(from, to), Vector3D.Max(from, to));
 
                     if (Session.Instance.Session.Camera.IsInFrustum(ref bb))
-                        drawList.Add(new DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, Vector3D.Zero, null, true));
+                        drawList.Add(new DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, Vector3D.Zero, null, true, 0, 0 , false));
                 }
                 pool.DeallocateAllMarked();
             }
@@ -120,6 +123,7 @@ namespace WeaponCore.Projectiles
             p.ShotLength = wDef.ShotLength;
             p.SpeedLength = wDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
             p.LineReSizeLen = p.SpeedLength / 60;
+            p.GrowStep = 1;
             var reSizeSteps = (int)(p.ShotLength / p.LineReSizeLen);
             p.ReSizeSteps = reSizeSteps > 0 ? reSizeSteps : 1;
             p.Grow = p.ReSizeSteps > 1;
@@ -135,7 +139,6 @@ namespace WeaponCore.Projectiles
             p.CurrentSpeed = p.FinalSpeed;
             p.State = Projectile.ProjectileState.Alive;
             p.PositionChecked = false;
-
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;

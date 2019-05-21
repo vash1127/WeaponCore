@@ -5,6 +5,7 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
 {
