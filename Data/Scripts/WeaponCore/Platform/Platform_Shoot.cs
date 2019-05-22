@@ -1,7 +1,6 @@
 ﻿using System;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {

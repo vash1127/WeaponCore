@@ -41,11 +41,12 @@ namespace WeaponCore
             {
                 var line = s.GetLine();
                 if (line.HasValue)
-                {
-                    Log.Line("test");
                     MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.PhysicalMaterial, s.WepDef.TrailColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.ShotWidth);
+                else
+                {
+                    _shrinking.Remove(s);
+                    sRemove = true;
                 }
-                else sRemove = true;
             }
             if (sRemove) _shrinking.ApplyRemovals();
         }
@@ -98,7 +99,7 @@ namespace WeaponCore
                         {
                             Projectile pro;
                             _projectiles.ProjectilePool[_pCounter].AllocateOrCreate(out pro);
-                            _projectiles.Start(pro, new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPool[_pCounter].Get());
+                            pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPool[_pCounter].Get());
                         }
                         if (_pCounter++ >= _projectiles.Wait.Length -1) _pCounter = 0;
                     }

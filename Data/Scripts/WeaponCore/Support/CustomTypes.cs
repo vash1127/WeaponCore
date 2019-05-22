@@ -33,7 +33,6 @@ namespace WeaponCore.Support
     {
         public enum EffectType
         {
-            None,
             Spark,
             Lance,
             Orb,
@@ -51,7 +50,6 @@ namespace WeaponCore.Support
 
         internal enum ShieldType
         {
-            None,
             Bypass,
             Emp,
             Energy,
@@ -67,7 +65,8 @@ namespace WeaponCore.Support
         internal bool UseRandomizedRange;
         internal bool ShieldHitDraw;
         internal bool RealisticDamage;
-        internal bool Trail;
+        internal bool LineTrail;
+        internal bool ParticleTrail;
         internal int RotateBarrelAxis; 
         internal int ReloadTime;
         internal int RateOfFire;
@@ -109,6 +108,7 @@ namespace WeaponCore.Support
         internal MySoundPair AmmoSound;
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
+        internal string CustomEffect;
     }
  
     public struct WeaponSystem
@@ -177,7 +177,6 @@ namespace WeaponCore.Support
     public class Shrinking
     {
         internal WeaponDefinition WepDef;
-        internal LineD Line;
         internal Vector3D Position;
         internal Vector3D Direction;
         internal double Length;
@@ -188,18 +187,17 @@ namespace WeaponCore.Support
         internal void Init(WeaponDefinition wepDef, LineD line, int reSizeSteps, double lineReSizeLen)
         {
             WepDef = wepDef;
-            Line = line;
-            Position = Line.To;
-            Direction = Line.Direction;
-            Length = Line.Length;
+            Position = line.To;
+            Direction = line.Direction;
+            Length = line.Length;
             ReSizeSteps = reSizeSteps;
             LineReSizeLen = lineReSizeLen;
-            ShrinkStep = 0;
+            ShrinkStep = reSizeSteps;
         }
 
         internal LineD? GetLine()
         {
-            if (ShrinkStep++ >= ReSizeSteps) return null;
+            if (ShrinkStep-- <= 0) return null;
             return new LineD(Position + -(Direction * (ShrinkStep * LineReSizeLen)), Position);
         }
     }

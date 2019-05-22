@@ -27,7 +27,8 @@ namespace WeaponCore
                 {
                     for (int i = 0; i < _projectiles.Wait.Length; i++)
                         lock (_projectiles.Wait[i]) DrawLists(_projectiles.DrawProjectiles[i]);
-                    if (_shrinking.Count > 0) Shrink();
+                    if (_shrinking.Count > 0)
+                        Shrink();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }

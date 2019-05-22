@@ -114,7 +114,7 @@ namespace WeaponCore
                 TurretMode = true,
                 TrackTarget = true,
                 RotateBarrelAxis = 3, // 0 = off, 1 = xAxis, 2 = yAxis, 3 = zAxis
-                RateOfFire = 6,
+                RateOfFire = 3600,
                 BarrelsPerShot = 1,
                 SkipBarrels = 0,
                 ShotsPerBarrel = 1,
@@ -135,9 +135,9 @@ namespace WeaponCore
                 DefaultDamage = 1f, 
                 InitalSpeed = 10f,
                 AccelPerSec = 10f,
-                DesiredSpeed = 30f,
+                DesiredSpeed = 300f,
                 MaxTrajectory = 2000f,
-                ShotLength = 120f,
+                ShotLength = 10f,
                 ShotWidth = 0.1f,
                 DeviateShotAngle = 2f,
                 BackkickForce = 2.5f,
@@ -145,6 +145,23 @@ namespace WeaponCore
                 RangeMultiplier = 2.1f,
                 AreaEffectYield = 0f,
                 AreaEffectRadius = 0f,
+                UseRandomizedRange = false,
+
+                // Ammo Visual Audio properties
+                ModelName = MyStringId.GetOrCompute("Custom"),
+                AmmoSound = new MySoundPair("cueName"),
+
+                ParticleTrail = true,
+                // The following are used if ParticleTrail is set to true
+                ParticleColor = new Vector4(255, 255, 255, 128),
+                Effect = Custom,
+                CustomEffect = "ShipWelderArc", //only used if effect is set to "Custom"
+
+                LineTrail = true,
+                // The following are used if Trail is set to true;
+                PhysicalMaterial = MyStringId.GetOrCompute("WeaponLaser"), // WeaponLaser, WarpBubble, ProjectileTrailLine
+                TrailColor = new Vector4(0, 0, 255, 110f),
+
                 RealisticDamage = false,
                 // If set to realistic DefaultDamage is disabled the 
                 // and following values are used, damage equation is: 
@@ -153,16 +170,6 @@ namespace WeaponCore
                 Mass = 150f,  // in grams
                 ThermalDamage = 0, // MegaWatts
                 Health = 0f,
-
-                // Ammo Visual Audio properties
-                Trail = true,
-                UseRandomizedRange = false,
-                PhysicalMaterial = MyStringId.GetOrCompute("ProjectileTrailLine"),
-                TrailColor = new Vector4(255, 10, 0, 110f),
-                ParticleColor = new Vector4(255, 0, 0, 175),
-                Effect = Lance,
-                ModelName = MyStringId.GetOrCompute("Custom"),
-                AmmoSound = new MySoundPair("cueName"),
 
                 //Shield Behavior
                 ShieldHitDraw = true,

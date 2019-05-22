@@ -9,7 +9,6 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
@@ -81,8 +80,8 @@ namespace WeaponCore.Projectiles
                         if (intersect != null)
                         {
                             var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                            drawList.Add(new DrawProjectile(p.Weapon, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position), p.CurrentSpeed, hitInfo.HitPos, entity, true, p.LineReSizeLen, p.ReSizeSteps, p.Shrink));
-                            ProjectileClose(p, pool, checkPool);
+                            drawList.Add(new DrawProjectile(p.Weapon, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.CurrentSpeed, hitInfo.HitPos, entity, true, p.LineReSizeLen, p.ReSizeSteps, p.Shrink));
+                            p.ProjectileClose(pool, checkPool);
                         }
                     }
                     segmentPool.Return(segmentList);
@@ -91,7 +90,7 @@ namespace WeaponCore.Projectiles
                     var distTraveled = (p.Origin - p.Position);
                     if (Vector3D.Dot(distTraveled, distTraveled) >= p.MaxTrajectory * p.MaxTrajectory)
                     {
-                        ProjectileClose(p, pool, checkPool);
+                        p.ProjectileClose(pool, checkPool);
                         continue;
                     }
 
@@ -115,43 +114,6 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal void Start(Projectile p, Shot fired, Weapon weapon, List<MyEntity> checkList)
-        {
-            p.Weapon = weapon;
-            var wDef = weapon.WeaponType;
-            p.MaxTrajectory = wDef.MaxTrajectory;
-            p.ShotLength = wDef.ShotLength;
-            p.SpeedLength = wDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
-            p.LineReSizeLen = p.SpeedLength / 60;
-            p.GrowStep = 1;
-            var reSizeSteps = (int)(p.ShotLength / p.LineReSizeLen);
-            p.ReSizeSteps = reSizeSteps > 0 ? reSizeSteps : 1;
-            p.Grow = p.ReSizeSteps > 1;
-            p.Shrink = p.Grow;
-            p.Origin = fired.Position;
-            p.Direction = fired.Direction;
-            p.Position = p.Origin;
-            p.MyGrid = weapon.Logic.MyGrid;
-            p.CheckList = checkList;
-            p.StartSpeed = p.Weapon.Logic.Turret.CubeGrid.Physics.LinearVelocity;
-            p.AddSpeed = p.Direction * p.SpeedLength;
-            p.FinalSpeed = p.StartSpeed + p.AddSpeed;
-            p.CurrentSpeed = p.FinalSpeed;
-            p.State = Projectile.ProjectileState.Alive;
-            p.PositionChecked = false;
-            //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
-            //_checkIntersectionIndex = _checkIntersectionCnt % 5;
-            //_checkIntersectionCnt += 3;
-            //ProjectileParticleStart();
-        }
-
-        private void ProjectileClose(Projectile p, ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool)
-        {
-            p.State = Projectile.ProjectileState.Dead;
-            p.Effect1.Close(true, false);
-            checkPool.Return(p.CheckList);
-            pool.MarkForDeallocate(p);
-        }
 
         private void PrefetchVoxelPhysicsIfNeeded(Projectile p)
         {
@@ -214,21 +176,6 @@ namespace WeaponCore.Projectiles
             }
 
             return Math.Sqrt(diff) * missileToTarget + normalMissileAcceleration;
-        }
-
-        private void ProjectileParticleStart(Projectile p)
-        {
-            var color = new Vector4(255, 255, 255, 128f); // comment out to use beam color
-            var mainParticle = 32;
-            var to = p.Position;
-            var matrix = MatrixD.CreateTranslation(to);
-            MyParticlesManager.TryCreateParticleEffect(mainParticle, out p.Effect1, ref matrix, ref to, uint.MaxValue, true); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
-            if (p.Effect1 == null) return;
-            p.Effect1.DistanceMax = p.MaxTrajectory;
-            p.Effect1.UserColorMultiplier = color;
-            p.Effect1.UserRadiusMultiplier = 1f;
-            p.Effect1.UserEmitterScale = 1f;
-            p.Effect1.Velocity = p.CurrentSpeed;
         }
     }
 }
