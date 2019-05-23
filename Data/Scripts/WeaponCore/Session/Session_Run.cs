@@ -55,14 +55,31 @@ namespace WeaponCore
         protected override void UnloadData()
         {
             SApi.Unload();
-            Instance = null;
 
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
 
 
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
-
+            /*
+            for (int i = 0; i < _projectiles.Wait.Length; i++)
+            {
+                lock (_projectiles.Wait[i])
+                {
+                    foreach (var a in _projectiles.ProjectilePool[i].Active)
+                    {
+                        a.Effect1.Clear();
+                        //a.Effect1.Stop(true);
+                    }
+                    foreach (var m in _projectiles.ProjectilePool[i].Marked)
+                    {
+                        m.Effect1.Clear();
+                        //m.Effect1.Stop(true);
+                    }
+                }
+            }
+            */
+            Instance = null;
             Log.Line("Logging stopped.");
             Log.Close();
         }

@@ -43,7 +43,9 @@ namespace WeaponCore.Projectiles
 
         private void Process(int i)
         {
-            var noDraw = Session.Instance.DedicatedServer;
+            var noAv = Session.Instance.DedicatedServer;
+            var camera = Session.Instance.Session.Camera;
+            var cameraPos = camera.Position;
             lock (Wait[i])
             {
                 var pool = ProjectilePool[i];
@@ -53,7 +55,12 @@ namespace WeaponCore.Projectiles
                 var linePool = LinePool[i];
                 foreach (var p in pool.Active)
                 {
-                    if (p.State != Projectile.ProjectileState.Alive) continue;
+                    if (p.State != Projectile.ProjectileState.Alive)
+                    {
+                        if (p.State == Projectile.ProjectileState.Start) p.Start(checkPool.Get());
+                        else continue;
+                    }
+
                     p.CurrentMagnitude = p.CurrentSpeed * StepConst;
                     p.LastPosition = p.Position;
                     p.Position += p.CurrentMagnitude;
@@ -79,8 +86,11 @@ namespace WeaponCore.Projectiles
 
                         if (intersect != null)
                         {
-                            var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                            drawList.Add(new DrawProjectile(p.Weapon, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.CurrentSpeed, hitInfo.HitPos, entity, true, p.LineReSizeLen, p.ReSizeSteps, p.Shrink));
+                            if (!noAv && p.DrawLine && p.Draw)
+                            {
+                                var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
+                                drawList.Add(new DrawProjectile(p.Weapon, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.CurrentSpeed, hitInfo.HitPos, entity, true, p.LineReSizeLen, p.ReSizeSteps, p.Shrink));
+                            }
                             p.ProjectileClose(pool, checkPool);
                         }
                     }
@@ -94,7 +104,17 @@ namespace WeaponCore.Projectiles
                         continue;
                     }
 
-                    if (noDraw) continue;
+                    if (noAv || !p.Draw) continue;
+
+                    if (!p.StartSound)
+                    {
+                        double dist;
+                        Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
+                        if (dist <= p.AmmoAudioRangeBuffSqr) p.SoundStart();
+                    }
+                    else p.Sound1.SetPosition(p.Position);
+
+                    if (!p.DrawLine) continue;
 
                     if (p.Grow)
                     {
@@ -107,7 +127,7 @@ namespace WeaponCore.Projectiles
                     var to = p.CurrentLine.To;
                     var bb = new BoundingBoxD(Vector3D.Min(from, to), Vector3D.Max(from, to));
 
-                    if (Session.Instance.Session.Camera.IsInFrustum(ref bb))
+                    if (camera.IsInFrustum(ref bb))
                         drawList.Add(new DrawProjectile(p.Weapon, 0, p.CurrentLine, p.CurrentSpeed, Vector3D.Zero, null, true, 0, 0 , false));
                 }
                 pool.DeallocateAllMarked();

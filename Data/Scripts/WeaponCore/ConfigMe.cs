@@ -114,7 +114,7 @@ namespace WeaponCore
                 TurretMode = true,
                 TrackTarget = true,
                 RotateBarrelAxis = 3, // 0 = off, 1 = xAxis, 2 = yAxis, 3 = zAxis
-                RateOfFire = 3600,
+                RateOfFire = 15,
                 BarrelsPerShot = 1,
                 SkipBarrels = 0,
                 ShotsPerBarrel = 1,
@@ -123,7 +123,7 @@ namespace WeaponCore
                 HeatSinkRate = 2,
                 MuzzleFlashLifeSpan = 0,
                 RotateSpeed = 1f,
-                FiringSound = new MySoundPair("cueName"),
+                FiringSound = new MySoundPair("RealWepTurretMissileShot"),
 
                 // Ammo Mag properties
                 ReloadTime = 10,
@@ -135,11 +135,9 @@ namespace WeaponCore
                 DefaultDamage = 1f, 
                 InitalSpeed = 10f,
                 AccelPerSec = 10f,
-                DesiredSpeed = 300f,
+                DesiredSpeed = 50f,
                 MaxTrajectory = 2000f,
-                ShotLength = 10f,
-                ShotWidth = 0.1f,
-                DeviateShotAngle = 2f,
+                DeviateShotAngle = 1f,
                 BackkickForce = 2.5f,
                 SpeedVariance = 5f,
                 RangeMultiplier = 2.1f,
@@ -149,18 +147,24 @@ namespace WeaponCore
 
                 // Ammo Visual Audio properties
                 ModelName = MyStringId.GetOrCompute("Custom"),
-                AmmoSound = new MySoundPair("cueName"),
+                AmmoTravelSound = new MySoundPair("ArcLrgShipLrgJetHydrogen"),
+                AmmoHitSound = new MySoundPair("RealWepSmallMissileExpl"),
+                VisualProbability = 1f,
+                AmmoAudioRange = 40f,
 
                 ParticleTrail = true,
                 // The following are used if ParticleTrail is set to true
                 ParticleColor = new Vector4(255, 255, 255, 128),
                 Effect = Custom,
                 CustomEffect = "ShipWelderArc", //only used if effect is set to "Custom"
+                ParticleRadiusMultiplier = 1.5f,
 
-                LineTrail = true,
+                LineTrail = false,
                 // The following are used if Trail is set to true;
                 PhysicalMaterial = MyStringId.GetOrCompute("WeaponLaser"), // WeaponLaser, WarpBubble, ProjectileTrailLine
                 TrailColor = new Vector4(0, 0, 255, 110f),
+                LineLength = 1f,
+                LineWidth = 0.025f,
 
                 RealisticDamage = false,
                 // If set to realistic DefaultDamage is disabled the 

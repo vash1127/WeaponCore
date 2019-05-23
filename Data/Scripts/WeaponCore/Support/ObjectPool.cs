@@ -39,6 +39,15 @@ namespace WeaponCore.Support
             }
         }
 
+        public HashSetReader<T> Marked
+        {
+            get
+            {
+                using (_activeLock.Acquire())
+                    return new HashSetReader<T>(_marked);
+            }
+        }
+
         public int ActiveCount
         {
             get

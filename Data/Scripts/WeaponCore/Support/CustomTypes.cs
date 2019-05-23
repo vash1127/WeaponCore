@@ -79,8 +79,8 @@ namespace WeaponCore.Support
         internal int MuzzleFlashLifeSpan;
         internal float Mass;
         internal float Health;
-        internal float ShotLength;
-        internal float ShotWidth;
+        internal float LineLength;
+        internal float LineWidth;
         internal float InitalSpeed;
         internal float AccelPerSec;
         internal float DesiredSpeed;
@@ -98,6 +98,9 @@ namespace WeaponCore.Support
         internal float ShieldDmgMultiplier;
         internal float DefaultDamage;
         internal float ComputedBaseDamage;
+        internal float VisualProbability;
+        internal float ParticleRadiusMultiplier;
+        internal float AmmoAudioRange;
         internal MyStringId PhysicalMaterial;
         internal MyStringId ModelName;
         internal Vector4 TrailColor;
@@ -105,7 +108,8 @@ namespace WeaponCore.Support
         internal ShieldType ShieldDamage;
         internal EffectType Effect;
         internal GuidanceType Guidance;
-        internal MySoundPair AmmoSound;
+        internal MySoundPair AmmoTravelSound;
+        internal MySoundPair AmmoHitSound;
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
         internal string CustomEffect;

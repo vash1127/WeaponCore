@@ -28,7 +28,7 @@ namespace WeaponCore
                     _shrinking.Add(shrink);
                 }
 
-                MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.ShotWidth);
+                MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.LineWidth);
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();
@@ -41,7 +41,7 @@ namespace WeaponCore
             {
                 var line = s.GetLine();
                 if (line.HasValue)
-                    MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.PhysicalMaterial, s.WepDef.TrailColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.ShotWidth);
+                    MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.PhysicalMaterial, s.WepDef.TrailColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.LineWidth);
                 else
                 {
                     _shrinking.Remove(s);
@@ -99,7 +99,10 @@ namespace WeaponCore
                         {
                             Projectile pro;
                             _projectiles.ProjectilePool[_pCounter].AllocateOrCreate(out pro);
-                            pro.Start(new Shot(m.Position, m.DeviatedDir), w, _projectiles.CheckPool[_pCounter].Get());
+                            pro.Weapon = w;
+                            pro.Origin = m.Position;
+                            pro.Direction = m.DeviatedDir;
+                            pro.State = Projectile.ProjectileState.Start;
                         }
                         if (_pCounter++ >= _projectiles.Wait.Length -1) _pCounter = 0;
                     }
