@@ -1,13 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.Engine.Utils;
+﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.World;
-using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -75,12 +70,15 @@ namespace WeaponCore.Projectiles
             CurrentSpeed = FinalSpeed;
             PositionChecked = false;
             StartSound = false;
-            Sound1.CustomVolume = 0;
             Draw = wDef.VisualProbability >= (double)MyUtils.GetRandomFloat(0.0f, 1f);
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
             if (Draw && wDef.ParticleTrail) ProjectileParticleStart();
+            Sound1.CustomMaxDistance = 150f;
+            Sound1.CustomVolume = 10f;
+            Sound1.SetPosition(Origin);
+            Sound1.PlaySoundWithDistance(wDef.FiringSound.SoundId, false, false, false, true, false, false, false);
             State = ProjectileState.Alive;
         }
 
@@ -102,21 +100,11 @@ namespace WeaponCore.Projectiles
         internal void SoundStart()
         {
             var wDef = Weapon.WeaponType;
-            Sound1.PlaySoundWithDistance(wDef.AmmoTravelSound.SoundId, false, false, false, false, true, false, false);
-            Sound1.CustomVolume = 1;
             Sound1.CustomMaxDistance = wDef.AmmoAudioRange;
-            Sound1.SetPosition(Origin);
+            Sound1.CustomVolume = 1f;
+            Sound1.SetPosition(Position);
+            Sound1.PlaySoundWithDistance(wDef.AmmoTravelSound.SoundId, false, false, false, true, false, false, false);
             StartSound = true;
-            /*
-            Func<bool> func = () =>
-            {
-                if (MyAPIGateway.Session.ControlledObject != null && MyAPIGateway.Session.ControlledObject.Entity is IMyCharacter)
-                    return MyAPIGateway.Session.ControlledObject.Entity == HitEntity;
-                return false;
-            };
-            Sound1.EmitterMethods[1].Add(func);
-            Sound1.EmitterMethods[0].Add(func);
-            */
         }
 
         internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool)
@@ -131,7 +119,7 @@ namespace WeaponCore.Projectiles
             Sound1.CustomMaxDistance = 150f;
             Sound1.CustomVolume = 3;
             Sound1.SetPosition(Position);
-            Sound1.PlaySoundWithDistance(Weapon.WeaponType.AmmoHitSound.SoundId, false, false, false, true, true, false, true);
+            Sound1.PlaySoundWithDistance(Weapon.WeaponType.AmmoHitSound.SoundId, false, false, false, true, true, false, false);
         }
 
         private void DisposeEffect()
