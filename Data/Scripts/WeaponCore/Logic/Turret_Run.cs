@@ -13,10 +13,11 @@ using IMyLargeTurretBase = Sandbox.ModAPI.IMyLargeTurretBase;
 
 namespace WeaponCore
 {
-    [MyEntityComponentDescriptor(typeof(MyObjectBuilder_LargeMissileTurret), false, "PDCTurretLB", "PDCTurretSB")]
+    //[MyEntityComponentDescriptor(typeof(MyObjectBuilder_LargeMissileTurret), false, "PDCTurretLB", "PDCTurretSB")]
 
     public partial class Logic : MyGameLogicComponent
     {
+        /*
         public override void OnAddedToContainer()
         {
             if (!_containerInited)
@@ -151,5 +152,6 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in Close: {ex}"); }
         }
+        */
     }
 }

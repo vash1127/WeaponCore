@@ -1,14 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using WeaponCore.Support;
 
-namespace WeaponCore
-{
-    public partial class Logic
+namespace WeaponCore.Support
+{ 
+    public partial class WeaponComponent
     {
-        /*
+
         internal void RegisterEvents(bool register = true)
         {
             if (register)
@@ -52,6 +54,5 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in Controller AppendingCustomInfo: {ex}"); }
         }
-        */
     }
 }

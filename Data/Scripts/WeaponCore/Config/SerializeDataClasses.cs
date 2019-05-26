@@ -59,9 +59,9 @@ namespace WeaponCore
         {
             if (!isServer)
             {
-                if (Entity?.GameLogic == null) return false;
-                var logic = Entity.GameLogic.GetAs<Logic>();
-                logic?.UpdateState(State);
+                if (Entity == null) return false;
+                var comp = Entity.Components.Get<WeaponComponent>();
+                comp?.UpdateState(State);
                 return false;
             }
             return true;
@@ -84,9 +84,9 @@ namespace WeaponCore
 
         public override bool Received(bool isServer)
         {
-            if (Entity?.GameLogic == null) return false;
-            var logic = Entity.GameLogic.GetAs<Logic>();
-            logic?.UpdateSettings(Settings);
+            if (Entity == null) return false;
+            var comp = Entity.Components.Get<WeaponComponent>();
+            comp?.UpdateSettings(Settings);
             return isServer;
         }
     }

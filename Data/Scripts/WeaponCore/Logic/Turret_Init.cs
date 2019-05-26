@@ -10,6 +10,7 @@ namespace WeaponCore
 {
     public partial class Logic
     {
+        /*
         private void BeforeInit()
         {
             if (MyGrid == null) return;
@@ -102,5 +103,6 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in AddResourceSourceComponent: {ex}"); }
         }
+        */
     }
 }

@@ -6,6 +6,7 @@ using VRage.Collections;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Data.Scripts.WeaponCore;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
 
@@ -13,24 +14,24 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        public uint Tick;
+        internal static Session Instance { get; private set; }
+
+        private readonly Projectiles.Projectiles _projectiles = new Projectiles.Projectiles();
+
         private int _count = -1;
         private int _lCount;
         private int _eCount;
         private int _pCounter;
         private double _syncDistSqr;
 
-        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
+        private DSUtils _dsUtil { get; set; } = new DSUtils();
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private MyEntity3DSoundEmitter SoundEmitter { get; set; } = new MyEntity3DSoundEmitter(null)
         {
             CustomMaxDistance = float.MaxValue,
         };
 
-        private readonly Projectiles.Projectiles _projectiles = new Projectiles.Projectiles();
-
-        internal static Session Instance { get; private set; }
-
+        internal uint Tick;
         internal const ushort PACKET_ID = 62519;
         internal const double TickTimeDiv = 0.0625;
 
@@ -78,18 +79,21 @@ namespace WeaponCore
         internal readonly List<Logic> Logic = new List<Logic>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
+        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
+        internal readonly Dictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new Dictionary<MyCubeGrid, GridTargetingAi>();
+        internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponStructures = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
 
-        public Dictionary<MyStringHash, WeaponStructure> WeaponStructure = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal ShieldApi SApi = new ShieldApi();
-        internal ConfigMe MyConfig = new ConfigMe();
+        //internal ConfigMe MyConfig = new ConfigMe();
         internal static WeaponEnforcement Enforcement { get; set; } = new WeaponEnforcement();
         internal FutureEvents FutureEvents { get; set; } = new FutureEvents();
-        private DSUtils _dsUtil { get; set; } = new DSUtils();
+        internal Config MyConfig = new Config();
 
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",
             "WC-L_Guidance"
         };
+
     }
 }

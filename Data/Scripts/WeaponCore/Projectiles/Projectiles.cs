@@ -57,7 +57,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.State != Projectile.ProjectileState.Alive)
                     {
-                        if (p.State == Projectile.ProjectileState.Start) p.Start(checkPool.Get());
+                        if (p.State == Projectile.ProjectileState.Start) p.Start(checkPool.Get(), noAv);
                         else continue;
                     }
 
@@ -91,7 +91,7 @@ namespace WeaponCore.Projectiles
                                 var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
                                 drawList.Add(new DrawProjectile(p.Weapon, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.CurrentSpeed, hitInfo.HitPos, entity, true, p.LineReSizeLen, p.ReSizeSteps, p.Shrink));
                             }
-                            p.ProjectileClose(pool, checkPool);
+                            p.ProjectileClose(pool, checkPool, noAv);
                         }
                     }
                     segmentPool.Return(segmentList);
@@ -100,19 +100,22 @@ namespace WeaponCore.Projectiles
                     var distTraveled = (p.Origin - p.Position);
                     if (Vector3D.Dot(distTraveled, distTraveled) >= p.MaxTrajectory * p.MaxTrajectory)
                     {
-                        p.ProjectileClose(pool, checkPool);
+                        p.ProjectileClose(pool, checkPool, noAv);
                         continue;
                     }
 
                     if (noAv || !p.Draw) continue;
 
-                    if (!p.StartSound)
+                    if (p.WepDef.AmmoTravelSound != null)
                     {
-                        double dist;
-                        Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
-                        if (dist <= p.AmmoAudioRangeBuffSqr) p.SoundStart();
+                        if (!p.AmmoSound)
+                        {
+                            double dist;
+                            Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
+                            if (dist <= p.AmmoTravelSoundRangeSqr) p.AmmoSoundStart();
+                        }
+                        else p.Sound1.SetPosition(p.Position);
                     }
-                    else p.Sound1.SetPosition(p.Position);
 
                     if (!p.DrawLine) continue;
 

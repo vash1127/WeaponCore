@@ -1,7 +1,10 @@
 using System;
 using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -49,36 +52,59 @@ namespace WeaponCore
         public override void LoadData()
         {
             Instance = this;
+            Log.Init("debugdevelop.log");
+            //Log.Line($"Logging Started");
+            MasterLoadData();
+            MyEntities.OnEntityCreate += OnEntityCreate;
+            MyEntities.OnEntityDelete += OnEntityDelete;
+
             //MyEntities.OnEntityCreate += MyEntities_OnEntityCreate;
         }
 
+        private void OnEntityCreate(MyEntity myEntity)
+        {
+            var cube = myEntity as MyCubeBlock;
+            if (cube != null)
+            {
+                var weaponBase = cube as IMyLargeMissileTurret;
+                if (weaponBase != null && WeaponStructures.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
+                {
+                    GridTargetingAIs.Add(cube.CubeGrid, new GridTargetingAi(cube.CubeGrid));
+                    var weaponComp = new WeaponComponent(cube, weaponBase);
+                    cube.Components.Add(weaponComp);
+                    GridTargetingAIs[cube.CubeGrid].WeaponBase.Add(cube, weaponComp);
+                    Log.Line($"Iscube: {cube.DebugName} - {cube.SubBlockName} - {cube.BlockDefinition.Id.SubtypeId.String}");
+                }
+            }
+        }
+
+        private void OnEntityDelete(MyEntity myEntity)
+        {
+            var cube = myEntity as MyCubeBlock;
+            if (cube != null)
+            {
+                var weaponBase = cube as IMyLargeMissileTurret;
+                if (weaponBase != null && WeaponStructures.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
+                {
+                    GridTargetingAIs[cube.CubeGrid].WeaponBase.Remove(cube);
+                    Log.Line($"removing Weapon");
+                    if (GridTargetingAIs[cube.CubeGrid].WeaponBase.Count == 0)
+                    {
+                        Log.Line($"last weapon, removing grid");
+                        GridTargetingAIs.Remove(cube.CubeGrid);
+                    }
+                }
+            }
+        }
         protected override void UnloadData()
         {
             SApi.Unload();
 
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
 
-
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
-            /*
-            for (int i = 0; i < _projectiles.Wait.Length; i++)
-            {
-                lock (_projectiles.Wait[i])
-                {
-                    foreach (var a in _projectiles.ProjectilePool[i].Active)
-                    {
-                        a.Effect1.Clear();
-                        //a.Effect1.Stop(true);
-                    }
-                    foreach (var m in _projectiles.ProjectilePool[i].Marked)
-                    {
-                        m.Effect1.Clear();
-                        //m.Effect1.Stop(true);
-                    }
-                }
-            }
-            */
+
             Instance = null;
             Log.Line("Logging stopped.");
             Log.Close();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -15,9 +16,7 @@ namespace WeaponCore.Platform
         {
             EntityPart = entity;
             _localTranslation = entity.LocalMatrix.Translation;
-            _pivotOffsetVec =
-                (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) -
-                 entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
+            _pivotOffsetVec = (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) - entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
             _upPivotOffsetLen = _pivotOffsetVec.Length();
 
             WeaponSystem = weaponSystem;
@@ -36,12 +35,15 @@ namespace WeaponCore.Platform
         public WeaponDefinition WeaponType;
         public Dummy[] Dummies;
         public Muzzle[] Muzzles;
-        public Logic Logic;
+        public WeaponComponent Comp;
         public uint[] BeamSlot { get; set; }
         public MyEntity Target { get; set; }
         public Random Rnd = new Random(902138212);
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
+        private List<MyEntityList.MyEntityListInfoItem> _targetList = new List<MyEntityList.MyEntityListInfoItem>();
+        private SortedSet<BlockInfo> SortedBlocks = new SortedSet<BlockInfo>(new BlockPriority());
+        private SortedSet<TargetInfo> SortedRoots = new SortedSet<TargetInfo>(new RootPriority());
 
         private MatrixD _weaponMatrix;
         private MatrixD _oldWeaponMatrix;
@@ -97,15 +99,15 @@ namespace WeaponCore.Platform
         public readonly RecursiveSubparts SubParts = new RecursiveSubparts();
         public readonly WeaponStructure Structure;
 
-        public MyWeaponPlatform(MyStringHash subTypeIdHash, IMyEntity entity, Logic logic)
+        public MyWeaponPlatform(MyStringHash subTypeIdHash, WeaponComponent comp)
         {
-            Structure = Session.Instance.WeaponStructure[subTypeIdHash];
+            Structure = Session.Instance.WeaponStructures[subTypeIdHash];
             //PartNames = Structure.PartNames;
             var subPartCount = Structure.PartNames.Length;
 
             Weapons = new Weapon[subPartCount];
 
-            SubParts.Entity = entity;
+            SubParts.Entity = comp.Entity;
             SubParts.CheckSubparts();
             for (int i = 0; i < subPartCount; i++)
             {
@@ -116,7 +118,7 @@ namespace WeaponCore.Platform
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
-                    Logic = logic,
+                    Comp = comp,
                 };
             }
 

@@ -5,10 +5,40 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRageMath;
 
 namespace WeaponCore.Support
 {
+    internal class RootPriority : IComparer<TargetInfo>
+    {
+        public int Compare(TargetInfo x, TargetInfo y)
+        {
+            var compareVolume = x.Distance.CompareTo(y.Distance);
+            if (compareVolume != 0) return -compareVolume;
+            /*
+            var compareBlocks = x.BlocksCount.CompareTo(y.BlocksCount);
+            if (compareBlocks != 0) return compareBlocks;
+            */
+
+            return x.Entity.EntityId.CompareTo(y.Entity.EntityId);
+        }
+    }
+
+    internal class BlockPriority : IComparer<BlockInfo>
+    {
+        public int Compare(BlockInfo x, BlockInfo y)
+        {
+            var compareVolume = x.Entity.PositionComp.WorldAABB.Volume.CompareTo(y.Entity.PositionComp.WorldAABB.Volume);
+            if (compareVolume != 0) return compareVolume;
+            /*
+            var compareBlocks = x.BlocksCount.CompareTo(y.BlocksCount);
+            if (compareBlocks != 0) return compareBlocks;
+            */
+            return x.Entity.EntityId.CompareTo(y.Entity.EntityId);
+        }
+    }
+
     internal static class ConcurrentQueueExtensions
     {
         public static void Clear<T>(this ConcurrentQueue<T> queue)

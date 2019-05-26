@@ -31,7 +31,7 @@ namespace WeaponCore.Projectiles
             foreach (var result in segmentList)
             {
                 var ent = result.Element;
-                if (ent == fired.Weapon.Logic.Turret.CubeGrid) continue;
+                if (ent == fired.Weapon.Comp.MyGrid) continue;
 
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
@@ -59,7 +59,7 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < segmentList.Count; i++)
             {
                 var ent = segmentList[i].Element;
-                if (ent == fired.Weapon.Logic.Turret.CubeGrid) continue;
+                if (ent == fired.Weapon.Comp.MyGrid) continue;
 
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)

@@ -5,7 +5,6 @@ using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
-using WeaponCore.Support;
 using IMyLargeTurretBase = Sandbox.ModAPI.IMyLargeTurretBase;
 
 namespace WeaponCore.Platform
@@ -26,16 +25,16 @@ namespace WeaponCore.Platform
                 var grid = Target as MyCubeGrid;
                 if (grid == null) return;
 
-                var bCount = Logic.TargetBlocks.Count;
+                var bCount = Comp.TargetBlocks.Count;
                 var found = false;
                 var c = 0;
                 while (!found)
                 {
                     if (c++ > 100) break;
                     var next = Rnd.Next(0, bCount);
-                    if (!Logic.TargetBlocks[next].MarkedForClose)
+                    if (!Comp.TargetBlocks[next].MarkedForClose)
                     {
-                        Target = Logic.TargetBlocks[next];
+                        Target = Comp.TargetBlocks[next];
                         //Logic.Turret.TrackTarget(Target);
                         //Log.Line($"found block - Block:{Logic.TargetBlocks[next].DebugName} - Target:{Target.DebugName} - random:{next} - bCount:{bCount}");
                         found = true;
@@ -46,10 +45,10 @@ namespace WeaponCore.Platform
 
         internal MyEntity GetTarget()
         {
-            foreach (var ent in Logic.Targeting.TargetRoots)
+            foreach (var ent in Comp.Targeting.TargetRoots)
             {
                 if (ent == null || ent.MarkedForClose || Target == ent || Target?.Parent == ent) continue;
-                var entInfo = MyDetectedEntityInfoHelper.Create(ent, Logic.Turret.OwnerId);
+                var entInfo = MyDetectedEntityInfoHelper.Create(ent, Comp.Turret.OwnerId);
                 if (entInfo.IsEmpty() || (entInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Owner)) continue;
                 if (entInfo.Type == MyDetectedEntityType.SmallGrid || entInfo.Type == MyDetectedEntityType.LargeGrid)
                 {
@@ -64,8 +63,8 @@ namespace WeaponCore.Platform
 
         private bool GetTargetBlocks(MyEntity targetGrid)
         {
-            Logic.TargetBlocks.Clear();
-            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = Logic.Targeting.TargetBlocks;
+            Comp.TargetBlocks.Clear();
+            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = Comp.Targeting.TargetBlocks;
             var g = 0;
             var f = 0;
             foreach (var targets in allTargets)
@@ -79,7 +78,7 @@ namespace WeaponCore.Platform
                 {
                     if (b == null) continue;
                     if (f++ > 9) return true;
-                    Logic.TargetBlocks.Add(b);
+                    Comp.TargetBlocks.Add(b);
                 }
             }
 
@@ -88,21 +87,21 @@ namespace WeaponCore.Platform
 
         internal void Rotate(float speed)
         {
-            var myCube = Logic.MyCube;
+            var myCube = Comp.MyCube;
             var myMatrix = myCube.PositionComp.WorldMatrix;
             var targetPos = Target.PositionComp.WorldAABB.Center;
             var myPivotPos = myCube.PositionComp.WorldAABB.Center;
             myPivotPos += myMatrix.Up * _upPivotOffsetLen;
 
-            GetTurretAngles(ref targetPos, ref myPivotPos, Logic.Turret, speed, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
+            GetTurretAngles(ref targetPos, ref myPivotPos, Comp.Turret, speed, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
             GetTurretAngles2(ref targetPos, ref myPivotPos, ref myMatrix, out _azimuth, out _elevation);
             var azDiff = 100 * (_desiredAzimuth - _azimuth) / _azimuth;
             var elDiff = 100 * (_desiredElevation - _elevation) / _elevation;
 
             _azOk = azDiff > -101 && azDiff < -99 || azDiff > -1 && azDiff < 1;
             _elOk = elDiff > -101 && elDiff < -99 || elDiff > -1 && elDiff < 1;
-            Logic.Turret.Azimuth = (float)_azimuth;
-            Logic.Turret.Elevation = (float)_elevation;
+            Comp.Turret.Azimuth = (float)_azimuth;
+            Comp.Turret.Elevation = (float)_elevation;
         }
 
         internal void GetTurretAngles(ref Vector3D targetPositionWorld, ref Vector3D turretPivotPointWorld, IMyLargeTurretBase turret, double maxAngularStep, out double azimuth, out double elevation, out double desiredAzimuth, out double desiredElevation)

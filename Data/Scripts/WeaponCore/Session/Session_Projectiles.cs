@@ -53,58 +53,60 @@ namespace WeaponCore
 
         private void UpdateWeaponPlatforms()
         {
-            for (int i = 0; i < Logic.Count; i++)
+            foreach (var aiPair in GridTargetingAIs)
             {
-                var logic = Logic[i];
-                if (!logic.State.Value.Online) continue;
-
-                for (int j = 0; j < logic.Platform.Weapons.Length; j++)
+                foreach (var basePair in aiPair.Value.WeaponBase.Values)
                 {
-                    if (j != 0) continue;
-                    var w = logic.Platform.Weapons[j];
-                    var gunner = false;
-                    if (!logic.Turret.IsUnderControl)
-                    {
-                        if (w.Target != null)
-                        {
-                            DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
-                        }
-                        if (w.TrackTarget && w.SeekTarget) w.SelectTarget();
-                        if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);
-                        if (w.TrackTarget && w.ReadyToTrack)
-                        {
-                            //logic.Turret.TrackTarget(w.Target);
-                            //logic.Turret.EnableIdleRotation = false;
-                        }
-                    }
-                    else
-                    {
-                        if (MyAPIGateway.Input.IsAnyMousePressed())
-                        {
-                            var currentAmmo = logic.Gun.GunBase.CurrentAmmo;
-                            if (currentAmmo <= 1) logic.Gun.GunBase.CurrentAmmo += 1;
-                            gunner = true;
-                        }
-                    }
+                    if (!basePair.State.Value.Online) continue;
 
-                    if (w.ReadyToShoot || gunner) w.Shoot();
-                    if (w.ShotCounter != 0) continue;
-
-                    for (int k = 0; k < w.Muzzles.Length; k++)
+                    for (int j = 0; j < basePair.Platform.Weapons.Length; j++)
                     {
-                        var m = w.Muzzles[k];
-                        if (Tick != m.LastShot) continue;
-
-                        lock (_projectiles.Wait[_pCounter])
+                        if (j != 0) continue;
+                        var w = basePair.Platform.Weapons[j];
+                        var gunner = false;
+                        if (!basePair.Turret.IsUnderControl)
                         {
-                            Projectile pro;
-                            _projectiles.ProjectilePool[_pCounter].AllocateOrCreate(out pro);
-                            pro.Weapon = w;
-                            pro.Origin = m.Position;
-                            pro.Direction = m.DeviatedDir;
-                            pro.State = Projectile.ProjectileState.Start;
+                            if (w.Target != null)
+                            {
+                                DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
+                            }
+                            if (w.TrackTarget && w.SeekTarget) w.SelectTarget();
+                            if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);
+                            if (w.TrackTarget && w.ReadyToTrack)
+                            {
+                                //logic.Turret.TrackTarget(w.Target);
+                                //logic.Turret.EnableIdleRotation = false;
+                            }
                         }
-                        if (_pCounter++ >= _projectiles.Wait.Length -1) _pCounter = 0;
+                        else
+                        {
+                            if (MyAPIGateway.Input.IsAnyMousePressed())
+                            {
+                                var currentAmmo = basePair.Gun.GunBase.CurrentAmmo;
+                                if (currentAmmo <= 1) basePair.Gun.GunBase.CurrentAmmo += 1;
+                                gunner = true;
+                            }
+                        }
+
+                        if (w.ReadyToShoot || gunner) w.Shoot();
+                        if (w.ShotCounter != 0) continue;
+
+                        for (int k = 0; k < w.Muzzles.Length; k++)
+                        {
+                            var m = w.Muzzles[k];
+                            if (Tick != m.LastShot) continue;
+
+                            lock (_projectiles.Wait[_pCounter])
+                            {
+                                Projectile pro;
+                                _projectiles.ProjectilePool[_pCounter].AllocateOrCreate(out pro);
+                                pro.Weapon = w;
+                                pro.Origin = m.Position;
+                                pro.Direction = m.DeviatedDir;
+                                pro.State = Projectile.ProjectileState.Start;
+                            }
+                            if (_pCounter++ >= _projectiles.Wait.Length - 1) _pCounter = 0;
+                        }
                     }
                 }
             }

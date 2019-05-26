@@ -1,14 +1,51 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Serialization;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore
 {
     public partial class Session
     {
+        public void MasterLoadData()
+        {
+            //Log.Line($"MasterLoadData");
+            MyAPIGateway.Utilities.RegisterMessageHandler(1, Handler);
+            MyAPIGateway.Utilities.SendModMessage(2, null);
+        }
+
+
+        public void Handler(object o)
+        {
+            var message = o as MyTuple<string, string, string, string>[];
+            if (message == null)
+            {
+                Log.Line($"invalid Config");
+                return;
+            }
+
+            var platforms = MyAPIGateway.Utilities.SerializeFromXML<string[]>(message[0].Item1);
+            var weaponMounts = MyAPIGateway.Utilities.SerializeFromXML<string[]>(message[0].Item2);
+            var barrelAttachments = MyAPIGateway.Utilities.SerializeFromXML<string[]>(message[0].Item3);
+            var weaponDefinitions = MyAPIGateway.Utilities.SerializeFromXML<WeaponDefinition[]>(message[0].Item4);
+            /*
+            foreach (var pair in tDef)
+                MyConfig.TurretDefinitions.Add(pair.Key, new TurretDefinition(pair.Value.TurretMap));
+
+            foreach (var pair in wDef)
+                MyConfig.WeaponDefinitions.Add(pair.Key, pair.Value);
+
+            foreach (var pair in bDef)
+                MyConfig.BarrelDefinitions.Add(pair.Key, pair.Value);
+            */
+            Log.Line($"received config from slave");
+        }
+
         internal void Timings()
         {
             Tick = (uint)(Session.ElapsedPlayTime.TotalMilliseconds * TickTimeDiv);

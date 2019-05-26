@@ -10,6 +10,7 @@ namespace WeaponCore
 {
     public partial class Logic
     {
+        /*
         public enum PlayerNotice
         {
             EmitterInit,
@@ -103,7 +104,7 @@ namespace WeaponCore
             }
             if (soundEmitter.Entity != null && pair != null) soundEmitter.PlaySingleSound(pair, true);
         }
-
+        */
         internal void BroadcastMessage(bool forceNoPower = false)
         {
             /*
@@ -117,7 +118,7 @@ namespace WeaponCore
             state.Value.Message = false;
             */
         }
-
+        /*
         private void SaveAndSendAll()
         {
             _firstSync = true;
@@ -128,6 +129,7 @@ namespace WeaponCore
             State.NetworkUpdate();
             if (Session.Enforced.Debug >= 3) Log.Line($"SaveAndSendAll: ControllerId [{Turret.EntityId}]");
         }
+        */
         /*
         public static Beam BeamOrientation(Barrel barrel, MyEntitySubpart turretHead, float range)
         {
@@ -149,6 +151,7 @@ namespace WeaponCore
             return beam;
         }
         */
+        /*
         internal void TerminalRefresh(bool update = true)
         {
             Turret.RefreshCustomInfo();
@@ -162,5 +165,6 @@ namespace WeaponCore
                 if (!(match1 && match2)) MyCube.UpdateTerminal();
             }
         }
+        */
     }
 }

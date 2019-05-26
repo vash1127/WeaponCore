@@ -1,15 +1,39 @@
 ﻿using System.Collections.Generic;
+using System.Xml.Serialization;
 using Sandbox.Game.Entities;
+using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using static WeaponCore.Support.WeaponDefinition;
 
 namespace WeaponCore.Support
 {
+    public class DefinitionSet
+    {
+        [XmlElement(nameof(Block), typeof(Block))]
+        public List<Block> Beams = new List<Block>();
+    }
+
+    public struct SerializedTurretDef
+    {
+        public List<KeyValuePair<string, List<KeyValuePair<string, TurretParts>>>> TurretMap;
+    }
 
     public struct TurretDefinition
     {
-        public Dictionary<string, TurretParts> TurretMap;
+        public readonly Dictionary<string, TurretParts> TurretMap;
+
+        public TurretDefinition(IEnumerable<KeyValuePair<string, List<KeyValuePair<string, TurretParts>>>> mapList)
+        {
+            TurretMap = new Dictionary<string, TurretParts>();
+            foreach (var id in mapList)
+            {
+                foreach (var tPart in id.Value)
+                {
+                    TurretMap.Add(tPart.Key, new TurretParts(tPart.Key, tPart.Value.BarrelGroup));
+                }
+            }
+        }
     }
 
     public struct TurretParts
@@ -100,7 +124,14 @@ namespace WeaponCore.Support
         internal float ComputedBaseDamage;
         internal float VisualProbability;
         internal float ParticleRadiusMultiplier;
-        internal float AmmoAudioRange;
+        internal float AmmoTravelSoundRange;
+        internal float AmmoTravelSoundVolume;
+        internal float AmmoHitSoundRange;
+        internal float AmmoHitSoundVolume;
+        internal float ReloadSoundRange;
+        internal float ReloadSoundVolume;
+        internal float FiringSoundRange;
+        internal float FiringSoundVolume;
         internal MyStringId PhysicalMaterial;
         internal MyStringId ModelName;
         internal Vector4 TrailColor;
@@ -219,6 +250,50 @@ namespace WeaponCore.Support
             HitPos = hitPos;
             Size = size;
             Effect = effect;
+        }
+    }
+
+    public struct TargetInfo
+    {
+        public enum TargetType
+        {
+            Player,
+            Grid,
+            Other
+        }
+
+        public readonly MyEntity Entity;
+        public readonly double Distance;
+        public readonly float Size;
+        public readonly TargetType Type;
+        public TargetInfo(MyEntity entity, double distance, float size, TargetType type)
+        {
+            Entity = entity;
+            Distance = distance;
+            Size = size;
+            Type = type;
+        }
+    }
+
+    public struct BlockInfo
+    {
+        public enum BlockType
+        {
+            Player,
+            Grid,
+            Other
+        }
+
+        public readonly MyEntity Entity;
+        public readonly double Distance;
+        public readonly float Size;
+        public readonly BlockType Type;
+        public BlockInfo(MyEntity entity, double distance, float size, BlockType type)
+        {
+            Entity = entity;
+            Distance = distance;
+            Size = size;
+            Type = type;
         }
     }
 }

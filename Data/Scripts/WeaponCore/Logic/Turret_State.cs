@@ -11,6 +11,7 @@ namespace WeaponCore
 {
     partial class Logic
     {
+        /*
         private bool EntityAlive()
         {
             _tick = Session.Instance.Tick;
@@ -205,5 +206,6 @@ namespace WeaponCore
             State.Value.Message = false;
             State.SaveState();
         }
+        */
     }
 }

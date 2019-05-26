@@ -215,11 +215,15 @@
     <None Include="Models\Weapons\Torpedo_Test.mwm" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Scripts\WeaponCore\ConfigMe.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Config.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Config\Enforcements.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Config\LogicData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Config\SerializeDataClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Config\SerializedValues.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Comp_Events.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Comp_Fields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Comp_Init.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Comp_Run.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Platform\Platform_Main.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Controls\WepUi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Logic\Turret_State.cs" />
@@ -247,6 +251,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\EntityExtentions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\FutureEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\GridIntersect.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Support\GridTargetingAi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Log.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\ObjectPool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectile.cs" />
