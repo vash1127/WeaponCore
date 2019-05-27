@@ -17,7 +17,6 @@ namespace WeaponCore
             try
             {
                 BeforeStartInit();
-                MyConfig.Init();
             }
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
         }
@@ -51,14 +50,19 @@ namespace WeaponCore
 
         public override void LoadData()
         {
-            Instance = this;
-            Log.Init("debugdevelop.log");
-            //Log.Line($"Logging Started");
-            MasterLoadData();
-            MyEntities.OnEntityCreate += OnEntityCreate;
-            MyEntities.OnEntityDelete += OnEntityDelete;
+            try
+            {
+                Instance = this;
+                Log.Init("debugdevelop.log");
+                Log.Line($"Logging Started");
 
-            //MyEntities.OnEntityCreate += MyEntities_OnEntityCreate;
+                MyEntities.OnEntityCreate += OnEntityCreate;
+                MyEntities.OnEntityDelete += OnEntityDelete;
+                MasterLoadData();
+                MyConfig.Init();
+                //MyEntities.OnEntityCreate += MyEntities_OnEntityCreate;
+            }
+            catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
 
         private void OnEntityCreate(MyEntity myEntity)
@@ -100,7 +104,11 @@ namespace WeaponCore
         {
             SApi.Unload();
 
+            MyEntities.OnEntityCreate -= OnEntityCreate;
+            MyEntities.OnEntityDelete -= OnEntityDelete;
+
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
+            MyAPIGateway.Utilities.UnregisterMessageHandler(1, Handler);
 
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;

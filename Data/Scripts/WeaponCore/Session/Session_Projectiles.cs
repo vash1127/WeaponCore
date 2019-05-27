@@ -57,6 +57,7 @@ namespace WeaponCore
             {
                 foreach (var basePair in aiPair.Value.WeaponBase.Values)
                 {
+                    if (!basePair.MainInit) basePair.InitPlatform();
                     if (!basePair.State.Value.Online) continue;
 
                     for (int j = 0; j < basePair.Platform.Weapons.Length; j++)

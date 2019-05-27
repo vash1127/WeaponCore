@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Xml.Serialization;
-using Sandbox.Game.Entities;
+using ProtoBuf;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
@@ -8,51 +7,7 @@ using static WeaponCore.Support.WeaponDefinition;
 
 namespace WeaponCore.Support
 {
-    public class DefinitionSet
-    {
-        [XmlElement(nameof(Block), typeof(Block))]
-        public List<Block> Beams = new List<Block>();
-    }
-
-    public struct SerializedTurretDef
-    {
-        public List<KeyValuePair<string, List<KeyValuePair<string, TurretParts>>>> TurretMap;
-    }
-
-    public struct TurretDefinition
-    {
-        public readonly Dictionary<string, TurretParts> TurretMap;
-
-        public TurretDefinition(IEnumerable<KeyValuePair<string, List<KeyValuePair<string, TurretParts>>>> mapList)
-        {
-            TurretMap = new Dictionary<string, TurretParts>();
-            foreach (var id in mapList)
-            {
-                foreach (var tPart in id.Value)
-                {
-                    TurretMap.Add(tPart.Key, new TurretParts(tPart.Key, tPart.Value.BarrelGroup));
-                }
-            }
-        }
-    }
-
-    public struct TurretParts
-    {
-        public readonly string WeaponType;
-        public readonly string BarrelGroup;
-
-        internal TurretParts(string weaponType, string barrelGroup)
-        {
-            WeaponType = weaponType;
-            BarrelGroup = barrelGroup;
-        }
-    }
-    
-    public struct BarrelGroup
-    {
-        public List<string> Barrels;
-    }
-
+    [ProtoContract]
     public struct WeaponDefinition
     {
         public enum EffectType
@@ -80,72 +35,75 @@ namespace WeaponCore.Support
             Kinetic
         }
 
-        internal bool TurretMode;
-        internal bool TrackTarget;
-        internal bool HasAreaEffect;
-        internal bool HasThermalEffect;
-        internal bool HasKineticEffect;
-        internal bool SkipAcceleration;
-        internal bool UseRandomizedRange;
-        internal bool ShieldHitDraw;
-        internal bool RealisticDamage;
-        internal bool LineTrail;
-        internal bool ParticleTrail;
-        internal int RotateBarrelAxis; 
-        internal int ReloadTime;
-        internal int RateOfFire;
-        internal int BarrelsPerShot;
-        internal int SkipBarrels;
-        internal int ShotsPerBarrel;
-        internal int HeatPerRoF;
-        internal int MaxHeat;
-        internal int HeatSinkRate;
-        internal int MuzzleFlashLifeSpan;
-        internal float Mass;
-        internal float Health;
-        internal float LineLength;
-        internal float LineWidth;
-        internal float InitalSpeed;
-        internal float AccelPerSec;
-        internal float DesiredSpeed;
-        internal float RotateSpeed;
-        internal float SpeedVariance;
-        internal float MaxTrajectory;
-        internal float BackkickForce;
-        internal float DeviateShotAngle;
-        internal float ReleaseTimeAfterFire;
-        internal float RangeMultiplier;
-        internal float ThermalDamage;
-        internal float KeenScaler;
-        internal float AreaEffectYield;
-        internal float AreaEffectRadius;
-        internal float ShieldDmgMultiplier;
-        internal float DefaultDamage;
-        internal float ComputedBaseDamage;
-        internal float VisualProbability;
-        internal float ParticleRadiusMultiplier;
-        internal float AmmoTravelSoundRange;
-        internal float AmmoTravelSoundVolume;
-        internal float AmmoHitSoundRange;
-        internal float AmmoHitSoundVolume;
-        internal float ReloadSoundRange;
-        internal float ReloadSoundVolume;
-        internal float FiringSoundRange;
-        internal float FiringSoundVolume;
-        internal MyStringId PhysicalMaterial;
-        internal MyStringId ModelName;
-        internal Vector4 TrailColor;
-        internal Vector4 ParticleColor;
-        internal ShieldType ShieldDamage;
-        internal EffectType Effect;
-        internal GuidanceType Guidance;
-        internal MySoundPair AmmoTravelSound;
-        internal MySoundPair AmmoHitSound;
-        internal MySoundPair ReloadSound;
-        internal MySoundPair FiringSound;
-        internal string CustomEffect;
+        [ProtoMember(1)] internal KeyValuePair<string, string>[] MountPoints;
+        [ProtoMember(2)] internal string[] Barrels;
+        [ProtoMember(3)] internal string DefinitionId;
+        [ProtoMember(4)] internal bool TurretMode;
+        [ProtoMember(5)] internal bool TrackTarget;
+        [ProtoMember(6)] internal bool HasAreaEffect;
+        [ProtoMember(7)] internal bool HasThermalEffect;
+        [ProtoMember(8)] internal bool HasKineticEffect;
+        [ProtoMember(9)] internal bool SkipAcceleration;
+        [ProtoMember(10)] internal bool UseRandomizedRange;
+        [ProtoMember(11)] internal bool ShieldHitDraw;
+        [ProtoMember(12)] internal bool RealisticDamage;
+        [ProtoMember(13)] internal bool LineTrail;
+        [ProtoMember(14)] internal bool ParticleTrail;
+        [ProtoMember(15)] internal int RotateBarrelAxis;
+        [ProtoMember(16)] internal int ReloadTime;
+        [ProtoMember(17)] internal int RateOfFire;
+        [ProtoMember(18)] internal int BarrelsPerShot;
+        [ProtoMember(19)] internal int SkipBarrels;
+        [ProtoMember(20)] internal int ShotsPerBarrel;
+        [ProtoMember(21)] internal int HeatPerRoF;
+        [ProtoMember(22)] internal int MaxHeat;
+        [ProtoMember(23)] internal int HeatSinkRate;
+        [ProtoMember(24)] internal int MuzzleFlashLifeSpan;
+        [ProtoMember(25)] internal float Mass;
+        [ProtoMember(26)] internal float Health;
+        [ProtoMember(27)] internal float LineLength;
+        [ProtoMember(28)] internal float LineWidth;
+        [ProtoMember(29)] internal float InitalSpeed;
+        [ProtoMember(30)] internal float AccelPerSec;
+        [ProtoMember(31)] internal float DesiredSpeed;
+        [ProtoMember(32)] internal float RotateSpeed;
+        [ProtoMember(33)] internal float SpeedVariance;
+        [ProtoMember(34)] internal float MaxTrajectory;
+        [ProtoMember(35)] internal float BackkickForce;
+        [ProtoMember(36)] internal float DeviateShotAngle;
+        [ProtoMember(37)] internal float ReleaseTimeAfterFire;
+        [ProtoMember(38)] internal float RangeMultiplier;
+        [ProtoMember(39)] internal float ThermalDamage;
+        [ProtoMember(40)] internal float KeenScaler;
+        [ProtoMember(41)] internal float AreaEffectYield;
+        [ProtoMember(42)] internal float AreaEffectRadius;
+        [ProtoMember(43)] internal float ShieldDmgMultiplier;
+        [ProtoMember(44)] internal float DefaultDamage;
+        [ProtoMember(45)] internal float ComputedBaseDamage;
+        [ProtoMember(46)] internal float VisualProbability;
+        [ProtoMember(47)] internal float ParticleRadiusMultiplier;
+        [ProtoMember(48)] internal float AmmoTravelSoundRange;
+        [ProtoMember(49)] internal float AmmoTravelSoundVolume;
+        [ProtoMember(50)] internal float AmmoHitSoundRange;
+        [ProtoMember(51)] internal float AmmoHitSoundVolume;
+        [ProtoMember(52)] internal float ReloadSoundRange;
+        [ProtoMember(53)] internal float ReloadSoundVolume;
+        [ProtoMember(54)] internal float FiringSoundRange;
+        [ProtoMember(55)] internal float FiringSoundVolume;
+        [ProtoMember(56)] internal MyStringId PhysicalMaterial;
+        [ProtoMember(57)] internal MyStringId ModelName;
+        [ProtoMember(58)] internal Vector4 TrailColor;
+        [ProtoMember(59)] internal Vector4 ParticleColor;
+        [ProtoMember(60)] internal ShieldType ShieldDamage;
+        [ProtoMember(61)] internal EffectType Effect;
+        [ProtoMember(62)] internal GuidanceType Guidance;
+        [ProtoMember(63)] internal string AmmoTravelSound;
+        [ProtoMember(64)] internal string AmmoHitSound;
+        [ProtoMember(65)] internal string ReloadSound;
+        [ProtoMember(66)] internal string FiringSound;
+        [ProtoMember(67)] internal string CustomEffect;
     }
- 
+
     public struct WeaponSystem
     {
         public readonly MyStringHash PartName;
@@ -153,12 +111,12 @@ namespace WeaponCore.Support
         public readonly string WeaponName;
         public readonly string[] Barrels;
 
-        public WeaponSystem(MyStringHash partName, WeaponDefinition weaponType, string weaponName, string[] barrels)
+        public WeaponSystem(MyStringHash partName, WeaponDefinition weaponType, string weaponName)
         {
             PartName = partName;
             WeaponType = weaponType;
+            Barrels = weaponType.Barrels;
             WeaponName = weaponName;
-            Barrels = barrels;
         }
     }
 
@@ -168,9 +126,9 @@ namespace WeaponCore.Support
         public readonly MyStringHash[] PartNames;
         public readonly bool MultiParts;
 
-        public WeaponStructure(KeyValuePair<string, TurretDefinition> tDef, Dictionary<string, WeaponDefinition> wDef, Dictionary<string, BarrelGroup> bDef)
+        public WeaponStructure(KeyValuePair<string, Dictionary<string, string>> tDef, List<WeaponDefinition> wDef)
         {
-            var map = tDef.Value.TurretMap;
+            var map = tDef.Value;
             var numOfParts = map.Count;
             MultiParts = numOfParts > 1;
 
@@ -181,13 +139,12 @@ namespace WeaponCore.Support
             {
                 var myNameHash = MyStringHash.GetOrCompute(w.Key);
                 names[mapIndex] = myNameHash;
-                var myBarrels = bDef[w.Value.BarrelGroup].Barrels;
-                var barrelStrings = new string[myBarrels.Count];
-                for (int i = 0; i < myBarrels.Count; i++)
-                    barrelStrings[i] = myBarrels[i];
-                var weaponTypeName = w.Value.WeaponType;
 
-                var weaponDef = wDef[weaponTypeName];
+                var weaponTypeName = w.Value;
+                WeaponDefinition weaponDef = new WeaponDefinition();
+
+                foreach (var weapon in wDef)
+                    if (weapon.DefinitionId == weaponTypeName) weaponDef = weapon;
 
                 weaponDef.DeviateShotAngle = MathHelper.ToRadians(weaponDef.DeviateShotAngle);
                 weaponDef.HasAreaEffect = weaponDef.AreaEffectYield > 0 && weaponDef.AreaEffectRadius > 0;
@@ -201,7 +158,7 @@ namespace WeaponCore.Support
                 }
                 else weaponDef.ComputedBaseDamage = weaponDef.DefaultDamage; // For the unbelievers. 
 
-                WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName, barrelStrings));
+                WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName));
 
                 mapIndex++;
             }

@@ -6,7 +6,6 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-
         internal void Shoot()
         {
             var tick = Session.Instance.Tick;

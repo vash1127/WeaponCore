@@ -99,7 +99,7 @@ namespace WeaponCore.Projectiles
             Sound1.CustomMaxDistance = WepDef.FiringSoundRange;
             Sound1.CustomVolume = WepDef.FiringSoundVolume;
             Sound1.SetPosition(Origin);
-            Sound1.PlaySoundWithDistance(WepDef.FiringSound.SoundId, false, false, false, true, false, false, false);
+            Sound1.PlaySoundWithDistance(Weapon.FiringSoundPair.SoundId, false, false, false, true, false, false, false);
         }
 
         internal void AmmoSoundStart()
@@ -107,7 +107,7 @@ namespace WeaponCore.Projectiles
             Sound1.CustomMaxDistance = WepDef.AmmoTravelSoundRange;
             Sound1.CustomVolume = WepDef.AmmoTravelSoundVolume;
             Sound1.SetPosition(Position);
-            Sound1.PlaySoundWithDistance(WepDef.AmmoTravelSound.SoundId, false, false, false, true, false, false, false);
+            Sound1.PlaySoundWithDistance(Weapon.AmmoTravelSoundPair.SoundId, false, false, false, true, false, false, false);
             AmmoSound = true;
         }
 
@@ -124,7 +124,7 @@ namespace WeaponCore.Projectiles
                     Sound1.CustomMaxDistance = WepDef.AmmoHitSoundRange;
                     Sound1.CustomVolume = WepDef.AmmoHitSoundVolume;
                     Sound1.SetPosition(Position);
-                    Sound1.PlaySoundWithDistance(Weapon.WeaponType.AmmoHitSound.SoundId, false, false, false, true, true, false, false);
+                    Sound1.PlaySoundWithDistance(Weapon.AmmoHitSoundPair.SoundId, false, false, false, true, true, false, false);
                 }
             }
 

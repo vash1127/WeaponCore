@@ -28,6 +28,11 @@ namespace WeaponCore.Platform
             _numOfBarrels = WeaponSystem.Barrels.Length;
 
             BeamSlot = new uint[_numOfBarrels];
+
+            FiringSoundPair = new MySoundPair(WeaponType.FiringSound);
+            ReloadSoundPair = new MySoundPair(WeaponType.ReloadSound);
+            AmmoTravelSoundPair = new MySoundPair(WeaponType.AmmoTravelSound);
+            AmmoHitSoundPair = new MySoundPair(WeaponType.AmmoHitSound);
         }
 
         public IMyEntity EntityPart;
@@ -39,6 +44,11 @@ namespace WeaponCore.Platform
         public uint[] BeamSlot { get; set; }
         public MyEntity Target { get; set; }
         public Random Rnd = new Random(902138212);
+        public readonly MySoundPair FiringSoundPair;
+        public readonly MySoundPair ReloadSoundPair;
+        public readonly MySoundPair AmmoTravelSoundPair;
+        public readonly MySoundPair AmmoHitSoundPair;
+
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
         private List<MyEntityList.MyEntityListInfoItem> _targetList = new List<MyEntityList.MyEntityListInfoItem>();

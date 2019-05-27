@@ -43,7 +43,7 @@ namespace WeaponCore.Support
             Platform = new MyWeaponPlatform(_subTypeIdHash, this);
             StorageSetup();
             State.Value.Online = true;
-            Log.Line("Platform initted");
+            MainInit = true;
         }
 
         public override void OnRemovedFromScene()
