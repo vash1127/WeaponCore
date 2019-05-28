@@ -55,8 +55,8 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyEntities.OnEntityDelete += OnEntityDelete;
-                MyAPIGateway.Utilities.RegisterMessageHandler(1, Handler);
-                MyAPIGateway.Utilities.SendModMessage(2, null);
+                MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
+                MyAPIGateway.Utilities.SendModMessage(7772, null);
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
@@ -94,7 +94,7 @@ namespace WeaponCore
             SApi.Unload();
 
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
-            MyAPIGateway.Utilities.UnregisterMessageHandler(1, Handler);
+            MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyEntities.OnEntityDelete -= OnEntityDelete;
