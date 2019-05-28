@@ -129,9 +129,8 @@ namespace WeaponCore.Support
         public WeaponStructure(KeyValuePair<string, Dictionary<string, string>> tDef, List<WeaponDefinition> wDef)
         {
             var map = tDef.Value;
-            var numOfParts = map.Count;
+            var numOfParts = wDef.Count;
             MultiParts = numOfParts > 1;
-
             var names = new MyStringHash[numOfParts];
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
@@ -141,7 +140,7 @@ namespace WeaponCore.Support
                 names[mapIndex] = myNameHash;
 
                 var weaponTypeName = w.Value;
-                WeaponDefinition weaponDef = new WeaponDefinition();
+                var weaponDef = new WeaponDefinition();
 
                 foreach (var weapon in wDef)
                     if (weapon.DefinitionId == weaponTypeName) weaponDef = weapon;

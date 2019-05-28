@@ -11,20 +11,31 @@ namespace WeaponCore.Data.Scripts.WeaponCore
 
         internal void Init()
         {
+            if (Session.Instance.Inited) return;
+            Log.Init("debugdevelop.log");
+            Log.Line($"Logging Started");
             foreach (var weaponDef in WeaponDefinitions)
             {
                 foreach (var mount in weaponDef.MountPoints)
                 {
                     var subTypeId = mount.Key;
                     var subPartId = mount.Value;
-                    TurretDefinitions[subTypeId] = new Dictionary<string, string>
-                    {
-                        [subPartId] = weaponDef.DefinitionId
-                    };
+                    if (!TurretDefinitions.ContainsKey(subTypeId))
+                        TurretDefinitions[subTypeId] = new Dictionary<string, string>
+                        {
+                            [subPartId] = weaponDef.DefinitionId
+                        };
+                    else TurretDefinitions[subTypeId][subPartId] = weaponDef.DefinitionId;
                 }
             }
+
             foreach (var def in TurretDefinitions)
-                Session.Instance.WeaponStructures.Add(MyStringHash.GetOrCompute(def.Key), new WeaponStructure(def, WeaponDefinitions));
+            {
+                var subTypeIdHash = MyStringHash.GetOrCompute(def.Key);
+                Session.Instance.SubTypeIdHashMap.Add(def.Key, subTypeIdHash);
+                Session.Instance.WeaponPlatforms.Add(subTypeIdHash, new WeaponStructure(def, WeaponDefinitions));
+            }
+            Session.Instance.Inited = true;
         }
     }
 }

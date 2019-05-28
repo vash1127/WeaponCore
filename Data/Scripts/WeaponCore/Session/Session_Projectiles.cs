@@ -4,7 +4,6 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.ModAPI;
 using VRageMath;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Projectiles.Projectiles;
@@ -27,7 +26,6 @@ namespace WeaponCore
                     shrink.Init(wDef, line, p.ReSizeSteps, p.LineReSizeLen);
                     _shrinking.Add(shrink);
                 }
-
                 MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.LineWidth);
             }
             drawList.Clear();
@@ -40,8 +38,7 @@ namespace WeaponCore
             foreach (var s in _shrinking)
             {
                 var line = s.GetLine();
-                if (line.HasValue)
-                    MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.PhysicalMaterial, s.WepDef.TrailColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.LineWidth);
+                if (line.HasValue) MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.PhysicalMaterial, s.WepDef.TrailColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.LineWidth);
                 else
                 {
                     _shrinking.Remove(s);
@@ -57,19 +54,17 @@ namespace WeaponCore
             {
                 foreach (var basePair in aiPair.Value.WeaponBase.Values)
                 {
-                    if (!basePair.MainInit) basePair.InitPlatform();
                     if (!basePair.State.Value.Online) continue;
 
                     for (int j = 0; j < basePair.Platform.Weapons.Length; j++)
                     {
-                        if (j != 0) continue;
                         var w = basePair.Platform.Weapons[j];
                         var gunner = false;
                         if (!basePair.Turret.IsUnderControl)
                         {
                             if (w.Target != null)
                             {
-                                DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
+                                //DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
                             }
                             if (w.TrackTarget && w.SeekTarget) w.SelectTarget();
                             if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);
@@ -88,26 +83,7 @@ namespace WeaponCore
                                 gunner = true;
                             }
                         }
-
                         if (w.ReadyToShoot || gunner) w.Shoot();
-                        if (w.ShotCounter != 0) continue;
-
-                        for (int k = 0; k < w.Muzzles.Length; k++)
-                        {
-                            var m = w.Muzzles[k];
-                            if (Tick != m.LastShot) continue;
-
-                            lock (_projectiles.Wait[_pCounter])
-                            {
-                                Projectile pro;
-                                _projectiles.ProjectilePool[_pCounter].AllocateOrCreate(out pro);
-                                pro.Weapon = w;
-                                pro.Origin = m.Position;
-                                pro.Direction = m.DeviatedDir;
-                                pro.State = Projectile.ProjectileState.Start;
-                            }
-                            if (_pCounter++ >= _projectiles.Wait.Length - 1) _pCounter = 0;
-                        }
                     }
                 }
             }

@@ -4,7 +4,6 @@ using Sandbox.Game.Entities;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.ModAPI;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 
@@ -84,7 +83,7 @@ namespace WeaponCore.Platform
 
         internal bool TurretMode { get; set; }
         internal bool TrackTarget { get; set; }
-        internal bool ReadyToTrack => Target != null && _azOk && _elOk && !Target.MarkedForClose;
+        internal bool ReadyToTrack => Target != null && (_azOk && _elOk || !WeaponType.TurretMode) && !Target.MarkedForClose;
         internal bool ReadyToShoot => _weaponReady && ReadyToTrack;
         internal bool SeekTarget => Target == null && _targetTick++ > 59 || Target != null && Target.MarkedForClose;
 
@@ -109,12 +108,11 @@ namespace WeaponCore.Platform
         public readonly RecursiveSubparts SubParts = new RecursiveSubparts();
         public readonly WeaponStructure Structure;
 
-        public MyWeaponPlatform(MyStringHash subTypeIdHash, WeaponComponent comp)
+        public MyWeaponPlatform(WeaponComponent comp)
         {
-            Structure = Session.Instance.WeaponStructures[subTypeIdHash];
-            //PartNames = Structure.PartNames;
-            var subPartCount = Structure.PartNames.Length;
 
+            Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
+            var subPartCount = Structure.PartNames.Length;
             Weapons = new Weapon[subPartCount];
 
             SubParts.Entity = comp.Entity;
@@ -131,7 +129,6 @@ namespace WeaponCore.Platform
                     Comp = comp,
                 };
             }
-
             CompileTurret();
         }
 

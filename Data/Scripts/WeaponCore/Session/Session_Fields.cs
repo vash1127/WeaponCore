@@ -5,7 +5,6 @@ using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game.ModAPI;
 using VRage.Utils;
-using VRageMath;
 using WeaponCore.Data.Scripts.WeaponCore;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
@@ -16,15 +15,16 @@ namespace WeaponCore
     {
         internal static Session Instance { get; private set; }
 
-        private readonly Projectiles.Projectiles _projectiles = new Projectiles.Projectiles();
+        internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
+        internal volatile bool Inited;
 
         private int _count = -1;
         private int _lCount;
         private int _eCount;
-        private int _pCounter;
         private double _syncDistSqr;
 
         private DSUtils _dsUtil { get; set; } = new DSUtils();
+        private readonly object _configLock = new object();
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private MyEntity3DSoundEmitter SoundEmitter { get; set; } = new MyEntity3DSoundEmitter(null)
         {
@@ -46,6 +46,7 @@ namespace WeaponCore
 
         internal uint SoundTick { get; set; }
         internal int PlayerEventId { get; set; }
+        internal int ProCounter { get; set; }
         internal ulong AuthorSteamId { get; set; } = 76561197969691953;
         internal long AuthorPlayerId { get; set; }
         internal long LastTerminalId { get; set; }
@@ -80,7 +81,8 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         internal readonly Dictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new Dictionary<MyCubeGrid, GridTargetingAi>();
-        internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponStructures = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
+        internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
+        internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
 
         internal ShieldApi SApi = new ShieldApi();
         //internal ConfigMe MyConfig = new ConfigMe();

@@ -8,6 +8,7 @@ namespace WeaponCore
     {
         private void BeforeStartInit()
         {
+
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;
             DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
@@ -36,28 +37,18 @@ namespace WeaponCore
                 SyncDist = MyAPIGateway.Session.SessionSettings.SyncDistance;
                 SyncDistSqr = SyncDist * SyncDist;
                 SyncBufferedDistSqr = SyncDistSqr + 250000;
-                if (Enforced.Debug >= 2) Log.Line($"SyncDistSqr:{SyncDistSqr} - SyncBufferedDistSqr:{SyncBufferedDistSqr} - DistNorm:{SyncDist}");
             }
             else
             {
                 SyncDist = MyAPIGateway.Session.SessionSettings.ViewDistance;
                 SyncDistSqr = SyncDist * SyncDist;
                 SyncBufferedDistSqr = SyncDistSqr + 250000;
-                if (Enforced.Debug >= 2) Log.Line($"SyncDistSqr:{SyncDistSqr} - SyncBufferedDistSqr:{SyncBufferedDistSqr} - DistNorm:{SyncDist}");
             }
-            //MyAPIGateway.Parallel.StartBackground(WebMonitor);
 
             if (!IsServer) RequestEnforcement(MyAPIGateway.Multiplayer.MyId);
             foreach (var mod in MyAPIGateway.Session.Mods)
                 if (mod.PublishedFileId == 1365616918) ShieldMod = true;
             ShieldMod = true;
         }
-
-        /*
-         *  if (!_controlsCreated)
-            {
-                (MyAPIUtilities.Static as IMyUtilities).InvokeOnGameThread(CreateControls);
-            }
-        */
     }
 }

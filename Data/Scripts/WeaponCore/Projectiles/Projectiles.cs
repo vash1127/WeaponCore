@@ -55,16 +55,21 @@ namespace WeaponCore.Projectiles
                 var linePool = LinePool[i];
                 foreach (var p in pool.Active)
                 {
-                    if (p.State != Projectile.ProjectileState.Alive)
+                    switch (p.State)
                     {
-                        if (p.State == Projectile.ProjectileState.Start) p.Start(checkPool.Get(), noAv);
-                        else continue;
+                        case Projectile.ProjectileState.Dead:
+                            continue;
+                        case Projectile.ProjectileState.Start:
+                            p.Start(checkPool.Get(), noAv);
+                            break;
+                        case Projectile.ProjectileState.Ending:
+                            p.Stop(pool, checkPool);
+                            continue;
                     }
 
                     p.CurrentMagnitude = p.CurrentSpeed * StepConst;
                     p.LastPosition = p.Position;
                     p.Position += p.CurrentMagnitude;
-
                     Vector3D? intersect = null;
                     var segmentList = segmentPool.Get();
                     var beam = new LineD(p.LastPosition, p.Position + p.CurrentMagnitude);

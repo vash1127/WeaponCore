@@ -9,21 +9,13 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        public void MasterLoadData()
-        {
-            //Log.Line($"MasterLoadData");
-            MyAPIGateway.Utilities.RegisterMessageHandler(1, Handler);
-            MyAPIGateway.Utilities.SendModMessage(2, null);
-        }
-
-
         public void Handler(object o)
         {
             try
             {
                 var message = o as byte[];
-                if (message == null)
-                    return;
+                if (message == null) return;
+
                 var slaveDefArray = MyAPIGateway.Utilities.SerializeFromBinary<WeaponDefinition[]>(message);
                 foreach (var wepDef in slaveDefArray)
                     MyConfig.WeaponDefinitions.Add(wepDef);
@@ -77,7 +69,7 @@ namespace WeaponCore
         internal void ProcessHits()
         {
             IThreadHits hitEvent;
-            while (_projectiles.Hits.TryDequeue(out hitEvent)) hitEvent.Execute();
+            while (Projectiles.Hits.TryDequeue(out hitEvent)) hitEvent.Execute();
         }
 
         private void WebDispatchDone()

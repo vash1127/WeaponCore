@@ -34,13 +34,12 @@ namespace WeaponCore.Support
             _mpActive = Session.Instance.MpActive;
             RegisterEvents(true);
             Targeting = MyCube.CubeGrid.Components.Get<MyGridTargeting>();
-            _subTypeIdHash = MyStringHash.GetOrCompute(Turret.BlockDefinition.SubtypeId);
-            Log.Line("added to scene");
+            InitPlatform();
         }
 
         public void InitPlatform()
         {
-            Platform = new MyWeaponPlatform(_subTypeIdHash, this);
+            Platform = new MyWeaponPlatform(this);
             StorageSetup();
             State.Value.Online = true;
             MainInit = true;
@@ -49,7 +48,6 @@ namespace WeaponCore.Support
         public override void OnRemovedFromScene()
         {
             base.OnRemovedFromScene();
-            Log.Line("removed from scene");
         }
 
         public override bool IsSerialized()

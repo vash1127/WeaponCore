@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -13,6 +15,8 @@ namespace WeaponCore.Projectiles
     internal class Projectile
     {
         //private static int _checkIntersectionCnt = 0;
+        internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+        internal const int EndSteps = 3;
         internal ProjectileState State;
         internal Vector3D Direction;
         internal Vector3D Position;
@@ -28,15 +32,18 @@ namespace WeaponCore.Projectiles
         internal Vector3D CurrentSpeed;
         internal Vector3D FinalSpeed;
         internal Vector3D CurrentMagnitude;
+        internal Vector3D CameraStartPos;
         internal LineD CurrentLine;
         internal double ShotLength;
         internal float SpeedLength;
         internal float MaxTrajectory;
         internal float AmmoTravelSoundRangeSqr;
+        internal double DistanceFromCameraSqr;
         internal bool PositionChecked;
         internal double LineReSizeLen;
         internal int ReSizeSteps;
         internal int GrowStep = 1;
+        internal int EndStep;
         internal bool Grow;
         internal bool Shrink;
         internal bool Draw;
@@ -69,9 +76,13 @@ namespace WeaponCore.Projectiles
             AddSpeed = Direction * SpeedLength;
             FinalSpeed = StartSpeed + AddSpeed;
             CurrentSpeed = FinalSpeed;
+            CurrentMagnitude = CurrentSpeed * StepConst;
             PositionChecked = false;
             AmmoSound = false;
             Draw = WepDef.VisualProbability >= (double)MyUtils.GetRandomFloat(0.0f, 1f);
+            EndStep = 0;
+            CameraStartPos = MyAPIGateway.Session.Camera.Position;
+            Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
@@ -83,15 +94,20 @@ namespace WeaponCore.Projectiles
         private void ProjectileParticleStart()
         {
             var to = Origin;
+            to += -CurrentMagnitude; // we are in a thread, draw is delayed a frame.
             var matrix = MatrixD.CreateTranslation(to);
             MyParticlesManager.TryCreateParticleEffect(WepDef.CustomEffect, ref matrix, ref to, uint.MaxValue, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
             //Effect1.UserDraw = true;
-            //Effect1.DistanceMax = 5000;
+            Effect1.DistanceMax = 5000;
             Effect1.UserColorMultiplier = WepDef.ParticleColor;
-            Effect1.UserRadiusMultiplier = WepDef.ParticleRadiusMultiplier;
-            Effect1.UserEmitterScale = 1f;
+            var reScale = (float) Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
+            var scaler = reScale < 1 ? reScale : 1;
+
+            Effect1.UserRadiusMultiplier = WepDef.ParticleRadiusMultiplier * scaler;
+            Effect1.UserEmitterScale = 1 * scaler;
             Effect1.Velocity = CurrentSpeed;
+            // Log.Line($"Radius:{Effect1.UserRadiusMultiplier} - UserEmitterScale:{Effect1.UserEmitterScale} - UserScale:{Effect1.UserScale} - Scaler:{scaler} - scale:{reScale}");
         }
 
         internal void FireSoundStart()
@@ -113,8 +129,18 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool, bool noAv)
         {
-            State = ProjectileState.Dead;
-            if (!noAv)
+            if (noAv)
+            {
+                checkPool.Return(CheckList);
+                pool.MarkForDeallocate(this);
+                State = ProjectileState.Dead;
+            }
+            else State = ProjectileState.Ending;
+        }
+
+        internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool)
+        {
+            if (EndStep++ >= EndSteps)
             {
                 if (WepDef.ParticleTrail) DisposeEffect();
 
@@ -126,10 +152,10 @@ namespace WeaponCore.Projectiles
                     Sound1.SetPosition(Position);
                     Sound1.PlaySoundWithDistance(Weapon.AmmoHitSoundPair.SoundId, false, false, false, true, true, false, false);
                 }
+                checkPool.Return(CheckList);
+                pool.MarkForDeallocate(this);
+                State = ProjectileState.Dead;
             }
-
-            checkPool.Return(CheckList);
-            pool.MarkForDeallocate(this);
         }
 
         private void DisposeEffect()
@@ -146,6 +172,7 @@ namespace WeaponCore.Projectiles
         {
             Start,
             Alive,
+            Ending,
             Dead,
         }
     }

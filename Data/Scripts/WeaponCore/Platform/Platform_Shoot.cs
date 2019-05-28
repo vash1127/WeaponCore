@@ -1,6 +1,8 @@
 ﻿using System;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Projectiles;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -8,7 +10,8 @@ namespace WeaponCore.Platform
     {
         internal void Shoot()
         {
-            var tick = Session.Instance.Tick;
+            var session = Session.Instance;
+            var tick = session.Tick;
             var rotateAxis = WeaponType.RotateBarrelAxis;
             var radiansPerShot = (2 * Math.PI / _numOfBarrels);
             var radiansPerTick = radiansPerShot / _timePerShot;
@@ -58,6 +61,7 @@ namespace WeaponCore.Platform
                     var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
                     var randomFloat1 = MyUtils.GetRandomFloat(-deviatedAngle, deviatedAngle);
                     var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
+
                     muzzle.DeviatedDir = Vector3.TransformNormal(
                         -new Vector3(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
                             MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
@@ -67,6 +71,17 @@ namespace WeaponCore.Platform
 
                 if (i == bps - 1) _nextMuzzle++;
                 _nextMuzzle = (_nextMuzzle + (skipAhead + 1)) % (endBarrel + 1);
+
+                lock (session.Projectiles.Wait[session.ProCounter])
+                {
+                    Projectile pro;
+                    session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
+                    pro.Weapon = this;
+                    pro.Origin = muzzle.Position;
+                    pro.Direction = muzzle.DeviatedDir;
+                    pro.State = Projectile.ProjectileState.Start;
+                }
+                if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
             }
 
             if (tick - _posChangedTick > 10) _posUpdatedTick = tick;

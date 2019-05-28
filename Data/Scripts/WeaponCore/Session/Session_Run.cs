@@ -27,8 +27,8 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
-                    for (int i = 0; i < _projectiles.Wait.Length; i++)
-                        lock (_projectiles.Wait[i]) DrawLists(_projectiles.DrawProjectiles[i]);
+                    for (int i = 0; i < Projectiles.Wait.Length; i++)
+                        lock (Projectiles.Wait[i]) DrawLists(Projectiles.DrawProjectiles[i]);
                     if (_shrinking.Count > 0)
                         Shrink();
                 }
@@ -41,9 +41,9 @@ namespace WeaponCore
             try
             {
                 Timings();
-                if (!_projectiles.Hits.IsEmpty) ProcessHits();
+                if (!Projectiles.Hits.IsEmpty) ProcessHits();
                 UpdateWeaponPlatforms();
-                MyAPIGateway.Parallel.Start(_projectiles.Update);
+                MyAPIGateway.Parallel.Start(Projectiles.Update);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -53,14 +53,10 @@ namespace WeaponCore
             try
             {
                 Instance = this;
-                Log.Init("debugdevelop.log");
-                Log.Line($"Logging Started");
-
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyEntities.OnEntityDelete += OnEntityDelete;
-                MasterLoadData();
-                MyConfig.Init();
-                //MyEntities.OnEntityCreate += MyEntities_OnEntityCreate;
+                MyAPIGateway.Utilities.RegisterMessageHandler(1, Handler);
+                MyAPIGateway.Utilities.SendModMessage(2, null);
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
@@ -68,47 +64,40 @@ namespace WeaponCore
         private void OnEntityCreate(MyEntity myEntity)
         {
             var cube = myEntity as MyCubeBlock;
-            if (cube != null)
-            {
-                var weaponBase = cube as IMyLargeMissileTurret;
-                if (weaponBase != null && WeaponStructures.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                {
-                    GridTargetingAIs.Add(cube.CubeGrid, new GridTargetingAi(cube.CubeGrid));
-                    var weaponComp = new WeaponComponent(cube, weaponBase);
-                    cube.Components.Add(weaponComp);
-                    GridTargetingAIs[cube.CubeGrid].WeaponBase.Add(cube, weaponComp);
-                    Log.Line($"Iscube: {cube.DebugName} - {cube.SubBlockName} - {cube.BlockDefinition.Id.SubtypeId.String}");
-                }
-            }
+            var weaponBase = cube as IMyLargeMissileTurret;
+            if (weaponBase == null) return;
+
+            if (!Inited) lock (_configLock) MyConfig.Init();
+            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+
+            GridTargetingAIs.Add(cube.CubeGrid, new GridTargetingAi(cube.CubeGrid));
+            var weaponComp = new WeaponComponent(cube, weaponBase);
+            cube.Components.Add(weaponComp);
+            GridTargetingAIs[cube.CubeGrid].WeaponBase.Add(cube, weaponComp);
         }
 
         private void OnEntityDelete(MyEntity myEntity)
         {
             var cube = myEntity as MyCubeBlock;
-            if (cube != null)
-            {
-                var weaponBase = cube as IMyLargeMissileTurret;
-                if (weaponBase != null && WeaponStructures.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                {
-                    GridTargetingAIs[cube.CubeGrid].WeaponBase.Remove(cube);
-                    Log.Line($"removing Weapon");
-                    if (GridTargetingAIs[cube.CubeGrid].WeaponBase.Count == 0)
-                    {
-                        Log.Line($"last weapon, removing grid");
-                        GridTargetingAIs.Remove(cube.CubeGrid);
-                    }
-                }
-            }
+            var weaponBase = cube as IMyLargeMissileTurret;
+            if (weaponBase == null) return;
+
+            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+
+            GridTargetingAIs[cube.CubeGrid].WeaponBase.Remove(cube);
+            if (GridTargetingAIs[cube.CubeGrid].WeaponBase.Count == 0)
+                GridTargetingAIs.Remove(cube.CubeGrid);
         }
+
         protected override void UnloadData()
         {
             SApi.Unload();
 
-            MyEntities.OnEntityCreate -= OnEntityCreate;
-            MyEntities.OnEntityDelete -= OnEntityDelete;
-
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
             MyAPIGateway.Utilities.UnregisterMessageHandler(1, Handler);
+
+            MyEntities.OnEntityCreate -= OnEntityCreate;
+            MyEntities.OnEntityDelete -= OnEntityDelete;
 
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
