@@ -179,40 +179,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Data\Ammo.sbc" />
-    <None Include="Data\AmmoMag.sbc" />
-    <None Include="Data\Audio_PDC.sbc" />
-    <None Include="Data\BlockCategories_PDC.sbc" />
-    <None Include="Data\BlueprintClasses_PDC.sbc" />
-    <None Include="Data\CubeBlocks_PDC.sbc" />
     <None Include="Data\EntityComponents.sbc" />
-    <None Include="Data\Particles_PDC.sbc" />
-    <None Include="Data\Weapons.sbc">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="Models\Cubes\DS_TorpBarrel.mwm" />
-    <None Include="Models\Cubes\DS_TorpBase0.mwm" />
-    <None Include="Models\Cubes\DS_TorpBase0_Constr1.mwm" />
-    <None Include="Models\Cubes\DS_TorpBase0_Constr2.mwm" />
-    <None Include="Models\Cubes\DS_TorpBase1.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurret.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretBarrels.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretBarrels_LOD1.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretBarrels_LOD2.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretBarrels_LOD3.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretBase1.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretBase1_LOD1.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretBase1_LOD2.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretBase1_LOD3.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretConstruction_1.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretConstruction_1_LOD1.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretConstruction_2.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurretConstruction_2_LOD1.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurret_LOD1.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurret_LOD2.mwm" />
-    <None Include="Models\Cubes\Small\MissileTurret_LOD3.mwm" />
-    <None Include="Models\Weapons\Torpedo_Ammo_1st.mwm" />
-    <None Include="Models\Weapons\Torpedo_Test.mwm" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Scripts\WeaponCore\Config.cs" />
@@ -264,10 +231,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\StaticUtils.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Utils.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Audio\" />
-    <Folder Include="Textures\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />
