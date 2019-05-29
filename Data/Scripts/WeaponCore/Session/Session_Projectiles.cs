@@ -52,21 +52,27 @@ namespace WeaponCore
         {
             foreach (var aiPair in GridTargetingAIs)
             {
-                foreach (var basePair in aiPair.Value.WeaponBase.Values)
+                var grid = aiPair.Key;
+                var ai = aiPair.Value;
+                foreach (var basePair in ai.WeaponBase)
                 {
-                    if (!basePair.State.Value.Online) continue;
 
-                    for (int j = 0; j < basePair.Platform.Weapons.Length; j++)
+                    var myCube = basePair.Key;
+                    var weapon = basePair.Value;
+                    if (!weapon.MainInit || !weapon.State.Value.Online) continue;
+
+                    for (int j = 0; j < weapon.Platform.Weapons.Length; j++)
                     {
-                        var w = basePair.Platform.Weapons[j];
+                        var w = weapon.Platform.Weapons[j];
                         var gunner = false;
-                        if (!basePair.Turret.IsUnderControl)
+                        if (!weapon.Turret.IsUnderControl)
                         {
                             if (w.Target != null)
                             {
                                 //DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
                             }
-                            if (w.TrackTarget && w.SeekTarget) w.SelectTarget();
+
+                            if (w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w.EntityPart.PositionComp.GetPosition());
                             if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);
                             if (w.TrackTarget && w.ReadyToTrack)
                             {
@@ -78,8 +84,8 @@ namespace WeaponCore
                         {
                             if (MyAPIGateway.Input.IsAnyMousePressed())
                             {
-                                var currentAmmo = basePair.Gun.GunBase.CurrentAmmo;
-                                if (currentAmmo <= 1) basePair.Gun.GunBase.CurrentAmmo += 1;
+                                var currentAmmo = weapon.Gun.GunBase.CurrentAmmo;
+                                if (currentAmmo <= 1) weapon.Gun.GunBase.CurrentAmmo += 1;
                                 gunner = true;
                             }
                         }

@@ -37,7 +37,7 @@ namespace WeaponCore
         {
             try
             {
-                var logic = block?.GameLogic?.GetAs<Logic>();
+                var logic = block?.GameLogic?.GetAs<WeaponComponent>();
                 if (WepControl || logic == null) return;
 
                 TerminalHelpers.Separator(logic.Turret, "WC-L_sep0");

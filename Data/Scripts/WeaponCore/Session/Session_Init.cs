@@ -1,5 +1,7 @@
-﻿using Sandbox.Game;
+﻿using System.Collections.Generic;
+using Sandbox.Game;
 using Sandbox.ModAPI;
+using VRage.Utils;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -15,7 +17,6 @@ namespace WeaponCore
 
             MyAPIGateway.Multiplayer.RegisterMessageHandler(PACKET_ID, ReceivedPacket);
 
-            //if (!DedicatedServer && IsServer) Players.TryAdd(MyAPIGateway.Session.Player.IdentityId, MyAPIGateway.Session.Player);
             if (!DedicatedServer && IsServer) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
 
             MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
@@ -23,13 +24,6 @@ namespace WeaponCore
             if (!DedicatedServer)
             {
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControls;
-            }
-
-            if (IsServer)
-            {
-                Log.Line("LoadConf - Session: This is a server");
-                UtilsStatic.PrepConfigFile();
-                UtilsStatic.ReadConfigFile();
             }
 
             if (MpActive)
@@ -45,10 +39,38 @@ namespace WeaponCore
                 SyncBufferedDistSqr = SyncDistSqr + 250000;
             }
 
-            if (!IsServer) RequestEnforcement(MyAPIGateway.Multiplayer.MyId);
             foreach (var mod in MyAPIGateway.Session.Mods)
                 if (mod.PublishedFileId == 1365616918) ShieldMod = true;
             ShieldMod = true;
+        }
+
+        internal void Init()
+        {
+            if (Inited) return;
+            Log.Init("debugdevelop.log");
+            Log.Line($"Logging Started");
+            foreach (var weaponDef in _weaponDefinitions)
+            {
+                foreach (var mount in weaponDef.MountPoints)
+                {
+                    var subTypeId = mount.Key;
+                    var subPartId = mount.Value;
+                    if (!_turretDefinitions.ContainsKey(subTypeId))
+                        _turretDefinitions[subTypeId] = new Dictionary<string, string>
+                        {
+                            [subPartId] = weaponDef.DefinitionId
+                        };
+                    else _turretDefinitions[subTypeId][subPartId] = weaponDef.DefinitionId;
+                }
+            }
+
+            foreach (var def in _turretDefinitions)
+            {
+                var subTypeIdHash = MyStringHash.GetOrCompute(def.Key);
+                SubTypeIdHashMap.Add(def.Key, subTypeIdHash);
+                WeaponPlatforms.Add(subTypeIdHash, new WeaponStructure(def, _weaponDefinitions));
+            }
+            Inited = true;
         }
     }
 }

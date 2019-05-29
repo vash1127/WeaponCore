@@ -1,6 +1,4 @@
-﻿using VRage.Serialization;
-
-namespace WeaponCore.Support
+﻿namespace WeaponCore.Support
 {
     using System;
     using System.Collections.Generic;
@@ -18,80 +16,21 @@ namespace WeaponCore.Support
 
     internal static class UtilsStatic
     {
-        public static void PrepConfigFile()
+        public static void UpdateTerminal(this MyCubeBlock block)
         {
-            const int Version = 70;
-
-            var dsCfgExists = MyAPIGateway.Utilities.FileExistsInGlobalStorage("WeaponCore.cfg");
-            if (dsCfgExists)
+            MyOwnershipShareModeEnum shareMode;
+            long ownerId;
+            if (block.IDModule != null)
             {
-                var unPackCfg = MyAPIGateway.Utilities.ReadFileInGlobalStorage("WeaponCore.cfg");
-                var unPackedData = MyAPIGateway.Utilities.SerializeFromXML<WeaponEnforcement>(unPackCfg.ReadToEnd());
-                /*
-                var invalidValue = unPackedData.HpsEfficiency <= 0 || unPackedData.BaseScaler < 1 || unPackedData.MaintenanceCost <= 0;
-                if (invalidValue)
-                {
-                    if (unPackedData.HpsEfficiency <= 0) unPackedData.HpsEfficiency = HpsEfficiency;
-                    if (unPackedData.BaseScaler < 1) unPackedData.BaseScaler = BaseScaler;
-                    if (unPackedData.MaintenanceCost <= 0) unPackedData.MaintenanceCost = MaintenanceCost;
-                }
-                if (unPackedData.Version == Version && !invalidValue) return;
-
-                if (!invalidValue) Log.Line($"outdated config file regenerating, file version: {unPackedData.Version} - current version: {Version}");
-                else Log.Line("Invalid config file, fixing");
-                */
-
-                /*
-                Session.Enforced.BaseScaler = !unPackedData.BaseScaler.Equals(-1) ? unPackedData.BaseScaler : BaseScaler;
-                Session.Enforced.HeatScaler = !unPackedData.HeatScaler.Equals(-1f) ? unPackedData.HeatScaler : HeatScaler;
-                Session.Enforced.Unused = !unPackedData.Unused.Equals(-1f) ? unPackedData.Unused : Unused;
-                Session.Enforced.StationRatio = !unPackedData.StationRatio.Equals(-1) ? unPackedData.StationRatio : StationRatio;
-                Session.Enforced.LargeShipRatio = !unPackedData.LargeShipRatio.Equals(-1) ? unPackedData.LargeShipRatio : LargeShipRate;
-                Session.Enforced.SmallShipRatio = !unPackedData.SmallShipRatio.Equals(-1) ? unPackedData.SmallShipRatio : SmallShipRatio;
-                Session.Enforced.DisableVoxelSupport = !unPackedData.DisableVoxelSupport.Equals(-1) ? unPackedData.DisableVoxelSupport : DisableVoxel;
-                Session.Enforced.DisableEntityBarrier = !unPackedData.DisableEntityBarrier.Equals(-1) ? unPackedData.DisableEntityBarrier : DisableEntityBarrier;
-                Session.Enforced.Debug = !unPackedData.Debug.Equals(-1) ? unPackedData.Debug : Debug;
-                Session.Enforced.SuperWeapons = !unPackedData.SuperWeapons.Equals(-1) ? unPackedData.SuperWeapons : SuperWeapons;
-                Session.Enforced.CapScaler = !unPackedData.CapScaler.Equals(-1f) ? unPackedData.CapScaler : CapScaler;
-                Session.Enforced.HpsEfficiency = !unPackedData.HpsEfficiency.Equals(-1f) ? unPackedData.HpsEfficiency : HpsEfficiency;
-                Session.Enforced.MaintenanceCost = !unPackedData.MaintenanceCost.Equals(-1f) ? unPackedData.MaintenanceCost : MaintenanceCost;
-                Session.Enforced.DisableBlockDamage = !unPackedData.DisableBlockDamage.Equals(-1) ? unPackedData.DisableBlockDamage : DisableBlockDamage;
-                Session.Enforced.DisableLineOfSight = !unPackedData.DisableLineOfSight.Equals(-1) ? unPackedData.DisableLineOfSight : DisableLineOfSight;
-                if (unPackedData.Version <= 69)
-                {
-                    Session.Enforced.CapScaler = 0.5f;
-                    Session.Enforced.HpsEfficiency = 0.5f;
-                    Session.Enforced.HeatScaler = 0.0065f;
-                    Session.Enforced.BaseScaler = 10;
-                }			
-                */
-               Session.Enforced.Version = Version;
-                UpdateConfigFile(unPackCfg);
+                ownerId = block.IDModule.Owner;
+                shareMode = block.IDModule.ShareMode;
             }
             else
             {
-                Session.Enforced.Debug = 1;
-                Session.Enforced.SenderId = 0;
-                Session.Enforced.Version = 1;
-                WriteNewConfigFile();
-
-                Log.Line($"wrote new config file - file exists: {MyAPIGateway.Utilities.FileExistsInGlobalStorage("WeaponCore.cfg")}");
+                return;
             }
-        }
-
-        public static void ReadConfigFile()
-        {
-            var dsCfgExists = MyAPIGateway.Utilities.FileExistsInGlobalStorage("WeaponCore.cfg");
-
-            if (Session.Enforced.Debug == 3) Log.Line($"Reading config, file exists? {dsCfgExists}");
-
-            if (!dsCfgExists) return;
-
-            var cfg = MyAPIGateway.Utilities.ReadFileInGlobalStorage("WeaponCore.cfg");
-            var data = MyAPIGateway.Utilities.SerializeFromXML<WeaponEnforcement>(cfg.ReadToEnd());
-            Session.Enforced = data;
-
-            if (Session.Enforced.Debug == 3) Log.Line($"Writing settings to mod:\n{data}");
+            block.ChangeOwner(ownerId, shareMode == MyOwnershipShareModeEnum.None ? MyOwnershipShareModeEnum.Faction : MyOwnershipShareModeEnum.None);
+            block.ChangeOwner(ownerId, shareMode);
         }
 
         public static void FibonacciSeq(int magicNum)
@@ -258,37 +197,6 @@ namespace WeaponCore.Support
             return new Vector3D?((Vector3D)zero);
         }
 
-        public static void UpdateTerminal(this MyCubeBlock block)
-        {
-            MyOwnershipShareModeEnum shareMode;
-            long ownerId;
-            if (block.IDModule != null)
-            {
-                ownerId = block.IDModule.Owner;
-                shareMode = block.IDModule.ShareMode;
-            }
-            else
-            {
-                return;
-            }
-            block.ChangeOwner(ownerId, shareMode == MyOwnershipShareModeEnum.None ? MyOwnershipShareModeEnum.Faction : MyOwnershipShareModeEnum.None);
-            block.ChangeOwner(ownerId, shareMode);
-        }
-
-        public static long IntPower(int x, short power)
-        {
-            if (power == 0) return 1;
-            if (power == 1) return x;
-            int n = 15;
-            while ((power <<= 1) >= 0) n--;
-
-            long tmp = x;
-            while (--n > 0)
-                tmp = tmp * tmp *
-                      (((power <<= 1) < 0) ? x : 1);
-            return tmp;
-        }
-
         public static double InverseSqrDist(Vector3D source, Vector3D target, double range)
         {
             var rangeSq = range * range;
@@ -340,27 +248,6 @@ namespace WeaponCore.Support
             return surfaceArea;
         }
 
-        public static bool DistanceCheck(IMyCubeBlock block, int x, double range)
-        {
-            if (MyAPIGateway.Session.Player.Character == null) return false;
-
-            var pPosition = MyAPIGateway.Session.Player.Character.PositionComp.WorldVolume.Center;
-            var cPosition = block.CubeGrid.PositionComp.WorldVolume.Center;
-            var dist = Vector3D.DistanceSquared(cPosition, pPosition) <= (x + range) * (x + range);
-            return dist;
-        }
-
-        public static int BlockCount(IMyCubeBlock shield)
-        {
-            var subGrids = MyAPIGateway.GridGroups.GetGroup(shield.CubeGrid, GridLinkTypeEnum.Mechanical);
-            var blockCnt = 0;
-            foreach (var grid in subGrids)
-            {
-                blockCnt += ((MyCubeGrid)grid).BlocksCount;
-            }
-            return blockCnt;
-        }
-
         public static void CreateExplosion(Vector3D position, float radius, float damage = 5000)
         {
             MyExplosionTypeEnum explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_50;
@@ -410,28 +297,6 @@ namespace WeaponCore.Support
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        private static void UpdateConfigFile(TextReader unPackCfg)
-        {
-            unPackCfg.Close();
-            unPackCfg.Dispose();
-            MyAPIGateway.Utilities.DeleteFileInGlobalStorage("WeaponCore.cfg");
-            var newCfg = MyAPIGateway.Utilities.WriteFileInGlobalStorage("WeaponCore.cfg");
-            var newData = MyAPIGateway.Utilities.SerializeToXML(Session.Enforced);
-            newCfg.Write(newData);
-            newCfg.Flush();
-            newCfg.Close();
-            Log.Line($"wrote modified config file - file exists: {MyAPIGateway.Utilities.FileExistsInGlobalStorage("WeaponCore.cfg")}");
-        }
-
-        private static void WriteNewConfigFile()
-        {
-            var cfg = MyAPIGateway.Utilities.WriteFileInGlobalStorage("WeaponCore.cfg");
-            var data = MyAPIGateway.Utilities.SerializeToXML(Session.Enforced);
-            cfg.Write(data);
-            cfg.Flush();
-            cfg.Close();
-        }
-
         private static Vector3D VectorProjection(Vector3D a, Vector3D b)
         {
             if (Vector3D.IsZero(b))
@@ -439,23 +304,5 @@ namespace WeaponCore.Support
 
             return a.Dot(b) / b.LengthSquared() * b;
         }
-
-        /*
-        private static double PowerCalculation(IMyEntity breaching, IMyCubeGrid grid)
-        {
-            var bPhysics = breaching.Physics;
-            var sPhysics = grid.Physics;
-
-            const double wattsPerNewton = (3.36e6 / 288000);
-            var velTarget = sPhysics.GetVelocityAtPoint(breaching.Physics.CenterOfMassWorld);
-            var accelLinear = sPhysics.LinearAcceleration;
-            var velTargetNext = velTarget + accelLinear * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-            var velModifyNext = bPhysics.LinearVelocity;
-            var linearImpulse = bPhysics.Mass * (velTargetNext - velModifyNext);
-            var powerCorrectionInJoules = wattsPerNewton * linearImpulse.Length();
-
-            return powerCorrectionInJoules * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        }
-        */
     }
 }

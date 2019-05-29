@@ -5,7 +5,6 @@ using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game.ModAPI;
 using VRage.Utils;
-using WeaponCore.Data.Scripts.WeaponCore;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
 
@@ -13,38 +12,30 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        internal const ushort PACKET_ID = 62518;
+        internal const double TickTimeDiv = 0.0625;
+
         internal static Session Instance { get; private set; }
 
-        internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
         internal volatile bool Inited;
+        internal volatile bool Dispatched;
 
         private int _count = -1;
         private int _lCount;
         private int _eCount;
         private double _syncDistSqr;
 
-        private DSUtils _dsUtil { get; set; } = new DSUtils();
         private readonly object _configLock = new object();
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
-        private MyEntity3DSoundEmitter SoundEmitter { get; set; } = new MyEntity3DSoundEmitter(null)
-        {
-            CustomMaxDistance = float.MaxValue,
-        };
-
-        internal uint Tick;
-        internal const ushort PACKET_ID = 62519;
-        internal const double TickTimeDiv = 0.0625;
-
-        internal volatile bool Dispatched;
+        private readonly Dictionary<string, Dictionary<string, string>> _turretDefinitions = new Dictionary<string, Dictionary<string, string>>();
+        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
+        private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
+        private DSUtils _dsUtil { get; set; } = new DSUtils();
 
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
-        internal readonly Guid LogicEnforceGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811503");
 
-        internal static WeaponEnforcement Enforced { get; set; } = new WeaponEnforcement();
-        internal static bool EnforceInit { get; set; }
-
-        internal uint SoundTick { get; set; }
+        internal uint Tick;
         internal int PlayerEventId { get; set; }
         internal int ProCounter { get; set; }
         internal ulong AuthorSteamId { get; set; } = 76561197969691953;
@@ -79,16 +70,14 @@ namespace WeaponCore
         internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
-        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
-        internal readonly Dictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new Dictionary<MyCubeGrid, GridTargetingAi>();
+        private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
+        internal readonly MyConcurrentDictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new MyConcurrentDictionary<MyCubeGrid, GridTargetingAi>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
+        internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
 
         internal ShieldApi SApi = new ShieldApi();
-        //internal ConfigMe MyConfig = new ConfigMe();
-        internal static WeaponEnforcement Enforcement { get; set; } = new WeaponEnforcement();
         internal FutureEvents FutureEvents { get; set; } = new FutureEvents();
-        internal Config MyConfig = new Config();
 
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {

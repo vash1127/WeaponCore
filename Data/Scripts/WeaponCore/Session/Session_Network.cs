@@ -8,17 +8,6 @@ namespace WeaponCore
     public partial class Session
     {
         #region Network sync
-        internal void RequestEnforcement(ulong requestorId)
-        {
-            try
-            {
-                Enforced.SenderId = requestorId;
-                var bytes = MyAPIGateway.Utilities.SerializeToBinary(new DataEnforce(0, Enforced));
-                MyAPIGateway.Multiplayer.SendMessageToServer(PACKET_ID, bytes, true);
-            }
-            catch (Exception ex) { Log.Line($"Exception in RequestEnforcement: {ex}"); }
-        }
-
         internal void PacketizeToClientsInRange(IMyFunctionalBlock block, PacketBase packet)
         {
             try

@@ -5,14 +5,6 @@ using static WeaponCore.Support.WeaponDefinition;
 namespace WeaponCore
 {
     [ProtoContract]
-    public class WeaponEnforcement
-    {
-        [ProtoMember(1)] public ulong SenderId = 0;
-        [ProtoMember(2), DefaultValue(-1)] public int Debug = -1;
-        [ProtoMember(3), DefaultValue(-1)] public int Version = -1;
-    }
-
-    [ProtoContract]
     public class LogicStateValues
     {
         [ProtoMember(1)] public uint MId;

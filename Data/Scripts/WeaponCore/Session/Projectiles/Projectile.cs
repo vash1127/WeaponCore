@@ -98,7 +98,7 @@ namespace WeaponCore.Projectiles
             var matrix = MatrixD.CreateTranslation(to);
             MyParticlesManager.TryCreateParticleEffect(WepDef.CustomEffect, ref matrix, ref to, uint.MaxValue, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
-            //Effect1.UserDraw = true;
+            Effect1.UserDraw = true;
             Effect1.DistanceMax = 5000;
             Effect1.UserColorMultiplier = WepDef.ParticleColor;
             var reScale = (float) Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance

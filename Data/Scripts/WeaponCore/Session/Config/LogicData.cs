@@ -50,7 +50,6 @@ namespace WeaponCore
                     Value = loadedState;
                     loadedSomething = true;
                 }
-                if (Session.Enforced.Debug == 3) Log.Line($"Loaded - LogicId [{Logic.EntityId}]:\n{Value.ToString()}");
             }
             return loadedSomething;
         }

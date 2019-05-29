@@ -1,30 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI.Ingame;
-using VRage.Game;
-using VRage.Game.Entity;
-using VRageMath;
-using WeaponCore.Support;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace WeaponCore
+namespace WeaponCore.Support
 {
-    partial class Logic
+    public partial class WeaponComponent
     {
-        /*
-        private bool EntityAlive()
-        {
-            _tick = Session.Instance.Tick;
-            if (MyGrid?.Physics == null) return false;
-            if (!_firstSync && _readyToSync) SaveAndSendAll();
-            if (!_isDedicated && _count == 29) TerminalRefresh();
-
-            if (!_allInited && !PostInit()) return false;
-
-            if (ClientUiUpdate || SettingsUpdated) UpdateSettings();
-            return true;
-        }
-
         private Status WeaponState()
         {
             if (_isServer)
@@ -66,14 +49,6 @@ namespace WeaponCore
 
         internal void Online()
         {
-            _currentShootTime = Gun.GunBase.LastShootTime.Ticks;
-            if ((_currentShootTime != _lastShootTime))
-            {
-                Gun.GunBase.CurrentAmmo += 1;
-                ShotsFired = true;
-                _lastShootTick = _tick;
-                _lastShootTime = _currentShootTime;
-            }
         }
 
         internal void OfflineWeapon(bool clear, Status reason, bool keepCharge = false)
@@ -144,13 +119,14 @@ namespace WeaponCore
             return false;
         }
 
+
         internal void UpdateSettings(LogicSettingsValues newSettings)
         {
             if (newSettings.MId > Set.Value.MId)
             {
                 Set.Value = newSettings;
                 SettingsUpdated = true;
-                
+
             }
         }
 
@@ -161,7 +137,7 @@ namespace WeaponCore
                 if (!_isServer)
                 {
 
-                    if (State.Value.Message) BroadcastMessage();
+                    //if (State.Value.Message) BroadcastMessage();
                 }
                 State.Value = newState;
                 _clientNotReady = false;
@@ -201,11 +177,10 @@ namespace WeaponCore
                 if (_isServer) TerminalRefresh(false);
             }
 
-            if (!_isDedicated && State.Value.Message) BroadcastMessage();
+            //if (!_isDedicated && State.Value.Message) BroadcastMessage();
 
             State.Value.Message = false;
             State.SaveState();
         }
-        */
     }
 }

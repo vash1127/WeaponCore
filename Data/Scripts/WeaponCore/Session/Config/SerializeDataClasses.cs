@@ -8,7 +8,6 @@ namespace WeaponCore
 {
     [ProtoInclude(3, typeof(DataLogicState))]
     [ProtoInclude(4, typeof(DataWeaponHit))]
-    [ProtoInclude(5, typeof(DataEnforce))]
 
     [ProtoContract]
     public abstract class PacketBase
@@ -108,39 +107,10 @@ namespace WeaponCore
         public override bool Received(bool isServer)
         {
             if (isServer || Entity?.GameLogic == null) return false;
-            var logic = Entity.GameLogic.GetAs<Logic>();
+            var logic = Entity.GameLogic.GetAs<WeaponComponent>();
             if (logic == null) return false;
 
             Session.Instance.WeaponHits.Add(new WeaponHit(logic, State.HitPos, State.Size, State.Effect));
-            return false;
-        }
-    }
-
-    [ProtoContract]
-    public class DataEnforce : PacketBase
-    {
-        public DataEnforce()
-        {
-        } // Empty constructor required for deserialization
-
-        [ProtoMember(1)] public WeaponEnforcement State = null;
-
-        public DataEnforce(long entityId, WeaponEnforcement state) : base(entityId)
-        {
-            State = state;
-        }
-
-        public override bool Received(bool isServer)
-        {
-            if (!isServer)
-            {
-                Session.Enforced = State;
-                Session.EnforceInit = true;
-                return false;
-            }
-            var data = new DataEnforce(0, Session.Enforced);
-            var bytes = MyAPIGateway.Utilities.SerializeToBinary(data);
-            MyAPIGateway.Multiplayer.SendMessageTo(Session.PACKET_ID, bytes, State.SenderId);
             return false;
         }
     }

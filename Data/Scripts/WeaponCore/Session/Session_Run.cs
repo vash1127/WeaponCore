@@ -54,7 +54,10 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
+                MyEntities.OnEntityAdd += OnEntityAdd;
+
                 MyEntities.OnEntityDelete += OnEntityDelete;
+                //MyEntities.OnEntityRemove += OnEntityRemove;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
             }
@@ -63,30 +66,59 @@ namespace WeaponCore
 
         private void OnEntityCreate(MyEntity myEntity)
         {
-            var cube = myEntity as MyCubeBlock;
-            var weaponBase = cube as IMyLargeMissileTurret;
-            if (weaponBase == null) return;
+            try
+            {
+                var cube = myEntity as MyCubeBlock;
+                var weaponBase = cube as IMyLargeMissileTurret;
+                if (weaponBase == null) return;
 
-            if (!Inited) lock (_configLock) MyConfig.Init();
-            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+                if (!Inited) lock (_configLock) Init();
+                if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-            GridTargetingAIs.Add(cube.CubeGrid, new GridTargetingAi(cube.CubeGrid));
-            var weaponComp = new WeaponComponent(cube, weaponBase);
-            cube.Components.Add(weaponComp);
-            GridTargetingAIs[cube.CubeGrid].WeaponBase.Add(cube, weaponComp);
+                GridTargetingAi gridAi;
+                if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                {
+                    gridAi = new GridTargetingAi(cube.CubeGrid, this);
+                    GridTargetingAIs.Add(cube.CubeGrid, gridAi);
+                }
+                var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
+                GridTargetingAIs[cube.CubeGrid].WeaponBase.Add(cube, weaponComp);
+                _compsToStart.Enqueue(weaponComp);
+            }
+            catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
+        }
+
+        private void OnEntityAdd(MyEntity myEntity)
+        {
+            try
+            {
+                if (!_compsToStart.IsEmpty)
+                {
+                    WeaponComponent weaponComp;
+                    _compsToStart.TryDequeue(out weaponComp);
+                    weaponComp.MyCube.Components.Add(weaponComp);
+                    weaponComp.OnAddedToScene();
+                    Log.Line($"added to comp");
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
 
         private void OnEntityDelete(MyEntity myEntity)
         {
-            var cube = myEntity as MyCubeBlock;
-            var weaponBase = cube as IMyLargeMissileTurret;
-            if (weaponBase == null) return;
+            try
+            {
+                var cube = myEntity as MyCubeBlock;
+                var weaponBase = cube as IMyLargeMissileTurret;
+                if (weaponBase == null) return;
 
-            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+                if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-            GridTargetingAIs[cube.CubeGrid].WeaponBase.Remove(cube);
-            if (GridTargetingAIs[cube.CubeGrid].WeaponBase.Count == 0)
-                GridTargetingAIs.Remove(cube.CubeGrid);
+                GridTargetingAIs[cube.CubeGrid].WeaponBase.Remove(cube);
+                if (GridTargetingAIs[cube.CubeGrid].WeaponBase.Count == 0)
+                    GridTargetingAIs.Remove(cube.CubeGrid);
+            }
+            catch (Exception ex) { Log.Line($"Exception in OnEntityDelete: {ex}"); }
         }
 
         protected override void UnloadData()

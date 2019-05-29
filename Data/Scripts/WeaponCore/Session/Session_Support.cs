@@ -1,7 +1,5 @@
 ﻿using System;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
@@ -18,7 +16,7 @@ namespace WeaponCore
 
                 var slaveDefArray = MyAPIGateway.Utilities.SerializeFromBinary<WeaponDefinition[]>(message);
                 foreach (var wepDef in slaveDefArray)
-                    MyConfig.WeaponDefinitions.Add(wepDef);
+                    _weaponDefinitions.Add(wepDef);
             }
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
         }
@@ -78,26 +76,11 @@ namespace WeaponCore
         }
 
         #region Events
-        public MyEntity3DSoundEmitter AudioReady(MyEntity entity)
-        {
-            if (Tick - SoundTick < 600 && Tick > 600) return null;
-            SoundTick = Tick;
-
-            SoundEmitter.StopSound(false);
-            SoundEmitter.Entity = entity;
-            SoundEmitter.CustomVolume = MyAPIGateway.Session.Config.GameVolume * 0.75f;
-            return SoundEmitter;
-        }
-
         private void PlayerConnected(long id)
         {
             try
             {
-                if (Players.ContainsKey(id))
-                {
-                    if (Enforced.Debug >= 2) Log.Line($"Player id({id}) already exists");
-                    return;
-                }
+                if (Players.ContainsKey(id)) return;
                 MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, id));
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}"); }
@@ -114,7 +97,6 @@ namespace WeaponCore
                 {
                     AuthorPlayerId = 0;
                 }
-                if (Enforced.Debug >= 3) Log.Line($"Removed player, new playerCount:{Players.Count}");
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}"); }
         }
@@ -126,7 +108,6 @@ namespace WeaponCore
                 Players[id] = player;
                 PlayerEventId++;
                 if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
-                if (Enforced.Debug >= 3) Log.Line($"Added player: {player.DisplayName}, new playerCount:{Players.Count}");
             }
             return false;
         }

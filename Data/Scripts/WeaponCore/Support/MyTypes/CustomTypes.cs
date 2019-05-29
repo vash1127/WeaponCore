@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using ProtoBuf;
+using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Generics;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Support;
 using static WeaponCore.Support.WeaponDefinition;
 
 namespace WeaponCore.Support
@@ -104,6 +108,15 @@ namespace WeaponCore.Support
         [ProtoMember(67)] internal string CustomEffect;
     }
 
+    public class TestParticles : MyParticlesManager
+    {
+        private void Test()
+        {
+            var test = ParticleEffectsForUpdate;
+            test.Add(new MyParticleEffect());
+        }
+    }
+
     public struct WeaponSystem
     {
         public readonly MyStringHash PartName;
@@ -195,12 +208,12 @@ namespace WeaponCore.Support
 
     public struct WeaponHit
     {
-        public readonly Logic Logic;
+        public readonly WeaponComponent Logic;
         public readonly Vector3D HitPos;
         public readonly float Size;
         public readonly EffectType Effect;
 
-        public WeaponHit(Logic logic, Vector3D hitPos, float size, EffectType effect)
+        public WeaponHit(WeaponComponent logic, Vector3D hitPos, float size, EffectType effect)
         {
             Logic = logic;
             HitPos = hitPos;

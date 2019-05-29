@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI.Ingame;
-using VRage.Game;
-using VRage.Game.Entity;
 using VRageMath;
 using IMyLargeTurretBase = Sandbox.ModAPI.IMyLargeTurretBase;
 
@@ -11,80 +6,6 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal void SelectTarget()
-        {
-            //if (Target == null) Logic.Turret.ResetTargetingToDefault();
-            _targetTick = 0;
-            _weaponReady = false;
-            Target = GetTarget();
-
-            if (Target != null)
-            {
-                _weaponReady = true;
-                _firstRun = false;
-                var grid = Target as MyCubeGrid;
-                if (grid == null) return;
-
-                var bCount = Comp.TargetBlocks.Count;
-                var found = false;
-                var c = 0;
-                while (!found)
-                {
-                    if (c++ > 100) break;
-                    var next = Rnd.Next(0, bCount);
-                    if (!Comp.TargetBlocks[next].MarkedForClose)
-                    {
-                        Target = Comp.TargetBlocks[next];
-                        //Logic.Turret.TrackTarget(Target);
-                        //Log.Line($"found block - Block:{Logic.TargetBlocks[next].DebugName} - Target:{Target.DebugName} - random:{next} - bCount:{bCount}");
-                        found = true;
-                    }
-                }
-            }
-        }
-
-        internal MyEntity GetTarget()
-        {
-            foreach (var ent in Comp.Targeting.TargetRoots)
-            {
-                if (ent == null || ent.MarkedForClose || Target == ent || Target?.Parent == ent) continue;
-                var entInfo = MyDetectedEntityInfoHelper.Create(ent, Comp.Turret.OwnerId);
-                if (entInfo.IsEmpty() || (entInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Owner)) continue;
-                if (entInfo.Type == MyDetectedEntityType.SmallGrid || entInfo.Type == MyDetectedEntityType.LargeGrid)
-                {
-                    if (!GetTargetBlocks(ent)) continue;
-                    return ent;
-                }
-                return ent;
-            }
-
-            return null;
-        }
-
-        private bool GetTargetBlocks(MyEntity targetGrid)
-        {
-            Comp.TargetBlocks.Clear();
-            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = Comp.Targeting.TargetBlocks;
-            var g = 0;
-            var f = 0;
-            foreach (var targets in allTargets)
-            {
-                var rootGrid = targets.Key;
-                if (rootGrid != targetGrid) continue;
-                if (rootGrid.MarkedForClose) return false;
-
-                if (g++ > 0) break;
-                foreach (var b in targets.Value)
-                {
-                    if (b == null) continue;
-                    if (f++ > 9) return true;
-                    Comp.TargetBlocks.Add(b);
-                }
-            }
-
-            return f > 0;
-        }
-
         internal void Rotate(float speed)
         {
             var myCube = Comp.MyCube;

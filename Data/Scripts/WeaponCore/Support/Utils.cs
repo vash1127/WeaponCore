@@ -4,26 +4,11 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using VRageMath;
+using VRage.Game.Entity;
 
 namespace WeaponCore.Support
 {
-    internal class RootPriority : IComparer<TargetInfo>
-    {
-        public int Compare(TargetInfo x, TargetInfo y)
-        {
-            var compareVolume = x.Distance.CompareTo(y.Distance);
-            if (compareVolume != 0) return -compareVolume;
-            /*
-            var compareBlocks = x.BlocksCount.CompareTo(y.BlocksCount);
-            if (compareBlocks != 0) return compareBlocks;
-            */
 
-            return x.Entity.EntityId.CompareTo(y.Entity.EntityId);
-        }
-    }
 
     internal class BlockPriority : IComparer<BlockInfo>
     {
@@ -45,72 +30,6 @@ namespace WeaponCore.Support
         {
             T item;
             while (queue.TryDequeue(out item)) { }
-        }
-    }
-
-    internal class MonitorWork
-    {
-        internal List<Logic> ShieldList;
-        internal uint Tick;
-        internal int ShieldCnt;
-        internal int MinScaler;
-
-        internal void DoIt(List<Logic> s, uint t)
-        {
-            ShieldList = s;
-            Tick = t;
-            ShieldCnt = ShieldList.Count;
-            var preMinScaler = ShieldCnt / 30;
-            if (preMinScaler <= 0) preMinScaler = 1;
-            MinScaler = preMinScaler > 6 ? 9 : preMinScaler;
-        }
-    }
-
-    internal class EmpWork
-    {
-        internal MyCubeGrid Grid;
-        internal Vector3D EpiCenter;
-        internal int WarHeadSize;
-        internal double WarHeadYield;
-        internal double DirYield;
-        internal int StackCount;
-        internal double RangeCap;
-        internal double RangeCapSqr;
-        internal bool Stored;
-        internal bool Computed;
-        internal bool Drawed;
-        internal bool EventRunning;
-
-        internal void StoreEmpBlast(Vector3D epicCenter, int warHeadSize, double warHeadYield, int stackCount, double rangeCap)
-        {
-            EpiCenter = epicCenter;
-            WarHeadSize = warHeadSize;
-            WarHeadYield = warHeadYield;
-            StackCount = stackCount;
-            RangeCap = rangeCap;
-            RangeCapSqr = rangeCap * rangeCap;
-            DirYield = (warHeadYield * stackCount) * 0.5;
-            Stored = true;
-            EventRunning = true;
-        }
-
-        internal void ComputeComplete()
-        {
-            Computed = true;
-        }
-
-        internal void EmpDrawComplete()
-        {
-            Drawed = true;
-        }
-
-        internal void EventComplete()
-        {
-            Computed = false;
-            Drawed = false;
-            Stored = false;
-            EventRunning = false;
-            if (Session.Enforced.Debug >= 2) Log.Line($"====================================================================== [WarHead EventComplete]");
         }
     }
 
@@ -516,81 +435,6 @@ namespace WeaponCore.Support
             _last = ms;
             Sw.Reset();
         }
-        /*
-        internal static BoundingSphereD CreateFromPointsList(List<Vector3D> points)
-        {
-            Vector3D current;
-            Vector3D Vector3D_1 = current = points[0];
-            Vector3D Vector3D_2 = current;
-            Vector3D Vector3D_3 = current;
-            Vector3D Vector3D_4 = current;
-            Vector3D Vector3D_5 = current;
-            Vector3D Vector3D_6 = current;
-            foreach (Vector3D Vector3D_7 in points)
-            {
-                if (Vector3D_7.X < Vector3D_6.X)
-                    Vector3D_6 = Vector3D_7;
-                if (Vector3D_7.X > Vector3D_5.X)
-                    Vector3D_5 = Vector3D_7;
-                if (Vector3D_7.Y < Vector3D_4.Y)
-                    Vector3D_4 = Vector3D_7;
-                if (Vector3D_7.Y > Vector3D_3.Y)
-                    Vector3D_3 = Vector3D_7;
-                if (Vector3D_7.Z < Vector3D_2.Z)
-                    Vector3D_2 = Vector3D_7;
-                if (Vector3D_7.Z > Vector3D_1.Z)
-                    Vector3D_1 = Vector3D_7;
-            }
-            double result1;
-            Vector3D.Distance(ref Vector3D_5, ref Vector3D_6, out result1);
-            double result2;
-            Vector3D.Distance(ref Vector3D_3, ref Vector3D_4, out result2);
-            double result3;
-            Vector3D.Distance(ref Vector3D_1, ref Vector3D_2, out result3);
-            Vector3D result4;
-            double num1;
-            if (result1 > result2)
-            {
-                if (result1 > result3)
-                {
-                    Vector3D.Lerp(ref Vector3D_5, ref Vector3D_6, 0.5f, out result4);
-                    num1 = result1 * 0.5f;
-                }
-                else
-                {
-                    Vector3D.Lerp(ref Vector3D_1, ref Vector3D_2, 0.5f, out result4);
-                    num1 = result3 * 0.5f;
-                }
-            }
-            else if (result2 > result3)
-            {
-                Vector3D.Lerp(ref Vector3D_3, ref Vector3D_4, 0.5f, out result4);
-                num1 = result2 * 0.5f;
-            }
-            else
-            {
-                Vector3D.Lerp(ref Vector3D_1, ref Vector3D_2, 0.5f, out result4);
-                num1 = result3 * 0.5f;
-            }
-            foreach (Vector3D Vector3D_7 in points)
-            {
-                Vector3D Vector3D_8;
-                Vector3D_8.X = Vector3D_7.X - result4.X;
-                Vector3D_8.Y = Vector3D_7.Y - result4.Y;
-                Vector3D_8.Z = Vector3D_7.Z - result4.Z;
-                double num2 = Vector3D_8.Length();
-                if (num2 > num1)
-                {
-                    num1 = (num1 + num2) * 0.5;
-                    result4 += (1.0 - (num1 / num2)) * Vector3D_8;
-                }
-            }
-            BoundingSphereD boundingSphereD;
-            boundingSphereD.Center = result4;
-            boundingSphereD.Radius = num1;
-            return boundingSphereD;
-        }
-    */
     }
 
     internal class RunningAverage

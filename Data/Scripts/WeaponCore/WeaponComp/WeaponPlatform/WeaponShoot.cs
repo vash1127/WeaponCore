@@ -1,9 +1,12 @@
 ﻿using System;
+using Sandbox.ModAPI;
+using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
-
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -25,6 +28,7 @@ namespace WeaponCore.Platform
 
             if (rotateAxis != 0) MovePart(radiansPerTick, -1 * bps, rotateAxis == 1, rotateAxis == 2, rotateAxis == 3);
 
+            _targetTick++;
             if (ShotCounter != 0) return;
 
             var endBarrel = _numOfBarrels - 1;
@@ -48,7 +52,18 @@ namespace WeaponCore.Platform
                     muzzle.LastPosUpdate = tick;
                 }
             }
-
+            if (_targetTick > 59)
+            {
+                _targetTick = 0;
+                IHitInfo hitInfo;
+                MyAPIGateway.Physics.CastRay(EntityPart.PositionComp.WorldAABB.Center, Target.PositionComp.GetPosition(), out hitInfo, 15);
+                if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target?.Parent))
+                {
+                    Target = null;
+                    return;
+                }
+                //Log.Line($"not setting null: targetIs:{Target?.DebugName} - hitEnt:{hitEnt?.DebugName}");
+            }
             for (int i = 0; i < bps; i++)
             {
                 var current = _nextMuzzle;
