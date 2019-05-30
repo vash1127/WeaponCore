@@ -62,7 +62,6 @@ namespace WeaponCore.Platform
                     Target = null;
                     return;
                 }
-                //Log.Line($"not setting null: targetIs:{Target?.DebugName} - hitEnt:{hitEnt?.DebugName}");
             }
             for (int i = 0; i < bps; i++)
             {

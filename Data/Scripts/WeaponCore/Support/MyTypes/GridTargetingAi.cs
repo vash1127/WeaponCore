@@ -9,6 +9,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -42,12 +43,14 @@ namespace WeaponCore.Support
         {
             internal readonly MyDetectedEntityInfo EntInfo;
             internal readonly MyEntity Target;
+            internal readonly bool IsGrid;
             internal readonly MyCubeGrid MyGrid;
 
-            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, MyCubeGrid myGrid)
+            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, MyCubeGrid myGrid)
             {
                 EntInfo = entInfo;
                 Target = target;
+                IsGrid = isGrid;
                 MyGrid = myGrid;
             }
         }
@@ -64,25 +67,27 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void SelectTarget(ref MyEntity target, Vector3D weaponPos)
+        internal void SelectTarget(ref MyEntity target, Weapon weapon)
         {
             if (MySession.Tick - _targetsUpdatedTick >= 100)
             {
                 UpdateTargets();
                 _targetsUpdatedTick = MySession.Tick;
             }
-            else if (target != null) return;
-             
+            else if (target != null && !target.MarkedForClose) return;
             WeaponReady = false;
-            lock (_tLock) GetTarget(ref target, weaponPos);
+
+            lock (_tLock) GetTarget(ref target, weapon.MyPivotPos);
 
             if (target != null)
             {
                 WeaponReady = true;
+                weapon.Comp.Turret.EnableIdleRotation = false;
                 var grid = target as MyCubeGrid;
                 if (grid == null) return;
 
-                GetTargetBlocks(grid);
+                var gotBlock = GetTargetBlocks(grid);
+                if (!gotBlock) Log.Line("no block found");
                 var bCount = TargetBlocks.Count;
                 var found = false;
                 var c = 0;
@@ -96,28 +101,38 @@ namespace WeaponCore.Support
                         found = true;
                     }
                 }
+                if (!found) Log.Line("while never picked block");
             }
         }
 
         internal void GetTarget(ref MyEntity target, Vector3D weaponPos)
         {
             var physics = MyAPIGateway.Physics;
+            var found = false;
             for (int i = 0; i < SortedTargets.Count; i++)
             {
                 var targetInfo = SortedTargets[i];
-                IHitInfo hitInfo;
-                physics.CastRay(weaponPos, targetInfo.Target.PositionComp.GetPosition(), out hitInfo,0);
-                if (hitInfo.HitEntity == targetInfo.Target)
+                if (targetInfo.Target == null || targetInfo.Target.MarkedForClose) continue;
+                if (targetInfo.IsGrid)
                 {
                     target = targetInfo.Target;
+                    found = true;
+                    break;
                 }
-                else target = null;
+                IHitInfo hitInfo;
+                physics.CastRay(weaponPos, targetInfo.Target.PositionComp.GetPosition(), out hitInfo,15, true);
+                if (hitInfo?.HitEntity == targetInfo.Target)
+                {
+                    target = targetInfo.Target;
+                    found = true;
+                    break;
+                }
             }
+            if (!found) target = null;
         }
 
         private bool GetTargetBlocks(MyEntity targetGrid)
         {
-            Log.Line($"getting grid block cache");
             TargetBlocks.Clear();
             IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = Targeting.TargetBlocks;
             var g = 0;
@@ -177,7 +192,7 @@ namespace WeaponCore.Support
                             break;
                     }
                     ValidTargets.Add(ent, entInfo);
-                    SortedTargets.Add(new TargetInfo(entInfo, ent, MyGrid));
+                    SortedTargets.Add(new TargetInfo(entInfo, ent, (ent is MyCubeGrid), MyGrid));
                 }
                 SortedTargets.Sort(_targetCompare);
             }

@@ -54,7 +54,6 @@ namespace WeaponCore.Platform
         private Vector3D _weaponPosition;
         private Vector3D _oldWeaponPosition;
         private Vector3 _pivotOffsetVec;
-
         private int _rotationTime;
         private int _numOfBarrels;
         private int _shotsInCycle;
@@ -75,9 +74,10 @@ namespace WeaponCore.Platform
         private bool _azOk;
         private bool _elOk;
 
+        internal Vector3D MyPivotPos;
         internal bool TurretMode { get; set; }
         internal bool TrackTarget { get; set; }
-        internal bool ReadyToTrack => Target != null && (_azOk && _elOk || !WeaponType.TurretMode) && !Target.MarkedForClose;
+        internal bool ReadyToTrack => Target != null && (_azOk && _elOk || !WeaponType.TurretMode);
         internal bool ReadyToShoot => Comp.MyAi.WeaponReady && ReadyToTrack;
         internal bool SeekTarget => Target == null || Target != null && Target.MarkedForClose;
 

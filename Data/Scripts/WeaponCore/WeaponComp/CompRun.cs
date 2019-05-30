@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using WeaponCore.Platform;
@@ -72,6 +73,7 @@ namespace WeaponCore.Support
             Platform = new MyWeaponPlatform(this);
             StorageSetup();
             State.Value.Online = true;
+            MyGrid.GetFatBlockCount<MyCubeBlock>();
             MainInit = true;
         }
 
