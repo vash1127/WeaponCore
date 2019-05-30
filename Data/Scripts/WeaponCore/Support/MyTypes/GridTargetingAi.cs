@@ -113,25 +113,6 @@ namespace WeaponCore.Support
                 }
                 else target = null;
             }
-
-            /*
-            foreach (var ent in Targeting.TargetRoots)
-            {
-                if (ent == null || ent.MarkedForClose || target == ent || target?.Parent == ent) continue;
-                var entInfo = MyDetectedEntityInfoHelper.Create(ent, MyGrid.BigOwners[0]);
-                if (entInfo.IsEmpty() || (entInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Owner)) continue;
-                if (entInfo.Type == MyDetectedEntityType.SmallGrid || entInfo.Type == MyDetectedEntityType.LargeGrid)
-                {
-                    if (!GetTargetBlocks(ent)) continue;
-                    target = ent;
-                    return;
-                }
-
-                target = ent;
-                return;
-            }
-            target = null;
-            */
         }
 
         private bool GetTargetBlocks(MyEntity targetGrid)

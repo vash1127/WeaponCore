@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using ProtoBuf;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Generics;
@@ -106,15 +107,6 @@ namespace WeaponCore.Support
         [ProtoMember(65)] internal string ReloadSound;
         [ProtoMember(66)] internal string FiringSound;
         [ProtoMember(67)] internal string CustomEffect;
-    }
-
-    public class TestParticles : MyParticlesManager
-    {
-        private void Test()
-        {
-            var test = ParticleEffectsForUpdate;
-            test.Add(new MyParticleEffect());
-        }
     }
 
     public struct WeaponSystem
