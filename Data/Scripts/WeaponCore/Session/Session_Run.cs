@@ -40,7 +40,6 @@ namespace WeaponCore
         {
             try
             {
-
                 Timings();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
                 UpdateWeaponPlatforms();

@@ -65,6 +65,7 @@ namespace WeaponCore
         internal bool MouseButtonLeft { get; set; }
         internal bool MouseButtonMiddle { get; set; }
         internal bool MouseButtonRight { get; set; }
+        internal bool InTurret { get; set; }
         internal MyEntity ControlledEntity { get; set; }
 
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");

@@ -1,7 +1,5 @@
 ﻿using System;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
 using VRage.Game.ModAPI;
 using VRage.Input;
 using WeaponCore.Support;
@@ -79,7 +77,7 @@ namespace WeaponCore
                 MouseButtonMiddle = false;
                 MouseButtonRight = false;
             }
-
+            InTurret = false;
         }
 
         internal void ProcessHits()
