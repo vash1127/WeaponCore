@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sandbox.Game.Entities.Character;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Utils;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
