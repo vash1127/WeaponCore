@@ -65,6 +65,7 @@ namespace WeaponCore
                     {
                         var w = weapon.Platform.Weapons[j];
                         var gunner = false;
+                        var trigger = false;
                         if (!weapon.Turret.IsUnderControl)
                         {
                             if (w.Target != null)
@@ -81,14 +82,15 @@ namespace WeaponCore
                         }
                         else
                         {
+                            gunner = true;
                             if (MyAPIGateway.Input.IsAnyMousePressed())
                             {
                                 var currentAmmo = weapon.Gun.GunBase.CurrentAmmo;
                                 if (currentAmmo <= 1) weapon.Gun.GunBase.CurrentAmmo += 1;
-                                gunner = true;
+                                trigger = true;
                             }
                         }
-                        if (w.ReadyToShoot || gunner) w.Shoot();
+                        if (w.ReadyToShoot && !gunner || gunner && trigger) w.Shoot();
                     }
                 }
             }
