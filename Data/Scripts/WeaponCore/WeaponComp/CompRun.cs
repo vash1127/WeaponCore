@@ -74,6 +74,7 @@ namespace WeaponCore.Support
             StorageSetup();
             State.Value.Online = true;
             MyGrid.GetFatBlockCount<MyCubeBlock>();
+            Turret.EnableIdleRotation = false;
             MainInit = true;
         }
 

@@ -44,13 +44,15 @@ namespace WeaponCore.Support
             internal readonly MyDetectedEntityInfo EntInfo;
             internal readonly MyEntity Target;
             internal readonly bool IsGrid;
+            internal readonly int PartCount;
             internal readonly MyCubeGrid MyGrid;
 
-            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, MyCubeGrid myGrid)
+            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, int partCount, MyCubeGrid myGrid)
             {
                 EntInfo = entInfo;
                 Target = target;
                 IsGrid = isGrid;
+                PartCount = partCount;
                 MyGrid = myGrid;
             }
         }
@@ -59,11 +61,11 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
+                var compareParts = x.PartCount.CompareTo(y.PartCount);
+                if (compareParts != 0) return -compareParts;
                 var xApproching = Vector3.Dot(x.Target.Physics.LinearVelocity, x.Target.PositionComp.GetPosition() - x.MyGrid.PositionComp.GetPosition()) < 0;
                 var yApproching = Vector3.Dot(y.Target.Physics.LinearVelocity, y.Target.PositionComp.GetPosition() - y.MyGrid.PositionComp.GetPosition()) < 0;
-                var compareApproch = xApproching.CompareTo(yApproching);
-                if (compareApproch != 0) return -compareApproch;
-                return x.Target.EntityId.CompareTo(y.Target.EntityId);
+                return xApproching.CompareTo(yApproching);
             }
         }
 
@@ -192,7 +194,12 @@ namespace WeaponCore.Support
                             break;
                     }
                     ValidTargets.Add(ent, entInfo);
-                    SortedTargets.Add(new TargetInfo(entInfo, ent, (ent is MyCubeGrid), MyGrid));
+
+                    var grid = ent as MyCubeGrid;
+                    var isGrid = grid != null;
+                    int partCount = isGrid ? grid.GetFatBlocks().Count : 1;
+
+                    SortedTargets.Add(new TargetInfo(entInfo, ent, isGrid, partCount, MyGrid));
                 }
                 SortedTargets.Sort(_targetCompare);
             }

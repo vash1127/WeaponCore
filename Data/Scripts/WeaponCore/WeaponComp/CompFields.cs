@@ -1,15 +1,10 @@
-﻿using System.Collections.Generic;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
-using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Game.ObjectBuilders.Definitions;
-using VRage.Utils;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -83,6 +78,7 @@ namespace WeaponCore.Support
             MyCube = myCube;
             MyGrid = MyCube.CubeGrid;
             Turret = turret;
+            Gun = (IMyGunObject<MyGunBase>)MyCube;
         }
     }
 }
