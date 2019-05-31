@@ -68,6 +68,8 @@ namespace WeaponCore.Support
         internal bool ClientUiUpdate { get; set; }
         internal bool IsFunctional { get; set; }
         internal bool IsWorking { get; set; }
+        internal int FireRequest { get; set; }
+
         internal LogicSettings Set { get; set; }
         internal LogicState State { get; set; }
         internal MyResourceSinkComponent Sink { get; set; }

@@ -1,11 +1,9 @@
 ﻿using System;
 using Sandbox.ModAPI;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
-using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 namespace WeaponCore.Platform
 {
@@ -20,7 +18,7 @@ namespace WeaponCore.Platform
             var radiansPerTick = radiansPerShot / _timePerShot;
             if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
             _newCycle = false;
-
+            var targetLock = Target != null;
             if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
 
             var bps = WeaponType.BarrelsPerShot;
@@ -28,7 +26,7 @@ namespace WeaponCore.Platform
 
             if (rotateAxis != 0) MovePart(radiansPerTick, -1 * bps, rotateAxis == 1, rotateAxis == 2, rotateAxis == 3);
 
-            _targetTick++;
+            if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
 
             var endBarrel = _numOfBarrels - 1;
@@ -52,12 +50,12 @@ namespace WeaponCore.Platform
                     muzzle.LastPosUpdate = tick;
                 }
             }
-            if (_targetTick > 59)
+            if (targetLock && _targetTick > 59)
             {
                 _targetTick = 0;
                 IHitInfo hitInfo;
                 MyAPIGateway.Physics.CastRay(EntityPart.PositionComp.WorldAABB.Center, Target.PositionComp.GetPosition(), out hitInfo, 15);
-                if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target?.Parent))
+                if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target.Parent))
                 {
                     Target = null;
                     return;

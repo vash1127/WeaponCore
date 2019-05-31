@@ -195,8 +195,8 @@
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Controls\WepUi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponShoot.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponTracking.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Projectiles\Common.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Projectiles\Damage.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Common.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Damage.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MyTypes\CustomTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Session_Controls.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Session_Fields.cs" />
@@ -214,9 +214,9 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\GridIntersect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MyTypes\GridTargetingAi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Log.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Projectiles\ObjectPool.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Projectiles\Projectile.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Projectiles\Projectiles.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ObjectPool.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectile.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectiles.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Extensions\ParallelExt.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\ModelSupport\RecursiveSubparts.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Api\ShieldApi.cs" />

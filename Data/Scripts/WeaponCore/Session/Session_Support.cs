@@ -1,6 +1,9 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
 using VRage.Game.ModAPI;
+using VRage.Input;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore
@@ -62,6 +65,21 @@ namespace WeaponCore
 
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
                 ShieldApiLoaded = true;
+            ControlledEntity = Session.CameraController.Entity;
+            MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
+            if (MouseButtonPressed)
+            {
+                MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
+                MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
+                MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
+            }
+            else
+            {
+                MouseButtonLeft = false;
+                MouseButtonMiddle = false;
+                MouseButtonRight = false;
+            }
+
         }
 
         internal void ProcessHits()

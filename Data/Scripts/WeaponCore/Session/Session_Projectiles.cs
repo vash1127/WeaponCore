@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Game.Entities.Character;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Utils;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
@@ -26,7 +28,10 @@ namespace WeaponCore
                     shrink.Init(wDef, line, p.ReSizeSteps, p.LineReSizeLen);
                     _shrinking.Add(shrink);
                 }
-                MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.LineWidth);
+                var matrix = MatrixD.CreateFromDir(line.Direction);
+                matrix.Translation = line.From;
+                TransparentRenderExt.DrawTransparentCylinder(ref matrix, wDef.LineWidth, wDef.LineWidth, (float)line.Length, 6, wDef.TrailColor, wDef.TrailColor, wDef.PhysicalMaterial, wDef.PhysicalMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                //MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.LineWidth);
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();
@@ -64,9 +69,8 @@ namespace WeaponCore
                     for (int j = 0; j < weapon.Platform.Weapons.Length; j++)
                     {
                         var w = weapon.Platform.Weapons[j];
-                        var gunner = false;
-                        var trigger = false;
-                        if (!weapon.Turret.IsUnderControl)
+                        var gunner = ControlledEntity == weapon.MyCube;
+                        if (!gunner)
                         {
                             if (w.Target != null)
                             {
@@ -82,15 +86,13 @@ namespace WeaponCore
                         }
                         else
                         {
-                            gunner = true;
-                            if (MyAPIGateway.Input.IsAnyMousePressed())
+                            if (MouseButtonPressed)
                             {
                                 var currentAmmo = weapon.Gun.GunBase.CurrentAmmo;
                                 if (currentAmmo <= 1) weapon.Gun.GunBase.CurrentAmmo += 1;
-                                trigger = true;
                             }
                         }
-                        if (w.ReadyToShoot && !gunner || gunner && trigger) w.Shoot();
+                        if (w.ReadyToShoot && !gunner || gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                     }
                 }
             }

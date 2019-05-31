@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Collections;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using WeaponCore.Support;
@@ -60,6 +61,11 @@ namespace WeaponCore
         internal bool Tick1800 { get; set; }
         internal bool ShieldMod { get; set; }
         internal bool ShieldApiLoaded { get; set; }
+        internal bool MouseButtonPressed { get; set; }
+        internal bool MouseButtonLeft { get; set; }
+        internal bool MouseButtonMiddle { get; set; }
+        internal bool MouseButtonRight { get; set; }
+        internal MyEntity ControlledEntity { get; set; }
 
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
         internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
