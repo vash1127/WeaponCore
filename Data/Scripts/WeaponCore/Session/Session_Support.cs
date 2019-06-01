@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRage.Input;
@@ -64,6 +65,13 @@ namespace WeaponCore
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
                 ShieldApiLoaded = true;
             ControlledEntity = Session.CameraController.Entity;
+            if (ControlledEntity is IMyGunBaseUser)
+            {
+                var rawZoom = MyAPIGateway.Session.Camera.FovWithZoom;
+                Zoom = rawZoom <= 1 ? rawZoom : 1;
+            }
+            else Zoom = 1;
+
             MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
             if (MouseButtonPressed)
             {
@@ -77,7 +85,6 @@ namespace WeaponCore
                 MouseButtonMiddle = false;
                 MouseButtonRight = false;
             }
-            InTurret = false;
         }
 
         internal void ProcessHits()

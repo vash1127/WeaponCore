@@ -144,12 +144,13 @@ namespace WeaponCore.Projectiles
             {
                 if (WepDef.ParticleTrail) DisposeEffect();
 
-                if (AmmoSound) Sound1.StopSound(true, true);
+                Sound1.StopSound(true, true);
                 if (WepDef.AmmoHitSound != null)
                 {
                     Sound1.CustomMaxDistance = WepDef.AmmoHitSoundRange;
                     Sound1.CustomVolume = WepDef.AmmoHitSoundVolume;
                     Sound1.SetPosition(Position);
+                    Sound1.CanPlayLoopSounds = false;
                     Sound1.PlaySoundWithDistance(Weapon.AmmoHitSoundPair.SoundId, false, false, false, true, true, false, false);
                 }
                 checkPool.Return(CheckList);

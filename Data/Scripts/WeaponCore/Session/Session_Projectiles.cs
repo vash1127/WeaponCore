@@ -85,7 +85,7 @@ namespace WeaponCore
                         {
                             if (w.Target != null)
                             {
-                                DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
+                                //DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
                             }
                             if (w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
                             if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);

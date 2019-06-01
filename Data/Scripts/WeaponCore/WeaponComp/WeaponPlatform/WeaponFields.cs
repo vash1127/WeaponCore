@@ -49,15 +49,18 @@ namespace WeaponCore.Platform
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
 
+        private MyEntity _lastTarget;
         private MatrixD _weaponMatrix;
         private MatrixD _oldWeaponMatrix;
         private Vector3D _weaponPosition;
         private Vector3D _oldWeaponPosition;
+        private Vector3D _lastPredictedPos;
         private Vector3 _pivotOffsetVec;
         private int _rotationTime;
         private int _numOfBarrels;
         private int _shotsInCycle;
         private int _nextMuzzle;
+        private uint _lastPredictionTick;
         private uint _posUpdatedTick = uint.MinValue;
         private uint _posChangedTick = 1;
         private uint _targetTick;

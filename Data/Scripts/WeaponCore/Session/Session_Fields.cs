@@ -45,6 +45,8 @@ namespace WeaponCore
         internal double SyncDistSqr { get; private set; }
         internal double SyncBufferedDistSqr { get; private set; }
         internal double SyncDist { get; private set; }
+        internal float Zoom { get; set; }
+
         internal bool MpActive { get; set; }
         internal bool IsServer { get; set; }
         internal bool DedicatedServer { get; set; }

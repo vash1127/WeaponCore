@@ -1,6 +1,14 @@
 ﻿using System;
+using Sandbox;
+using Sandbox.Definitions;
+using Sandbox.Game.Weapons;
+using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
+using VRageRender;
 using IMyLargeTurretBase = Sandbox.ModAPI.IMyLargeTurretBase;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -14,8 +22,8 @@ namespace WeaponCore.Platform
             var myPivotPos = myCube.PositionComp.WorldAABB.Center;
             myPivotPos += myMatrix.Up * _upPivotOffsetLen;
             MyPivotPos = myPivotPos;
-
-            GetTurretAngles(ref targetPos, ref MyPivotPos, Comp.Turret, speed, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
+            var predictedPos = GetPredictedTargetPosition(Target);
+            GetTurretAngles(ref predictedPos, ref MyPivotPos, Comp.Turret, speed, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
             //GetTurretAngles2(ref targetPos, ref myPivotPos, ref myMatrix, out _azimuth, out _elevation);
             var azDiff = 100 * (_desiredAzimuth - _azimuth) / _azimuth;
             var elDiff = 100 * (_desiredElevation - _elevation) / _elevation;
@@ -24,6 +32,7 @@ namespace WeaponCore.Platform
             _elOk = elDiff > -101 && elDiff < -99 || elDiff > -1 && elDiff < 1;
             Comp.Turret.Azimuth = (float)_azimuth;
             Comp.Turret.Elevation = (float)_elevation;
+            //Log.Line($"{_azimuth}({azDiff})[{_desiredAzimuth}] - {_elevation}({elDiff})[{_desiredElevation}]");
         }
 
         internal void GetTurretAngles(ref Vector3D targetPositionWorld, ref Vector3D turretPivotPointWorld, IMyLargeTurretBase turret, double maxAngularStep, out double azimuth, out double elevation, out double desiredAzimuth, out double desiredElevation)
@@ -131,6 +140,75 @@ namespace WeaponCore.Platform
             if (num1 < 0 && num2 > 0)
                 return false;
             return true;
+        }
+
+        public Vector3D GetPredictedTargetPosition(MyEntity target)
+        {
+            var thisTick = Comp.MyAi.MySession.Tick;
+            if (thisTick == _lastPredictionTick && _lastTarget == target)
+                return _lastPredictedPos;
+            //if (thisTick != _lastPredictionTick)
+                //this.m_muzzleWorldPosition = this.Turret.GunBase.GetMuzzleWorldPosition();
+            _lastTarget = target;
+            _lastPredictionTick = thisTick;
+            if (target == null)
+            {
+                _lastPredictedPos = Vector3D.Zero;
+                return _lastPredictedPos;
+            }
+            if (target.MarkedForClose)
+            {
+                _lastPredictedPos = target.PositionComp.GetPosition();
+                return _lastPredictedPos;
+            }
+            var center = target.PositionComp.WorldAABB.Center;
+            var deltaPos = center - MyPivotPos;
+            //if (true)
+            {
+                DsDebugDraw.DrawLine(MyPivotPos, center, Color.Lime, 0.1f);
+            }
+            var projectileVel = 0.0f;
+            var num1 = 0.0f;
+
+            projectileVel = WeaponType.DesiredSpeed;
+            num1 = WeaponType.MaxTrajectory;
+
+            num1 += WeaponType.AreaEffectRadius;
+            var flag = !WeaponType.SkipAcceleration;
+
+            var num2 = projectileVel < 9.99999974737875E-06 ? 1E-06f : num1 / projectileVel;
+            var vector3_1 = Vector3.Zero;
+            if (target.Physics != null)
+            {
+                vector3_1 = target.Physics.LinearVelocity;
+            }
+            else
+            {
+                var topMostParent = target.GetTopMostParent();
+                if (topMostParent?.Physics != null)
+                    vector3_1 = topMostParent.Physics.LinearVelocity;
+            }
+            var vector3_2 = ((IMyCubeGrid)Comp.MyGrid)?.Physics.LinearVelocity ?? Vector3.Zero;
+            var vector3_3 = vector3_1 - vector3_2;
+            var num3 = MathHelper.Clamp(Intercept(deltaPos, vector3_3, projectileVel), 0.0, num2);
+            var vector3D = center + (float)num3 * vector3_1;
+            _lastPredictedPos = flag ? vector3D - (float)num3 / num2 * vector3_2 : vector3D - (float)num3 * vector3_2;
+            //if (true)
+            {
+                DsDebugDraw.DrawLine(MyPivotPos, _lastPredictedPos, Color.Orange, 0.1f);
+            }
+            return _lastPredictedPos;
+        }
+
+        private double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
+        {
+            var num1 = Vector3D.Dot(deltaVel, deltaVel) - projectileVel * projectileVel;
+            var num2 = 2.0 * Vector3D.Dot(deltaVel, deltaPos);
+            var num3 = Vector3D.Dot(deltaPos, deltaPos);
+            var d = num2 * num2 - 4.0 * num1 * num3;
+            if (d <= 0.0)
+                return -1.0;
+            return 2.0 * num3 / (Math.Sqrt(d) - num2);
         }
     }
 }
