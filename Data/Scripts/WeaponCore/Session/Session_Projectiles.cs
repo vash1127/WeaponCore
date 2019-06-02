@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.ModAPI;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Projectiles.Projectiles;
@@ -83,17 +84,9 @@ namespace WeaponCore
                         w.Gunner = ControlledEntity == weapon.MyCube;
                         if (!w.Gunner)
                         {
-                            if (w.Target != null)
-                            {
-                                //DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
-                            }
                             if (w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
-                            if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.TurretDef.RotateSpeed);
-                            if (w.TrackTarget && w.ReadyToTrack)
-                            {
-                                //logic.Turret.TrackTarget(w.Target);
-                                //logic.Turret.EnableIdleRotation = false;
-                            }
+                            if (w.TrackingAi && w.Target != null)
+                                Weapon.TrackingTarget(w, w.Target, w.WeaponType.TurretDef.RotateSpeed);
                         }
                         else
                         {

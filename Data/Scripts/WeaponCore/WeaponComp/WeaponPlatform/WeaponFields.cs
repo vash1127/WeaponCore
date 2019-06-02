@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
@@ -16,7 +14,6 @@ namespace WeaponCore.Platform
             _localTranslation = entity.LocalMatrix.Translation;
             _pivotOffsetVec = (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) - entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
             _upPivotOffsetLen = _pivotOffsetVec.Length();
-
             WeaponSystem = weaponSystem;
             WeaponType = weaponSystem.WeaponType;
             TurretMode = WeaponType.TurretDef.TurretMode;
@@ -31,21 +28,20 @@ namespace WeaponCore.Platform
             ReloadSoundPair = new MySoundPair(WeaponType.AudioDef.ReloadSound);
             AmmoTravelSoundPair = new MySoundPair(WeaponType.AudioDef.AmmoTravelSound);
             AmmoHitSoundPair = new MySoundPair(WeaponType.AudioDef.AmmoHitSound);
-            InitTurretBase();
         }
 
-        public IMyEntity EntityPart;
-        public WeaponSystem WeaponSystem;
-        public WeaponDefinition WeaponType;
-        public Dummy[] Dummies;
-        public Muzzle[] Muzzles;
-        public WeaponComponent Comp;
-        public uint[] BeamSlot { get; set; }
-        public MyEntity Target;
-        public readonly MySoundPair FiringSoundPair;
-        public readonly MySoundPair ReloadSoundPair;
-        public readonly MySoundPair AmmoTravelSoundPair;
-        public readonly MySoundPair AmmoHitSoundPair;
+        internal IMyEntity EntityPart;
+        internal WeaponSystem WeaponSystem;
+        internal WeaponDefinition WeaponType;
+        internal Dummy[] Dummies;
+        internal Muzzle[] Muzzles;
+        internal WeaponComponent Comp;
+        internal uint[] BeamSlot { get; set; }
+        internal MyEntity Target;
+        internal readonly MySoundPair FiringSoundPair;
+        internal readonly MySoundPair ReloadSoundPair;
+        internal readonly MySoundPair AmmoTravelSoundPair;
+        internal readonly MySoundPair AmmoHitSoundPair;
 
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
@@ -68,22 +64,27 @@ namespace WeaponCore.Platform
         private uint _ticksPerShot;
         internal uint ShotCounter;
         private double _timePerShot;
-        private double _azimuth;
-        private double _elevation;
-        private double _desiredAzimuth;
-        private double _desiredElevation;
+        internal double Azimuth;
+        internal double Elevation;
+        internal double DesiredAzimuth;
+        internal double DesiredElevation;
 
         private bool _newCycle = false;
         //private bool _firstRun = true;
-        private bool _azOk;
-        private bool _elOk;
+        internal uint CheckedForTargetTick;
+        internal float RotationSpeed;
+        internal float ElevationSpeed;
+        internal float MaxAzimuthRadians;
+        internal float MinAzimuthRadians;
+        internal float MaxElevationRadians;
+        internal float MinElevationRadians;
 
-        internal Vector3D MyPivotPos;
         internal bool TurretMode { get; set; }
         internal bool TrackTarget { get; set; }
-        internal bool ReadyToTrack => Target != null && (_azOk && _elOk || !WeaponType.TurretDef.TurretMode);
+        internal bool ReadyToTrack => Target != null;
         internal bool ReadyToShoot => Comp.MyAi.WeaponReady && ReadyToTrack;
         internal bool SeekTarget => Target == null || Target != null && Target.MarkedForClose;
         internal bool Gunner;
+        internal bool TrackingAi;
     }
 }

@@ -71,16 +71,16 @@ namespace WeaponCore.Support
 
         internal void SelectTarget(ref MyEntity target, Weapon weapon)
         {
-            if (MySession.Tick - _targetsUpdatedTick >= 100)
-            {
-                UpdateTargets();
-                _targetsUpdatedTick = MySession.Tick;
-            }
-            else if (target != null && !target.MarkedForClose) return;
+            if (MySession.Tick - _targetsUpdatedTick < 100) return;
+            if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
+            if (target != null && !target.MarkedForClose) return;
+
+            UpdateTargets();
+            _targetsUpdatedTick = MySession.Tick;
+            weapon.CheckedForTargetTick = MySession.Tick;
+
             WeaponReady = false;
-
-            lock (_tLock) GetTarget(ref target, weapon.MyPivotPos);
-
+            lock (_tLock) GetTarget(ref target, weapon);
             if (target != null)
             {
                 WeaponReady = true;
@@ -93,21 +93,33 @@ namespace WeaponCore.Support
                 var bCount = TargetBlocks.Count;
                 var found = false;
                 var c = 0;
+                var physics = MyAPIGateway.Physics;
+                var weaponPos = weapon.Comp.MyPivotPos;
                 while (!found)
                 {
                     if (c++ > 100) break;
                     var next = Rnd.Next(0, bCount);
                     if (!TargetBlocks[next].MarkedForClose)
                     {
-                        target = TargetBlocks[next];
-                        found = true;
+                        IHitInfo hitInfo;
+                        physics.CastRay(weaponPos, TargetBlocks[next].PositionComp.GetPosition(), out hitInfo, 15);
+                        if (hitInfo?.HitEntity == TargetBlocks[next].Parent)
+                        {
+                            target = TargetBlocks[next];
+                            found = true;
+                        }
                     }
                 }
-                if (!found) Log.Line("while never picked block");
+
+                if (!found)
+                {
+                    target = null;
+                    Log.Line("while never picked block");
+                }
             }
         }
 
-        internal void GetTarget(ref MyEntity target, Vector3D weaponPos)
+        internal void GetTarget(ref MyEntity target, Weapon weapon)
         {
             var physics = MyAPIGateway.Physics;
             var found = false;
@@ -115,12 +127,14 @@ namespace WeaponCore.Support
             {
                 var targetInfo = SortedTargets[i];
                 if (targetInfo.Target == null || targetInfo.Target.MarkedForClose) continue;
+                if (!(Weapon.TrackingTarget(weapon, targetInfo.Target))) continue;
                 if (targetInfo.IsGrid)
                 {
                     target = targetInfo.Target;
                     found = true;
                     break;
                 }
+                var weaponPos = weapon.Comp.MyPivotPos;
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetInfo.Target.PositionComp.GetPosition(), out hitInfo,15, true);
                 if (hitInfo?.HitEntity == targetInfo.Target)

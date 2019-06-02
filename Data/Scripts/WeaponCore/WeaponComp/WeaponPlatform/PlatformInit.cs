@@ -12,8 +12,8 @@ namespace WeaponCore.Platform
         public readonly MyLargeTurretBaseDefinition BaseDefinition;
         public MyWeaponPlatform(WeaponComponent comp)
         {
-            Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
             BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
+            Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
             var subPartCount = Structure.PartNames.Length;
             Weapons = new Weapon[subPartCount];
             SubParts.Entity = comp.Entity;
@@ -29,8 +29,16 @@ namespace WeaponCore.Platform
                     Dummies = new Dummy[barrelCount],
                     Comp = comp,
                 };
+
+                var weapon = Weapons[i];
+                if (weapon.WeaponType.TurretDef.TurretMode && comp.TrackingWeapon == null && subPartEntity?.Parent?.Parent?.Parent == comp.MyCube)
+                {
+                    weapon.TrackingAi = true;
+                    comp.TrackingWeapon = weapon;
+                }
             }
             CompileTurret();
+
         }
 
         private void CompileTurret()

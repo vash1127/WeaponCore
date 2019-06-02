@@ -1,6 +1,7 @@
 ﻿using System;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -70,9 +71,11 @@ namespace WeaponCore.Support
         public void InitPlatform()
         {
             Platform = new MyWeaponPlatform(this);
+            foreach (var t in Platform.Weapons) t.InitTracking();
             StorageSetup();
             State.Value.Online = true;
             Turret.EnableIdleRotation = false;
+            Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
             MainInit = true;
         }
 

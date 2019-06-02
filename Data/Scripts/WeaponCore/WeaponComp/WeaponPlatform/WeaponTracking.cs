@@ -1,67 +1,65 @@
 ﻿using System;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using IMyLargeTurretBase = Sandbox.ModAPI.IMyLargeTurretBase;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal void Rotate(float speed)
+        internal static bool TrackingTarget(Weapon weapon, MyEntity target, double maxAngularStep = double.MinValue)
         {
-            var myCube = Comp.MyCube;
-            var myMatrix = myCube.PositionComp.WorldMatrix;
-            var myPivotPos = myCube.PositionComp.WorldAABB.Center;
-            myPivotPos += myMatrix.Up * _upPivotOffsetLen;
-            MyPivotPos = myPivotPos;
-            var predictedPos = GetPredictedTargetPosition(Target);
-            GetTurretAngles(ref predictedPos, ref MyPivotPos, Comp.Turret, speed, out _azimuth, out _elevation, out _desiredAzimuth, out _desiredElevation);
-            var azDiff = 100 * (_desiredAzimuth - _azimuth) / _azimuth;
-            var elDiff = 100 * (_desiredElevation - _elevation) / _elevation;
+            var trackingWeapon = weapon.Comp.TrackingWeapon;
+            var turret = trackingWeapon.Comp.Turret;
+            var cube = weapon.Comp.MyCube;
+            var targetPos = weapon.GetPredictedTargetPosition(target);
+            var weaponPos = weapon.Comp.MyPivotPos;
 
-            _azOk = azDiff > -101 && azDiff < -99 || azDiff > -1 && azDiff < 1;
-            _elOk = elDiff > -101 && elDiff < -99 || elDiff > -1 && elDiff < 1;
-            Comp.Turret.Azimuth = (float)_azimuth;
-            Comp.Turret.Elevation = (float)_elevation;
-            //Rotation = (float)_desiredAzimuth;
-            //Elevation = (float)_desiredElevation;
-            //RotateModels();
-
-            //Log.Line($"{_azimuth}({azDiff})[{_desiredAzimuth}] - {_elevation}({elDiff})[{_desiredElevation}]");
-        }
-
-        internal void GetTurretAngles(ref Vector3D targetPositionWorld, ref Vector3D turretPivotPointWorld, IMyLargeTurretBase turret, double maxAngularStep, out double azimuth, out double elevation, out double desiredAzimuth, out double desiredElevation)
-        {
-            // Get current turret facing
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
-            currentVector = Vector3D.Rotate(currentVector, turret.WorldMatrix);
+            currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
 
-            var up = turret.WorldMatrix.Up;
+            var up = cube.WorldMatrix.Up;
             var left = Vector3D.Cross(up, currentVector);
             if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
                 left.Normalize();
             var forward = Vector3D.Cross(left, up);
 
-            var matrix = new MatrixD()
-            {
-                Forward = forward,
-                Left = left,
-                Up = up,
-            };
+            var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
-            // Get desired angles
-            var targetDirection = targetPositionWorld - turretPivotPointWorld;
+            var targetDirection = targetPos - weaponPos;
+
+            double desiredAzimuth;
+            double desiredElevation;
             GetRotationAngles(ref targetDirection, ref matrix, out desiredAzimuth, out desiredElevation);
 
-            // Get control angles
-            azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAngularStep, maxAngularStep);
-            elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxAngularStep, maxAngularStep);
+            var azConstraint = Math.Min(trackingWeapon.MaxAzimuthRadians, Math.Max(trackingWeapon.MinAzimuthRadians, desiredAzimuth));
+            var elConstraint = Math.Min(trackingWeapon.MaxElevationRadians, Math.Max(trackingWeapon.MinElevationRadians, desiredElevation));
+            var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
+            var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
+            var tracking = !azConstrained && !elConstrained;
+            if (!tracking) weapon.Target = null;
+            else if (weapon == trackingWeapon && weapon.Target != null)
+            {
+                DsDebugDraw.DrawLine(weaponPos, weapon.Target.PositionComp.WorldAABB.Center, Color.Lime, 0.1f);
+                DsDebugDraw.DrawLine(weaponPos, targetPos, Color.Orange, 0.1f);
+            }
+
+            if (weapon != trackingWeapon) return tracking;
+
+            if (tracking && maxAngularStep > double.MinValue)
+            {
+                trackingWeapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAngularStep, maxAngularStep);
+                trackingWeapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxAngularStep, maxAngularStep);
+                trackingWeapon.DesiredAzimuth = desiredAzimuth;
+                trackingWeapon.DesiredElevation = desiredElevation;
+                turret.Azimuth = (float) trackingWeapon.Azimuth;
+                turret.Elevation = (float)trackingWeapon.Elevation;
+            }
+            return tracking;
         }
 
         /*
@@ -69,7 +67,7 @@ namespace WeaponCore.Platform
         Dependencies: AngleBetween
         */
 
-        void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
+        static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
         {
             var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
             var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
@@ -97,26 +95,15 @@ namespace WeaponCore.Platform
             var thisTick = Comp.MyAi.MySession.Tick;
             if (thisTick == _lastPredictionTick && _lastTarget == target)
                 return _lastPredictedPos;
-            //if (thisTick != _lastPredictionTick)
-                //this.m_muzzleWorldPosition = this.Turret.GunBase.GetMuzzleWorldPosition();
             _lastTarget = target;
             _lastPredictionTick = thisTick;
-            if (target == null)
+            if (target == null || target.MarkedForClose)
             {
                 _lastPredictedPos = Vector3D.Zero;
                 return _lastPredictedPos;
             }
-            if (target.MarkedForClose)
-            {
-                _lastPredictedPos = target.PositionComp.GetPosition();
-                return _lastPredictedPos;
-            }
             var center = target.PositionComp.WorldAABB.Center;
-            var deltaPos = center - MyPivotPos;
-            //if (true)
-            {
-                DsDebugDraw.DrawLine(MyPivotPos, center, Color.Lime, 0.1f);
-            }
+            var deltaPos = center - Comp.MyPivotPos;
 
             var projectileVel = WeaponType.AmmoDef.DesiredSpeed;
             var maxTrajectory = WeaponType.AmmoDef.MaxTrajectory;
@@ -136,15 +123,12 @@ namespace WeaponCore.Platform
                 if (topMostParent?.Physics != null)
                     targetVel = topMostParent.Physics.LinearVelocity;
             }
-            var myVel = ((IMyCubeGrid)Comp.MyGrid)?.Physics.LinearVelocity ?? Vector3.Zero;
+            var myVel = Comp.Physics.LinearVelocity;
             var deltaVel = targetVel - myVel;
             var num3 = MathHelper.Clamp(Intercept(deltaPos, deltaVel, projectileVel), 0.0, maxVel);
             var vector3D = center + (float)num3 * targetVel;
             _lastPredictedPos = flag ? vector3D - (float)num3 / maxVel * myVel : vector3D - (float)num3 * myVel;
-            //if (true)
-            {
-                DsDebugDraw.DrawLine(MyPivotPos, _lastPredictedPos, Color.Orange, 0.1f);
-            }
+
             return _lastPredictedPos;
         }
 
@@ -159,27 +143,84 @@ namespace WeaponCore.Platform
             return 2.0 * num3 / (Math.Sqrt(d) - num2);
         }
 
+        internal void InitTracking()
+        {
+            _randomStandbyChange_ms = MyAPIGateway.Session.ElapsedPlayTime.Milliseconds;
+            _randomStandbyChangeConst_ms = MyUtils.GetRandomInt(3500, 4500);
+            _randomStandbyRotation = 0.0f;
+            _randomStandbyElevation = 0.0f;
+
+            RotationSpeed = Comp.Platform.BaseDefinition.RotationSpeed;
+            ElevationSpeed = Comp.Platform.BaseDefinition.ElevationSpeed;
+            MinElevationRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinElevationDegrees));
+            MaxElevationRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxElevationDegrees));
+
+            if ((double)MinElevationRadians > (double)MaxElevationRadians)
+                MinElevationRadians -= 6.283185f;
+            _minSinElevationRadians = (float)Math.Sin((double)MinElevationRadians);
+            _maxSinElevationRadians = (float)Math.Sin((double)MaxElevationRadians);
+            MinAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinAzimuthDegrees));
+            MaxAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxAzimuthDegrees));
+            if ((double)MinAzimuthRadians > (double)MaxAzimuthRadians)
+                MinAzimuthRadians -= 6.283185f;
+        }
+
+        private float NormalizeAngle(int angle)
+        {
+            int num = angle % 360;
+            if (num == 0 && angle != 0)
+                return 360f;
+            return num;
+        }
+
+        public static bool NearlyEqual(double f1, double f2)
+        {
+            // Equal if they are within 0.00001 of each other
+            return Math.Abs(f1 - f2) < 0.00001;
+        }
+
+
+        private static double ClampAzimuth(Weapon weapon, double value)
+        {
+            if (IsAzimuthLimited(weapon))
+                value = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, value));
+            return value;
+        }
+
+        private static bool IsAzimuthLimited(Weapon weapon)
+        {
+            return Math.Abs(weapon.MaxAzimuthRadians - weapon.MinAzimuthRadians - 6.28318548202515) > 0.01;
+        }
+
+        private static double ClampElevation(Weapon weapon, double value)
+        {
+            if (IsElevationLimited(weapon))
+                value = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, value));
+            return value;
+        }
+
+        private static bool IsElevationLimited(Weapon weapon)
+        {
+            return Math.Abs(weapon.MaxElevationRadians - weapon.MinElevationRadians - 6.28318548202515) > 0.01;
+        }
+
         private int _randomStandbyChange_ms;
         private int _randomStandbyChangeConst_ms;
         private float _randomStandbyRotation;
         private float _randomStandbyElevation;
-        private float _rotationSpeed;
-        private float _elevationSpeed;
-        private float _maxAzimuthRadians;
-        private float _minAzimuthRadians;
-        private float _maxElevationRadians;
-        private float _minElevationRadians;
+
         private float _rotationLast;
         private float _elevationLast;
         private float _gunIdleElevation;
         private float _gunIdleAzimuth;
+        private float _minSinElevationRadians = -1f;
+        private float _maxSinElevationRadians = 1f;
+
         private bool _gunIdleElevationAzimuthUnknown;
         private bool _enableIdleRotation;
         private bool _randomIsMoving;
         private bool _transformDirty = true;
         private bool _wasAnimatedLastFrame;
-        internal float Rotation;
-        internal float Elevation;
         internal float BarrelElevationMin;
         internal bool IsAimed;
         private IMyEntity _barrel;
@@ -191,52 +232,6 @@ namespace WeaponCore.Platform
             _barrel = EntityPart;
             _base1 = EntityPart.Parent.Parent;
             _base2 = EntityPart.Parent;
-            /*
-            this.m_shootIgnoreEntities = new VRage.Game.Entity.MyEntity[1]
-            {
-                (VRage.Game.Entity.MyEntity) this
-            };
-            */
-            //this.CreateTerminalControls();
-            //this.m_status = MyLargeTurretBase.MyLargeShipGunStatus.MyWeaponStatus_Deactivated;
-            _randomStandbyChange_ms = MyAPIGateway.Session.ElapsedPlayTime.Milliseconds;
-            _randomStandbyChangeConst_ms = MyUtils.GetRandomInt(3500, 4500);
-            _randomStandbyRotation = 0.0f;
-            _randomStandbyElevation = 0.0f;
-            Rotation = 0.0f;
-            Elevation = 0.0f;
-            _rotationSpeed = 0.005f;
-            _elevationSpeed = 0.005f;
-            /*
-                < MinElevationDegrees > -9 </ MinElevationDegrees >
-                < MaxElevationDegrees > 50 </ MaxElevationDegrees >
-                < MinAzimuthDegrees > -180 </ MinAzimuthDegrees >
-                < MaxAzimuthDegrees > 180 </ MaxAzimuthDegrees >
-            */
-            _minElevationRadians = -9 / 0.0174533f;
-            _maxElevationRadians = 50 / 0.0174533f;
-            _minAzimuthRadians = -180 / 0.0174533f;
-            _maxAzimuthRadians = 180 / 0.0174533f;
-            //this.m_shootDelayIntervalConst_ms = 200;
-            //this.m_shootIntervalConst_ms = 1200;
-            //this.m_shootIntervalVarianceConst_ms = 500;
-            //this.m_shootStatusChanged_ms = 0;
-            //this.m_isPotentialTarget = false;
-            //this.m_targetPrediction = (MyLargeTurretBase.IMyPredicionType)new MyLargeTurretBase.MyTargetPredictionType(this);
-            //this.m_currentPrediction = this.m_targetPrediction;
-            //this.m_positionPrediction = (MyLargeTurretBase.IMyPredicionType)new MyLargeTurretBase.MyPositionPredictionType(this);
-            //this.m_soundEmitter = new MyEntity3DSoundEmitter((VRage.Game.Entity.MyEntity)this, true, 1f);
-            //this.m_soundEmitterForRotation = new MyEntity3DSoundEmitter((VRage.Game.Entity.MyEntity)this, true, 1f);
-            //this.ControllerInfo.ControlReleased += new Action<MyEntityController>(this.OnControlReleased);
-            //this.m_gunBase = new MyGunBase();
-            //this.m_outOfAmmoNotification = new MyHudNotification(MyCommonTexts.OutOfAmmo, 1000, "Blue", MyGuiDrawAlignEnum.HORISONTAL_CENTER_AND_VERTICAL_CENTER, 0, MyNotificationLevel.Important);
-            //this.NeedsUpdate |= MyEntityUpdateEnum.EACH_FRAME | MyEntityUpdateEnum.EACH_10TH_FRAME | MyEntityUpdateEnum.BEFORE_NEXT_FRAME;
-            //this.SyncType.Append((object)this.m_gunBase);
-            //this.m_shootingRange.ValueChanged += (Action<SyncBase>)(x => this.ShootingRangeChanged());
-            //this.m_rotationAndElevationSync.ValueChanged += (Action<SyncBase>)(x => this.RotationAndElevationSync());
-            //this.m_targetSync.AlwaysReject<MyLargeTurretBase.CurrentTargetSync, SyncDirection.FromServer>();
-            //this.m_targetSync.ValueChanged += (Action<SyncBase>)(x => this.TargetChanged());
-            //this.m_toolbar = new MyToolbar(this.ToolbarType, 9, 9);
         }
 
 
@@ -259,7 +254,7 @@ namespace WeaponCore.Platform
             }
             //ClampRotationAndElevation();
             Matrix rotMatrix;
-            Matrix.CreateRotationY(Rotation, out rotMatrix);
+            Matrix.CreateRotationY((float)Azimuth, out rotMatrix);
 
             var baseMatrix = Comp.MyCube.PositionComp.LocalMatrix;
             var baseMatrixTran = baseMatrix.Translation;
@@ -271,7 +266,7 @@ namespace WeaponCore.Platform
             _base1.PositionComp.SetLocalMatrix(ref rotMatrix, _base1.Physics, false, ref rotDoneMatrix, true);
 
             Matrix elMatrix;
-            Matrix.CreateRotationX(Elevation, out elMatrix);
+            Matrix.CreateRotationX((float)Elevation, out elMatrix);
 
             Matrix elDoneMatrix;
             Matrix.Multiply(ref elMatrix, ref rotDoneMatrix, out elDoneMatrix);
@@ -289,7 +284,7 @@ namespace WeaponCore.Platform
 
         private Vector3 LookAt(Vector3D target)
         {
-            var muzzleWorldPosition = MyPivotPos;
+            var muzzleWorldPosition = Comp.MyPivotPos;
             float azimuth;
             float elevation;
             Vector3.GetAzimuthAndElevation(Vector3.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, Comp.MyCube.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
@@ -317,18 +312,18 @@ namespace WeaponCore.Platform
             ResetRandomAiming();
             var randomStandbyRotation = _randomStandbyRotation;
             var standbyElevation = _randomStandbyElevation;
-            var max1 = _rotationSpeed * 16f;
+            var max1 = RotationSpeed * 16f;
             var flag = false;
-            var rotation = Rotation;
+            var rotation = Azimuth;
             var num1 = (randomStandbyRotation - rotation);
             if (num1 * num1 > 9.99999943962493E-11)
             {
-                Rotation += MathHelper.Clamp(num1, -max1, max1);
+                Azimuth += MathHelper.Clamp(num1, -max1, max1);
                 flag = true;
             }
             if (standbyElevation > BarrelElevationMin)
             {
-                var max2 = _elevationSpeed * 16f;
+                var max2 = ElevationSpeed * 16f;
                 var num2 = standbyElevation - Elevation;
                 if (num2 * num2 > 9.99999943962493E-11)
                 {
@@ -355,7 +350,7 @@ namespace WeaponCore.Platform
 
         protected void ResetRotation()
         {
-            Rotation = 0.0f;
+            Azimuth = 0.0f;
             Elevation = 0.0f;
             ClampRotationAndElevation();
             _randomStandbyElevation = 0.0f;
@@ -373,15 +368,15 @@ namespace WeaponCore.Platform
             }
             var y = vector3.Y;
             var x = vector3.X;
-            var max1 = _rotationSpeed * 16f;
-            var num1 = MathHelper.WrapAngle(y - Rotation);
-            Rotation += MathHelper.Clamp(num1, -max1, max1);
+            var max1 = RotationSpeed * 16f;
+            var num1 = MathHelper.WrapAngle((float) (y - Azimuth));
+            Azimuth += MathHelper.Clamp(num1, -max1, max1);
             //var flag = num1 * num1 > 9.99999943962493E-11;
-            if (Rotation > 3.14159297943115)
-                Rotation -= 6.283185f;
-            else if (Rotation < -3.14159297943115)
-                Rotation += 6.283185f;
-            var max2 = _elevationSpeed * 16f;
+            if (Azimuth > 3.14159297943115)
+                Azimuth -= 6.283185f;
+            else if (Azimuth < -3.14159297943115)
+                Azimuth += 6.283185f;
+            var max2 = ElevationSpeed * 16f;
             var num2 = Math.Max(x, BarrelElevationMin) - Elevation;
             Elevation += MathHelper.Clamp(num2, -max2, max2);
             //this.m_playAimingSound = flag || (double)num2 * (double)num2 > 9.99999943962493E-11;
@@ -389,7 +384,7 @@ namespace WeaponCore.Platform
             RotateModels();
             if (Target != null)
             {
-                var num3 = Math.Abs(y - Rotation);
+                var num3 = Math.Abs(y - Azimuth);
                 var num4 = Math.Abs(x - Elevation);
                 IsAimed = num3 <= 1.40129846432482E-45 && num4 <= 0.00999999977648258;
             }
@@ -400,38 +395,13 @@ namespace WeaponCore.Platform
 
         private void ClampRotationAndElevation()
         {
-            Rotation = ClampRotation(Rotation);
-            Elevation = ClampElevation(Elevation);
-        }
-
-
-        private float ClampRotation(float value)
-        {
-            if (IsRotationLimited())
-                value = Math.Min(_maxAzimuthRadians, Math.Max(_minAzimuthRadians, value));
-            return value;
-        }
-
-        private bool IsRotationLimited()
-        {
-            return Math.Abs((float)(_maxAzimuthRadians - _minAzimuthRadians - 6.28318548202515)) > 0.01;
-        }
-
-        private float ClampElevation(float value)
-        {
-            if (IsElevationLimited())
-                value = Math.Min(_maxElevationRadians, Math.Max(_minElevationRadians, value));
-            return value;
-        }
-
-        private bool IsElevationLimited()
-        {
-            return Math.Abs((float)(_maxElevationRadians - _minElevationRadians - 6.28318548202515)) > 0.01;
+            Azimuth = ClampAzimuth(this, Azimuth);
+            Elevation = ClampElevation(this, Elevation);
         }
 
         private bool HasElevationOrRotationChanged()
         {
-            return Math.Abs(_rotationLast - Rotation) > 0.00700000021606684 || Math.Abs(_elevationLast - Elevation) > 0.00700000021606684;
+            return Math.Abs(_rotationLast - Azimuth) > 0.00700000021606684 || Math.Abs(_elevationLast - Elevation) > 0.00700000021606684;
         }
         /*
         private void UpdateControlledWeapon()
@@ -471,31 +441,7 @@ namespace WeaponCore.Platform
             base.UpdateVisual();
             this.m_transformDirty = true;
         }
-
-        void GetTurretAngles2(ref Vector3D targetPositionWorld, ref Vector3D turretPivotPointWorld, ref MatrixD turretWorldMatrix, out double azimuth, out double elevation)
-        {
-            Vector3D localTargetPosition = targetPositionWorld - turretPivotPointWorld;
-            GetRotationAngles2(ref localTargetPosition, ref turretWorldMatrix, out azimuth, out elevation);
-        }
-
-        /*
-        /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
-        Dependencies: AngleBetween
-        void GetRotationAngles2(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
-        {
-            var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
-            var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
-
-            yaw = AngleBetween(Vector3D.Forward, flattenedTargetVector) * -Math.Sign(localTargetVector.X); //right is negative
-            if (Math.Abs(yaw) < 1E-6 && localTargetVector.Z > 0) //check for straight back case
-                yaw = Math.PI;
-
-            if (Vector3D.IsZero(flattenedTargetVector)) //check for straight up case
-                pitch = MathHelper.PiOver2 * Math.Sign(localTargetVector.Y);
-            else
-                pitch = AngleBetween(localTargetVector, flattenedTargetVector) * Math.Sign(localTargetVector.Y); //up is positive
-        }
-
+        */
 
         /// <summary>
         /// Returns if the normalized dot product between two vectors is greater than the tolerance.
@@ -520,6 +466,5 @@ namespace WeaponCore.Platform
                 return false;
             return true;
         }
-        */
     }
 }

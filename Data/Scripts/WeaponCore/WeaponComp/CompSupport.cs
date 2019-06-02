@@ -29,5 +29,12 @@ namespace WeaponCore.Support
             State.SaveState();
             State.NetworkUpdate();
         }
+
+        internal void UpdatePivotPos(float upPivotOffsetLen)
+        {
+            var myPivotPos = MyCube.PositionComp.WorldAABB.Center;
+            myPivotPos += MyCube.PositionComp.WorldMatrix.Up * upPivotOffsetLen;
+            MyPivotPos = myPivotPos;
+        }
     }
 }

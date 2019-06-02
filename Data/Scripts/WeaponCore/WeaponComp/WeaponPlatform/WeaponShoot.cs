@@ -4,8 +4,7 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
-using WeaponCore.Support;
-using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
+using  WeaponCore.Support;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -26,7 +25,6 @@ namespace WeaponCore.Platform
             var skipAhead = WeaponType.TurretDef.SkipBarrels;
 
             if (rotateAxis != 0) MovePart(radiansPerTick, -1 * bps, rotateAxis == 1, rotateAxis == 2, rotateAxis == 3);
-
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
             var endBarrel = _numOfBarrels - 1;
@@ -53,13 +51,22 @@ namespace WeaponCore.Platform
             if (targetLock && _targetTick > 59)
             {
                 _targetTick = 0;
-                IHitInfo hitInfo;
-                MyAPIGateway.Physics.CastRay(EntityPart.PositionComp.WorldAABB.Center, Target.PositionComp.GetPosition(), out hitInfo, 15);
-                if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target.Parent))
+                if (!TrackingAi) Log.Line($"shootStep1: TargetNull:{Target == null}");
+                if (!TrackingAi && !TrackingTarget(this, Target))
                 {
+                    Log.Line("shootStep2: setting target null");
                     Target = null;
                     return;
                 }
+                IHitInfo hitInfo;
+                MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.PositionComp.GetPosition(), out hitInfo, 15);
+                if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target.Parent))
+                {
+                    Log.Line($"rayFail, setting target to null");
+                    Target = null;
+                    return;
+                }
+
             }
             for (int i = 0; i < bps; i++)
             {

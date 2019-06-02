@@ -8,6 +8,7 @@ namespace WeaponCore.Platform
         public void PositionChanged(MyPositionComponentBase pComp)
         {
             _posChangedTick = Session.Instance.Tick;
+            if (TrackingAi) Comp.UpdatePivotPos(_upPivotOffsetLen);
         }
 
         public class Muzzle

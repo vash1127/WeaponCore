@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -62,6 +63,8 @@ namespace WeaponCore.Support
         public MyPhysicsComponentBase Physics;
         public MyWeaponPlatform Platform;
         public IMyLargeMissileTurret Turret;
+        internal Weapon TrackingWeapon;
+        internal Vector3D MyPivotPos;
 
         internal IMyGunObject<MyGunBase> Gun { get; set; }
         internal bool MainInit { get; set; }
@@ -69,7 +72,6 @@ namespace WeaponCore.Support
         internal bool ClientUiUpdate { get; set; }
         internal bool IsFunctional { get; set; }
         internal bool IsWorking { get; set; }
-        internal int FireRequest { get; set; }
 
         internal LogicSettings Set { get; set; }
         internal LogicState State { get; set; }
@@ -82,7 +84,6 @@ namespace WeaponCore.Support
             MyGrid = MyCube.CubeGrid;
             Turret = turret;
             Gun = (IMyGunObject<MyGunBase>)MyCube;
-            Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
         }
     }
 }
