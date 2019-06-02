@@ -19,18 +19,19 @@ namespace WeaponCore.Platform
 
             WeaponSystem = weaponSystem;
             WeaponType = weaponSystem.WeaponType;
-            TurretMode = WeaponType.TurretMode;
-            TrackTarget = WeaponType.TrackTarget;
-            _ticksPerShot = (uint)(3600 / WeaponType.RateOfFire);
-            _timePerShot = (3600d / WeaponType.RateOfFire);
+            TurretMode = WeaponType.TurretDef.TurretMode;
+            TrackTarget = WeaponType.TurretDef.TrackTarget;
+            _ticksPerShot = (uint)(3600 / WeaponType.TurretDef.RateOfFire);
+            _timePerShot = (3600d / WeaponType.TurretDef.RateOfFire);
             _numOfBarrels = WeaponSystem.Barrels.Length;
 
             BeamSlot = new uint[_numOfBarrels];
 
-            FiringSoundPair = new MySoundPair(WeaponType.FiringSound);
-            ReloadSoundPair = new MySoundPair(WeaponType.ReloadSound);
-            AmmoTravelSoundPair = new MySoundPair(WeaponType.AmmoTravelSound);
-            AmmoHitSoundPair = new MySoundPair(WeaponType.AmmoHitSound);
+            FiringSoundPair = new MySoundPair(WeaponType.AudioDef.FiringSound);
+            ReloadSoundPair = new MySoundPair(WeaponType.AudioDef.ReloadSound);
+            AmmoTravelSoundPair = new MySoundPair(WeaponType.AudioDef.AmmoTravelSound);
+            AmmoHitSoundPair = new MySoundPair(WeaponType.AudioDef.AmmoHitSound);
+            InitTurretBase();
         }
 
         public IMyEntity EntityPart;
@@ -80,9 +81,9 @@ namespace WeaponCore.Platform
         internal Vector3D MyPivotPos;
         internal bool TurretMode { get; set; }
         internal bool TrackTarget { get; set; }
-        internal bool ReadyToTrack => Target != null && (_azOk && _elOk || !WeaponType.TurretMode);
+        internal bool ReadyToTrack => Target != null && (_azOk && _elOk || !WeaponType.TurretDef.TurretMode);
         internal bool ReadyToShoot => Comp.MyAi.WeaponReady && ReadyToTrack;
         internal bool SeekTarget => Target == null || Target != null && Target.MarkedForClose;
-
+        internal bool Gunner;
     }
 }

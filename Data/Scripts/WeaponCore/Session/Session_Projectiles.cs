@@ -31,9 +31,9 @@ namespace WeaponCore
                 {
                     var matrix = MatrixD.CreateFromDir(line.Direction);
                     matrix.Translation = line.From;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, wDef.LineWidth, wDef.LineWidth, (float)line.Length, 6, wDef.TrailColor, wDef.TrailColor, wDef.PhysicalMaterial, wDef.PhysicalMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, wDef.GraphicDef.ProjectileWidth, wDef.GraphicDef.ProjectileWidth, (float)line.Length, 6, wDef.GraphicDef.ProjectileColor, wDef.GraphicDef.ProjectileColor, wDef.GraphicDef.ProjectileMaterial, wDef.GraphicDef.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
-                else MyTransparentGeometry.AddLocalLineBillboard(wDef.PhysicalMaterial, wDef.TrailColor, line.From, 0, line.Direction, (float)line.Length, wDef.LineWidth);
+                else MyTransparentGeometry.AddLocalLineBillboard(wDef.GraphicDef.ProjectileMaterial, wDef.GraphicDef.ProjectileColor, line.From, 0, line.Direction, (float)line.Length, wDef.GraphicDef.ProjectileWidth);
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();
@@ -51,9 +51,9 @@ namespace WeaponCore
                     {
                         var matrix = MatrixD.CreateFromDir(line.Value.Direction);
                         matrix.Translation = line.Value.From;
-                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.WepDef.LineWidth, s.WepDef.LineWidth, (float)line.Value.Length, 6, s.WepDef.TrailColor, s.WepDef.TrailColor, s.WepDef.PhysicalMaterial, s.WepDef.PhysicalMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.WepDef.GraphicDef.ProjectileWidth, s.WepDef.GraphicDef.ProjectileWidth, (float)line.Value.Length, 6, s.WepDef.GraphicDef.ProjectileColor, s.WepDef.GraphicDef.ProjectileColor, s.WepDef.GraphicDef.ProjectileMaterial, s.WepDef.GraphicDef.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                     }
-                    else MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.PhysicalMaterial, s.WepDef.TrailColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.LineWidth);
+                    else MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.GraphicDef.ProjectileMaterial, s.WepDef.GraphicDef.ProjectileColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.GraphicDef.ProjectileWidth);
                 }
                 else
                 {
@@ -80,15 +80,15 @@ namespace WeaponCore
                     for (int j = 0; j < weapon.Platform.Weapons.Length; j++)
                     {
                         var w = weapon.Platform.Weapons[j];
-                        var gunner = ControlledEntity == weapon.MyCube;
-                        if (!gunner)
+                        w.Gunner = ControlledEntity == weapon.MyCube;
+                        if (!w.Gunner)
                         {
                             if (w.Target != null)
                             {
                                 //DsDebugDraw.DrawLine(w.EntityPart.PositionComp.WorldAABB.Center, w.Target.PositionComp.WorldAABB.Center, Color.Black, 0.01f);
                             }
                             if (w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
-                            if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.RotateSpeed);
+                            if (w.TurretMode && w.Target != null) w.Rotate(w.WeaponType.TurretDef.RotateSpeed);
                             if (w.TrackTarget && w.ReadyToTrack)
                             {
                                 //logic.Turret.TrackTarget(w.Target);
@@ -104,7 +104,7 @@ namespace WeaponCore
                                 if (currentAmmo <= 1) weapon.Gun.GunBase.CurrentAmmo += 1;
                             }
                         }
-                        if (w.ReadyToShoot && !gunner || gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
+                        if (w.ReadyToShoot && !w.Gunner || w.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                     }
                 }
             }
@@ -128,9 +128,9 @@ namespace WeaponCore
                 if (Tick % 6 == 0) radius = 0.14f;
                 var weapon = pInfo.Weapon;
                 var beamSlot = weapon.BeamSlot;
-                var material = weapon.WeaponType.PhysicalMaterial;
-                var trailColor = weapon.WeaponType.TrailColor;
-                var particleColor = weapon.WeaponType.ParticleColor;
+                var material = weapon.WeaponType.GraphicDef.ProjectileMaterial;
+                var trailColor = weapon.WeaponType.GraphicDef.ProjectileColor;
+                var particleColor = weapon.WeaponType.GraphicDef.ParticleColor;
                 if (pInfo.PrimeProjectile && Tick > beamSlot[pInfo.ProjectileId] && pInfo.HitPos != Vector3D.Zero)
                 {
                     beamSlot[pInfo.ProjectileId] = Tick + 20;

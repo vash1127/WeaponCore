@@ -51,16 +51,16 @@ namespace WeaponCore
             Log.Line($"Logging Started");
             foreach (var weaponDef in _weaponDefinitions)
             {
-                foreach (var mount in weaponDef.MountPoints)
+                foreach (var mount in weaponDef.TurretDef.MountPoints)
                 {
                     var subTypeId = mount.Key;
                     var subPartId = mount.Value;
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                         _turretDefinitions[subTypeId] = new Dictionary<string, string>
                         {
-                            [subPartId] = weaponDef.DefinitionId
+                            [subPartId] = weaponDef.TurretDef.DefinitionId
                         };
-                    else _turretDefinitions[subTypeId][subPartId] = weaponDef.DefinitionId;
+                    else _turretDefinitions[subTypeId][subPartId] = weaponDef.TurretDef.DefinitionId;
                 }
             }
 

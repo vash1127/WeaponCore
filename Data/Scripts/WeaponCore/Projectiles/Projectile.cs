@@ -57,12 +57,12 @@ namespace WeaponCore.Projectiles
         internal void Start(List<MyEntity> checkList, bool noAv)
         {
             WepDef = Weapon.WeaponType;
-            DrawLine = WepDef.LineTrail;
-            MaxTrajectory = WepDef.MaxTrajectory;
-            ShotLength = WepDef.LineLength;
-            SpeedLength = WepDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
+            DrawLine = WepDef.GraphicDef.ProjectileTrail;
+            MaxTrajectory = WepDef.AmmoDef.MaxTrajectory;
+            ShotLength = WepDef.AmmoDef.ProjectileLength;
+            SpeedLength = WepDef.AmmoDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
             LineReSizeLen = SpeedLength / 60;
-            AmmoTravelSoundRangeSqr = (WepDef.AmmoTravelSoundRange * WepDef.AmmoTravelSoundRange);
+            AmmoTravelSoundRangeSqr = (WepDef.AudioDef.AmmoTravelSoundRange * WepDef.AudioDef.AmmoTravelSoundRange);
             GrowStep = 1;
             var reSizeSteps = (int)(ShotLength / LineReSizeLen);
             ReSizeSteps = reSizeSteps > 0 ? reSizeSteps : 1;
@@ -79,15 +79,15 @@ namespace WeaponCore.Projectiles
             CurrentMagnitude = CurrentSpeed * StepConst;
             PositionChecked = false;
             AmmoSound = false;
-            Draw = WepDef.VisualProbability >= (double)MyUtils.GetRandomFloat(0.0f, 1f);
+            Draw = WepDef.GraphicDef.VisualProbability >= (double)MyUtils.GetRandomFloat(0.0f, 1f);
             EndStep = 0;
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
             Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
-            if (Draw && WepDef.ParticleTrail && !noAv) ProjectileParticleStart();
-            if (!noAv && WepDef.FiringSound != null) FireSoundStart();
+            if (Draw && WepDef.GraphicDef.ParticleTrail && !noAv) ProjectileParticleStart();
+            if (!noAv && WepDef.AudioDef.FiringSound != null) FireSoundStart();
             State = ProjectileState.Alive;
         }
 
@@ -96,15 +96,15 @@ namespace WeaponCore.Projectiles
             var to = Origin;
             to += -CurrentMagnitude; // we are in a thread, draw is delayed a frame.
             var matrix = MatrixD.CreateTranslation(to);
-            MyParticlesManager.TryCreateParticleEffect(WepDef.CustomEffect, ref matrix, ref to, uint.MaxValue, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+            MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.CustomEffect, ref matrix, ref to, uint.MaxValue, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
             //Effect1.UserDraw = true;
             Effect1.DistanceMax = 5000;
-            Effect1.UserColorMultiplier = WepDef.ParticleColor;
+            Effect1.UserColorMultiplier = WepDef.GraphicDef.ParticleColor;
             var reScale = (float) Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
             var scaler = reScale < 1 ? reScale : 1;
 
-            Effect1.UserRadiusMultiplier = WepDef.ParticleRadiusMultiplier * scaler;
+            Effect1.UserRadiusMultiplier = WepDef.GraphicDef.ParticleRadiusMultiplier * scaler;
             Effect1.UserEmitterScale = 1 * scaler;
             Effect1.Velocity = CurrentSpeed;
             // Log.Line($"Radius:{Effect1.UserRadiusMultiplier} - UserEmitterScale:{Effect1.UserEmitterScale} - UserScale:{Effect1.UserScale} - Scaler:{scaler} - scale:{reScale}");
@@ -112,16 +112,16 @@ namespace WeaponCore.Projectiles
 
         internal void FireSoundStart()
         {
-            Sound1.CustomMaxDistance = WepDef.FiringSoundRange;
-            Sound1.CustomVolume = WepDef.FiringSoundVolume;
+            Sound1.CustomMaxDistance = WepDef.AudioDef.FiringSoundRange;
+            Sound1.CustomVolume = WepDef.AudioDef.FiringSoundVolume;
             Sound1.SetPosition(Origin);
             Sound1.PlaySoundWithDistance(Weapon.FiringSoundPair.SoundId, false, false, false, true, false, false, false);
         }
 
         internal void AmmoSoundStart()
         {
-            Sound1.CustomMaxDistance = WepDef.AmmoTravelSoundRange;
-            Sound1.CustomVolume = WepDef.AmmoTravelSoundVolume;
+            Sound1.CustomMaxDistance = WepDef.AudioDef.AmmoTravelSoundRange;
+            Sound1.CustomVolume = WepDef.AudioDef.AmmoTravelSoundVolume;
             Sound1.SetPosition(Position);
             Sound1.PlaySoundWithDistance(Weapon.AmmoTravelSoundPair.SoundId, false, false, false, true, false, false, false);
             AmmoSound = true;
@@ -142,13 +142,13 @@ namespace WeaponCore.Projectiles
         {
             if (EndStep++ >= EndSteps)
             {
-                if (WepDef.ParticleTrail) DisposeEffect();
+                if (WepDef.GraphicDef.ParticleTrail) DisposeEffect();
 
                 Sound1.StopSound(true, true);
-                if (WepDef.AmmoHitSound != null)
+                if (WepDef.AudioDef.AmmoHitSound != null)
                 {
-                    Sound1.CustomMaxDistance = WepDef.AmmoHitSoundRange;
-                    Sound1.CustomVolume = WepDef.AmmoHitSoundVolume;
+                    Sound1.CustomMaxDistance = WepDef.AudioDef.AmmoHitSoundRange;
+                    Sound1.CustomVolume = WepDef.AudioDef.AmmoHitSoundVolume;
                     Sound1.SetPosition(Position);
                     Sound1.CanPlayLoopSounds = false;
                     Sound1.PlaySoundWithDistance(Weapon.AmmoHitSoundPair.SoundId, false, false, false, true, true, false, false);

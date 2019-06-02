@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using ProtoBuf;
 using VRageMath;
-using static WeaponCore.Support.WeaponDefinition;
+using static WeaponCore.Support.GraphicDefinition;
 namespace WeaponCore
 {
     [ProtoContract]

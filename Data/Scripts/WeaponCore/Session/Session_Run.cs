@@ -1,11 +1,21 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.ObjectBuilders;
 using WeaponCore.Support;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Common.ObjectBuilders.Definitions;
+using SpaceEngineers.Game.Weapons.Guns;
+using VRage.Collections;
+using VRage.Game;
+using VRage.Utils;
 
 namespace WeaponCore
 {
@@ -52,6 +62,7 @@ namespace WeaponCore
         {
             try
             {
+
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyEntities.OnEntityAdd += OnEntityAdd;

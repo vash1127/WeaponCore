@@ -111,7 +111,7 @@ namespace WeaponCore.Projectiles
 
                     if (noAv || !p.Draw) continue;
 
-                    if (p.WepDef.AmmoTravelSound != null)
+                    if (p.WepDef.AudioDef.AmmoTravelSound != null)
                     {
                         if (!p.AmmoSound)
                         {

@@ -1,4 +1,5 @@
-﻿using VRage.ModAPI;
+﻿using Sandbox.Definitions;
+using VRage.ModAPI;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform
@@ -8,13 +9,13 @@ namespace WeaponCore.Platform
         public readonly Weapon[] Weapons;
         public readonly RecursiveSubparts SubParts = new RecursiveSubparts();
         public readonly WeaponStructure Structure;
-
+        public readonly MyLargeTurretBaseDefinition BaseDefinition;
         public MyWeaponPlatform(WeaponComponent comp)
         {
             Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
+            BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
             var subPartCount = Structure.PartNames.Length;
             Weapons = new Weapon[subPartCount];
-
             SubParts.Entity = comp.Entity;
             SubParts.CheckSubparts();
             for (int i = 0; i < subPartCount; i++)

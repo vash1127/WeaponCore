@@ -59,6 +59,7 @@ namespace WeaponCore.Support
 
         public MyCubeBlock MyCube;
         public MyCubeGrid MyGrid;
+        public MyPhysicsComponentBase Physics;
         public MyWeaponPlatform Platform;
         public IMyLargeMissileTurret Turret;
 
@@ -81,6 +82,7 @@ namespace WeaponCore.Support
             MyGrid = MyCube.CubeGrid;
             Turret = turret;
             Gun = (IMyGunObject<MyGunBase>)MyCube;
+            Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
         }
     }
 }

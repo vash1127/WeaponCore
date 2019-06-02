@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Sandbox.Common.ObjectBuilders.Definitions;
 using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game.Entity;

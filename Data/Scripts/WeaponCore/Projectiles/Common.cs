@@ -40,7 +40,7 @@ namespace WeaponCore.Projectiles
                     else continue;
                 }
 
-                var speedLen = fired.Weapon.WeaponType.DesiredSpeed * 0.0166;
+                var speedLen = fired.Weapon.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
                 var extLen = speedLen * 3;
                 var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
@@ -67,7 +67,7 @@ namespace WeaponCore.Projectiles
                     if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
-                var speedLen = fired.Weapon.WeaponType.DesiredSpeed * 0.0166;
+                var speedLen = fired.Weapon.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
                 var extLen = speedLen * 3;
                 var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
@@ -94,7 +94,7 @@ namespace WeaponCore.Projectiles
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as IMyCubeGrid;
                 var voxel = ent as MyVoxelBase;
-                var speedLen = fired.Weapon.WeaponType.DesiredSpeed * 0.0166;
+                var speedLen = fired.Weapon.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
                 var extLen = speedLen * 3;
                 var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 if (shield != null)

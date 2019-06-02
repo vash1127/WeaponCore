@@ -4,6 +4,7 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
+using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 namespace WeaponCore.Platform
 {
@@ -11,9 +12,9 @@ namespace WeaponCore.Platform
     {
         internal void Shoot()
         {
-            var session = Session.Instance;
+            var session = Comp.MyAi.MySession;
             var tick = session.Tick;
-            var rotateAxis = WeaponType.RotateBarrelAxis;
+            var rotateAxis = WeaponType.TurretDef.RotateBarrelAxis;
             var radiansPerShot = (2 * Math.PI / _numOfBarrels);
             var radiansPerTick = radiansPerShot / _timePerShot;
             if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
@@ -21,14 +22,13 @@ namespace WeaponCore.Platform
             var targetLock = Target != null;
             if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
 
-            var bps = WeaponType.BarrelsPerShot;
-            var skipAhead = WeaponType.SkipBarrels;
+            var bps = WeaponType.TurretDef.BarrelsPerShot;
+            var skipAhead = WeaponType.TurretDef.SkipBarrels;
 
             if (rotateAxis != 0) MovePart(radiansPerTick, -1 * bps, rotateAxis == 1, rotateAxis == 2, rotateAxis == 3);
 
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
-
             var endBarrel = _numOfBarrels - 1;
             var updatePos = _posChangedTick > _posUpdatedTick;
 
@@ -66,8 +66,7 @@ namespace WeaponCore.Platform
                 var current = _nextMuzzle;
                 var muzzle = Muzzles[current];
                 muzzle.LastShot = tick;
-
-                var deviatedAngle = WeaponType.DeviateShotAngle;
+                var deviatedAngle = WeaponType.TurretDef.DeviateShotAngle;
                 if (deviatedAngle > 0)
                 {
                     var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
@@ -81,9 +80,8 @@ namespace WeaponCore.Platform
                 }
                 else muzzle.DeviatedDir = muzzle.Direction;
 
-                if (i == bps - 1) _nextMuzzle++;
+                if (i == bps) _nextMuzzle++;
                 _nextMuzzle = (_nextMuzzle + (skipAhead + 1)) % (endBarrel + 1);
-
                 lock (session.Projectiles.Wait[session.ProCounter])
                 {
                     Projectile pro;
