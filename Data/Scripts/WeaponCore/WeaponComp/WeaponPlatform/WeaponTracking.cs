@@ -1,7 +1,6 @@
 ﻿using System;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
-using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -10,14 +9,14 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal static bool TrackingTarget(Weapon weapon, MyEntity target, double maxAngularStep = double.MinValue)
+        internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
             var turret = trackingWeapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var targetPos = weapon.GetPredictedTargetPosition(target);
             var weaponPos = weapon.Comp.MyPivotPos;
-
+            var maxAngularStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : double.MinValue;
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
@@ -42,7 +41,7 @@ namespace WeaponCore.Platform
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             var tracking = !azConstrained && !elConstrained;
             if (!tracking) weapon.Target = null;
-            else if (weapon == trackingWeapon && weapon.Target != null)
+            else if (false && weapon == trackingWeapon && weapon.Target != null)
             {
                 DsDebugDraw.DrawLine(weaponPos, weapon.Target.PositionComp.WorldAABB.Center, Color.Lime, 0.1f);
                 DsDebugDraw.DrawLine(weaponPos, targetPos, Color.Orange, 0.1f);
@@ -157,8 +156,8 @@ namespace WeaponCore.Platform
 
             if ((double)MinElevationRadians > (double)MaxElevationRadians)
                 MinElevationRadians -= 6.283185f;
-            _minSinElevationRadians = (float)Math.Sin((double)MinElevationRadians);
-            _maxSinElevationRadians = (float)Math.Sin((double)MaxElevationRadians);
+            //_minSinElevationRadians = (float)Math.Sin((double)MinElevationRadians);
+            //_maxSinElevationRadians = (float)Math.Sin((double)MaxElevationRadians);
             MinAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinAzimuthDegrees));
             MaxAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxAzimuthDegrees));
             if ((double)MinAzimuthRadians > (double)MaxAzimuthRadians)
@@ -179,7 +178,11 @@ namespace WeaponCore.Platform
             return Math.Abs(f1 - f2) < 0.00001;
         }
 
-
+        private int _randomStandbyChange_ms;
+        private int _randomStandbyChangeConst_ms;
+        private float _randomStandbyRotation;
+        private float _randomStandbyElevation;
+        /*
         private static double ClampAzimuth(Weapon weapon, double value)
         {
             if (IsAzimuthLimited(weapon))
@@ -204,10 +207,6 @@ namespace WeaponCore.Platform
             return Math.Abs(weapon.MaxElevationRadians - weapon.MinElevationRadians - 6.28318548202515) > 0.01;
         }
 
-        private int _randomStandbyChange_ms;
-        private int _randomStandbyChangeConst_ms;
-        private float _randomStandbyRotation;
-        private float _randomStandbyElevation;
 
         private float _rotationLast;
         private float _elevationLast;
@@ -403,7 +402,6 @@ namespace WeaponCore.Platform
         {
             return Math.Abs(_rotationLast - Azimuth) > 0.00700000021606684 || Math.Abs(_elevationLast - Elevation) > 0.00700000021606684;
         }
-        /*
         private void UpdateControlledWeapon()
         {
             if (this.HasElevationOrRotationChanged())

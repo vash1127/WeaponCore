@@ -21,7 +21,6 @@ namespace WeaponCore.Support
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly List<MyEntity> TargetBlocks = new List<MyEntity>();
         internal MyGridTargeting Targeting { get; set; }
-        internal bool WeaponReady = true;
         internal bool TargetNeutrals;
         internal bool TargetNoOwners;
         internal Random Rnd;
@@ -71,19 +70,19 @@ namespace WeaponCore.Support
 
         internal void SelectTarget(ref MyEntity target, Weapon weapon)
         {
-            if (MySession.Tick - _targetsUpdatedTick < 100) return;
-            if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
+            if (MySession.Tick - _targetsUpdatedTick < 100)
+            {
+                UpdateTargets();
+                _targetsUpdatedTick = MySession.Tick;
+            }
             if (target != null && !target.MarkedForClose) return;
+            if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
 
-            UpdateTargets();
-            _targetsUpdatedTick = MySession.Tick;
             weapon.CheckedForTargetTick = MySession.Tick;
 
-            WeaponReady = false;
             lock (_tLock) GetTarget(ref target, weapon);
             if (target != null)
             {
-                WeaponReady = true;
                 weapon.Comp.Turret.EnableIdleRotation = false;
                 var grid = target as MyCubeGrid;
                 if (grid == null) return;

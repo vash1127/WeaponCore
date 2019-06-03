@@ -51,7 +51,6 @@ namespace WeaponCore.Platform
             if (targetLock && _targetTick > 59)
             {
                 _targetTick = 0;
-                if (!TrackingAi) Log.Line($"shootStep1: TargetNull:{Target == null}");
                 if (!TrackingAi && !TrackingTarget(this, Target))
                 {
                     Log.Line("shootStep2: setting target null");

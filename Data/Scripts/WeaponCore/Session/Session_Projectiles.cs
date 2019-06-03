@@ -73,7 +73,6 @@ namespace WeaponCore
                 var ai = aiPair.Value;
                 foreach (var basePair in ai.WeaponBase)
                 {
-
                     var myCube = basePair.Key;
                     var weapon = basePair.Value;
                     if (!weapon.MainInit || !weapon.State.Value.Online) continue;
@@ -84,9 +83,9 @@ namespace WeaponCore
                         w.Gunner = ControlledEntity == weapon.MyCube;
                         if (!w.Gunner)
                         {
-                            if (w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
+                            if (Tick > 60 && w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
                             if (w.TrackingAi && w.Target != null)
-                                Weapon.TrackingTarget(w, w.Target, w.WeaponType.TurretDef.RotateSpeed);
+                                Weapon.TrackingTarget(w, w.Target, true);
                         }
                         else
                         {

@@ -82,7 +82,7 @@ namespace WeaponCore.Platform
         internal bool TurretMode { get; set; }
         internal bool TrackTarget { get; set; }
         internal bool ReadyToTrack => Target != null;
-        internal bool ReadyToShoot => Comp.MyAi.WeaponReady && ReadyToTrack;
+        internal bool ReadyToShoot => ReadyToTrack;
         internal bool SeekTarget => Target == null || Target != null && Target.MarkedForClose;
         internal bool Gunner;
         internal bool TrackingAi;
