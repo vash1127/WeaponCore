@@ -7,7 +7,6 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
@@ -18,13 +17,15 @@ namespace WeaponCore.Projectiles
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int EndSteps = 3;
         internal ProjectileState State;
+        internal EntityState ModelState;
         internal Vector3D Direction;
         internal Vector3D Position;
         internal Vector3D LastPosition;
-        internal Weapon Weapon;
+        internal WeaponSystem WeaponSystem;
         internal WeaponDefinition WepDef;
         internal List<MyEntity> CheckList;
-        internal MyCubeGrid MyGrid;
+        internal MyCubeBlock FiringCube;
+        internal MyCubeGrid FiringGrid;
         internal MyEntity HitEntity;
         internal Vector3D Origin;
         internal Vector3D StartSpeed;
@@ -33,11 +34,13 @@ namespace WeaponCore.Projectiles
         internal Vector3D FinalSpeed;
         internal Vector3D CurrentMagnitude;
         internal Vector3D CameraStartPos;
+        internal Vector3D LastEntityPos;
         internal LineD CurrentLine;
         internal double ShotLength;
         internal float SpeedLength;
         internal float MaxTrajectory;
         internal float AmmoTravelSoundRangeSqr;
+        internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
         internal bool PositionChecked;
         internal double LineReSizeLen;
@@ -49,14 +52,26 @@ namespace WeaponCore.Projectiles
         internal bool Draw;
         internal bool DrawLine;
         internal bool AmmoSound;
+        internal bool FirstOffScreen;
         internal MyParticleEffect Effect1;
         internal readonly MyEntity3DSoundEmitter Sound1 = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
+        internal MyEntity Entity;
+        internal MatrixD EntityMatrix;
+        internal int ModelId;
+        internal MySoundPair FireSound = new MySoundPair();
+        internal MySoundPair TravelSound = new MySoundPair();
+        internal MySoundPair ReloadSound = new MySoundPair();
+        internal MySoundPair HitSound = new MySoundPair();
+        internal bool HasTravelSound;
 
         internal void Start(List<MyEntity> checkList, bool noAv)
         {
-            WepDef = Weapon.WeaponType;
+            FirstOffScreen = true;
+            ModelState = EntityState.Stale;
+            WepDef = WeaponSystem.WeaponType;
+            FiringGrid = FiringCube.CubeGrid;
             DrawLine = WepDef.GraphicDef.ProjectileTrail;
             MaxTrajectory = WepDef.AmmoDef.MaxTrajectory;
             ShotLength = WepDef.AmmoDef.ProjectileLength;
@@ -69,10 +84,10 @@ namespace WeaponCore.Projectiles
             Grow = ReSizeSteps > 1;
             Shrink = Grow;
             Position = Origin;
-            MyGrid = Weapon.Comp.MyGrid;
+            LastEntityPos = Origin;
             HitEntity = null;
             CheckList = checkList;
-            StartSpeed = Weapon.Comp.Turret.CubeGrid.Physics.LinearVelocity;
+            StartSpeed = FiringGrid.Physics.LinearVelocity;
             AddSpeed = Direction * SpeedLength;
             FinalSpeed = StartSpeed + AddSpeed;
             CurrentSpeed = FinalSpeed;
@@ -86,8 +101,37 @@ namespace WeaponCore.Projectiles
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
-            if (Draw && WepDef.GraphicDef.ParticleTrail && !noAv) ProjectileParticleStart();
-            if (!noAv && WepDef.AudioDef.FiringSound != null) FireSoundStart();
+
+            if (!noAv)
+            {
+                if (Draw && WepDef.GraphicDef.ParticleTrail ) ProjectileParticleStart();
+
+                if (WepDef.AudioDef.AmmoTravelSound != string.Empty)
+                {
+                    HasTravelSound = true;
+                    TravelSound.Init(WepDef.AudioDef.AmmoTravelSound, false);
+                }
+                else HasTravelSound = false;
+
+                if (WepDef.AudioDef.ReloadSound != string.Empty)
+                    ReloadSound.Init(WepDef.AudioDef.ReloadSound, false);
+
+                if (WepDef.AudioDef.AmmoHitSound != string.Empty)
+                    HitSound.Init(WepDef.AudioDef.AmmoHitSound, false);
+
+                if (WepDef.AudioDef.FiringSound != string.Empty)
+                {
+                    FireSound.Init(WepDef.AudioDef.FiringSound, false);
+                    FireSoundStart();
+                }
+                ModelId = WeaponSystem.ModelId;
+                if (ModelId != -1)
+                {
+                    ModelState = EntityState.Exists;
+                    ScreenCheckRadius = Entity.PositionComp.WorldVolume.Radius * 2;
+                }
+                ModelState = ModelId != -1 ? EntityState.Exists : EntityState.None;
+            }
             State = ProjectileState.Alive;
         }
 
@@ -98,7 +142,6 @@ namespace WeaponCore.Projectiles
             var matrix = MatrixD.CreateTranslation(to);
             MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.CustomEffect, ref matrix, ref to, uint.MaxValue, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
-            //Effect1.UserDraw = true;
             Effect1.DistanceMax = 5000;
             Effect1.UserColorMultiplier = WepDef.GraphicDef.ParticleColor;
             var reScale = (float) Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
@@ -107,7 +150,6 @@ namespace WeaponCore.Projectiles
             Effect1.UserRadiusMultiplier = WepDef.GraphicDef.ParticleRadiusMultiplier * scaler;
             Effect1.UserEmitterScale = 1 * scaler;
             Effect1.Velocity = CurrentSpeed;
-            // Log.Line($"Radius:{Effect1.UserRadiusMultiplier} - UserEmitterScale:{Effect1.UserEmitterScale} - UserScale:{Effect1.UserScale} - Scaler:{scaler} - scale:{reScale}");
         }
 
         internal void FireSoundStart()
@@ -115,7 +157,7 @@ namespace WeaponCore.Projectiles
             Sound1.CustomMaxDistance = WepDef.AudioDef.FiringSoundRange;
             Sound1.CustomVolume = WepDef.AudioDef.FiringSoundVolume;
             Sound1.SetPosition(Origin);
-            Sound1.PlaySoundWithDistance(Weapon.FiringSoundPair.SoundId, false, false, false, true, false, false, false);
+            Sound1.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
         }
 
         internal void AmmoSoundStart()
@@ -123,7 +165,7 @@ namespace WeaponCore.Projectiles
             Sound1.CustomMaxDistance = WepDef.AudioDef.AmmoTravelSoundRange;
             Sound1.CustomVolume = WepDef.AudioDef.AmmoTravelSoundVolume;
             Sound1.SetPosition(Position);
-            Sound1.PlaySoundWithDistance(Weapon.AmmoTravelSoundPair.SoundId, false, false, false, true, false, false, false);
+            Sound1.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
             AmmoSound = true;
         }
 
@@ -138,21 +180,29 @@ namespace WeaponCore.Projectiles
             else State = ProjectileState.Ending;
         }
 
-        internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool)
+        internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool, EntityPool<MyEntity> entPool, List<Projectiles.DrawProjectile> drawList)
         {
+            if (ModelState == EntityState.Exists)
+            {
+                drawList.Add(new Projectiles.DrawProjectile(WeaponSystem, Entity, EntityMatrix, 0, new LineD(), CurrentSpeed, Vector3D.Zero, null, true, 0, 0, false, true));
+                entPool.MarkForDeallocate(Entity);
+                ModelState = EntityState.Stale;
+            }
+
             if (EndStep++ >= EndSteps)
             {
                 if (WepDef.GraphicDef.ParticleTrail) DisposeEffect();
 
-                Sound1.StopSound(true, true);
-                if (WepDef.AudioDef.AmmoHitSound != null)
+                if (WepDef.AudioDef.AmmoHitSound != string.Empty)
                 {
                     Sound1.CustomMaxDistance = WepDef.AudioDef.AmmoHitSoundRange;
                     Sound1.CustomVolume = WepDef.AudioDef.AmmoHitSoundVolume;
                     Sound1.SetPosition(Position);
                     Sound1.CanPlayLoopSounds = false;
-                    Sound1.PlaySoundWithDistance(Weapon.AmmoHitSoundPair.SoundId, false, false, false, true, true, false, false);
+                    Sound1.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
                 }
+                else if (AmmoSound) Sound1.StopSound(false, true);
+
                 checkPool.Return(CheckList);
                 pool.MarkForDeallocate(this);
                 State = ProjectileState.Dead;
@@ -175,6 +225,13 @@ namespace WeaponCore.Projectiles
             Alive,
             Ending,
             Dead,
+        }
+
+        internal enum EntityState
+        {
+            Exists,
+            Stale,
+            None
         }
     }
 }

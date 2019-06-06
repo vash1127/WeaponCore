@@ -28,7 +28,6 @@ namespace WeaponCore
             Tick = (uint)(Session.ElapsedPlayTime.TotalMilliseconds * TickTimeDiv);
             Tick20 = Tick % 20 == 0;
             Tick60 = Tick % 60 == 0;
-            Tick60 = Tick % 60 == 0;
             Tick180 = Tick % 180 == 0;
             Tick300 = Tick % 300 == 0;
             Tick600 = Tick % 600 == 0;
@@ -141,7 +140,6 @@ namespace WeaponCore
         public string ModPath()
         {
             var modPath = ModContext.ModPath;
-            Log.Line(modPath);
             return modPath;
         }
         #endregion

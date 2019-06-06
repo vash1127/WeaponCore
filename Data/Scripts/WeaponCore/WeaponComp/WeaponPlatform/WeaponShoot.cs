@@ -1,6 +1,12 @@
 ﻿using System;
+using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Game.Models;
+using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -92,10 +98,22 @@ namespace WeaponCore.Platform
                 {
                     Projectile pro;
                     session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
-                    pro.Weapon = this;
+                    pro.WeaponSystem = WeaponSystem;
+                    pro.FiringCube = Comp.MyCube;
                     pro.Origin = muzzle.Position;
                     pro.Direction = muzzle.DeviatedDir;
                     pro.State = Projectile.ProjectileState.Start;
+                    if (WeaponSystem.ModelId != -1)
+                    {
+                        MyEntity ent;
+                        session.Projectiles.EntityPool[session.ProCounter][WeaponSystem.ModelId].AllocateOrCreate(out ent);
+                        if (!ent.InScene)
+                        {
+                            ent.InScene = true;
+                            ent.Render.AddRenderObjects();
+                        }
+                        pro.Entity = ent;
+                    }
                 }
                 if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
             }

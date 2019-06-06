@@ -23,11 +23,6 @@ namespace WeaponCore.Platform
             _numOfBarrels = WeaponSystem.Barrels.Length;
 
             BeamSlot = new uint[_numOfBarrels];
-
-            FiringSoundPair = new MySoundPair(WeaponType.AudioDef.FiringSound);
-            ReloadSoundPair = new MySoundPair(WeaponType.AudioDef.ReloadSound);
-            AmmoTravelSoundPair = new MySoundPair(WeaponType.AudioDef.AmmoTravelSound);
-            AmmoHitSoundPair = new MySoundPair(WeaponType.AudioDef.AmmoHitSound);
         }
 
         internal IMyEntity EntityPart;
@@ -38,10 +33,6 @@ namespace WeaponCore.Platform
         internal WeaponComponent Comp;
         internal uint[] BeamSlot { get; set; }
         internal MyEntity Target;
-        internal readonly MySoundPair FiringSoundPair;
-        internal readonly MySoundPair ReloadSoundPair;
-        internal readonly MySoundPair AmmoTravelSoundPair;
-        internal readonly MySoundPair AmmoHitSoundPair;
 
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;

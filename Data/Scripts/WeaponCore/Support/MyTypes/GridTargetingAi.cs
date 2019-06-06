@@ -87,8 +87,11 @@ namespace WeaponCore.Support
                 var grid = target as MyCubeGrid;
                 if (grid == null) return;
 
-                var gotBlock = GetTargetBlocks(grid);
-                if (!gotBlock) Log.Line("no block found");
+                if (!GetTargetBlocks(grid))
+                {
+                    target = null;
+                    return;
+                }
                 var bCount = TargetBlocks.Count;
                 var found = false;
                 var c = 0;

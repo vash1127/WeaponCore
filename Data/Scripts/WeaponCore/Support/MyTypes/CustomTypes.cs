@@ -26,7 +26,7 @@ namespace WeaponCore.Support
         [ProtoMember(5)] internal float VisualProbability;
         [ProtoMember(6)] internal float ParticleRadiusMultiplier;
         [ProtoMember(7)] internal MyStringId ProjectileMaterial;
-        [ProtoMember(8)] internal MyStringId ModelName;
+        [ProtoMember(8)] internal string ModelName;
         [ProtoMember(9)] internal Vector4 ProjectileColor;
         [ProtoMember(10)] internal Vector4 ParticleColor;
         [ProtoMember(11)] internal EffectType Effect;
@@ -128,6 +128,7 @@ namespace WeaponCore.Support
         [ProtoMember(8)] internal AmmoDefinition AmmoDef;
         [ProtoMember(9)] internal GraphicDefinition GraphicDef;
         [ProtoMember(10)] internal AudioDefinition AudioDef;
+        [ProtoMember(11)] internal string ModPath;
     }
 
     public struct WeaponSystem
@@ -136,13 +137,19 @@ namespace WeaponCore.Support
         public readonly WeaponDefinition WeaponType;
         public readonly string WeaponName;
         public readonly string[] Barrels;
-
+        public readonly int ModelId;
         public WeaponSystem(MyStringHash partName, WeaponDefinition weaponType, string weaponName)
         {
             PartName = partName;
             WeaponType = weaponType;
             Barrels = weaponType.TurretDef.Barrels;
             WeaponName = weaponName;
+            if (WeaponType.GraphicDef.ModelName != string.Empty)
+            {
+                ModelId = Session.Instance.ModelCount++;
+                Session.Instance.ModelIdToName.Add(ModelId, WeaponType.ModPath + WeaponType.GraphicDef.ModelName);
+            }
+            else ModelId = -1;
         }
     }
 

@@ -3,7 +3,6 @@ using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
@@ -21,23 +20,23 @@ namespace WeaponCore.Projectiles
             public readonly ShieldApi SApi;
             public readonly Vector3D HitPos;
             public readonly int Hits;
-            public readonly Weapon Weapon;
-            public TurretShieldEvent(IMyTerminalBlock shield, ShieldApi sApi, Vector3D hitPos, int hits, Weapon weapon)
+            public readonly Fired Fired;
+            public TurretShieldEvent(IMyTerminalBlock shield, ShieldApi sApi, Vector3D hitPos, int hits, Fired fired)
             {
                 Shield = shield;
                 SApi = sApi;
                 HitPos = hitPos;
                 Hits = hits;
-                Weapon = weapon;
+                Fired = fired;
             }
 
             public void Execute()
             {
-                if (Shield == null || Weapon == null || SApi == null) return;
-                var wDef = Weapon.WeaponType;
+                if (Shield == null  || SApi == null) return;
+                var wDef = Fired.WeaponSystem.WeaponType;
                 var baseDamage = wDef.ComputedBaseDamage;
                 var damage = (baseDamage  + wDef.AmmoDef.AreaEffectYield) * Hits;
-                SApi.PointAttackShield(Shield, HitPos, Weapon.Comp.MyCube.EntityId, damage, false, true);
+                SApi.PointAttackShield(Shield, HitPos, Fired.FiringCube.EntityId, damage, false, true);
             }
         }
 
@@ -46,23 +45,23 @@ namespace WeaponCore.Projectiles
             public readonly IMySlimBlock Block;
             public readonly Vector3D HitPos;
             public readonly int Hits;
-            public readonly Weapon Weapon;
+            public readonly Fired Fired;
             public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
-            public TurretGridEvent(IMySlimBlock block, Vector3D hitPos, int hits, Weapon weapon)
+            public TurretGridEvent(IMySlimBlock block, Vector3D hitPos, int hits, Fired fired)
             {
                 Block = block;
                 HitPos = hitPos;
                 Hits = hits;
-                Weapon = weapon;
+                Fired = fired;
             }
 
             public void Execute()
             {
                 if (Block == null || Block.IsDestroyed || Block.CubeGrid.MarkedForClose) return;
-                var wDef = Weapon.WeaponType;
+                var wDef = Fired.WeaponSystem.WeaponType;
                 var baseDamage = wDef.ComputedBaseDamage;
                 var damage = baseDamage * Hits;
-                Block.DoDamage(damage, TestDamage, true, null, Weapon.Comp.MyCube.EntityId);
+                Block.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
                 if (wDef.HasAreaEffect)
                     UtilsStatic.CreateExplosion(HitPos, wDef.AmmoDef.AreaEffectRadius, wDef.AmmoDef.AreaEffectYield);
             }
@@ -72,19 +71,19 @@ namespace WeaponCore.Projectiles
         {
             public readonly IMyDestroyableObject DestObj;
             public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
-            public readonly Weapon Weapon;
+            public readonly Fired Fired;
 
-            internal TurretDestroyableEvent(IMyDestroyableObject destObj, Weapon weapon)
+            internal TurretDestroyableEvent(IMyDestroyableObject destObj, Fired fired)
             {
                 DestObj = destObj;
-                Weapon = weapon;
+                Fired = fired;
             }
 
             public void Execute()
             {
                 if (DestObj == null) return;
                 var damage = 100;
-                DestObj.DoDamage(damage, TestDamage, true, null, Weapon.Comp.MyCube.EntityId);
+                DestObj.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
             }
         }
 

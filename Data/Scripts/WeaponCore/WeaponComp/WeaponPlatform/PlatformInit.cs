@@ -38,7 +38,6 @@ namespace WeaponCore.Platform
                 }
             }
             CompileTurret();
-
         }
 
         private void CompileTurret()

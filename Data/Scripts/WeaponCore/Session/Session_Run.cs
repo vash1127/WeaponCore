@@ -46,6 +46,7 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 //_dsUtil.StopWatchReport("test", -1);
                 MyAPIGateway.Parallel.Start(Projectiles.Update);
+                //Projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -54,7 +55,6 @@ namespace WeaponCore
         {
             try
             {
-
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyEntities.OnEntityAdd += OnEntityAdd;

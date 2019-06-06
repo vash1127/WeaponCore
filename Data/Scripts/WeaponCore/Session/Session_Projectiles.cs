@@ -18,7 +18,22 @@ namespace WeaponCore
             for (int i = 0; i < drawList.Count; i++)
             {
                 var p = drawList[i];
-                var wDef = p.Weapon.WeaponType;
+                var wDef = p.WeaponSystem.WeaponType;
+                var drawLine = wDef.GraphicDef.ProjectileTrail;
+                if (!drawLine)
+                {
+                    if (p.Entity != null)
+                    {
+                        p.Entity.PositionComp.SetWorldMatrix(p.EntityMatrix, null, false, false, false);
+                        if (p.Last)
+                        {
+                            p.Entity.InScene = false;
+                            p.Entity.Render.RemoveRenderObjects();
+                        }
+                    }
+                    continue;
+                }
+
                 var line = p.Projectile;
                 if (p.Shrink)
                 {
@@ -101,7 +116,7 @@ namespace WeaponCore
                 }
             }
         }
-
+        /*
         private void DrawBeam(DrawProjectile pInfo)
         {
             var cameraPos = MyAPIGateway.Session.Camera.Position;
@@ -118,7 +133,7 @@ namespace WeaponCore
 
                 var radius = 0.15f;
                 if (Tick % 6 == 0) radius = 0.14f;
-                var weapon = pInfo.Weapon;
+                var weapon = pInfo.WeaponSystem;
                 var beamSlot = weapon.BeamSlot;
                 var material = weapon.WeaponType.GraphicDef.ProjectileMaterial;
                 var trailColor = weapon.WeaponType.GraphicDef.ProjectileColor;
@@ -137,7 +152,7 @@ namespace WeaponCore
                 else MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, material, ref trailColor, 2f);
             }
         }
-
+        */
         private MyParticleEffect _effect1 = new MyParticleEffect();
 
         internal void BeamParticleStart(IMyEntity ent, Vector3D pos, Vector4 color)

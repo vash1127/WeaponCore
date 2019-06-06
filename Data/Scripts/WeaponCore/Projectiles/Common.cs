@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -9,57 +8,18 @@ using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.ModAPI;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 
 namespace WeaponCore.Projectiles
 {
     internal partial class Projectiles
     {
-        private readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>> _segmentPool = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>();
-        internal readonly ConcurrentQueue<IThreadHits> Hits = new ConcurrentQueue<IThreadHits>();
-
-        private readonly MyConcurrentPool<DamageInfo> _damagePool = new MyConcurrentPool<DamageInfo>();
-
-        private readonly MyConcurrentDictionary<IMySlimBlock, DamageInfo> _hitBlocks = new MyConcurrentDictionary<IMySlimBlock, DamageInfo>();
-        private readonly MyConcurrentDictionary<IMyEntity, DamageInfo> _hitEnts = new MyConcurrentDictionary<IMyEntity, DamageInfo>();
-
-        internal void GetAllEntitiesInLine(List<MyEntity> ents, Fired fired, LineD beam)
-        {
-            var segmentList = _segmentPool.Get();
-            MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
-            foreach (var result in segmentList)
-            {
-                var ent = result.Element;
-                if (ent == fired.Weapon.Comp.MyGrid) continue;
-
-                var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
-                if (shieldBlock != null)
-                {
-                    if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
-                    else continue;
-                }
-
-                var speedLen = fired.Weapon.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
-                var extLen = speedLen * 3;
-                var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
-                var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                if (obb.Intersects(ref extBeam) == null) continue;
-
-                if (ent.Physics != null && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
-                    ents.Add(ent);
-            }
-            segmentList.Clear();
-            _segmentPool.Return(segmentList);
-        }
-
-        internal void GetAllEntitiesInLine2(List<MyEntity> ents, Fired fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList)
+        internal void GetAllEntitiesInLine(List<MyEntity> ents, Fired fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList)
         {
             for (int i = 0; i < segmentList.Count; i++)
             {
                 var ent = segmentList[i].Element;
-                if (ent == fired.Weapon.Comp.MyGrid) continue;
+                if (ent == fired.FiringCube.CubeGrid) continue;
 
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
@@ -67,7 +27,7 @@ namespace WeaponCore.Projectiles
                     if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
-                var speedLen = fired.Weapon.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
+                var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
                 var extLen = speedLen * 3;
                 var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
@@ -94,7 +54,7 @@ namespace WeaponCore.Projectiles
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as IMyCubeGrid;
                 var voxel = ent as MyVoxelBase;
-                var speedLen = fired.Weapon.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
+                var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
                 var extLen = speedLen * 3;
                 var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 if (shield != null)
@@ -165,45 +125,58 @@ namespace WeaponCore.Projectiles
             return nearestHit;
         }
 
-        internal bool GetDamageInfo(Fired fired, LineD beam, HitInfo hitInfo, int beamId, bool draw)
+        internal bool GetDamageInfo(
+            Fired fired,
+            MyEntity entity,
+            MatrixD entityMatrix,
+            LineD beam, 
+            HitInfo hitInfo, 
+            MyConcurrentDictionary<IMyEntity, DamageInfo> hitEnts, 
+            MyConcurrentDictionary<IMySlimBlock, DamageInfo> hitBlocks, 
+            MyConcurrentPool<DamageInfo> damagePool, 
+            int beamId, 
+            bool draw)
         {
             if (hitInfo.HitPos != Vector3D.Zero)
             {
                 DamageInfo damageInfo = null;
                 if (hitInfo.Slim != null)
                 {
-                    _hitBlocks.TryGetValue(hitInfo.Slim, out damageInfo);
-                    if (damageInfo == null) damageInfo = _damagePool.Get();
+                    hitBlocks.TryGetValue(hitInfo.Slim, out damageInfo);
+                    if (damageInfo == null) damageInfo = damagePool.Get();
                     damageInfo.Update(beamId, hitInfo.NewBeam, null, hitInfo.Slim, hitInfo.HitPos, 1);
-                    _hitBlocks[hitInfo.Slim] = damageInfo;
+                    hitBlocks[hitInfo.Slim] = damageInfo;
                 }
                 else
                 {
-                    _hitEnts.TryGetValue(hitInfo.Entity, out damageInfo);
-                    if (damageInfo == null) damageInfo = _damagePool.Get();
+                    hitEnts.TryGetValue(hitInfo.Entity, out damageInfo);
+                    if (damageInfo == null) damageInfo = damagePool.Get();
                     damageInfo.Update(beamId, hitInfo.NewBeam, hitInfo.Entity, null, hitInfo.HitPos, 1);
-                    _hitEnts[hitInfo.Entity] = damageInfo;
+                    hitEnts[hitInfo.Entity] = damageInfo;
                 }
-
                 return true;
             }
-            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(fired.Weapon, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false, 0,0, false));
+            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(fired.WeaponSystem, entity, entityMatrix, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false, 0,0, false, false));
             return false;
         }
 
-        internal void DamageEntities(Fired fired)
+        internal void DamageEntities(
+            Fired fired, 
+            MyConcurrentDictionary<IMyEntity, DamageInfo> hitEnts,
+            MyConcurrentDictionary<IMySlimBlock, DamageInfo> hitBlocks,
+            MyConcurrentPool<DamageInfo> damagePool)
         {
-            foreach (var pair in _hitBlocks)
+            foreach (var pair in hitBlocks)
             {
                 var info = pair.Value;
                 info.HitPos /= info.HitCount;
 
-                if (Session.Instance.IsServer) Hits.Enqueue(new TurretGridEvent(pair.Key, info.HitPos, pair.Value.HitCount, fired.Weapon));
+                if (Session.Instance.IsServer) Hits.Enqueue(new TurretGridEvent(pair.Key, info.HitPos, pair.Value.HitCount, fired));
                 info.Clean();
-                _damagePool.Return(info);
+                damagePool.Return(info);
             }
 
-            foreach (var pair in _hitEnts)
+            foreach (var pair in hitEnts)
             {
                 var ent = pair.Key;
                 var shield = ent as IMyTerminalBlock;
@@ -215,42 +188,48 @@ namespace WeaponCore.Projectiles
 
                 if (Session.Instance.IsServer)
                 {
-                    if (shield != null) Hits.Enqueue(new TurretShieldEvent(shield, Session.Instance.SApi, info.HitPos / info.HitCount, info.HitCount, fired.Weapon));
+                    if (shield != null) Hits.Enqueue(new TurretShieldEvent(shield, Session.Instance.SApi, info.HitPos / info.HitCount, info.HitCount, fired));
                     if (voxel != null) Hits.Enqueue(new TurretVoxelEvent());
-                    if (destroyable != null) Hits.Enqueue(new TurretDestroyableEvent(destroyable, fired.Weapon));
+                    if (destroyable != null) Hits.Enqueue(new TurretDestroyableEvent(destroyable, fired));
                 }
                 info.Clean();
-                _damagePool.Return(info);
+                damagePool.Return(info);
             }
-            _hitBlocks.Clear();
-            _hitEnts.Clear();
+            hitBlocks.Clear();
+            hitEnts.Clear();
         }
 
         internal struct DrawProjectile
         {
-            internal readonly Weapon Weapon;
+            internal readonly WeaponSystem WeaponSystem;
             internal readonly int ProjectileId;
+            internal readonly MyEntity Entity;
+            internal readonly MatrixD EntityMatrix;
             internal readonly LineD Projectile;
             internal readonly Vector3D Speed;
             internal readonly Vector3D HitPos;
-            internal readonly IMyEntity Entity;
+            internal readonly IMyEntity HitEntity;
             internal readonly bool PrimeProjectile;
             internal readonly double LineReSizeLen;
             internal readonly int ReSizeSteps;
             internal readonly bool Shrink;
+            internal readonly bool Last;
 
-            internal DrawProjectile(Weapon weapon, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity entity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink)
+            internal DrawProjectile(WeaponSystem weaponSystem, MyEntity entity, MatrixD entityMatrix, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity hitEntity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last)
             {
-                Weapon = weapon;
+                WeaponSystem = weaponSystem;
+                Entity = entity;
+                EntityMatrix = entityMatrix;
                 ProjectileId = projectileId;
                 Projectile = projectile;
                 Speed = speed;
                 HitPos = hitPos;
-                Entity = entity;
+                HitEntity = hitEntity;
                 PrimeProjectile = primeProjectile;
                 LineReSizeLen = lineReSizeLen;
                 ReSizeSteps = reSizeSteps;
                 Shrink = shrink;
+                Last = last;
             }
         }
 
@@ -284,12 +263,14 @@ namespace WeaponCore.Projectiles
         internal struct Fired
         {
             public readonly List<LineD> Shots;
-            public readonly Weapon Weapon;
+            public readonly WeaponSystem WeaponSystem;
+            public readonly MyCubeBlock FiringCube;
 
-            public Fired(Weapon weapon, List<LineD> shots)
+            public Fired(WeaponSystem weaponSystem, List<LineD> shots, MyCubeBlock firingCube)
             {
-                Weapon = weapon;
+                WeaponSystem = weaponSystem;
                 Shots = shots;
+                FiringCube = firingCube;
             }
         }
 

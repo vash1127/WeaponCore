@@ -103,6 +103,40 @@ namespace WeaponCore.Platform
             }
             var center = target.PositionComp.WorldAABB.Center;
             var deltaPos = center - Comp.MyPivotPos;
+            var projectileVel = WeaponType.AmmoDef.DesiredSpeed;
+            var targetVel = Vector3.Zero;
+            if (target.Physics != null)
+            {
+                targetVel = target.Physics.LinearVelocity;
+            }
+            else
+            {
+                var topMostParent = target.GetTopMostParent();
+                if (topMostParent?.Physics != null)
+                    targetVel = topMostParent.Physics.LinearVelocity;
+            }
+            var myVel = Comp.Physics.LinearVelocity;
+            var deltaVel = targetVel - myVel;
+            var timeToIntercept = Intercept(deltaPos, deltaVel, projectileVel);
+            // IFF timeToIntercept is less than 0, intercept is not possible!!!
+            _lastPredictedPos = center + (float)timeToIntercept * deltaVel;
+            return _lastPredictedPos;
+        }
+
+        public Vector3D GetPredictedTargetPosition2(MyEntity target)
+        {
+            var thisTick = Comp.MyAi.MySession.Tick;
+            if (thisTick == _lastPredictionTick && _lastTarget == target)
+                return _lastPredictedPos;
+            _lastTarget = target;
+            _lastPredictionTick = thisTick;
+            if (target == null || target.MarkedForClose)
+            {
+                _lastPredictedPos = Vector3D.Zero;
+                return _lastPredictedPos;
+            }
+            var center = target.PositionComp.WorldAABB.Center;
+            var deltaPos = center - Comp.MyPivotPos;
 
             var projectileVel = WeaponType.AmmoDef.DesiredSpeed;
             var maxTrajectory = WeaponType.AmmoDef.MaxTrajectory;

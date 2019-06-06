@@ -7,6 +7,7 @@ using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
+using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
 
@@ -40,6 +41,7 @@ namespace WeaponCore
         internal uint Tick;
         internal int PlayerEventId { get; set; }
         internal int ProCounter { get; set; }
+        internal int ModelCount { get; set; }
         internal ulong AuthorSteamId { get; set; } = 76561197969691953;
         internal long AuthorPlayerId { get; set; }
         internal long LastTerminalId { get; set; }
@@ -84,11 +86,12 @@ namespace WeaponCore
         internal readonly MyConcurrentDictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new MyConcurrentDictionary<MyCubeGrid, GridTargetingAi>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
+        internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
 
         internal ShieldApi SApi = new ShieldApi();
         internal FutureEvents FutureEvents { get; set; } = new FutureEvents();
-
+        internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",

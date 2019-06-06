@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.ModAPI;
+using VRage.Game.Entity;
 using VRage.Utils;
 using WeaponCore.Support;
 
@@ -71,6 +73,13 @@ namespace WeaponCore
                 WeaponPlatforms.Add(subTypeIdHash, new WeaponStructure(def, _weaponDefinitions));
             }
             Inited = true;
+
+            for (int i = 0; i < Projectiles.Wait.Length; i++)
+            {
+                Projectiles.EntityPool[i] = new EntityPool<MyEntity>[ModelCount];
+                for (int j = 0; j < ModelCount; j++)
+                    Projectiles.EntityPool[i][j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.Activator);
+            }
         }
     }
 }
