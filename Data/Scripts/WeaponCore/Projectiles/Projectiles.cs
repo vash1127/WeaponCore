@@ -54,7 +54,7 @@ namespace WeaponCore.Projectiles
             ent.Init(null, model, null, null, null);
             ent.Render.CastShadows = false;
             ent.IsPreview = true;
-            ent.Render.Visible = true;
+            //ent.Render.Visible = true;
             ent.Save = false;
             ent.SyncFlag = false;
             ent.NeedsWorldMatrix = false;
@@ -65,7 +65,11 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-           MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+           //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+           for (int i = 0; i < Wait.Length; i++)
+           {
+                Process(i);
+           }
         }
 
         private void Process(int i)
@@ -107,10 +111,20 @@ namespace WeaponCore.Projectiles
 
                     p.CurrentMagnitude = p.CurrentSpeed * StepConst;
                     p.LastPosition = p.Position;
-                    p.Position += p.CurrentMagnitude;
 
                     if (p.ModelState == Projectile.EntityState.Exists)
-                        p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Entity.PositionComp.WorldMatrix.Forward, p.Entity.PositionComp.WorldMatrix.Up);
+                    {
+                        p.Position += p.CurrentMagnitude;
+                        if (p.TrackTarget)
+                        {
+                            var physics = p.Target.Physics ?? p.Target.Parent.Physics;
+                            var test = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.CurrentMagnitude, 0, 1);
+                            p.Position += test;
+                            p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+                        }
+                        else p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+                    }
+                    else p.Position += p.CurrentMagnitude;
 
                     Vector3D? intersect = null;
                     var segmentList = segmentPool.Get();
@@ -240,7 +254,7 @@ namespace WeaponCore.Projectiles
 
         //Relative velocity proportional navigation
         //aka: Whip-Nav
-        Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1)
+        private Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1)
         {
             var missileToTarget = Vector3D.Normalize(targetPosition - missilePos);
             var relativeVelocity = targetVelocity - missileVelocity;

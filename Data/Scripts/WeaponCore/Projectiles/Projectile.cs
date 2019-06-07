@@ -58,6 +58,7 @@ namespace WeaponCore.Projectiles
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal MyEntity Entity;
+        internal MyEntity Target;
         internal MatrixD EntityMatrix;
         internal int ModelId;
         internal MySoundPair FireSound = new MySoundPair();
@@ -65,6 +66,7 @@ namespace WeaponCore.Projectiles
         internal MySoundPair ReloadSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
         internal bool HasTravelSound;
+        internal bool TrackTarget => Target != null && !Target.MarkedForClose && WepDef.AmmoDef.Guidance == AmmoDefinition.GuidanceType.Smart;
 
         internal void Start(List<MyEntity> checkList, bool noAv)
         {
@@ -78,11 +80,7 @@ namespace WeaponCore.Projectiles
             SpeedLength = WepDef.AmmoDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
             LineReSizeLen = SpeedLength / 60;
             AmmoTravelSoundRangeSqr = (WepDef.AudioDef.AmmoTravelSoundRange * WepDef.AudioDef.AmmoTravelSoundRange);
-            GrowStep = 1;
-            var reSizeSteps = (int)(ShotLength / LineReSizeLen);
-            ReSizeSteps = reSizeSteps > 0 ? reSizeSteps : 1;
-            Grow = ReSizeSteps > 1;
-            Shrink = Grow;
+
             Position = Origin;
             LastEntityPos = Origin;
             HitEntity = null;
@@ -132,6 +130,13 @@ namespace WeaponCore.Projectiles
                 }
                 ModelState = ModelId != -1 ? EntityState.Exists : EntityState.None;
             }
+
+            GrowStep = 1;
+            var reSizeSteps = (int)(ShotLength / LineReSizeLen);
+            ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
+            Grow = ReSizeSteps > 1;
+            Shrink = Grow;
+
             State = ProjectileState.Alive;
         }
 

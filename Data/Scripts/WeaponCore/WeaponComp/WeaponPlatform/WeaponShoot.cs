@@ -1,12 +1,7 @@
 ﻿using System;
-using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Game.Models;
-using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -103,6 +98,7 @@ namespace WeaponCore.Platform
                     pro.Origin = muzzle.Position;
                     pro.Direction = muzzle.DeviatedDir;
                     pro.State = Projectile.ProjectileState.Start;
+                    pro.Target = Target;
                     if (WeaponSystem.ModelId != -1)
                     {
                         MyEntity ent;

@@ -45,8 +45,8 @@ namespace WeaponCore
                 //_dsUtil.Sw.Restart();
                 UpdateWeaponPlatforms();
                 //_dsUtil.StopWatchReport("test", -1);
-                MyAPIGateway.Parallel.Start(Projectiles.Update);
-                //Projectiles.Update();
+                //MyAPIGateway.Parallel.Start(Projectiles.Update);
+                Projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
