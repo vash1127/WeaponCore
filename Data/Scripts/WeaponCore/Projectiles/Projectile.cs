@@ -18,81 +18,95 @@ namespace WeaponCore.Projectiles
         internal const int EndSteps = 3;
         internal ProjectileState State;
         internal EntityState ModelState;
+        internal MatrixD EntityMatrix;
+
         internal Vector3D Direction;
         internal Vector3D Position;
         internal Vector3D LastPosition;
+        internal Vector3D Origin;
+        internal Vector3D StartSpeed;
+        internal Vector3D AddSpeed;
+        internal Vector3D CurrentSpeed;
+        internal Vector3D Velocity;
+        internal Vector3D CurrentMagnitude;
+        internal Vector3D CameraStartPos;
+        internal Vector3D LastEntityPos;
+
         internal WeaponSystem WeaponSystem;
         internal WeaponDefinition WepDef;
         internal List<MyEntity> CheckList;
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
         internal MyEntity HitEntity;
-        internal Vector3D Origin;
-        internal Vector3D StartSpeed;
-        internal Vector3D AddSpeed;
-        internal Vector3D CurrentSpeed;
-        internal Vector3D FinalSpeed;
-        internal Vector3D CurrentMagnitude;
-        internal Vector3D CameraStartPos;
-        internal Vector3D LastEntityPos;
-        internal LineD CurrentLine;
-        internal double ShotLength;
+        internal float FinalSpeed;
+        internal float FinalSpeedSqr;
         internal float SpeedLength;
-        internal float MaxTrajectory;
         internal float AmmoTravelSoundRangeSqr;
+        internal float MaxTrajectory;
+        internal double MaxTrajectorySqr;
+        internal double DistanceTraveledSqr;
+        internal double ShotLength;
         internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
-        internal bool PositionChecked;
         internal double LineReSizeLen;
+        internal LineD CurrentLine;
+
+        internal uint Age;
         internal int ReSizeSteps;
         internal int GrowStep = 1;
         internal int EndStep;
+        internal int ModelId;
         internal bool Grow;
         internal bool Shrink;
         internal bool Draw;
         internal bool DrawLine;
         internal bool AmmoSound;
         internal bool FirstOffScreen;
+        internal bool HasTravelSound;
+        internal bool SpawnParticle;
+        internal bool ConstantSpeed;
+        internal bool PositionChecked;
+        internal bool TrackTarget => Target != null && !Target.MarkedForClose && WepDef.AmmoDef.Guidance == AmmoDefinition.GuidanceType.Smart;
         internal MyParticleEffect Effect1;
         internal readonly MyEntity3DSoundEmitter Sound1 = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal MyEntity Entity;
         internal MyEntity Target;
-        internal MatrixD EntityMatrix;
-        internal int ModelId;
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair ReloadSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
-        internal bool HasTravelSound;
-        internal bool TrackTarget => Target != null && !Target.MarkedForClose && WepDef.AmmoDef.Guidance == AmmoDefinition.GuidanceType.Smart;
+
 
         internal void Start(List<MyEntity> checkList, bool noAv)
         {
             FirstOffScreen = true;
+            DistanceTraveledSqr = 0;
             ModelState = EntityState.Stale;
             WepDef = WeaponSystem.WeaponType;
             FiringGrid = FiringCube.CubeGrid;
             DrawLine = WepDef.GraphicDef.ProjectileTrail;
             MaxTrajectory = WepDef.AmmoDef.MaxTrajectory;
+            MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             ShotLength = WepDef.AmmoDef.ProjectileLength;
             SpeedLength = WepDef.AmmoDef.DesiredSpeed;// * MyUtils.GetRandomFloat(1f, 1.5f);
             LineReSizeLen = SpeedLength / 60;
             AmmoTravelSoundRangeSqr = (WepDef.AudioDef.AmmoTravelSoundRange * WepDef.AudioDef.AmmoTravelSoundRange);
-
             Position = Origin;
             LastEntityPos = Origin;
             HitEntity = null;
             CheckList = checkList;
             StartSpeed = FiringGrid.Physics.LinearVelocity;
             AddSpeed = Direction * SpeedLength;
-            FinalSpeed = StartSpeed + AddSpeed;
-            CurrentSpeed = FinalSpeed;
+            FinalSpeed = WepDef.AmmoDef.DesiredSpeed;
+            FinalSpeedSqr = FinalSpeed * FinalSpeed;
+            Velocity = StartSpeed + AddSpeed;
             CurrentMagnitude = CurrentSpeed * StepConst;
             PositionChecked = false;
             AmmoSound = false;
             Draw = WepDef.GraphicDef.VisualProbability >= (double)MyUtils.GetRandomFloat(0.0f, 1f);
+            SpawnParticle = Draw && WepDef.GraphicDef.ParticleTrail;
             EndStep = 0;
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
             Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
@@ -102,7 +116,7 @@ namespace WeaponCore.Projectiles
 
             if (!noAv)
             {
-                if (Draw && WepDef.GraphicDef.ParticleTrail ) ProjectileParticleStart();
+                if (SpawnParticle) ProjectileParticleStart();
 
                 if (WepDef.AudioDef.AmmoTravelSound != string.Empty)
                 {
@@ -136,7 +150,7 @@ namespace WeaponCore.Projectiles
             ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
             Grow = ReSizeSteps > 1;
             Shrink = Grow;
-
+            ConstantSpeed = WepDef.AmmoDef.AccelPerSec <= 0;
             State = ProjectileState.Alive;
         }
 
@@ -154,7 +168,7 @@ namespace WeaponCore.Projectiles
 
             Effect1.UserRadiusMultiplier = WepDef.GraphicDef.ParticleRadiusMultiplier * scaler;
             Effect1.UserEmitterScale = 1 * scaler;
-            Effect1.Velocity = CurrentSpeed;
+            Effect1.Velocity = Velocity;
         }
 
         internal void FireSoundStart()

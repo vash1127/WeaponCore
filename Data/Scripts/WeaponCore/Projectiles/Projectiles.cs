@@ -54,7 +54,6 @@ namespace WeaponCore.Projectiles
             ent.Init(null, model, null, null, null);
             ent.Render.CastShadows = false;
             ent.IsPreview = true;
-            //ent.Render.Visible = true;
             ent.Save = false;
             ent.SyncFlag = false;
             ent.NeedsWorldMatrix = false;
@@ -91,6 +90,7 @@ namespace WeaponCore.Projectiles
                 var modelClose = false;
                 foreach (var p in pool.Active)
                 {
+                    p.Age++;
                     switch (p.State)
                     {
                         case Projectile.ProjectileState.Dead:
@@ -109,22 +109,40 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
 
-                    p.CurrentMagnitude = p.CurrentSpeed * StepConst;
                     p.LastPosition = p.Position;
-
-                    if (p.ModelState == Projectile.EntityState.Exists)
+                    if (p.ConstantSpeed)
                     {
+                        p.CurrentMagnitude = p.CurrentSpeed * StepConst;
                         p.Position += p.CurrentMagnitude;
+                    }
+                    else
+                    {
                         if (p.TrackTarget)
                         {
                             var physics = p.Target.Physics ?? p.Target.Parent.Physics;
-                            var test = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.CurrentMagnitude, 0, 1);
-                            p.Position += test;
-                            p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+                            var commandedAccel = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.Velocity, 1f, 1f);
+                            var newVel = p.Velocity + commandedAccel;
+                            if (newVel.LengthSquared() > p.FinalSpeedSqr)
+                            {
+                                newVel.Normalize();
+                                newVel *= p.FinalSpeed;
+                            }
+                            p.Velocity = newVel;
+                            p.Direction = Vector3D.Normalize(p.Velocity);
+                            p.CurrentMagnitude = p.Velocity * StepConst;
+                            p.Position += p.CurrentMagnitude;
+                            if (p.SpawnParticle) p.Effect1.Velocity = p.Velocity;
                         }
-                        else p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+                        p.DistanceTraveledSqr += p.Velocity.LengthSquared();
+                        if (p.DistanceTraveledSqr > p.MaxTrajectorySqr)
+                        {
+                            p.ProjectileClose(pool, checkPool, noAv);
+                            continue;
+                        }
                     }
-                    else p.Position += p.CurrentMagnitude;
+
+                    if (p.ModelState == Projectile.EntityState.Exists) p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+
 
                     Vector3D? intersect = null;
                     var segmentList = segmentPool.Get();
