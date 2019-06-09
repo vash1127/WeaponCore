@@ -125,48 +125,6 @@ namespace WeaponCore.Platform
             return _lastPredictedPos;
         }
 
-        public Vector3D GetPredictedTargetPosition2(MyEntity target)
-        {
-            var thisTick = Comp.MyAi.MySession.Tick;
-            if (thisTick == _lastPredictionTick && _lastTarget == target)
-                return _lastPredictedPos;
-            _lastTarget = target;
-            _lastPredictionTick = thisTick;
-            if (target == null || target.MarkedForClose)
-            {
-                _lastPredictedPos = Vector3D.Zero;
-                return _lastPredictedPos;
-            }
-            var center = target.PositionComp.WorldAABB.Center;
-            var deltaPos = center - Comp.MyPivotPos;
-
-            var projectileVel = WeaponType.AmmoDef.DesiredSpeed;
-            var maxTrajectory = WeaponType.AmmoDef.MaxTrajectory;
-
-            maxTrajectory += WeaponType.AmmoDef.AreaEffectRadius;
-            var flag = !WeaponType.SkipAcceleration;
-
-            var maxVel = projectileVel < 9.99999974737875E-06 ? 1E-06f : maxTrajectory / projectileVel;
-            var targetVel = Vector3.Zero;
-            if (target.Physics != null)
-            {
-                targetVel = target.Physics.LinearVelocity;
-            }
-            else
-            {
-                var topMostParent = target.GetTopMostParent();
-                if (topMostParent?.Physics != null)
-                    targetVel = topMostParent.Physics.LinearVelocity;
-            }
-            var myVel = Comp.Physics.LinearVelocity;
-            var deltaVel = targetVel - myVel;
-            var num3 = MathHelper.Clamp(Intercept(deltaPos, deltaVel, projectileVel), 0.0, maxVel);
-            var vector3D = center + (float)num3 * targetVel;
-            _lastPredictedPos = flag ? vector3D - (float)num3 / maxVel * myVel : vector3D - (float)num3 * myVel;
-
-            return _lastPredictedPos;
-        }
-
         private static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
         {
             var num1 = Vector3D.Dot(deltaVel, deltaVel) - projectileVel * projectileVel;
@@ -214,109 +172,35 @@ namespace WeaponCore.Platform
             return Math.Abs(f1 - f2) < 0.00001;
         }
 
+        /// <summary>
+        /// Returns if the normalized dot product between two vectors is greater than the tolerance.
+        /// This is helpful for determining if two vectors are "more parallel" than the tolerance.
+        /// </summary>
+        /// <param name="a">First vector</param>
+        /// <param name="b">Second vector</param>
+        /// <param name="tolerance">Cosine of maximum angle</param>
+        /// <returns></returns>
+        public static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
+        {
+            double dot = Vector3D.Dot(a, b);
+            double num = a.LengthSquared() * b.LengthSquared() * tolerance * Math.Sign(tolerance);
+            return Math.Sign(dot) * dot > num;
+        }
+
+        bool sameSign(float num1, double num2)
+        {
+            if (num1 > 0 && num2 < 0)
+                return false;
+            if (num1 < 0 && num2 > 0)
+                return false;
+            return true;
+        }
+
         private int _randomStandbyChange_ms;
         private int _randomStandbyChangeConst_ms;
         private float _randomStandbyRotation;
         private float _randomStandbyElevation;
         /*
-        private static double ClampAzimuth(Weapon weapon, double value)
-        {
-            if (IsAzimuthLimited(weapon))
-                value = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, value));
-            return value;
-        }
-
-        private static bool IsAzimuthLimited(Weapon weapon)
-        {
-            return Math.Abs(weapon.MaxAzimuthRadians - weapon.MinAzimuthRadians - 6.28318548202515) > 0.01;
-        }
-
-        private static double ClampElevation(Weapon weapon, double value)
-        {
-            if (IsElevationLimited(weapon))
-                value = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, value));
-            return value;
-        }
-
-        private static bool IsElevationLimited(Weapon weapon)
-        {
-            return Math.Abs(weapon.MaxElevationRadians - weapon.MinElevationRadians - 6.28318548202515) > 0.01;
-        }
-
-
-        private float _rotationLast;
-        private float _elevationLast;
-        private float _gunIdleElevation;
-        private float _gunIdleAzimuth;
-        private float _minSinElevationRadians = -1f;
-        private float _maxSinElevationRadians = 1f;
-
-        private bool _gunIdleElevationAzimuthUnknown;
-        private bool _enableIdleRotation;
-        private bool _randomIsMoving;
-        private bool _transformDirty = true;
-        private bool _wasAnimatedLastFrame;
-        internal float BarrelElevationMin;
-        internal bool IsAimed;
-        private IMyEntity _barrel;
-        private IMyEntity _base1;
-        private IMyEntity _base2;
-
-        public void InitTurretBase()
-        {
-            _barrel = EntityPart;
-            _base1 = EntityPart.Parent.Parent;
-            _base2 = EntityPart.Parent;
-        }
-
-
-        private void RotateModels()
-        {
-            if (_base1 == null || _barrel == null || !_base1.Render.IsChild(0))
-                return;
-            if (!_transformDirty)
-            {
-                var physics = Comp.Physics;
-                if (physics != null)
-                {
-                    var flag = !Comp.MyAi.MySession.IsServer && !Comp.MyGrid.IsClientPredicted;
-                    var linearVelocity = physics.LinearVelocity;
-                    var vector3 = flag ? physics.AngularVelocityLocal : physics.AngularVelocity;
-                    if (linearVelocity.Equals(Vector3.Zero) && vector3.Equals(Vector3.Zero) && _wasAnimatedLastFrame == flag)
-                        return;
-                    _wasAnimatedLastFrame = flag;
-                }
-            }
-            //ClampRotationAndElevation();
-            Matrix rotMatrix;
-            Matrix.CreateRotationY((float)Azimuth, out rotMatrix);
-
-            var baseMatrix = Comp.MyCube.PositionComp.LocalMatrix;
-            var baseMatrixTran = baseMatrix.Translation;
-            baseMatrixTran.Z += 1.09354f;
-            baseMatrix.Translation = baseMatrixTran;
-
-            Matrix rotDoneMatrix;
-            Matrix.Multiply(ref rotMatrix, ref baseMatrix, out rotDoneMatrix);
-            _base1.PositionComp.SetLocalMatrix(ref rotMatrix, _base1.Physics, false, ref rotDoneMatrix, true);
-
-            Matrix elMatrix;
-            Matrix.CreateRotationX((float)Elevation, out elMatrix);
-
-            Matrix elDoneMatrix;
-            Matrix.Multiply(ref elMatrix, ref rotDoneMatrix, out elDoneMatrix);
-            var tmpTran = elDoneMatrix.Translation;
-            tmpTran.Z -= 1.04848f;
-            tmpTran.Y += 0.37814f;
-
-            elDoneMatrix.Translation = tmpTran;
-            Log.Line($"baseTran:{baseMatrix.Translation} - base2Tran:{_base1.PositionComp.LocalMatrix.Translation} - rotDoneTran:{rotDoneMatrix.Translation} - elDoneTran:{elDoneMatrix.Translation} - elMatrixTran:{elMatrix.Translation}");
-            _base2.PositionComp.SetLocalMatrix(ref elMatrix, _base2.Physics, true, ref elDoneMatrix, true);
-            //_barrel.WorldPositionChanged();
-            _barrel.Render.UpdateRenderObject(true, true);
-            _transformDirty = false;
-        }
-
         private Vector3 LookAt(Vector3D target)
         {
             var muzzleWorldPosition = Comp.MyPivotPos;
@@ -329,15 +213,6 @@ namespace WeaponCore.Platform
                 _gunIdleElevationAzimuthUnknown = false;
             }
             return new Vector3(elevation - _gunIdleElevation, MathHelper.WrapAngle(azimuth - _gunIdleAzimuth), 0.0f);
-        }
-
-        private void ResetRandomAiming()
-        {
-            if (MyAPIGateway.Session.ElapsedPlayTime.Milliseconds - _randomStandbyChange_ms <= _randomStandbyChangeConst_ms)
-                return;
-            _randomStandbyRotation = MyUtils.GetRandomFloat(-3.141593f, 3.141593f);
-            _randomStandbyElevation = MyUtils.GetRandomFloat(0.0f, 1.570796f);
-            _randomStandbyChange_ms = MyAPIGateway.Session.ElapsedPlayTime.Milliseconds;
         }
 
         private void RandomMovement()
@@ -383,78 +258,6 @@ namespace WeaponCore.Platform
             }
         }
 
-        protected void ResetRotation()
-        {
-            Azimuth = 0.0f;
-            Elevation = 0.0f;
-            ClampRotationAndElevation();
-            _randomStandbyElevation = 0.0f;
-            _randomStandbyRotation = 0.0f;
-            _randomStandbyChange_ms = MyAPIGateway.Session.ElapsedPlayTime.Milliseconds;
-        }
-
-        public bool RotationAndElevation()
-        {
-            var vector3 = Vector3.Zero;
-            if (Target != null)
-            {
-                var predictedTargetPosition = GetPredictedTargetPosition(Target);
-                vector3 = LookAt(predictedTargetPosition);
-            }
-            var y = vector3.Y;
-            var x = vector3.X;
-            var max1 = RotationSpeed * 16f;
-            var num1 = MathHelper.WrapAngle((float) (y - Azimuth));
-            Azimuth += MathHelper.Clamp(num1, -max1, max1);
-            //var flag = num1 * num1 > 9.99999943962493E-11;
-            if (Azimuth > 3.14159297943115)
-                Azimuth -= 6.283185f;
-            else if (Azimuth < -3.14159297943115)
-                Azimuth += 6.283185f;
-            var max2 = ElevationSpeed * 16f;
-            var num2 = Math.Max(x, BarrelElevationMin) - Elevation;
-            Elevation += MathHelper.Clamp(num2, -max2, max2);
-            //this.m_playAimingSound = flag || (double)num2 * (double)num2 > 9.99999943962493E-11;
-            ClampRotationAndElevation();
-            RotateModels();
-            if (Target != null)
-            {
-                var num3 = Math.Abs(y - Azimuth);
-                var num4 = Math.Abs(x - Elevation);
-                IsAimed = num3 <= 1.40129846432482E-45 && num4 <= 0.00999999977648258;
-            }
-            else
-                IsAimed = false;
-            return IsAimed;
-        }
-
-        private void ClampRotationAndElevation()
-        {
-            Azimuth = ClampAzimuth(this, Azimuth);
-            Elevation = ClampElevation(this, Elevation);
-        }
-
-        private bool HasElevationOrRotationChanged()
-        {
-            return Math.Abs(_rotationLast - Azimuth) > 0.00700000021606684 || Math.Abs(_elevationLast - Elevation) > 0.00700000021606684;
-        }
-        private void UpdateControlledWeapon()
-        {
-            if (this.HasElevationOrRotationChanged())
-                this.m_stopShootingTime = 0.0f;
-            else if ((double)this.m_stopShootingTime <= 0.0)
-                this.m_stopShootingTime = (float)MySandboxGame.TotalGamePlayTimeInMilliseconds;
-            else if ((double)this.m_stopShootingTime + 120.0 < (double)MySandboxGame.TotalGamePlayTimeInMilliseconds)
-                this.StopAimingSound();
-            this.m_rotationLast = this.Rotation;
-            this.m_elevationLast = this.Elevation;
-            this.RotateModels();
-            if (this.m_status != MyLargeTurretBase.MyLargeShipGunStatus.MyWeaponStatus_Shooting)
-                return;
-            this.m_barrel.StopShooting();
-            this.m_status = MyLargeTurretBase.MyLargeShipGunStatus.MyWeaponStatus_Searching;
-        }
-
         private void SetupSearchRaycast()
         {
             MatrixD muzzleWorldMatrix = this.m_gunBase.GetMuzzleWorldMatrix();
@@ -476,29 +279,5 @@ namespace WeaponCore.Platform
             this.m_transformDirty = true;
         }
         */
-
-        /// <summary>
-        /// Returns if the normalized dot product between two vectors is greater than the tolerance.
-        /// This is helpful for determining if two vectors are "more parallel" than the tolerance.
-        /// </summary>
-        /// <param name="a">First vector</param>
-        /// <param name="b">Second vector</param>
-        /// <param name="tolerance">Cosine of maximum angle</param>
-        /// <returns></returns>
-        public static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
-        {
-            double dot = Vector3D.Dot(a, b);
-            double num = a.LengthSquared() * b.LengthSquared() * tolerance * Math.Sign(tolerance);
-            return Math.Sign(dot) * dot > num;
-        }
-
-        bool sameSign(float num1, double num2)
-        {
-            if (num1 > 0 && num2 < 0)
-                return false;
-            if (num1 < 0 && num2 > 0)
-                return false;
-            return true;
-        }
     }
 }

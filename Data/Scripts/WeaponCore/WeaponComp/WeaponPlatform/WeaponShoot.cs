@@ -68,6 +68,7 @@ namespace WeaponCore.Platform
                 }
 
             }
+            Log.Line("test");
             for (int i = 0; i < bps; i++)
             {
                 var current = _nextMuzzle;
