@@ -16,9 +16,10 @@ namespace WeaponCore.Projectiles
     {
         private void GetEntitiesInBlastRadius(Fired fired, Vector3D position, int poolId)
         {
+            var wepDef = fired.WeaponSystem.WeaponType;
             var entCheckList = CheckPool[poolId].Get();
             var entsFound = CheckPool[poolId].Get();
-            var sphere = new BoundingSphereD(position, fired.WeaponSystem.WeaponType.AmmoDef.AreaEffectRadius);
+            var sphere = new BoundingSphereD(position, wepDef.AmmoDef.AreaEffectRadius);
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, entCheckList);
 
             foreach (var ent in entCheckList)
@@ -28,6 +29,9 @@ namespace WeaponCore.Projectiles
             }
             entCheckList.Clear();
             CheckPool[poolId].Return(entCheckList);
+            if (wepDef.AmmoDef.DetonateOnEnd || entsFound.Count > 0)
+                Hits.Enqueue(new ProximityEvent(fired, null, position, Session.Instance.SApi));
+
             foreach (var ent in entsFound)
             {
                 if (Session.Instance.IsServer)

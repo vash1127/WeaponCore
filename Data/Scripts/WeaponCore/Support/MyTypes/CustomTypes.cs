@@ -95,23 +95,24 @@ namespace WeaponCore.Support
 
         [ProtoMember(1)] internal bool UseRandomizedRange;
         [ProtoMember(2)] internal bool RealisticDamage;
-        [ProtoMember(3)] internal float Mass;
-        [ProtoMember(4)] internal float Health;
-        [ProtoMember(5)] internal float ProjectileLength;
-        [ProtoMember(6)] internal float InitalSpeed;
-        [ProtoMember(7)] internal float AccelPerSec;
-        [ProtoMember(8)] internal float DesiredSpeed;
-        [ProtoMember(9)] internal float SpeedVariance;
-        [ProtoMember(10)] internal float MaxTrajectory;
-        [ProtoMember(11)] internal float BackkickForce;
-        [ProtoMember(12)] internal float RangeMultiplier;
-        [ProtoMember(13)] internal float ThermalDamage;
-        [ProtoMember(14)] internal float AreaEffectYield;
-        [ProtoMember(15)] internal float AreaEffectRadius;
-        [ProtoMember(16)] internal float ShieldDmgMultiplier;
-        [ProtoMember(17)] internal float DefaultDamage;
-        [ProtoMember(18)] internal ShieldType ShieldDamage;
-        [ProtoMember(19)] internal GuidanceType Guidance;
+        [ProtoMember(3)] internal bool DetonateOnEnd;
+        [ProtoMember(4)] internal float Mass;
+        [ProtoMember(5)] internal float Health;
+        [ProtoMember(6)] internal float ProjectileLength;
+        [ProtoMember(7)] internal float InitalSpeed;
+        [ProtoMember(8)] internal float AccelPerSec;
+        [ProtoMember(9)] internal float DesiredSpeed;
+        [ProtoMember(10)] internal float SpeedVariance;
+        [ProtoMember(11)] internal float MaxTrajectory;
+        [ProtoMember(12)] internal float BackkickForce;
+        [ProtoMember(13)] internal float RangeMultiplier;
+        [ProtoMember(14)] internal float ThermalDamage;
+        [ProtoMember(15)] internal float AreaEffectYield;
+        [ProtoMember(16)] internal float AreaEffectRadius;
+        [ProtoMember(17)] internal float ShieldDmgMultiplier;
+        [ProtoMember(18)] internal float DefaultDamage;
+        [ProtoMember(19)] internal ShieldType ShieldDamage;
+        [ProtoMember(20)] internal GuidanceType Guidance;
     }
 
     [ProtoContract]

@@ -108,12 +108,16 @@ namespace WeaponCore.Projectiles
 
             public void Execute()
             {
-                UtilsStatic.CreateFakeExplosion(ActivatePos, Fired.WeaponSystem.WeaponType.AmmoDef.AreaEffectRadius);
+                var wepDef = Fired.WeaponSystem.WeaponType;
+                if (Entity == null)
+                {
+                    UtilsStatic.CreateFakeExplosion(ActivatePos, wepDef.AmmoDef.AreaEffectRadius);
+                    return;
+                }
                 var shield = Entity as IMyTerminalBlock;
                 var grid = Entity as MyCubeGrid;
                 var voxel = Entity as MyVoxelBase;
                 var destroyable = Entity as IMyDestroyableObject;
-                Log.Line($"{shield != null}");
             }
         }
 
