@@ -173,15 +173,18 @@ namespace WeaponCore.Projectiles
                     ModelState = EntityState.Exists;
                     ScreenCheckRadius = Entity.PositionComp.WorldVolume.Radius * 2;
                 }
-                ModelState = ModelId != -1 ? EntityState.Exists : EntityState.None;
+                else ModelState = EntityState.None;
             }
 
-            var reSizeSteps = (int)(ShotLength / LineReSizeLen);
-            ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
-            Grow = ReSizeSteps > 1;
-            Shrink = Grow;
-
-            State = ProjectileState.Alive;
+            if (SpeedLength > 0 && MaxTrajectory > 0)
+            {
+                var reSizeSteps = (int) (ShotLength / LineReSizeLen);
+                ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
+                Grow = ReSizeSteps > 1;
+                Shrink = Grow;
+                State = ProjectileState.Alive;
+            }
+            else State = ProjectileState.OneAndDone;
         }
 
         private void ProjectileParticleStart()
@@ -274,6 +277,7 @@ namespace WeaponCore.Projectiles
             Alive,
             Ending,
             Dead,
+            OneAndDone,
         }
 
         internal enum EntityState

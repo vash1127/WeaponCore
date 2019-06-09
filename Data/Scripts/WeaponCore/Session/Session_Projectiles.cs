@@ -47,7 +47,8 @@ namespace WeaponCore
                 {
                     var matrix = MatrixD.CreateFromDir(line.Direction);
                     matrix.Translation = line.From;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, wDef.GraphicDef.ProjectileWidth, wDef.GraphicDef.ProjectileWidth, (float)line.Length, 6, wDef.GraphicDef.ProjectileColor, wDef.GraphicDef.ProjectileColor, wDef.GraphicDef.ProjectileMaterial, wDef.GraphicDef.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    Log.Line("test");
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, wDef.GraphicDef.ProjectileWidth, wDef.GraphicDef.ProjectileWidth, (float)line.Length, 24, wDef.GraphicDef.ProjectileColor, wDef.GraphicDef.ProjectileColor, wDef.GraphicDef.ProjectileMaterial, wDef.GraphicDef.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
                 else MyTransparentGeometry.AddLocalLineBillboard(wDef.GraphicDef.ProjectileMaterial, wDef.GraphicDef.ProjectileColor, line.From, 0, line.Direction, (float)line.Length, wDef.GraphicDef.ProjectileWidth);
             }

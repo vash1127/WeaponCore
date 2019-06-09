@@ -107,9 +107,18 @@ namespace WeaponCore.Projectiles
                                 modelClose = true;
                             }
                             continue;
+                        case Projectile.ProjectileState.OneAndDone:
+                            p.Stop(pool, checkPool, null, null);
+                            continue;
                     }
 
                     p.LastPosition = p.Position;
+                    if (p.State == Projectile.ProjectileState.OneAndDone)
+                    {
+                        var beamEnd = p.Position + (p.Direction * p.ShotLength);
+                        p.TravelMagnitude = beamEnd;
+                        p.Position = beamEnd;
+                    }
                     if (p.ConstantSpeed)
                     {
                         var velStep = p.Velocity * StepConst;
@@ -153,7 +162,9 @@ namespace WeaponCore.Projectiles
 
                     Vector3D? intersect = null;
                     var segmentList = segmentPool.Get();
-                    var beam = new LineD(p.LastPosition, p.Position + p.TravelMagnitude);
+                    LineD beam;
+                    if (p.State == Projectile.ProjectileState.OneAndDone) beam = new LineD(p.LastPosition, p.Position);
+                    else beam = new LineD(p.LastPosition, p.Position + p.TravelMagnitude);
                     MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
@@ -184,7 +195,7 @@ namespace WeaponCore.Projectiles
                     if (intersect != null) continue;
 
                     var distFromOrigin = (p.Origin - p.Position);
-                    if (Vector3D.Dot(distFromOrigin, distFromOrigin) >= p.MaxTrajectory * p.MaxTrajectory)
+                    if (p.State != Projectile.ProjectileState.OneAndDone && Vector3D.Dot(distFromOrigin, distFromOrigin) >= p.MaxTrajectory * p.MaxTrajectory)
                     {
                         p.ProjectileClose(pool, checkPool, noAv);
                         continue;
