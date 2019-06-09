@@ -332,3 +332,6 @@ ASALocalRun/
 
 # Local History for Visual Studio
 .localhistory/
+Models/Cubes/AmmoOrb.blockdef.xml
+Models/Cubes/AmmoOrb.fbx
+Models/Cubes/AmmoOrb.xml
