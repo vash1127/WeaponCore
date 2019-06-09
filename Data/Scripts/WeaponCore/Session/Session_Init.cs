@@ -51,6 +51,7 @@ namespace WeaponCore
             if (Inited) return;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
+
             foreach (var weaponDef in _weaponDefinitions)
             {
                 foreach (var mount in weaponDef.TurretDef.MountPoints)

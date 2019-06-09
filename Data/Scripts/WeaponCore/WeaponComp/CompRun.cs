@@ -29,6 +29,7 @@ namespace WeaponCore.Support
 
         public override void OnAddedToScene()
         {
+            if (MainInit) return;
             base.OnAddedToScene();
             _isServer = Session.Instance.IsServer;
             _isDedicated = Session.Instance.DedicatedServer;

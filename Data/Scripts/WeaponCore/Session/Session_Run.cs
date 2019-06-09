@@ -74,10 +74,8 @@ namespace WeaponCore
                 var cube = myEntity as MyCubeBlock;
                 var weaponBase = cube as IMyLargeMissileTurret;
                 if (weaponBase == null) return;
-
                 if (!Inited) lock (_configLock) Init();
                 if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
-
                 GridTargetingAi gridAi;
                 if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                 {
