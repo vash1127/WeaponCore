@@ -12,7 +12,7 @@ namespace WeaponCore.Platform
         internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
-            Log.Line($"match:{trackingWeapon == weapon} - this:{weapon.GetHashCode()}({weapon.WeaponSystem.WeaponName}) - controller:{trackingWeapon.GetHashCode()}({trackingWeapon.WeaponSystem.WeaponName})");
+            //Log.Line($"match:{trackingWeapon == weapon} - this:{weapon.GetHashCode()}({weapon.WeaponSystem.WeaponName}) - controller:{trackingWeapon.GetHashCode()}({trackingWeapon.WeaponSystem.WeaponName})");
             var turret = trackingWeapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var targetPos = weapon.GetPredictedTargetPosition(target);

@@ -93,7 +93,6 @@ namespace WeaponCore
                 {
                     var myCube = basePair.Key;
                     var weapon = basePair.Value;
-                    if (myCube.CubeGrid.GridSizeEnum == MyCubeSize.Large) continue;
                     if (!weapon.MainInit || !weapon.State.Value.Online) continue;
 
                     for (int j = 0; j < weapon.Platform.Weapons.Length; j++)
