@@ -70,7 +70,7 @@ namespace WeaponCore.Support
 
         internal void SelectTarget(ref MyEntity target, Weapon weapon)
         {
-            if (MySession.Tick - _targetsUpdatedTick < 100)
+            if (MySession.Tick - _targetsUpdatedTick > 100)
             {
                 UpdateTargets();
                 _targetsUpdatedTick = MySession.Tick;
@@ -79,7 +79,6 @@ namespace WeaponCore.Support
             if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
 
             weapon.CheckedForTargetTick = MySession.Tick;
-
             lock (_tLock) GetTarget(ref target, weapon);
             if (target != null)
             {
@@ -183,6 +182,7 @@ namespace WeaponCore.Support
                 {
                     if (ent == null || ent.MarkedForClose) continue;
                     var entInfo = MyDetectedEntityInfoHelper.Create(ent, myOwner);
+
                     switch (entInfo.Type)
                     {
                         case MyDetectedEntityType.Asteroid:

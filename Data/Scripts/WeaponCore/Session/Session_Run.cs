@@ -58,8 +58,8 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyEntities.OnEntityAdd += OnEntityAdd;
-
                 MyEntities.OnEntityDelete += OnEntityDelete;
+
                 //MyEntities.OnEntityRemove += OnEntityRemove;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
@@ -130,6 +130,7 @@ namespace WeaponCore
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
+            MyEntities.OnEntityAdd -= OnEntityAdd;
             MyEntities.OnEntityDelete -= OnEntityDelete;
 
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;

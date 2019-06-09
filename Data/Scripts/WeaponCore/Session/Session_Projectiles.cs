@@ -101,7 +101,7 @@ namespace WeaponCore
                         w.Gunner = ControlledEntity == weapon.MyCube;
                         if (!w.Gunner)
                         {
-                            if (Tick > 60 && w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
+                            if (Tick > 100 && w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
                             if (w.TrackingAi && w.Target != null)
                                 Weapon.TrackingTarget(w, w.Target, true);
                         }

@@ -248,7 +248,7 @@
             return surfaceArea;
         }
 
-        public static void CreateExplosion(Vector3D position, float radius, float damage = 5000)
+        public static void CreateExplosion(Vector3D position, float radius, float damage)
         {
             MyExplosionTypeEnum explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_50;
             if (radius < 2.0)

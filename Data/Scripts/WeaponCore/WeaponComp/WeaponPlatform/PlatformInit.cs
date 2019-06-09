@@ -23,7 +23,6 @@ namespace WeaponCore.Platform
                 var barrelCount = Structure.WeaponSystems[Structure.PartNames[i]].Barrels.Length;
                 IMyEntity subPartEntity;
                 SubParts.NameToEntity.TryGetValue(Structure.PartNames[i].String, out subPartEntity);
-                Log.Line($"{i} - {Structure.PartNames[i].String}");
                 Weapons[i] = new Weapon(subPartEntity, Structure.WeaponSystems[Structure.PartNames[i]])
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
@@ -34,7 +33,6 @@ namespace WeaponCore.Platform
                 var weapon = Weapons[i];
                 if (weapon.WeaponType.TurretDef.TurretMode && comp.TrackingWeapon == null && subPartEntity?.Parent?.Parent?.Parent == comp.MyCube)
                 {
-                    Log.Line($"Controller:{i} - {Structure.PartNames[i].String}");
                     weapon.TrackingAi = true;
                     comp.TrackingWeapon = weapon;
                 }
