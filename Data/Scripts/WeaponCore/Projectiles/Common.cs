@@ -14,11 +14,37 @@ namespace WeaponCore.Projectiles
 {
     internal partial class Projectiles
     {
-        internal void GetAllEntitiesInLine(List<MyEntity> ents, Fired fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList)
+        private void GetEntitiesInBlastRadius(Fired fired, Vector3D position, int poolId)
         {
-            for (int i = 0; i < segmentList.Count; i++)
+            var entCheckList = CheckPool[poolId].Get();
+            var entsFound = CheckPool[poolId].Get();
+            var sphere = new BoundingSphereD(position, fired.WeaponSystem.WeaponType.AmmoDef.AreaEffectRadius);
+            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, entCheckList);
+
+            foreach (var ent in entCheckList)
             {
-                var ent = segmentList[i].Element;
+                var blastLine = new LineD(position, ent.PositionComp.WorldAABB.Center);
+                GetAllEntitiesInLine(entsFound, fired, blastLine, null, entCheckList);
+            }
+            entCheckList.Clear();
+            CheckPool[poolId].Return(entCheckList);
+            foreach (var ent in entsFound)
+            {
+                if (Session.Instance.IsServer)
+                    Hits.Enqueue(new ProximityEvent(fired, ent, position, Session.Instance.SApi));
+            }
+            entsFound.Clear();
+            CheckPool[poolId].Return(entsFound);
+        }
+
+        internal void GetAllEntitiesInLine(List<MyEntity> ents, Fired fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList,  List<MyEntity> entList)
+        {
+            var listCnt = segmentList?.Count ?? entList.Count;
+
+            for (int i = 0; i < listCnt; i++)
+            {
+                var ent = segmentList != null ? segmentList[i].Element : entList[i];
+
                 if (ent == fired.FiringCube.CubeGrid) continue;
 
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
@@ -171,7 +197,7 @@ namespace WeaponCore.Projectiles
                 var info = pair.Value;
                 info.HitPos /= info.HitCount;
 
-                if (Session.Instance.IsServer) Hits.Enqueue(new TurretGridEvent(pair.Key, info.HitPos, pair.Value.HitCount, fired));
+                if (Session.Instance.IsServer) Hits.Enqueue(new GridEvent(pair.Key, info.HitPos, pair.Value.HitCount, fired));
                 info.Clean();
                 damagePool.Return(info);
             }
@@ -188,9 +214,9 @@ namespace WeaponCore.Projectiles
 
                 if (Session.Instance.IsServer)
                 {
-                    if (shield != null) Hits.Enqueue(new TurretShieldEvent(shield, Session.Instance.SApi, info.HitPos / info.HitCount, info.HitCount, fired));
-                    if (voxel != null) Hits.Enqueue(new TurretVoxelEvent());
-                    if (destroyable != null) Hits.Enqueue(new TurretDestroyableEvent(destroyable, fired));
+                    if (shield != null) Hits.Enqueue(new ShieldEvent(shield, Session.Instance.SApi, info.HitPos / info.HitCount, info.HitCount, fired));
+                    if (voxel != null) Hits.Enqueue(new VoxelEvent());
+                    if (destroyable != null) Hits.Enqueue(new DestroyableEvent(destroyable, fired));
                 }
                 info.Clean();
                 damagePool.Return(info);

@@ -96,6 +96,7 @@ namespace WeaponCore.Platform
                     pro.WeaponSystem = WeaponSystem;
                     pro.FiringCube = Comp.MyCube;
                     pro.Origin = muzzle.Position;
+                    pro.PredictedTargetPos = TargetPos;
                     pro.Direction = muzzle.DeviatedDir;
                     pro.State = Projectile.ProjectileState.Start;
                     pro.Target = Target;

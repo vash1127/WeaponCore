@@ -1,4 +1,7 @@
-﻿using Sandbox.ModAPI;
+﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.Utils;
@@ -14,14 +17,14 @@ namespace WeaponCore.Projectiles
             void Execute();
         }
 
-        internal class TurretShieldEvent : IThreadHits
+        internal class ShieldEvent : IThreadHits
         {
             public readonly IMyTerminalBlock Shield;
             public readonly ShieldApi SApi;
             public readonly Vector3D HitPos;
             public readonly int Hits;
             public readonly Fired Fired;
-            public TurretShieldEvent(IMyTerminalBlock shield, ShieldApi sApi, Vector3D hitPos, int hits, Fired fired)
+            public ShieldEvent(IMyTerminalBlock shield, ShieldApi sApi, Vector3D hitPos, int hits, Fired fired)
             {
                 Shield = shield;
                 SApi = sApi;
@@ -40,14 +43,14 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal class TurretGridEvent : IThreadHits
+        internal class GridEvent : IThreadHits
         {
             public readonly IMySlimBlock Block;
             public readonly Vector3D HitPos;
             public readonly int Hits;
             public readonly Fired Fired;
             public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
-            public TurretGridEvent(IMySlimBlock block, Vector3D hitPos, int hits, Fired fired)
+            public GridEvent(IMySlimBlock block, Vector3D hitPos, int hits, Fired fired)
             {
                 Block = block;
                 HitPos = hitPos;
@@ -67,13 +70,13 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal class TurretDestroyableEvent : IThreadHits
+        internal class DestroyableEvent : IThreadHits
         {
             public readonly IMyDestroyableObject DestObj;
             public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
             public readonly Fired Fired;
 
-            internal TurretDestroyableEvent(IMyDestroyableObject destObj, Fired fired)
+            internal DestroyableEvent(IMyDestroyableObject destObj, Fired fired)
             {
                 DestObj = destObj;
                 Fired = fired;
@@ -87,7 +90,34 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal class TurretVoxelEvent : IThreadHits
+        internal class ProximityEvent : IThreadHits
+        {
+            public readonly Vector3D ActivatePos;
+            public readonly ShieldApi SApi;
+            public readonly MyEntity Entity;
+            public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
+            public readonly Fired Fired;
+
+            public ProximityEvent(Fired fired, MyEntity entity, Vector3D activatePos, ShieldApi sApi)
+            {
+                Fired = fired;
+                Entity = entity;
+                ActivatePos = activatePos;
+                SApi = sApi;
+            }
+
+            public void Execute()
+            {
+                UtilsStatic.CreateFakeExplosion(ActivatePos, Fired.WeaponSystem.WeaponType.AmmoDef.AreaEffectRadius);
+                var shield = Entity as IMyTerminalBlock;
+                var grid = Entity as MyCubeGrid;
+                var voxel = Entity as MyVoxelBase;
+                var destroyable = Entity as IMyDestroyableObject;
+                Log.Line($"{shield != null}");
+            }
+        }
+
+        internal class VoxelEvent : IThreadHits
         {
             public void Execute()
             {

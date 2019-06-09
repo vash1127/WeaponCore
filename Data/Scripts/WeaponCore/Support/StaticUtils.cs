@@ -276,6 +276,27 @@
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
+        public static void CreateFakeExplosion(Vector3D position, double radius)
+        {
+            MyExplosionInfo explosionInfo = new MyExplosionInfo()
+            {
+                PlayerDamage = 0.0f,
+                Damage = 0f,
+                ExplosionType = MyExplosionTypeEnum.WARHEAD_EXPLOSION_02,
+                ExplosionSphere = new BoundingSphereD(position, radius),
+                LifespanMiliseconds = 0,
+                ParticleScale = 1f,
+                Direction = Vector3.Down,
+                VoxelExplosionCenter = position,
+                ExplosionFlags = MyExplosionFlags.CREATE_PARTICLE_EFFECT,
+                VoxelCutoutScale = 0f,
+                PlaySound = true,
+                ApplyForceAndDamage = false,
+                ObjectsRemoveDelayInMiliseconds = 0
+            };
+            MyExplosions.AddExplosion(ref explosionInfo);
+        }
+
         public static void CreateFakeSmallExplosion(Vector3D position)
         {
             MyExplosionInfo explosionInfo = new MyExplosionInfo()

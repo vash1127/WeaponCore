@@ -81,8 +81,7 @@ namespace WeaponCore.Support
         {
             None,
             Remote,
-            Seeking,
-            Lock,
+            TravelTo,
             Smart
         }
 

@@ -15,6 +15,8 @@ namespace WeaponCore.Platform
             var turret = trackingWeapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var targetPos = weapon.GetPredictedTargetPosition(target);
+            weapon.TargetPos = targetPos;
+
             var weaponPos = weapon.Comp.MyPivotPos;
             var maxAngularStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : double.MinValue;
             Vector3D currentVector;

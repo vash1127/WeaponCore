@@ -78,7 +78,7 @@ namespace WeaponCore
             {
                 Projectiles.EntityPool[i] = new EntityPool<MyEntity>[ModelCount];
                 for (int j = 0; j < ModelCount; j++)
-                    Projectiles.EntityPool[i][j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.Activator);
+                    Projectiles.EntityPool[i][j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.EntityActivator);
             }
         }
     }

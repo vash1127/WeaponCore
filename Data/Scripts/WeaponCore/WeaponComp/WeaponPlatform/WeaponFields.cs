@@ -33,6 +33,7 @@ namespace WeaponCore.Platform
         internal WeaponComponent Comp;
         internal uint[] BeamSlot { get; set; }
         internal MyEntity Target;
+        internal Vector3D TargetPos;
 
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
