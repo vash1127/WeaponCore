@@ -92,29 +92,32 @@ namespace WeaponCore
                 foreach (var basePair in ai.WeaponBase)
                 {
                     var myCube = basePair.Key;
-                    var weapon = basePair.Value;
-                    if (!weapon.MainInit || !weapon.State.Value.Online) continue;
+                    var comp = basePair.Value;
+                    if (!comp.MainInit || !comp.State.Value.Online) continue;
 
-                    for (int j = 0; j < weapon.Platform.Weapons.Length; j++)
+                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
-                        var w = weapon.Platform.Weapons[j];
-                        w.Gunner = ControlledEntity == weapon.MyCube;
+                        var w = comp.Platform.Weapons[j];
+                        w.Gunner = ControlledEntity == comp.MyCube;
                         if (!w.Gunner)
                         {
                             if (Tick > 100 && w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
                             if (w.TrackingAi && w.Target != null)
-                                Weapon.TrackingTarget(w, w.Target, true);
+                            {
+                                if (!Weapon.TrackingTarget(w, w.Target, true)) w.Target = null;
+                            }
+                            if (w != comp.TrackingWeapon && comp.TrackingWeapon.Target == null) w.Target = null;
                         }
                         else
                         {
                             InTurret = true;
                             if (MouseButtonPressed)
                             {
-                                var currentAmmo = weapon.Gun.GunBase.CurrentAmmo;
-                                if (currentAmmo <= 1) weapon.Gun.GunBase.CurrentAmmo += 1;
+                                var currentAmmo = comp.Gun.GunBase.CurrentAmmo;
+                                if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
                             }
                         }
-                        if (w.ReadyToShoot && !w.Gunner || w.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
+                        if (w.ReadyToShoot && !w.Gunner && w.Comp.TurretTargetLock || w.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                     }
                 }
             }

@@ -44,12 +44,13 @@ namespace WeaponCore.Support
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.Instance.LastTerminalId == Turret.EntityId;
         //internal uint ResetEntityTick;
-        internal float SinkCurrentPower { get; set; }
-        internal float SinkPower { get; set; } = 0.01f;
-        internal bool NotFailed { get; set; }
-        internal bool WarmedUp { get; set; }
-        internal bool Starting { get; set; }
-        internal bool Sync { get; set; } = true;
+        internal float SinkCurrentPower;
+        internal bool TurretTargetLock;
+        internal float SinkPower = 0.01f;
+        internal bool NotFailed;
+        internal bool WarmedUp;
+        internal bool Starting;
+        internal bool Sync = true;
         internal enum Status
         {
             Online,
@@ -66,16 +67,16 @@ namespace WeaponCore.Support
         internal Weapon TrackingWeapon;
         internal Vector3D MyPivotPos;
 
-        internal IMyGunObject<MyGunBase> Gun { get; set; }
-        internal bool MainInit { get; set; }
-        internal bool SettingsUpdated { get; set; }
-        internal bool ClientUiUpdate { get; set; }
-        internal bool IsFunctional { get; set; }
-        internal bool IsWorking { get; set; }
+        internal IMyGunObject<MyGunBase> Gun;
+        internal bool MainInit;
+        internal bool SettingsUpdated;
+        internal bool ClientUiUpdate;
+        internal bool IsFunctional;
+        internal bool IsWorking;
 
-        internal LogicSettings Set { get; set; }
-        internal LogicState State { get; set; }
-        internal MyResourceSinkComponent Sink { get; set; }
+        internal LogicSettings Set;
+        internal LogicState State;
+        internal MyResourceSinkComponent Sink;
 
         public WeaponComponent(GridTargetingAi ai, MyCubeBlock myCube, IMyLargeMissileTurret turret)
         {

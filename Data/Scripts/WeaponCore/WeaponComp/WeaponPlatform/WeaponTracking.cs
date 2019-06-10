@@ -12,11 +12,15 @@ namespace WeaponCore.Platform
         internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
+
             //Log.Line($"match:{trackingWeapon == weapon} - this:{weapon.GetHashCode()}({weapon.WeaponSystem.WeaponName}) - controller:{trackingWeapon.GetHashCode()}({trackingWeapon.WeaponSystem.WeaponName})");
             var turret = trackingWeapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var targetPos = weapon.GetPredictedTargetPosition(target);
             weapon.TargetPos = targetPos;
+            if (weapon != trackingWeapon)
+                return trackingWeapon.Comp.TurretTargetLock;
+
             var weaponPos = weapon.Comp.MyPivotPos;
             var maxAngularStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : double.MinValue;
             Vector3D currentVector;
@@ -42,14 +46,6 @@ namespace WeaponCore.Platform
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             var tracking = !azConstrained && !elConstrained;
-            if (!tracking) weapon.Target = null;
-            else if (false && weapon == trackingWeapon && weapon.Target != null)
-            {
-                DsDebugDraw.DrawLine(weaponPos, weapon.Target.PositionComp.WorldAABB.Center, Color.Lime, 0.1f);
-                DsDebugDraw.DrawLine(weaponPos, targetPos, Color.Orange, 0.1f);
-            }
-
-            if (weapon != trackingWeapon) return tracking;
 
             if (tracking && maxAngularStep > double.MinValue)
             {
@@ -60,7 +56,52 @@ namespace WeaponCore.Platform
                 turret.Azimuth = (float) trackingWeapon.Azimuth;
                 turret.Elevation = (float)trackingWeapon.Elevation;
             }
+
+            if (false && weapon == trackingWeapon && weapon.Target != null)
+            {
+                DsDebugDraw.DrawLine(weaponPos, weapon.Target.PositionComp.WorldAABB.Center, Color.Lime, 0.1f);
+                DsDebugDraw.DrawLine(weaponPos, targetPos, Color.Orange, 0.1f);
+            }
+
+            //var testPos = weaponPos + (Vector3D.Normalize(weapon.EntityPart.WorldMatrix.Forward) + Vector3D.Distance(weaponPos, targetPos));
+            //var gotLock = IsDotProductWithinTolerance(ref targetPos, ref testPos, 0.866);
+            //Log.Line($"gotLock:{gotLock}");
+            trackingWeapon.Comp.TurretTargetLock = tracking && IsTargetInView(trackingWeapon, targetPos);
             return tracking;
+        }
+
+        private static bool IsTargetInView(Weapon weapon, Vector3D predPos)
+        {
+            var lookAtPositionEuler = weapon.LookAt(predPos);
+            var inRange = weapon.IsInRange(ref lookAtPositionEuler);
+            //Log.Line($"isInRange: {inRange}");
+            return inRange;
+        }
+
+        private bool _gunIdleElevationAzimuthUnknown = true;
+        private float _gunIdleElevation;
+        private float _gunIdleAzimuth;
+        private Vector3 LookAt(Vector3D target)
+        {
+            Vector3D muzzleWorldPosition = Comp.MyPivotPos;
+            float azimuth;
+            float elevation;
+            Vector3.GetAzimuthAndElevation(Vector3.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
+            if (_gunIdleElevationAzimuthUnknown)
+            {
+                Vector3.GetAzimuthAndElevation((Vector3)Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
+                _gunIdleElevationAzimuthUnknown = false;
+            }
+            return new Vector3(elevation - _gunIdleElevation, MathHelper.WrapAngle(azimuth - _gunIdleAzimuth), 0.0f);
+        }
+
+        private bool IsInRange(ref Vector3 lookAtPositionEuler)
+        {
+            float y = lookAtPositionEuler.Y;
+            float x = lookAtPositionEuler.X;
+            if (y > MinAzimuthRadians && y < MaxAzimuthRadians && x > MinElevationRadians)
+                return x < MaxElevationRadians;
+            return false;
         }
 
         /*

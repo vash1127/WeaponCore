@@ -36,7 +36,6 @@ namespace WeaponCore.Platform
                 _shotsInCycle = 0;
                 _newCycle = true;
             }
-
             if (updatePos)
             {
                 for (int j = 0; j < _numOfBarrels; j++)
