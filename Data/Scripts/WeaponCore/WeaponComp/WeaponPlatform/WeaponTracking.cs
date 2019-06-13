@@ -3,25 +3,40 @@ using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
+        internal static bool CheckTarget(Weapon weapon, MyEntity target)
+        {
+            var trackingWeapon = weapon.Comp.TrackingWeapon;
+            var targetPos = weapon.GetPredictedTargetPosition(target);
+            weapon.TargetPos = targetPos;
+            weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
+
+            weapon.IsAligned = trackingWeapon.Comp.TurretTargetLock
+                                   && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref weapon.TargetDir, weapon.AimingTolerance);
+            return weapon.IsAligned;
+        }
+
         internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
 
-            //Log.Line($"match:{trackingWeapon == weapon} - this:{weapon.GetHashCode()}({weapon.WeaponSystem.WeaponName}) - controller:{trackingWeapon.GetHashCode()}({trackingWeapon.WeaponSystem.WeaponName})");
             var turret = trackingWeapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var targetPos = weapon.GetPredictedTargetPosition(target);
             weapon.TargetPos = targetPos;
-            if (weapon != trackingWeapon)
-                return trackingWeapon.Comp.TurretTargetLock;
+            weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            var weaponPos = weapon.Comp.MyPivotPos;
+            if (weapon != trackingWeapon)
+            {
+                weapon.IsAligned = trackingWeapon.Comp.TurretTargetLock 
+                                  && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref weapon.TargetDir, 0.9659);
+                return weapon.IsAligned;
+            }
+
             var maxAngularStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : double.MinValue;
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
@@ -35,19 +50,17 @@ namespace WeaponCore.Platform
 
             var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
-            var targetDirection = targetPos - weaponPos;
-
             double desiredAzimuth;
             double desiredElevation;
-            GetRotationAngles(ref targetDirection, ref matrix, out desiredAzimuth, out desiredElevation);
+            GetRotationAngles(ref weapon.TargetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
             var azConstraint = Math.Min(trackingWeapon.MaxAzimuthRadians, Math.Max(trackingWeapon.MinAzimuthRadians, desiredAzimuth));
             var elConstraint = Math.Min(trackingWeapon.MaxElevationRadians, Math.Max(trackingWeapon.MinElevationRadians, desiredElevation));
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
-            var tracking = !azConstrained && !elConstrained;
+            trackingWeapon.IsTracking = !azConstrained && !elConstrained;
 
-            if (tracking && maxAngularStep > double.MinValue)
+            if (trackingWeapon.IsTracking && maxAngularStep > double.MinValue)
             {
                 trackingWeapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAngularStep, maxAngularStep);
                 trackingWeapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxAngularStep, maxAngularStep);
@@ -57,17 +70,14 @@ namespace WeaponCore.Platform
                 turret.Elevation = (float)trackingWeapon.Elevation;
             }
 
-            if (false && weapon == trackingWeapon && weapon.Target != null)
+            if (trackingWeapon.IsTracking)
             {
-                DsDebugDraw.DrawLine(weaponPos, weapon.Target.PositionComp.WorldAABB.Center, Color.Lime, 0.1f);
-                DsDebugDraw.DrawLine(weaponPos, targetPos, Color.Orange, 0.1f);
+                trackingWeapon.IsInView = IsTargetInView(trackingWeapon, targetPos);
+                if (trackingWeapon.IsInView)
+                    trackingWeapon.IsAligned = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref weapon.TargetDir, weapon.AimingTolerance);
             }
-
-            //var testPos = weaponPos + (Vector3D.Normalize(weapon.EntityPart.WorldMatrix.Forward) + Vector3D.Distance(weaponPos, targetPos));
-            //var gotLock = IsDotProductWithinTolerance(ref targetPos, ref testPos, 0.866);
-            //Log.Line($"gotLock:{gotLock}");
-            trackingWeapon.Comp.TurretTargetLock = tracking && IsTargetInView(trackingWeapon, targetPos);
-            return tracking;
+            trackingWeapon.Comp.TurretTargetLock = trackingWeapon.IsTracking && trackingWeapon.IsInView && trackingWeapon.IsAligned;
+            return trackingWeapon.IsTracking;
         }
 
         private static bool IsTargetInView(Weapon weapon, Vector3D predPos)
@@ -146,7 +156,8 @@ namespace WeaponCore.Platform
             }
             var center = target.PositionComp.WorldAABB.Center;
             var deltaPos = center - Comp.MyPivotPos;
-            var projectileVel = WeaponType.AmmoDef.DesiredSpeed;
+            var ammoSpeed = WeaponType.AmmoDef.DesiredSpeed;
+            var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
             var targetVel = Vector3.Zero;
             if (target.Physics != null)
             {
@@ -224,8 +235,8 @@ namespace WeaponCore.Platform
         public static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
         {
             double dot = Vector3D.Dot(a, b);
-            double num = a.LengthSquared() * b.LengthSquared() * tolerance * Math.Sign(tolerance);
-            return Math.Sign(dot) * dot > num;
+            double num = a.LengthSquared() * b.LengthSquared() * tolerance * Math.Abs(tolerance);
+            return Math.Abs(dot) * dot > num;
         }
 
         bool sameSign(float num1, double num2)

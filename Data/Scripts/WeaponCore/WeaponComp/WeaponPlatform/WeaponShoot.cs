@@ -14,9 +14,7 @@ namespace WeaponCore.Platform
         {
             var session = Comp.MyAi.MySession;
             var tick = session.Tick;
-            var rotateAxis = WeaponType.TurretDef.RotateBarrelAxis;
-            var radiansPerShot = (2 * Math.PI / _numOfBarrels);
-            var radiansPerTick = radiansPerShot / _timePerShot;
+
             if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
             _newCycle = false;
             var targetLock = Target != null;
@@ -25,7 +23,7 @@ namespace WeaponCore.Platform
             var bps = WeaponType.TurretDef.BarrelsPerShot;
             var skipAhead = WeaponType.TurretDef.SkipBarrels;
 
-            if (rotateAxis != 0) MovePart(radiansPerTick, -1 * bps, rotateAxis == 1, rotateAxis == 2, rotateAxis == 3);
+            if (WeaponType.TurretDef.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
             var endBarrel = _numOfBarrels - 1;
@@ -117,12 +115,15 @@ namespace WeaponCore.Platform
             if (tick - _posChangedTick > 10) _posUpdatedTick = tick;
         }
 
-        public void MovePart(double radians, int time, bool xAxis, bool yAxis, bool zAxis)
+        public void MovePart(int time)
         {
+            var radiansPerShot = (2 * Math.PI / _numOfBarrels);
+            var radians = radiansPerShot / _timePerShot;
+            var axis = WeaponType.TurretDef.RotateBarrelAxis;
             MatrixD rotationMatrix;
-            if (xAxis) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
-            else if (yAxis) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
-            else if (zAxis) rotationMatrix = MatrixD.CreateRotationZ(radians * _rotationTime);
+            if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
+            else if (axis == 2 ) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
+            else if (axis == 3) rotationMatrix = MatrixD.CreateRotationZ(radians * _rotationTime);
             else return;
 
             _rotationTime += time;

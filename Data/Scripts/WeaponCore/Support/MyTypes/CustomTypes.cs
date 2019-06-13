@@ -71,7 +71,7 @@ namespace WeaponCore.Support
         [ProtoMember(16)] internal float RotateSpeed;
         [ProtoMember(17)] internal float DeviateShotAngle;
         [ProtoMember(18)] internal float ReleaseTimeAfterFire;
-
+        [ProtoMember(19)] internal double AimingTolerance;
     }
 
     [ProtoContract]

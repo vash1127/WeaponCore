@@ -120,7 +120,7 @@ namespace WeaponCore.Projectiles
             FinalSpeed = WepDef.AmmoDef.DesiredSpeed;
             FinalSpeedSqr = FinalSpeed * FinalSpeed;
 
-            Draw = WepDef.GraphicDef.VisualProbability >= (double)MyUtils.GetRandomFloat(0.0f, 1f);
+            Draw = WepDef.GraphicDef.VisualProbability >= MyUtils.GetRandomDouble(0.0f, 1f);
             SpawnParticle = Draw && WepDef.GraphicDef.ParticleTrail;
 
             if (LockedTarget) FoundTarget = true;

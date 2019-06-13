@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Ingame;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -15,8 +15,9 @@ namespace WeaponCore.Support
 {
     public class GridTargetingAi
     {
+        internal volatile bool Ready;
         internal readonly MyCubeGrid MyGrid;
-        internal readonly MyConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new MyConcurrentDictionary<MyCubeBlock, WeaponComponent>();
+        internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyEntity, MyDetectedEntityInfo> ValidTargets = new Dictionary<MyEntity, MyDetectedEntityInfo>();
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly List<MyEntity> TargetBlocks = new List<MyEntity>();
@@ -26,9 +27,9 @@ namespace WeaponCore.Support
         internal Random Rnd;
         internal Session MySession;
 
-        private readonly object _tLock = new object();
         private readonly TargetCompare _targetCompare = new TargetCompare();
         private uint _targetsUpdatedTick;
+        private long _myOwner;
 
         internal GridTargetingAi(MyCubeGrid grid, Session mySession)
         {
@@ -74,12 +75,14 @@ namespace WeaponCore.Support
             {
                 UpdateTargets();
                 _targetsUpdatedTick = MySession.Tick;
+                _myOwner = MyGrid.BigOwners[0];
+
             }
             if (target != null && !target.MarkedForClose) return;
             if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
 
             weapon.CheckedForTargetTick = MySession.Tick;
-            lock (_tLock) GetTarget(ref target, weapon);
+            GetTarget(ref target, weapon);
             if (target != null)
             {
                 weapon.Comp.Turret.EnableIdleRotation = false;
@@ -173,52 +176,48 @@ namespace WeaponCore.Support
 
         private void UpdateTargets()
         {
-            lock (_tLock)
+            ValidTargets.Clear();
+            SortedTargets.Clear();
+            foreach (var ent in Targeting.TargetRoots)
             {
-                var myOwner = MyGrid.BigOwners[0];
-                ValidTargets.Clear();
-                SortedTargets.Clear();
-                foreach (var ent in Targeting.TargetRoots)
+                if (ent == null || ent.MarkedForClose) continue;
+                var entInfo = MyDetectedEntityInfoHelper.Create(ent, _myOwner);
+
+                switch (entInfo.Type)
                 {
-                    if (ent == null || ent.MarkedForClose) continue;
-                    var entInfo = MyDetectedEntityInfoHelper.Create(ent, myOwner);
-
-                    switch (entInfo.Type)
-                    {
-                        case MyDetectedEntityType.Asteroid:
-                            continue;
-                        case MyDetectedEntityType.Planet:
-                            continue;
-                        case MyDetectedEntityType.FloatingObject:
-                            continue;
-                        case MyDetectedEntityType.None:
-                            continue;
-                        case MyDetectedEntityType.Unknown:
-                            continue;
-                    }
-                    switch (entInfo.Relationship)
-                    {
-                        case MyRelationsBetweenPlayerAndBlock.Owner:
-                            continue;
-                        case MyRelationsBetweenPlayerAndBlock.FactionShare:
-                            continue;
-                        case MyRelationsBetweenPlayerAndBlock.NoOwnership:
-                            if (!TargetNoOwners) continue;
-                            break;
-                        case MyRelationsBetweenPlayerAndBlock.Neutral:
-                            if (!TargetNeutrals) continue;
-                            break;
-                    }
-                    ValidTargets.Add(ent, entInfo);
-
-                    var grid = ent as MyCubeGrid;
-                    var isGrid = grid != null;
-                    int partCount = isGrid ? grid.GetFatBlocks().Count : 1;
-
-                    SortedTargets.Add(new TargetInfo(entInfo, ent, isGrid, partCount, MyGrid));
+                    case MyDetectedEntityType.Asteroid:
+                        continue;
+                    case MyDetectedEntityType.Planet:
+                        continue;
+                    case MyDetectedEntityType.FloatingObject:
+                        continue;
+                    case MyDetectedEntityType.None:
+                        continue;
+                    case MyDetectedEntityType.Unknown:
+                        continue;
                 }
-                SortedTargets.Sort(_targetCompare);
+                switch (entInfo.Relationship)
+                {
+                    case MyRelationsBetweenPlayerAndBlock.Owner:
+                        continue;
+                    case MyRelationsBetweenPlayerAndBlock.FactionShare:
+                        continue;
+                    case MyRelationsBetweenPlayerAndBlock.NoOwnership:
+                        if (!TargetNoOwners) continue;
+                        break;
+                    case MyRelationsBetweenPlayerAndBlock.Neutral:
+                        if (!TargetNeutrals) continue;
+                        break;
+                }
+                ValidTargets.Add(ent, entInfo);
+
+                var grid = ent as MyCubeGrid;
+                var isGrid = grid != null;
+                int partCount = isGrid ? grid.GetFatBlocks().Count : 1;
+
+                SortedTargets.Add(new TargetInfo(entInfo, ent, isGrid, partCount, MyGrid));
             }
+            SortedTargets.Sort(_targetCompare);
         }
     }
 }

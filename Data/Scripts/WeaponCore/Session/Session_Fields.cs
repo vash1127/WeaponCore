@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Sandbox.Common.ObjectBuilders.Definitions;
 using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game.Entity;
@@ -39,39 +38,39 @@ namespace WeaponCore
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
 
         internal uint Tick;
-        internal int PlayerEventId { get; set; }
-        internal int ProCounter { get; set; }
-        internal int ModelCount { get; set; }
-        internal ulong AuthorSteamId { get; set; } = 76561197969691953;
-        internal long AuthorPlayerId { get; set; }
-        internal long LastTerminalId { get; set; }
-        internal double SyncDistSqr { get; private set; }
-        internal double SyncBufferedDistSqr { get; private set; }
-        internal double SyncDist { get; private set; }
-        internal float Zoom { get; set; }
+        internal int PlayerEventId;
+        internal int ProCounter;
+        internal int ModelCount;
+        internal ulong AuthorSteamId = 76561197969691953;
+        internal long AuthorPlayerId;
+        internal long LastTerminalId;
+        internal double SyncDistSqr;
+        internal double SyncBufferedDistSqr;
+        internal double SyncDist;
+        internal float Zoom;
 
-        internal bool MpActive { get; set; }
-        internal bool IsServer { get; set; }
-        internal bool DedicatedServer { get; set; }
-        internal bool WepAction { get; set; }
-        internal bool WepControl { get; set; }
-        internal bool FirstLoop { get; set; }
-        internal bool GameLoaded { get; set; }
-        internal bool MiscLoaded { get; set; }
-        internal bool Tick20 { get; set; }
-        internal bool Tick60 { get; set; }
-        internal bool Tick180 { get; set; }
-        internal bool Tick300 { get; set; }
-        internal bool Tick600 { get; set; }
-        internal bool Tick1800 { get; set; }
-        internal bool ShieldMod { get; set; }
-        internal bool ShieldApiLoaded { get; set; }
-        internal bool MouseButtonPressed { get; set; }
-        internal bool MouseButtonLeft { get; set; }
-        internal bool MouseButtonMiddle { get; set; }
-        internal bool MouseButtonRight { get; set; }
-        internal bool InTurret { get; set; }
-        internal MyEntity ControlledEntity { get; set; }
+        internal bool MpActive;
+        internal bool IsServer;
+        internal bool DedicatedServer;
+        internal bool WepAction;
+        internal bool WepControl;
+        internal bool FirstLoop;
+        internal bool GameLoaded;
+        internal bool MiscLoaded;
+        internal bool Tick20;
+        internal bool Tick60;
+        internal bool Tick180;
+        internal bool Tick300;
+        internal bool Tick600;
+        internal bool Tick1800;
+        internal bool ShieldMod;
+        internal bool ShieldApiLoaded;
+        internal bool MouseButtonPressed;
+        internal bool MouseButtonLeft;
+        internal bool MouseButtonMiddle;
+        internal bool MouseButtonRight;
+        internal bool InTurret;
+        internal MyEntity ControlledEntity;
 
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
         internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
@@ -83,14 +82,14 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
         private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
-        internal readonly MyConcurrentDictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new MyConcurrentDictionary<MyCubeGrid, GridTargetingAi>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridTargetingAi>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
 
         internal ShieldApi SApi = new ShieldApi();
-        internal FutureEvents FutureEvents { get; set; } = new FutureEvents();
+        internal FutureEvents FutureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {

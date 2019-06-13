@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using System;
+using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
@@ -18,6 +19,7 @@ namespace WeaponCore.Platform
             WeaponType = weaponSystem.WeaponType;
             TurretMode = WeaponType.TurretDef.TurretMode;
             TrackTarget = WeaponType.TurretDef.TrackTarget;
+            AimingTolerance = Math.Cos(MathHelper.ToRadians(WeaponType.TurretDef.AimingTolerance));
             _ticksPerShot = (uint)(3600 / WeaponType.TurretDef.RateOfFire);
             _timePerShot = (3600d / WeaponType.TurretDef.RateOfFire);
             _numOfBarrels = WeaponSystem.Barrels.Length;
@@ -34,6 +36,7 @@ namespace WeaponCore.Platform
         internal uint[] BeamSlot { get; set; }
         internal MyEntity Target;
         internal Vector3D TargetPos;
+        internal Vector3D TargetDir;
 
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
@@ -60,6 +63,7 @@ namespace WeaponCore.Platform
         internal double Elevation;
         internal double DesiredAzimuth;
         internal double DesiredElevation;
+        internal double AimingTolerance;
 
         private bool _newCycle = false;
         //private bool _firstRun = true;
@@ -71,12 +75,14 @@ namespace WeaponCore.Platform
         internal float MaxElevationRadians;
         internal float MinElevationRadians;
 
-        internal bool TurretMode { get; set; }
-        internal bool TrackTarget { get; set; }
-        internal bool ReadyToTrack => Target != null && !Target.MarkedForClose;
-        internal bool ReadyToShoot => ReadyToTrack;
-        internal bool SeekTarget => Target == null || Target != null && Target.MarkedForClose;
+        internal bool TurretMode;
+        internal bool TrackTarget;
+        internal bool AiReady;
+        internal bool SeekTarget;
         internal bool Gunner;
         internal bool TrackingAi;
+        internal bool IsTracking;
+        internal bool IsInView;
+        internal bool IsAligned;
     }
 }

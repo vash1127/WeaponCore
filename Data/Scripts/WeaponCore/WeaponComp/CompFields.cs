@@ -66,6 +66,7 @@ namespace WeaponCore.Support
         public IMyLargeMissileTurret Turret;
         internal Weapon TrackingWeapon;
         internal Vector3D MyPivotPos;
+        internal Vector3D MyPivotDir;
 
         internal IMyGunObject<MyGunBase> Gun;
         internal bool MainInit;

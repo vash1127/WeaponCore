@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.ModAPI;
 using VRageMath;
+using VRageRender;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -44,14 +45,40 @@ namespace WeaponCore
                     _shrinking.Add(shrink);
                 }
                 var color = wDef.GraphicDef.ProjectileColor;
-                if (_count > 29) color.W /= 2;
-                if (InTurret)
+                var width = wDef.GraphicDef.ProjectileWidth;
+
+                var newWidth = width;
+
+                if (wDef.AmmoDef.DesiredSpeed <= 0)
+                {
+                    var changeValue = 0.01f;
+                    if (_lCount < 60)
+                    {
+                        var adder = (_lCount + 1);
+                        var adder2 = adder * changeValue;
+                        var adder3 = adder2 + 1;
+                        newWidth = adder3 * width;
+                        color *= adder3;
+                    }
+                    else
+                    {
+                        var shrinkFrom = ((60) * changeValue) + 1;
+
+                        var adder = (_lCount - 59);
+                        var adder2 = adder * changeValue;
+                        var scaler = (shrinkFrom - adder2);
+                        newWidth = scaler * width;
+                        color *= (shrinkFrom - adder2);
+                    }
+                }
+
+                if (!InTurret) 
                 {
                     var matrix = MatrixD.CreateFromDir(line.Direction);
                     matrix.Translation = line.From;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, wDef.GraphicDef.ProjectileWidth, wDef.GraphicDef.ProjectileWidth, (float)line.Length, 6, color, color, wDef.GraphicDef.ProjectileMaterial, wDef.GraphicDef.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, wDef.GraphicDef.ProjectileWidth, (float)line.Length, 12, color, color, wDef.GraphicDef.ProjectileMaterial, wDef.GraphicDef.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
-                else MyTransparentGeometry.AddLocalLineBillboard(wDef.GraphicDef.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, wDef.GraphicDef.ProjectileWidth);
+                else MyTransparentGeometry.AddLocalLineBillboard(wDef.GraphicDef.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();
@@ -85,13 +112,42 @@ namespace WeaponCore
 
         private void UpdateWeaponPlatforms()
         {
+            _dsUtil.Sw.Restart();
+            if (!GameLoaded) return;
             foreach (var aiPair in GridTargetingAIs)
             {
-                var grid = aiPair.Key;
+                //var grid = aiPair.Key;
+                var gridAi = aiPair.Value;
+                if (!gridAi.Ready) continue;
+                foreach (var basePair in gridAi.WeaponBase)
+                {
+                    //var myCube = basePair.Key;
+                    var comp = basePair.Value;
+                    if (!comp.MainInit || !comp.State.Value.Online) continue;
+
+                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                    {
+                        var w = comp.Platform.Weapons[j];
+                        if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
+
+                        if (w.AiReady || w.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
+                    }
+                }
+                gridAi.Ready = false;
+            }
+            _dsUtil.StopWatchReport("test", -1);
+        }
+
+        private void AiLoop()
+        {
+            if (!GameLoaded) return;
+            foreach (var aiPair in GridTargetingAIs)
+            {
+                //var grid = aiPair.Key;
                 var ai = aiPair.Value;
                 foreach (var basePair in ai.WeaponBase)
                 {
-                    var myCube = basePair.Key;
+                    //var myCube = basePair.Key;
                     var comp = basePair.Value;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
@@ -101,11 +157,17 @@ namespace WeaponCore
                         w.Gunner = ControlledEntity == comp.MyCube;
                         if (!w.Gunner)
                         {
-                            if (Tick > 100 && w.TrackTarget && w.SeekTarget) ai.SelectTarget(ref w.Target, w);
-                            if (w.TrackingAi && w.Target != null)
+                            if (w.TrackingAi)
                             {
-                                if (!Weapon.TrackingTarget(w, w.Target, true)) w.Target = null;
+                                if (w.Target != null && !Weapon.TrackingTarget(w, w.Target, true))
+                                    w.Target = null;
                             }
+                            else
+                            {
+                                if (!w.TrackTarget) w.Target = comp.TrackingWeapon.Target;
+                                if (w.Target != null && !Weapon.CheckTarget(w, w.Target)) w.Target = null;
+                            }
+
                             if (w != comp.TrackingWeapon && comp.TrackingWeapon.Target == null) w.Target = null;
                         }
                         else
@@ -117,97 +179,12 @@ namespace WeaponCore
                                 if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
                             }
                         }
-                        if (w.ReadyToShoot && !w.Gunner && w.Comp.TurretTargetLock || w.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
+                        w.AiReady = w.Target != null && !w.Gunner && w.Comp.TurretTargetLock && !w.Target.MarkedForClose;
+                        w.SeekTarget = Tick20 && !w.Gunner && (w.Target == null || w.Target != null && w.Target.MarkedForClose) && w.TrackTarget;
+                        if (w.AiReady || w.SeekTarget || w.Gunner) ai.Ready = true;
                     }
                 }
             }
-        }
-        /*
-        private void DrawBeam(DrawProjectile pInfo)
-        {
-            var cameraPos = MyAPIGateway.Session.Camera.Position;
-            var beamScaledDir = pInfo.Projectile.From - pInfo.Projectile.To;
-            var beamCenter = pInfo.Projectile.From + -(beamScaledDir * 0.5f);
-            var distToBeam = Vector3D.DistanceSquared(cameraPos, beamCenter);
-            if (distToBeam > 25000000) return;
-            var beamSphereRadius = pInfo.Projectile.Length * 0.5;
-            var beamSphere = new BoundingSphereD(beamCenter, beamSphereRadius);
-            if (MyAPIGateway.Session.Camera.IsInFrustum(ref beamSphere))
-            {
-                var matrix = MatrixD.CreateFromDir(pInfo.Projectile.Direction);
-                matrix.Translation = pInfo.Projectile.From;
-
-                var radius = 0.15f;
-                if (Tick % 6 == 0) radius = 0.14f;
-                var weapon = pInfo.WeaponSystem;
-                var beamSlot = weapon.BeamSlot;
-                var material = weapon.WeaponType.GraphicDef.ProjectileMaterial;
-                var trailColor = weapon.WeaponType.GraphicDef.ProjectileColor;
-                var particleColor = weapon.WeaponType.GraphicDef.ParticleColor;
-                if (pInfo.PrimeProjectile && Tick > beamSlot[pInfo.ProjectileId] && pInfo.HitPos != Vector3D.Zero)
-                {
-                    beamSlot[pInfo.ProjectileId] = Tick + 20;
-                    BeamParticleStart(pInfo.Entity, pInfo.HitPos, particleColor);
-                }
-
-                if (distToBeam < 1000000)
-                {
-                    if (distToBeam > 250000) radius *= 1.5f;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, radius, radius, (float)pInfo.Projectile.Length, 6, trailColor, trailColor, WarpMaterial, WarpMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
-                }
-                else MySimpleObjectDraw.DrawLine(pInfo.Projectile.From, pInfo.Projectile.To, material, ref trailColor, 2f);
-            }
-        }
-        */
-        private MyParticleEffect _effect1 = new MyParticleEffect();
-
-        internal void BeamParticleStart(IMyEntity ent, Vector3D pos, Vector4 color)
-        {
-            color = new Vector4(255, 10, 0, 1f); // comment out to use beam color
-            var dist = Vector3D.Distance(MyAPIGateway.Session.Camera.Position, pos);
-            var logOfPlayerDist = Math.Log(dist);
-
-            var mainParticle = 32;
-
-            var size = 20;
-            var radius = size / logOfPlayerDist;
-            var vel = ent.Physics.LinearVelocity;
-            var matrix = MatrixD.CreateTranslation(pos);
-            MyParticlesManager.TryCreateParticleEffect(mainParticle, out _effect1, ref matrix, ref pos, uint.MaxValue, true); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
-
-            if (_effect1 == null) return;
-            _effect1.Loop = false;
-            _effect1.DurationMax = 0.3333333332f;
-            _effect1.DurationMin = 0.3333333332f;
-            _effect1.UserColorMultiplier = color;
-            _effect1.UserRadiusMultiplier = (float)radius;
-            _effect1.UserEmitterScale = 1;
-            _effect1.Velocity = vel;
-            _effect1.Play();
-        }
-
-        private void BoltParticleStart(IMyEntity ent, Vector3D pos, Vector4 color, Vector3D speed)
-        {
-            var dist = Vector3D.Distance(MyAPIGateway.Session.Camera.Position, pos);
-            var logOfPlayerDist = Math.Log(dist);
-
-            var mainParticle = 32;
-
-            var size = 10;
-            var radius = size / logOfPlayerDist;
-            var vel = ent.Physics.LinearVelocity;
-            var matrix = MatrixD.CreateTranslation(pos);
-            MyParticlesManager.TryCreateParticleEffect(mainParticle, out _effect1, ref matrix, ref pos, uint.MaxValue, true); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
-
-            if (_effect1 == null) return;
-            _effect1.Loop = false;
-            _effect1.DurationMax = 0.3333333332f;
-            _effect1.DurationMin = 0.3333333332f;
-            _effect1.UserColorMultiplier = color;
-            _effect1.UserRadiusMultiplier = (float)radius;
-            _effect1.UserEmitterScale = 1;
-            _effect1.Velocity = speed;
-            _effect1.Play();
         }
     }
 }

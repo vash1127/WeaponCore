@@ -36,13 +36,14 @@ namespace WeaponCore
             if (_count++ == 59)
             {
                 _count = 0;
-                _lCount++;
-                if (_lCount == 10)
-                {
-                    _lCount = 0;
-                    _eCount++;
-                    if (_eCount == 10) _eCount = 0;
-                }
+
+            }
+            _lCount++;
+            if (_lCount == 129)
+            {
+                _lCount = 0;
+                _eCount++;
+                if (_eCount == 10) _eCount = 0;
             }
             if (!GameLoaded && Tick > 100)
             {

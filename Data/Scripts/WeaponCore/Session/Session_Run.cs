@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -45,8 +46,9 @@ namespace WeaponCore
                 //_dsUtil.Sw.Restart();
                 UpdateWeaponPlatforms();
                 //_dsUtil.StopWatchReport("test", -1);
-                //MyAPIGateway.Parallel.Start(Projectiles.Update);
-                Projectiles.Update();
+                MyAPIGateway.Parallel.Start(Projectiles.Update);
+                MyAPIGateway.Parallel.Start(AiLoop);
+                //Projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -80,10 +82,10 @@ namespace WeaponCore
                 if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                 {
                     gridAi = new GridTargetingAi(cube.CubeGrid, this);
-                    GridTargetingAIs.Add(cube.CubeGrid, gridAi);
+                    GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
                 var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
-                GridTargetingAIs[cube.CubeGrid].WeaponBase.Add(cube, weaponComp);
+                GridTargetingAIs[cube.CubeGrid].WeaponBase.TryAdd(cube, weaponComp);
                 _compsToStart.Enqueue(weaponComp);
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
