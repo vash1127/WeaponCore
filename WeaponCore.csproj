@@ -191,6 +191,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\LogicData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializeDataClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializedValues.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionInventory.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponDefinitions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponStructure.cs" />

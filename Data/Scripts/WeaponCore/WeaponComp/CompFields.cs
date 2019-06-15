@@ -51,6 +51,7 @@ namespace WeaponCore.Support
         internal float SinkCurrentPower;
         internal bool TurretTargetLock;
         internal float SinkPower = 0.01f;
+        internal bool Gunner;
         internal bool NotFailed;
         internal bool WarmedUp;
         internal bool Starting;

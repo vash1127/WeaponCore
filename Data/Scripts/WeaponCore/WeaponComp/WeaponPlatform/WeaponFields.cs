@@ -86,10 +86,10 @@ namespace WeaponCore.Platform
         internal bool TrackTarget;
         internal bool AiReady;
         internal bool SeekTarget;
-        internal bool Gunner;
         internal bool TrackingAi;
         internal bool IsTracking;
         internal bool IsInView;
         internal bool IsAligned;
+        internal bool PullAmmo;
     }
 }

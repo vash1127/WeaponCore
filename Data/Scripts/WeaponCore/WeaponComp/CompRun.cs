@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using Sandbox.Game.AI.Pathfinding;
-using Sandbox.Game.GameSystems.CoordinateSystem;
 using Sandbox.ModAPI;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
-using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
