@@ -23,7 +23,7 @@ namespace WeaponCore.Platform
                 var barrelCount = Structure.WeaponSystems[Structure.PartNames[i]].Barrels.Length;
                 IMyEntity subPartEntity;
                 SubParts.NameToEntity.TryGetValue(Structure.PartNames[i].String, out subPartEntity);
-                Weapons[i] = new Weapon(subPartEntity, Structure.WeaponSystems[Structure.PartNames[i]])
+                Weapons[i] = new Weapon(subPartEntity, Structure.WeaponSystems[Structure.PartNames[i]], i)
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
@@ -43,6 +43,7 @@ namespace WeaponCore.Platform
         private void CompileTurret()
         {
             var c = 0;
+
             foreach (var m in Structure.WeaponSystems)
             {
                 var subPart = SubParts.NameToEntity[m.Key.String];

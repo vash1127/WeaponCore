@@ -3,6 +3,7 @@ using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {

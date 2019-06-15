@@ -17,7 +17,7 @@ namespace WeaponCore.Platform
             public Vector3D Direction;
             public Vector3D DeviatedDir;
             public uint LastShot;
-            public uint LastPosUpdate;
+            public uint LastUpdateTick;
         }
     }
 }

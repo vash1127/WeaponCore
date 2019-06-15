@@ -1,8 +1,14 @@
-﻿using Sandbox.Game.Entities;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Definitions;
+using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -36,14 +42,12 @@ namespace WeaponCore.Support
         //private bool _bInit;
         //private bool _wasOnline;
 
-        //private MyStringHash _subTypeIdHash;
         private DSUtils Dsutil1 { get; set; } = new DSUtils();
         internal GridTargetingAi MyAi { get; set; }
 
         internal MyResourceSinkInfo ResourceInfo;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.Instance.LastTerminalId == Turret.EntityId;
-        //internal uint ResetEntityTick;
         internal float SinkCurrentPower;
         internal bool TurretTargetLock;
         internal float SinkPower = 0.01f;
@@ -65,6 +69,8 @@ namespace WeaponCore.Support
         public MyWeaponPlatform Platform;
         public IMyLargeMissileTurret Turret;
         internal Weapon TrackingWeapon;
+        internal MyInventory BlockInventory;
+        internal MyInventory TempInventory;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
 
@@ -74,6 +80,8 @@ namespace WeaponCore.Support
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
         internal bool IsWorking;
+        internal bool FullInventory;
+        internal bool MultiInventory;
 
         internal LogicSettings Set;
         internal LogicState State;
@@ -86,6 +94,10 @@ namespace WeaponCore.Support
             MyGrid = MyCube.CubeGrid;
             Turret = turret;
             Gun = (IMyGunObject<MyGunBase>)MyCube;
+            var self = (MyObjectBuilder_TurretBase) new MyObjectBuilder_LargeMissileTurret();
+            TempInventory = new MyInventory(255f, new Vector3(1f, 1f, 1f), MyInventoryFlags.CanReceive);
+            TempInventory.Init(self.Inventory);
+            BlockInventory = (MyInventory)MyCube.GetInventoryBase();
         }
     }
 }

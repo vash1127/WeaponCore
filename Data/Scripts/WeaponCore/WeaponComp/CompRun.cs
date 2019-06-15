@@ -1,7 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Sandbox.Game.AI.Pathfinding;
+using Sandbox.Game.GameSystems.CoordinateSystem;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -34,7 +40,6 @@ namespace WeaponCore.Support
             _isServer = Session.Instance.IsServer;
             _isDedicated = Session.Instance.DedicatedServer;
             _mpActive = Session.Instance.MpActive;
-            RegisterEvents(true);
             InitPlatform();
             Log.Line("added to scene");
         }
@@ -73,10 +78,20 @@ namespace WeaponCore.Support
         {
             Platform = new MyWeaponPlatform(this);
             foreach (var t in Platform.Weapons) t.InitTracking();
+            var ammoTypeCnt = Platform.Structure.AmmoToWeaponIds.Count;
+            var gun = Gun.GunBase;
+            var id = ammoTypeCnt == 0 ? Platform.Weapons[0].WeaponSystem.MagazineDef.Id 
+                : Platform.Structure.AmmoToWeaponIds.First().Key;
+            BlockInventory.Constraint.Clear();
+            BlockInventory.Constraint.Add(id);
+            gun.SwitchAmmoMagazine(id);
+
             StorageSetup();
             State.Value.Online = true;
             Turret.EnableIdleRotation = false;
+            MultiInventory = ammoTypeCnt > 1;
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
+            RegisterEvents();
             MainInit = true;
         }
 

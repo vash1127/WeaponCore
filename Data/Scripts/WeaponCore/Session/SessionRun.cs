@@ -7,6 +7,7 @@ using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using WeaponCore.Support;
+using static Sandbox.Definitions.MyDefinitionManager;
 
 namespace WeaponCore
 {
@@ -43,11 +44,10 @@ namespace WeaponCore
             {
                 Timings();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
-                //_dsUtil.Sw.Restart();
+                if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
                 UpdateWeaponPlatforms();
-                //_dsUtil.StopWatchReport("test", -1);
-                MyAPIGateway.Parallel.Start(Projectiles.Update);
                 MyAPIGateway.Parallel.Start(AiLoop);
+                MyAPIGateway.Parallel.Start(Projectiles.Update);
                 //Projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
@@ -65,6 +65,7 @@ namespace WeaponCore
                 //MyEntities.OnEntityRemove += OnEntityRemove;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
+                AllDefinitions = Static.GetAllDefinitions();
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }

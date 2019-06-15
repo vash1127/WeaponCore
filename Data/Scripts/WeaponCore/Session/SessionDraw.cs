@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.ModAPI;
+﻿using System.Collections.Generic;
 using VRage.Game;
-using VRage.ModAPI;
 using VRageMath;
-using VRageRender;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
-using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore
 {
     public partial class Session
     {
-        private void DrawLists(List<DrawProjectile> drawList)
+        private void DrawLists(List<Projectiles.Projectiles.DrawProjectile> drawList)
         {
             var sFound = false;
             for (int i = 0; i < drawList.Count; i++)
@@ -72,7 +66,7 @@ namespace WeaponCore
                     }
                 }
 
-                if (!InTurret) 
+                if (!InTurret)
                 {
                     var matrix = MatrixD.CreateFromDir(line.Direction);
                     matrix.Translation = line.From;
@@ -108,83 +102,6 @@ namespace WeaponCore
                 }
             }
             if (sRemove) _shrinking.ApplyRemovals();
-        }
-
-        private void UpdateWeaponPlatforms()
-        {
-            _dsUtil.Sw.Restart();
-            if (!GameLoaded) return;
-            foreach (var aiPair in GridTargetingAIs)
-            {
-                //var grid = aiPair.Key;
-                var gridAi = aiPair.Value;
-                if (!gridAi.Ready) continue;
-                foreach (var basePair in gridAi.WeaponBase)
-                {
-                    //var myCube = basePair.Key;
-                    var comp = basePair.Value;
-                    if (!comp.MainInit || !comp.State.Value.Online) continue;
-
-                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                    {
-                        var w = comp.Platform.Weapons[j];
-                        if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
-
-                        if (w.AiReady || w.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
-                    }
-                }
-                gridAi.Ready = false;
-            }
-            _dsUtil.StopWatchReport("test", -1);
-        }
-
-        private void AiLoop()
-        {
-            if (!GameLoaded) return;
-            foreach (var aiPair in GridTargetingAIs)
-            {
-                //var grid = aiPair.Key;
-                var ai = aiPair.Value;
-                foreach (var basePair in ai.WeaponBase)
-                {
-                    //var myCube = basePair.Key;
-                    var comp = basePair.Value;
-                    if (!comp.MainInit || !comp.State.Value.Online) continue;
-
-                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                    {
-                        var w = comp.Platform.Weapons[j];
-                        w.Gunner = ControlledEntity == comp.MyCube;
-                        if (!w.Gunner)
-                        {
-                            if (w.TrackingAi)
-                            {
-                                if (w.Target != null && !Weapon.TrackingTarget(w, w.Target, true))
-                                    w.Target = null;
-                            }
-                            else
-                            {
-                                if (!w.TrackTarget) w.Target = comp.TrackingWeapon.Target;
-                                if (w.Target != null && !Weapon.CheckTarget(w, w.Target)) w.Target = null;
-                            }
-
-                            if (w != comp.TrackingWeapon && comp.TrackingWeapon.Target == null) w.Target = null;
-                        }
-                        else
-                        {
-                            InTurret = true;
-                            if (MouseButtonPressed)
-                            {
-                                var currentAmmo = comp.Gun.GunBase.CurrentAmmo;
-                                if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
-                            }
-                        }
-                        w.AiReady = w.Target != null && !w.Gunner && w.Comp.TurretTargetLock && !w.Target.MarkedForClose;
-                        w.SeekTarget = Tick20 && !w.Gunner && (w.Target == null || w.Target != null && w.Target.MarkedForClose) && w.TrackTarget;
-                        if (w.AiReady || w.SeekTarget || w.Gunner) ai.Ready = true;
-                    }
-                }
-            }
         }
     }
 }

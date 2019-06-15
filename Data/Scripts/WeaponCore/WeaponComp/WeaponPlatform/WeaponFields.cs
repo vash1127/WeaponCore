@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
@@ -9,7 +10,7 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        public Weapon(IMyEntity entity, WeaponSystem weaponSystem)
+        public Weapon(IMyEntity entity, WeaponSystem weaponSystem, int weaponId)
         {
             EntityPart = entity;
             _localTranslation = entity.LocalMatrix.Translation;
@@ -17,6 +18,8 @@ namespace WeaponCore.Platform
             _upPivotOffsetLen = _pivotOffsetVec.Length();
             WeaponSystem = weaponSystem;
             WeaponType = weaponSystem.WeaponType;
+
+            WeaponId = weaponId;
             TurretMode = WeaponType.TurretDef.TurretMode;
             TrackTarget = WeaponType.TurretDef.TrackTarget;
             AimingTolerance = Math.Cos(MathHelper.ToRadians(WeaponType.TurretDef.AimingTolerance));
@@ -26,17 +29,6 @@ namespace WeaponCore.Platform
 
             BeamSlot = new uint[_numOfBarrels];
         }
-
-        internal IMyEntity EntityPart;
-        internal WeaponSystem WeaponSystem;
-        internal WeaponDefinition WeaponType;
-        internal Dummy[] Dummies;
-        internal Muzzle[] Muzzles;
-        internal WeaponComponent Comp;
-        internal uint[] BeamSlot { get; set; }
-        internal MyEntity Target;
-        internal Vector3D TargetPos;
-        internal Vector3D TargetDir;
 
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
@@ -53,20 +45,35 @@ namespace WeaponCore.Platform
         private int _shotsInCycle;
         private int _nextMuzzle;
         private uint _lastPredictionTick;
-        private uint _posUpdatedTick = uint.MinValue;
         private uint _posChangedTick = 1;
         private uint _targetTick;
         private uint _ticksPerShot;
-        internal uint ShotCounter;
         private double _timePerShot;
+
+
+        private bool _newCycle = false;
+        //private bool _firstRun = true;
+
+        internal IMyEntity EntityPart;
+        internal WeaponSystem WeaponSystem;
+        internal WeaponDefinition WeaponType;
+        internal Dummy[] Dummies;
+        internal Muzzle[] Muzzles;
+        internal WeaponComponent Comp;
+        internal uint[] BeamSlot { get; set; }
+        internal MyEntity Target;
+        internal Vector3D TargetPos;
+        internal Vector3D TargetDir;
+
+        internal uint AmmoUpdateTick;
+        internal uint ShotCounter;
+        internal int CurrentAmmo;
         internal double Azimuth;
         internal double Elevation;
         internal double DesiredAzimuth;
         internal double DesiredElevation;
         internal double AimingTolerance;
-
-        private bool _newCycle = false;
-        //private bool _firstRun = true;
+        internal int WeaponId;
         internal uint CheckedForTargetTick;
         internal float RotationSpeed;
         internal float ElevationSpeed;

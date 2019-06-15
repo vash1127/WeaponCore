@@ -10,7 +10,6 @@ using WeaponCore.Support;
 
 namespace WeaponCore
 {
-
     public partial class Session
     {
         #region UI Config

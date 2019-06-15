@@ -1,5 +1,9 @@
 ﻿using System;
+using System.Linq;
+using Sandbox.Definitions;
+using Sandbox.Game;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -25,27 +29,15 @@ namespace WeaponCore.Platform
 
             if (WeaponType.TurretDef.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
+
             if (ShotCounter != 0) return;
             var endBarrel = _numOfBarrels - 1;
-            var updatePos = _posChangedTick > _posUpdatedTick;
-
             if (_shotsInCycle++ == (_numOfBarrels - 1))
             {
                 _shotsInCycle = 0;
                 _newCycle = true;
             }
-            if (updatePos)
-            {
-                for (int j = 0; j < _numOfBarrels; j++)
-                {
-                    var muzzle = Muzzles[j];
-                    var dummy = Dummies[j];
-                    var newInfo = dummy.Info;
-                    muzzle.Direction = newInfo.Direction;
-                    muzzle.Position = newInfo.Position;
-                    muzzle.LastPosUpdate = tick;
-                }
-            }
+
             if (targetLock && _targetTick > 59)
             {
                 _targetTick = 0;
@@ -69,6 +61,16 @@ namespace WeaponCore.Platform
             {
                 var current = _nextMuzzle;
                 var muzzle = Muzzles[current];
+                var lastTick = muzzle.LastUpdateTick;
+                var recentMovement = lastTick >= _posChangedTick && lastTick - _posChangedTick < 10;
+                if (recentMovement || _posChangedTick > lastTick)
+                {
+                    var dummy = Dummies[current];
+                    var newInfo = dummy.Info;
+                    muzzle.Direction = newInfo.Direction;
+                    muzzle.Position = newInfo.Position;
+                    muzzle.LastUpdateTick = tick;
+                }
                 muzzle.LastShot = tick;
                 var deviatedAngle = WeaponType.TurretDef.DeviateShotAngle;
                 if (deviatedAngle > 0)
@@ -111,8 +113,6 @@ namespace WeaponCore.Platform
                 }
                 if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
             }
-
-            if (tick - _posChangedTick > 10) _posUpdatedTick = tick;
         }
 
         public void MovePart(int time)

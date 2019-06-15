@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -81,13 +82,15 @@ namespace WeaponCore
         internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
+        internal readonly ConcurrentQueue<InventoryChange> InventoryEvent = new ConcurrentQueue<InventoryChange>();
         private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridTargetingAi>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
+
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
-
+        internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal ShieldApi SApi = new ShieldApi();
         internal FutureEvents FutureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
