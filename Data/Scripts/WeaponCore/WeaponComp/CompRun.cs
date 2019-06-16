@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
@@ -86,6 +88,8 @@ namespace WeaponCore.Support
             Turret.EnableIdleRotation = false;
             MultiInventory = ammoTypeCnt > 1;
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
+            FullInventory = BlockInventory.CargoPercentage >= 0.5;
+
             RegisterEvents();
             MainInit = true;
         }

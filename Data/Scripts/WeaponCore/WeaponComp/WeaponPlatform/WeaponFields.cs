@@ -90,6 +90,6 @@ namespace WeaponCore.Platform
         internal bool IsTracking;
         internal bool IsInView;
         internal bool IsAligned;
-        internal bool PullAmmo;
+        internal bool PullAmmo = true;
     }
 }

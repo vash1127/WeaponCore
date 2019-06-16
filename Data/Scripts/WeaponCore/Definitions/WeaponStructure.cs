@@ -38,7 +38,6 @@ namespace WeaponCore.Support
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<MyDefinitionId, int> AmmoToWeaponIds;
-        public readonly Dictionary<MyDefinitionId, MyDefinitionId> NextAmmoDef;
         public readonly MyStringHash[] PartNames;
         public readonly bool MultiParts;
 
@@ -51,7 +50,6 @@ namespace WeaponCore.Support
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             AmmoToWeaponIds = new Dictionary<MyDefinitionId, int>(MyDefinitionId.Comparer);
-            NextAmmoDef = new Dictionary<MyDefinitionId, MyDefinitionId>(MyDefinitionId.Comparer);
             foreach (var w in map)
             {
                 var myNameHash = MyStringHash.GetOrCompute(w.Key);
@@ -85,24 +83,6 @@ namespace WeaponCore.Support
 
                 mapIndex++;
             }
-
-            int next = 0;
-            MyDefinitionId firstId = new MyDefinitionId();
-            MyDefinitionId lastId = new MyDefinitionId();
-
-            foreach (var ammoDef in AmmoToWeaponIds)
-            {
-                if (next++ == 0)
-                {
-                    firstId = ammoDef.Key;
-                    lastId = ammoDef.Key;
-                    next++;
-                    continue;
-                }
-                NextAmmoDef.Add(lastId, ammoDef.Key);
-                lastId = ammoDef.Key;
-            }
-            NextAmmoDef.Add(lastId, firstId);
             PartNames = names;
         }
     }

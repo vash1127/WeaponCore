@@ -1,5 +1,7 @@
 ﻿using System;
+using Sandbox.Engine.Platform;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
@@ -115,6 +117,7 @@ namespace WeaponCore.Platform
             return false;
         }
 
+
         /*
         /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
         Dependencies: AngleBetween
@@ -169,7 +172,7 @@ namespace WeaponCore.Platform
             }
 
             double timeToIntercept;
-            _lastPredictedPos = CalculateProjectileInterceptPoint(projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
+            _lastPredictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
             return _lastPredictedPos;
         }
 
@@ -185,10 +188,82 @@ namespace WeaponCore.Platform
             return 2.0 * num3 / (Math.Sqrt(d) - num2);
         }
 
+
         /*
         ** Whip's Projectile Intercept - Modified for DarkStar 06.15.2019
         */
-        private Vector3D CalculateProjectileInterceptPoint(
+        Vector3D CalculateProjectileInterceptPoint(
+            double gridMaxSpeed,        /* Maximum grid speed           (m/s)   */
+            double projectileSpeed,     /* Maximum projectile speed     (m/s)   */
+            double updateFrequency,     /* Frequency this is run        (Hz)    */
+            Vector3D shooterVelocity,   /* Shooter initial velocity     (m/s)   */
+            Vector3D shooterPosition,   /* Shooter initial position     (m)     */
+            Vector3D targetVelocity,    /* Target initial velocity      (m/s)   */
+            Vector3D targetPosition,    /* Target initial position      (m)     */
+            out double timeToIntercept  /* Estimated time to intercept  (s)     */)
+        {
+            timeToIntercept = -1;
+
+            Vector3D deltaPos = targetPosition - shooterPosition;
+            Vector3D deltaVel = targetVelocity - shooterVelocity;
+            double a = Vector3D.Dot(deltaVel, deltaVel) - projectileSpeed * projectileSpeed;
+            double b = 2 * Vector3D.Dot(deltaVel, deltaPos);
+            double c = Vector3D.Dot(deltaPos, deltaPos);
+            double d = b * b - 4 * a * c;
+            if (d < 0)
+                return targetPosition;
+
+            double sqrtD = Math.Sqrt(d);
+            double t1 = 2 * c / (-b + sqrtD);
+            double t2 = 2 * c / (-b - sqrtD);
+            double tmin = Math.Min(t1, t2);
+            double tmax = Math.Max(t1, t2);
+            if (t1 < 0 && t2 < 0)
+                return targetPosition;
+            else if (tmin > 0)
+                timeToIntercept = tmin;
+            else
+                timeToIntercept = tmax;
+
+            Vector3D targetAcceleration = updateFrequency * (targetVelocity - _lastTargetVelocity1);
+            _lastTargetVelocity1 = targetVelocity;
+
+            Vector3D interceptEst = targetPosition
+                                    + targetVelocity * timeToIntercept;
+            /*
+            ** Target trajectory estimation
+            */
+            //double dt = 1.0 / 60.0; // This can be a const somewhere
+            double dt = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS; // This can be a const somewhere
+
+            double simtime = 0;
+            double maxSpeedSq = gridMaxSpeed * gridMaxSpeed;
+            Vector3D tgtPosSim = targetPosition;
+            Vector3D tgtVelSim = deltaVel;
+            Vector3D tgtAccStep = targetAcceleration * dt;
+
+            while (simtime < timeToIntercept)
+            {
+                simtime += dt;
+                tgtVelSim += tgtAccStep;
+                if (tgtVelSim.LengthSquared() > maxSpeedSq)
+                    tgtVelSim = Vector3D.Normalize(tgtVelSim) * gridMaxSpeed;
+
+                tgtPosSim += tgtVelSim * dt;
+            }
+
+            /*
+            ** Applying correction
+            */
+            return tgtPosSim;
+        }
+
+        Vector3D _lastTargetVelocity1 = Vector3D.Zero;
+
+        /*
+        ** Whip's Projectile Intercept - Modified for DarkStar 06.15.2019
+        */
+        private Vector3D CalculateProjectileInterceptPointFast(
             double projectileSpeed,     /* Maximum projectile speed     (m/s) */
             double updateFrequency,     /* Frequency this is run        (Hz) */
             Vector3D shooterVelocity,   /* Shooter initial velocity     (m/s) */
@@ -215,14 +290,14 @@ namespace WeaponCore.Platform
             var projectileForwardVelocity = projectileForwardSpeed * directHeadingNorm;
             timeToIntercept = distanceToTarget / projectileForwardSpeed;
 
-            var targetAcceleration = updateFrequency * (targetVelocity - _lastTargetVelocity);
-            _lastTargetVelocity = targetVelocity;
+            var targetAcceleration = updateFrequency * (targetVelocity - _lastTargetVelocity2);
+            _lastTargetVelocity2 = targetVelocity;
 
             var interceptPoint = shooterPosition + (projectileForwardVelocity + normalVelocity) * timeToIntercept + 0.5 * targetAcceleration * timeToIntercept * timeToIntercept;
             return interceptPoint;
         }
 
-        Vector3D _lastTargetVelocity = Vector3D.Zero;
+        Vector3D _lastTargetVelocity2 = Vector3D.Zero;
 
         internal void InitTracking()
         {
@@ -247,41 +322,37 @@ namespace WeaponCore.Platform
         }
 
 
-        public Vector3D OldGetPredictedTargetPosition(MyEntity target)
+        public Vector3D GetBasicPredictedTargetPosition(MyEntity target)
         {
-            var thisTick = Comp.MyAi.MySession.Tick;
-            if (thisTick == _lastPredictionTick && _lastTarget == target)
+            var tick = Comp.MyAi.MySession.Tick;
+
+            if (target == null || target.MarkedForClose || tick == _lastPredictionTick && _lastTarget == target)
                 return _lastPredictedPos;
+
             _lastTarget = target;
-            _lastPredictionTick = thisTick;
-            if (target == null || target.MarkedForClose)
-            {
-                _lastPredictedPos = Vector3D.Zero;
-                return _lastPredictedPos;
-            }
+            _lastPredictionTick = tick;
+
             var targetCenter = target.PositionComp.WorldAABB.Center;
             var shooterPos = Comp.MyPivotPos;
-            //var deltaPos = targetCenter - shooterPos;
+            var shooterVel = Comp.Physics.LinearVelocity;
             var ammoSpeed = WeaponType.AmmoDef.DesiredSpeed;
             var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
             var targetVel = Vector3.Zero;
-            if (target.Physics != null)
-            {
-                targetVel = target.Physics.LinearVelocity;
-            }
+
+            if (target.Physics != null) targetVel = target.Physics.LinearVelocity;
             else
             {
                 var topMostParent = target.GetTopMostParent();
                 if (topMostParent?.Physics != null)
                     targetVel = topMostParent.Physics.LinearVelocity;
             }
-            var shooterVel = Comp.Physics.LinearVelocity;
-            //var deltaVel = targetVel - shooterVel;
-            double timeToIntercept;
-            //var timeToIntercept = Intercept(deltaPos, deltaVel, projectileVel);
-            _lastPredictedPos = CalculateProjectileInterceptPoint(projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
+
+            var deltaPos = targetCenter - shooterPos;
+            var deltaVel = targetVel - shooterVel;
+            var timeToIntercept = Intercept(deltaPos, deltaVel, projectileVel);
+            
             // IFF timeToIntercept is less than 0, intercept is not possible!!!
-            //_lastPredictedPos = center + (float)timeToIntercept * deltaVel;
+            _lastPredictedPos = targetCenter + (float)timeToIntercept * deltaVel;
             return _lastPredictedPos;
         }
 

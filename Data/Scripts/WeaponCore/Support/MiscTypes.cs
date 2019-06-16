@@ -39,7 +39,6 @@ namespace WeaponCore.Support
         public enum ChangeType
         {
             Add,
-            Pause,
         }
 
         public readonly Weapon Weapon;

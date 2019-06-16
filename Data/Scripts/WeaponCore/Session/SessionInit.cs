@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
@@ -28,6 +29,9 @@ namespace WeaponCore
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControls;
             }
 
+            var env = MyDefinitionManager.Static.EnvironmentDefinition;
+            if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
+            else if (env.SmallShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.SmallShipMaxSpeed;
             if (MpActive)
             {
                 SyncDist = MyAPIGateway.Session.SessionSettings.SyncDistance;

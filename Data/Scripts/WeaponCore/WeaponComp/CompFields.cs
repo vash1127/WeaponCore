@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Sandbox.Common.ObjectBuilders;
-using Sandbox.Definitions;
+﻿using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -18,6 +15,9 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
+        internal const uint SuspendAmmoCount = 600;
+        internal const uint UnSuspendAmmoCount = 2400;
+
         //private const int SyncCount = 60;
         //private readonly MyDefinitionId _gId = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Electricity");
         private uint _tick;
@@ -64,17 +64,16 @@ namespace WeaponCore.Support
             WarmingUp,
         }
 
-        public MyCubeBlock MyCube;
-        public MyCubeGrid MyGrid;
-        public MyPhysicsComponentBase Physics;
-        public MyWeaponPlatform Platform;
-        public IMyLargeMissileTurret Turret;
+        internal MyCubeBlock MyCube;
+        internal MyCubeGrid MyGrid;
+        internal MyPhysicsComponentBase Physics;
+        internal MyWeaponPlatform Platform;
+        internal IMyLargeMissileTurret Turret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
         internal MyInventory TempInventory;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
-
         internal IMyGunObject<MyGunBase> Gun;
         internal bool MainInit;
         internal bool SettingsUpdated;

@@ -48,6 +48,7 @@ namespace WeaponCore
         internal double SyncDistSqr;
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
+        internal double MaxEntitySpeed;
         internal float Zoom;
 
         internal bool MpActive;

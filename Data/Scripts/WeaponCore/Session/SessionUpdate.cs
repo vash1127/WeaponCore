@@ -1,5 +1,4 @@
-﻿using VRage.Game.Entity;
-using WeaponCore.Platform;
+﻿using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.InventoryChange;
 
@@ -26,8 +25,13 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (ammoCheck && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId && Tick - w.AmmoUpdateTick >= 500)
-                            InventoryEvent.Enqueue(new InventoryChange(w, new MyPhysicalInventoryItem(), 0, ChangeType.Pause));
+                        if (ammoCheck)
+                        {
+                            if (!w.PullAmmo && Tick - w.AmmoUpdateTick >= WeaponComponent.UnSuspendAmmoCount)
+                                AmmoPull(comp, w, false);
+                            else if (w.PullAmmo && Tick - w.AmmoUpdateTick >= WeaponComponent.SuspendAmmoCount && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId)
+                                AmmoPull(comp, w, true);
+                        }
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
 

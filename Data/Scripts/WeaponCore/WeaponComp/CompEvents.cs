@@ -20,7 +20,7 @@ namespace WeaponCore.Support
                 IsWorkingChanged(MyCube);
                 BlockInventory.ContentsAdded += OnContentsAdded;
                 BlockInventory.ContentsRemoved += OnContentsRemoved;
-                BlockInventory.InventoryContentChanged += OnInventoryContentChanged;
+                BlockInventory.BeforeContentsChanged += OnBeforeContentsChanged;
                 BlockInventory.ContentsRemoved += OnContentsRemoved;
             }
             else
@@ -29,23 +29,19 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsAdded -= OnContentsAdded;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
-                BlockInventory.InventoryContentChanged -= OnInventoryContentChanged;
+                BlockInventory.BeforeContentsChanged -= OnBeforeContentsChanged;
             }
         }
 
-        private void OnInventoryContentChanged(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
+        private void OnBeforeContentsChanged(MyInventoryBase inventory)
         {
             try
             {
-                Log.Line("ContentsChanged");
-                var defId = item.Content.GetId();
-
-                int weaponId;
-                if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponId)) return;
-
-                var weapon = Platform.Weapons[weaponId];
-                //Session.Instance.InventoryEvent.Enqueue(new InventoryChange(weapon, item, amount, InventoryChange.ChangeType.Change));
-
+                if (FullInventory)
+                {
+                    Log.Line("BeforeChange, was full inventory, resetting AmmoTicks");
+                    ResetAmmoTimers();
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in OnInventoryContentChanged: {ex}"); }
         }
@@ -54,7 +50,7 @@ namespace WeaponCore.Support
         {
             try
             {
-                Log.Line("ContentsAdded");
+                //Log.Line("ContentsAdded");
                 var defId = item.Content.GetId();
 
                 int weaponId;
@@ -72,13 +68,18 @@ namespace WeaponCore.Support
         {
             try
             {
-                Log.Line("ContentsRemoved");
+                //Log.Line("ContentsRemoved");
                 var defId = item.Content.GetId();
 
                 int weaponId;
                 if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponId)) return;
 
                 var weapon = Platform.Weapons[weaponId];
+                if (FullInventory)
+                {
+                    BlockInventory.Refresh();
+                    FullInventory = BlockInventory.CargoPercentage >= 0.5;
+                }
                 //Session.Instance.InventoryEvent.Enqueue(new InventoryChange(weapon, item, amount, InventoryChange.ChangeType.Remove));
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsRemoved: {ex}"); }
