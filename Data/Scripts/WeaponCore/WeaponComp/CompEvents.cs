@@ -10,7 +10,6 @@ namespace WeaponCore.Support
 { 
     public partial class WeaponComponent
     {
-
         internal void RegisterEvents(bool register = true)
         {
             if (register)

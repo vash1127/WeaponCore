@@ -31,6 +31,8 @@ namespace WeaponCore.Platform
             if (targetLock) _targetTick++;
 
             if (ShotCounter != 0) return;
+            CurrentAmmo--;
+            Log.Line($"weaponId:{WeaponId} - CurrentAmmo:{CurrentAmmo}");
             var endBarrel = _numOfBarrels - 1;
             if (_shotsInCycle++ == (_numOfBarrels - 1))
             {

@@ -1,4 +1,7 @@
-﻿using WeaponCore.Platform;
+﻿using VRage;
+using VRage.Game;
+using WeaponCore.Platform;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -23,12 +26,23 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
+
                         if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
                                 AmmoPull(comp, w, false);
                             else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
+                        }
+
+                        if (w.CurrentAmmo == 0)
+                        {
+                            var inventory = comp.BlockInventory;
+                            var ammoDef = w.WeaponSystem.AmmoDefId;
+                            var hasAmmoMag = inventory.GetItemAmount(ammoDef);
+                            if (hasAmmoMag.RawValue == 0) continue;
+                            inventory.RemoveItemsOfType(1, ammoDef);
+                            w.CurrentAmmo = w.WeaponSystem.MagazineDef.Capacity;
                         }
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
