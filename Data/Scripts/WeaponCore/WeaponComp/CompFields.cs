@@ -15,8 +15,7 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
-        internal const uint SuspendAmmoCount = 600;
-        internal const uint UnSuspendAmmoCount = 2400;
+
 
         //private const int SyncCount = 60;
         //private readonly MyDefinitionId _gId = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Electricity");
@@ -71,7 +70,6 @@ namespace WeaponCore.Support
         internal IMyLargeMissileTurret Turret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
-        internal MyInventory TempInventory;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal IMyGunObject<MyGunBase> Gun;
@@ -94,9 +92,6 @@ namespace WeaponCore.Support
             MyGrid = MyCube.CubeGrid;
             Turret = turret;
             Gun = (IMyGunObject<MyGunBase>)MyCube;
-            var self = (MyObjectBuilder_TurretBase) new MyObjectBuilder_LargeMissileTurret();
-            TempInventory = new MyInventory(255f, new Vector3(1f, 1f, 1f), MyInventoryFlags.CanReceive);
-            TempInventory.Init(self.Inventory);
             BlockInventory = (MyInventory)MyCube.GetInventoryBase();
         }
     }

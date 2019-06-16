@@ -1,6 +1,5 @@
 ﻿using System;
 using Sandbox.Game.Entities;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
@@ -10,25 +9,8 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        public Weapon(IMyEntity entity, WeaponSystem weaponSystem, int weaponId)
-        {
-            EntityPart = entity;
-            _localTranslation = entity.LocalMatrix.Translation;
-            _pivotOffsetVec = (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) - entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
-            _upPivotOffsetLen = _pivotOffsetVec.Length();
-            WeaponSystem = weaponSystem;
-            WeaponType = weaponSystem.WeaponType;
-
-            WeaponId = weaponId;
-            TurretMode = WeaponType.TurretDef.TurretMode;
-            TrackTarget = WeaponType.TurretDef.TrackTarget;
-            AimingTolerance = Math.Cos(MathHelper.ToRadians(WeaponType.TurretDef.AimingTolerance));
-            _ticksPerShot = (uint)(3600 / WeaponType.TurretDef.RateOfFire);
-            _timePerShot = (3600d / WeaponType.TurretDef.RateOfFire);
-            _numOfBarrels = WeaponSystem.Barrels.Length;
-
-            BeamSlot = new uint[_numOfBarrels];
-        }
+        internal const uint SuspendAmmoCount = 300;
+        internal const uint UnSuspendAmmoCount = 2100;
 
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
@@ -65,7 +47,8 @@ namespace WeaponCore.Platform
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
 
-        internal uint AmmoUpdateTick;
+        internal uint SuspendAmmoTick;
+        internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal int CurrentAmmo;
         internal double Azimuth;
@@ -90,6 +73,27 @@ namespace WeaponCore.Platform
         internal bool IsTracking;
         internal bool IsInView;
         internal bool IsAligned;
-        internal bool PullAmmo = true;
+        internal bool AmmoSuspend;
+
+        public Weapon(IMyEntity entity, WeaponSystem weaponSystem, int weaponId)
+        {
+            EntityPart = entity;
+            _localTranslation = entity.LocalMatrix.Translation;
+            _pivotOffsetVec = (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) - entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
+            _upPivotOffsetLen = _pivotOffsetVec.Length();
+            WeaponSystem = weaponSystem;
+            WeaponType = weaponSystem.WeaponType;
+
+            WeaponId = weaponId;
+            TurretMode = WeaponType.TurretDef.TurretMode;
+            TrackTarget = WeaponType.TurretDef.TrackTarget;
+            AimingTolerance = Math.Cos(MathHelper.ToRadians(WeaponType.TurretDef.AimingTolerance));
+            _ticksPerShot = (uint)(3600 / WeaponType.TurretDef.RateOfFire);
+            _timePerShot = (3600d / WeaponType.TurretDef.RateOfFire);
+            _numOfBarrels = WeaponSystem.Barrels.Length;
+
+            BeamSlot = new uint[_numOfBarrels];
+        }
+
     }
 }

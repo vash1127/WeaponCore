@@ -1,6 +1,4 @@
 ﻿using WeaponCore.Platform;
-using WeaponCore.Support;
-using static WeaponCore.Support.InventoryChange;
 
 namespace WeaponCore
 {
@@ -27,9 +25,9 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
                         if (ammoCheck)
                         {
-                            if (!w.PullAmmo && Tick - w.AmmoUpdateTick >= WeaponComponent.UnSuspendAmmoCount)
+                            if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
                                 AmmoPull(comp, w, false);
-                            else if (w.PullAmmo && Tick - w.AmmoUpdateTick >= WeaponComponent.SuspendAmmoCount && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId)
+                            else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
                         }
 

@@ -100,6 +100,5 @@ namespace WeaponCore
             "WC-L_PowerLevel",
             "WC-L_Guidance"
         };
-
     }
 }

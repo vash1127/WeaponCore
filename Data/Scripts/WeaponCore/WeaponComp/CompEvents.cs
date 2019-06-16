@@ -21,7 +21,6 @@ namespace WeaponCore.Support
                 BlockInventory.ContentsAdded += OnContentsAdded;
                 BlockInventory.ContentsRemoved += OnContentsRemoved;
                 BlockInventory.BeforeContentsChanged += OnBeforeContentsChanged;
-                BlockInventory.ContentsRemoved += OnContentsRemoved;
             }
             else
             {
@@ -50,7 +49,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                //Log.Line("ContentsAdded");
                 var defId = item.Content.GetId();
 
                 int weaponId;
@@ -68,19 +66,16 @@ namespace WeaponCore.Support
         {
             try
             {
-                //Log.Line("ContentsRemoved");
                 var defId = item.Content.GetId();
 
                 int weaponId;
                 if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponId)) return;
 
-                var weapon = Platform.Weapons[weaponId];
                 if (FullInventory)
                 {
                     BlockInventory.Refresh();
                     FullInventory = BlockInventory.CargoPercentage >= 0.5;
                 }
-                //Session.Instance.InventoryEvent.Enqueue(new InventoryChange(weapon, item, amount, InventoryChange.ChangeType.Remove));
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsRemoved: {ex}"); }
         }

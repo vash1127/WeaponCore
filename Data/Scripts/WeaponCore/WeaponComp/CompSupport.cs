@@ -12,7 +12,8 @@ namespace WeaponCore.Support
             foreach (var w in Platform.Weapons)
             {
                 if (skip && w == weapon) continue;
-                w.AmmoUpdateTick = MyAi.MySession.Tick;
+                w.SuspendAmmoTick = 0;
+                w.UnSuspendAmmoTick = 0;
             }
         }
         internal void TerminalRefresh(bool update = true)
