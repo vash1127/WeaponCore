@@ -20,11 +20,7 @@ namespace WeaponCore
                 {
                     var comp = weapon.Comp;
                     var nextDefRaw = NextActiveAmmoDef(comp, weapon);
-                    if (!nextDefRaw.HasValue)
-                    {
-                        //Log.Line("Didn't find new ammoDef");
-                        return;
-                    }
+                    //if (!nextDefRaw.HasValue) return;
                     //Log.Line($"added to inventory: oldWeaponId:{weapon.WeaponId} - oldDef:{weapon.WeaponSystem.AmmoDefId.SubtypeId.String} - newDef:{nextDefRaw.Value.SubtypeId.String}");
                 }
             }

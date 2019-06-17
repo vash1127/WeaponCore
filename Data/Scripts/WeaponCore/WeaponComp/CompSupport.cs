@@ -7,15 +7,6 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent 
     {
-        private void ResetAmmoTimers(bool skip = false, Weapon weapon = null)
-        {
-            foreach (var w in Platform.Weapons)
-            {
-                if (skip && w == weapon) continue;
-                w.SuspendAmmoTick = 0;
-                w.UnSuspendAmmoTick = 0;
-            }
-        }
         internal void TerminalRefresh(bool update = true)
         {
             Turret.RefreshCustomInfo();

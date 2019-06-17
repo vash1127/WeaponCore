@@ -16,7 +16,7 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
-
+        internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
         //private const int SyncCount = 60;
         //private readonly MyDefinitionId _gId = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Electricity");

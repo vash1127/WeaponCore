@@ -1,10 +1,5 @@
-﻿using System.Linq;
-using System.Threading;
-using VRage;
-using VRage.Game;
-using WeaponCore.Platform;
+﻿using WeaponCore.Platform;
 using WeaponCore.Support;
-
 namespace WeaponCore
 {
     public partial class Session

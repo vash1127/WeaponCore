@@ -84,6 +84,7 @@ namespace WeaponCore.Support
         {
             IsWorking = myCubeBlock.IsWorking;
             IsFunctional = myCubeBlock.IsFunctional;
+            State.Value.Online = IsWorking && IsFunctional;
         }
 
         internal string GetShieldStatus()
