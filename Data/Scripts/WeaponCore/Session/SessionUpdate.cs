@@ -1,4 +1,6 @@
-﻿using VRage;
+﻿using System.Linq;
+using System.Threading;
+using VRage;
 using VRage.Game;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -19,9 +21,8 @@ namespace WeaponCore
                 {
                     //var myCube = basePair.Key;
                     var comp = basePair.Value;
-                    var ammoCheck = comp.MultiInventory && !comp.FullInventory;
+                    var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
-
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
@@ -34,19 +35,15 @@ namespace WeaponCore
                             else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
                         }
+                        if (w.CurrentMags == 0 && w.CurrentAmmo == 0) continue;
 
                         if (w.CurrentAmmo == 0)
                         {
-                            var inventory = comp.BlockInventory;
-                            var ammoDef = w.WeaponSystem.AmmoDefId;
-                            var hasAmmoMag = inventory.GetItemAmount(ammoDef);
-                            if (hasAmmoMag.RawValue == 0) continue;
-                            inventory.RemoveItemsOfType(1, ammoDef);
+                            comp.BlockInventory.RemoveItemsOfType(1, w.WeaponSystem.AmmoDefId);
                             w.CurrentAmmo = w.WeaponSystem.MagazineDef.Capacity;
                         }
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
-
                         if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                     }
                 }

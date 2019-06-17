@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using VRage;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
@@ -10,7 +11,7 @@ namespace WeaponCore.Platform
     public partial class Weapon
     {
         internal const uint SuspendAmmoCount = 300;
-        internal const uint UnSuspendAmmoCount = 2100;
+        internal const uint UnSuspendAmmoCount = 1200;
 
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
@@ -51,6 +52,7 @@ namespace WeaponCore.Platform
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal int CurrentAmmo;
+        internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
         internal double DesiredAzimuth;
@@ -74,6 +76,7 @@ namespace WeaponCore.Platform
         internal bool IsInView;
         internal bool IsAligned;
         internal bool AmmoSuspend;
+        internal bool AmmoFull;
 
         public Weapon(IMyEntity entity, WeaponSystem weaponSystem, int weaponId)
         {
@@ -94,6 +97,5 @@ namespace WeaponCore.Platform
 
             BeamSlot = new uint[_numOfBarrels];
         }
-
     }
 }

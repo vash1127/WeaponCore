@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -74,10 +75,24 @@ namespace WeaponCore.Support
         public void InitPlatform()
         {
             Platform = new MyWeaponPlatform(this);
-            foreach (var t in Platform.Weapons) t.InitTracking();
-            var ammoTypeCnt = Platform.Structure.AmmoToWeaponIds.Count;
+
+            PullingAmmoCnt = Platform.Structure.AmmoToWeaponIds.Count;
+
+            FullInventory = BlockInventory.CargoPercentage >= 0.5;
+            MultiInventory = PullingAmmoCnt > 1;
+            if (MultiInventory)
+            {
+                MaxAmmoVolume = (float)MyFixedPoint.MultiplySafe(MaxInventoryVolume, 1 / (float)PullingAmmoCnt) * 0.5f;
+                MaxAmmoMass = (float)MyFixedPoint.MultiplySafe(MaxInventoryMass, 1 / (float)PullingAmmoCnt) * 0.5f;
+            }
+            foreach (var weapon in Platform.Weapons)
+            {
+                weapon.InitTracking();
+                Session.ComputeStorage(weapon);
+            }
+
             var gun = Gun.GunBase;
-            var id = ammoTypeCnt == 0 ? Platform.Weapons[0].WeaponSystem.MagazineDef.Id 
+            var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].WeaponSystem.MagazineDef.Id 
                 : Platform.Structure.AmmoToWeaponIds.First().Key;
             BlockInventory.Constraint.Clear();
             BlockInventory.Constraint.Add(id);
@@ -86,11 +101,10 @@ namespace WeaponCore.Support
             StorageSetup();
             State.Value.Online = true;
             Turret.EnableIdleRotation = false;
-            MultiInventory = ammoTypeCnt > 1;
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
-            FullInventory = BlockInventory.CargoPercentage >= 0.5;
 
             RegisterEvents();
+
             MainInit = true;
         }
 

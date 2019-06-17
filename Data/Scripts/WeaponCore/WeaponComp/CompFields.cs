@@ -5,6 +5,7 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -47,9 +48,16 @@ namespace WeaponCore.Support
         internal MyResourceSinkInfo ResourceInfo;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.Instance.LastTerminalId == Turret.EntityId;
+
+        internal MyFixedPoint MaxInventoryVolume;
+        internal MyFixedPoint MaxInventoryMass;
+        internal uint LastAmmoUnSuspendTick;
+        internal int PullingAmmoCnt;
+        internal float MaxAmmoVolume;
+        internal float MaxAmmoMass;
         internal float SinkCurrentPower;
-        internal bool TurretTargetLock;
         internal float SinkPower = 0.01f;
+        internal bool TurretTargetLock;
         internal bool Gunner;
         internal bool NotFailed;
         internal bool WarmedUp;
@@ -93,6 +101,9 @@ namespace WeaponCore.Support
             Turret = turret;
             Gun = (IMyGunObject<MyGunBase>)MyCube;
             BlockInventory = (MyInventory)MyCube.GetInventoryBase();
+            BlockInventory.Constraint.m_useDefaultIcon = false;
+            MaxInventoryVolume = BlockInventory.MaxVolume;
+            MaxInventoryMass = BlockInventory.MaxMass;
         }
     }
 }

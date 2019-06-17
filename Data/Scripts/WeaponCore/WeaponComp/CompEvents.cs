@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -35,11 +36,13 @@ namespace WeaponCore.Support
         {
             try
             {
+                /*
                 if (FullInventory)
                 {
                     Log.Line("BeforeChange, was full inventory, resetting AmmoTicks");
                     ResetAmmoTimers();
                 }
+                */
             }
             catch (Exception ex) { Log.Line($"Exception in OnInventoryContentChanged: {ex}"); }
         }
@@ -69,12 +72,10 @@ namespace WeaponCore.Support
 
                 int weaponId;
                 if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponId)) return;
-
-                if (FullInventory)
-                {
-                    BlockInventory.Refresh();
-                    FullInventory = BlockInventory.CargoPercentage >= 0.5;
-                }
+                var weapon = Platform.Weapons[weaponId];
+                Session.ComputeStorage(weapon);
+                //weapon.SuspendAmmoTick = 0;
+                //weapon.UnSuspendAmmoTick = 0;
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsRemoved: {ex}"); }
         }
