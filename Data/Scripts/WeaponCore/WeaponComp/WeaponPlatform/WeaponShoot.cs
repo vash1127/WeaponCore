@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Linq;
-using Sandbox.Definitions;
-using Sandbox.Game;
 using Sandbox.ModAPI;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -31,6 +27,7 @@ namespace WeaponCore.Platform
             if (targetLock) _targetTick++;
 
             if (ShotCounter != 0) return;
+
             CurrentAmmo--;
             var endBarrel = _numOfBarrels - 1;
             if (_shotsInCycle++ == (_numOfBarrels - 1))
@@ -56,8 +53,8 @@ namespace WeaponCore.Platform
                     Target = null;
                     return;
                 }
-
             }
+
             for (int i = 0; i < bps; i++)
             {
                 var current = _nextMuzzle;

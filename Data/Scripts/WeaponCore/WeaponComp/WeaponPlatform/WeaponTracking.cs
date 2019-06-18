@@ -1,11 +1,9 @@
 ﻿using System;
-using Sandbox.Engine.Platform;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -40,7 +38,8 @@ namespace WeaponCore.Platform
                 return weapon.IsAligned;
             }
 
-            var maxAngularStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : double.MinValue;
+            var maxAzimuthStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : double.MinValue;
+            var maxElevationStep = step ? weapon.WeaponType.TurretDef.ElevationSpeed : double.MinValue;
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
@@ -63,10 +62,10 @@ namespace WeaponCore.Platform
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             trackingWeapon.IsTracking = !azConstrained && !elConstrained;
 
-            if (trackingWeapon.IsTracking && maxAngularStep > double.MinValue)
+            if (trackingWeapon.IsTracking && maxAzimuthStep > double.MinValue)
             {
-                trackingWeapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAngularStep, maxAngularStep);
-                trackingWeapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxAngularStep, maxAngularStep);
+                trackingWeapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
+                trackingWeapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxElevationStep, maxElevationStep);
                 trackingWeapon.DesiredAzimuth = desiredAzimuth;
                 trackingWeapon.DesiredElevation = desiredElevation;
                 turret.Azimuth = (float) trackingWeapon.Azimuth;

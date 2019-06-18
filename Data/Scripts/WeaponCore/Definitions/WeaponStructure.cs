@@ -15,6 +15,7 @@ namespace WeaponCore.Support
         public readonly int ModelId;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
+        public readonly bool SimpleFiringSound;
 
         public WeaponSystem(MyStringHash partName, WeaponDefinition weaponType, string weaponName, MyDefinitionId ammoDefId)
         {
@@ -24,6 +25,12 @@ namespace WeaponCore.Support
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
+            var audioDef = WeaponType.AudioDef;
+
+            SimpleFiringSound = audioDef.FiringSoundStart != string.Empty 
+                                && audioDef.FiringSoundLoop == string.Empty 
+                                && audioDef.FiringSoundEnd == string.Empty; 
+
             if (WeaponType.GraphicDef.ModelName != string.Empty)
             {
                 ModelId = Session.Instance.ModelCount++;

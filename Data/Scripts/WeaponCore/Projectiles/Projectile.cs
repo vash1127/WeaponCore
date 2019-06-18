@@ -73,6 +73,7 @@ namespace WeaponCore.Projectiles
         internal bool SeekTarget;
         internal bool VariableRange;
         internal bool DynamicGuidance;
+        internal bool SimpleFiringSound;
         internal AmmoDefinition.GuidanceType Guidance;
         internal MyParticleEffect Effect1;
         internal readonly MyEntity3DSoundEmitter Sound1 = new MyEntity3DSoundEmitter(null, false, 1f);
@@ -82,7 +83,6 @@ namespace WeaponCore.Projectiles
         internal MyEntity Target;
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
-        internal MySoundPair ReloadSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
 
 
@@ -134,7 +134,8 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            AmmoTravelSoundRangeSqr = (WepDef.AudioDef.AmmoTravelSoundRange * WepDef.AudioDef.AmmoTravelSoundRange);
+            SimpleFiringSound = WeaponSystem.SimpleFiringSound;
+            AmmoTravelSoundRangeSqr = (WepDef.AudioDef.AmmoTravelRange * WepDef.AudioDef.AmmoTravelRange);
             Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
@@ -156,17 +157,15 @@ namespace WeaponCore.Projectiles
                 }
                 else HasTravelSound = false;
 
-                if (WepDef.AudioDef.ReloadSound != string.Empty)
-                    ReloadSound.Init(WepDef.AudioDef.ReloadSound, false);
-
                 if (WepDef.AudioDef.AmmoHitSound != string.Empty)
                     HitSound.Init(WepDef.AudioDef.AmmoHitSound, false);
 
-                if (WepDef.AudioDef.FiringSound != string.Empty)
+                if (SimpleFiringSound)
                 {
-                    FireSound.Init(WepDef.AudioDef.FiringSound, false);
+                    FireSound.Init(WepDef.AudioDef.FiringSoundStart, false);
                     FireSoundStart();
                 }
+
                 ModelId = WeaponSystem.ModelId;
                 if (ModelId != -1)
                 {
@@ -206,16 +205,16 @@ namespace WeaponCore.Projectiles
 
         internal void FireSoundStart()
         {
-            Sound1.CustomMaxDistance = WepDef.AudioDef.FiringSoundRange;
-            Sound1.CustomVolume = WepDef.AudioDef.FiringSoundVolume;
+            Sound1.CustomMaxDistance = WepDef.AudioDef.FiringRange;
+            Sound1.CustomVolume = WepDef.AudioDef.FiringVolume;
             Sound1.SetPosition(Origin);
             Sound1.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
         }
 
         internal void AmmoSoundStart()
         {
-            Sound1.CustomMaxDistance = WepDef.AudioDef.AmmoTravelSoundRange;
-            Sound1.CustomVolume = WepDef.AudioDef.AmmoTravelSoundVolume;
+            Sound1.CustomMaxDistance = WepDef.AudioDef.AmmoTravelRange;
+            Sound1.CustomVolume = WepDef.AudioDef.AmmoTravelVolume;
             Sound1.SetPosition(Position);
             Sound1.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
             AmmoSound = true;
@@ -247,8 +246,8 @@ namespace WeaponCore.Projectiles
 
                 if (WepDef.AudioDef.AmmoHitSound != string.Empty)
                 {
-                    Sound1.CustomMaxDistance = WepDef.AudioDef.AmmoHitSoundRange;
-                    Sound1.CustomVolume = WepDef.AudioDef.AmmoHitSoundVolume;
+                    Sound1.CustomMaxDistance = WepDef.AudioDef.AmmoHitRange;
+                    Sound1.CustomVolume = WepDef.AudioDef.AmmoHitVolume;
                     Sound1.SetPosition(Position);
                     Sound1.CanPlayLoopSounds = false;
                     Sound1.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);

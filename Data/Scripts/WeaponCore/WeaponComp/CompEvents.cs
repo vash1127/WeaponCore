@@ -20,7 +20,6 @@ namespace WeaponCore.Support
                 IsWorkingChanged(MyCube);
                 BlockInventory.ContentsAdded += OnContentsAdded;
                 BlockInventory.ContentsRemoved += OnContentsRemoved;
-                BlockInventory.BeforeContentsChanged += OnBeforeContentsChanged;
             }
             else
             {
@@ -28,23 +27,7 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsAdded -= OnContentsAdded;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
-                BlockInventory.BeforeContentsChanged -= OnBeforeContentsChanged;
             }
-        }
-
-        private void OnBeforeContentsChanged(MyInventoryBase inventory)
-        {
-            try
-            {
-                /*
-                if (FullInventory)
-                {
-                    Log.Line("BeforeChange, was full inventory, resetting AmmoTicks");
-                    ResetAmmoTimers();
-                }
-                */
-            }
-            catch (Exception ex) { Log.Line($"Exception in OnInventoryContentChanged: {ex}"); }
         }
 
         internal void OnContentsAdded(MyPhysicalInventoryItem item, MyFixedPoint amount)
@@ -59,7 +42,6 @@ namespace WeaponCore.Support
                 var weapon = Platform.Weapons[weaponId];
 
                 Session.Instance.InventoryEvent.Enqueue(new InventoryChange(weapon, item, amount, InventoryChange.ChangeType.Add));
-
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsAdded: {ex}"); }
         }

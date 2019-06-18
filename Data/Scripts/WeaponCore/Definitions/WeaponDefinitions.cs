@@ -32,18 +32,28 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct AudioDefinition
     {
-        [ProtoMember(1)] internal float AmmoTravelSoundRange;
-        [ProtoMember(2)] internal float AmmoTravelSoundVolume;
-        [ProtoMember(3)] internal float AmmoHitSoundRange;
-        [ProtoMember(4)] internal float AmmoHitSoundVolume;
-        [ProtoMember(5)] internal float ReloadSoundRange;
-        [ProtoMember(6)] internal float ReloadSoundVolume;
-        [ProtoMember(7)] internal float FiringSoundRange;
-        [ProtoMember(8)] internal float FiringSoundVolume;
-        [ProtoMember(9)] internal string AmmoTravelSound;
-        [ProtoMember(10)] internal string AmmoHitSound;
-        [ProtoMember(11)] internal string ReloadSound;
-        [ProtoMember(12)] internal string FiringSound;
+        [ProtoMember(1)] internal float AmmoTravelRange;
+        [ProtoMember(2)] internal float AmmoTravelVolume;
+        [ProtoMember(3)] internal float AmmoTravelPitchVar;
+        [ProtoMember(4)] internal float AmmoTravelVolumeVar;
+        [ProtoMember(5)] internal float AmmoHitRange;
+        [ProtoMember(6)] internal float AmmoHitVolume;
+        [ProtoMember(7)] internal float AmmoHitPitchVar;
+        [ProtoMember(8)] internal float AmmoHitVolumeVar;
+        [ProtoMember(9)] internal float ReloadRange;
+        [ProtoMember(10)] internal float ReloadVolume;
+        [ProtoMember(11)] internal float FiringRange;
+        [ProtoMember(12)] internal float FiringVolume;
+        [ProtoMember(13)] internal float FiringPitchVar;
+        [ProtoMember(14)] internal float FiringVolumeVar;
+        [ProtoMember(15)] internal string AmmoHitSound;
+        [ProtoMember(16)] internal string ReloadSound;
+        [ProtoMember(17)] internal string NoAmmoSound;
+        [ProtoMember(18)] internal string AmmoTravelSound;
+        [ProtoMember(19)] internal string TurretRotationSound;
+        [ProtoMember(20)] internal string FiringSoundStart;
+        [ProtoMember(21)] internal string FiringSoundLoop;
+        [ProtoMember(22)] internal string FiringSoundEnd;
     }
 
     [ProtoContract]
@@ -66,10 +76,11 @@ namespace WeaponCore.Support
         [ProtoMember(15)] internal int HeatSinkRate;
         [ProtoMember(16)] internal int MuzzleFlashLifeSpan;
         [ProtoMember(17)] internal float RotateSpeed;
-        [ProtoMember(18)] internal float DeviateShotAngle;
-        [ProtoMember(19)] internal float ReleaseTimeAfterFire;
-        [ProtoMember(20)] internal float ShotEnergyCost;
-        [ProtoMember(21)] internal double AimingTolerance;
+        [ProtoMember(18)] internal float ElevationSpeed;
+        [ProtoMember(19)] internal float DeviateShotAngle;
+        [ProtoMember(20)] internal float ReleaseTimeAfterFire;
+        [ProtoMember(21)] internal float ShotEnergyCost;
+        [ProtoMember(22)] internal double AimingTolerance;
     }
 
     [ProtoContract]
