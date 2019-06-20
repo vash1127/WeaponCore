@@ -21,7 +21,7 @@ namespace WeaponCore.Support
         [ProtoMember(4)] internal float ProjectileWidth;
         [ProtoMember(5)] internal float VisualProbability;
         [ProtoMember(6)] internal float ParticleRadiusMultiplier;
-        [ProtoMember(7)] internal MyStringId ProjectileMaterial;
+        [ProtoMember(7)] internal string ProjectileMaterial;
         [ProtoMember(8)] internal string ModelName;
         [ProtoMember(9)] internal Vector4 ProjectileColor;
         [ProtoMember(10)] internal Vector4 ParticleColor;

@@ -16,6 +16,7 @@ namespace WeaponCore.Support
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly bool SimpleFiringSound;
+        public readonly MyStringId ProjectileMaterial;
 
         public WeaponSystem(MyStringHash partName, WeaponDefinition weaponType, string weaponName, MyDefinitionId ammoDefId)
         {
@@ -25,6 +26,7 @@ namespace WeaponCore.Support
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
+            ProjectileMaterial = MyStringId.GetOrCompute(WeaponType.GraphicDef.ProjectileMaterial);
             var audioDef = WeaponType.AudioDef;
 
             SimpleFiringSound = audioDef.FiringSoundStart != string.Empty 

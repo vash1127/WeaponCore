@@ -22,7 +22,6 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-
                         if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)

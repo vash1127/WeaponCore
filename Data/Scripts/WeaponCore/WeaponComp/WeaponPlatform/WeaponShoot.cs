@@ -2,6 +2,7 @@
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Game.ModAPI.Ingame;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -19,15 +20,13 @@ namespace WeaponCore.Platform
             _newCycle = false;
             var targetLock = Target != null;
             if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
-
+            
             var bps = WeaponType.TurretDef.BarrelsPerShot;
             var skipAhead = WeaponType.TurretDef.SkipBarrels;
 
             if (WeaponType.TurretDef.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
-
             if (ShotCounter != 0) return;
-
             CurrentAmmo--;
             var endBarrel = _numOfBarrels - 1;
             if (_shotsInCycle++ == (_numOfBarrels - 1))

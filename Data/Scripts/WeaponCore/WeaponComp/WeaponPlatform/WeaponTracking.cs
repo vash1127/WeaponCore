@@ -4,6 +4,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -24,7 +25,6 @@ namespace WeaponCore.Platform
         internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
-
             var turret = trackingWeapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var targetPos = weapon.GetPredictedTargetPosition(target);
@@ -61,7 +61,7 @@ namespace WeaponCore.Platform
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             trackingWeapon.IsTracking = !azConstrained && !elConstrained;
-
+            Log.Line($"test: {weapon.WeaponSystem.WeaponName} - {trackingWeapon.IsTracking}");
             if (trackingWeapon.IsTracking && maxAzimuthStep > double.MinValue)
             {
                 trackingWeapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
@@ -171,6 +171,7 @@ namespace WeaponCore.Platform
             }
 
             double timeToIntercept;
+
             _lastPredictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
             return _lastPredictedPos;
         }

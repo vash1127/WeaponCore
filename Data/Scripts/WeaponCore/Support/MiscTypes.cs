@@ -1,5 +1,6 @@
 ﻿using VRage;
 using VRage.Game.Entity;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Support.GraphicDefinition;
@@ -15,13 +16,15 @@ namespace WeaponCore.Support
         internal int ReSizeSteps;
         internal double LineReSizeLen;
         internal int ShrinkStep;
+        internal MyStringId ProjectileMaterial;
 
-        internal void Init(WeaponDefinition wepDef, LineD line, int reSizeSteps, double lineReSizeLen)
+        internal void Init(WeaponDefinition wepDef, LineD line, MyStringId proejctileMaterial, int reSizeSteps, double lineReSizeLen)
         {
             WepDef = wepDef;
             Position = line.To;
             Direction = line.Direction;
             Length = line.Length;
+            ProjectileMaterial = proejctileMaterial;
             ReSizeSteps = reSizeSteps;
             LineReSizeLen = lineReSizeLen;
             ShrinkStep = reSizeSteps;

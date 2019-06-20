@@ -35,7 +35,7 @@ namespace WeaponCore
                 {
                     sFound = true;
                     var shrink = _shrinkPool.Get();
-                    shrink.Init(wDef, line, p.ReSizeSteps, p.LineReSizeLen);
+                    shrink.Init(wDef, line, p.WeaponSystem.ProjectileMaterial, p.ReSizeSteps, p.LineReSizeLen);
                     _shrinking.Add(shrink);
                 }
                 var color = wDef.GraphicDef.ProjectileColor;
@@ -66,13 +66,13 @@ namespace WeaponCore
                     }
                 }
 
-                if (!InTurret)
+                if (InTurret)
                 {
                     var matrix = MatrixD.CreateFromDir(line.Direction);
                     matrix.Translation = line.From;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, wDef.GraphicDef.ProjectileWidth, (float)line.Length, 12, color, color, wDef.GraphicDef.ProjectileMaterial, wDef.GraphicDef.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, wDef.GraphicDef.ProjectileWidth, (float)line.Length, 12, color, color, p.WeaponSystem.ProjectileMaterial, p.WeaponSystem.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
-                else MyTransparentGeometry.AddLocalLineBillboard(wDef.GraphicDef.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
+                else MyTransparentGeometry.AddLocalLineBillboard(p.WeaponSystem.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();
@@ -91,9 +91,9 @@ namespace WeaponCore
                         var matrix = MatrixD.CreateFromDir(line.Value.Direction);
                         matrix.Translation = line.Value.From;
 
-                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.WepDef.GraphicDef.ProjectileWidth, s.WepDef.GraphicDef.ProjectileWidth, (float)line.Value.Length, 6, s.WepDef.GraphicDef.ProjectileColor, s.WepDef.GraphicDef.ProjectileColor, s.WepDef.GraphicDef.ProjectileMaterial, s.WepDef.GraphicDef.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.WepDef.GraphicDef.ProjectileWidth, s.WepDef.GraphicDef.ProjectileWidth, (float)line.Value.Length, 6, s.WepDef.GraphicDef.ProjectileColor, s.WepDef.GraphicDef.ProjectileColor, s.ProjectileMaterial, s.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                     }
-                    else MyTransparentGeometry.AddLocalLineBillboard(s.WepDef.GraphicDef.ProjectileMaterial, s.WepDef.GraphicDef.ProjectileColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.GraphicDef.ProjectileWidth);
+                    else MyTransparentGeometry.AddLocalLineBillboard(s.ProjectileMaterial, s.WepDef.GraphicDef.ProjectileColor, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.WepDef.GraphicDef.ProjectileWidth);
                 }
                 else
                 {
