@@ -15,7 +15,15 @@ namespace WeaponCore.Support
         public readonly int ModelId;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
-        public readonly bool SimpleFiringSound;
+        public readonly FiringSoundState FiringSound;
+
+        public enum FiringSoundState
+        {
+            None,
+            Simple,
+            Full
+        }
+
         public readonly MyStringId ProjectileMaterial;
 
         public WeaponSystem(MyStringHash partName, WeaponDefinition weaponType, string weaponName, MyDefinitionId ammoDefId)
@@ -29,9 +37,16 @@ namespace WeaponCore.Support
             ProjectileMaterial = MyStringId.GetOrCompute(WeaponType.GraphicDef.ProjectileMaterial);
             var audioDef = WeaponType.AudioDef;
 
-            SimpleFiringSound = audioDef.FiringSoundStart != string.Empty 
-                                && audioDef.FiringSoundLoop == string.Empty 
-                                && audioDef.FiringSoundEnd == string.Empty; 
+            var fSoundStart = audioDef.FiringSoundStart;
+            var fSoundLoop = audioDef.FiringSoundLoop;
+            var fSoundEnd = audioDef.FiringSoundEnd;
+            var e = string.Empty;
+
+            if (fSoundStart != e && fSoundLoop == e && fSoundEnd == e)
+                FiringSound = FiringSoundState.Simple;
+            else if (fSoundLoop == e && fSoundLoop == e && fSoundEnd == e)
+                FiringSound = FiringSoundState.None;
+            else FiringSound = FiringSoundState.Full;
 
             if (WeaponType.GraphicDef.ModelName != string.Empty)
             {

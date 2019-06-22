@@ -1,8 +1,8 @@
 ﻿using System;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Game.ModAPI.Ingame;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -27,6 +27,7 @@ namespace WeaponCore.Platform
             if (WeaponType.TurretDef.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
+            IsShooting();
             CurrentAmmo--;
             var endBarrel = _numOfBarrels - 1;
             if (_shotsInCycle++ == (_numOfBarrels - 1))
@@ -38,7 +39,7 @@ namespace WeaponCore.Platform
             if (targetLock && _targetTick > 59)
             {
                 _targetTick = 0;
-                if (!TrackingAi && !TrackingTarget(this, Target))
+                if (!TrackingAi && !ValidTarget(this, Target))
                 {
                     Log.Line("shootStep2: setting target null");
                     Target = null;
@@ -56,7 +57,7 @@ namespace WeaponCore.Platform
 
             for (int i = 0; i < bps; i++)
             {
-                var current = _nextMuzzle;
+                var current = NextMuzzle;
                 var muzzle = Muzzles[current];
                 var lastTick = muzzle.LastUpdateTick;
                 var recentMovement = lastTick >= _posChangedTick && lastTick - _posChangedTick < 10;
@@ -83,8 +84,8 @@ namespace WeaponCore.Platform
                 }
                 else muzzle.DeviatedDir = muzzle.Direction;
 
-                if (i == bps) _nextMuzzle++;
-                _nextMuzzle = (_nextMuzzle + (skipAhead + 1)) % (endBarrel + 1);
+                if (i == bps) NextMuzzle++;
+                NextMuzzle = (NextMuzzle + (skipAhead + 1)) % (endBarrel + 1);
                 lock (session.Projectiles.Wait[session.ProCounter])
                 {
                     Projectile pro;
@@ -126,6 +127,73 @@ namespace WeaponCore.Platform
             _rotationTime += time;
             rotationMatrix.Translation = _localTranslation;
             EntityPart.PositionComp.LocalMatrix = rotationMatrix;
+        }
+
+
+        internal float MuzzleFlashLength;
+        internal float MuzzleFlashRadius;
+        internal MyParticleEffect ShotSmoke;
+        internal MyParticleEffect MuzzleFlash;
+        internal int SmokeToGenerate;
+
+        private void StartShooting()
+        {
+            Log.Line($"starting sound");
+        }
+
+        private void IsShooting()
+        {
+            MuzzleFlashLength = MyUtils.GetRandomFloat(4f, 6f);
+            MuzzleFlashRadius = MyUtils.GetRandomFloat(1.2f, 2f);
+            if (Comp.MyAi.MySession.InTurret)
+                MuzzleFlashRadius *= 0.33f;
+            IncreaseSmoke();
+            var vel = Comp.Physics.LinearVelocity;
+            var muzzle = Muzzles[NextMuzzle];
+            var pos = muzzle.Position;
+            var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.WorldMatrix.Up);
+            Log.Line($"{pos} - {matrix}");
+            if (ShotSmoke == null)
+            {
+                if (SmokeToGenerate > 0)
+                    MyParticlesManager.TryCreateParticleEffect("Smoke_LargeGunShot", ref matrix, ref pos, uint.MaxValue, out ShotSmoke);
+            }
+            else if (ShotSmoke.IsEmittingStopped)
+                ShotSmoke.Play();
+
+            if (MuzzleFlash == null)
+                MyParticlesManager.TryCreateParticleEffect("Muzzle_Flash_Large", ref matrix, ref pos, uint.MaxValue, out MuzzleFlash);
+
+            if (ShotSmoke != null)
+                ShotSmoke.WorldMatrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.WorldMatrix.Up);
+            if (MuzzleFlash != null)
+            {
+                MuzzleFlash.WorldMatrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.WorldMatrix.Up);
+                //MuzzleFlash.Length = MuzzleFlashLength;
+                //MuzzleFlash.UserRadiusMultiplier = MuzzleFlashRadius;
+            }
+        }
+
+        private void IncreaseSmoke()
+        {
+            SmokeToGenerate += 19;
+            SmokeToGenerate = MyUtils.GetClampInt(SmokeToGenerate, 0, 50);
+        }
+
+        private void DecreaseSmoke()
+        {
+            --SmokeToGenerate;
+            SmokeToGenerate = MyUtils.GetClampInt(SmokeToGenerate, 0, 50);
+        }
+
+        private void EndShooting()
+        {
+            if (MuzzleFlash != null)
+            {
+                MuzzleFlash.Stop(true);
+                MuzzleFlash = (MyParticleEffect)null;
+                DecreaseSmoke();
+            }
         }
     }
 }

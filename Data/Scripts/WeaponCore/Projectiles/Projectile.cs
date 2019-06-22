@@ -73,7 +73,7 @@ namespace WeaponCore.Projectiles
         internal bool SeekTarget;
         internal bool VariableRange;
         internal bool DynamicGuidance;
-        internal bool SimpleFiringSound;
+        internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoDefinition.GuidanceType Guidance;
         internal MyParticleEffect Effect1;
         internal readonly MyEntity3DSoundEmitter Sound1 = new MyEntity3DSoundEmitter(null, false, 1f);
@@ -134,7 +134,7 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            SimpleFiringSound = WeaponSystem.SimpleFiringSound;
+            FiringSoundState = WeaponSystem.FiringSound;
             AmmoTravelSoundRangeSqr = (WepDef.AudioDef.AmmoTravelRange * WepDef.AudioDef.AmmoTravelRange);
             Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
@@ -160,7 +160,7 @@ namespace WeaponCore.Projectiles
                 if (WepDef.AudioDef.AmmoHitSound != string.Empty)
                     HitSound.Init(WepDef.AudioDef.AmmoHitSound, false);
 
-                if (SimpleFiringSound)
+                if (FiringSoundState == WeaponSystem.FiringSoundState.Simple)
                 {
                     FireSound.Init(WepDef.AudioDef.FiringSoundStart, false);
                     FireSoundStart();

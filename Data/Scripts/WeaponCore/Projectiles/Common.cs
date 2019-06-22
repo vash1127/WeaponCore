@@ -2,11 +2,13 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 
@@ -57,7 +59,7 @@ namespace WeaponCore.Projectiles
                     if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
-                var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
+                var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
                 var extLen = speedLen * 3;
                 var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
@@ -84,7 +86,7 @@ namespace WeaponCore.Projectiles
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as IMyCubeGrid;
                 var voxel = ent as MyVoxelBase;
-                var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * 0.0166;
+                var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS; ;
                 var extLen = speedLen * 3;
                 var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 if (shield != null)
@@ -244,6 +246,7 @@ namespace WeaponCore.Projectiles
             internal readonly int ReSizeSteps;
             internal readonly bool Shrink;
             internal readonly bool Last;
+            internal readonly Vector4 Color;
 
             internal DrawProjectile(WeaponSystem weaponSystem, MyEntity entity, MatrixD entityMatrix, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity hitEntity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last)
             {
@@ -260,18 +263,17 @@ namespace WeaponCore.Projectiles
                 ReSizeSteps = reSizeSteps;
                 Shrink = shrink;
                 Last = last;
-            }
-        }
-
-        internal struct Shot
-        {
-            public readonly Vector3D Position;
-            public readonly Vector3D Direction;
-
-            public Shot(Vector3D position, Vector3D direction)
-            {
-                Position = position;
-                Direction = direction;
+                var wDef = WeaponSystem.WeaponType;
+                var color = wDef.GraphicDef.ProjectileColor;
+                var rcm = wDef.GraphicDef.RandomColorMultipler;
+                if (rcm.Item1 > 0 && rcm.Item2 > 0)
+                {
+                    var randomValue = MyUtils.GetRandomFloat(rcm.Item1, rcm.Item2);
+                    color.X *= randomValue;
+                    color.Y *= randomValue;
+                    color.Z *= randomValue;
+                }
+                Color = color;
             }
         }
 

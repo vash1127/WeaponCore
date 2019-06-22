@@ -131,7 +131,7 @@ namespace WeaponCore.Support
             {
                 var targetInfo = SortedTargets[i];
                 if (targetInfo.Target == null || targetInfo.Target.MarkedForClose) continue;
-                if (!(Weapon.TrackingTarget(weapon, targetInfo.Target))) continue;
+                if (weapon.TrackingAi && !Weapon.TrackingTarget(weapon, targetInfo.Target) || !weapon.TrackingAi && !Weapon.ValidTarget(weapon, targetInfo.Target, true)) continue;
                 if (targetInfo.IsGrid)
                 {
                     target = targetInfo.Target;

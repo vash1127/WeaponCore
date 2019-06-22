@@ -38,7 +38,7 @@ namespace WeaponCore
                     shrink.Init(wDef, line, p.WeaponSystem.ProjectileMaterial, p.ReSizeSteps, p.LineReSizeLen);
                     _shrinking.Add(shrink);
                 }
-                var color = wDef.GraphicDef.ProjectileColor;
+                var color = p.Color;
                 var width = wDef.GraphicDef.ProjectileWidth;
 
                 var newWidth = width;

@@ -10,33 +10,33 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal static bool CheckTarget(Weapon weapon, MyEntity target)
+        internal static bool ValidTarget(Weapon weapon, MyEntity target, bool checkOnly = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
             var targetPos = weapon.GetPredictedTargetPosition(target);
-            weapon.TargetPos = targetPos;
-            weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
+            var targetDir = targetPos - weapon.Comp.MyPivotPos;
+            var wasAligned = weapon.IsAligned;
+            var isAligned = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, 0.9659);
+            if (checkOnly) return isAligned;
 
-            weapon.IsAligned = trackingWeapon.Comp.TurretTargetLock
-                                   && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref weapon.TargetDir, weapon.AimingTolerance);
-            return weapon.IsAligned;
+            var alignedChange = wasAligned != isAligned;
+            if (alignedChange && isAligned) weapon.StartShooting();
+            else if (alignedChange) weapon.EndShooting();
+
+            weapon.TargetPos = targetPos;
+            weapon.TargetDir = targetDir;
+            weapon.IsAligned = isAligned;
+
+            return isAligned;
         }
 
         internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
         {
-            var trackingWeapon = weapon.Comp.TrackingWeapon;
-            var turret = trackingWeapon.Comp.Turret;
+            var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var targetPos = weapon.GetPredictedTargetPosition(target);
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
-
-            if (weapon != trackingWeapon)
-            {
-                weapon.IsAligned = trackingWeapon.Comp.TurretTargetLock 
-                                  && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref weapon.TargetDir, 0.9659);
-                return weapon.IsAligned;
-            }
 
             var maxAzimuthStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : double.MinValue;
             var maxElevationStep = step ? weapon.WeaponType.TurretDef.ElevationSpeed : double.MinValue;
@@ -56,30 +56,43 @@ namespace WeaponCore.Platform
             double desiredElevation;
             GetRotationAngles(ref weapon.TargetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
-            var azConstraint = Math.Min(trackingWeapon.MaxAzimuthRadians, Math.Max(trackingWeapon.MinAzimuthRadians, desiredAzimuth));
-            var elConstraint = Math.Min(trackingWeapon.MaxElevationRadians, Math.Max(trackingWeapon.MinElevationRadians, desiredElevation));
+            var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+            var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
-            trackingWeapon.IsTracking = !azConstrained && !elConstrained;
-            Log.Line($"test: {weapon.WeaponSystem.WeaponName} - {trackingWeapon.IsTracking}");
-            if (trackingWeapon.IsTracking && maxAzimuthStep > double.MinValue)
+            weapon.IsTracking = !azConstrained && !elConstrained;
+            if (!step) return weapon.IsTracking;
+
+            if (weapon.IsTracking && maxAzimuthStep > double.MinValue)
             {
-                trackingWeapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                trackingWeapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxElevationStep, maxElevationStep);
-                trackingWeapon.DesiredAzimuth = desiredAzimuth;
-                trackingWeapon.DesiredElevation = desiredElevation;
-                turret.Azimuth = (float) trackingWeapon.Azimuth;
-                turret.Elevation = (float)trackingWeapon.Elevation;
+                weapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
+                weapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxElevationStep, maxElevationStep);
+                weapon.DesiredAzimuth = desiredAzimuth;
+                weapon.DesiredElevation = desiredElevation;
+                turret.Azimuth = (float)weapon.Azimuth;
+                turret.Elevation = (float)weapon.Elevation;
             }
 
-            if (trackingWeapon.IsTracking)
+            var isInView = false;
+            var isAligned = false;
+            if (weapon.IsTracking)
             {
-                trackingWeapon.IsInView = IsTargetInView(trackingWeapon, targetPos);
-                if (trackingWeapon.IsInView)
-                    trackingWeapon.IsAligned = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref weapon.TargetDir, weapon.AimingTolerance);
+                isInView = IsTargetInView(weapon, targetPos);
+                if (isInView)
+                    isAligned = IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref weapon.TargetDir, weapon.AimingTolerance);
             }
-            trackingWeapon.Comp.TurretTargetLock = trackingWeapon.IsTracking && trackingWeapon.IsInView && trackingWeapon.IsAligned;
-            return trackingWeapon.IsTracking;
+            else weapon.Target = null;
+
+            weapon.IsInView = isInView;
+            var wasAligned = weapon.IsAligned;
+            weapon.IsAligned = isAligned;
+
+            var alignedChange = wasAligned != isAligned;
+            if (alignedChange && isAligned) weapon.StartShooting();
+            else if (alignedChange) weapon.EndShooting();
+
+            weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
+            return weapon.IsTracking;
         }
 
         private static bool IsTargetInView(Weapon weapon, Vector3D predPos)
@@ -115,7 +128,6 @@ namespace WeaponCore.Platform
                 return x < MaxElevationRadians;
             return false;
         }
-
 
         /*
         /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///

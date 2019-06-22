@@ -12,6 +12,7 @@ namespace WeaponCore.Platform
     {
         internal const uint SuspendAmmoCount = 300;
         internal const uint UnSuspendAmmoCount = 1200;
+        internal int NextMuzzle;
 
         private readonly Vector3 _localTranslation;
         private readonly float _upPivotOffsetLen;
@@ -26,7 +27,6 @@ namespace WeaponCore.Platform
         private int _rotationTime;
         private int _numOfBarrels;
         private int _shotsInCycle;
-        private int _nextMuzzle;
         private uint _lastPredictionTick;
         private uint _posChangedTick = 1;
         private uint _targetTick;

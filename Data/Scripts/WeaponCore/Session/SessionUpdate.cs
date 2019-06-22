@@ -1,5 +1,4 @@
 ﻿using WeaponCore.Platform;
-using WeaponCore.Support;
 namespace WeaponCore
 {
     public partial class Session
@@ -64,18 +63,13 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
                         if (!gunner)
                         {
-                            if (w.TrackingAi)
-                            {
-                                if (w.Target != null && !Weapon.TrackingTarget(w, w.Target, true))
-                                    w.Target = null;
-                            }
+                            if (w.TrackingAi && w.Target != null)
+                                Weapon.TrackingTarget(w, w.Target, true);
                             else
                             {
                                 if (!w.TrackTarget) w.Target = comp.TrackingWeapon.Target;
-                                if (w.Target != null && !Weapon.CheckTarget(w, w.Target)) w.Target = null;
+                                else if (w.Target != null && !Weapon.ValidTarget(w, w.Target)) w.Target = null;
                             }
-
-                            if (w != comp.TrackingWeapon && comp.TrackingWeapon.Target == null) w.Target = null;
                         }
                         else
                         {

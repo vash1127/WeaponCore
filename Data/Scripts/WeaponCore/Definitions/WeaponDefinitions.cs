@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using ProtoBuf;
+using VRage;
 using VRage.Utils;
 using VRageMath;
 
@@ -15,6 +16,7 @@ namespace WeaponCore.Support
             Orb,
             Custom
         }
+
         [ProtoMember(1)] internal bool ShieldHitDraw;
         [ProtoMember(2)] internal bool ProjectileTrail;
         [ProtoMember(3)] internal bool ParticleTrail;
@@ -27,6 +29,8 @@ namespace WeaponCore.Support
         [ProtoMember(10)] internal Vector4 ParticleColor;
         [ProtoMember(11)] internal EffectType Effect;
         [ProtoMember(12)] internal string CustomEffect;
+        [ProtoMember(13)] internal (float, float) RandomColorMultipler;
+        [ProtoMember(14)] internal (float, float) RandomWidthMultipler;
     }
 
     [ProtoContract]
