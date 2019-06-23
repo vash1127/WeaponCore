@@ -131,13 +131,26 @@ namespace WeaponCore.Projectiles
                             var physics = p.Target.Physics ?? p.Target.Parent.Physics;
                             var commandedAccel = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.Velocity, 1f, 1f);
                             var newVel = p.Velocity + commandedAccel;
-                            if (newVel.LengthSquared() > p.FinalSpeedSqr)
+                            if (newVel.LengthSquared() > p.DesiredSpeedSqr)
                             {
                                 newVel.Normalize();
-                                newVel *= p.FinalSpeed;
+                                newVel *= p.DesiredSpeed;
                             }
                             p.Velocity = newVel;
                             p.Direction = Vector3D.Normalize(p.Velocity);
+                            p.TravelMagnitude = p.Velocity * StepConst;
+                            p.Position += p.TravelMagnitude;
+                            if (p.WeaponSystem.AmmoParticle) p.Effect1.Velocity = p.Velocity;
+                        }
+                        else
+                        {
+                            var newVel = p.Velocity + p.AccelVelocity;
+                            if (newVel.LengthSquared() > p.DesiredSpeedSqr)
+                            {
+                                newVel.Normalize();
+                                newVel *= p.DesiredSpeed;
+                            }
+                            p.Velocity = newVel;
                             p.TravelMagnitude = p.Velocity * StepConst;
                             p.Position += p.TravelMagnitude;
                             if (p.WeaponSystem.AmmoParticle) p.Effect1.Velocity = p.Velocity;
@@ -186,7 +199,7 @@ namespace WeaponCore.Projectiles
                             if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
                             {
                                 var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                                drawList.Add(new DrawProjectile(p.WeaponSystem, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.SpeedLength, p.ReSizeSteps, p.Shrink, false));
+                                drawList.Add(new DrawProjectile(p.WeaponSystem, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
                             }
                             p.ProjectileClose(pool, checkPool, noAv);
                         }
@@ -230,7 +243,7 @@ namespace WeaponCore.Projectiles
 
                     if (p.Grow)
                     {
-                        p.CurrentLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.SpeedLength)));
+                        p.CurrentLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.MaxSpeedLength)));
                         if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
                     }
                     else p.CurrentLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);

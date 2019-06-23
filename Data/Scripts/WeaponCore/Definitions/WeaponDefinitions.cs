@@ -73,12 +73,11 @@ namespace WeaponCore.Support
         }
 
         [ProtoMember(1)] internal float MaxTrajectory;
-        [ProtoMember(2)] internal float InitalSpeed;
-        [ProtoMember(3)] internal float AccelPerSec;
-        [ProtoMember(4)] internal float DesiredSpeed;
-        [ProtoMember(5)] internal Randomize SpeedVariance;
-        [ProtoMember(6)] internal Randomize RangeVariance;
-        [ProtoMember(7)] internal GuidanceType Guidance;
+        [ProtoMember(2)] internal float AccelPerSec;
+        [ProtoMember(3)] internal float DesiredSpeed;
+        [ProtoMember(4)] internal Randomize SpeedVariance;
+        [ProtoMember(5)] internal Randomize RangeVariance;
+        [ProtoMember(6)] internal GuidanceType Guidance;
     }
 
     [ProtoContract]

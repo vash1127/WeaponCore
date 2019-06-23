@@ -20,12 +20,15 @@ namespace WeaponCore.Projectiles
         internal EntityState ModelState;
         internal MatrixD EntityMatrix;
 
+        internal LineD CurrentLine;
         internal Vector3D Direction;
         internal Vector3D Position;
         internal Vector3D LastPosition;
         internal Vector3D Origin;
         internal Vector3D StartSpeed;
         internal Vector3D Velocity;
+        internal Vector3D AccelVelocity;
+        internal Vector3D MaxVelocity;
         internal Vector3D TravelMagnitude;
         internal Vector3D CameraStartPos;
         internal Vector3D LastEntityPos;
@@ -38,9 +41,10 @@ namespace WeaponCore.Projectiles
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
         internal MyEntity HitEntity;
-        internal float FinalSpeed;
-        internal float FinalSpeedSqr;
-        internal float SpeedLength;
+        internal float DesiredSpeed;
+        internal float DesiredSpeedSqr;
+        internal double MaxSpeedLength;
+        internal double AccelLength;
         internal double CheckLength;
         internal float AmmoTravelSoundRangeSqr;
         internal float MaxTrajectory;
@@ -50,7 +54,6 @@ namespace WeaponCore.Projectiles
         internal double ShotLength;
         internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
-        internal LineD CurrentLine;
 
         internal uint Age;
         internal int ReSizeSteps;
@@ -112,11 +115,10 @@ namespace WeaponCore.Projectiles
             MaxTrajectory = WepDef.AmmoDef.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             ShotLength = WepDef.AmmoDef.ProjectileLength;
-            SpeedLength = WepDef.AmmoDef.Trajectory.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;// * MyUtils.GetRandomFloat(1f, 1.5f);
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
-            FinalSpeed = WepDef.AmmoDef.Trajectory.DesiredSpeed;
-            FinalSpeedSqr = FinalSpeed * FinalSpeed;
+            DesiredSpeed = WepDef.AmmoDef.Trajectory.DesiredSpeed;
+            DesiredSpeedSqr = DesiredSpeed * DesiredSpeed;
 
             Draw = WepDef.GraphicDef.VisualProbability >= MyUtils.GetRandomDouble(0.0f, 1f);
 
@@ -139,9 +141,14 @@ namespace WeaponCore.Projectiles
             //_checkIntersectionCnt += 3;
 
             ConstantSpeed = WepDef.AmmoDef.Trajectory.AccelPerSec <= 0;
-            if (ConstantSpeed) Velocity = StartSpeed + (Direction * FinalSpeed);
-            else Velocity = StartSpeed;
+            MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
+            MaxSpeedLength = MaxVelocity.Length() * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;// * MyUtils.GetRandomFloat(1f, 1.5f);
+            AccelLength = WepDef.AmmoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
+            AccelVelocity = (Direction * AccelLength);
+            Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
+
             TravelMagnitude = Velocity * StepConst;
+
 
             if (!noAv)
             {
@@ -172,9 +179,9 @@ namespace WeaponCore.Projectiles
                 else ModelState = EntityState.None;
             }
 
-            if (SpeedLength > 0 && MaxTrajectory > 0)
+            if (MaxSpeedLength > 0 && MaxTrajectory > 0)
             {
-                var reSizeSteps = (int) (ShotLength / SpeedLength);
+                var reSizeSteps = (int) (ShotLength / MaxSpeedLength);
                 ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
                 Grow = ReSizeSteps > 1;
                 Shrink = Grow;
@@ -182,7 +189,7 @@ namespace WeaponCore.Projectiles
             }
             else State = ProjectileState.OneAndDone;
 
-            CheckLength = ShotLength > SpeedLength ? (ShotLength - SpeedLength) * 2 : SpeedLength * 2;
+            CheckLength = ShotLength > MaxSpeedLength ? (ShotLength - MaxSpeedLength) * 2 : MaxSpeedLength * 2;
         }
 
         private void ProjectileParticleStart()
@@ -190,7 +197,14 @@ namespace WeaponCore.Projectiles
             var to = Origin;
             to += -TravelMagnitude; // we are in a thread, draw is delayed a frame.
             var matrix = MatrixD.CreateTranslation(to);
-            MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.Particles.AmmoParticle, ref matrix, ref to, uint.MaxValue, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+            uint parentId;
+            if (ModelState == EntityState.Exists)
+            {
+                parentId = Entity.Render.GetRenderObjectID();
+                to += Vector3D.Rotate(WepDef.GraphicDef.Particles.AmmoOffset, EntityMatrix);
+            }
+            else parentId = uint.MaxValue;
+            MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
             Effect1.DistanceMax = 5000;
             Effect1.UserColorMultiplier = WepDef.GraphicDef.Particles.AmmoColor;
