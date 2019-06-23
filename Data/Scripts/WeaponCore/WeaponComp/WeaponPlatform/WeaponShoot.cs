@@ -27,8 +27,9 @@ namespace WeaponCore.Platform
             if (WeaponType.TurretDef.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
-            IsShooting();
             if (!WeaponSystem.EnergyAmmo) CurrentAmmo--;
+
+            IsShooting();
             var endBarrel = _numOfBarrels - 1;
             if (_shotsInCycle++ == (_numOfBarrels - 1))
             {

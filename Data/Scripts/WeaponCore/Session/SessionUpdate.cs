@@ -1,4 +1,5 @@
 ﻿using WeaponCore.Platform;
+using WeaponCore.Support;
 namespace WeaponCore
 {
     public partial class Session
@@ -22,7 +23,7 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
                         var energyAmmo = w.WeaponSystem.EnergyAmmo;
-                        if (ammoCheck && !energyAmmo)
+                        if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
                                 AmmoPull(comp, w, false);
