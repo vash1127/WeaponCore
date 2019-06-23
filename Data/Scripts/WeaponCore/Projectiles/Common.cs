@@ -59,18 +59,11 @@ namespace WeaponCore.Projectiles
                     if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
-                //var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
-                //var extLen = speedLen * 3;
-                //var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
-
+                var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
+                var extBeam = new LineD(extFrom, beam.To);
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                 var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                if (obb.Intersects(ref beam) == null)
-                {
-                    //Log.Line($"fail:{ent.DebugName} - {obb.Center} - {obb.HalfExtent}");
-                    //DsDebugDraw.DrawLine(extBeam.From, extBeam.To, Color.Blue, 0.1f);
-                    continue;
-                }
+                if (obb.Intersects(ref extBeam) == null) continue;
 
                 if (ent.Physics != null && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                     ents.Add(ent);
@@ -87,9 +80,6 @@ namespace WeaponCore.Projectiles
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as IMyCubeGrid;
                 var voxel = ent as MyVoxelBase;
-                //var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.Trajectory.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS; ;
-                //var extLen = speedLen * 3;
-                //var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 if (shield != null)
                 {
                     var hitPos = Session.Instance.SApi.LineIntersectShield(shield, beam);

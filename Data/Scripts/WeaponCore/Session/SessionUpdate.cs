@@ -21,16 +21,17 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (ammoCheck)
+                        var energyAmmo = w.WeaponSystem.EnergyAmmo;
+                        if (ammoCheck && !energyAmmo)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
                                 AmmoPull(comp, w, false);
                             else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
                         }
-                        if (w.CurrentMags == 0 && w.CurrentAmmo == 0) continue;
+                        if ((w.CurrentMags == 0 && w.CurrentAmmo == 0) && !energyAmmo) continue;
 
-                        if (w.CurrentAmmo == 0)
+                        if (w.CurrentAmmo == 0 && !energyAmmo)
                         {
                             comp.BlockInventory.RemoveItemsOfType(1, w.WeaponSystem.AmmoDefId);
                             w.CurrentAmmo = w.WeaponSystem.MagazineDef.Capacity;

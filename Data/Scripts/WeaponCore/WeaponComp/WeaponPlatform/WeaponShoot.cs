@@ -28,7 +28,7 @@ namespace WeaponCore.Platform
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
             IsShooting();
-            CurrentAmmo--;
+            if (!WeaponSystem.EnergyAmmo) CurrentAmmo--;
             var endBarrel = _numOfBarrels - 1;
             if (_shotsInCycle++ == (_numOfBarrels - 1))
             {

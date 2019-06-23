@@ -21,6 +21,7 @@ namespace WeaponCore.Support
         public readonly bool AmmoTravelSound;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
+        public readonly bool EnergyAmmo;
         public enum FiringSoundState
         {
             None,
@@ -44,7 +45,7 @@ namespace WeaponCore.Support
             AmmoTravelSound = WeaponType.AudioDef.Ammo.TravelSound != string.Empty;
             AmmoAreaEffect = WeaponType.AmmoDef.AreaEffectRadius > 0;
             AmmoSkipAccel = WeaponType.AmmoDef.Trajectory.AccelPerSec <= 0;
-
+            EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
             var audioDef = WeaponType.AudioDef;
 
             var fSoundStart = audioDef.Turret.FiringSoundStart;
@@ -95,7 +96,7 @@ namespace WeaponCore.Support
                     if (weapon.TurretDef.DefinitionId == weaponTypeName) weaponDef = weapon;
 
                 var ammoDefId = new MyDefinitionId();
-                var ammoBlank = weaponDef.TurretDef.AmmoMagazineId == string.Empty;
+                var ammoBlank = weaponDef.TurretDef.AmmoMagazineId == string.Empty || weaponDef.TurretDef.AmmoMagazineId == "Blank";
                 foreach (var def in Session.Instance.AllDefinitions)
                     if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == weaponDef.TurretDef.AmmoMagazineId) ammoDefId = def.Id;
 
