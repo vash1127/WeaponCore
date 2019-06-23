@@ -176,7 +176,7 @@ namespace WeaponCore.Projectiles
                     var segmentList = segmentPool.Get();
                     LineD beam;
                     if (p.State == Projectile.ProjectileState.OneAndDone) beam = new LineD(p.LastPosition, p.Position);
-                    else beam = new LineD(p.LastPosition - (p.Direction * p.CheckLength), p.Position);
+                    else beam = new LineD(p.LastPosition - (p.Direction * p.CheckLength * 100), p.Position);
 
                     MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
                     var segCount = segmentList.Count;

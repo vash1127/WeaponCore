@@ -189,7 +189,7 @@ namespace WeaponCore.Projectiles
             }
             else State = ProjectileState.OneAndDone;
 
-            CheckLength = ShotLength > MaxSpeedLength ? (ShotLength - MaxSpeedLength) * 2 : MaxSpeedLength * 2;
+            CheckLength = MaxSpeedLength * 2;
         }
 
         private void ProjectileParticleStart()
