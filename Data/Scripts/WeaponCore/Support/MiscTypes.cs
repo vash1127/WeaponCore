@@ -3,7 +3,6 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
-using static WeaponCore.Support.GraphicDefinition;
 
 namespace WeaponCore.Support
 {
@@ -62,14 +61,12 @@ namespace WeaponCore.Support
         public readonly WeaponComponent Logic;
         public readonly Vector3D HitPos;
         public readonly float Size;
-        public readonly EffectType Effect;
 
-        public WeaponHit(WeaponComponent logic, Vector3D hitPos, float size, EffectType effect)
+        public WeaponHit(WeaponComponent logic, Vector3D hitPos, float size, string stateEffect)
         {
             Logic = logic;
             HitPos = hitPos;
             Size = size;
-            Effect = effect;
         }
     }
 

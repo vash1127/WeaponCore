@@ -30,7 +30,7 @@ namespace WeaponCore
     public class WeaponHitValues
     {
         [ProtoMember(1)] public Vector3D HitPos;
-        [ProtoMember(2)] public EffectType Effect;
+        [ProtoMember(2)] public string Effect;
         [ProtoMember(3)] public float Size;
     }
 }

@@ -37,7 +37,7 @@ namespace WeaponCore.Projectiles
             {
                 if (Shield == null  || SApi == null) return;
                 var wDef = Fired.WeaponSystem.WeaponType;
-                var baseDamage = wDef.ComputedBaseDamage;
+                var baseDamage = wDef.AmmoDef.DefaultDamage;
                 var damage = (baseDamage  + wDef.AmmoDef.AreaEffectYield) * Hits;
                 SApi.PointAttackShield(Shield, HitPos, Fired.FiringCube.EntityId, damage, false, true);
             }
@@ -61,11 +61,12 @@ namespace WeaponCore.Projectiles
             public void Execute()
             {
                 if (Block == null || Block.IsDestroyed || Block.CubeGrid.MarkedForClose) return;
-                var wDef = Fired.WeaponSystem.WeaponType;
-                var baseDamage = wDef.ComputedBaseDamage;
+                var wSystem = Fired.WeaponSystem;
+                var wDef = wSystem.WeaponType;
+                var baseDamage = wDef.AmmoDef.DefaultDamage;
                 var damage = baseDamage * Hits;
                 Block.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
-                if (wDef.HasAreaEffect)
+                if (wSystem.AmmoAreaEffect)
                     UtilsStatic.CreateExplosion(HitPos, wDef.AmmoDef.AreaEffectRadius, wDef.AmmoDef.AreaEffectYield);
             }
         }

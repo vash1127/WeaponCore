@@ -129,12 +129,8 @@ namespace WeaponCore.Platform
             EntityPart.PositionComp.LocalMatrix = rotationMatrix;
         }
 
-
-        internal float MuzzleFlashLength;
-        internal float MuzzleFlashRadius;
-        internal MyParticleEffect ShotSmoke;
-        internal MyParticleEffect MuzzleFlash;
-        internal int SmokeToGenerate;
+        internal MyParticleEffect MuzzleEffect1;
+        internal MyParticleEffect MuzzleEffect2;
 
         private void StartShooting()
         {
@@ -143,56 +139,45 @@ namespace WeaponCore.Platform
 
         private void IsShooting()
         {
-            MuzzleFlashLength = MyUtils.GetRandomFloat(4f, 6f);
-            MuzzleFlashRadius = MyUtils.GetRandomFloat(1.2f, 2f);
-            if (Comp.MyAi.MySession.InTurret)
-                MuzzleFlashRadius *= 0.33f;
-            IncreaseSmoke();
             var vel = Comp.Physics.LinearVelocity;
             var muzzle = Muzzles[NextMuzzle];
             var pos = muzzle.Position;
-            var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.WorldMatrix.Up);
-            Log.Line($"{pos} - {matrix}");
-            if (ShotSmoke == null)
+            var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
+            if (MuzzleEffect1 == null)
+                MyParticlesManager.TryCreateParticleEffect("Smoke_LargeGunShot", ref matrix, ref pos, uint.MaxValue, out MuzzleEffect1);
+            else if (MuzzleEffect1.IsEmittingStopped)
+                MuzzleEffect1.Play();
+
+            if (MuzzleEffect2 == null)
+                MyParticlesManager.TryCreateParticleEffect("Muzzle_Flash_Large", ref matrix, ref pos, uint.MaxValue, out MuzzleEffect2);
+            else if (MuzzleEffect2.IsEmittingStopped)
+                MuzzleEffect2.Play();
+
+            if (MuzzleEffect1 != null)
             {
-                if (SmokeToGenerate > 0)
-                    MyParticlesManager.TryCreateParticleEffect("Smoke_LargeGunShot", ref matrix, ref pos, uint.MaxValue, out ShotSmoke);
+                MuzzleEffect1.WorldMatrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
+                MuzzleEffect1.Velocity = vel;
             }
-            else if (ShotSmoke.IsEmittingStopped)
-                ShotSmoke.Play();
 
-            if (MuzzleFlash == null)
-                MyParticlesManager.TryCreateParticleEffect("Muzzle_Flash_Large", ref matrix, ref pos, uint.MaxValue, out MuzzleFlash);
-
-            if (ShotSmoke != null)
-                ShotSmoke.WorldMatrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.WorldMatrix.Up);
-            if (MuzzleFlash != null)
+            if (MuzzleEffect2 != null)
             {
-                MuzzleFlash.WorldMatrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.WorldMatrix.Up);
-                //MuzzleFlash.Length = MuzzleFlashLength;
-                //MuzzleFlash.UserRadiusMultiplier = MuzzleFlashRadius;
+                MuzzleEffect2.WorldMatrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
+                MuzzleEffect2.Velocity = vel;
             }
-        }
-
-        private void IncreaseSmoke()
-        {
-            SmokeToGenerate += 19;
-            SmokeToGenerate = MyUtils.GetClampInt(SmokeToGenerate, 0, 50);
-        }
-
-        private void DecreaseSmoke()
-        {
-            --SmokeToGenerate;
-            SmokeToGenerate = MyUtils.GetClampInt(SmokeToGenerate, 0, 50);
         }
 
         private void EndShooting()
         {
-            if (MuzzleFlash != null)
+            if (MuzzleEffect2 != null)
             {
-                MuzzleFlash.Stop(true);
-                MuzzleFlash = (MyParticleEffect)null;
-                DecreaseSmoke();
+                MuzzleEffect2.Stop(true);
+                MuzzleEffect2 = null;
+            }
+
+            if (MuzzleEffect1 != null)
+            {
+                MuzzleEffect1.Stop(false);
+                MuzzleEffect1 = null;
             }
         }
     }

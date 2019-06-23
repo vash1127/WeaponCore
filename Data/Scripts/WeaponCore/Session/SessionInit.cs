@@ -60,8 +60,8 @@ namespace WeaponCore
             {
                 foreach (var mount in weaponDef.TurretDef.MountPoints)
                 {
-                    var subTypeId = mount.Key;
-                    var subPartId = mount.Value;
+                    var subTypeId = mount.SubtypeId;
+                    var subPartId = mount.SubpartId;
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                         _turretDefinitions[subTypeId] = new Dictionary<string, string>
                         {

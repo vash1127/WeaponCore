@@ -16,7 +16,11 @@ namespace WeaponCore.Support
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly FiringSoundState FiringSound;
-
+        public readonly bool AmmoParticle;
+        public readonly bool AmmoHitSound;
+        public readonly bool AmmoTravelSound;
+        public readonly bool AmmoAreaEffect;
+        public readonly bool AmmoSkipAccel;
         public enum FiringSoundState
         {
             None,
@@ -34,12 +38,18 @@ namespace WeaponCore.Support
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
-            ProjectileMaterial = MyStringId.GetOrCompute(WeaponType.GraphicDef.ProjectileMaterial);
+            ProjectileMaterial = MyStringId.GetOrCompute(WeaponType.GraphicDef.Line.Material);
+            AmmoParticle = WeaponType.GraphicDef.Particles.AmmoParticle != string.Empty;
+            AmmoHitSound = WeaponType.AudioDef.Ammo.HitSound != string.Empty;
+            AmmoTravelSound = WeaponType.AudioDef.Ammo.TravelSound != string.Empty;
+            AmmoAreaEffect = WeaponType.AmmoDef.AreaEffectRadius > 0;
+            AmmoSkipAccel = WeaponType.AmmoDef.Trajectory.AccelPerSec <= 0;
+
             var audioDef = WeaponType.AudioDef;
 
-            var fSoundStart = audioDef.FiringSoundStart;
-            var fSoundLoop = audioDef.FiringSoundLoop;
-            var fSoundEnd = audioDef.FiringSoundEnd;
+            var fSoundStart = audioDef.Turret.FiringSoundStart;
+            var fSoundLoop = audioDef.Turret.FiringSoundLoop;
+            var fSoundEnd = audioDef.Turret.FiringSoundEnd;
             var e = string.Empty;
 
             if (fSoundStart != e && fSoundLoop == e && fSoundEnd == e)
@@ -48,13 +58,12 @@ namespace WeaponCore.Support
                 FiringSound = FiringSoundState.None;
             else FiringSound = FiringSoundState.Full;
 
-            if (WeaponType.GraphicDef.ModelName != string.Empty)
+            if (WeaponType.GraphicDef.ModelName != string.Empty && !WeaponType.GraphicDef.Line.Trail)
             {
                 ModelId = Session.Instance.ModelCount++;
                 Session.Instance.ModelIdToName.Add(ModelId, WeaponType.ModPath + WeaponType.GraphicDef.ModelName);
             }
             else ModelId = -1;
-
         }
     }
 
@@ -91,8 +100,7 @@ namespace WeaponCore.Support
                     if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == weaponDef.TurretDef.AmmoMagazineId) ammoDefId = def.Id;
 
                 weaponDef.TurretDef.DeviateShotAngle = MathHelper.ToRadians(weaponDef.TurretDef.DeviateShotAngle);
-                weaponDef.HasAreaEffect = weaponDef.AmmoDef.AreaEffectYield > 0 && weaponDef.AmmoDef.AreaEffectRadius > 0;
-                weaponDef.SkipAcceleration = weaponDef.AmmoDef.AccelPerSec > 0;
+                /*
                 if (weaponDef.AmmoDef.RealisticDamage)
                 {
                     weaponDef.HasKineticEffect = weaponDef.AmmoDef.Mass > 0 && weaponDef.AmmoDef.DesiredSpeed > 0;
@@ -100,7 +108,7 @@ namespace WeaponCore.Support
                     var kinetic = ((weaponDef.AmmoDef.Mass / 2) * (weaponDef.AmmoDef.DesiredSpeed * weaponDef.AmmoDef.DesiredSpeed) / 1000) * weaponDef.KeenScaler;
                     weaponDef.ComputedBaseDamage = kinetic + weaponDef.AmmoDef.ThermalDamage;
                 }
-                else weaponDef.ComputedBaseDamage = weaponDef.AmmoDef.DefaultDamage; // For the unbelievers. 
+                */
 
                 WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName, ammoDefId));
                 if (weaponDef.TurretDef.AmmoMagazineId != string.Empty) AmmoToWeaponIds.Add(ammoDefId, mapIndex);

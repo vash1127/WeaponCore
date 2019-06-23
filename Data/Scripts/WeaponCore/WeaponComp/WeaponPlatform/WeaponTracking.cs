@@ -170,7 +170,7 @@ namespace WeaponCore.Platform
             var targetCenter = target.PositionComp.WorldAABB.Center;
             var shooterPos = Comp.MyPivotPos;
             var shooterVel = Comp.Physics.LinearVelocity;
-            var ammoSpeed = WeaponType.AmmoDef.DesiredSpeed;
+            var ammoSpeed = WeaponType.AmmoDef.Trajectory.DesiredSpeed;
             var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
             var targetVel = Vector3.Zero;
 
@@ -347,7 +347,7 @@ namespace WeaponCore.Platform
             var targetCenter = target.PositionComp.WorldAABB.Center;
             var shooterPos = Comp.MyPivotPos;
             var shooterVel = Comp.Physics.LinearVelocity;
-            var ammoSpeed = WeaponType.AmmoDef.DesiredSpeed;
+            var ammoSpeed = WeaponType.AmmoDef.Trajectory.DesiredSpeed;
             var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
             var targetVel = Vector3.Zero;
 

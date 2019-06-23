@@ -111,12 +111,11 @@ namespace WeaponCore.Projectiles
                             p.Stop(pool, checkPool, null, null);
                             continue;
                     }
-
                     p.LastPosition = p.Position;
                     if (p.State == Projectile.ProjectileState.OneAndDone)
                     {
                         var beamEnd = p.Position + (p.Direction * p.ShotLength);
-                        p.TravelMagnitude = beamEnd;
+                        p.TravelMagnitude = p.Position - beamEnd;
                         p.Position = beamEnd;
                     }
                     if (p.ConstantSpeed)
@@ -127,7 +126,7 @@ namespace WeaponCore.Projectiles
                     }
                     else
                     {
-                        if (p.Guidance == AmmoDefinition.GuidanceType.Smart && p.Target != null && !p.Target.MarkedForClose)
+                        if (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.Target != null && !p.Target.MarkedForClose)
                         {
                             var physics = p.Target.Physics ?? p.Target.Parent.Physics;
                             var commandedAccel = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.Velocity, 1f, 1f);
@@ -141,7 +140,7 @@ namespace WeaponCore.Projectiles
                             p.Direction = Vector3D.Normalize(p.Velocity);
                             p.TravelMagnitude = p.Velocity * StepConst;
                             p.Position += p.TravelMagnitude;
-                            if (p.SpawnParticle) p.Effect1.Velocity = p.Velocity;
+                            if (p.WeaponSystem.AmmoParticle) p.Effect1.Velocity = p.Velocity;
                         }
                     }
 
@@ -164,7 +163,8 @@ namespace WeaponCore.Projectiles
                     var segmentList = segmentPool.Get();
                     LineD beam;
                     if (p.State == Projectile.ProjectileState.OneAndDone) beam = new LineD(p.LastPosition, p.Position);
-                    else beam = new LineD(p.LastPosition, p.Position + p.TravelMagnitude);
+                    else beam = new LineD(p.LastPosition - (p.Direction * p.CheckLength), p.Position);
+
                     MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
@@ -186,7 +186,7 @@ namespace WeaponCore.Projectiles
                             if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
                             {
                                 var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                                drawList.Add(new DrawProjectile(p.WeaponSystem, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.LineReSizeLen, p.ReSizeSteps, p.Shrink, false));
+                                drawList.Add(new DrawProjectile(p.WeaponSystem, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.SpeedLength, p.ReSizeSteps, p.Shrink, false));
                             }
                             p.ProjectileClose(pool, checkPool, noAv);
                         }
@@ -230,7 +230,7 @@ namespace WeaponCore.Projectiles
 
                     if (p.Grow)
                     {
-                        p.CurrentLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.LineReSizeLen)));
+                        p.CurrentLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.SpeedLength)));
                         if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
                     }
                     else p.CurrentLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);

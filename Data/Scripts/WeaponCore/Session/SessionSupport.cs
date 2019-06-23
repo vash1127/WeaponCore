@@ -15,7 +15,6 @@ namespace WeaponCore
             {
                 var message = o as byte[];
                 if (message == null) return;
-
                 var slaveDefArray = MyAPIGateway.Utilities.SerializeFromBinary<WeaponDefinition[]>(message);
                 foreach (var wepDef in slaveDefArray)
                     _weaponDefinitions.Add(wepDef);

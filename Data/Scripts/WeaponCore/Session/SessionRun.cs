@@ -48,8 +48,8 @@ namespace WeaponCore
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
                 UpdateWeaponPlatforms();
                 MyAPIGateway.Parallel.Start(AiLoop);
-                MyAPIGateway.Parallel.Start(Projectiles.Update);
-                //Projectiles.Update();
+                //MyAPIGateway.Parallel.Start(Projectiles.Update);
+                Projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

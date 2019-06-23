@@ -59,12 +59,13 @@ namespace WeaponCore.Projectiles
                     if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
-                var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
-                var extLen = speedLen * 3;
-                var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
+                //var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
+                //var extLen = speedLen * 3;
+                //var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
+
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                 var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                if (obb.Intersects(ref extBeam) == null)
+                if (obb.Intersects(ref beam) == null)
                 {
                     //Log.Line($"fail:{ent.DebugName} - {obb.Center} - {obb.HalfExtent}");
                     //DsDebugDraw.DrawLine(extBeam.From, extBeam.To, Color.Blue, 0.1f);
@@ -86,15 +87,15 @@ namespace WeaponCore.Projectiles
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as IMyCubeGrid;
                 var voxel = ent as MyVoxelBase;
-                var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS; ;
-                var extLen = speedLen * 3;
-                var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
+                //var speedLen = fired.WeaponSystem.WeaponType.AmmoDef.Trajectory.DesiredSpeed * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS; ;
+                //var extLen = speedLen * 3;
+                //var extBeam = new LineD(beam.From + -(beam.Direction * speedLen), beam.To + (beam.Direction * extLen));
                 if (shield != null)
                 {
-                    var hitPos = Session.Instance.SApi.LineIntersectShield(shield, extBeam);
+                    var hitPos = Session.Instance.SApi.LineIntersectShield(shield, beam);
                     if (hitPos != null)
                     {
-                        var dist = Vector3D.Distance(hitPos.Value, extBeam.From);
+                        var dist = Vector3D.Distance(hitPos.Value, beam.From);
                         if (dist < nearestDist)
                         {
                             nearestDist = dist;
@@ -104,7 +105,7 @@ namespace WeaponCore.Projectiles
                 }
                 else if (grid != null)
                 {
-                    var pos3I = grid.RayCastBlocks(extBeam.From, extBeam.To);
+                    var pos3I = grid.RayCastBlocks(beam.From, beam.To);
                     if (pos3I != null)
                     {
                         var firstBlock = grid.GetCubeBlock(pos3I.Value);
@@ -117,12 +118,12 @@ namespace WeaponCore.Projectiles
                         var blockBox = new BoundingBoxD(-halfExt, halfExt);
                         var rotMatrix = Quaternion.CreateFromRotationMatrix(firstBlock.CubeGrid.WorldMatrix);
                         var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
-                        if (obb.Intersects(ref extBeam) == null) Log.Line("how???");
-                        var dist = obb.Intersects(ref extBeam) ?? Vector3D.Distance(extBeam.From, center);
+                        if (obb.Intersects(ref beam) == null) Log.Line("how???");
+                        var dist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, center);
                         if (dist < nearestDist)
                         {
                             nearestDist = dist;
-                            var hitPos = extBeam.From + (beam.Direction * (double)dist);
+                            var hitPos = beam.From + (beam.Direction * (double)dist);
                             nearestHit = new HitInfo(hitPos, new LineD(beam.From, hitPos), null, firstBlock);
                         }
                     }
@@ -130,7 +131,7 @@ namespace WeaponCore.Projectiles
                 else if (voxel != null)
                 {
                     Vector3D? t;
-                    voxel.GetIntersectionWithLine(ref extBeam, out t, true, IntersectionFlags.DIRECT_TRIANGLES);
+                    voxel.GetIntersectionWithLine(ref beam, out t, true, IntersectionFlags.DIRECT_TRIANGLES);
                     if (t != null) Log.Line($"voxel hit: {t.Value}");
                     /*
                     {
@@ -145,11 +146,11 @@ namespace WeaponCore.Projectiles
                 {
                     var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
                     var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                    var dist = obb.Intersects(ref extBeam);
+                    var dist = obb.Intersects(ref beam);
                     if (dist != null && dist < nearestDist)
                     {
                         nearestDist = dist.Value;
-                        var hitPos = extBeam.From + (beam.Direction * (double)dist);
+                        var hitPos = beam.From + (beam.Direction * (double)dist);
                         nearestHit = new HitInfo(hitPos, new LineD(beam.From, hitPos), ent, null);
                     }
                 }
@@ -264,11 +265,11 @@ namespace WeaponCore.Projectiles
                 Shrink = shrink;
                 Last = last;
                 var wDef = WeaponSystem.WeaponType;
-                var color = wDef.GraphicDef.ProjectileColor;
-                var rcm = wDef.GraphicDef.RandomColorMultipler;
-                if (rcm.Item1 > 0 && rcm.Item2 > 0)
+                var color = wDef.GraphicDef.Line.Color;
+                var rcm = wDef.GraphicDef.Line.RandomizeColor;
+                if (rcm.Start > 0 && rcm.End > 0)
                 {
-                    var randomValue = MyUtils.GetRandomFloat(rcm.Item1, rcm.Item2);
+                    var randomValue = MyUtils.GetRandomFloat(rcm.Start, rcm.End);
                     color.X *= randomValue;
                     color.Y *= randomValue;
                     color.Z *= randomValue;
