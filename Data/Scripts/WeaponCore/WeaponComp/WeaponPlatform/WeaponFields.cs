@@ -15,7 +15,7 @@ namespace WeaponCore.Platform
         internal int NextMuzzle;
 
         private readonly Vector3 _localTranslation;
-        private readonly float _upPivotOffsetLen;
+        //private readonly float _upPivotOffsetLen;
 
         private MyEntity _lastTarget;
         private MatrixD _weaponMatrix;
@@ -23,7 +23,7 @@ namespace WeaponCore.Platform
         private Vector3D _weaponPosition;
         private Vector3D _oldWeaponPosition;
         private Vector3D _lastPredictedPos;
-        private Vector3 _pivotOffsetVec;
+        //private Vector3 _pivotOffsetVec;
         private int _rotationTime;
         private int _numOfBarrels;
         private int _shotsInCycle;
@@ -82,8 +82,10 @@ namespace WeaponCore.Platform
         {
             EntityPart = entity;
             _localTranslation = entity.LocalMatrix.Translation;
-            _pivotOffsetVec = (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) - entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
-            _upPivotOffsetLen = _pivotOffsetVec.Length();
+            //_pivotOffsetVec = (Vector3.Transform(entity.PositionComp.LocalAABB.Center, entity.PositionComp.LocalMatrix) - entity.GetTopMostParent(typeof(MyCubeBlock)).PositionComp.LocalAABB.Center);
+            //_pivotOffsetVec = Vector3.Zero;
+
+            //_upPivotOffsetLen = _pivotOffsetVec.Length();
             WeaponSystem = weaponSystem;
             WeaponType = weaponSystem.WeaponType;
 
@@ -96,6 +98,8 @@ namespace WeaponCore.Platform
             _numOfBarrels = WeaponSystem.Barrels.Length;
 
             BeamSlot = new uint[_numOfBarrels];
+
+
         }
     }
 }

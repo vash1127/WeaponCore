@@ -1,4 +1,6 @@
-﻿using WeaponCore.Platform;
+﻿using VRage.Game;
+using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -16,6 +18,7 @@ namespace WeaponCore
                 {
                     //var myCube = basePair.Key;
                     var comp = basePair.Value;
+                    //DsDebugDraw.DrawSingleVec(comp.MyPivotPos, 0.5f, Color.Red);
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;

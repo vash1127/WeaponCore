@@ -80,6 +80,7 @@ namespace WeaponCore.Support
         internal MyInventory BlockInventory;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
+        internal double MyPivotOffset;
         internal IMyGunObject<MyGunBase> Gun;
         internal bool MainInit;
         internal bool SettingsUpdated;
@@ -88,7 +89,7 @@ namespace WeaponCore.Support
         internal bool IsWorking;
         internal bool FullInventory;
         internal bool MultiInventory;
-
+        internal bool PivotLengthSet;
         internal LogicSettings Set;
         internal LogicState State;
         internal MyResourceSinkComponent Sink;

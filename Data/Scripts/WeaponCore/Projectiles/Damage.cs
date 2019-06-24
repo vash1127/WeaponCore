@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
@@ -49,7 +50,7 @@ namespace WeaponCore.Projectiles
             public readonly Vector3D HitPos;
             public readonly int Hits;
             public readonly Fired Fired;
-            public readonly MyStringHash TestDamage = MyStringHash.GetOrCompute("TestDamage");
+            public readonly MyStringHash TestDamage = MyDamageType.Bullet;
             public GridEvent(IMySlimBlock block, Vector3D hitPos, int hits, Fired fired)
             {
                 Block = block;

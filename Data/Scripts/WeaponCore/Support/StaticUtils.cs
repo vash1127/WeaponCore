@@ -251,7 +251,9 @@
         public static void CreateExplosion(Vector3D position, float radius, float damage)
         {
             MyExplosionTypeEnum explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_50;
-            if (radius < 2.0)
+            if (radius < 3.75)
+                explosionTypeEnum = MyExplosionTypeEnum.MISSILE_EXPLOSION;
+            else if (radius < 7.5)
                 explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_02;
             else if (radius < 15.0)
                 explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_15;
@@ -271,7 +273,8 @@
                 VoxelCutoutScale = 1f,
                 PlaySound = true,
                 ApplyForceAndDamage = true,
-                ObjectsRemoveDelayInMiliseconds = 40
+                ObjectsRemoveDelayInMiliseconds = 40,
+                KeepAffectedBlocks = true
             };
             MyExplosions.AddExplosion(ref explosionInfo);
         }
