@@ -165,7 +165,7 @@ namespace WeaponCore.Projectiles
                         if (p.DistanceTraveled.LengthSquared() > p.DistanceToTravelSqr)
                         {
                             if (p.MoveToAndActivate)
-                                GetEntitiesInBlastRadius(new Fired(p.WeaponSystem, null, p.FiringCube), p.Position, i);
+                                GetEntitiesInBlastRadius(new Fired(p.WeaponSystem, null, p.FiringCube, p.ReverseOriginRay), p.Position, i);
 
                             p.ProjectileClose(pool, checkPool, noAv);
                             continue;
@@ -182,14 +182,15 @@ namespace WeaponCore.Projectiles
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
                     {
+                        /*
                         if (p.ModelId == -1)
                         {
                             DsDebugDraw.DrawSingleVec(beam.From, 0.05f, Color.Black);
                             DsDebugDraw.DrawSingleVec(beam.To, 0.05f, Color.White);
                             DsDebugDraw.DrawSingleVec(p.LastPosition, 0.05f, Color.Orange);
                         }
-
-                        var fired = new Fired(p.WeaponSystem, linePool.Get(), p.FiringCube);
+                        */
+                        var fired = new Fired(p.WeaponSystem, linePool.Get(), p.FiringCube, p.ReverseOriginRay);
                         GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
                         var hitInfo = GetHitEntities(p.CheckList, fired, beam);
                         if (GetDamageInfo(fired, p.Entity, p.EntityMatrix, beam, hitInfo, hitEnts, hitBlocks, damagePool,0, false))

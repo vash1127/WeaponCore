@@ -52,7 +52,7 @@ namespace WeaponCore.Projectiles
                 var ent = segmentList != null ? segmentList[i].Element : entList[i];
 
                 if (ent == fired.FiringCube.CubeGrid) continue;
-
+                if (ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
@@ -288,12 +288,14 @@ namespace WeaponCore.Projectiles
             public readonly List<LineD> Shots;
             public readonly WeaponSystem WeaponSystem;
             public readonly MyCubeBlock FiringCube;
+            public readonly RayD ReverseOriginRay;
 
-            public Fired(WeaponSystem weaponSystem, List<LineD> shots, MyCubeBlock firingCube)
+            public Fired(WeaponSystem weaponSystem, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay)
             {
                 WeaponSystem = weaponSystem;
                 Shots = shots;
                 FiringCube = firingCube;
+                ReverseOriginRay = reverseOriginRay;
             }
         }
 
