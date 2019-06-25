@@ -19,16 +19,12 @@ namespace WeaponCore.Projectiles
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MatrixD EntityMatrix;
-
-        internal RayD OriginRay;
         internal RayD ReverseOriginRay;
         internal LineD CurrentLine;
         internal Vector3D Direction;
         internal Vector3D Position;
         internal Vector3D LastPosition;
         internal Vector3D Origin;
-        internal Vector3D OriginDir;
-        internal Vector3D ReverseOriginDir;
         internal Vector3D StartSpeed;
         internal Vector3D Velocity;
         internal Vector3D AccelVelocity;
@@ -59,7 +55,7 @@ namespace WeaponCore.Projectiles
         internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
 
-        internal uint Age;
+        internal int Age = -1;
         internal int ReSizeSteps;
         internal int GrowStep = 1;
         internal int EndStep;
@@ -98,10 +94,7 @@ namespace WeaponCore.Projectiles
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
             Position = Origin;
             LastEntityPos = Origin;
-            OriginDir = Direction;
-            ReverseOriginDir = -Direction;
-            OriginRay = new RayD(ref Origin, ref OriginDir);
-            ReverseOriginRay = new RayD(ref Origin, ref ReverseOriginDir);
+            ReverseOriginRay = new RayD(Origin, -Direction);
             HitEntity = null;
             FirstOffScreen = true;
             AmmoSound = false;

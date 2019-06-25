@@ -165,7 +165,7 @@ namespace WeaponCore.Projectiles
                         if (p.DistanceTraveled.LengthSquared() > p.DistanceToTravelSqr)
                         {
                             if (p.MoveToAndActivate)
-                                GetEntitiesInBlastRadius(new Fired(p.WeaponSystem, null, p.FiringCube, p.ReverseOriginRay), p.Position, i);
+                                GetEntitiesInBlastRadius(new Fired(p.WeaponSystem, null, p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age), p.Position, i);
 
                             p.ProjectileClose(pool, checkPool, noAv);
                             continue;
@@ -190,7 +190,7 @@ namespace WeaponCore.Projectiles
                             DsDebugDraw.DrawSingleVec(p.LastPosition, 0.05f, Color.Orange);
                         }
                         */
-                        var fired = new Fired(p.WeaponSystem, linePool.Get(), p.FiringCube, p.ReverseOriginRay);
+                        var fired = new Fired(p.WeaponSystem, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age);
                         GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
                         var hitInfo = GetHitEntities(p.CheckList, fired, beam);
                         if (GetDamageInfo(fired, p.Entity, p.EntityMatrix, beam, hitInfo, hitEnts, hitBlocks, damagePool,0, false))

@@ -2,7 +2,6 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -52,7 +51,7 @@ namespace WeaponCore.Projectiles
                 var ent = segmentList != null ? segmentList[i].Element : entList[i];
 
                 if (ent == fired.FiringCube.CubeGrid) continue;
-                if (ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
+                if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
@@ -289,13 +288,17 @@ namespace WeaponCore.Projectiles
             public readonly WeaponSystem WeaponSystem;
             public readonly MyCubeBlock FiringCube;
             public readonly RayD ReverseOriginRay;
+            public readonly Vector3D Direction;
+            public readonly int Age;
 
-            public Fired(WeaponSystem weaponSystem, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay)
+            public Fired(WeaponSystem weaponSystem, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay, Vector3D direction, int age)
             {
                 WeaponSystem = weaponSystem;
                 Shots = shots;
                 FiringCube = firingCube;
                 ReverseOriginRay = reverseOriginRay;
+                Direction = direction;
+                Age = age;
             }
         }
 

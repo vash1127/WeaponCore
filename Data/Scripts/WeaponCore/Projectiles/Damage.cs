@@ -68,7 +68,7 @@ namespace WeaponCore.Projectiles
                 var damage = baseDamage * Hits;
                 Block.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
                 if (wSystem.AmmoAreaEffect)
-                    UtilsStatic.CreateExplosion(HitPos, wDef.AmmoDef.AreaEffectRadius, wDef.AmmoDef.AreaEffectYield);
+                    UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction,Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, wDef.AmmoDef.AreaEffectRadius, wDef.AmmoDef.AreaEffectYield);
             }
         }
 
