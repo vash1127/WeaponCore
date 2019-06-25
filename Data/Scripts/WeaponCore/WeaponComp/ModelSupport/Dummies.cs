@@ -18,6 +18,8 @@ namespace WeaponCore.Support
         internal MatrixD CachedMatrix;
         internal DummyInfo CachedInfo;
         private readonly string[] _path;
+        private readonly Dictionary<string, IMyModelDummy> _tmp1 = new Dictionary<string, IMyModelDummy>();
+        private readonly Dictionary<string, IMyModelDummy> _tmp2 = new Dictionary<string, IMyModelDummy>();
 
         public Dummy(IMyEntity e, params string[] path)
         {
@@ -38,8 +40,8 @@ namespace WeaponCore.Support
                     _cachedSubpart = part;
                 else
                 {
-                    var tmp2 = new Dictionary<string, IMyModelDummy>();
-                    _cachedSubpart.Model?.GetDummies(tmp2);
+                    _tmp2.Clear();
+                    _cachedSubpart.Model?.GetDummies(_tmp2);
                     _failed = true;
                     return;
                 }
@@ -47,10 +49,10 @@ namespace WeaponCore.Support
 
             _cachedSubpartModel = _cachedSubpart?.Model;
             _cachedDummyMatrix = null;
-            var tmp = new Dictionary<string, IMyModelDummy>();
-            _cachedSubpartModel?.GetDummies(tmp);
+            _tmp1.Clear();
+            _cachedSubpartModel?.GetDummies(_tmp1);
             IMyModelDummy dummy;
-            if (tmp.TryGetValue(_path[_path.Length - 1], out dummy))
+            if (_tmp1.TryGetValue(_path[_path.Length - 1], out dummy))
             {
                 _cachedDummyMatrix = dummy.Matrix;
                 _failed = false;

@@ -19,6 +19,7 @@ namespace WeaponCore
                     //var myCube = basePair.Key;
                     var comp = basePair.Value;
                     //DsDebugDraw.DrawSingleVec(comp.MyPivotPos, 0.5f, Color.Red);
+                    //DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Blue, 0.1f);
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;

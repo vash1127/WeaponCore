@@ -281,13 +281,12 @@
 
         public static void CreateMissileExplosion(Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, float radius, float damage)
         {
-            const MyExplosionTypeEnum explosionTypeEnum = MyExplosionTypeEnum.MISSILE_EXPLOSION;
             var sphere = new BoundingSphereD(position, radius);
-            var explosionInfo = new MyExplosionInfo()
+            var explosionInfo = new MyExplosionInfo
             {
                 PlayerDamage = 0.0f,
                 Damage = damage,
-                ExplosionType = explosionTypeEnum,
+                ExplosionType = MyExplosionTypeEnum.MISSILE_EXPLOSION,
                 ExplosionSphere = sphere,
                 LifespanMiliseconds = 700,
                 HitEntity = hitEnt,
@@ -299,7 +298,6 @@
                 VoxelCutoutScale = 0.3f,
                 PlaySound = true,
                 ApplyForceAndDamage = true,
-                //ObjectsRemoveDelayInMiliseconds = 40,
                 KeepAffectedBlocks = true
             };
             MyExplosions.AddExplosion(ref explosionInfo);
@@ -345,6 +343,18 @@
                 ObjectsRemoveDelayInMiliseconds = 0
             };
             MyExplosions.AddExplosion(ref explosionInfo);
+        }
+
+        public static Vector3D NearestPointOnLine(Vector3D start, Vector3D end, Vector3D pnt)
+        {
+            var line = (end - start);
+            var len = line.Length();
+            line.Normalize();
+
+            var v = pnt - start;
+            var d = Vector3.Dot(v, line);
+            MathHelper.Clamp(d, 0f, len);
+            return start + line * d;
         }
 
         private static Vector3D VectorProjection(Vector3D a, Vector3D b)

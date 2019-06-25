@@ -27,9 +27,9 @@ namespace WeaponCore.Platform
             if (WeaponType.TurretDef.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
+            IsShooting();
             if (!WeaponSystem.EnergyAmmo) CurrentAmmo--;
 
-            IsShooting();
             var endBarrel = _numOfBarrels - 1;
             if (_shotsInCycle++ == (_numOfBarrels - 1))
             {
@@ -140,30 +140,41 @@ namespace WeaponCore.Platform
 
         private void IsShooting()
         {
-            var vel = Comp.Physics.LinearVelocity;
-            var muzzle = Muzzles[NextMuzzle];
-            var pos = muzzle.Position;
-            var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
-            if (MuzzleEffect1 == null)
-                MyParticlesManager.TryCreateParticleEffect("Smoke_LargeGunShot", ref matrix, ref pos, uint.MaxValue, out MuzzleEffect1);
-            else if (MuzzleEffect1.IsEmittingStopped)
-                MuzzleEffect1.Play();
-
-            if (MuzzleEffect2 == null)
-                MyParticlesManager.TryCreateParticleEffect("Muzzle_Flash_Large", ref matrix, ref pos, uint.MaxValue, out MuzzleEffect2);
-            else if (MuzzleEffect2.IsEmittingStopped)
-                MuzzleEffect2.Play();
-
-            if (MuzzleEffect1 != null)
+            if (WeaponSystem.TurretEffect1 || WeaponSystem.TurretEffect2)
             {
-                MuzzleEffect1.WorldMatrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
-                MuzzleEffect1.Velocity = vel;
-            }
+                var particles = WeaponType.GraphicDef.Particles;
+                var vel = Comp.Physics.LinearVelocity;
+                var dummy = Dummies[NextMuzzle];
+                var pos = dummy.Info.Position;
+                var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
 
-            if (MuzzleEffect2 != null)
-            {
-                MuzzleEffect2.WorldMatrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
-                MuzzleEffect2.Velocity = vel;
+                if (WeaponSystem.TurretEffect1)
+                {
+                    if (MuzzleEffect1 == null)
+                        MyParticlesManager.TryCreateParticleEffect(particles.Turret1Particle, ref matrix, ref pos, uint.MaxValue, out MuzzleEffect1);
+                    else if (particles.Turret1Restart && MuzzleEffect1.IsEmittingStopped)
+                        MuzzleEffect1.Play();
+
+                    if (MuzzleEffect1 != null)
+                    {
+                        MuzzleEffect1.WorldMatrix = matrix;
+                        MuzzleEffect1.Velocity = vel;
+                    }
+                }
+
+                if (WeaponSystem.TurretEffect2)
+                {
+                    if (MuzzleEffect2 == null)
+                        MyParticlesManager.TryCreateParticleEffect(particles.Turret2Particle, ref matrix, ref pos, uint.MaxValue, out MuzzleEffect2);
+                    else if (particles.Turret2Restart && MuzzleEffect2.IsEmittingStopped)
+                        MuzzleEffect2.Play();
+
+                    if (MuzzleEffect2 != null)
+                    {
+                        MuzzleEffect2.WorldMatrix = matrix;
+                        MuzzleEffect2.Velocity = vel;
+                    }
+                }
             }
         }
 

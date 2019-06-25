@@ -22,6 +22,9 @@ namespace WeaponCore.Support
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
         public readonly bool EnergyAmmo;
+        public readonly bool TurretEffect1;
+        public readonly bool TurretEffect2;
+
         public enum FiringSoundState
         {
             None,
@@ -46,6 +49,9 @@ namespace WeaponCore.Support
             AmmoAreaEffect = WeaponType.AmmoDef.AreaEffectRadius > 0;
             AmmoSkipAccel = WeaponType.AmmoDef.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
+            TurretEffect1 = WeaponType.GraphicDef.Particles.Turret1Particle != string.Empty;
+            TurretEffect2 = WeaponType.GraphicDef.Particles.Turret2Particle != string.Empty;
+
             var audioDef = WeaponType.AudioDef;
 
             var fSoundStart = audioDef.Turret.FiringSoundStart;

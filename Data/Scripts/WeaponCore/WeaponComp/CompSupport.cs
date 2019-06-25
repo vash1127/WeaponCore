@@ -36,21 +36,14 @@ namespace WeaponCore.Support
             if (!PivotLengthSet)
             {
                 var blockUpDir = MyCube.PositionComp.WorldMatrix.Up;
-                var testPos = MyCube.PositionComp.WorldAABB.Center - (blockUpDir * 20);
-                var sphere = weapon.EntityPart.PositionComp.WorldVolume;
-                var ray = new RayD(testPos, blockUpDir);
-                var intersect = sphere.Intersects(ray);
-                var dist = intersect ?? 0d;
-                var pivotPos = (testPos + ray.Direction * (dist + sphere.Radius));
-                MyPivotOffset = Vector3D.Distance(MyCube.PositionComp.WorldAABB.Center, pivotPos);
+                MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center - (blockUpDir * 10), MyCube.PositionComp.WorldAABB.Center + (blockUpDir * 10));
+                var closestPoint = UtilsStatic.NearestPointOnLine(MyPivotTestLine.From, MyPivotTestLine.To, weapon.EntityPart.PositionComp.WorldAABB.Center);
+                MyPivotOffset = Vector3D.Distance(MyCube.PositionComp.WorldAABB.Center, closestPoint);
                 PivotLengthSet = true;
             }
 
             MyPivotDir = weapon.EntityPart.PositionComp.WorldMatrix.Forward;
             MyPivotPos = MyCube.PositionComp.WorldAABB.Center + (MyCube.WorldMatrix.Up * MyPivotOffset);
-            //var myPivotPos = MyCube.PositionComp.WorldAABB.Center;
-            //myPivotPos += MyCube.PositionComp.WorldMatrix.Up * upPivotOffsetLen;
-            // MyPivotPos = myPivotPos;
         }
     }
 }
