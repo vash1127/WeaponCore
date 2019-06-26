@@ -31,7 +31,7 @@ namespace WeaponCore.Platform
                 };
 
                 var weapon = Weapons[i];
-                if (weapon.WeaponType.TurretDef.TurretMode && comp.TrackingWeapon == null && subPartEntity?.Parent?.Parent?.Parent == comp.MyCube)
+                if (weapon.WeaponType.TurretDef.TurretMode && comp.TrackingWeapon == null)
                 {
                     weapon.TrackingAi = true;
                     comp.TrackingWeapon = weapon;
