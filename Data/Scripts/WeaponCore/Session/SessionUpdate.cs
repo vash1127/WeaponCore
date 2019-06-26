@@ -1,4 +1,5 @@
-﻿using VRage.Game;
+﻿using System.Linq;
+using VRage.Game;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
@@ -27,6 +28,7 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
                         var energyAmmo = w.WeaponSystem.EnergyAmmo;
+
                         if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
@@ -63,7 +65,6 @@ namespace WeaponCore
                     var comp = basePair.Value;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
-
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];

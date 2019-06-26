@@ -118,7 +118,8 @@ namespace WeaponCore.Support
                 */
 
                 WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName, ammoDefId));
-                if (weaponDef.TurretDef.AmmoMagazineId != string.Empty) AmmoToWeaponIds.Add(ammoDefId, mapIndex);
+                if (weaponDef.TurretDef.AmmoMagazineId != string.Empty && weaponDef.TurretDef.AmmoMagazineId != "Blank")
+                    AmmoToWeaponIds.Add(ammoDefId, mapIndex);
 
                 mapIndex++;
             }

@@ -14,11 +14,11 @@ namespace WeaponCore
             while (InventoryEvent.TryDequeue(out change))
             {
                 var weapon = change.Weapon;
+                var comp = weapon.Comp;
                 ComputeStorage(weapon);
                 //Log.Line($"[InventoryChange] ammoDef:{weapon.WeaponSystem.AmmoDefId.SubtypeId.String} - Amount:{weapon.CurrentMags}");
-                if (change.Type == InventoryChange.ChangeType.Add)
+                if (comp.MultiInventory && change.Type == InventoryChange.ChangeType.Add)
                 {
-                    var comp = weapon.Comp;
                     var nextDefRaw = NextActiveAmmoDef(comp, weapon);
                     //if (!nextDefRaw.HasValue) return;
                     //Log.Line($"added to inventory: oldWeaponId:{weapon.WeaponId} - oldDef:{weapon.WeaponSystem.AmmoDefId.SubtypeId.String} - newDef:{nextDefRaw.Value.SubtypeId.String}");
