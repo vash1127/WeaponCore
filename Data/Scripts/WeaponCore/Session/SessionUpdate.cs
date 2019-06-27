@@ -46,7 +46,7 @@ namespace WeaponCore
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
                         if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
-                        if (w.IsShooting && w.Target == null) w.EndShooting();
+                        else if (w.IsShooting) w.EndShooting();
                     }
                 }
                 gridAi.Ready = false;
