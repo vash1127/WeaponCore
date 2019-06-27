@@ -130,7 +130,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < SortedTargets.Count; i++)
             {
                 var targetInfo = SortedTargets[i];
-                if (targetInfo.Target == null || targetInfo.Target.MarkedForClose) continue;
+                if (targetInfo.Target == null || targetInfo.Target.MarkedForClose || Vector3D.DistanceSquared(targetInfo.EntInfo.Position, weapon.Comp.MyPivotPos) > weapon.WeaponSystem.MaxTrajectorySqr) continue;
                 if (weapon.TrackingAi && !Weapon.TrackingTarget(weapon, targetInfo.Target) || !weapon.TrackingAi && !Weapon.ValidTarget(weapon, targetInfo.Target, true)) continue;
                 if (targetInfo.IsGrid)
                 {

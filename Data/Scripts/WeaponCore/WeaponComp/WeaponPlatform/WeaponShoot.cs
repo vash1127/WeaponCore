@@ -27,7 +27,7 @@ namespace WeaponCore.Platform
             if (WeaponType.TurretDef.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
-            IsShooting();
+            ShootingAV();
             if (!WeaponSystem.EnergyAmmo) CurrentAmmo--;
 
             var endBarrel = _numOfBarrels - 1;
@@ -40,6 +40,12 @@ namespace WeaponCore.Platform
             if (targetLock && _targetTick > 59)
             {
                 _targetTick = 0;
+                var targetPos = Target.PositionComp.GetPosition();
+                if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > WeaponSystem.MaxTrajectorySqr)
+                {
+                    Target = null;
+                    return;
+                }
                 if (!TrackingAi && !ValidTarget(this, Target))
                 {
                     Log.Line("shootStep2: setting target null");
@@ -133,12 +139,7 @@ namespace WeaponCore.Platform
         internal MyParticleEffect MuzzleEffect1;
         internal MyParticleEffect MuzzleEffect2;
 
-        private void StartShooting()
-        {
-            Log.Line($"starting sound");
-        }
-
-        private void IsShooting()
+        private void ShootingAV()
         {
             if (WeaponSystem.TurretEffect1 || WeaponSystem.TurretEffect2)
             {
@@ -178,7 +179,13 @@ namespace WeaponCore.Platform
             }
         }
 
-        private void EndShooting()
+        public void StartShooting()
+        {
+            Log.Line($"starting sound");
+            IsShooting = true;
+        }
+
+        public void EndShooting()
         {
             if (MuzzleEffect2 != null)
             {
@@ -191,6 +198,7 @@ namespace WeaponCore.Platform
                 MuzzleEffect1.Stop(false);
                 MuzzleEffect1 = null;
             }
+            IsShooting = false;
         }
     }
 }

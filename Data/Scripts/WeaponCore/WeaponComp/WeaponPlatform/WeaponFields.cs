@@ -77,7 +77,7 @@ namespace WeaponCore.Platform
         internal bool IsAligned;
         internal bool AmmoSuspend;
         internal bool AmmoFull;
-
+        internal bool IsShooting;
         public Weapon(IMyEntity entity, WeaponSystem weaponSystem, int weaponId)
         {
             EntityPart = entity;

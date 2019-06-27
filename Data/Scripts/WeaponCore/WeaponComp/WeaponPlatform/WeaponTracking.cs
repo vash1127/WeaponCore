@@ -19,9 +19,7 @@ namespace WeaponCore.Platform
             var isAligned = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, 0.9659);
 
             if (checkOnly) return isAligned;
-            var alignedChange = wasAligned != isAligned;
-            if (alignedChange && isAligned) weapon.StartShooting();
-            else if (alignedChange) weapon.EndShooting();
+            if (wasAligned != isAligned && isAligned) weapon.StartShooting();
 
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetDir;

@@ -38,7 +38,7 @@ namespace WeaponCore
                         }
                         if ((w.CurrentMags == 0 && w.CurrentAmmo == 0) && !energyAmmo) continue;
 
-                        if (w.CurrentAmmo == 0 && !energyAmmo)
+                        if (!energyAmmo && w.CurrentAmmo == 0 && w.CurrentMags != 0)
                         {
                             comp.BlockInventory.RemoveItemsOfType(1, w.WeaponSystem.AmmoDefId);
                             w.CurrentAmmo = w.WeaponSystem.MagazineDef.Capacity;
@@ -46,6 +46,7 @@ namespace WeaponCore
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
                         if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
+                        if (w.IsShooting && w.Target == null) w.EndShooting();
                     }
                 }
                 gridAi.Ready = false;

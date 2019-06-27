@@ -24,6 +24,7 @@ namespace WeaponCore.Support
         public readonly bool EnergyAmmo;
         public readonly bool TurretEffect1;
         public readonly bool TurretEffect2;
+        public readonly double MaxTrajectorySqr;
 
         public enum FiringSoundState
         {
@@ -51,6 +52,7 @@ namespace WeaponCore.Support
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
             TurretEffect1 = WeaponType.GraphicDef.Particles.Turret1Particle != string.Empty;
             TurretEffect2 = WeaponType.GraphicDef.Particles.Turret2Particle != string.Empty;
+            MaxTrajectorySqr = weaponType.AmmoDef.Trajectory.MaxTrajectory * weaponType.AmmoDef.Trajectory.MaxTrajectory;
 
             var audioDef = WeaponType.AudioDef;
 
