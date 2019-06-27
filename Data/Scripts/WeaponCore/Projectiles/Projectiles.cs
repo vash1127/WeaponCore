@@ -184,14 +184,6 @@ namespace WeaponCore.Projectiles
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
                     {
-                        /*
-                        if (p.ModelId == -1)
-                        {
-                            DsDebugDraw.DrawSingleVec(beam.From, 0.05f, Color.Black);
-                            DsDebugDraw.DrawSingleVec(beam.To, 0.05f, Color.White);
-                            DsDebugDraw.DrawSingleVec(p.LastPosition, 0.05f, Color.Orange);
-                        }
-                        */
                         var fired = new Fired(p.WeaponSystem, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age);
                         GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
                         var hitInfo = GetHitEntities(p.CheckList, fired, beam);

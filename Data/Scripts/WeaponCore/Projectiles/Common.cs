@@ -55,7 +55,8 @@ namespace WeaponCore.Projectiles
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
-                    if (ent.Physics == null) ents.Add((MyEntity) shieldBlock);
+                    if (ent.Physics == null && shieldBlock.CubeGrid != fired.FiringCube.CubeGrid)
+                        ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
                 var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));

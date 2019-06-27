@@ -1,5 +1,4 @@
-﻿
-using Sandbox.ModAPI;
+﻿using Sandbox.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -35,11 +34,14 @@ namespace WeaponCore.Support
         {
             if (!PivotLengthSet)
             {
-                var blockUpDir = MyCube.PositionComp.WorldMatrix.Up;
-                MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center - (blockUpDir * 10), MyCube.PositionComp.WorldAABB.Center + (blockUpDir * 10));
-                var closestPoint = UtilsStatic.NearestPointOnLine(MyPivotTestLine.From, MyPivotTestLine.To, weapon.EntityPart.PositionComp.WorldAABB.Center);
-                MyPivotOffset = Vector3D.Distance(MyCube.PositionComp.WorldAABB.Center, closestPoint);
+                //var blockUpDir = MyCube.WorldMatrix.Up;
+                //MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center - (blockUpDir * 10), MyCube.PositionComp.WorldAABB.Center + (blockUpDir * 10));
+                //var closestPoint = UtilsStatic.NearestPointOnLine(MyPivotTestLine.From, MyPivotTestLine.To, weapon.EntityPart.PositionComp.WorldAABB.Center);
+                var weaponPComp = weapon.EntityPart.PositionComp;
+                var offsetVector = UtilsStatic.GetClosestPointOnLine1(MyCube.PositionComp.WorldAABB.Center + (MyCube.WorldMatrix.Down * 10), MyCube.WorldMatrix.Up, weaponPComp.WorldAABB.Center, weaponPComp.WorldMatrix.Forward);
+                MyPivotOffset = Vector3D.Distance(MyCube.PositionComp.WorldAABB.Center, offsetVector);
                 PivotLengthSet = true;
+
             }
 
             MyPivotDir = weapon.EntityPart.PositionComp.WorldMatrix.Forward;

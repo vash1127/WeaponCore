@@ -357,6 +357,35 @@
             return start + line * d;
         }
 
+        /*
+        ** Returns the point on the line formed by (point1 + dir1 * x) that is closest to the point
+        ** on the line formed by line (point2 + dir2 * t)
+        */
+        public static Vector3D GetClosestPointOnLine1(Vector3D point1, Vector3D dir1, Vector3D point2, Vector3D dir2)
+        {
+            Vector3D axis = Vector3D.Cross(dir1, dir2);
+            if (Vector3D.IsZero(axis))
+                return point1;
+            Vector3D perpDir2 = Vector3D.Cross(dir2, axis);
+            Vector3D point1To2 = point2 - point1;
+            return point1 + Vector3D.Dot(point1To2, perpDir2) / Vector3D.Dot(dir1, perpDir2) * dir1;
+        }
+
+        /*
+        ** Returns the point on the line1 that is closest to the point on line2
+        */
+        public static Vector3D GetClosestPointOnLine2(Vector3D line1Start, Vector3D line1End, Vector3D line2Start, Vector3D line2End)
+        {
+            Vector3D dir1 = line1End - line1Start;
+            Vector3D dir2 = line2End - line2Start;
+            Vector3D axis = Vector3D.Cross(dir1, dir2);
+            if (Vector3D.IsZero(axis))
+                return line1Start;
+            Vector3D perpDir2 = Vector3D.Cross(dir2, axis);
+            Vector3D point1To2 = line2Start - line1Start;
+            return line1Start + Vector3D.Dot(point1To2, perpDir2) / Vector3D.Dot(dir1, perpDir2) * dir1;
+        }
+
         private static Vector3D VectorProjection(Vector3D a, Vector3D b)
         {
             if (Vector3D.IsZero(b))
