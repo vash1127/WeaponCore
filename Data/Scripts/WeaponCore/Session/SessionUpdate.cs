@@ -25,7 +25,6 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
                         var energyAmmo = w.WeaponSystem.EnergyAmmo;
-
                         if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
@@ -33,6 +32,7 @@ namespace WeaponCore
                             else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
                         }
+                        //Log.Line($"Turret: AiReady:{w.AiReady}({w.Comp.TurretTargetLock} - ValidTarget:{w.Target != null} - TrackingAi:{w.TrackingAi}  - Multi:{comp.MultiInventory} - FullInv:{comp.FullInventory}) - AmmoMa: AmmoSuspend:{w.AmmoSuspend} - AmmoFull:{w.AmmoFull} - AmmoCheck:{ammoCheck} - CurrAmmo:{w.CurrentAmmo} - CurrentMags:{w.CurrentMags} - Energy:{energyAmmo}");
                         if ((w.CurrentMags == 0 && w.CurrentAmmo == 0) && !energyAmmo) continue;
 
                         if (!energyAmmo && w.CurrentAmmo == 0 && w.CurrentMags != 0)

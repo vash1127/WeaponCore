@@ -16,12 +16,12 @@ namespace WeaponCore
                 var weapon = change.Weapon;
                 var comp = weapon.Comp;
                 ComputeStorage(weapon);
-                //Log.Line($"[InventoryChange] ammoDef:{weapon.WeaponSystem.AmmoDefId.SubtypeId.String} - Amount:{weapon.CurrentMags}");
+                Log.Line("updateinv");
                 if (comp.MultiInventory && change.Type == InventoryChange.ChangeType.Add)
                 {
+                    Log.Line("add mag");
                     var nextDefRaw = NextActiveAmmoDef(comp, weapon);
                     //if (!nextDefRaw.HasValue) return;
-                    //Log.Line($"added to inventory: oldWeaponId:{weapon.WeaponId} - oldDef:{weapon.WeaponSystem.AmmoDefId.SubtypeId.String} - newDef:{nextDefRaw.Value.SubtypeId.String}");
                 }
             }
         }
@@ -67,7 +67,7 @@ namespace WeaponCore
             foreach (var pair in ammoToWeaponIds)
             {
                 index++;
-                var weaponId = pair.Value;
+                var weaponId = pair.Value[0];
                 var ammoDef = pair.Key;
                 var weapon = comp.Platform.Weapons[weaponId];
                 if (weapon.AmmoSuspend || weapon.AmmoFull) continue;
@@ -105,8 +105,6 @@ namespace WeaponCore
                 }
             }
 
-            var oldSus = oldWeapon.SuspendAmmoTick;
-            var oldUnSus = oldWeapon.UnSuspendAmmoTick;
             oldWeapon.SuspendAmmoTick = 0;
             oldWeapon.UnSuspendAmmoTick = 0;
             if (nextFound || validFound && (!skipOld || validId != oldWeapon.WeaponId))
@@ -123,18 +121,19 @@ namespace WeaponCore
                 foreach (var a in comp.Platform.Structure.AmmoToWeaponIds)
                 {
                     var def = a.Key;
+                    //Log.Line($"constraint: {def.SubtypeId.String} - isNext:{def == nextDef} - isFull:{testWeapon.AmmoFull}");
                     if (def == nextDef) continue;
                     comp.BlockInventory.Constraint.Add(def);
                 }
                 var newWeapon = comp.Platform.Weapons[nextId];
-                //Log.Line($"[sending nextDef] next:{nextDef.SubtypeId.String} - last:{oldWeapon.WeaponSystem.AmmoDefId.SubtypeId.String} - Full:{oldWeapon.AmmoFull} - oldWeaponId:{oldWeapon.WeaponId} - newWeaponId:{newWeapon.WeaponId} - oldSus/oldUnSus:{oldSus}/{oldUnSus} - newSus/newUnSus:{newWeapon.SuspendAmmoTick}/{newWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend} - newAmmoSuspend:{newWeapon.AmmoSuspend} - skipOld:{skipOld}");
+                Log.Line($"[sending nextDef] next:{nextDef.SubtypeId.String} - last:{oldWeapon.WeaponSystem.AmmoDefId.SubtypeId.String} - Full:{oldWeapon.AmmoFull} - oldWeaponId:{oldWeapon.WeaponId} - newWeaponId:{newWeapon.WeaponId} - newSus/newUnSus:{newWeapon.SuspendAmmoTick}/{newWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend} - newAmmoSuspend:{newWeapon.AmmoSuspend} - skipOld:{skipOld}");
                 newWeapon.SuspendAmmoTick = 0;
                 newWeapon.UnSuspendAmmoTick = 0;
                 return nextDef;
             }
 
             comp.BlockInventory.Constraint.Remove(comp.Gun.GunBase.CurrentAmmoMagazineId);
-            //Log.Line($"[returning none] current:{comp.Gun.GunBase.CurrentAmmoMagazineId.SubtypeId.String} - foundFirst:{firstFound} - Full:{oldWeapon.AmmoFull} - foundValid:{validFound} - oldWeaponId:{oldWeapon.WeaponId} - oldSus/oldUnSus:{oldWeapon.SuspendAmmoTick}/{oldWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend}");
+            Log.Line($"[returning none] current:{comp.Gun.GunBase.CurrentAmmoMagazineId.SubtypeId.String} - foundFirst:{firstFound} - Full:{oldWeapon.AmmoFull} - foundValid:{validFound} - oldWeaponId:{oldWeapon.WeaponId} - oldSus/oldUnSus:{oldWeapon.SuspendAmmoTick}/{oldWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend}");
             return null;
         }
 
@@ -154,109 +153,6 @@ namespace WeaponCore
             weapon.AmmoFull = ammoMass >= comp.MaxAmmoMass || ammoVolume >= comp.MaxAmmoVolume; 
 
             //Log.Line($"[computed storage] AmmoDef:{def.SubtypeId.String}({weapon.CurrentMags.ToIntSafe()}) - Full:{weapon.AmmoFull} - Mass:<{itemMass}>{ammoMass}({comp.MaxAmmoMass})[{comp.MaxAmmoMass}] - Volume:<{itemVolume}>{ammoVolume}({comp.MaxAmmoVolume})[{comp.MaxInventoryVolume}]");
-        }
-
-        private static MyDefinitionId? NextActiveAmmoDefBackup(WeaponComponent comp, Weapon oldWeapon, bool skipOld = false)
-        {
-            var ammoToWeaponIds = comp.Platform.Structure.AmmoToWeaponIds;
-
-            MyDefinitionId firstDef = new MyDefinitionId();
-            MyDefinitionId nextDef = new MyDefinitionId();
-            MyDefinitionId lastDef = new MyDefinitionId();
-            var end = ammoToWeaponIds.Count - 1;
-            var index = 0;
-            var firstId = -1;
-            var lastId = -1;
-            var nextId = -1;
-            var returnNext = false;
-            var foundNext = false;
-            var validFound = false;
-            var firstFound = false;
-
-
-            foreach (var pair in ammoToWeaponIds)
-            {
-                var weaponId = pair.Value;
-                var ammoDef = pair.Key;
-                var weapon = comp.Platform.Weapons[weaponId];
-                if (weapon.AmmoSuspend && weapon.UnSuspendAmmoTick < Weapon.UnSuspendAmmoCount)
-                {
-                    if (index == end && validFound)
-                    {
-                        nextDef = lastDef;
-                        nextId = lastId;
-                        foundNext = true;
-                        Log.Line($"[returning last] new:{lastDef.SubtypeId.String} - old:{oldWeapon.WeaponSystem.AmmoDefId.SubtypeId.String} - lastId:{lastId} - Sus/UnSus:{weapon.SuspendAmmoTick}/{weapon.UnSuspendAmmoTick} - (was suspended but earlier found)");
-                        break;
-                    }
-                    index++;
-                    continue;
-                }
-
-                validFound = true;
-                lastDef = ammoDef;
-                lastId = weaponId;
-                if (returnNext) // found weapon last iteration, this the one.
-                {
-                    nextDef = ammoDef;
-                    nextId = weaponId;
-                    foundNext = true;
-                    Log.Line($"[returning next] new:{ammoDef.SubtypeId.String} - old:{oldWeapon.WeaponSystem.AmmoDefId.SubtypeId.String} - nextId:{nextId} - Sus/UnSus:{weapon.SuspendAmmoTick}/{weapon.UnSuspendAmmoTick}");
-                    break;
-                }
-
-                if (index == 0)
-                {
-                    firstDef = ammoDef; // save if oldweapon is last, but not only
-                    firstId = weaponId;
-                    firstFound = true;
-                }
-
-                if (weapon == oldWeapon)
-                {
-                    if (index == end && index != 0 && firstFound) // last but not only
-                    {
-                        nextDef = firstDef;
-                        nextId = firstId;
-                        foundNext = true;
-                        Log.Line($"[returning first] new:{firstDef.SubtypeId.String} - old:{oldWeapon.WeaponSystem.AmmoDefId.SubtypeId.String} - firstId:{firstId} - Sus/UnSus:{weapon.SuspendAmmoTick}/{weapon.UnSuspendAmmoTick}");
-                        break;
-                    }
-                    if (index == end && !skipOld) // last and only, resend own def.
-                    {
-                        nextDef = ammoDef;
-                        nextId = weaponId;
-                        foundNext = true;
-                        Log.Line($"[returning last] new:{ammoDef.SubtypeId.String} - old:{oldWeapon.WeaponSystem.AmmoDefId.SubtypeId.String} - nextId:{nextId} - Sus/UnSus:{weapon.SuspendAmmoTick}/{weapon.UnSuspendAmmoTick} - (and only)");
-                        break;
-                    }
-                    returnNext = true;
-                }
-                else if (index == end)
-                {
-                    nextDef = ammoDef;
-                    nextId = weaponId;
-                    foundNext = true;
-                    Log.Line($"[returning last] new:{ammoDef.SubtypeId.String} - old:{oldWeapon.WeaponSystem.AmmoDefId.SubtypeId.String} - nextId:{nextId} - Sus/UnSus:{weapon.SuspendAmmoTick}/{weapon.UnSuspendAmmoTick} - (only and not old weapon)");
-                    break;
-                }
-                index++;
-            }
-
-            oldWeapon.SuspendAmmoTick = 0;
-            if (foundNext)
-            {
-                comp.BlockInventory.Constraint.Clear();
-                comp.BlockInventory.Constraint.Add(nextDef);
-                comp.Gun.GunBase.SwitchAmmoMagazine(nextDef);
-                var newWeapon = comp.Platform.Weapons[nextId];
-                Log.Line($"[sending nextDef] next:{nextDef.SubtypeId.String} - oldWeaponId:{oldWeapon.WeaponId} - newWeaponId:{newWeapon.WeaponId} - oldSus/oldUnSus:{oldWeapon.SuspendAmmoTick}/{oldWeapon.UnSuspendAmmoTick} - newSus/newUnSus:{newWeapon.SuspendAmmoTick}/{newWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend} - newAmmoSuspend:{newWeapon.AmmoSuspend}");
-                newWeapon.AmmoSuspend = false;
-                newWeapon.SuspendAmmoTick = 0;
-                return nextDef;
-            }
-            Log.Line($"[returning none] foundFirst:{firstFound} - foundValid:{validFound} - Full:{oldWeapon.AmmoFull} - oldWeaponId:{oldWeapon.WeaponId} - oldSus/oldUnSus:{oldWeapon.SuspendAmmoTick}/{oldWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend}");
-            return null;
         }
     }
 }

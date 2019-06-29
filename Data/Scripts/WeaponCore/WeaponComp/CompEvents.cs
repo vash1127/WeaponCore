@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -36,12 +37,15 @@ namespace WeaponCore.Support
             {
                 var defId = item.Content.GetId();
 
-                int weaponId;
-                if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponId)) return;
+                List<int> weaponIds;
+                if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponIds)) return;
 
-                var weapon = Platform.Weapons[weaponId];
-
-                Session.Instance.InventoryEvent.Enqueue(new InventoryChange(weapon, item, amount, InventoryChange.ChangeType.Add));
+                foreach (var id in weaponIds)
+                {
+                    var weapon = Platform.Weapons[id];
+                    Session.ComputeStorage(weapon);
+                }
+                Session.Instance.InventoryEvent.Enqueue(new InventoryChange(Platform.Weapons[0], item, amount, InventoryChange.ChangeType.Add));
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsAdded: {ex}"); }
         }
@@ -52,10 +56,13 @@ namespace WeaponCore.Support
             {
                 var defId = item.Content.GetId();
 
-                int weaponId;
-                if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponId)) return;
-                var weapon = Platform.Weapons[weaponId];
-                Session.ComputeStorage(weapon);
+                List<int> weaponIds;
+                if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponIds)) return;
+                foreach (var id in weaponIds)
+                {
+                    var weapon = Platform.Weapons[id];
+                    Session.ComputeStorage(weapon);
+                }
                 //weapon.SuspendAmmoTick = 0;
                 //weapon.UnSuspendAmmoTick = 0;
             }

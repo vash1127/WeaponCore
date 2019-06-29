@@ -15,7 +15,6 @@ namespace WeaponCore.Platform
         {
             var session = Comp.MyAi.MySession;
             var tick = session.Tick;
-
             if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
             _newCycle = false;
             var targetLock = Target != null;

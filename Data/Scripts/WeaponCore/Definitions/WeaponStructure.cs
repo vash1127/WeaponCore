@@ -79,7 +79,7 @@ namespace WeaponCore.Support
     public struct WeaponStructure
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
-        public readonly Dictionary<MyDefinitionId, int> AmmoToWeaponIds;
+        public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
         public readonly MyStringHash[] PartNames;
         public readonly bool MultiParts;
 
@@ -91,7 +91,7 @@ namespace WeaponCore.Support
             var names = new MyStringHash[numOfParts];
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
-            AmmoToWeaponIds = new Dictionary<MyDefinitionId, int>(MyDefinitionId.Comparer);
+            AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
             foreach (var w in map)
             {
                 var myNameHash = MyStringHash.GetOrCompute(w.Key);
@@ -120,8 +120,11 @@ namespace WeaponCore.Support
                 */
 
                 WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName, ammoDefId));
-                if (weaponDef.TurretDef.AmmoMagazineId != string.Empty && weaponDef.TurretDef.AmmoMagazineId != "Blank")
-                    AmmoToWeaponIds.Add(ammoDefId, mapIndex);
+                if (!ammoBlank)
+                {
+                    if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();
+                    AmmoToWeaponIds[ammoDefId].Add(mapIndex);
+                }
 
                 mapIndex++;
             }

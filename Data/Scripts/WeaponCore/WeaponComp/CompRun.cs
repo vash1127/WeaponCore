@@ -96,6 +96,12 @@ namespace WeaponCore.Support
             BlockInventory.Constraint.Clear();
             BlockInventory.Constraint.Add(id);
             gun.SwitchAmmoMagazine(id);
+            foreach (var w in Platform.Weapons)
+            {
+                var otherId = w.WeaponSystem.MagazineDef.AmmoDefinitionId;
+                if (otherId == id) continue;
+                BlockInventory.Constraint.Add(otherId);
+            }
 
             StorageSetup();
             State.Value.Online = true;
