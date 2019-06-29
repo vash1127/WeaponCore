@@ -20,23 +20,24 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal string[] Barrels;
         [ProtoMember(3)] internal string DefinitionId;
         [ProtoMember(4)] internal string AmmoMagazineId;
-        [ProtoMember(5)] internal bool TurretMode;
-        [ProtoMember(6)] internal bool TrackTarget;
-        [ProtoMember(7)] internal int RotateBarrelAxis;
-        [ProtoMember(8)] internal int ReloadTime;
-        [ProtoMember(9)] internal int RateOfFire;
-        [ProtoMember(10)] internal int BarrelsPerShot;
-        [ProtoMember(11)] internal int SkipBarrels;
-        [ProtoMember(12)] internal int ShotsPerBarrel;
-        [ProtoMember(13)] internal int HeatPerRoF;
-        [ProtoMember(14)] internal int MaxHeat;
-        [ProtoMember(15)] internal int HeatSinkRate;
-        [ProtoMember(16)] internal float RotateSpeed;
-        [ProtoMember(17)] internal float ElevationSpeed;
-        [ProtoMember(18)] internal float DeviateShotAngle;
-        [ProtoMember(19)] internal float ReleaseTimeAfterFire;
-        [ProtoMember(20)] internal float ShotEnergyCost;
-        [ProtoMember(21)] internal double AimingTolerance;
+        [ProtoMember(5)] internal bool IsTurret;
+        [ProtoMember(6)] internal bool TurretController;
+        [ProtoMember(7)] internal bool TrackTargets;
+        [ProtoMember(8)] internal int RotateBarrelAxis;
+        [ProtoMember(9)] internal int ReloadTime;
+        [ProtoMember(10)] internal int RateOfFire;
+        [ProtoMember(11)] internal int BarrelsPerShot;
+        [ProtoMember(12)] internal int SkipBarrels;
+        [ProtoMember(13)] internal int ShotsPerBarrel;
+        [ProtoMember(14)] internal int HeatPerRoF;
+        [ProtoMember(15)] internal int MaxHeat;
+        [ProtoMember(16)] internal int HeatSinkRate;
+        [ProtoMember(17)] internal float RotateSpeed;
+        [ProtoMember(18)] internal float ElevationSpeed;
+        [ProtoMember(19)] internal float DeviateShotAngle;
+        [ProtoMember(20)] internal float ReleaseTimeAfterFire;
+        [ProtoMember(21)] internal float ShotEnergyCost;
+        [ProtoMember(22)] internal double AimingTolerance;
     }
 
     [ProtoContract]

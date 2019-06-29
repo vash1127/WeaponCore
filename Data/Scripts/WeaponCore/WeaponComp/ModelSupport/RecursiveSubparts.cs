@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
@@ -16,7 +15,7 @@ namespace WeaponCore.Support
     {
         private readonly List<IMyEntity> _subparts = new List<IMyEntity>();
         private readonly Dictionary<string, IMyModelDummy> _tmp = new Dictionary<string, IMyModelDummy>();
-        public readonly Dictionary<IMyEntity, string> EntityToName = new Dictionary<IMyEntity, string>();
+        //public readonly Dictionary<IMyEntity, string> EntityToName = new Dictionary<IMyEntity, string>();
         public readonly Dictionary<string, IMyEntity> NameToEntity = new Dictionary<string, IMyEntity>();
 
         private IMyModel _trackedModel;
@@ -29,7 +28,7 @@ namespace WeaponCore.Support
                 return;
             _trackedModel = Entity?.Model;
             _subparts.Clear();
-            EntityToName.Clear();
+            //EntityToName.Clear();
             NameToEntity.Clear();
             if (Entity != null)
             {
@@ -51,11 +50,13 @@ namespace WeaponCore.Support
                             if (query.TryGetSubpart(name, out res))
                             {
                                 _subparts.Add(res);
-                                EntityToName.Add(res, name);
+                                //EntityToName.Add(res, name);
                                 NameToEntity.Add(name, res);
                             }
                         }
                 }
+                NameToEntity.Add("None", Entity);
+                NameToEntity.Add("none", Entity);
             }
         }
         IEnumerator<IMyEntity> IEnumerable<IMyEntity>.GetEnumerator()

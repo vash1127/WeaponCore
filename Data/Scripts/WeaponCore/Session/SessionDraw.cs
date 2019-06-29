@@ -72,7 +72,8 @@ namespace WeaponCore
                     matrix.Translation = line.From;
                     TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, wDef.GraphicDef.Line.Width, (float)line.Length, 12, color, color, p.WeaponSystem.ProjectileMaterial, p.WeaponSystem.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
-                else MyTransparentGeometry.AddLocalLineBillboard(p.WeaponSystem.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
+                else
+                    MyTransparentGeometry.AddLocalLineBillboard(p.WeaponSystem.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();

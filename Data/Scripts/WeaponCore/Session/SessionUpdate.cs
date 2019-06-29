@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using VRage.Game;
-using VRageMath;
-using WeaponCore.Platform;
+﻿using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -45,6 +42,7 @@ namespace WeaponCore
                         }
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
+
                         if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                         else if (w.IsShooting) w.EndShooting();
                     }
@@ -65,6 +63,7 @@ namespace WeaponCore
                     //var myCube = basePair.Key;
                     var comp = basePair.Value;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
+                    InTurret = gunner;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
@@ -73,15 +72,14 @@ namespace WeaponCore
                         {
                             if (w.TrackingAi && w.Target != null)
                                 Weapon.TrackingTarget(w, w.Target, true);
-                            else
+                            else 
                             {
-                                if (!w.TrackTarget) w.Target = comp.TrackingWeapon.Target;
+                                if (w.IsTurret && !w.TrackTarget) w.Target = comp.TrackingWeapon.Target;
                                 else if (w.Target != null && !Weapon.ValidTarget(w, w.Target)) w.Target = null;
                             }
                         }
                         else
                         {
-                            InTurret = true;
                             if (MouseButtonPressed)
                             {
                                 var currentAmmo = comp.Gun.GunBase.CurrentAmmo;

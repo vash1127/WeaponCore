@@ -182,7 +182,7 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
-            Log.Line($"starting sound");
+            Log.Line($"starting sound: Name:{WeaponSystem.WeaponName} - PartName:{WeaponSystem.PartName} - IsTurret:{WeaponType.TurretDef.IsTurret} - {Muzzles[NextMuzzle].Position}");
             IsShooting = true;
         }
 

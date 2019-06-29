@@ -61,23 +61,30 @@ namespace WeaponCore
                 foreach (var mount in weaponDef.TurretDef.MountPoints)
                 {
                     var subTypeId = mount.SubtypeId;
-                    var subPartId = mount.SubpartId;
+                    var partId = mount.SubpartId;
                     if (!_turretDefinitions.ContainsKey(subTypeId))
+                    {
                         _turretDefinitions[subTypeId] = new Dictionary<string, string>
                         {
-                            [subPartId] = weaponDef.TurretDef.DefinitionId
+                            [partId] = weaponDef.TurretDef.DefinitionId
                         };
-                    else _turretDefinitions[subTypeId][subPartId] = weaponDef.TurretDef.DefinitionId;
+                        _subTypeIdToWeaponDefs[subTypeId] = new List<WeaponDefinition> {weaponDef};
+                    }
+                    else
+                    {
+                        _turretDefinitions[subTypeId][partId] = weaponDef.TurretDef.DefinitionId;
+                        _subTypeIdToWeaponDefs[subTypeId].Add(weaponDef);
+                    }
                 }
             }
 
-            foreach (var def in _turretDefinitions)
+            foreach (var tDef in _turretDefinitions)
             {
-                var subTypeIdHash = MyStringHash.GetOrCompute(def.Key);
-                SubTypeIdHashMap.Add(def.Key, subTypeIdHash);
-                WeaponPlatforms.Add(subTypeIdHash, new WeaponStructure(def, _weaponDefinitions));
+                var subTypeIdHash = MyStringHash.GetOrCompute(tDef.Key);
+                SubTypeIdHashMap.Add(tDef.Key, subTypeIdHash);
+
+                WeaponPlatforms.Add(subTypeIdHash, new WeaponStructure(tDef, _subTypeIdToWeaponDefs[tDef.Key]));
             }
-            Inited = true;
 
             for (int i = 0; i < Projectiles.Wait.Length; i++)
             {
@@ -85,6 +92,7 @@ namespace WeaponCore
                 for (int j = 0; j < ModelCount; j++)
                     Projectiles.EntityPool[i][j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.EntityActivator);
             }
+            Inited = true;
         }
     }
 }

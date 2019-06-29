@@ -31,6 +31,7 @@ namespace WeaponCore
         private readonly object _configLock = new object();
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private readonly Dictionary<string, Dictionary<string, string>> _turretDefinitions = new Dictionary<string, Dictionary<string, string>>();
+        private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
         private DSUtils _dsUtil { get; set; } = new DSUtils();

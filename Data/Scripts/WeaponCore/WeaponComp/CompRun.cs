@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Sandbox.ModAPI;
 using VRage;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
@@ -111,7 +109,7 @@ namespace WeaponCore.Support
         public override void OnRemovedFromScene()
         {
             base.OnRemovedFromScene();
-            Platform.SubParts.Entity = null;
+            Platform.Parts.Entity = null;
             RegisterEvents(false);
             IsWorking = false;
             IsFunctional = false;

@@ -4,7 +4,6 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using WeaponCore.Support;
@@ -47,7 +46,8 @@ namespace WeaponCore
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
                 UpdateWeaponPlatforms();
-                MyAPIGateway.Parallel.Start(AiLoop);
+                //MyAPIGateway.Parallel.Start(AiLoop);
+                AiLoop();
                 //MyAPIGateway.Parallel.Start(Projectiles.Update);
                 Projectiles.Update();
             }
