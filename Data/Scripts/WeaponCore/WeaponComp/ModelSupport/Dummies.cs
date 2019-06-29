@@ -86,9 +86,13 @@ namespace WeaponCore.Support
         {
             get
             {
-                if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
-                CachedMatrix = (_cachedDummyMatrix ?? MatrixD.Identity) * (_cachedSubpart?.WorldMatrix ?? _entity.WorldMatrix);
-                CachedInfo = new DummyInfo(CachedMatrix.Translation, -Vector3D.Normalize(CachedMatrix.Backward - CachedMatrix.Forward));
+                //CachedMatrix = (_cachedDummyMatrix ?? MatrixD.Identity) * (_cachedSubpart?.WorldMatrix ?? _entity.WorldMatrix);
+                if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart.Model)) Update();
+                var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
+                var pos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix); 
+                var dir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
+                CachedInfo = new DummyInfo(pos, dir);
+                //Log.Line($"{CachedInfo.Position} - {_cachedSubpartModel == _cachedSubpart.Model} - {_cachedModel == _entity.Model} - {_cachedDummyMatrix.HasValue}");
                 return CachedInfo;
             }
         }

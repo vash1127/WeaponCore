@@ -1,5 +1,6 @@
 ﻿using VRage.Game.Components;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -8,7 +9,7 @@ namespace WeaponCore.Platform
         public void PositionChanged(MyPositionComponentBase pComp)
         {
             _posChangedTick = Session.Instance.Tick;
-            if (TrackingAi) Comp.UpdatePivotPos(this);
+            if (TrackingAi || !IsTurret) Comp.UpdatePivotPos(this);
         }
 
         public class Muzzle

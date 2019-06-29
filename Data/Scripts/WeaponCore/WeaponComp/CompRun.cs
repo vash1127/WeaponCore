@@ -72,6 +72,7 @@ namespace WeaponCore.Support
 
         public void InitPlatform()
         {
+            Entity.NeedsWorldMatrix = true;
             Platform = new MyWeaponPlatform(this);
 
             PullingAmmoCnt = Platform.Structure.AmmoToWeaponIds.Count;
