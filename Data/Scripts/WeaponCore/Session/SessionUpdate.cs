@@ -33,12 +33,14 @@ namespace WeaponCore
                                 AmmoPull(comp, w, true);
                         }
                         //Log.Line($"Turret: AiReady:{w.AiReady}({w.Comp.TurretTargetLock} - ValidTarget:{w.Target != null} - TrackingAi:{w.TrackingAi}  - Multi:{comp.MultiInventory} - FullInv:{comp.FullInventory}) - AmmoMa: AmmoSuspend:{w.AmmoSuspend} - AmmoFull:{w.AmmoFull} - AmmoCheck:{ammoCheck} - CurrAmmo:{w.CurrentAmmo} - CurrentMags:{w.CurrentMags} - Energy:{energyAmmo}");
-                        if ((w.CurrentMags == 0 && w.CurrentAmmo == 0) && !energyAmmo) continue;
-
-                        if (!energyAmmo && w.CurrentAmmo == 0 && w.CurrentMags != 0)
+                        if (!energyAmmo && w.CurrentAmmo == 0)
                         {
-                            comp.BlockInventory.RemoveItemsOfType(1, w.WeaponSystem.AmmoDefId);
-                            w.CurrentAmmo = w.WeaponSystem.MagazineDef.Capacity;
+                            if (w.AmmoMagTimer == int.MaxValue)
+                            {
+                                if (w.CurrentMags != 0) w.LoadAmmoMag = true;
+                                continue;
+                            }
+                            if (!w.AmmoMagLoaded) continue;
                         }
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);

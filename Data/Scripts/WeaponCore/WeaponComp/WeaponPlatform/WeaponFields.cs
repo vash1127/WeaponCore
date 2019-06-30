@@ -50,6 +50,7 @@ namespace WeaponCore.Platform
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal int CurrentAmmo;
+        internal int AmmoMagTimer = int.MaxValue;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
@@ -77,6 +78,30 @@ namespace WeaponCore.Platform
         internal bool AmmoSuspend;
         internal bool AmmoFull;
         internal bool IsShooting;
+
+        internal bool LoadAmmoMag
+        {
+            set
+            {
+                if (value)
+                {
+                    Comp.BlockInventory.RemoveItemsOfType(1, WeaponSystem.AmmoDefId);
+                    AmmoMagTimer = WeaponSystem.ReloadTime;
+                }
+            }
+        }
+
+        internal bool AmmoMagLoaded
+        {
+            get
+            {
+                if (--AmmoMagTimer > 0) return false;
+                CurrentAmmo = WeaponSystem.MagazineDef.Capacity;
+                AmmoMagTimer = int.MaxValue;
+                return true;
+            }
+        }
+
         public Weapon(IMyEntity entity, WeaponSystem weaponSystem, int weaponId)
         {
             EntityPart = entity;

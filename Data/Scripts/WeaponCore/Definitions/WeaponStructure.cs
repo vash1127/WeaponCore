@@ -13,6 +13,7 @@ namespace WeaponCore.Support
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly int ModelId;
+        public readonly int ReloadTime;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly FiringSoundState FiringSound;
@@ -53,7 +54,7 @@ namespace WeaponCore.Support
             TurretEffect1 = WeaponType.GraphicDef.Particles.Turret1Particle != string.Empty;
             TurretEffect2 = WeaponType.GraphicDef.Particles.Turret2Particle != string.Empty;
             MaxTrajectorySqr = weaponType.AmmoDef.Trajectory.MaxTrajectory * weaponType.AmmoDef.Trajectory.MaxTrajectory;
-
+            ReloadTime = WeaponType.TurretDef.ReloadTime;
             var audioDef = WeaponType.AudioDef;
 
             var fSoundStart = audioDef.Turret.FiringSoundStart;
