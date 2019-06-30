@@ -54,7 +54,7 @@ namespace WeaponCore.Support
             IMyModelDummy dummy;
             if (_tmp1.TryGetValue(_path[_path.Length - 1], out dummy))
             {
-                _cachedDummyMatrix = dummy.Matrix;
+                _cachedDummyMatrix = MatrixD.Normalize(dummy.Matrix);
                 _failed = false;
                 return;
             }

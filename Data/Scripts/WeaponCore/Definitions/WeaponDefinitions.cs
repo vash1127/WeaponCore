@@ -16,6 +16,13 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct TurretDefinition
     {
+        internal enum Prediction
+        {
+            Off,
+            Basic,
+            Advanced,
+        }
+
         [ProtoMember(1)] internal MountPoint[] MountPoints;
         [ProtoMember(2)] internal string[] Barrels;
         [ProtoMember(3)] internal string DefinitionId;
@@ -38,6 +45,7 @@ namespace WeaponCore.Support
         [ProtoMember(20)] internal float ReleaseTimeAfterFire;
         [ProtoMember(21)] internal float ShotEnergyCost;
         [ProtoMember(22)] internal double AimingTolerance;
+        [ProtoMember(23)] internal Prediction TargetPrediction;
     }
 
     [ProtoContract]

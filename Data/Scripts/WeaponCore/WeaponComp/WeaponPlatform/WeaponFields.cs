@@ -1,5 +1,4 @@
 ﻿using System;
-using Sandbox.Game.Entities;
 using VRage;
 using VRage.Game.Entity;
 using VRage.ModAPI;
@@ -17,11 +16,12 @@ namespace WeaponCore.Platform
         private readonly Vector3 _localTranslation;
 
         private MyEntity _lastTarget;
-        private MatrixD _weaponMatrix;
-        private MatrixD _oldWeaponMatrix;
-        private Vector3D _weaponPosition;
-        private Vector3D _oldWeaponPosition;
+        //private MatrixD _weaponMatrix;
+        //private MatrixD _oldWeaponMatrix;
+        ///private Vector3D _weaponPosition;
+        //private Vector3D _oldWeaponPosition;
         private Vector3D _lastPredictedPos;
+        private double _lastTimeToIntercept;
         private int _rotationTime;
         private int _numOfBarrels;
         private int _shotsInCycle;

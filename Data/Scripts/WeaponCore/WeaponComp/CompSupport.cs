@@ -45,7 +45,9 @@ namespace WeaponCore.Support
             }
 
             MyPivotDir = weapon.EntityPart.PositionComp.WorldMatrix.Forward;
-            MyPivotPos = MyCube.PositionComp.WorldAABB.Center + (MyCube.WorldMatrix.Up * MyPivotOffset);
+            //MyPivotPos = MyCube.PositionComp.WorldAABB.Center + (MyCube.WorldMatrix.Up * MyPivotOffset);
+            MyPivotPos = weapon.EntityPart.PositionComp.WorldAABB.Center;
+
         }
     }
 }

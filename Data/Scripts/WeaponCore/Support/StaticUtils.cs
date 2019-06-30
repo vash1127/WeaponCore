@@ -393,5 +393,21 @@
 
             return a.Dot(b) / b.LengthSquared() * b;
         }
+
+        public static bool sameSign(float num1, double num2)
+        {
+            if (num1 > 0 && num2 < 0)
+                return false;
+            if (num1 < 0 && num2 > 0)
+                return false;
+            return true;
+        }
+
+        public static bool NearlyEqual(double f1, double f2)
+        {
+            // Equal if they are within 0.00001 of each other
+            return Math.Abs(f1 - f2) < 0.00001;
+        }
+
     }
 }

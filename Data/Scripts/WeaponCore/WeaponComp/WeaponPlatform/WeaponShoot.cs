@@ -19,7 +19,6 @@ namespace WeaponCore.Platform
             _newCycle = false;
             var targetLock = Target != null;
             if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
-            
             var bps = WeaponType.TurretDef.BarrelsPerShot;
             var skipAhead = WeaponType.TurretDef.SkipBarrels;
 

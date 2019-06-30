@@ -147,7 +147,6 @@ namespace WeaponCore.Projectiles
             AccelLength = WepDef.AmmoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
-
             TravelMagnitude = Velocity * StepConst;
 
             if (!noAv)

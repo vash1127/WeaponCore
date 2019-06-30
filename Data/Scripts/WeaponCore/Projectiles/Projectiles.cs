@@ -173,7 +173,7 @@ namespace WeaponCore.Projectiles
                             continue;
                         }
                     }
-
+                    //Log.Line($"Const:{p.ConstantSpeed} - State:{p.State} - Guidance:{p.Guidance} - Dynamic:{p.DynamicGuidance} - Desired:{p.DesiredSpeed} - Vel:{p.Velocity.Length()} - ShotLen:{p.ShotLength} - Travelmag:{p.TravelMagnitude.Length()}");
                     Vector3D? intersect = null;
                     var segmentList = segmentPool.Get();
                     LineD beam;

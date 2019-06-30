@@ -1,10 +1,9 @@
 ﻿using System;
-using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Support.TurretDefinition;
 
 namespace WeaponCore.Platform
 {
@@ -13,7 +12,21 @@ namespace WeaponCore.Platform
         internal static bool ValidTarget(Weapon weapon, MyEntity target, bool checkOnly = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
-            var targetPos = weapon.GetPredictedTargetPosition(target);
+            var prediction = weapon.WeaponType.TurretDef.TargetPrediction;
+
+            Vector3D targetPos;
+            double timeToIntercept;
+            if (prediction != Prediction.Off)
+            {
+                var simple = prediction == Prediction.Basic;
+                targetPos = weapon.GetPredictedTargetPosition(target, simple, out timeToIntercept);
+            }
+            else
+            {
+                targetPos = target.PositionComp.WorldMatrix.Translation;
+                timeToIntercept = double.MaxValue;
+            }
+
             var targetDir = targetPos - weapon.Comp.MyPivotPos;
             var isAligned = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, 0.9659);
 
@@ -30,7 +43,20 @@ namespace WeaponCore.Platform
         {
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
-            var targetPos = weapon.GetPredictedTargetPosition(target);
+            var prediction = weapon.WeaponType.TurretDef.TargetPrediction;
+
+            Vector3D targetPos;
+            double timeToIntercept;
+            if (prediction != Prediction.Off)
+            {
+                var simple = prediction == Prediction.Basic;
+                targetPos = weapon.GetPredictedTargetPosition(target, simple, out timeToIntercept);
+            }
+            else
+            {
+                targetPos = target.PositionComp.WorldMatrix.Translation;
+                timeToIntercept = double.MaxValue;
+            }
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
 
@@ -124,11 +150,29 @@ namespace WeaponCore.Platform
             return false;
         }
 
+        public static double AngleBetween(Vector3D a, Vector3D b) //returns radians
+        {
+            if (Vector3D.IsZero(a) || Vector3D.IsZero(b))
+                return 0;
+            else
+                return Math.Acos(MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
+        }
+
+        private static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
+        {
+            var num1 = Vector3D.Dot(deltaVel, deltaVel) - projectileVel * projectileVel;
+            var num2 = 2.0 * Vector3D.Dot(deltaVel, deltaPos);
+            var num3 = Vector3D.Dot(deltaPos, deltaPos);
+            var d = num2 * num2 - 4.0 * num1 * num3;
+            if (d <= 0.0)
+                return -1.0;
+            return 2.0 * num3 / (Math.Sqrt(d) - num2);
+        }
+
         /*
         /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
         Dependencies: AngleBetween
         */
-
         static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
         {
             var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
@@ -141,23 +185,22 @@ namespace WeaponCore.Platform
                 pitch = AngleBetween(localTargetVector, flattenedTargetVector) * Math.Sign(localTargetVector.Y); //up is positive
         }
 
-        /// <summary>
-        /// Computes angle between 2 vectors
-        /// </summary>
-        public static double AngleBetween(Vector3D a, Vector3D b) //returns radians
-        {
-            if (Vector3D.IsZero(a) || Vector3D.IsZero(b))
-                return 0;
-            else
-                return Math.Acos(MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
-        }
-
-        public Vector3D GetPredictedTargetPosition(MyEntity target)
+        public Vector3D GetPredictedTargetPosition(MyEntity target, bool simple, out double timeToIntercept)
         {
             var tick = Comp.MyAi.MySession.Tick;
 
-            if (target == null || target.MarkedForClose || tick == _lastPredictionTick && _lastTarget == target)
+            if (target == null || target.MarkedForClose)
+            {
+                _lastTimeToIntercept = -1;
+                timeToIntercept = _lastTimeToIntercept;
                 return _lastPredictedPos;
+            }
+
+            if (tick == _lastPredictionTick && _lastTarget == target)
+            {
+                timeToIntercept = _lastTimeToIntercept;
+                return _lastPredictedPos;
+            }
 
             _lastTarget = target;
             _lastPredictionTick = tick;
@@ -177,29 +220,25 @@ namespace WeaponCore.Platform
                     targetVel = topMostParent.Physics.LinearVelocity;
             }
 
-            double timeToIntercept;
+            if (simple) 
+            {
+                var deltaPos = targetCenter - shooterPos;
+                var deltaVel = targetVel - shooterVel;
+                timeToIntercept = Intercept(deltaPos, deltaVel, projectileVel);
+                _lastPredictedPos = targetCenter + (float)timeToIntercept * deltaVel;
+            }
+            else
+                _lastPredictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
 
-            _lastPredictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
+            _lastTimeToIntercept = timeToIntercept;
             return _lastPredictedPos;
         }
-
-
-        private static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
-        {
-            var num1 = Vector3D.Dot(deltaVel, deltaVel) - projectileVel * projectileVel;
-            var num2 = 2.0 * Vector3D.Dot(deltaVel, deltaPos);
-            var num3 = Vector3D.Dot(deltaPos, deltaPos);
-            var d = num2 * num2 - 4.0 * num1 * num3;
-            if (d <= 0.0)
-                return -1.0;
-            return 2.0 * num3 / (Math.Sqrt(d) - num2);
-        }
-
 
         /*
         ** Whip's Projectile Intercept - Modified for DarkStar 06.15.2019
         */
-        Vector3D CalculateProjectileInterceptPoint(
+        Vector3D _lastTargetVelocity1 = Vector3D.Zero;
+        public Vector3D CalculateProjectileInterceptPoint(
             double gridMaxSpeed,        /* Maximum grid speed           (m/s)   */
             double projectileSpeed,     /* Maximum projectile speed     (m/s)   */
             double updateFrequency,     /* Frequency this is run        (Hz)    */
@@ -265,11 +304,11 @@ namespace WeaponCore.Platform
             return tgtPosSim;
         }
 
-        Vector3D _lastTargetVelocity1 = Vector3D.Zero;
 
         /*
         ** Whip's Projectile Intercept - Modified for DarkStar 06.15.2019
         */
+        Vector3D _lastTargetVelocity2 = Vector3D.Zero;
         private Vector3D CalculateProjectileInterceptPointFast(
             double projectileSpeed,     /* Maximum projectile speed     (m/s) */
             double updateFrequency,     /* Frequency this is run        (Hz) */
@@ -304,14 +343,27 @@ namespace WeaponCore.Platform
             return interceptPoint;
         }
 
-        Vector3D _lastTargetVelocity2 = Vector3D.Zero;
+        /// <summary>
+        /// Returns if the normalized dot product between two vectors is greater than the tolerance.
+        /// This is helpful for determining if two vectors are "more parallel" than the tolerance.
+        /// </summary>
+        /// <param name="a">First vector</param>
+        /// <param name="b">Second vector</param>
+        /// <param name="tolerance">Cosine of maximum angle</param>
+        /// <returns></returns>
+        public static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
+        {
+            double dot = Vector3D.Dot(a, b);
+            double num = a.LengthSquared() * b.LengthSquared() * tolerance * Math.Abs(tolerance);
+            return Math.Abs(dot) * dot > num;
+        }
 
         internal void InitTracking()
         {
-            _randomStandbyChange_ms = MyAPIGateway.Session.ElapsedPlayTime.Milliseconds;
-            _randomStandbyChangeConst_ms = MyUtils.GetRandomInt(3500, 4500);
-            _randomStandbyRotation = 0.0f;
-            _randomStandbyElevation = 0.0f;
+            //_randomStandbyChange_ms = MyAPIGateway.Session.ElapsedPlayTime.Milliseconds;
+            //_randomStandbyChangeConst_ms = MyUtils.GetRandomInt(3500, 4500);
+            //_randomStandbyRotation = 0.0f;
+            //_randomStandbyElevation = 0.0f;
 
             RotationSpeed = Comp.Platform.BaseDefinition.RotationSpeed;
             ElevationSpeed = Comp.Platform.BaseDefinition.ElevationSpeed;
@@ -328,41 +380,6 @@ namespace WeaponCore.Platform
                 MinAzimuthRadians -= 6.283185f;
         }
 
-
-        public Vector3D GetBasicPredictedTargetPosition(MyEntity target)
-        {
-            var tick = Comp.MyAi.MySession.Tick;
-
-            if (target == null || target.MarkedForClose || tick == _lastPredictionTick && _lastTarget == target)
-                return _lastPredictedPos;
-
-            _lastTarget = target;
-            _lastPredictionTick = tick;
-
-            var targetCenter = target.PositionComp.WorldAABB.Center;
-            var shooterPos = Comp.MyPivotPos;
-            var shooterVel = Comp.Physics.LinearVelocity;
-            var ammoSpeed = WeaponType.AmmoDef.Trajectory.DesiredSpeed;
-            var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
-            var targetVel = Vector3.Zero;
-
-            if (target.Physics != null) targetVel = target.Physics.LinearVelocity;
-            else
-            {
-                var topMostParent = target.GetTopMostParent();
-                if (topMostParent?.Physics != null)
-                    targetVel = topMostParent.Physics.LinearVelocity;
-            }
-
-            var deltaPos = targetCenter - shooterPos;
-            var deltaVel = targetVel - shooterVel;
-            var timeToIntercept = Intercept(deltaPos, deltaVel, projectileVel);
-            
-            // IFF timeToIntercept is less than 0, intercept is not possible!!!
-            _lastPredictedPos = targetCenter + (float)timeToIntercept * deltaVel;
-            return _lastPredictedPos;
-        }
-
         private float NormalizeAngle(int angle)
         {
             int num = angle % 360;
@@ -371,117 +388,15 @@ namespace WeaponCore.Platform
             return num;
         }
 
-        public static bool NearlyEqual(double f1, double f2)
-        {
-            // Equal if they are within 0.00001 of each other
-            return Math.Abs(f1 - f2) < 0.00001;
-        }
-
-        /// <summary>
-        /// Returns if the normalized dot product between two vectors is greater than the tolerance.
-        /// This is helpful for determining if two vectors are "more parallel" than the tolerance.
-        /// </summary>
-        /// <param name="a">First vector</param>
-        /// <param name="b">Second vector</param>
-        /// <param name="tolerance">Cosine of maximum angle</param>
-        /// <returns></returns>
-        public static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
-        {
-            double dot = Vector3D.Dot(a, b);
-            double num = a.LengthSquared() * b.LengthSquared() * tolerance * Math.Abs(tolerance);
-            return Math.Abs(dot) * dot > num;
-        }
-
-        bool sameSign(float num1, double num2)
-        {
-            if (num1 > 0 && num2 < 0)
-                return false;
-            if (num1 < 0 && num2 > 0)
-                return false;
-            return true;
-        }
-
+        /*
         private int _randomStandbyChange_ms;
         private int _randomStandbyChangeConst_ms;
-        private float _randomStandbyRotation;
         private float _randomStandbyElevation;
-        /*
-        private Vector3 LookAt(Vector3D target)
-        {
-            var muzzleWorldPosition = Comp.MyPivotPos;
-            float azimuth;
-            float elevation;
-            Vector3.GetAzimuthAndElevation(Vector3.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, Comp.MyCube.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
-            if (_gunIdleElevationAzimuthUnknown)
-            {
-                Vector3.GetAzimuthAndElevation(EntityPart.LocalMatrix.Forward, out _gunIdleAzimuth, out _gunIdleElevation);
-                _gunIdleElevationAzimuthUnknown = false;
-            }
-            return new Vector3(elevation - _gunIdleElevation, MathHelper.WrapAngle(azimuth - _gunIdleAzimuth), 0.0f);
-        }
-
-        private void RandomMovement()
-        {
-            if (!_enableIdleRotation || Gunner)
-                return;
-            ResetRandomAiming();
-            var randomStandbyRotation = _randomStandbyRotation;
-            var standbyElevation = _randomStandbyElevation;
-            var max1 = RotationSpeed * 16f;
-            var flag = false;
-            var rotation = Azimuth;
-            var num1 = (randomStandbyRotation - rotation);
-            if (num1 * num1 > 9.99999943962493E-11)
-            {
-                Azimuth += MathHelper.Clamp(num1, -max1, max1);
-                flag = true;
-            }
-            if (standbyElevation > BarrelElevationMin)
-            {
-                var max2 = ElevationSpeed * 16f;
-                var num2 = standbyElevation - Elevation;
-                if (num2 * num2 > 9.99999943962493E-11)
-                {
-                    Elevation += MathHelper.Clamp(num2, -max2, max2);
-                    flag = true;
-                }
-            }
-            //this.m_playAimingSound = flag;
-            ClampRotationAndElevation();
-            if (_randomIsMoving)
-            {
-                if (flag)
-                    return;
-                //this.SetupSearchRaycast();
-                _randomIsMoving = false;
-            }
-            else
-            {
-                if (!flag)
-                    return;
-                _randomIsMoving = true;
-            }
-        }
-
-        private void SetupSearchRaycast()
-        {
-            MatrixD muzzleWorldMatrix = this.m_gunBase.GetMuzzleWorldMatrix();
-            Vector3D vector3D = muzzleWorldMatrix.Translation + muzzleWorldMatrix.Forward * (double)this.m_searchingRange;
-            this.m_laserLength = (double)this.m_searchingRange;
-            this.m_hitPosition = vector3D;
-        }
-
         private void GetCameraDummy()
         {
             if (this.m_base2.Model == null || !this.m_base2.Model.Dummies.ContainsKey("camera"))
                 return;
             this.CameraDummy = this.m_base2.Model.Dummies["camera"];
-        }
-
-        public void UpdateVisual()
-        {
-            base.UpdateVisual();
-            this.m_transformDirty = true;
         }
         */
     }
