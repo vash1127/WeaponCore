@@ -130,9 +130,14 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.Target != null && !p.Target.MarkedForClose)
                         {
-                            var physics = p.Target.Physics ?? p.Target.Parent.Physics;
-                            var commandedAccel = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.Velocity, 1f, 1f);
-                            var newVel = p.Velocity + commandedAccel;
+                            Vector3D newVel;
+                            if (p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength)
+                            {
+                                var physics = p.Target.Physics ?? p.Target.Parent.Physics;
+                                var commandedAccel = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.Velocity, p.AccelLength, p.WepDef.AmmoDef.Trajectory.SmartsFactor);
+                                newVel = p.Velocity + commandedAccel;
+                            }
+                            else newVel = p.Velocity += (p.Direction * p.AccelLength);
                             if (newVel.LengthSquared() > p.DesiredSpeedSqr)
                             {
                                 newVel.Normalize();
@@ -142,7 +147,6 @@ namespace WeaponCore.Projectiles
                             p.Direction = Vector3D.Normalize(p.Velocity);
                             p.TravelMagnitude = p.Velocity * StepConst;
                             p.Position += p.TravelMagnitude;
-                            if (p.WeaponSystem.AmmoParticle) p.Effect1.Velocity = p.Velocity;
                         }
                         else
                         {
@@ -155,11 +159,16 @@ namespace WeaponCore.Projectiles
                             p.Velocity = newVel;
                             p.TravelMagnitude = p.Velocity * StepConst;
                             p.Position += p.TravelMagnitude;
-                            if (p.WeaponSystem.AmmoParticle) p.Effect1.Velocity = p.Velocity;
                         }
                     }
 
-                    if (p.ModelState == Projectile.EntityState.Exists) p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+                    if (p.ModelState == Projectile.EntityState.Exists)
+                    {
+                        p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+                        if (p.WeaponSystem.AmmoParticle) p.Effect1.WorldMatrix = p.EntityMatrix;
+                    }
+                    else if (p.WeaponSystem.AmmoParticle)
+                        p.Effect1.Velocity = p.Velocity;
 
                     if (p.DynamicGuidance && (p.MoveToAndActivate || p.LockedTarget))
                     {
@@ -245,8 +254,15 @@ namespace WeaponCore.Projectiles
 
                     if (p.Grow)
                     {
-                        p.CurrentLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.MaxSpeedLength)));
-                        if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
+                        if (p.AccelLength <= 0)
+                        {
+                            p.CurrentLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.MaxSpeedLength)));
+                            if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
+                        }
+                        else
+                            p.CurrentLine = new LineD(p.Position, p.Position + - (p.Direction * Vector3D.Distance(p.Origin, p.Position)));
+
+                        if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength) p.Grow = false;
                     }
                     else p.CurrentLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
 

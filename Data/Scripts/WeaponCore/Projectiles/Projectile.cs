@@ -48,6 +48,7 @@ namespace WeaponCore.Projectiles
         internal double CheckLength;
         internal float AmmoTravelSoundRangeSqr;
         internal float MaxTrajectory;
+        internal float SmartsFactor;
         internal double MaxTrajectorySqr;
         internal double DistanceTraveledSqr;
         internal double DistanceToTravelSqr;
@@ -108,6 +109,7 @@ namespace WeaponCore.Projectiles
             Guidance = WepDef.AmmoDef.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
             LockedTarget = Target != null && !Target.MarkedForClose;
+            SmartsFactor = WepDef.AmmoDef.Trajectory.SmartsFactor;
 
             if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
             CheckList = checkList;
@@ -182,7 +184,7 @@ namespace WeaponCore.Projectiles
             {
                 var reSizeSteps = (int) (ShotLength / MaxSpeedLength);
                 ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
-                Grow = ReSizeSteps > 1;
+                Grow = ReSizeSteps > 1 || AccelLength > 0 && AccelLength < ShotLength;
                 Shrink = Grow;
                 State = ProjectileState.Alive;
             }
@@ -195,6 +197,7 @@ namespace WeaponCore.Projectiles
         {
             var to = Origin;
             to += -TravelMagnitude; // we are in a thread, draw is delayed a frame.
+
             var matrix = MatrixD.CreateTranslation(to);
             uint parentId;
             if (ModelState == EntityState.Exists)

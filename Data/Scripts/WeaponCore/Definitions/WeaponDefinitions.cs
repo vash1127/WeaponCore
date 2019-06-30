@@ -16,10 +16,11 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct TurretDefinition
     {
-        internal enum Prediction
+        public enum Prediction
         {
             Off,
             Basic,
+            Accurate,
             Advanced,
         }
 
@@ -84,9 +85,11 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal float MaxTrajectory;
         [ProtoMember(2)] internal float AccelPerSec;
         [ProtoMember(3)] internal float DesiredSpeed;
-        [ProtoMember(4)] internal Randomize SpeedVariance;
-        [ProtoMember(5)] internal Randomize RangeVariance;
-        [ProtoMember(6)] internal GuidanceType Guidance;
+        [ProtoMember(4)] internal float SmartsFactor;
+        [ProtoMember(5)] internal float TargetLossDegree;
+        [ProtoMember(6)] internal Randomize SpeedVariance;
+        [ProtoMember(7)] internal Randomize RangeVariance;
+        [ProtoMember(8)] internal GuidanceType Guidance;
     }
 
     [ProtoContract]

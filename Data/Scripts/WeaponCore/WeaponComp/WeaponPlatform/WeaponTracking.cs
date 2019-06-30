@@ -15,17 +15,12 @@ namespace WeaponCore.Platform
             var prediction = weapon.WeaponType.TurretDef.TargetPrediction;
 
             Vector3D targetPos;
-            double timeToIntercept;
+            var timeToIntercept = double.MinValue;
+
             if (prediction != Prediction.Off)
-            {
-                var simple = prediction == Prediction.Basic;
-                targetPos = weapon.GetPredictedTargetPosition(target, simple, out timeToIntercept);
-            }
+                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
             else
-            {
                 targetPos = target.PositionComp.WorldMatrix.Translation;
-                timeToIntercept = double.MaxValue;
-            }
 
             var targetDir = targetPos - weapon.Comp.MyPivotPos;
             var isAligned = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, 0.9659);
@@ -46,17 +41,13 @@ namespace WeaponCore.Platform
             var prediction = weapon.WeaponType.TurretDef.TargetPrediction;
 
             Vector3D targetPos;
-            double timeToIntercept;
+            var timeToIntercept = double.MinValue;
+
             if (prediction != Prediction.Off)
-            {
-                var simple = prediction == Prediction.Basic;
-                targetPos = weapon.GetPredictedTargetPosition(target, simple, out timeToIntercept);
-            }
+                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
             else
-            {
                 targetPos = target.PositionComp.WorldMatrix.Translation;
-                timeToIntercept = double.MaxValue;
-            }
+
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
 
@@ -185,7 +176,7 @@ namespace WeaponCore.Platform
                 pitch = AngleBetween(localTargetVector, flattenedTargetVector) * Math.Sign(localTargetVector.Y); //up is positive
         }
 
-        public Vector3D GetPredictedTargetPosition(MyEntity target, bool simple, out double timeToIntercept)
+        public Vector3D GetPredictedTargetPosition(MyEntity target, Prediction prediction, out double timeToIntercept)
         {
             var tick = Comp.MyAi.MySession.Tick;
 
@@ -220,13 +211,15 @@ namespace WeaponCore.Platform
                     targetVel = topMostParent.Physics.LinearVelocity;
             }
 
-            if (simple) 
+            if (prediction == Prediction.Basic) 
             {
                 var deltaPos = targetCenter - shooterPos;
                 var deltaVel = targetVel - shooterVel;
                 timeToIntercept = Intercept(deltaPos, deltaVel, projectileVel);
                 _lastPredictedPos = targetCenter + (float)timeToIntercept * deltaVel;
             }
+            else if (prediction == Prediction.Accurate)
+                _lastPredictedPos = CalculateProjectileInterceptPointFast(projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
             else
                 _lastPredictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
 
