@@ -74,7 +74,6 @@ namespace WeaponCore
         internal bool MouseButtonRight;
         internal bool InTurret;
         internal MyEntity ControlledEntity;
-
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
         internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
 

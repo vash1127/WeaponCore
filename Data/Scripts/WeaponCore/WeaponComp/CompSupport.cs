@@ -32,22 +32,15 @@ namespace WeaponCore.Support
 
         internal void UpdatePivotPos(Weapon weapon)
         {
-            if (!PivotLengthSet)
-            {
-                //var blockUpDir = MyCube.WorldMatrix.Up;
-                //MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center - (blockUpDir * 10), MyCube.PositionComp.WorldAABB.Center + (blockUpDir * 10));
-                //var closestPoint = UtilsStatic.NearestPointOnLine(MyPivotTestLine.From, MyPivotTestLine.To, weapon.EntityPart.PositionComp.WorldAABB.Center);
-                var weaponPComp = weapon.EntityPart.PositionComp;
-                var offsetVector = UtilsStatic.GetClosestPointOnLine1(MyCube.PositionComp.WorldAABB.Center + (MyCube.WorldMatrix.Down * 10), MyCube.WorldMatrix.Up, weaponPComp.WorldAABB.Center, weaponPComp.WorldMatrix.Forward);
-                MyPivotOffset = Vector3D.Distance(MyCube.PositionComp.WorldAABB.Center, offsetVector);
-                PivotLengthSet = true;
+            var weaponPComp = weapon.EntityPart.PositionComp;
+            var weaponCenter = weaponPComp.WorldMatrix.Translation;
+            var weaponForward = weaponPComp.WorldMatrix.Forward;
 
-            }
-
-            MyPivotDir = weapon.EntityPart.PositionComp.WorldMatrix.Forward;
-            //MyPivotPos = MyCube.PositionComp.WorldAABB.Center + (MyCube.WorldMatrix.Up * MyPivotOffset);
-            MyPivotPos = weapon.EntityPart.PositionComp.WorldAABB.Center;
-
+            var blockCenter = MyCube.PositionComp.WorldAABB.Center;
+            var blockUp = MyCube.PositionComp.WorldMatrix.Up;
+            MyPivotDir = weaponForward;
+            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(blockCenter, blockUp, weaponCenter, weaponForward);
+            //MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center, MyPivotPos);
         }
     }
 }

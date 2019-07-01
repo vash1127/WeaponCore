@@ -134,8 +134,9 @@ namespace WeaponCore.Projectiles
                             if (p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength)
                             {
                                 var physics = p.Target.Physics ?? p.Target.Parent.Physics;
-                                var commandedAccel = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.Velocity, p.AccelLength, p.WepDef.AmmoDef.Trajectory.SmartsFactor);
-                                newVel = p.Velocity + commandedAccel;
+                                var trajInfo = p.WepDef.AmmoDef.Trajectory;
+                                var commandedAccel = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.Velocity, trajInfo.AccelPerSec, trajInfo.SmartsFactor);
+                                newVel = p.Velocity + (commandedAccel * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS);
                             }
                             else newVel = p.Velocity += (p.Direction * p.AccelLength);
                             if (newVel.LengthSquared() > p.DesiredSpeedSqr)
@@ -165,7 +166,19 @@ namespace WeaponCore.Projectiles
                     if (p.ModelState == Projectile.EntityState.Exists)
                     {
                         p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
-                        if (p.WeaponSystem.AmmoParticle) p.Effect1.WorldMatrix = p.EntityMatrix;
+                        if (p.WeaponSystem.AmmoParticle)
+                        {
+                            p.Effect1.WorldMatrix = p.EntityMatrix;
+                            var center = p.EntityMatrix.Translation;
+                            var forward = p.EntityMatrix.Forward;
+                            var up = p.EntityMatrix.Up;
+                            var left = p.EntityMatrix.Left;
+                            var offset = p.WepDef.GraphicDef.Particles.AmmoOffset;
+                            center += (forward * offset.X);
+                            center += (up * offset.Y);
+                            center += (left * offset.Z);
+                            p.Effect1.SetTranslation(center);
+                        }
                     }
                     else if (p.WeaponSystem.AmmoParticle)
                         p.Effect1.Velocity = p.Velocity;

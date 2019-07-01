@@ -9,7 +9,7 @@ namespace WeaponCore.Platform
         public void PositionChanged(MyPositionComponentBase pComp)
         {
             _posChangedTick = Session.Instance.Tick;
-            if (TrackingAi || !IsTurret) Comp.UpdatePivotPos(this);
+            if (!BarrelMove && (TrackingAi || !IsTurret)) Comp.UpdatePivotPos(this);
         }
 
         public class Muzzle

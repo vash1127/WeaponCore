@@ -51,8 +51,8 @@ namespace WeaponCore.Platform
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            var maxAzimuthStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : double.MinValue;
-            var maxElevationStep = step ? weapon.WeaponType.TurretDef.ElevationSpeed : double.MinValue;
+            var maxAzimuthStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : float.MinValue;
+            var maxElevationStep = step ? weapon.WeaponType.TurretDef.ElevationSpeed : float.MinValue;
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
@@ -65,8 +65,8 @@ namespace WeaponCore.Platform
 
             var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
-            double desiredAzimuth;
-            double desiredElevation;
+            float desiredAzimuth;
+            float desiredElevation;
             GetRotationAngles(ref weapon.TargetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
             var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
@@ -76,14 +76,16 @@ namespace WeaponCore.Platform
             weapon.IsTracking = !azConstrained && !elConstrained;
             if (!step) return weapon.IsTracking;
 
-            if (weapon.IsTracking && maxAzimuthStep > double.MinValue)
+            if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
             {
+                var oldAz = weapon.Azimuth;
+                var oldEl = weapon.Elevation;
                 weapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
                 weapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxElevationStep, maxElevationStep);
                 weapon.DesiredAzimuth = desiredAzimuth;
                 weapon.DesiredElevation = desiredElevation;
-                turret.Azimuth = (float)weapon.Azimuth;
-                turret.Elevation = (float)weapon.Elevation;
+                if (!MathHelper.IsZero(oldAz - weapon.Azimuth)) turret.Azimuth = weapon.Azimuth;
+                if (!MathHelper.IsZero(oldEl - weapon.Elevation)) turret.Elevation = weapon.Elevation;
             }
 
             var isInView = false;
@@ -141,12 +143,12 @@ namespace WeaponCore.Platform
             return false;
         }
 
-        public static double AngleBetween(Vector3D a, Vector3D b) //returns radians
+        public static float AngleBetween(Vector3D a, Vector3D b) //returns radians
         {
             if (Vector3D.IsZero(a) || Vector3D.IsZero(b))
                 return 0;
             else
-                return Math.Acos(MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
+                return (float)Math.Acos(MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
         }
 
         private static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
@@ -164,7 +166,7 @@ namespace WeaponCore.Platform
         /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
         Dependencies: AngleBetween
         */
-        static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
+        static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out float yaw, out float pitch)
         {
             var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
             var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);

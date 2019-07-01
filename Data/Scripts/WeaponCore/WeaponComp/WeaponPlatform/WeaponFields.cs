@@ -52,10 +52,10 @@ namespace WeaponCore.Platform
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
         internal MyFixedPoint CurrentMags;
-        internal double Azimuth;
-        internal double Elevation;
-        internal double DesiredAzimuth;
-        internal double DesiredElevation;
+        internal float Azimuth;
+        internal float Elevation;
+        internal float DesiredAzimuth;
+        internal float DesiredElevation;
         internal double AimingTolerance;
         internal int WeaponId;
         internal uint CheckedForTargetTick;
@@ -78,6 +78,7 @@ namespace WeaponCore.Platform
         internal bool AmmoSuspend;
         internal bool AmmoFull;
         internal bool IsShooting;
+        internal bool BarrelMove;
 
         internal bool LoadAmmoMag
         {

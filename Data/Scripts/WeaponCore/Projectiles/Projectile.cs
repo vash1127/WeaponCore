@@ -198,15 +198,15 @@ namespace WeaponCore.Projectiles
             var to = Origin;
             to += -TravelMagnitude; // we are in a thread, draw is delayed a frame.
 
-            var matrix = MatrixD.CreateTranslation(to);
+            //var matrix = MatrixD.CreateTranslation(to);
             uint parentId;
             if (ModelState == EntityState.Exists)
             {
                 parentId = Entity.Render.GetRenderObjectID();
-                to += Vector3D.Rotate(WepDef.GraphicDef.Particles.AmmoOffset, EntityMatrix);
+                //to += Vector3D.Rotate(WepDef.GraphicDef.Particles.AmmoOffset, EntityMatrix);
             }
             else parentId = uint.MaxValue;
-            MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+            MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.Particles.AmmoParticle, ref MatrixD.Identity, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
             Effect1.DistanceMax = 5000;
             Effect1.UserColorMultiplier = WepDef.GraphicDef.Particles.AmmoColor;
@@ -215,7 +215,7 @@ namespace WeaponCore.Projectiles
 
             Effect1.UserRadiusMultiplier = WepDef.GraphicDef.Particles.AmmoScale * scaler;
             Effect1.UserEmitterScale = 1 * scaler;
-            Effect1.Velocity = Velocity;
+            if (ModelState != EntityState.Exists) Effect1.Velocity = Velocity;
         }
 
         internal void FireSoundStart()

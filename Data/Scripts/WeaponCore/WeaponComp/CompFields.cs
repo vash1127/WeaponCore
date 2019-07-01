@@ -16,19 +16,9 @@ namespace WeaponCore.Support
     public partial class WeaponComponent
     {
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
-
-        //private const int SyncCount = 60;
-        //private readonly MyDefinitionId _gId = new MyDefinitionId(typeof(MyObjectBuilder_GasProperties), "Electricity");
-        private uint _tick;
-
         private int _count = -1;
-        //private int _bCount;
-        //private int _bTime;
 
-
-        //private bool _aInit;
         private bool _allInited;
-        //private bool _containerInited;
         private bool _clientOn;
         private bool _isServer;
         private bool _isDedicated;
@@ -38,13 +28,10 @@ namespace WeaponCore.Support
         private bool _firstLoop = true;
         private bool _readyToSync;
         private bool _firstSync;
-        //private bool _bInit;
-        //private bool _wasOnline;
 
         private DSUtils Dsutil1 { get; set; } = new DSUtils();
         internal GridTargetingAi MyAi { get; set; }
 
-        internal MyResourceSinkInfo ResourceInfo;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.Instance.LastTerminalId == Turret.EntityId;
 
@@ -89,7 +76,6 @@ namespace WeaponCore.Support
         internal bool IsWorking;
         internal bool FullInventory;
         internal bool MultiInventory;
-        internal bool PivotLengthSet;
         internal LogicSettings Set;
         internal LogicState State;
         internal MyResourceSinkComponent Sink;

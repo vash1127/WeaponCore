@@ -1,4 +1,5 @@
-﻿using WeaponCore.Platform;
+﻿using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {

@@ -121,6 +121,7 @@ namespace WeaponCore.Platform
 
         public void MovePart(int time)
         {
+            BarrelMove = true;
             var radiansPerShot = (2 * Math.PI / _numOfBarrels);
             var radians = radiansPerShot / _timePerShot;
             var axis = WeaponType.TurretDef.RotateBarrelAxis;
@@ -133,6 +134,7 @@ namespace WeaponCore.Platform
             _rotationTime += time;
             rotationMatrix.Translation = _localTranslation;
             EntityPart.PositionComp.LocalMatrix = rotationMatrix;
+            BarrelMove = false;
         }
 
         internal MyParticleEffect MuzzleEffect1;
