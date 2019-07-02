@@ -28,6 +28,8 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsAdded -= OnContentsAdded;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
+                foreach (var w in Platform.Weapons)
+                    w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
             }
         }
 

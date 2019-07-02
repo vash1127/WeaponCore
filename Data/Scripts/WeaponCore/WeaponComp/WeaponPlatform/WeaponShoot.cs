@@ -103,6 +103,10 @@ namespace WeaponCore.Platform
                     pro.Direction = muzzle.DeviatedDir;
                     pro.State = Projectile.ProjectileState.Start;
                     pro.Target = Target;
+
+                    pro.GridGroup = Comp.MyAi.SubGrids;
+                    pro.GroupAABB = Comp.MyAi.GroupAABB;
+
                     if (WeaponSystem.ModelId != -1)
                     {
                         MyEntity ent;

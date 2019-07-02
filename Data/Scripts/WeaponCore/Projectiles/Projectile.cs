@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -21,6 +22,7 @@ namespace WeaponCore.Projectiles
         internal MatrixD EntityMatrix;
         internal RayD ReverseOriginRay;
         internal LineD CurrentLine;
+        internal BoundingBoxD GroupAABB;
         internal Vector3D Direction;
         internal Vector3D Position;
         internal Vector3D LastPosition;
@@ -86,7 +88,7 @@ namespace WeaponCore.Projectiles
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
-
+        internal HashSet<MyCubeGrid> GridGroup;
 
         internal void Start(List<MyEntity> checkList, bool noAv)
         {
@@ -109,7 +111,6 @@ namespace WeaponCore.Projectiles
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
             LockedTarget = Target != null && !Target.MarkedForClose;
             SmartsFactor = WepDef.AmmoDef.Trajectory.SmartsFactor;
-
             if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
             CheckList = checkList;
 

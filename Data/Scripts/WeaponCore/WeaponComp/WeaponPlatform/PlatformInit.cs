@@ -38,6 +38,7 @@ namespace WeaponCore.Platform
                 }
             }
             CompileTurret();
+            if (!comp.MyAi.SubGridInit) comp.MyAi.SubGridInfo();
         }
 
         private void CompileTurret()

@@ -186,6 +186,9 @@
     <None Include="Data\EntityComponents.sbc" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiEvents.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectilePool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\EntityPool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\LogicData.cs" />
@@ -223,7 +226,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\Extensions\EntityExtentions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\FutureEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\GridIntersect.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\GridAi\GridTargetingAi.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiTargeting.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Log.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ObjectPool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectile.cs" />

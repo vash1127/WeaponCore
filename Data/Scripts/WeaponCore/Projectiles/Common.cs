@@ -45,11 +45,9 @@ namespace WeaponCore.Projectiles
         internal void GetAllEntitiesInLine(List<MyEntity> ents, Fired fired, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList,  List<MyEntity> entList)
         {
             var listCnt = segmentList?.Count ?? entList.Count;
-
             for (int i = 0; i < listCnt; i++)
             {
                 var ent = segmentList != null ? segmentList[i].Element : entList[i];
-
                 if (ent == fired.FiringCube.CubeGrid) continue;
                 if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
@@ -59,6 +57,7 @@ namespace WeaponCore.Projectiles
                         ents.Add((MyEntity) shieldBlock);
                     else continue;
                 }
+
                 var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
                 var extBeam = new LineD(extFrom, beam.To);
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
