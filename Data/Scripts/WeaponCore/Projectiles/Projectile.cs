@@ -55,7 +55,6 @@ namespace WeaponCore.Projectiles
         internal double ShotLength;
         internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
-
         internal int Age = -1;
         internal int ReSizeSteps;
         internal int GrowStep = 1;
@@ -122,8 +121,9 @@ namespace WeaponCore.Projectiles
             StartSpeed = FiringGrid.Physics.LinearVelocity;
             DesiredSpeed = WepDef.AmmoDef.Trajectory.DesiredSpeed;
             DesiredSpeedSqr = DesiredSpeed * DesiredSpeed;
+            Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
 
-            Draw = WepDef.GraphicDef.VisualProbability >= MyUtils.GetRandomDouble(0.0f, 1f);
+            Draw = DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && WepDef.GraphicDef.VisualProbability >= MyUtils.GetRandomDouble(0.0f, 1f);
 
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
@@ -138,15 +138,14 @@ namespace WeaponCore.Projectiles
 
             FiringSoundState = WeaponSystem.FiringSound;
             AmmoTravelSoundRangeSqr = (WepDef.AudioDef.Ammo.TravelRange * WepDef.AudioDef.Ammo.TravelRange);
-            Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
 
             ConstantSpeed = WepDef.AmmoDef.Trajectory.AccelPerSec <= 0;
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
-            MaxSpeedLength = MaxVelocity.Length() * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;// * MyUtils.GetRandomFloat(1f, 1.5f);
-            AccelLength = WepDef.AmmoDef.Trajectory.AccelPerSec * MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
+            MaxSpeedLength = MaxVelocity.Length() * StepConst;// * MyUtils.GetRandomFloat(1f, 1.5f);
+            AccelLength = WepDef.AmmoDef.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
@@ -198,15 +197,20 @@ namespace WeaponCore.Projectiles
             var to = Origin;
             to += -TravelMagnitude; // we are in a thread, draw is delayed a frame.
 
-            //var matrix = MatrixD.CreateTranslation(to);
+            MatrixD matrix;
             uint parentId;
             if (ModelState == EntityState.Exists)
             {
                 parentId = Entity.Render.GetRenderObjectID();
-                //to += Vector3D.Rotate(WepDef.GraphicDef.Particles.AmmoOffset, EntityMatrix);
+                matrix = MatrixD.Identity;
+                to += Vector3D.Rotate(WepDef.GraphicDef.Particles.AmmoOffset, EntityMatrix);
             }
-            else parentId = uint.MaxValue;
-            MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.Particles.AmmoParticle, ref MatrixD.Identity, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+            else
+            {
+                matrix = MatrixD.CreateTranslation(to);
+                parentId = uint.MaxValue;
+            }
+            MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
             Effect1.DistanceMax = 5000;
             Effect1.UserColorMultiplier = WepDef.GraphicDef.Particles.AmmoColor;
