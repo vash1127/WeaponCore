@@ -104,8 +104,8 @@ namespace WeaponCore.Platform
                     pro.State = Projectile.ProjectileState.Start;
                     pro.Target = Target;
 
-                    pro.GridGroup = Comp.MyAi.SubGrids;
-                    pro.GroupAABB = Comp.MyAi.GroupAABB;
+                    //pro.GridGroup = Comp.MyAi.SubGrids;
+                    //pro.GroupAABB = Comp.MyAi.GroupAABB;
 
                     if (WeaponSystem.ModelId != -1)
                     {

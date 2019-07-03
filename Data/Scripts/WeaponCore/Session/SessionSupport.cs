@@ -35,7 +35,6 @@ namespace WeaponCore
             if (_count++ == 59)
             {
                 _count = 0;
-
             }
             _lCount++;
             if (_lCount == 129)
@@ -83,6 +82,15 @@ namespace WeaponCore
                 MouseButtonLeft = false;
                 MouseButtonMiddle = false;
                 MouseButtonRight = false;
+            }
+
+            if (!_compsToStart.IsEmpty)
+            {
+                WeaponComponent weaponComp;
+                _compsToStart.TryDequeue(out weaponComp);
+                weaponComp.MyCube.Components.Add(weaponComp);
+                weaponComp.OnAddedToScene();
+                Log.Line($"added to comp");
             }
         }
 

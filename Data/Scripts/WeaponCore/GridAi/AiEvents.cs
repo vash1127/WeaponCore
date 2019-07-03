@@ -10,13 +10,13 @@ namespace WeaponCore.Support
         {
             if (register)
             {
-                grid.OnBlockAdded += BlockAddedEvent;
-                grid.OnBlockRemoved += BlockRemovedEvent;
+                //grid.OnBlockAdded += BlockAddedEvent;
+                //grid.OnBlockRemoved += BlockRemovedEvent;
             }
             else
             {
-                grid.OnBlockAdded -= BlockAddedEvent;
-                grid.OnBlockRemoved -= BlockRemovedEvent;
+                //grid.OnBlockAdded -= BlockAddedEvent;
+                //grid.OnBlockRemoved -= BlockRemovedEvent;
             }
         }
 

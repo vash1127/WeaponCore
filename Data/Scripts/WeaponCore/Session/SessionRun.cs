@@ -60,10 +60,7 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
-                MyEntities.OnEntityAdd += OnEntityAdd;
                 MyEntities.OnEntityDelete += OnEntityDelete;
-
-                //MyEntities.OnEntityRemove += OnEntityRemove;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -93,22 +90,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
 
-        private void OnEntityAdd(MyEntity myEntity)
-        {
-            try
-            {
-                if (!_compsToStart.IsEmpty)
-                {
-                    WeaponComponent weaponComp;
-                    _compsToStart.TryDequeue(out weaponComp);
-                    weaponComp.MyCube.Components.Add(weaponComp);
-                    weaponComp.OnAddedToScene();
-                    Log.Line($"added to comp");
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
-        }
-
         private void OnEntityDelete(MyEntity myEntity)
         {
             try
@@ -134,7 +115,6 @@ namespace WeaponCore
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
-            MyEntities.OnEntityAdd -= OnEntityAdd;
             MyEntities.OnEntityDelete -= OnEntityDelete;
 
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
