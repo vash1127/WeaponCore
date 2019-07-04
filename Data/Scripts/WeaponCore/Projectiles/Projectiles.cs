@@ -181,19 +181,6 @@ namespace WeaponCore.Projectiles
                             var offVec = p.Position + Vector3D.Rotate(p.WepDef.GraphicDef.Particles.AmmoOffset, p.EntityMatrix);
                             p.Effect1.WorldMatrix = p.EntityMatrix;
                             p.Effect1.SetTranslation(offVec);
-                            /*
-                            var center = p.EntityMatrix.Translation;
-                            var backward = p.EntityMatrix.Backward;
-                            var up = p.EntityMatrix.Up;
-                            var right = p.EntityMatrix.Left;
-                            var offset = p.WepDef.GraphicDef.Particles.AmmoOffset;
-
-                            center += (backward * offset.Z);
-                            center += (up * offset.Y);
-                            center += (right * offset.X);
-                            */
-                            p.Effect1.WorldMatrix = p.EntityMatrix;
-                            p.Effect1.SetTranslation(offVec);
                         }
                     }
                     else if (!p.ConstantSpeed && p.Effect1 != null && p.WeaponSystem.AmmoParticle)
@@ -208,6 +195,8 @@ namespace WeaponCore.Projectiles
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
                     {
+                        var ds = new DSUtils();
+                        ds.Sw.Restart();
                         var fired = new Fired(p.WeaponSystem, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age);
                         GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
                         var hitInfo = GetHitEntities(p.CheckList, fired, beam);
@@ -229,6 +218,7 @@ namespace WeaponCore.Projectiles
                             }
                             p.ProjectileClose(pool, checkPool, noAv);
                         }
+                        ds.StopWatchReport("test", -1);
                     }
                     segmentPool.Return(segmentList);
                     if (intersect != null) continue;
