@@ -18,19 +18,19 @@ namespace WeaponCore.Projectiles
     internal partial class Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-
+        internal const int PoolCount = 16;
         internal readonly ConcurrentQueue<IThreadHits> Hits = new ConcurrentQueue<IThreadHits>();
 
-        internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[16];
-        internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[16][];
-        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[] SegmentPool = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[16];
-        internal readonly MyConcurrentPool<List<MyEntity>>[] CheckPool = new MyConcurrentPool<List<MyEntity>>[16];
-        internal readonly MyConcurrentPool<List<LineD>>[] LinePool = new MyConcurrentPool<List<LineD>>[16];
-        internal readonly MyConcurrentPool<DamageInfo>[] DamagePool = new MyConcurrentPool<DamageInfo>[16];
-        internal readonly MyConcurrentDictionary<IMySlimBlock, DamageInfo>[] HitBlocks = new MyConcurrentDictionary<IMySlimBlock, DamageInfo>[16];
-        internal readonly MyConcurrentDictionary<IMyEntity, DamageInfo>[] HitEnts = new MyConcurrentDictionary<IMyEntity, DamageInfo>[16];
-        internal readonly List<DrawProjectile>[] DrawProjectiles = new List<DrawProjectile>[16];
-        internal readonly object[] Wait = new object[16];
+        internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
+        internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
+        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[] SegmentPool = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[PoolCount];
+        internal readonly MyConcurrentPool<List<MyEntity>>[] CheckPool = new MyConcurrentPool<List<MyEntity>>[PoolCount];
+        internal readonly MyConcurrentPool<List<LineD>>[] LinePool = new MyConcurrentPool<List<LineD>>[PoolCount];
+        internal readonly MyConcurrentPool<DamageInfo>[] DamagePool = new MyConcurrentPool<DamageInfo>[PoolCount];
+        internal readonly MyConcurrentDictionary<IMySlimBlock, DamageInfo>[] HitBlocks = new MyConcurrentDictionary<IMySlimBlock, DamageInfo>[PoolCount];
+        internal readonly MyConcurrentDictionary<IMyEntity, DamageInfo>[] HitEnts = new MyConcurrentDictionary<IMyEntity, DamageInfo>[PoolCount];
+        internal readonly List<DrawProjectile>[] DrawProjectiles = new List<DrawProjectile>[PoolCount];
+        internal readonly object[] Wait = new object[PoolCount];
 
         internal Projectiles()
         {
@@ -64,11 +64,13 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-           //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
-           for (int i = 0; i < Wait.Length; i++)
-           {
+            MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+            /*
+            for (int i = 0; i < Wait.Length; i++)
+            {
                 Process(i);
-           }
+            }
+            */
         }
 
         private void Process(int i)
@@ -113,17 +115,32 @@ namespace WeaponCore.Projectiles
                     }
                     p.LastPosition = p.Position;
 
-                    if (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.Target != null && !p.Target.MarkedForClose)
+                    if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
                     {
                         Vector3D newVel;
-                        if (p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength)
+
+                        if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength))
                         {
-                            var physics = p.Target.Physics ?? p.Target.Parent.Physics;
+                            
                             var trajInfo = p.WepDef.AmmoDef.Trajectory;
-                            var commandedAccel = CalculateMissileIntercept(p.Target.PositionComp.WorldAABB.Center, physics.LinearVelocity, p.Position, p.Velocity, trajInfo.AccelPerSec, trajInfo.SmartsFactor);
+                            if (p.Target != null && !p.Target.MarkedForClose)
+                            {
+                                var physics = p.Target.Physics ?? p.Target.Parent.Physics;
+                                var targetPos = p.Target.PositionComp.WorldAABB.Center;
+                                if (targetPos != Vector3D.Zero) p.PrevTargetPos = targetPos;
+                                p.PrevTargetVel = physics.LinearVelocity;
+                            }
+                            else if (p.State != Projectile.ProjectileState.Zombie)
+                            {
+                                p.DistanceTraveled = 0;
+                                p.DistanceToTravelSqr = (Vector3D.DistanceSquared(p.Position, p.PrevTargetPos) + 100);
+                                p.State = Projectile.ProjectileState.Zombie;
+                            }
+                            var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, trajInfo.AccelPerSec, trajInfo.SmartsFactor);
                             newVel = p.Velocity + (commandedAccel * StepConst);
                         }
                         else newVel = p.Velocity += (p.Direction * p.AccelLength);
+
                         if (newVel.LengthSquared() > p.DesiredSpeedSqr)
                         {
                             newVel.Normalize();
@@ -154,14 +171,17 @@ namespace WeaponCore.Projectiles
                         p.TravelMagnitude = p.Velocity * StepConst;
                         p.Position += p.TravelMagnitude;
                     }
-
-                    p.DistanceTraveled += p.TravelMagnitude;
+                    p.DistanceTraveled += Vector3D.Dot(p.Direction, p.Velocity * StepConst);
 
                     if (p.ModelState == Projectile.EntityState.Exists)
                     {
                         p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
                         if (p.Effect1 != null && p.WeaponSystem.AmmoParticle)
                         {
+                            var offVec = p.Position + Vector3D.Rotate(p.WepDef.GraphicDef.Particles.AmmoOffset, p.EntityMatrix);
+                            p.Effect1.WorldMatrix = p.EntityMatrix;
+                            p.Effect1.SetTranslation(offVec);
+                            /*
                             var center = p.EntityMatrix.Translation;
                             var backward = p.EntityMatrix.Backward;
                             var up = p.EntityMatrix.Up;
@@ -171,8 +191,9 @@ namespace WeaponCore.Projectiles
                             center += (backward * offset.Z);
                             center += (up * offset.Y);
                             center += (right * offset.X);
+                            */
                             p.Effect1.WorldMatrix = p.EntityMatrix;
-                            p.Effect1.SetTranslation(center);
+                            p.Effect1.SetTranslation(offVec);
                         }
                     }
                     else if (!p.ConstantSpeed && p.Effect1 != null && p.WeaponSystem.AmmoParticle)
@@ -181,9 +202,8 @@ namespace WeaponCore.Projectiles
                     Vector3D? intersect = null;
                     var segmentList = segmentPool.Get();
                     LineD beam;
-                    if (p.State == Projectile.ProjectileState.OneAndDone) beam = new LineD(p.LastPosition, p.Position);
-                    else beam = new LineD(p.LastPosition - (p.Direction * p.CheckLength), p.Position);
-
+                    if (p.State == Projectile.ProjectileState.OneAndDone || p.Guidance != AmmoTrajectory.GuidanceType.None) beam = new LineD(p.LastPosition, p.Position);
+                    else beam = new LineD(p.LastPosition, p.Position);
                     MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
@@ -215,9 +235,9 @@ namespace WeaponCore.Projectiles
 
                     if (p.State != Projectile.ProjectileState.OneAndDone)
                     {
-                        if (p.DistanceTraveled.LengthSquared() > p.DistanceToTravelSqr)
+                        if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
-                            if (p.MoveToAndActivate)
+                            if (p.MoveToAndActivate || p.WeaponSystem.AmmoAreaEffect)
                                 GetEntitiesInBlastRadius(new Fired(p.WeaponSystem, null, p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age), p.Position, i);
 
                             p.ProjectileClose(pool, checkPool, noAv);

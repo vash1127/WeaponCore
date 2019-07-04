@@ -49,7 +49,7 @@ namespace WeaponCore.Projectiles
             {
                 var ent = segmentList != null ? segmentList[i].Element : entList[i];
                 if (ent == fired.FiringCube.CubeGrid) continue;
-                if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
+                //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {

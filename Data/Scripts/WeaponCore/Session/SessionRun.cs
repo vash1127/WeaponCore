@@ -11,7 +11,7 @@ using static Sandbox.Definitions.MyDefinitionManager;
 
 namespace WeaponCore
 {
-    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation | MyUpdateOrder.AfterSimulation, int.MinValue)]
+    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation | MyUpdateOrder.AfterSimulation | MyUpdateOrder.Simulation, int.MaxValue)]
     public partial class Session : MySessionComponentBase
     {
         public override void BeforeStart()
@@ -27,6 +27,7 @@ namespace WeaponCore
         {
             try
             {
+                //Log.Line("test4");
                 if (!DedicatedServer)
                 {
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
@@ -50,6 +51,25 @@ namespace WeaponCore
                 AiLoop();
                 //MyAPIGateway.Parallel.Start(Projectiles.Update);
                 Projectiles.Update();
+                //Log.Line("test1");
+            }
+            catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
+        }
+
+        public override void Simulate()
+        {
+            try
+            {
+                //Log.Line("test2");
+            }
+            catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
+        }
+
+        public override void UpdateAfterSimulation()
+        {
+            try
+            {
+                //Log.Line("test3");
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

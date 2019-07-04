@@ -5,7 +5,6 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -35,8 +34,9 @@ namespace WeaponCore.Projectiles
         internal Vector3D CameraStartPos;
         internal Vector3D LastEntityPos;
         internal Vector3D OriginTargetPos;
-        internal Vector3D DistanceTraveled;
         internal Vector3D PredictedTargetPos;
+        internal Vector3D PrevTargetPos;
+        internal Vector3D PrevTargetVel;
         internal WeaponSystem WeaponSystem;
         internal WeaponDefinition WepDef;
         internal List<MyEntity> CheckList;
@@ -52,7 +52,7 @@ namespace WeaponCore.Projectiles
         internal float MaxTrajectory;
         internal float SmartsFactor;
         internal double MaxTrajectorySqr;
-        internal double DistanceTraveledSqr;
+        internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
         internal double ShotLength;
         internal double ScreenCheckRadius;
@@ -96,6 +96,8 @@ namespace WeaponCore.Projectiles
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
             Position = Origin;
             LastEntityPos = Origin;
+            PrevTargetPos = PredictedTargetPos;
+            PrevTargetVel = Vector3D.Zero;
             ReverseOriginRay = new RayD(Origin, -Direction);
             HitEntity = null;
             FirstOffScreen = true;
@@ -103,8 +105,7 @@ namespace WeaponCore.Projectiles
             PositionChecked = false;
             EndStep = 0;
             GrowStep = 1;
-            DistanceTraveledSqr = 0;
-
+            DistanceTraveled = 0;
             WepDef = WeaponSystem.WeaponType;
             FiringGrid = FiringCube.CubeGrid;
             Guidance = WepDef.AmmoDef.Trajectory.Guidance;
@@ -297,6 +298,7 @@ namespace WeaponCore.Projectiles
             Ending,
             Dead,
             OneAndDone,
+            Zombie,
         }
 
         internal enum EntityState
