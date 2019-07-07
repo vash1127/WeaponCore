@@ -1,5 +1,8 @@
 ﻿using System;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
+using VRage;
+using VRage.Audio;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -21,7 +24,6 @@ namespace WeaponCore.Platform
             if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
             var bps = Kind.HardPoint.BarrelsPerShot;
             var skipAhead = Kind.HardPoint.SkipBarrels;
-
             if (AvCapable && (!PlayTurretAv || Comp.MyAi.MySession.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointMaxSoundDistSqr;
 
