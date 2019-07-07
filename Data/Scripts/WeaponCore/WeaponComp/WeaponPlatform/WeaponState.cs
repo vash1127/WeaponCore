@@ -92,7 +92,7 @@ namespace WeaponCore.Platform
             //if (FiringSound != null) 
             //Comp.StopRotSound(false);
             StopFiringSound(false);
-
+            TicksUntilShoot = 0;
             IsShooting = false;
         }
 

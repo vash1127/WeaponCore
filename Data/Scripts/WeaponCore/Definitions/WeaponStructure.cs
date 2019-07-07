@@ -15,6 +15,7 @@ namespace WeaponCore.Support
         public readonly string[] Barrels;
         public readonly int ModelId;
         public readonly int ReloadTime;
+        public readonly int DelayToFire;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly FiringSoundState FiringSound;
@@ -65,6 +66,7 @@ namespace WeaponCore.Support
 
             MaxTrajectorySqr = kind.Ammo.Trajectory.MaxTrajectory * kind.Ammo.Trajectory.MaxTrajectory;
             ReloadTime = kind.HardPoint.ReloadTime;
+            DelayToFire = kind.HardPoint.DelayUntilFire;
             var audioDef = kind.Audio;
 
             var fSoundStart = audioDef.HardPoint.FiringSound;

@@ -69,6 +69,7 @@ namespace WeaponCore.Platform
         internal double AimingTolerance;
         internal int WeaponId;
         internal uint CheckedForTargetTick;
+        internal uint TicksUntilShoot;
         internal float RotationSpeed;
         internal float ElevationSpeed;
         internal float MaxAzimuthRadians;

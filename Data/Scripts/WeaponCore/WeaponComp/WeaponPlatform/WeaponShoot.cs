@@ -25,11 +25,13 @@ namespace WeaponCore.Platform
 
             if (Kind.HardPoint.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
+            TicksUntilShoot++;
             if (ShotCounter != 0) return;
             if (!IsShooting) StartShooting();
             var playTurretAv = ws.HasTurretShootAv && !session.DedicatedServer && Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < ws.TurretAvDistSqr;
-            if (playTurretAv) ShootingAV();
-            if (Kind.HardPoint.DelayUntilFire > 0)
+            if (playTurretAv && TicksUntilShoot >= Kind.HardPoint.DelayUntilFire) ShootingAV();
+            if (Kind.HardPoint.DelayUntilFire > 0 && TicksUntilShoot < Kind.HardPoint.DelayUntilFire) return;
+
             if (!System.EnergyAmmo) CurrentAmmo--;
 
             var endBarrel = _numOfBarrels - 1;
