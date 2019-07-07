@@ -28,7 +28,7 @@ namespace WeaponCore.Platform
             TicksUntilShoot++;
             if (ShotCounter != 0) return;
             if (!IsShooting) StartShooting();
-            var playTurretAv = ws.HasTurretShootAv && !session.DedicatedServer && Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < ws.TurretAvDistSqr;
+            var playTurretAv = ws.HasTurretShootAv && !session.DedicatedServer && Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < SoundDistanceSqr;
             if (playTurretAv && TicksUntilShoot >= Kind.HardPoint.DelayUntilFire) ShootingAV();
             if (Kind.HardPoint.DelayUntilFire > 0 && TicksUntilShoot < Kind.HardPoint.DelayUntilFire) return;
 
@@ -144,6 +144,8 @@ namespace WeaponCore.Platform
             rotationMatrix.Translation = _localTranslation;
             EntityPart.PositionComp.LocalMatrix = rotationMatrix;
             BarrelMove = false;
+
+            if (RotateEmitter != null && !RotateEmitter.IsPlaying) StartRotateSound();
         }
     }
 }

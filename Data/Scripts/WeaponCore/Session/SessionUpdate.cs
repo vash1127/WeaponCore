@@ -50,19 +50,14 @@ namespace WeaponCore
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
 
-                        if (!DedicatedServer && w.TrackingAi && w.System.TurretRotationSound)
+                        if (!DedicatedServer && w.TrackingAi && w.System.HardPointRotationSound)
                         {
                             var rotationEmitter = comp.RotationEmitter != null;
+
                             if (w.IsTracking && !comp.AiLock && rotationEmitter && !comp.RotationEmitter.IsPlaying)
-                            {
                                 comp.RotationEmitter.PlaySound(comp.RotationSound, true, false, false, false, false, false);
-                                Log.Line($"play rot sound: {comp.RotationEmitter.SoundId}");
-                            }
                             else if ((!w.IsTracking || comp.AiLock) && rotationEmitter && comp.RotationEmitter.IsPlaying)
-                            {
-                                Log.Line($"stop rot 1: {comp.RotationEmitter.SoundId}");
                                 comp.StopRotSound(false);
-                            }
                         }
 
                         if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();

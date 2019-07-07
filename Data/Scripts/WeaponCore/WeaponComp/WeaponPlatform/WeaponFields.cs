@@ -53,8 +53,10 @@ namespace WeaponCore.Platform
 
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
+        internal MySoundPair RotateSound;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
+        internal readonly MyEntity3DSoundEmitter RotateEmitter;
 
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
@@ -76,7 +78,7 @@ namespace WeaponCore.Platform
         internal float MinAzimuthRadians;
         internal float MaxElevationRadians;
         internal float MinElevationRadians;
-
+        internal float SoundDistanceSqr;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -122,11 +124,18 @@ namespace WeaponCore.Platform
             Kind = system.Kind;
             Comp = comp;
 
-            if (system.FiringSound == WeaponSystem.FiringSoundState.Full)
+            if (system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
                 FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 FiringSound = new MySoundPair();
                 FiringSound.Init(Kind.Audio.HardPoint.FiringSound);
+                if (FiringEmitter.CustomMaxDistance.HasValue)
+                {
+                    var value = FiringEmitter.CustomMaxDistance.Value;
+                    SoundDistanceSqr = value * value;
+                    Log.Line($"CustomDistance:{value}");
+                }
+                Log.Line($"Weapon:{System.WeaponName} - Not Per Shot Firing Sound");
             }
 
             if (system.TurretReloadSound)
@@ -134,6 +143,13 @@ namespace WeaponCore.Platform
                 ReloadEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 ReloadSound = new MySoundPair();
                 ReloadSound.Init(Kind.Audio.HardPoint.ReloadSound);
+            }
+
+            if (system.BarrelRotationSound && system.Kind.HardPoint.RotateBarrelAxis != 0)
+            {
+                RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
+                RotateSound = new MySoundPair();
+                RotateSound.Init(Kind.Audio.HardPoint.BarrelRotationSound);
             }
 
             WeaponId = weaponId;
@@ -144,7 +160,6 @@ namespace WeaponCore.Platform
             _ticksPerShot = (uint)(3600 / Kind.HardPoint.RateOfFire);
             _timePerShot = (3600d / Kind.HardPoint.RateOfFire);
             _numOfBarrels = System.Barrels.Length;
-
             BeamSlot = new uint[_numOfBarrels];
         }
     }

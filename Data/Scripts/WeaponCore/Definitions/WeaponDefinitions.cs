@@ -180,16 +180,11 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct AudioHardPointDefinition
     {
-        [ProtoMember(1)] internal float ReloadRange;
-        [ProtoMember(2)] internal float ReloadVolume;
-        [ProtoMember(3)] internal float FiringRange;
-        [ProtoMember(4)] internal float FiringVolume;
-        [ProtoMember(5)] internal Randomize FiringPitchVar;
-        [ProtoMember(6)] internal Randomize FiringVolumeVar;
-        [ProtoMember(7)] internal string ReloadSound;
-        [ProtoMember(8)] internal string NoAmmoSound;
-        [ProtoMember(9)] internal string TurretRotationSound;
-        [ProtoMember(10)] internal string FiringSound;
-        [ProtoMember(11)] internal bool FiringSoundLoop;
+        [ProtoMember(1)] internal string ReloadSound;
+        [ProtoMember(2)] internal string NoAmmoSound;
+        [ProtoMember(3)] internal string HardPointRotationSound;
+        [ProtoMember(4)] internal string BarrelRotationSound;
+        [ProtoMember(5)] internal string FiringSound;
+        [ProtoMember(6)] internal bool FiringSoundPerShot;
     }
 }

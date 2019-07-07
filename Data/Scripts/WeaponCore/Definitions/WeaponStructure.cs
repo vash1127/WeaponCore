@@ -23,21 +23,21 @@ namespace WeaponCore.Support
         public readonly bool AmmoHitSound;
         public readonly bool AmmoTravelSound;
         public readonly bool TurretReloadSound;
-        public readonly bool TurretRotationSound;
+        public readonly bool HardPointRotationSound;
+        public readonly bool BarrelRotationSound;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
         public readonly bool EnergyAmmo;
         public readonly bool TurretEffect1;
         public readonly bool TurretEffect2;
         public readonly bool HasTurretShootAv;
-        public readonly double TurretAvDistSqr;
         public readonly double MaxTrajectorySqr;
 
         public enum FiringSoundState
         {
             None,
-            Simple,
-            Full
+            PerShot,
+            WhenDone
         }
 
         public readonly MyStringId ProjectileMaterial;
@@ -56,7 +56,8 @@ namespace WeaponCore.Support
             AmmoHitSound = kind.Audio.Ammo.HitSound != string.Empty;
             AmmoTravelSound = kind.Audio.Ammo.TravelSound != string.Empty;
             TurretReloadSound = kind.Audio.HardPoint.ReloadSound != string.Empty;
-            TurretRotationSound = kind.Audio.HardPoint.TurretRotationSound != string.Empty;
+            HardPointRotationSound = kind.Audio.HardPoint.HardPointRotationSound != string.Empty;
+            BarrelRotationSound = kind.Audio.HardPoint.BarrelRotationSound != string.Empty;
             TurretEffect1 = kind.Graphics.Particles.Turret1Particle != string.Empty;
             TurretEffect2 = kind.Graphics.Particles.Turret2Particle != string.Empty;
 
@@ -71,10 +72,10 @@ namespace WeaponCore.Support
 
             var fSoundStart = audioDef.HardPoint.FiringSound;
 
-            if (fSoundStart != string.Empty && !audioDef.HardPoint.FiringSoundLoop)
-                FiringSound = FiringSoundState.Simple;
-            else if (fSoundStart != string.Empty && audioDef.HardPoint.FiringSoundLoop)
-                FiringSound = FiringSoundState.Full;
+            if (fSoundStart != string.Empty && audioDef.HardPoint.FiringSoundPerShot)
+                FiringSound = FiringSoundState.PerShot;
+            else if (fSoundStart != string.Empty && !audioDef.HardPoint.FiringSoundPerShot)
+                FiringSound = FiringSoundState.WhenDone;
             else FiringSound = FiringSoundState.None;
 
             if (kind.Graphics.ModelName != string.Empty && !kind.Graphics.Line.Trail)
@@ -84,10 +85,7 @@ namespace WeaponCore.Support
             }
             else ModelId = -1;
 
-            HasTurretShootAv = TurretEffect1 || TurretEffect2 || TurretRotationSound || FiringSound == FiringSoundState.Full;
-
-            var firingRange = kind.Audio.HardPoint.FiringRange;
-            TurretAvDistSqr = FiringSound == FiringSoundState.Full ? firingRange * firingRange : 2500;
+            HasTurretShootAv = TurretEffect1 || TurretEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
         }
     }
 

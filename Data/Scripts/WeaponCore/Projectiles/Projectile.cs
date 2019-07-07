@@ -164,7 +164,7 @@ namespace WeaponCore.Projectiles
                 if (System.AmmoHitSound)
                     HitSound.Init(Kind.Audio.Ammo.HitSound, false);
 
-                if (FiringSoundState == WeaponSystem.FiringSoundState.Simple)
+                if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
                 {
                     FireSound.Init(Kind.Audio.HardPoint.FiringSound, false);
                     FireSoundStart();
@@ -224,8 +224,8 @@ namespace WeaponCore.Projectiles
 
         internal void FireSoundStart()
         {
-            Sound1.CustomMaxDistance = Kind.Audio.HardPoint.FiringRange;
-            Sound1.CustomVolume = Kind.Audio.HardPoint.FiringVolume;
+            //Sound1.CustomMaxDistance = Kind.Audio.HardPoint.FiringRange;
+            //Sound1.CustomVolume = Kind.Audio.HardPoint.FiringVolume;
             Sound1.SetPosition(Origin);
             Sound1.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
         }

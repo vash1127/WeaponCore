@@ -24,12 +24,6 @@ namespace WeaponCore.Platform
 
         private void ShootingAV()
         {
-
-            if (System.FiringSound == WeaponSystem.FiringSoundState.Full)
-            {
-
-            }
-
             if (System.TurretEffect1 || System.TurretEffect2)
             {
                 var particles = Kind.Graphics.Particles;
@@ -88,9 +82,7 @@ namespace WeaponCore.Platform
                 MuzzleEffect1.Stop(false);
                 MuzzleEffect1 = null;
             }
-
-            //if (FiringSound != null) 
-            //Comp.StopRotSound(false);
+            Log.Line("stop shooting");
             StopFiringSound(false);
             TicksUntilShoot = 0;
             IsShooting = false;
@@ -103,13 +95,12 @@ namespace WeaponCore.Platform
                 return;
 
             FiringEmitter.PlaySound(FiringSound, true);
-
             Log.Line("Start Firing Sound");
         }
 
         public void StopFiringSound(bool force)
         {
-            if (FiringEmitter == null || !FiringEmitter.IsPlaying)
+            if (FiringEmitter == null)
                 return;
             Log.Line("Stop Firing Sound");
             FiringEmitter.StopSound(force);
@@ -127,6 +118,19 @@ namespace WeaponCore.Platform
             if (!System.TurretReloadSound) return;
             Log.Line("Stop Reload Sound");
             ReloadEmitter?.StopSound(true, true);
+        }
+
+        public void StartRotateSound()
+        {
+            Log.Line("Start Reload Sound");
+            RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);
+        }
+
+        public void StopRotateSound()
+        {
+            if (RotateEmitter == null) return;
+            Log.Line("Stop Reload Sound");
+            RotateEmitter.StopSound(true, true);
         }
     }
 }

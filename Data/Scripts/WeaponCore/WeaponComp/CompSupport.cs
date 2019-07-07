@@ -45,11 +45,10 @@ namespace WeaponCore.Support
 
         public void StopRotSound(bool force)
         {
-            if (TrackingWeapon.System.TurretRotationSound && RotationEmitter != null)
+            if (TrackingWeapon.System.HardPointRotationSound && RotationEmitter != null)
             {
                 if (!RotationEmitter.IsPlaying)
                     return;
-                Log.Line("StopRotSound");
                 RotationEmitter.StopSound(force);
             }
         }

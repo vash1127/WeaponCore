@@ -35,10 +35,10 @@ namespace WeaponCore.Platform
                 {
                     weapon.TrackingAi = true;
                     comp.TrackingWeapon = weapon;
-                    if (weapon.System.TurretRotationSound)
+                    if (weapon.System.HardPointRotationSound)
                     {
                         comp.RotationSound = new MySoundPair();
-                        comp.RotationSound.Init(weapon.Kind.Audio.HardPoint.TurretRotationSound, false);
+                        comp.RotationSound.Init(weapon.Kind.Audio.HardPoint.HardPointRotationSound, false);
                     }
                 }
             }
