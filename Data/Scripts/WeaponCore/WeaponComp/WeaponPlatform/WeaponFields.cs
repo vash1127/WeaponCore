@@ -1,5 +1,7 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using VRage;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
@@ -36,8 +38,8 @@ namespace WeaponCore.Platform
         //private bool _firstRun = true;
 
         internal IMyEntity EntityPart;
-        internal WeaponSystem WeaponSystem;
-        internal WeaponDefinition WeaponType;
+        internal WeaponSystem System;
+        internal WeaponDefinition Kind;
         internal Dummy[] Dummies;
         internal Muzzle[] Muzzles;
         internal WeaponComponent Comp;
@@ -45,6 +47,14 @@ namespace WeaponCore.Platform
         internal MyEntity Target;
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
+
+        internal MyParticleEffect MuzzleEffect1;
+        internal MyParticleEffect MuzzleEffect2;
+
+        internal MySoundPair ReloadSound;
+        internal MySoundPair FiringSound;
+        internal readonly MyEntity3DSoundEmitter ReloadEmitter;
+        internal readonly MyEntity3DSoundEmitter FiringEmitter;
 
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
@@ -86,8 +96,8 @@ namespace WeaponCore.Platform
             {
                 if (value)
                 {
-                    Comp.BlockInventory.RemoveItemsOfType(1, WeaponSystem.AmmoDefId);
-                    AmmoMagTimer = WeaponSystem.ReloadTime;
+                    Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
+                    AmmoMagTimer = System.ReloadTime;
                 }
             }
         }
@@ -97,27 +107,42 @@ namespace WeaponCore.Platform
             get
             {
                 if (--AmmoMagTimer > 0) return false;
-                CurrentAmmo = WeaponSystem.MagazineDef.Capacity;
+                CurrentAmmo = System.MagazineDef.Capacity;
                 AmmoMagTimer = int.MaxValue;
                 return true;
             }
         }
 
-        public Weapon(IMyEntity entity, WeaponSystem weaponSystem, int weaponId)
+        public Weapon(IMyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp)
         {
             EntityPart = entity;
             _localTranslation = entity.LocalMatrix.Translation;
-            WeaponSystem = weaponSystem;
-            WeaponType = weaponSystem.WeaponType;
+            System = system;
+            Kind = system.Kind;
+            Comp = comp;
+
+            if (system.FiringSound == WeaponSystem.FiringSoundState.Full)
+            {
+                FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
+                FiringSound = new MySoundPair();
+                FiringSound.Init(Kind.Audio.HardPoint.FiringSound);
+            }
+
+            if (system.TurretReloadSound)
+            {
+                ReloadEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
+                ReloadSound = new MySoundPair();
+                ReloadSound.Init(Kind.Audio.HardPoint.ReloadSound);
+            }
 
             WeaponId = weaponId;
-            IsTurret = WeaponType.TurretDef.IsTurret;
-            TurretMode = WeaponType.TurretDef.TurretController;
-            TrackTarget = WeaponType.TurretDef.TrackTargets;
-            AimingTolerance = Math.Cos(MathHelper.ToRadians(WeaponType.TurretDef.AimingTolerance));
-            _ticksPerShot = (uint)(3600 / WeaponType.TurretDef.RateOfFire);
-            _timePerShot = (3600d / WeaponType.TurretDef.RateOfFire);
-            _numOfBarrels = WeaponSystem.Barrels.Length;
+            IsTurret = Kind.HardPoint.IsTurret;
+            TurretMode = Kind.HardPoint.TurretController;
+            TrackTarget = Kind.HardPoint.TrackTargets;
+            AimingTolerance = Math.Cos(MathHelper.ToRadians(Kind.HardPoint.AimingTolerance));
+            _ticksPerShot = (uint)(3600 / Kind.HardPoint.RateOfFire);
+            _timePerShot = (3600d / Kind.HardPoint.RateOfFire);
+            _numOfBarrels = System.Barrels.Length;
 
             BeamSlot = new uint[_numOfBarrels];
         }

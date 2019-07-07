@@ -21,7 +21,6 @@ namespace WeaponCore.Projectiles
         internal MatrixD EntityMatrix;
         internal RayD ReverseOriginRay;
         internal LineD CurrentLine;
-        internal BoundingBoxD GroupAABB;
         internal Vector3D Direction;
         internal Vector3D Position;
         internal Vector3D LastPosition;
@@ -37,8 +36,8 @@ namespace WeaponCore.Projectiles
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
         internal Vector3D PrevTargetVel;
-        internal WeaponSystem WeaponSystem;
-        internal WeaponDefinition WepDef;
+        internal WeaponSystem System;
+        internal WeaponDefinition Kind;
         internal List<MyEntity> CheckList;
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
@@ -88,7 +87,6 @@ namespace WeaponCore.Projectiles
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
-        internal HashSet<MyCubeGrid> GridGroup;
 
         internal void Start(List<MyEntity> checkList, bool noAv)
         {
@@ -106,26 +104,26 @@ namespace WeaponCore.Projectiles
             EndStep = 0;
             GrowStep = 1;
             DistanceTraveled = 0;
-            WepDef = WeaponSystem.WeaponType;
+            Kind = System.Kind;
             FiringGrid = FiringCube.CubeGrid;
-            Guidance = WepDef.AmmoDef.Trajectory.Guidance;
+            Guidance = Kind.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
             LockedTarget = Target != null && !Target.MarkedForClose;
-            SmartsFactor = WepDef.AmmoDef.Trajectory.SmartsFactor;
+            SmartsFactor = Kind.Ammo.Trajectory.SmartsFactor;
             if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
             CheckList = checkList;
 
-            DrawLine = WepDef.GraphicDef.Line.Trail;
-            MaxTrajectory = WepDef.AmmoDef.Trajectory.MaxTrajectory;
+            DrawLine = Kind.Graphics.Line.Trail;
+            MaxTrajectory = Kind.Ammo.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
-            ShotLength = WepDef.AmmoDef.ProjectileLength;
+            ShotLength = Kind.Ammo.ProjectileLength;
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
-            DesiredSpeed = WepDef.AmmoDef.Trajectory.DesiredSpeed;
+            DesiredSpeed = Kind.Ammo.Trajectory.DesiredSpeed;
             DesiredSpeedSqr = DesiredSpeed * DesiredSpeed;
             Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
 
-            Draw = DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && WepDef.GraphicDef.VisualProbability >= MyUtils.GetRandomDouble(0.0f, 1f);
+            Draw = DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && Kind.Graphics.VisualProbability >= MyUtils.GetRandomDouble(0.0f, 1f);
 
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
@@ -138,41 +136,41 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            FiringSoundState = WeaponSystem.FiringSound;
-            AmmoTravelSoundRangeSqr = (WepDef.AudioDef.Ammo.TravelRange * WepDef.AudioDef.Ammo.TravelRange);
+            FiringSoundState = System.FiringSound;
+            AmmoTravelSoundRangeSqr = (Kind.Audio.Ammo.TravelRange * Kind.Audio.Ammo.TravelRange);
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
 
-            ConstantSpeed = WepDef.AmmoDef.Trajectory.AccelPerSec <= 0;
+            ConstantSpeed = Kind.Ammo.Trajectory.AccelPerSec <= 0;
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
             MaxSpeedLength = MaxVelocity.Length() * StepConst;// * MyUtils.GetRandomFloat(1f, 1.5f);
-            AccelLength = WepDef.AmmoDef.Trajectory.AccelPerSec * StepConst;
+            AccelLength = Kind.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
 
             if (!noAv)
             {
-                if (WeaponSystem.AmmoParticle) ProjectileParticleStart();
+                if (System.AmmoParticle) ProjectileParticleStart();
 
-                if (WeaponSystem.AmmoTravelSound)
+                if (System.AmmoTravelSound)
                 {
                     HasTravelSound = true;
-                    TravelSound.Init(WepDef.AudioDef.Ammo.TravelSound, false);
+                    TravelSound.Init(Kind.Audio.Ammo.TravelSound, false);
                 }
                 else HasTravelSound = false;
 
-                if (WeaponSystem.AmmoHitSound)
-                    HitSound.Init(WepDef.AudioDef.Ammo.HitSound, false);
+                if (System.AmmoHitSound)
+                    HitSound.Init(Kind.Audio.Ammo.HitSound, false);
 
                 if (FiringSoundState == WeaponSystem.FiringSoundState.Simple)
                 {
-                    FireSound.Init(WepDef.AudioDef.Turret.FiringSoundStart, false);
+                    FireSound.Init(Kind.Audio.HardPoint.FiringSound, false);
                     FireSoundStart();
                 }
 
-                ModelId = WeaponSystem.ModelId;
+                ModelId = System.ModelId;
                 if (ModelId != -1)
                 {
                     ModelState = EntityState.Exists;
@@ -205,37 +203,37 @@ namespace WeaponCore.Projectiles
             {
                 parentId = Entity.Render.GetRenderObjectID();
                 matrix = MatrixD.Identity;
-                to += Vector3D.Rotate(WepDef.GraphicDef.Particles.AmmoOffset, EntityMatrix);
+                to += Vector3D.Rotate(Kind.Graphics.Particles.AmmoOffset, EntityMatrix);
             }
             else
             {
                 matrix = MatrixD.CreateTranslation(to);
                 parentId = uint.MaxValue;
             }
-            MyParticlesManager.TryCreateParticleEffect(WepDef.GraphicDef.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+            MyParticlesManager.TryCreateParticleEffect(Kind.Graphics.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
             Effect1.DistanceMax = 5000;
-            Effect1.UserColorMultiplier = WepDef.GraphicDef.Particles.AmmoColor;
+            Effect1.UserColorMultiplier = Kind.Graphics.Particles.AmmoColor;
             var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
             var scaler = reScale < 1 ? reScale : 1;
 
-            Effect1.UserRadiusMultiplier = WepDef.GraphicDef.Particles.AmmoScale * scaler;
+            Effect1.UserRadiusMultiplier = Kind.Graphics.Particles.AmmoScale * scaler;
             Effect1.UserEmitterScale = 1 * scaler;
             if (ModelState != EntityState.Exists) Effect1.Velocity = Velocity;
         }
 
         internal void FireSoundStart()
         {
-            Sound1.CustomMaxDistance = WepDef.AudioDef.Turret.FiringRange;
-            Sound1.CustomVolume = WepDef.AudioDef.Turret.FiringVolume;
+            Sound1.CustomMaxDistance = Kind.Audio.HardPoint.FiringRange;
+            Sound1.CustomVolume = Kind.Audio.HardPoint.FiringVolume;
             Sound1.SetPosition(Origin);
             Sound1.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
         }
 
         internal void AmmoSoundStart()
         {
-            Sound1.CustomMaxDistance = WepDef.AudioDef.Ammo.TravelRange;
-            Sound1.CustomVolume = WepDef.AudioDef.Ammo.TravelVolume;
+            Sound1.CustomMaxDistance = Kind.Audio.Ammo.TravelRange;
+            Sound1.CustomVolume = Kind.Audio.Ammo.TravelVolume;
             Sound1.SetPosition(Position);
             Sound1.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
             AmmoSound = true;
@@ -256,19 +254,19 @@ namespace WeaponCore.Projectiles
         {
             if (ModelState == EntityState.Exists)
             {
-                drawList.Add(new Projectiles.DrawProjectile(WeaponSystem, Entity, EntityMatrix, 0, new LineD(), Velocity, Vector3D.Zero, null, true, 0, 0, false, true));
+                drawList.Add(new Projectiles.DrawProjectile(System, Entity, EntityMatrix, 0, new LineD(), Velocity, Vector3D.Zero, null, true, 0, 0, false, true));
                 entPool.MarkForDeallocate(Entity);
                 ModelState = EntityState.Stale;
             }
 
             if (EndStep++ >= EndSteps)
             {
-                if (WeaponSystem.AmmoParticle) DisposeEffect();
+                if (System.AmmoParticle) DisposeEffect();
 
-                if (WeaponSystem.AmmoHitSound)
+                if (System.AmmoHitSound)
                 {
-                    Sound1.CustomMaxDistance = WepDef.AudioDef.Ammo.HitRange;
-                    Sound1.CustomVolume = WepDef.AudioDef.Ammo.HitVolume;
+                    Sound1.CustomMaxDistance = Kind.Audio.Ammo.HitRange;
+                    Sound1.CustomVolume = Kind.Audio.Ammo.HitVolume;
                     Sound1.SetPosition(Position);
                     Sound1.CanPlayLoopSounds = false;
                     Sound1.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);

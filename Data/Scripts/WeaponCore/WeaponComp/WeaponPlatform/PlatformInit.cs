@@ -1,4 +1,5 @@
 ﻿using Sandbox.Definitions;
+using Sandbox.Game.Entities;
 using VRage.ModAPI;
 using WeaponCore.Support;
 
@@ -23,22 +24,25 @@ namespace WeaponCore.Platform
                 var barrelCount = Structure.WeaponSystems[Structure.PartNames[i]].Barrels.Length;
                 IMyEntity partEntity;
                 Parts.NameToEntity.TryGetValue(Structure.PartNames[i].String, out partEntity);
-                Weapons[i] = new Weapon(partEntity, Structure.WeaponSystems[Structure.PartNames[i]], i)
+                Weapons[i] = new Weapon(partEntity, Structure.WeaponSystems[Structure.PartNames[i]], i, comp)
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
-                    Comp = comp,
                 };
 
                 var weapon = Weapons[i];
-                if (weapon.WeaponType.TurretDef.TurretController && comp.TrackingWeapon == null)
+                if (weapon.Kind.HardPoint.TurretController && comp.TrackingWeapon == null)
                 {
                     weapon.TrackingAi = true;
                     comp.TrackingWeapon = weapon;
+                    if (weapon.System.TurretRotationSound)
+                    {
+                        comp.RotationSound = new MySoundPair();
+                        comp.RotationSound.Init(weapon.Kind.Audio.HardPoint.TurretRotationSound, false);
+                    }
                 }
             }
             CompileTurret();
-            //if (!comp.MyAi.SubGridInit) comp.MyAi.SubGridInfo();
         }
 
         private void CompileTurret()

@@ -25,12 +25,12 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        var energyAmmo = w.WeaponSystem.EnergyAmmo;
+                        var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
                                 AmmoPull(comp, w, false);
-                            else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.WeaponSystem.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
+                            else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.System.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
                         }
                         //Log.Line($"Turret: AiReady:{w.AiReady}({w.Comp.TurretTargetLock} - ValidTarget:{w.Target != null} - TrackingAi:{w.TrackingAi}  - Multi:{comp.MultiInventory} - FullInv:{comp.FullInventory}) - AmmoMa: AmmoSuspend:{w.AmmoSuspend} - AmmoFull:{w.AmmoFull} - AmmoCheck:{ammoCheck} - CurrAmmo:{w.CurrentAmmo} - CurrentMags:{w.CurrentMags} - Energy:{energyAmmo}");
@@ -38,7 +38,11 @@ namespace WeaponCore
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
-                                if (w.CurrentMags != 0) w.LoadAmmoMag = true;
+                                if (w.CurrentMags != 0)
+                                {
+                                    w.LoadAmmoMag = true;
+                                    w.StartReloadSound();
+                                }
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
@@ -46,8 +50,23 @@ namespace WeaponCore
 
                         if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
 
+                        if (!DedicatedServer && w.TrackingAi && w.System.TurretRotationSound)
+                        {
+                            var rotationEmitter = comp.RotationEmitter != null;
+                            if (w.IsTracking && !comp.AiLock && rotationEmitter && !comp.RotationEmitter.IsPlaying)
+                            {
+                                comp.RotationEmitter.PlaySound(comp.RotationSound, true, false, false, false, false, false);
+                                Log.Line($"play rot sound: {comp.RotationEmitter.SoundId}");
+                            }
+                            else if ((!w.IsTracking || comp.AiLock) && rotationEmitter && comp.RotationEmitter.IsPlaying)
+                            {
+                                Log.Line($"stop rot 1: {comp.RotationEmitter.SoundId}");
+                                comp.StopRotSound(false);
+                            }
+                        }
+
                         if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
-                        else if (w.IsShooting) w.EndShooting();
+                        else if (w.IsShooting) w.StopShooting();
                     }
                 }
                 gridAi.Ready = false;

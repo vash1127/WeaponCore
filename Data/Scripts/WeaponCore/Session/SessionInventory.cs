@@ -28,7 +28,7 @@ namespace WeaponCore
 
         private static void AmmoPull(WeaponComponent comp, Weapon weapon, bool suspend)
         {
-            Log.Line($"[ammo pull] suspend:{suspend}(was:{weapon.AmmoSuspend}) weaponId:{weapon.WeaponId} - weaponDef:{weapon.WeaponSystem.AmmoDefId.SubtypeId.String} - Full:{weapon.AmmoFull} - weaponSuspendAge:{weapon.SuspendAmmoTick} - weaponUnSuspendAge:{weapon.UnSuspendAmmoTick} - multi:{comp.MultiInventory} - ");
+            Log.Line($"[ammo pull] suspend:{suspend}(was:{weapon.AmmoSuspend}) weaponId:{weapon.WeaponId} - weaponDef:{weapon.System.AmmoDefId.SubtypeId.String} - Full:{weapon.AmmoFull} - weaponSuspendAge:{weapon.SuspendAmmoTick} - weaponUnSuspendAge:{weapon.UnSuspendAmmoTick} - multi:{comp.MultiInventory} - ");
             weapon.AmmoSuspend = suspend;
 
             if (suspend) NextActiveAmmoDef(comp, weapon, true);
@@ -126,7 +126,7 @@ namespace WeaponCore
                     comp.BlockInventory.Constraint.Add(def);
                 }
                 var newWeapon = comp.Platform.Weapons[nextId];
-                Log.Line($"[sending nextDef] next:{nextDef.SubtypeId.String} - last:{oldWeapon.WeaponSystem.AmmoDefId.SubtypeId.String} - Full:{oldWeapon.AmmoFull} - oldWeaponId:{oldWeapon.WeaponId} - newWeaponId:{newWeapon.WeaponId} - newSus/newUnSus:{newWeapon.SuspendAmmoTick}/{newWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend} - newAmmoSuspend:{newWeapon.AmmoSuspend} - skipOld:{skipOld}");
+                Log.Line($"[sending nextDef] next:{nextDef.SubtypeId.String} - last:{oldWeapon.System.AmmoDefId.SubtypeId.String} - Full:{oldWeapon.AmmoFull} - oldWeaponId:{oldWeapon.WeaponId} - newWeaponId:{newWeapon.WeaponId} - newSus/newUnSus:{newWeapon.SuspendAmmoTick}/{newWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend} - newAmmoSuspend:{newWeapon.AmmoSuspend} - skipOld:{skipOld}");
                 newWeapon.SuspendAmmoTick = 0;
                 newWeapon.UnSuspendAmmoTick = 0;
                 return nextDef;
@@ -141,7 +141,7 @@ namespace WeaponCore
         {
             var comp = weapon.Comp;
             comp.BlockInventory.Refresh();
-            var def = weapon.WeaponSystem.AmmoDefId;
+            var def = weapon.System.AmmoDefId;
             comp.FullInventory = comp.BlockInventory.CargoPercentage >= 0.5;
             weapon.CurrentMags = comp.BlockInventory.GetItemAmount(def);
 

@@ -6,15 +6,15 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct WeaponDefinition
     {
-        [ProtoMember(1)] internal TurretDefinition TurretDef;
-        [ProtoMember(2)] internal AmmoDefinition AmmoDef;
-        [ProtoMember(3)] internal GraphicDefinition GraphicDef;
-        [ProtoMember(4)] internal AudioDefinition AudioDef;
+        [ProtoMember(1)] internal HardPointDefinition HardPoint;
+        [ProtoMember(2)] internal AmmoDefinition Ammo;
+        [ProtoMember(3)] internal GraphicDefinition Graphics;
+        [ProtoMember(4)] internal AudioDefinition Audio;
         [ProtoMember(5)] internal string ModPath;
     }
 
     [ProtoContract]
-    public struct TurretDefinition
+    public struct HardPointDefinition
     {
         public enum Prediction
         {
@@ -43,7 +43,7 @@ namespace WeaponCore.Support
         [ProtoMember(17)] internal float RotateSpeed;
         [ProtoMember(18)] internal float ElevationSpeed;
         [ProtoMember(19)] internal float DeviateShotAngle;
-        [ProtoMember(20)] internal float ReleaseTimeAfterFire;
+        [ProtoMember(20)] internal int DelayUntilFire;
         [ProtoMember(21)] internal float ShotEnergyCost;
         [ProtoMember(22)] internal double AimingTolerance;
         [ProtoMember(23)] internal Prediction TargetPrediction;
@@ -158,7 +158,7 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct AudioDefinition
     {
-        [ProtoMember(1)] internal AudioTuretDefinition Turret;
+        [ProtoMember(1)] internal AudioHardPointDefinition HardPoint;
         [ProtoMember(2)] internal AudioAmmoDefinition Ammo;
     }
 
@@ -178,7 +178,7 @@ namespace WeaponCore.Support
     }
 
     [ProtoContract]
-    public struct AudioTuretDefinition
+    public struct AudioHardPointDefinition
     {
         [ProtoMember(1)] internal float ReloadRange;
         [ProtoMember(2)] internal float ReloadVolume;
@@ -189,8 +189,7 @@ namespace WeaponCore.Support
         [ProtoMember(7)] internal string ReloadSound;
         [ProtoMember(8)] internal string NoAmmoSound;
         [ProtoMember(9)] internal string TurretRotationSound;
-        [ProtoMember(10)] internal string FiringSoundStart;
-        [ProtoMember(11)] internal string FiringSoundLoop;
-        [ProtoMember(12)] internal string FiringSoundEnd;
+        [ProtoMember(10)] internal string FiringSound;
+        [ProtoMember(11)] internal bool FiringSoundLoop;
     }
 }

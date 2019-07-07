@@ -91,14 +91,14 @@ namespace WeaponCore.Support
             }
 
             var gun = Gun.GunBase;
-            var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].WeaponSystem.MagazineDef.Id 
+            var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id 
                 : Platform.Structure.AmmoToWeaponIds.First().Key;
             BlockInventory.Constraint.Clear();
             BlockInventory.Constraint.Add(id);
             gun.SwitchAmmoMagazine(id);
             foreach (var w in Platform.Weapons)
             {
-                var otherId = w.WeaponSystem.MagazineDef.AmmoDefinitionId;
+                var otherId = w.System.MagazineDef.AmmoDefinitionId;
                 if (otherId == id) continue;
                 BlockInventory.Constraint.Add(otherId);
             }
@@ -120,6 +120,12 @@ namespace WeaponCore.Support
             RegisterEvents(false);
             IsWorking = false;
             IsFunctional = false;
+            RotationEmitter?.StopSound(true, true);
+            foreach (var w in Platform.Weapons)
+            {
+                w.StopReloadSound();
+                w.StopShooting();
+            }
         }
 
         public override bool IsSerialized()

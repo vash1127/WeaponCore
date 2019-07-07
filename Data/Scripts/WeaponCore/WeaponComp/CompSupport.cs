@@ -42,5 +42,16 @@ namespace WeaponCore.Support
             MyPivotPos = UtilsStatic.GetClosestPointOnLine1(blockCenter, blockUp, weaponCenter, weaponForward);
             //MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center, MyPivotPos);
         }
+
+        public void StopRotSound(bool force)
+        {
+            if (TrackingWeapon.System.TurretRotationSound && RotationEmitter != null)
+            {
+                if (!RotationEmitter.IsPlaying)
+                    return;
+                Log.Line("StopRotSound");
+                RotationEmitter.StopSound(force);
+            }
+        }
     }
 }

@@ -3,7 +3,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.TurretDefinition;
+using static WeaponCore.Support.HardPointDefinition;
 
 namespace WeaponCore.Platform
 {
@@ -12,7 +12,7 @@ namespace WeaponCore.Platform
         internal static bool ValidTarget(Weapon weapon, MyEntity target, bool checkOnly = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
-            var prediction = weapon.WeaponType.TurretDef.TargetPrediction;
+            var prediction = weapon.Kind.HardPoint.TargetPrediction;
 
             Vector3D targetPos;
             var timeToIntercept = double.MinValue;
@@ -38,7 +38,7 @@ namespace WeaponCore.Platform
         {
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
-            var prediction = weapon.WeaponType.TurretDef.TargetPrediction;
+            var prediction = weapon.Kind.HardPoint.TargetPrediction;
 
             Vector3D targetPos;
             var timeToIntercept = double.MinValue;
@@ -51,8 +51,8 @@ namespace WeaponCore.Platform
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            var maxAzimuthStep = step ? weapon.WeaponType.TurretDef.RotateSpeed : float.MinValue;
-            var maxElevationStep = step ? weapon.WeaponType.TurretDef.ElevationSpeed : float.MinValue;
+            var maxAzimuthStep = step ? weapon.Kind.HardPoint.RotateSpeed : float.MinValue;
+            var maxElevationStep = step ? weapon.Kind.HardPoint.ElevationSpeed : float.MinValue;
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
@@ -84,8 +84,11 @@ namespace WeaponCore.Platform
                 weapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxElevationStep, maxElevationStep);
                 weapon.DesiredAzimuth = desiredAzimuth;
                 weapon.DesiredElevation = desiredElevation;
-                if (!MathHelper.IsZero(oldAz - weapon.Azimuth)) turret.Azimuth = weapon.Azimuth;
-                if (!MathHelper.IsZero(oldEl - weapon.Elevation)) turret.Elevation = weapon.Elevation;
+                var azLocked = MathHelper.IsZero(oldAz - weapon.Azimuth);
+                var elLocked = MathHelper.IsZero(oldEl - weapon.Elevation);
+                if (!azLocked) turret.Azimuth = weapon.Azimuth;
+                if (!elLocked) turret.Elevation = weapon.Elevation;
+                weapon.Comp.AiLock = azLocked && elLocked;
             }
 
             var isInView = false;
@@ -104,7 +107,7 @@ namespace WeaponCore.Platform
 
             var alignedChange = wasAligned != isAligned;
             if (alignedChange && isAligned) weapon.StartShooting();
-            else if (alignedChange) weapon.EndShooting();
+            else if (alignedChange) weapon.StopShooting();
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
             return weapon.IsTracking;
         }
@@ -201,7 +204,7 @@ namespace WeaponCore.Platform
             var targetCenter = target.PositionComp.WorldAABB.Center;
             var shooterPos = Comp.MyPivotPos;
             var shooterVel = Comp.Physics.LinearVelocity;
-            var ammoSpeed = WeaponType.AmmoDef.Trajectory.DesiredSpeed;
+            var ammoSpeed = Kind.Ammo.Trajectory.DesiredSpeed;
             var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
             var targetVel = Vector3.Zero;
 

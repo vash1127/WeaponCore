@@ -122,7 +122,7 @@ namespace WeaponCore.Projectiles
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength))
                         {
                             
-                            var trajInfo = p.WepDef.AmmoDef.Trajectory;
+                            var trajInfo = p.Kind.Ammo.Trajectory;
                             if (p.Target != null && !p.Target.MarkedForClose)
                             {
                                 var physics = p.Target.Physics ?? p.Target.Parent.Physics;
@@ -176,14 +176,14 @@ namespace WeaponCore.Projectiles
                     if (p.ModelState == Projectile.EntityState.Exists)
                     {
                         p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
-                        if (p.Effect1 != null && p.WeaponSystem.AmmoParticle)
+                        if (p.Effect1 != null && p.System.AmmoParticle)
                         {
-                            var offVec = p.Position + Vector3D.Rotate(p.WepDef.GraphicDef.Particles.AmmoOffset, p.EntityMatrix);
+                            var offVec = p.Position + Vector3D.Rotate(p.Kind.Graphics.Particles.AmmoOffset, p.EntityMatrix);
                             p.Effect1.WorldMatrix = p.EntityMatrix;
                             p.Effect1.SetTranslation(offVec);
                         }
                     }
-                    else if (!p.ConstantSpeed && p.Effect1 != null && p.WeaponSystem.AmmoParticle)
+                    else if (!p.ConstantSpeed && p.Effect1 != null && p.System.AmmoParticle)
                         p.Effect1.Velocity = p.Velocity;
 
                     Vector3D? intersect = null;
@@ -195,9 +195,7 @@ namespace WeaponCore.Projectiles
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
                     {
-                        var ds = new DSUtils();
-                        ds.Sw.Restart();
-                        var fired = new Fired(p.WeaponSystem, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age);
+                        var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age);
                         GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
                         var hitInfo = GetHitEntities(p.CheckList, fired, beam);
                         if (GetDamageInfo(fired, p.Entity, p.EntityMatrix, beam, hitInfo, hitEnts, hitBlocks, damagePool,0, false))
@@ -214,11 +212,10 @@ namespace WeaponCore.Projectiles
                             if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
                             {
                                 var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                                drawList.Add(new DrawProjectile(p.WeaponSystem, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
+                                drawList.Add(new DrawProjectile(p.System, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
                             }
                             p.ProjectileClose(pool, checkPool, noAv);
                         }
-                        ds.StopWatchReport("test", -1);
                     }
                     segmentPool.Return(segmentList);
                     if (intersect != null) continue;
@@ -227,8 +224,8 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
-                            if (p.MoveToAndActivate || p.WeaponSystem.AmmoAreaEffect)
-                                GetEntitiesInBlastRadius(new Fired(p.WeaponSystem, null, p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age), p.Position, i);
+                            if (p.MoveToAndActivate || p.System.AmmoAreaEffect)
+                                GetEntitiesInBlastRadius(new Fired(p.System, null, p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age), p.Position, i);
 
                             p.ProjectileClose(pool, checkPool, noAv);
                             continue;
@@ -256,7 +253,7 @@ namespace WeaponCore.Projectiles
                         {
                             p.FirstOffScreen = false;
                             p.LastEntityPos = p.Position;
-                            drawList.Add(new DrawProjectile(p.WeaponSystem, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
+                            drawList.Add(new DrawProjectile(p.System, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
                         }
                         continue;
                     }
@@ -279,7 +276,7 @@ namespace WeaponCore.Projectiles
 
                     var bb = new BoundingBoxD(Vector3D.Min(p.CurrentLine.From, p.CurrentLine.To), Vector3D.Max(p.CurrentLine.From, p.CurrentLine.To));
                     if (camera.IsInFrustum(ref bb))
-                        drawList.Add(new DrawProjectile(p.WeaponSystem, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
+                        drawList.Add(new DrawProjectile(p.System, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
                 }
 
                 if (modelClose)
@@ -288,47 +285,6 @@ namespace WeaponCore.Projectiles
 
                 pool.DeallocateAllMarked();
             }
-        }
-
-
-        private void PrefetchVoxelPhysicsIfNeeded(Projectile p)
-        {
-            var ray = new LineD(p.Origin, p.Origin + p.Direction * p.MaxTrajectory, p.MaxTrajectory);
-            var lineD = new LineD(new Vector3D(Math.Floor(ray.From.X) * 0.5, Math.Floor(ray.From.Y) * 0.5, Math.Floor(ray.From.Z) * 0.5), new Vector3D(Math.Floor(p.Direction.X * 50.0), Math.Floor(p.Direction.Y * 50.0), Math.Floor(p.Direction.Z * 50.0)));
-            if (p.VoxelRayCache.IsItemPresent(lineD.GetHash(), (int)MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds, true))
-                return;
-            using (MyUtils.ReuseCollection(ref p.EntityRaycastResult))
-            {
-                MyGamePruningStructure.GetAllEntitiesInRay(ref ray, p.EntityRaycastResult, MyEntityQueryType.Static);
-                foreach (var segmentOverlapResult in p.EntityRaycastResult)
-                    (segmentOverlapResult.Element as MyPlanet)?.PrefetchShapeOnRay(ref ray);
-            }
-        }
-
-        private MyEntity GetSubpartOwner(MyEntity entity)
-        {
-            if (entity == null)
-                return null;
-            if (!(entity is MyEntitySubpart))
-                return entity;
-            var myEntity = entity;
-            while (myEntity is MyEntitySubpart)
-                myEntity = myEntity.Parent;
-            return myEntity ?? entity;
-        }
-
-        public static void ApplyProjectileForce(
-          MyEntity entity,
-          Vector3D intersectionPosition,
-          Vector3 normalizedDirection,
-          bool isPlayerShip,
-          float impulse)
-        {
-            if (entity.Physics == null || !entity.Physics.Enabled || entity.Physics.IsStatic)
-                return;
-            if (entity is IMyCharacter)
-                impulse *= 100f;
-            entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normalizedDirection * impulse, intersectionPosition, Vector3.Zero, new float?(), true, false);
         }
 
         //Relative velocity proportional navigation

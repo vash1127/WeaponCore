@@ -57,7 +57,7 @@ namespace WeaponCore
 
             foreach (var weaponDef in _weaponDefinitions)
             {
-                foreach (var mount in weaponDef.TurretDef.MountPoints)
+                foreach (var mount in weaponDef.HardPoint.MountPoints)
                 {
                     var subTypeId = mount.SubtypeId;
                     var partId = mount.SubpartId;
@@ -65,13 +65,13 @@ namespace WeaponCore
                     {
                         _turretDefinitions[subTypeId] = new Dictionary<string, string>
                         {
-                            [partId] = weaponDef.TurretDef.DefinitionId
+                            [partId] = weaponDef.HardPoint.DefinitionId
                         };
                         _subTypeIdToWeaponDefs[subTypeId] = new List<WeaponDefinition> {weaponDef};
                     }
                     else
                     {
-                        _turretDefinitions[subTypeId][partId] = weaponDef.TurretDef.DefinitionId;
+                        _turretDefinitions[subTypeId][partId] = weaponDef.HardPoint.DefinitionId;
                         _subTypeIdToWeaponDefs[subTypeId].Add(weaponDef);
                     }
                 }

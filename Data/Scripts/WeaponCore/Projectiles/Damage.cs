@@ -37,9 +37,9 @@ namespace WeaponCore.Projectiles
             public void Execute()
             {
                 if (Shield == null  || SApi == null) return;
-                var wDef = Fired.WeaponSystem.WeaponType;
-                var baseDamage = wDef.AmmoDef.DefaultDamage;
-                var damage = (baseDamage  + wDef.AmmoDef.AreaEffectYield) * Hits;
+                var kind = Fired.WeaponSystem.Kind;
+                var baseDamage = kind.Ammo.DefaultDamage;
+                var damage = (baseDamage + kind.Ammo.AreaEffectYield) * Hits;
                 SApi.PointAttackShield(Shield, HitPos, Fired.FiringCube.EntityId, damage, false, true);
             }
         }
@@ -63,12 +63,12 @@ namespace WeaponCore.Projectiles
             {
                 if (Block == null || Block.IsDestroyed || Block.CubeGrid.MarkedForClose) return;
                 var wSystem = Fired.WeaponSystem;
-                var wDef = wSystem.WeaponType;
-                var baseDamage = wDef.AmmoDef.DefaultDamage;
+                var kind = wSystem.Kind;
+                var baseDamage = kind.Ammo.DefaultDamage;
                 var damage = baseDamage * Hits;
                 Block.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
                 if (wSystem.AmmoAreaEffect)
-                    UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction,Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, wDef.AmmoDef.AreaEffectRadius, wDef.AmmoDef.AreaEffectYield);
+                    UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction,Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, kind.Ammo.AreaEffectRadius, kind.Ammo.AreaEffectYield);
             }
         }
 
@@ -110,10 +110,10 @@ namespace WeaponCore.Projectiles
 
             public void Execute()
             {
-                var wepDef = Fired.WeaponSystem.WeaponType;
+                var kind = Fired.WeaponSystem.Kind;
                 if (Entity == null)
                 {
-                    UtilsStatic.CreateFakeExplosion(ActivatePos, wepDef.AmmoDef.AreaEffectRadius);
+                    UtilsStatic.CreateFakeExplosion(ActivatePos, kind.Ammo.AreaEffectRadius);
                     return;
                 }
                 var shield = Entity as IMyTerminalBlock;

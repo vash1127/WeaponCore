@@ -34,7 +34,9 @@ namespace WeaponCore
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
-        private DSUtils _dsUtil { get; set; } = new DSUtils();
+        private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
+
+        internal DSUtils DsUtil { get; set; } = new DSUtils();
 
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
@@ -73,32 +75,34 @@ namespace WeaponCore
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
         internal bool InTurret;
+        internal Vector3D CameraPos;
         internal MyEntity ControlledEntity;
+
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
         internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
 
         internal readonly Guid LogictateGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811500");
         internal readonly Guid LogicettingsGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811501");
 
-        internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentQueue<DrawProjectile> DrawBeams = new ConcurrentQueue<DrawProjectile>();
         internal readonly ConcurrentQueue<InventoryChange> InventoryEvent = new ConcurrentQueue<InventoryChange>();
-        private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridTargetingAi>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
-
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
-        internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
-        internal ShieldApi SApi = new ShieldApi();
-        internal FutureEvents FutureEvents = new FutureEvents();
-        internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
+
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",
             "WC-L_Guidance"
         };
+
+        internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
+        internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
+        internal ShieldApi SApi = new ShieldApi();
+        internal FutureEvents FutureEvents = new FutureEvents();
+        internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
     }
 }

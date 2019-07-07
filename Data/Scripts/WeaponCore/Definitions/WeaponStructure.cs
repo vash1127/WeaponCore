@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Definitions;
+using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
@@ -9,7 +10,7 @@ namespace WeaponCore.Support
     public struct WeaponSystem
     {
         public readonly MyStringHash PartName;
-        public readonly WeaponDefinition WeaponType;
+        public readonly WeaponDefinition Kind;
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly int ModelId;
@@ -20,11 +21,15 @@ namespace WeaponCore.Support
         public readonly bool AmmoParticle;
         public readonly bool AmmoHitSound;
         public readonly bool AmmoTravelSound;
+        public readonly bool TurretReloadSound;
+        public readonly bool TurretRotationSound;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
         public readonly bool EnergyAmmo;
         public readonly bool TurretEffect1;
         public readonly bool TurretEffect2;
+        public readonly bool HasTurretShootAv;
+        public readonly double TurretAvDistSqr;
         public readonly double MaxTrajectorySqr;
 
         public enum FiringSoundState
@@ -36,44 +41,51 @@ namespace WeaponCore.Support
 
         public readonly MyStringId ProjectileMaterial;
 
-        public WeaponSystem(MyStringHash partName, WeaponDefinition weaponType, string weaponName, MyDefinitionId ammoDefId)
+        public WeaponSystem(MyStringHash partName, WeaponDefinition kind, string weaponName, MyDefinitionId ammoDefId)
         {
             PartName = partName;
-            WeaponType = weaponType;
-            Barrels = weaponType.TurretDef.Barrels;
+            Kind = kind;
+            Barrels = kind.HardPoint.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
-            ProjectileMaterial = MyStringId.GetOrCompute(WeaponType.GraphicDef.Line.Material);
-            AmmoParticle = WeaponType.GraphicDef.Particles.AmmoParticle != string.Empty;
-            AmmoHitSound = WeaponType.AudioDef.Ammo.HitSound != string.Empty;
-            AmmoTravelSound = WeaponType.AudioDef.Ammo.TravelSound != string.Empty;
-            AmmoAreaEffect = WeaponType.AmmoDef.AreaEffectRadius > 0;
-            AmmoSkipAccel = WeaponType.AmmoDef.Trajectory.AccelPerSec <= 0;
+            ProjectileMaterial = MyStringId.GetOrCompute(kind.Graphics.Line.Material);
+
+            AmmoParticle = kind.Graphics.Particles.AmmoParticle != string.Empty;
+            AmmoHitSound = kind.Audio.Ammo.HitSound != string.Empty;
+            AmmoTravelSound = kind.Audio.Ammo.TravelSound != string.Empty;
+            TurretReloadSound = kind.Audio.HardPoint.ReloadSound != string.Empty;
+            TurretRotationSound = kind.Audio.HardPoint.TurretRotationSound != string.Empty;
+            TurretEffect1 = kind.Graphics.Particles.Turret1Particle != string.Empty;
+            TurretEffect2 = kind.Graphics.Particles.Turret2Particle != string.Empty;
+
+            AmmoAreaEffect = kind.Ammo.AreaEffectRadius > 0;
+            AmmoSkipAccel = kind.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
-            TurretEffect1 = WeaponType.GraphicDef.Particles.Turret1Particle != string.Empty;
-            TurretEffect2 = WeaponType.GraphicDef.Particles.Turret2Particle != string.Empty;
-            MaxTrajectorySqr = weaponType.AmmoDef.Trajectory.MaxTrajectory * weaponType.AmmoDef.Trajectory.MaxTrajectory;
-            ReloadTime = WeaponType.TurretDef.ReloadTime;
-            var audioDef = WeaponType.AudioDef;
 
-            var fSoundStart = audioDef.Turret.FiringSoundStart;
-            var fSoundLoop = audioDef.Turret.FiringSoundLoop;
-            var fSoundEnd = audioDef.Turret.FiringSoundEnd;
-            var e = string.Empty;
+            MaxTrajectorySqr = kind.Ammo.Trajectory.MaxTrajectory * kind.Ammo.Trajectory.MaxTrajectory;
+            ReloadTime = kind.HardPoint.ReloadTime;
+            var audioDef = kind.Audio;
 
-            if (fSoundStart != e && fSoundLoop == e && fSoundEnd == e)
+            var fSoundStart = audioDef.HardPoint.FiringSound;
+
+            if (fSoundStart != string.Empty && !audioDef.HardPoint.FiringSoundLoop)
                 FiringSound = FiringSoundState.Simple;
-            else if (fSoundLoop == e && fSoundLoop == e && fSoundEnd == e)
-                FiringSound = FiringSoundState.None;
-            else FiringSound = FiringSoundState.Full;
+            else if (fSoundStart != string.Empty && audioDef.HardPoint.FiringSoundLoop)
+                FiringSound = FiringSoundState.Full;
+            else FiringSound = FiringSoundState.None;
 
-            if (WeaponType.GraphicDef.ModelName != string.Empty && !WeaponType.GraphicDef.Line.Trail)
+            if (kind.Graphics.ModelName != string.Empty && !kind.Graphics.Line.Trail)
             {
                 ModelId = Session.Instance.ModelCount++;
-                Session.Instance.ModelIdToName.Add(ModelId, WeaponType.ModPath + WeaponType.GraphicDef.ModelName);
+                Session.Instance.ModelIdToName.Add(ModelId, kind.ModPath + kind.Graphics.ModelName);
             }
             else ModelId = -1;
+
+            HasTurretShootAv = TurretEffect1 || TurretEffect2 || TurretRotationSound || FiringSound == FiringSoundState.Full;
+
+            var firingRange = kind.Audio.HardPoint.FiringRange;
+            TurretAvDistSqr = FiringSound == FiringSoundState.Full ? firingRange * firingRange : 2500;
         }
     }
 
@@ -84,10 +96,10 @@ namespace WeaponCore.Support
         public readonly MyStringHash[] PartNames;
         public readonly bool MultiParts;
 
-        public WeaponStructure(KeyValuePair<string, Dictionary<string, string>> tDef, List<WeaponDefinition> wDef)
+        public WeaponStructure(KeyValuePair<string, Dictionary<string, string>> tDef, List<WeaponDefinition> wDefList)
         {
             var map = tDef.Value;
-            var numOfParts = wDef.Count;
+            var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
             var names = new MyStringHash[numOfParts];
             var mapIndex = 0;
@@ -98,18 +110,18 @@ namespace WeaponCore.Support
                 var myNameHash = MyStringHash.GetOrCompute(w.Key);
                 names[mapIndex] = myNameHash;
 
-                var weaponTypeName = w.Value;
+                var typeName = w.Value;
                 var weaponDef = new WeaponDefinition();
 
-                foreach (var weapon in wDef)
-                    if (weapon.TurretDef.DefinitionId == weaponTypeName) weaponDef = weapon;
+                foreach (var weapon in wDefList)
+                    if (weapon.HardPoint.DefinitionId == typeName) weaponDef = weapon;
 
                 var ammoDefId = new MyDefinitionId();
-                var ammoBlank = weaponDef.TurretDef.AmmoMagazineId == string.Empty || weaponDef.TurretDef.AmmoMagazineId == "Blank";
+                var ammoBlank = weaponDef.HardPoint.AmmoMagazineId == string.Empty || weaponDef.HardPoint.AmmoMagazineId == "Blank";
                 foreach (var def in Session.Instance.AllDefinitions)
-                    if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == weaponDef.TurretDef.AmmoMagazineId) ammoDefId = def.Id;
+                    if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == weaponDef.HardPoint.AmmoMagazineId) ammoDefId = def.Id;
 
-                weaponDef.TurretDef.DeviateShotAngle = MathHelper.ToRadians(weaponDef.TurretDef.DeviateShotAngle);
+                weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
                 /*
                 if (weaponDef.AmmoDef.RealisticDamage)
                 {
@@ -120,7 +132,7 @@ namespace WeaponCore.Support
                 }
                 */
 
-                WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, weaponTypeName, ammoDefId));
+                WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, typeName, ammoDefId));
                 if (!ammoBlank)
                 {
                     if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();

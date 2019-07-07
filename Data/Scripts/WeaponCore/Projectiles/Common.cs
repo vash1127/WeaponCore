@@ -17,12 +17,11 @@ namespace WeaponCore.Projectiles
     {
         private void GetEntitiesInBlastRadius(Fired fired, Vector3D position, int poolId)
         {
-            var wepDef = fired.WeaponSystem.WeaponType;
+            var kind = fired.WeaponSystem.Kind;
             var entCheckList = CheckPool[poolId].Get();
             var entsFound = CheckPool[poolId].Get();
-            var sphere = new BoundingSphereD(position, wepDef.AmmoDef.AreaEffectRadius);
+            var sphere = new BoundingSphereD(position, kind.Ammo.AreaEffectRadius);
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, entCheckList);
-
             foreach (var ent in entCheckList)
             {
                 var blastLine = new LineD(position, ent.PositionComp.WorldAABB.Center);
@@ -30,7 +29,7 @@ namespace WeaponCore.Projectiles
             }
             entCheckList.Clear();
             CheckPool[poolId].Return(entCheckList);
-            if (wepDef.AmmoDef.DetonateOnEnd || entsFound.Count > 0)
+            if (kind.Ammo.DetonateOnEnd || entsFound.Count > 0)
                 Hits.Enqueue(new ProximityEvent(fired, null, position, Session.Instance.SApi));
 
             foreach (var ent in entsFound)
@@ -253,9 +252,9 @@ namespace WeaponCore.Projectiles
                 ReSizeSteps = reSizeSteps;
                 Shrink = shrink;
                 Last = last;
-                var wDef = WeaponSystem.WeaponType;
-                var color = wDef.GraphicDef.Line.Color;
-                var rcm = wDef.GraphicDef.Line.RandomizeColor;
+                var kind = WeaponSystem.Kind;
+                var color = kind.Graphics.Line.Color;
+                var rcm = kind.Graphics.Line.RandomizeColor;
                 if (rcm.Start > 0 && rcm.End > 0)
                 {
                     var randomValue = MyUtils.GetRandomFloat(rcm.Start, rcm.End);

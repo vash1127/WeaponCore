@@ -14,20 +14,23 @@ namespace WeaponCore.Platform
         internal void Shoot()
         {
             var session = Comp.MyAi.MySession;
+            var ws = System;
             var tick = session.Tick;
             if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
             _newCycle = false;
             var targetLock = Target != null;
             if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
-            var bps = WeaponType.TurretDef.BarrelsPerShot;
-            var skipAhead = WeaponType.TurretDef.SkipBarrels;
+            var bps = Kind.HardPoint.BarrelsPerShot;
+            var skipAhead = Kind.HardPoint.SkipBarrels;
 
-            if (WeaponType.TurretDef.RotateBarrelAxis != 0) MovePart(-1 * bps);
+            if (Kind.HardPoint.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
             if (ShotCounter != 0) return;
             if (!IsShooting) StartShooting();
-            ShootingAV();
-            if (!WeaponSystem.EnergyAmmo) CurrentAmmo--;
+            var playTurretAv = ws.HasTurretShootAv && !session.DedicatedServer && Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < ws.TurretAvDistSqr;
+            if (playTurretAv) ShootingAV();
+            if (Kind.HardPoint.DelayUntilFire > 0)
+            if (!System.EnergyAmmo) CurrentAmmo--;
 
             var endBarrel = _numOfBarrels - 1;
             if (_shotsInCycle++ == (_numOfBarrels - 1))
@@ -40,7 +43,7 @@ namespace WeaponCore.Platform
             {
                 _targetTick = 0;
                 var targetPos = Target.PositionComp.GetPosition();
-                if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > WeaponSystem.MaxTrajectorySqr)
+                if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
                 {
                     Target = null;
                     return;
@@ -76,7 +79,7 @@ namespace WeaponCore.Platform
                     muzzle.LastUpdateTick = tick;
                 }
                 muzzle.LastShot = tick;
-                var deviatedAngle = WeaponType.TurretDef.DeviateShotAngle;
+                var deviatedAngle = Kind.HardPoint.DeviateShotAngle;
                 if (deviatedAngle > 0)
                 {
                     var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
@@ -96,7 +99,7 @@ namespace WeaponCore.Platform
                 {
                     Projectile pro;
                     session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
-                    pro.WeaponSystem = WeaponSystem;
+                    pro.System = System;
                     pro.FiringCube = Comp.MyCube;
                     pro.Origin = muzzle.Position;
                     pro.PredictedTargetPos = TargetPos;
@@ -107,10 +110,10 @@ namespace WeaponCore.Platform
                     //pro.GridGroup = Comp.MyAi.SubGrids;
                     //pro.GroupAABB = Comp.MyAi.GroupAABB;
 
-                    if (WeaponSystem.ModelId != -1)
+                    if (System.ModelId != -1)
                     {
                         MyEntity ent;
-                        session.Projectiles.EntityPool[session.ProCounter][WeaponSystem.ModelId].AllocateOrCreate(out ent);
+                        session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out ent);
                         if (!ent.InScene)
                         {
                             ent.InScene = true;
@@ -128,7 +131,7 @@ namespace WeaponCore.Platform
             BarrelMove = true;
             var radiansPerShot = (2 * Math.PI / _numOfBarrels);
             var radians = radiansPerShot / _timePerShot;
-            var axis = WeaponType.TurretDef.RotateBarrelAxis;
+            var axis = Kind.HardPoint.RotateBarrelAxis;
             MatrixD rotationMatrix;
             if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
             else if (axis == 2 ) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
@@ -139,71 +142,6 @@ namespace WeaponCore.Platform
             rotationMatrix.Translation = _localTranslation;
             EntityPart.PositionComp.LocalMatrix = rotationMatrix;
             BarrelMove = false;
-        }
-
-        internal MyParticleEffect MuzzleEffect1;
-        internal MyParticleEffect MuzzleEffect2;
-
-        private void ShootingAV()
-        {
-            if (WeaponSystem.TurretEffect1 || WeaponSystem.TurretEffect2)
-            {
-                var particles = WeaponType.GraphicDef.Particles;
-                var vel = Comp.Physics.LinearVelocity;
-                var dummy = Dummies[NextMuzzle];
-                var pos = dummy.Info.Position;
-                var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
-
-                if (WeaponSystem.TurretEffect1)
-                {
-                    if (MuzzleEffect1 == null)
-                        MyParticlesManager.TryCreateParticleEffect(particles.Turret1Particle, ref matrix, ref pos, uint.MaxValue, out MuzzleEffect1);
-                    else if (particles.Turret1Restart && MuzzleEffect1.IsEmittingStopped)
-                        MuzzleEffect1.Play();
-
-                    if (MuzzleEffect1 != null)
-                    {
-                        MuzzleEffect1.WorldMatrix = matrix;
-                        MuzzleEffect1.Velocity = vel;
-                    }
-                }
-
-                if (WeaponSystem.TurretEffect2)
-                {
-                    if (MuzzleEffect2 == null)
-                        MyParticlesManager.TryCreateParticleEffect(particles.Turret2Particle, ref matrix, ref pos, uint.MaxValue, out MuzzleEffect2);
-                    else if (particles.Turret2Restart && MuzzleEffect2.IsEmittingStopped)
-                        MuzzleEffect2.Play();
-
-                    if (MuzzleEffect2 != null)
-                    {
-                        MuzzleEffect2.WorldMatrix = matrix;
-                        MuzzleEffect2.Velocity = vel;
-                    }
-                }
-            }
-        }
-
-        public void StartShooting()
-        {
-            Log.Line($"starting sound: Name:{WeaponSystem.WeaponName} - PartName:{WeaponSystem.PartName} - IsTurret:{WeaponType.TurretDef.IsTurret}");
-            IsShooting = true;
-        }
-
-        public void EndShooting()
-        {
-            if (MuzzleEffect2 != null)
-            {
-                MuzzleEffect2.Stop(true);
-                MuzzleEffect2 = null;
-            }
-
-            if (MuzzleEffect1 != null)
-            {
-                MuzzleEffect1.Stop(false);
-                MuzzleEffect1 = null;
-            }
-            IsShooting = false;
         }
     }
 }

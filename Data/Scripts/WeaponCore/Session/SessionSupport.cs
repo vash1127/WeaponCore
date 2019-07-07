@@ -31,7 +31,6 @@ namespace WeaponCore
             Tick300 = Tick % 300 == 0;
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
-
             if (_count++ == 59)
             {
                 _count = 0;
@@ -92,6 +91,8 @@ namespace WeaponCore
                 weaponComp.OnAddedToScene();
                 Log.Line($"added to comp");
             }
+
+            if (!DedicatedServer) CameraPos = Session.Camera.Position;
         }
 
         internal void ProcessHits()
