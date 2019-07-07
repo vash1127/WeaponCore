@@ -120,12 +120,7 @@ namespace WeaponCore.Support
             RegisterEvents(false);
             IsWorking = false;
             IsFunctional = false;
-            RotationEmitter?.StopSound(true, true);
-            foreach (var w in Platform.Weapons)
-            {
-                w.StopReloadSound();
-                w.StopShooting();
-            }
+            StopAllSounds();
         }
 
         public override bool IsSerialized()

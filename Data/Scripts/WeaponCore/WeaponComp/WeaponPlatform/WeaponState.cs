@@ -69,7 +69,7 @@ namespace WeaponCore.Platform
             IsShooting = true;
         }
 
-        public void StopShooting()
+        public void StopShooting(bool avOnly = false)
         {
             if (MuzzleEffect2 != null)
             {
@@ -84,8 +84,12 @@ namespace WeaponCore.Platform
             }
             Log.Line("stop shooting");
             StopFiringSound(false);
-            TicksUntilShoot = 0;
-            IsShooting = false;
+            StopRotateSound();
+            if (!avOnly)
+            {
+                TicksUntilShoot = 0;
+                IsShooting = false;
+            }
         }
 
 

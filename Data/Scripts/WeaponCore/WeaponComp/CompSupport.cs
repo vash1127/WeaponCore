@@ -52,5 +52,16 @@ namespace WeaponCore.Support
                 RotationEmitter.StopSound(force);
             }
         }
+
+        public void StopAllSounds()
+        {
+            RotationEmitter?.StopSound(true, true);
+            foreach (var w in Platform.Weapons)
+            {
+                w.StopReloadSound();
+                w.StopRotateSound();
+                w.StopShooting(true);
+            }
+        }
     }
 }

@@ -91,7 +91,6 @@ namespace WeaponCore
                 weaponComp.OnAddedToScene();
                 Log.Line($"added to comp");
             }
-
             if (!DedicatedServer) CameraPos = Session.Camera.Position;
         }
 
@@ -104,6 +103,19 @@ namespace WeaponCore
         private void WebDispatchDone()
         {
             Dispatched = false;
+        }
+
+        private void Paused()
+        {
+            Log.Line($"Stopping all sounds due to pause");
+            foreach (var aiPair in GridTargetingAIs)
+            {
+                var gridAi = aiPair.Value;
+                foreach (var comp in gridAi.WeaponBase.Values)
+                {
+                    comp.StopAllSounds();
+                }
+            }
         }
 
         #region Events
@@ -142,7 +154,6 @@ namespace WeaponCore
             }
             return false;
         }
-
         #endregion
 
         #region Misc

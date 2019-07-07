@@ -60,16 +60,23 @@ namespace WeaponCore
         {
             try
             {
-                //Log.Line("test2");
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
+        }
+
+        public override void UpdatingStopped()
+        {
+            try
+            {
+                Paused();
+            }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }
         }
 
         public override void UpdateAfterSimulation()
         {
             try
             {
-                //Log.Line("test3");
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
