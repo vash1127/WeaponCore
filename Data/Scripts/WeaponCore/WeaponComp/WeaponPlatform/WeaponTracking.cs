@@ -86,9 +86,14 @@ namespace WeaponCore.Platform
                 weapon.DesiredElevation = desiredElevation;
                 var azLocked = MathHelper.IsZero(oldAz - weapon.Azimuth);
                 var elLocked = MathHelper.IsZero(oldEl - weapon.Elevation);
-                if (!azLocked) turret.Azimuth = weapon.Azimuth;
-                if (!elLocked) turret.Elevation = weapon.Elevation;
-                weapon.Comp.AiLock = azLocked && elLocked;
+                var aim = !azLocked || !elLocked;
+                weapon.Comp.AiMoving = aim;
+                if (aim)
+                {
+                    weapon.Comp.LastTrackedTick = weapon.Comp.MyAi.MySession.Tick;
+                    turret.Azimuth = weapon.Azimuth;
+                    turret.Elevation = weapon.Elevation;
+                }
             }
 
             var isInView = false;

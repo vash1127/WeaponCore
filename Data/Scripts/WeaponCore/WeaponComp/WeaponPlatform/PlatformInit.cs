@@ -35,8 +35,9 @@ namespace WeaponCore.Platform
                 {
                     weapon.TrackingAi = true;
                     comp.TrackingWeapon = weapon;
-                    if (weapon.System.HardPointRotationSound)
+                    if (weapon.AvCapable && weapon.System.HardPointRotationSound)
                     {
+                        comp.RotationEmitter = new MyEntity3DSoundEmitter(comp.MyCube, true, 1f);
                         comp.RotationSound = new MySoundPair();
                         comp.RotationSound.Init(weapon.Kind.Audio.HardPoint.HardPointRotationSound, false);
                     }

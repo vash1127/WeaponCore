@@ -137,7 +137,7 @@ namespace WeaponCore.Projectiles
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
             FiringSoundState = System.FiringSound;
-            AmmoTravelSoundRangeSqr = (Kind.Audio.Ammo.TravelRange * Kind.Audio.Ammo.TravelRange);
+            AmmoTravelSoundRangeSqr = System.AmmoMaxSoundDistSqr;
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
@@ -232,8 +232,6 @@ namespace WeaponCore.Projectiles
 
         internal void AmmoSoundStart()
         {
-            Sound1.CustomMaxDistance = Kind.Audio.Ammo.TravelRange;
-            Sound1.CustomVolume = Kind.Audio.Ammo.TravelVolume;
             Sound1.SetPosition(Position);
             Sound1.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
             AmmoSound = true;
@@ -265,8 +263,6 @@ namespace WeaponCore.Projectiles
 
                 if (System.AmmoHitSound)
                 {
-                    Sound1.CustomMaxDistance = Kind.Audio.Ammo.HitRange;
-                    Sound1.CustomVolume = Kind.Audio.Ammo.HitVolume;
                     Sound1.SetPosition(Position);
                     Sound1.CanPlayLoopSounds = false;
                     Sound1.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);

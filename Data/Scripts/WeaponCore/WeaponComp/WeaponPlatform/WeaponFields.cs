@@ -78,7 +78,6 @@ namespace WeaponCore.Platform
         internal float MinAzimuthRadians;
         internal float MaxElevationRadians;
         internal float MinElevationRadians;
-        internal float SoundDistanceSqr;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -92,6 +91,8 @@ namespace WeaponCore.Platform
         internal bool AmmoFull;
         internal bool IsShooting;
         internal bool BarrelMove;
+        internal bool PlayTurretAv;
+        internal bool AvCapable;
 
         internal bool LoadAmmoMag
         {
@@ -123,29 +124,23 @@ namespace WeaponCore.Platform
             System = system;
             Kind = system.Kind;
             Comp = comp;
+            AvCapable = System.HasTurretShootAv && !Comp.MyAi.MySession.DedicatedServer;
 
-            if (system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
+            if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
                 FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 FiringSound = new MySoundPair();
                 FiringSound.Init(Kind.Audio.HardPoint.FiringSound);
-                if (FiringEmitter.CustomMaxDistance.HasValue)
-                {
-                    var value = FiringEmitter.CustomMaxDistance.Value;
-                    SoundDistanceSqr = value * value;
-                    Log.Line($"CustomDistance:{value}");
-                }
-                Log.Line($"Weapon:{System.WeaponName} - Not Per Shot Firing Sound");
             }
 
-            if (system.TurretReloadSound)
+            if (AvCapable && system.TurretReloadSound)
             {
                 ReloadEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 ReloadSound = new MySoundPair();
                 ReloadSound.Init(Kind.Audio.HardPoint.ReloadSound);
             }
 
-            if (system.BarrelRotationSound && system.Kind.HardPoint.RotateBarrelAxis != 0)
+            if (AvCapable && system.BarrelRotationSound && system.Kind.HardPoint.RotateBarrelAxis != 0)
             {
                 RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 RotateSound = new MySoundPair();

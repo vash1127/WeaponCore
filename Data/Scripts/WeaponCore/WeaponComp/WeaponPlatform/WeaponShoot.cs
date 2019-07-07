@@ -14,7 +14,6 @@ namespace WeaponCore.Platform
         internal void Shoot()
         {
             var session = Comp.MyAi.MySession;
-            var ws = System;
             var tick = session.Tick;
             if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
             _newCycle = false;
@@ -23,14 +22,17 @@ namespace WeaponCore.Platform
             var bps = Kind.HardPoint.BarrelsPerShot;
             var skipAhead = Kind.HardPoint.SkipBarrels;
 
+            if (AvCapable && (!PlayTurretAv || Comp.MyAi.MySession.Tick60))
+                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointMaxSoundDistSqr;
+
             if (Kind.HardPoint.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;
             TicksUntilShoot++;
+
             if (ShotCounter != 0) return;
             if (!IsShooting) StartShooting();
-            var playTurretAv = ws.HasTurretShootAv && !session.DedicatedServer && Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < SoundDistanceSqr;
-            if (playTurretAv && TicksUntilShoot >= Kind.HardPoint.DelayUntilFire) ShootingAV();
-            if (Kind.HardPoint.DelayUntilFire > 0 && TicksUntilShoot < Kind.HardPoint.DelayUntilFire) return;
+            if (TicksUntilShoot >= Kind.HardPoint.DelayUntilFire) ShootGraphics();
+            if (TicksUntilShoot < Kind.HardPoint.DelayUntilFire) return;
 
             if (!System.EnergyAmmo) CurrentAmmo--;
 
@@ -109,9 +111,6 @@ namespace WeaponCore.Platform
                     pro.State = Projectile.ProjectileState.Start;
                     pro.Target = Target;
 
-                    //pro.GridGroup = Comp.MyAi.SubGrids;
-                    //pro.GroupAABB = Comp.MyAi.GroupAABB;
-
                     if (System.ModelId != -1)
                     {
                         MyEntity ent;
@@ -144,8 +143,8 @@ namespace WeaponCore.Platform
             rotationMatrix.Translation = _localTranslation;
             EntityPart.PositionComp.LocalMatrix = rotationMatrix;
             BarrelMove = false;
-
-            if (RotateEmitter != null && !RotateEmitter.IsPlaying) StartRotateSound();
+            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
+                StartRotateSound();
         }
     }
 }

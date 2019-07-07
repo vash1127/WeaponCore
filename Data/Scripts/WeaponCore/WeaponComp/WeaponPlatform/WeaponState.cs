@@ -22,7 +22,7 @@ namespace WeaponCore.Platform
             public uint LastUpdateTick;
         }
 
-        private void ShootingAV()
+        private void ShootGraphics()
         {
             if (System.TurretEffect1 || System.TurretEffect2)
             {
@@ -65,7 +65,7 @@ namespace WeaponCore.Platform
         public void StartShooting()
         {
             Log.Line($"starting sound: Name:{System.WeaponName} - PartName:{System.PartName} - IsTurret:{Kind.HardPoint.IsTurret}");
-            StartFiringSound();
+            if (FiringEmitter != null) StartFiringSound();
             IsShooting = true;
         }
 
@@ -91,9 +91,6 @@ namespace WeaponCore.Platform
 
         public void StartFiringSound()
         {
-            if (FiringEmitter == null)
-                return;
-
             FiringEmitter.PlaySound(FiringSound, true);
             Log.Line("Start Firing Sound");
         }
@@ -108,14 +105,14 @@ namespace WeaponCore.Platform
 
         public void StartReloadSound()
         {
-            if (!System.TurretReloadSound || ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
+            if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
             Log.Line("Start Reload Sound");
             ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
         }
 
         public void StopReloadSound()
         {
-            if (!System.TurretReloadSound) return;
+            if (ReloadEmitter == null) return;
             Log.Line("Stop Reload Sound");
             ReloadEmitter?.StopSound(true, true);
         }

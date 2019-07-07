@@ -32,7 +32,7 @@ namespace WeaponCore.Support
         private DSUtils Dsutil1 { get; set; } = new DSUtils();
         internal GridTargetingAi MyAi { get; set; }
         internal MySoundPair RotationSound;
-        internal readonly MyEntity3DSoundEmitter RotationEmitter; 
+        internal MyEntity3DSoundEmitter RotationEmitter; 
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.Instance.LastTerminalId == Turret.EntityId;
@@ -40,6 +40,7 @@ namespace WeaponCore.Support
         internal MyFixedPoint MaxInventoryVolume;
         internal MyFixedPoint MaxInventoryMass;
         internal uint LastAmmoUnSuspendTick;
+        internal uint LastTrackedTick;
         internal int PullingAmmoCnt;
         internal float MaxAmmoVolume;
         internal float MaxAmmoMass;
@@ -78,6 +79,7 @@ namespace WeaponCore.Support
         internal bool IsWorking;
         internal bool FullInventory;
         internal bool MultiInventory;
+        internal bool AiMoving;
         internal bool AiLock;
         internal LogicSettings Set;
         internal LogicState State;
@@ -94,7 +96,6 @@ namespace WeaponCore.Support
             BlockInventory.Constraint.m_useDefaultIcon = false;
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
-            RotationEmitter = new MyEntity3DSoundEmitter(MyCube, true, 1f);
         }
     }
 }

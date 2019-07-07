@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Definitions;
-using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
@@ -32,7 +31,8 @@ namespace WeaponCore.Support
         public readonly bool TurretEffect2;
         public readonly bool HasTurretShootAv;
         public readonly double MaxTrajectorySqr;
-
+        public readonly float HardPointMaxSoundDistSqr;
+        public readonly float AmmoMaxSoundDistSqr;
         public enum FiringSoundState
         {
             None,
@@ -66,6 +66,8 @@ namespace WeaponCore.Support
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
 
             MaxTrajectorySqr = kind.Ammo.Trajectory.MaxTrajectory * kind.Ammo.Trajectory.MaxTrajectory;
+            HardPointMaxSoundDistSqr = kind.Audio.HardPoint.SoundMaxDistanceOveride * kind.Audio.HardPoint.SoundMaxDistanceOveride;
+            AmmoMaxSoundDistSqr = kind.Audio.Ammo.SoundMaxDistanceOveride * kind.Audio.Ammo.SoundMaxDistanceOveride;
             ReloadTime = kind.HardPoint.ReloadTime;
             DelayToFire = kind.HardPoint.DelayUntilFire;
             var audioDef = kind.Audio;
@@ -119,7 +121,9 @@ namespace WeaponCore.Support
                 var ammoDefId = new MyDefinitionId();
                 var ammoBlank = weaponDef.HardPoint.AmmoMagazineId == string.Empty || weaponDef.HardPoint.AmmoMagazineId == "Blank";
                 foreach (var def in Session.Instance.AllDefinitions)
+                {
                     if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == weaponDef.HardPoint.AmmoMagazineId) ammoDefId = def.Id;
+                }
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
                 /*

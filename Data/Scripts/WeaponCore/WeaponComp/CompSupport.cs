@@ -45,7 +45,7 @@ namespace WeaponCore.Support
 
         public void StopRotSound(bool force)
         {
-            if (TrackingWeapon.System.HardPointRotationSound && RotationEmitter != null)
+            if (RotationEmitter != null)
             {
                 if (!RotationEmitter.IsPlaying)
                     return;
