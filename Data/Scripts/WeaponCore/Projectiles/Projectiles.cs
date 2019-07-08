@@ -64,13 +64,11 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
-            /*
+            //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
             for (int i = 0; i < Wait.Length; i++)
             {
                 Process(i);
             }
-            */
         }
 
         private void Process(int i)
@@ -118,10 +116,8 @@ namespace WeaponCore.Projectiles
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
                     {
                         Vector3D newVel;
-
-                        if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength))
+                        if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
-                            
                             var trajInfo = p.Kind.Ammo.Trajectory;
                             if (p.Target != null && !p.Target.MarkedForClose)
                             {
@@ -299,12 +295,12 @@ namespace WeaponCore.Projectiles
             var normalMissileAcceleration = normalVelocity * compensationFactor;
 
             if (Vector3D.IsZero(normalMissileAcceleration))
-                return missileToTarget;
+                return missileToTarget * missileAcceleration;
 
             double diff = missileAcceleration * missileAcceleration - normalMissileAcceleration.LengthSquared();
             if (diff < 0)
             {
-                return normalMissileAcceleration; //fly parallel to the target
+                return Vector3D.Normalize(normalMissileAcceleration) * missileAcceleration; //fly parallel to the target
             }
 
             return Math.Sqrt(diff) * missileToTarget + normalMissileAcceleration;

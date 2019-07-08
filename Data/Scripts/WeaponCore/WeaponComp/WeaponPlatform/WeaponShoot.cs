@@ -109,7 +109,6 @@ namespace WeaponCore.Platform
                         pro.Direction = muzzle.DeviatedDir;
                         pro.State = Projectile.ProjectileState.Start;
                         pro.Target = Target;
-
                         if (System.ModelId != -1)
                         {
                             MyEntity ent;

@@ -54,6 +54,7 @@ namespace WeaponCore.Projectiles
         internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
         internal double ShotLength;
+        internal double SmartsDelayDistSqr;
         internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
         internal int Age = -1;
@@ -117,6 +118,9 @@ namespace WeaponCore.Projectiles
             MaxTrajectory = Kind.Ammo.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             ShotLength = Kind.Ammo.ProjectileLength;
+
+            var smartsDelayDist = ShotLength * Kind.Ammo.Trajectory.SmartsTrackingDelay;
+            SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
             DesiredSpeed = Kind.Ammo.Trajectory.DesiredSpeed;
