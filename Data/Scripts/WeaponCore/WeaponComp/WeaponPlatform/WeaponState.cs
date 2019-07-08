@@ -22,43 +22,72 @@ namespace WeaponCore.Platform
             public uint LastUpdateTick;
         }
 
-        private void ShootGraphics()
+        public void ShootGraphics()
         {
-            if (System.TurretEffect1 || System.TurretEffect2)
+            if (System.BarrelEffect1 || System.BarrelEffect2)
             {
-                var particles = Kind.Graphics.Particles;
-                var vel = Comp.Physics.LinearVelocity;
-                var dummy = Dummies[NextMuzzle];
-                var pos = dummy.Info.Position;
-                var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
-
-                if (System.TurretEffect1)
+                var removal = false;
+                var avSlot = 0;
+                foreach (var barrelPair in BarrelAvUpdater)
                 {
-                    if (MuzzleEffect1 == null)
-                        MyParticlesManager.TryCreateParticleEffect(particles.Turret1Particle, ref matrix, ref pos, uint.MaxValue, out MuzzleEffect1);
-                    else if (particles.Turret1Restart && MuzzleEffect1.IsEmittingStopped)
-                        MuzzleEffect1.Play();
+                    var slot = avSlot++;
+                    var lastUpdateTick = barrelPair.Value;
+                    var dummy = barrelPair.Key;
+                    var tick = Comp.MyAi.MySession.Tick;
+                    var ticksAgo = tick - lastUpdateTick;
 
-                    if (MuzzleEffect1 != null)
+                    var particles = Kind.Graphics.Particles;
+                    var vel = Comp.Physics.LinearVelocity;
+                    var pos = dummy.Info.Position;
+                    var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
+
+                    if (System.BarrelEffect1 && ticksAgo <= System.Barrel1AvTicks)
                     {
-                        MuzzleEffect1.WorldMatrix = matrix;
-                        MuzzleEffect1.Velocity = vel;
+                        if (BarrelEffects1[slot] == null)
+                            MyParticlesManager.TryCreateParticleEffect(particles.Barrel1Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[slot]);
+                        else if (particles.Barrel1Restart && BarrelEffects1[slot].IsEmittingStopped)
+                            BarrelEffects1[slot].Play();
+
+                        if (BarrelEffects1[slot] != null)
+                        {
+                            BarrelEffects1[slot].WorldMatrix = matrix;
+                            BarrelEffects1[slot].Velocity = vel;
+                        }
+                    }
+                    else if (BarrelEffects1[slot] != null)
+                    {
+                        BarrelEffects1[slot].Stop(true);
+                        BarrelEffects1[slot] = null;
+                        Log.Line("stop effect 1");
+                    }
+
+                    if (System.BarrelEffect2 && ticksAgo <= System.Barrel2AvTicks)
+                    {
+                        if (BarrelEffects2[slot] == null)
+                            MyParticlesManager.TryCreateParticleEffect(particles.Barrel2Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[slot]);
+                        else if (particles.Barrel2Restart && BarrelEffects2[slot].IsEmittingStopped)
+                            BarrelEffects2[slot].Play();
+
+                        if (BarrelEffects2[slot] != null)
+                        {
+                            BarrelEffects2[slot].WorldMatrix = matrix;
+                            BarrelEffects2[slot].Velocity = vel;
+                        }
+                    }
+                    else if (BarrelEffects2[slot] != null)
+                    {
+                        BarrelEffects2[slot].Stop(true);
+                        BarrelEffects2[slot] = null;
+                        Log.Line("stop effect 2");
+                    }
+
+                    if (ticksAgo > System.Barrel1AvTicks && ticksAgo > System.Barrel2AvTicks)
+                    {
+                        removal = true;
+                        BarrelAvUpdater.Remove(dummy);
                     }
                 }
-
-                if (System.TurretEffect2)
-                {
-                    if (MuzzleEffect2 == null)
-                        MyParticlesManager.TryCreateParticleEffect(particles.Turret2Particle, ref matrix, ref pos, uint.MaxValue, out MuzzleEffect2);
-                    else if (particles.Turret2Restart && MuzzleEffect2.IsEmittingStopped)
-                        MuzzleEffect2.Play();
-
-                    if (MuzzleEffect2 != null)
-                    {
-                        MuzzleEffect2.WorldMatrix = matrix;
-                        MuzzleEffect2.Velocity = vel;
-                    }
-                }
+                if (removal) BarrelAvUpdater.ApplyRemovals();
             }
         }
 
@@ -68,36 +97,24 @@ namespace WeaponCore.Platform
             if (FiringEmitter != null) StartFiringSound();
             if (System.ShotEnergyCost > 0)
             {
-                var hardPoint = System.Kind.HardPoint;
-                var gameStep = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-                var powerRequired = ((System.ShotEnergyCost * (hardPoint.RateOfFire * gameStep)) * hardPoint.BarrelsPerShot) * hardPoint.ShotsPerBarrel;
-                Comp.SinkPower = powerRequired;
+                Comp.SinkPower += RequiredPower;
                 Comp.Sink.Update();
-                Log.Line($"BaseCost PerSec:{System.ShotEnergyCost * (hardPoint.RateOfFire * gameStep)} - PerShotCost:{System.ShotEnergyCost} - ShotsPerSec:{(hardPoint.RateOfFire * gameStep)} - 1St Multi:{hardPoint.BarrelsPerShot} - 2nd Multi:{hardPoint.ShotsPerBarrel} - Total:{powerRequired}");
             }
             IsShooting = true;
         }
 
         public void StopShooting(bool avOnly = false)
         {
-            if (MuzzleEffect2 != null)
-            {
-                MuzzleEffect2.Stop(true);
-                MuzzleEffect2 = null;
-            }
-
-            if (MuzzleEffect1 != null)
-            {
-                MuzzleEffect1.Stop(false);
-                MuzzleEffect1 = null;
-            }
             Log.Line("stop shooting");
             StopFiringSound(false);
             StopRotateSound();
+            ShootGraphics();
             if (!avOnly)
             {
                 TicksUntilShoot = 0;
                 IsShooting = false;
+                Comp.SinkPower -= RequiredPower;
+                Comp.Sink.Update();
             }
         }
 

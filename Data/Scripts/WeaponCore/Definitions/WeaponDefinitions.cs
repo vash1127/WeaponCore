@@ -127,14 +127,16 @@ namespace WeaponCore.Support
         [ProtoMember(5)] internal string HitParticle;
         [ProtoMember(6)] internal Vector4 HitColor;
         [ProtoMember(7)] internal float HitScale;
-        [ProtoMember(8)] internal string Turret1Particle;
-        [ProtoMember(9)] internal Vector4 Turret1Color;
-        [ProtoMember(10)] internal float Turret1Scale;
-        [ProtoMember(11)] internal bool Turret1Restart;
-        [ProtoMember(12)] internal string Turret2Particle;
-        [ProtoMember(13)] internal Vector4 Turret2Color;
-        [ProtoMember(14)] internal float Turret2Scale;
-        [ProtoMember(15)] internal bool Turret2Restart;
+        [ProtoMember(8)] internal string Barrel1Particle;
+        [ProtoMember(9)] internal Vector4 Barrel1Color;
+        [ProtoMember(10)] internal float Barrel1Scale;
+        [ProtoMember(11)] internal bool Barrel1Restart;
+        [ProtoMember(12)] internal int Barrel1Duration;
+        [ProtoMember(13)] internal string Barrel2Particle;
+        [ProtoMember(14)] internal Vector4 Barrel2Color;
+        [ProtoMember(15)] internal float Barrel2Scale;
+        [ProtoMember(16)] internal bool Barrel2Restart;
+        [ProtoMember(17)] internal int Barrel2Duration;
     }
 
     [ProtoContract]

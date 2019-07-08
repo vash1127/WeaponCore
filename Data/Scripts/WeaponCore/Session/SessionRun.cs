@@ -51,7 +51,6 @@ namespace WeaponCore
                 AiLoop();
                 //MyAPIGateway.Parallel.Start(Projectiles.Update);
                 Projectiles.Update();
-                //Log.Line("test1");
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

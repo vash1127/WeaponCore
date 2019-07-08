@@ -29,9 +29,8 @@ namespace WeaponCore.Platform
 
             if (ShotCounter != 0) return;
             if (!IsShooting) StartShooting();
-            if (TicksUntilShoot >= Kind.HardPoint.DelayUntilFire) ShootGraphics();
             if (TicksUntilShoot < Kind.HardPoint.DelayUntilFire) return;
-
+            if (PlayTurretAv && BarrelAvUpdater.Reader.Count > 0) ShootGraphics();
             if (!System.EnergyAmmo) CurrentAmmo--;
 
             var endBarrel = _numOfBarrels - 1;
@@ -79,8 +78,10 @@ namespace WeaponCore.Platform
                     muzzle.Direction = newInfo.Direction;
                     muzzle.Position = newInfo.Position;
                     muzzle.LastUpdateTick = tick;
+                    if (PlayTurretAv) BarrelAvUpdater.Add(dummy, tick, true);
                 }
                 muzzle.LastShot = tick;
+
 
                 lock (session.Projectiles.Wait[session.ProCounter])
                 {

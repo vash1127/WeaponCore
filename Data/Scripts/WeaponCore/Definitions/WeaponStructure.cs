@@ -15,21 +15,23 @@ namespace WeaponCore.Support
         public readonly int ModelId;
         public readonly int ReloadTime;
         public readonly int DelayToFire;
+        public readonly int Barrel1AvTicks;
+        public readonly int Barrel2AvTicks;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly FiringSoundState FiringSound;
         public readonly bool AmmoParticle;
         public readonly bool AmmoHitSound;
         public readonly bool AmmoTravelSound;
-        public readonly bool TurretReloadSound;
+        public readonly bool WeaponReloadSound;
         public readonly bool HardPointRotationSound;
         public readonly bool BarrelRotationSound;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
         public readonly bool EnergyAmmo;
-        public readonly bool TurretEffect1;
-        public readonly bool TurretEffect2;
-        public readonly bool HasTurretShootAv;
+        public readonly bool BarrelEffect1;
+        public readonly bool BarrelEffect2;
+        public readonly bool HasBarrelShootAv;
         public readonly double MaxTrajectorySqr;
         public readonly float HardPointMaxSoundDistSqr;
         public readonly float AmmoMaxSoundDistSqr;
@@ -56,11 +58,11 @@ namespace WeaponCore.Support
             AmmoParticle = kind.Graphics.Particles.AmmoParticle != string.Empty;
             AmmoHitSound = kind.Audio.Ammo.HitSound != string.Empty;
             AmmoTravelSound = kind.Audio.Ammo.TravelSound != string.Empty;
-            TurretReloadSound = kind.Audio.HardPoint.ReloadSound != string.Empty;
+            WeaponReloadSound = kind.Audio.HardPoint.ReloadSound != string.Empty;
             HardPointRotationSound = kind.Audio.HardPoint.HardPointRotationSound != string.Empty;
             BarrelRotationSound = kind.Audio.HardPoint.BarrelRotationSound != string.Empty;
-            TurretEffect1 = kind.Graphics.Particles.Turret1Particle != string.Empty;
-            TurretEffect2 = kind.Graphics.Particles.Turret2Particle != string.Empty;
+            BarrelEffect1 = kind.Graphics.Particles.Barrel1Particle != string.Empty;
+            BarrelEffect2 = kind.Graphics.Particles.Barrel2Particle != string.Empty;
 
             AmmoAreaEffect = kind.Ammo.AreaEffectRadius > 0;
             AmmoSkipAccel = kind.Ammo.Trajectory.AccelPerSec <= 0;
@@ -73,6 +75,8 @@ namespace WeaponCore.Support
 
             ReloadTime = kind.HardPoint.ReloadTime;
             DelayToFire = kind.HardPoint.DelayUntilFire;
+            Barrel1AvTicks = kind.Graphics.Particles.Barrel1Duration;
+            Barrel2AvTicks = kind.Graphics.Particles.Barrel2Duration;
             var audioDef = kind.Audio;
 
             var fSoundStart = audioDef.HardPoint.FiringSound;
@@ -90,7 +94,7 @@ namespace WeaponCore.Support
             }
             else ModelId = -1;
 
-            HasTurretShootAv = TurretEffect1 || TurretEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
+            HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
         }
     }
 

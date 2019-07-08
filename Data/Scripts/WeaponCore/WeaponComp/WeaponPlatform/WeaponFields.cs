@@ -1,6 +1,7 @@
 ﻿using System;
 using Sandbox.Game.Entities;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
@@ -47,9 +48,8 @@ namespace WeaponCore.Platform
         internal MyEntity Target;
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
-
-        internal MyParticleEffect MuzzleEffect1;
-        internal MyParticleEffect MuzzleEffect2;
+        internal MyParticleEffect[] BarrelEffects1;
+        internal MyParticleEffect[] BarrelEffects2;
 
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
@@ -57,6 +57,7 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
+        internal readonly CachingDictionary<Dummy, uint> BarrelAvUpdater = new CachingDictionary<Dummy, uint>();
 
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
@@ -78,6 +79,7 @@ namespace WeaponCore.Platform
         internal float MinAzimuthRadians;
         internal float MaxElevationRadians;
         internal float MinElevationRadians;
+        internal float RequiredPower => ((System.ShotEnergyCost * (System.Kind.HardPoint.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Kind.HardPoint.BarrelsPerShot) * System.Kind.HardPoint.ShotsPerBarrel;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -93,7 +95,6 @@ namespace WeaponCore.Platform
         internal bool BarrelMove;
         internal bool PlayTurretAv;
         internal bool AvCapable;
-
         internal bool LoadAmmoMag
         {
             set
@@ -124,7 +125,7 @@ namespace WeaponCore.Platform
             System = system;
             Kind = system.Kind;
             Comp = comp;
-            AvCapable = System.HasTurretShootAv && !Comp.MyAi.MySession.DedicatedServer;
+            AvCapable = System.HasBarrelShootAv && !Comp.MyAi.MySession.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
@@ -133,7 +134,7 @@ namespace WeaponCore.Platform
                 FiringSound.Init(Kind.Audio.HardPoint.FiringSound);
             }
 
-            if (AvCapable && system.TurretReloadSound)
+            if (AvCapable && system.WeaponReloadSound)
             {
                 ReloadEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 ReloadSound = new MySoundPair();
@@ -145,6 +146,12 @@ namespace WeaponCore.Platform
                 RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 RotateSound = new MySoundPair();
                 RotateSound.Init(Kind.Audio.HardPoint.BarrelRotationSound);
+            }
+
+            if (AvCapable)
+            {
+                if (System.BarrelEffect1) BarrelEffects1 = new MyParticleEffect[System.Kind.HardPoint.Barrels.Length];
+                if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Kind.HardPoint.Barrels.Length];
             }
 
             WeaponId = weaponId;

@@ -1,5 +1,4 @@
-﻿using VRageMath;
-using WeaponCore.Platform;
+﻿using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -60,6 +59,8 @@ namespace WeaponCore
 
                         if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                         else if (w.IsShooting) w.StopShooting();
+
+                        if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
                     }
                 }
                 gridAi.Ready = false;
