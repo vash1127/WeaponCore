@@ -44,7 +44,7 @@ namespace WeaponCore.Support
         [ProtoMember(18)] internal float ElevationSpeed;
         [ProtoMember(19)] internal float DeviateShotAngle;
         [ProtoMember(20)] internal int DelayUntilFire;
-        [ProtoMember(21)] internal float ShotEnergyCost;
+        [ProtoMember(21)] internal float EnergyCost;
         [ProtoMember(22)] internal double AimingTolerance;
         [ProtoMember(23)] internal Prediction TargetPrediction;
     }

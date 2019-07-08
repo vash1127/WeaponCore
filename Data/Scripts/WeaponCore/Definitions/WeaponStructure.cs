@@ -33,6 +33,7 @@ namespace WeaponCore.Support
         public readonly double MaxTrajectorySqr;
         public readonly float HardPointMaxSoundDistSqr;
         public readonly float AmmoMaxSoundDistSqr;
+        public readonly float ShotEnergyCost;
         public enum FiringSoundState
         {
             None,
@@ -68,6 +69,8 @@ namespace WeaponCore.Support
             MaxTrajectorySqr = kind.Ammo.Trajectory.MaxTrajectory * kind.Ammo.Trajectory.MaxTrajectory;
             HardPointMaxSoundDistSqr = kind.Audio.HardPoint.SoundMaxDistanceOveride * kind.Audio.HardPoint.SoundMaxDistanceOveride;
             AmmoMaxSoundDistSqr = kind.Audio.Ammo.SoundMaxDistanceOveride * kind.Audio.Ammo.SoundMaxDistanceOveride;
+            ShotEnergyCost = kind.HardPoint.EnergyCost * kind.Ammo.DefaultDamage;
+
             ReloadTime = kind.HardPoint.ReloadTime;
             DelayToFire = kind.HardPoint.DelayUntilFire;
             var audioDef = kind.Audio;

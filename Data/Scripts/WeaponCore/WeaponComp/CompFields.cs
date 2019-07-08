@@ -83,7 +83,7 @@ namespace WeaponCore.Support
         internal bool AiLock;
         internal LogicSettings Set;
         internal LogicState State;
-        internal MyResourceSinkComponent Sink;
+        internal MyResourceSinkComponent Sink => MyCube.ResourceSink;
 
         public WeaponComponent(GridTargetingAi ai, MyCubeBlock myCube, IMyLargeMissileTurret turret)
         {
@@ -96,6 +96,14 @@ namespace WeaponCore.Support
             BlockInventory.Constraint.m_useDefaultIcon = false;
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
+            var resourceInfo = new MyResourceSinkInfo()
+            {
+                ResourceTypeId = GId,
+                MaxRequiredInput = 0f,
+                RequiredInputFunc = () => SinkPower
+            };
+            Sink.RemoveType(ref GId);
+            Sink.AddType(ref resourceInfo);
         }
     }
 }

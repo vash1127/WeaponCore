@@ -66,6 +66,15 @@ namespace WeaponCore.Platform
         {
             Log.Line($"starting sound: Name:{System.WeaponName} - PartName:{System.PartName} - IsTurret:{Kind.HardPoint.IsTurret}");
             if (FiringEmitter != null) StartFiringSound();
+            if (System.ShotEnergyCost > 0)
+            {
+                var hardPoint = System.Kind.HardPoint;
+                var gameStep = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+                var powerRequired = ((System.ShotEnergyCost * (hardPoint.RateOfFire * gameStep)) * hardPoint.BarrelsPerShot) * hardPoint.ShotsPerBarrel;
+                Comp.SinkPower = powerRequired;
+                Comp.Sink.Update();
+                Log.Line($"BaseCost PerSec:{System.ShotEnergyCost * (hardPoint.RateOfFire * gameStep)} - PerShotCost:{System.ShotEnergyCost} - ShotsPerSec:{(hardPoint.RateOfFire * gameStep)} - 1St Multi:{hardPoint.BarrelsPerShot} - 2nd Multi:{hardPoint.ShotsPerBarrel} - Total:{powerRequired}");
+            }
             IsShooting = true;
         }
 
@@ -123,14 +132,14 @@ namespace WeaponCore.Platform
 
         public void StartRotateSound()
         {
-            Log.Line("Start Reload Sound");
+            //Log.Line("Start Rotate Sound");
             RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);
         }
 
         public void StopRotateSound()
         {
             if (RotateEmitter == null) return;
-            Log.Line("Stop Reload Sound");
+            //Log.Line("Stop Rotate Sound");
             RotateEmitter.StopSound(true, true);
         }
     }

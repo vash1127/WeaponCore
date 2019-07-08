@@ -1,9 +1,5 @@
 ﻿using System;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
-using VRage;
-using VRage.Audio;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -85,47 +81,50 @@ namespace WeaponCore.Platform
                     muzzle.LastUpdateTick = tick;
                 }
                 muzzle.LastShot = tick;
-                var deviatedAngle = Kind.HardPoint.DeviateShotAngle;
-                if (deviatedAngle > 0)
-                {
-                    var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                    var randomFloat1 = MyUtils.GetRandomFloat(-deviatedAngle, deviatedAngle);
-                    var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
 
-                    muzzle.DeviatedDir = Vector3.TransformNormal(
-                        -new Vector3(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
-                            MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
-                            MyMath.FastCos(randomFloat1)), dirMatrix);
-                }
-                else muzzle.DeviatedDir = muzzle.Direction;
-
-                if (i == bps) NextMuzzle++;
-                NextMuzzle = (NextMuzzle + (skipAhead + 1)) % (endBarrel + 1);
                 lock (session.Projectiles.Wait[session.ProCounter])
                 {
-                    Projectile pro;
-                    session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
-                    pro.System = System;
-                    pro.FiringCube = Comp.MyCube;
-                    pro.Origin = muzzle.Position;
-                    pro.PredictedTargetPos = TargetPos;
-                    pro.Direction = muzzle.DeviatedDir;
-                    pro.State = Projectile.ProjectileState.Start;
-                    pro.Target = Target;
-
-                    if (System.ModelId != -1)
+                    for (int j = 0; j < Kind.HardPoint.ShotsPerBarrel; j++)
                     {
-                        MyEntity ent;
-                        session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out ent);
-                        if (!ent.InScene)
+                        if (Kind.HardPoint.DeviateShotAngle > 0)
                         {
-                            ent.InScene = true;
-                            ent.Render.AddRenderObjects();
+                            var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
+                            var randomFloat1 = MyUtils.GetRandomFloat(-Kind.HardPoint.DeviateShotAngle, Kind.HardPoint.DeviateShotAngle);
+                            var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
+
+                            muzzle.DeviatedDir = Vector3.TransformNormal(
+                                -new Vector3(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
+                                    MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
+                                    MyMath.FastCos(randomFloat1)), dirMatrix);
                         }
-                        pro.Entity = ent;
+                        else muzzle.DeviatedDir = muzzle.Direction;
+
+                        Projectile pro;
+                        session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
+                        pro.System = System;
+                        pro.FiringCube = Comp.MyCube;
+                        pro.Origin = muzzle.Position;
+                        pro.PredictedTargetPos = TargetPos;
+                        pro.Direction = muzzle.DeviatedDir;
+                        pro.State = Projectile.ProjectileState.Start;
+                        pro.Target = Target;
+
+                        if (System.ModelId != -1)
+                        {
+                            MyEntity ent;
+                            session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out ent);
+                            if (!ent.InScene)
+                            {
+                                ent.InScene = true;
+                                ent.Render.AddRenderObjects();
+                            }
+                            pro.Entity = ent;
+                        }
+                        if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
                     }
                 }
-                if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
+                if (i == bps) NextMuzzle++;
+                NextMuzzle = (NextMuzzle + (skipAhead + 1)) % (endBarrel + 1);
             }
         }
 
