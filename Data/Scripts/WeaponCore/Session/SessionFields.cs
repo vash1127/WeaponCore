@@ -101,6 +101,7 @@ namespace WeaponCore
 
         internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
+        internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal ShieldApi SApi = new ShieldApi();
         internal FutureEvents FutureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);

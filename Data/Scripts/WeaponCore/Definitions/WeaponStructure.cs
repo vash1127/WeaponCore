@@ -24,6 +24,7 @@ namespace WeaponCore.Support
         public readonly bool AmmoHitSound;
         public readonly bool AmmoTravelSound;
         public readonly bool WeaponReloadSound;
+        public readonly bool NoAmmoSound;
         public readonly bool HardPointRotationSound;
         public readonly bool BarrelRotationSound;
         public readonly bool AmmoAreaEffect;
@@ -33,9 +34,17 @@ namespace WeaponCore.Support
         public readonly bool BarrelEffect2;
         public readonly bool HasBarrelShootAv;
         public readonly double MaxTrajectorySqr;
-        public readonly float HardPointMaxSoundDistSqr;
-        public readonly float AmmoMaxSoundDistSqr;
         public readonly float ShotEnergyCost;
+        public readonly float FiringSoundDistSqr;
+        public readonly float ReloadSoundDistSqr;
+        public readonly float BarrelSoundDistSqr;
+        public readonly float HardPointSoundDistSqr;
+        public readonly float NoAmmoSoundDistSqr;
+        public readonly float HitSoundDistSqr;
+        public readonly float AmmoTravelSoundDistSqr;
+        public readonly float HardPointSoundMaxDistSqr;
+        public readonly float AmmoSoundMaxDistSqr;
+
         public enum FiringSoundState
         {
             None,
@@ -53,14 +62,9 @@ namespace WeaponCore.Support
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
-            ProjectileMaterial = MyStringId.GetOrCompute(kind.Graphics.Line.Material);
 
+            ProjectileMaterial = MyStringId.GetOrCompute(kind.Graphics.Line.Material);
             AmmoParticle = kind.Graphics.Particles.AmmoParticle != string.Empty;
-            AmmoHitSound = kind.Audio.Ammo.HitSound != string.Empty;
-            AmmoTravelSound = kind.Audio.Ammo.TravelSound != string.Empty;
-            WeaponReloadSound = kind.Audio.HardPoint.ReloadSound != string.Empty;
-            HardPointRotationSound = kind.Audio.HardPoint.HardPointRotationSound != string.Empty;
-            BarrelRotationSound = kind.Audio.HardPoint.BarrelRotationSound != string.Empty;
             BarrelEffect1 = kind.Graphics.Particles.Barrel1Particle != string.Empty;
             BarrelEffect2 = kind.Graphics.Particles.Barrel2Particle != string.Empty;
 
@@ -69,23 +73,92 @@ namespace WeaponCore.Support
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
 
             MaxTrajectorySqr = kind.Ammo.Trajectory.MaxTrajectory * kind.Ammo.Trajectory.MaxTrajectory;
-            HardPointMaxSoundDistSqr = kind.Audio.HardPoint.SoundMaxDistanceOveride * kind.Audio.HardPoint.SoundMaxDistanceOveride;
-            AmmoMaxSoundDistSqr = kind.Audio.Ammo.SoundMaxDistanceOveride * kind.Audio.Ammo.SoundMaxDistanceOveride;
             ShotEnergyCost = kind.HardPoint.EnergyCost * kind.Ammo.DefaultDamage;
 
             ReloadTime = kind.HardPoint.ReloadTime;
             DelayToFire = kind.HardPoint.DelayUntilFire;
             Barrel1AvTicks = kind.Graphics.Particles.Barrel1Duration;
             Barrel2AvTicks = kind.Graphics.Particles.Barrel2Duration;
+
+            AmmoHitSound = kind.Audio.Ammo.HitSound != string.Empty;
+            AmmoTravelSound = kind.Audio.Ammo.TravelSound != string.Empty;
+            WeaponReloadSound = kind.Audio.HardPoint.ReloadSound != string.Empty;
+            HardPointRotationSound = kind.Audio.HardPoint.HardPointRotationSound != string.Empty;
+            BarrelRotationSound = kind.Audio.HardPoint.BarrelRotationSound != string.Empty;
+            NoAmmoSound = kind.Audio.HardPoint.NoAmmoSound != string.Empty;
+
             var audioDef = kind.Audio;
-
             var fSoundStart = audioDef.HardPoint.FiringSound;
-
             if (fSoundStart != string.Empty && audioDef.HardPoint.FiringSoundPerShot)
                 FiringSound = FiringSoundState.PerShot;
             else if (fSoundStart != string.Empty && !audioDef.HardPoint.FiringSoundPerShot)
                 FiringSound = FiringSoundState.WhenDone;
             else FiringSound = FiringSoundState.None;
+
+            const string arc = "Arc";
+            FiringSoundDistSqr = 0;
+            AmmoTravelSoundDistSqr = 0;
+            ReloadSoundDistSqr = 0;
+            BarrelSoundDistSqr = 0;
+            HardPointSoundDistSqr = 0;
+            NoAmmoSoundDistSqr = 0;
+            HitSoundDistSqr = 0;
+            HardPointSoundMaxDistSqr = 0;
+            AmmoSoundMaxDistSqr = 0;
+            var fireSound = string.Concat(arc, kind.Audio.HardPoint.FiringSound);
+            var hitSound = string.Concat(arc, kind.Audio.Ammo.HitSound);
+            var travelSound = string.Concat(arc, kind.Audio.Ammo.TravelSound);
+            var reloadSound = string.Concat(arc, kind.Audio.HardPoint.ReloadSound);
+            var barrelSound = string.Concat(arc, kind.Audio.HardPoint.BarrelRotationSound);
+            var hardPointSound = string.Concat(arc, kind.Audio.HardPoint.HardPointRotationSound);
+            var noAmmoSound = string.Concat(arc, kind.Audio.HardPoint.NoAmmoSound);
+            foreach (var def in Session.Instance.SoundDefinitions)
+            {
+                var id = def.Id.SubtypeId.String;
+                if (FiringSound != FiringSoundState.None && id == fireSound)
+                {
+                    var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
+                    if (ob != null) FiringSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
+                    if (FiringSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = FiringSoundDistSqr;
+                }
+                if (AmmoHitSound && id == hitSound)
+                {
+                    var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
+                    if (ob != null) HitSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
+                    if (HitSoundDistSqr > AmmoSoundMaxDistSqr) AmmoSoundMaxDistSqr = HitSoundDistSqr;
+                }
+                else if (AmmoTravelSound && id == travelSound)
+                {
+                    var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
+                    if (ob != null) AmmoTravelSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
+                    if (AmmoTravelSoundDistSqr > AmmoSoundMaxDistSqr) AmmoSoundMaxDistSqr = AmmoTravelSoundDistSqr;
+                }
+                else if (WeaponReloadSound && id == reloadSound)
+                {
+                    var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
+                    if (ob != null) ReloadSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
+                    if (ReloadSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = ReloadSoundDistSqr;
+
+                }
+                else if (BarrelRotationSound && id == barrelSound)
+                {
+                    var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
+                    if (ob != null) BarrelSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
+                    if (BarrelSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = BarrelSoundDistSqr;
+                }
+                else if (HardPointRotationSound && id == hardPointSound)
+                {
+                    var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
+                    if (ob != null) HardPointSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
+                    if (HardPointSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = HardPointSoundDistSqr;
+                }
+                else if (NoAmmoSound && id == noAmmoSound)
+                {
+                    var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
+                    if (ob != null) NoAmmoSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
+                    if (NoAmmoSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = NoAmmoSoundDistSqr;
+                }
+            }
 
             if (kind.Graphics.ModelName != string.Empty && !kind.Graphics.Line.Trail)
             {

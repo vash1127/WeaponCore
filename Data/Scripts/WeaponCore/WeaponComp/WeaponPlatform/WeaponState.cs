@@ -58,7 +58,6 @@ namespace WeaponCore.Platform
                     {
                         BarrelEffects1[slot].Stop(true);
                         BarrelEffects1[slot] = null;
-                        Log.Line("stop effect 1");
                     }
 
                     if (System.BarrelEffect2 && ticksAgo <= System.Barrel2AvTicks)
@@ -78,7 +77,6 @@ namespace WeaponCore.Platform
                     {
                         BarrelEffects2[slot].Stop(true);
                         BarrelEffects2[slot] = null;
-                        Log.Line("stop effect 2");
                     }
 
                     if (ticksAgo > System.Barrel1AvTicks && ticksAgo > System.Barrel2AvTicks)

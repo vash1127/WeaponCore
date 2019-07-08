@@ -137,7 +137,7 @@ namespace WeaponCore.Projectiles
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
             FiringSoundState = System.FiringSound;
-            AmmoTravelSoundRangeSqr = System.AmmoMaxSoundDistSqr;
+            AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
             //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;

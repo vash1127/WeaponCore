@@ -21,7 +21,7 @@ namespace WeaponCore.Platform
             var bps = Kind.HardPoint.BarrelsPerShot;
             var skipAhead = Kind.HardPoint.SkipBarrels;
             if (AvCapable && (!PlayTurretAv || Comp.MyAi.MySession.Tick60))
-                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointMaxSoundDistSqr;
+                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointSoundMaxDistSqr;
 
             if (Kind.HardPoint.RotateBarrelAxis != 0) MovePart(-1 * bps);
             if (targetLock) _targetTick++;

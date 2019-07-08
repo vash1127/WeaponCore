@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -90,6 +91,7 @@ namespace WeaponCore
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
+                SoundDefinitions = Static.GetSoundDefinitions();
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
