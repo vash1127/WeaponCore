@@ -18,11 +18,13 @@ namespace WeaponCore.Platform
             var bps = Kind.HardPoint.Loading.BarrelsPerShot;
             var targetLock = Target != null;
 
+            if (targetLock) _targetTick++;
+
             if (System.BurstMode)
             {
                 if (_shots > System.Kind.HardPoint.Loading.ShotsInBurst)
                 {
-                    if (tick - _lastShotTick > System.Kind.HardPoint.Loading.DelayAfterBurst) _shots = 0;
+                    if (tick - _lastShotTick > System.Kind.HardPoint.Loading.DelayAfterBurst) _shots = 1;
                     else
                     {
                         if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
@@ -32,16 +34,15 @@ namespace WeaponCore.Platform
                 _lastShotTick = tick;
             }
 
-            if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
-            _newCycle = false;
-            if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
-
             if (AvCapable && (!PlayTurretAv || Comp.MyAi.MySession.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointSoundMaxDistSqr;
 
             if (Kind.HardPoint.RotateBarrelAxis != 0) MovePart(-1 * Kind.HardPoint.Loading.BarrelsPerShot);
 
-            if (targetLock) _targetTick++;
+            if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
+            if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
+
+            _newCycle = false;
 
             _ticksUntilShoot++;
             if (ShotCounter != 0) return;
@@ -50,8 +51,7 @@ namespace WeaponCore.Platform
             if (!IsShooting) StartShooting();
             if (_ticksUntilShoot < System.DelayToFire) return;
 
-            var endBarrel = _numOfBarrels - 1;
-            if (_shotsInCycle++ == (_numOfBarrels - 1))
+            if (_shotsInCycle++ == _numOfBarrels - 1)
             {
                 _shotsInCycle = 0;
                 _newCycle = true;
@@ -85,7 +85,6 @@ namespace WeaponCore.Platform
             var isStatic = Comp.Physics.IsStatic;
             for (int i = 0; i < bps; i++)
             {
-
                 var current = NextMuzzle;
                 var muzzle = Muzzles[current];
                 var lastTick = muzzle.LastUpdateTick;
@@ -152,14 +151,14 @@ namespace WeaponCore.Platform
                 }
                 if (i == bps) NextMuzzle++;
 
-                NextMuzzle = (NextMuzzle + (Kind.HardPoint.Loading.SkipBarrels + 1)) % (endBarrel + 1);
+                NextMuzzle = (NextMuzzle + (Kind.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
             }
         }
 
         public void MovePart(int time)
         {
             BarrelMove = true;
-            var radiansPerShot = (2 * Math.PI / _numOfBarrels);
+            var radiansPerShot = 2 * Math.PI / _numOfBarrels;
             var radians = radiansPerShot / _timePerShot;
             var axis = Kind.HardPoint.RotateBarrelAxis;
             MatrixD rotationMatrix;
