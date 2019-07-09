@@ -42,7 +42,7 @@ namespace WeaponCore.Platform
                     var tick = Comp.MyAi.MySession.Tick;
                     var ticksAgo = tick - lastUpdateTick;
 
-                    var particles = Kind.Graphics.Particles;
+                    var particles = System.Values.Graphics.Particles;
                     var vel = Comp.Physics.LinearVelocity;
                     var pos = dummy.Info.Position;
                     var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
@@ -97,7 +97,7 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
-            //Log.Line($"starting sound: Name:{System.WeaponName} - PartName:{System.PartName} - IsTurret:{Kind.HardPoint.IsTurret}");
+            //Log.Line($"starting sound: Name:{System.WeaponName} - PartName:{System.PartName} - IsTurret:{Values.HardPoint.IsTurret}");
             if (FiringEmitter != null) StartFiringSound();
             if (System.ShotEnergyCost > 0)
             {

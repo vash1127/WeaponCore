@@ -1,40 +1,31 @@
 ﻿using VRage;
 using VRage.Game.Entity;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
-
+using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore.Support
 {
     public class Shrinking
     {
-        internal WeaponDefinition Kind;
+        internal DrawProjectile DrawProjectile;
         internal Vector3D Position;
         internal Vector3D Direction;
         internal double Length;
-        internal float Width;
-        internal int ReSizeSteps;
-        internal double LineReSizeLen;
         internal int ShrinkStep;
-        internal MyStringId ProjectileMaterial;
 
-        internal void Init(WeaponDefinition kind, LineD line, MyStringId proejctileMaterial, int reSizeSteps, double lineReSizeLen, float width)
+        internal void Init(LineD line, ref DrawProjectile projectile)
         {
-            Kind = kind;
+            DrawProjectile = projectile;
             Position = line.To;
             Direction = line.Direction;
             Length = line.Length;
-            Width = width;
-            ProjectileMaterial = proejctileMaterial;
-            ReSizeSteps = reSizeSteps;
-            LineReSizeLen = lineReSizeLen;
-            ShrinkStep = reSizeSteps;
+            ShrinkStep = DrawProjectile.ReSizeSteps;
         }
 
         internal LineD? GetLine()
         {
             if (ShrinkStep-- <= 0) return null;
-            return new LineD(Position + -(Direction * (ShrinkStep * LineReSizeLen)), Position);
+            return new LineD(Position + -(Direction * (DrawProjectile.ReSizeSteps * DrawProjectile.LineReSizeLen)), Position);
         }
     }
 

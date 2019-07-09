@@ -13,8 +13,7 @@ namespace WeaponCore
             for (int i = 0; i < drawList.Count; i++)
             {
                 var p = drawList[i];
-                var kind = p.WeaponSystem.Kind;
-                var drawLine = kind.Graphics.Line.Trail;
+                var drawLine = p.Fired.System.Values.Graphics.Line.Trail;
                 if (!drawLine)
                 {
                     if (p.Entity != null)
@@ -36,14 +35,14 @@ namespace WeaponCore
                 {
                     sFound = true;
                     var shrink = _shrinkPool.Get();
-                    shrink.Init(kind, line, p.WeaponSystem.ProjectileMaterial, p.ReSizeSteps, p.LineReSizeLen, width);
+                    shrink.Init(line, ref p);
                     _shrinking.Add(shrink);
                 }
                 var color = p.Color;
 
                 var newWidth = width;
 
-                if (kind.Ammo.Trajectory.DesiredSpeed <= 0)
+                if (p.Fired.System.Values.Ammo.Trajectory.DesiredSpeed <= 0)
                 {
                     var changeValue = 0.01f;
                     if (_lCount < 60)
@@ -70,10 +69,10 @@ namespace WeaponCore
                 {
                     var matrix = MatrixD.CreateFromDir(line.Direction);
                     matrix.Translation = line.From;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)line.Length, 12, color, color, p.WeaponSystem.ProjectileMaterial, p.WeaponSystem.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)line.Length, 12, color, color, p.Fired.System.ProjectileMaterial, p.Fired.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
                 else
-                    MyTransparentGeometry.AddLocalLineBillboard(p.WeaponSystem.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
+                    MyTransparentGeometry.AddLocalLineBillboard(p.Fired.System.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();
@@ -92,9 +91,9 @@ namespace WeaponCore
                         var matrix = MatrixD.CreateFromDir(line.Value.Direction);
                         matrix.Translation = line.Value.From;
 
-                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.Kind.Graphics.Line.Width, s.Kind.Graphics.Line.Width, (float)line.Value.Length, 6, s.Kind.Graphics.Line.Color, s.Kind.Graphics.Line.Color, s.ProjectileMaterial, s.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.DrawProjectile.Fired.System.Values.Graphics.Line.Width, s.DrawProjectile.Fired.System.Values.Graphics.Line.Width, (float)line.Value.Length, 6, s.DrawProjectile.Fired.System.Values.Graphics.Line.Color, s.DrawProjectile.Fired.System.Values.Graphics.Line.Color, s.DrawProjectile.Fired.System.ProjectileMaterial, s.DrawProjectile.Fired.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                     }
-                    else MyTransparentGeometry.AddLocalLineBillboard(s.ProjectileMaterial, s.Kind.Graphics.Line.Color, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.Kind.Graphics.Line.Width);
+                    else MyTransparentGeometry.AddLocalLineBillboard(s.DrawProjectile.Fired.System.ProjectileMaterial, s.DrawProjectile.Fired.System.Values.Graphics.Line.Color, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.DrawProjectile.Fired.System.Values.Graphics.Line.Width);
                 }
                 else
                 {

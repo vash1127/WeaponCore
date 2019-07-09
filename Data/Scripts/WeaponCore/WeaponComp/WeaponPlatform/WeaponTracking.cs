@@ -12,7 +12,7 @@ namespace WeaponCore.Platform
         internal static bool ValidTarget(Weapon weapon, MyEntity target, bool checkOnly = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
-            var prediction = weapon.Kind.HardPoint.TargetPrediction;
+            var prediction = weapon.System.Values.HardPoint.TargetPrediction;
 
             Vector3D targetPos;
             var timeToIntercept = double.MinValue;
@@ -38,7 +38,7 @@ namespace WeaponCore.Platform
         {
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
-            var prediction = weapon.Kind.HardPoint.TargetPrediction;
+            var prediction = weapon.System.Values.HardPoint.TargetPrediction;
 
             Vector3D targetPos;
             var timeToIntercept = double.MinValue;
@@ -51,8 +51,8 @@ namespace WeaponCore.Platform
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            var maxAzimuthStep = step ? weapon.Kind.HardPoint.RotateSpeed : float.MinValue;
-            var maxElevationStep = step ? weapon.Kind.HardPoint.ElevationSpeed : float.MinValue;
+            var maxAzimuthStep = step ? weapon.System.Values.HardPoint.RotateSpeed : float.MinValue;
+            var maxElevationStep = step ? weapon.System.Values.HardPoint.ElevationSpeed : float.MinValue;
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
@@ -209,7 +209,7 @@ namespace WeaponCore.Platform
             var targetCenter = target.PositionComp.WorldAABB.Center;
             var shooterPos = Comp.MyPivotPos;
             var shooterVel = Comp.Physics.LinearVelocity;
-            var ammoSpeed = Kind.Ammo.Trajectory.DesiredSpeed;
+            var ammoSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
             var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
             var targetVel = Vector3.Zero;
 

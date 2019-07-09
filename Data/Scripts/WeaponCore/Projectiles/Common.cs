@@ -17,10 +17,9 @@ namespace WeaponCore.Projectiles
     {
         private void GetEntitiesInBlastRadius(Fired fired, Vector3D position, int poolId)
         {
-            var kind = fired.WeaponSystem.Kind;
             var entCheckList = CheckPool[poolId].Get();
             var entsFound = CheckPool[poolId].Get();
-            var sphere = new BoundingSphereD(position, kind.Ammo.AreaEffectRadius);
+            var sphere = new BoundingSphereD(position, fired.System.Values.Ammo.AreaEffectRadius);
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, entCheckList);
             foreach (var ent in entCheckList)
             {
@@ -29,7 +28,7 @@ namespace WeaponCore.Projectiles
             }
             entCheckList.Clear();
             CheckPool[poolId].Return(entCheckList);
-            if (kind.Ammo.DetonateOnEnd || entsFound.Count > 0)
+            if (fired.System.Values.Ammo.DetonateOnEnd || entsFound.Count > 0)
                 Hits.Enqueue(new ProximityEvent(fired, null, position, Session.Instance.SApi));
 
             foreach (var ent in entsFound)
@@ -177,7 +176,7 @@ namespace WeaponCore.Projectiles
                 }
                 return true;
             }
-            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(fired.WeaponSystem, entity, entityMatrix, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false, 0,0, false, false));
+            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(ref fired, entity, entityMatrix, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false, 0,0, false, false));
             return false;
         }
 
@@ -222,7 +221,7 @@ namespace WeaponCore.Projectiles
 
         internal struct DrawProjectile
         {
-            internal readonly WeaponSystem WeaponSystem;
+            internal readonly Fired Fired;
             internal readonly int ProjectileId;
             internal readonly MyEntity Entity;
             internal readonly MatrixD EntityMatrix;
@@ -238,9 +237,9 @@ namespace WeaponCore.Projectiles
             internal readonly bool Last;
             internal readonly Vector4 Color;
 
-            internal DrawProjectile(WeaponSystem weaponSystem, MyEntity entity, MatrixD entityMatrix, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity hitEntity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last)
+            internal DrawProjectile(ref Fired fired, MyEntity entity, MatrixD entityMatrix, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity hitEntity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last)
             {
-                WeaponSystem = weaponSystem;
+                Fired = fired;
                 Entity = entity;
                 EntityMatrix = entityMatrix;
                 ProjectileId = projectileId;
@@ -253,20 +252,20 @@ namespace WeaponCore.Projectiles
                 ReSizeSteps = reSizeSteps;
                 Shrink = shrink;
                 Last = last;
-                var color = WeaponSystem.Kind.Graphics.Line.Color;
-                if (WeaponSystem.LineColorVariance)
+                var color = Fired.System.Values.Graphics.Line.Color;
+                if (Fired.System.LineColorVariance)
                 {
-                    var cv = WeaponSystem.Kind.Graphics.Line.ColorVariance;
+                    var cv = Fired.System.Values.Graphics.Line.ColorVariance;
                     var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                     color.X *= randomValue;
                     color.Y *= randomValue;
                     color.Z *= randomValue;
                 }
 
-                var width = WeaponSystem.Kind.Graphics.Line.Width;
-                if (WeaponSystem.LineWidthVariance)
+                var width = Fired.System.Values.Graphics.Line.Width;
+                if (Fired.System.LineWidthVariance)
                 {
-                    var wv = WeaponSystem.Kind.Graphics.Line.WidthVariance;
+                    var wv = Fired.System.Values.Graphics.Line.WidthVariance;
                     var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                     width += randomValue;
                 }
@@ -294,15 +293,15 @@ namespace WeaponCore.Projectiles
         internal struct Fired
         {
             public readonly List<LineD> Shots;
-            public readonly WeaponSystem WeaponSystem;
+            public readonly WeaponSystem System;
             public readonly MyCubeBlock FiringCube;
             public readonly RayD ReverseOriginRay;
             public readonly Vector3D Direction;
             public readonly int Age;
 
-            public Fired(WeaponSystem weaponSystem, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay, Vector3D direction, int age)
+            public Fired(WeaponSystem system, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay, Vector3D direction, int age)
             {
-                WeaponSystem = weaponSystem;
+                System = system;
                 Shots = shots;
                 FiringCube = firingCube;
                 ReverseOriginRay = reverseOriginRay;

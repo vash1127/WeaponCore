@@ -37,11 +37,10 @@ namespace WeaponCore.Projectiles
             public void Execute()
             {
                 if (Shield == null  || SApi == null) return;
-                var kind = Fired.WeaponSystem.Kind;
-                var baseDamage = kind.Ammo.DefaultDamage;
-                var damage = (baseDamage + kind.Ammo.AreaEffectYield) * Hits;
+                var baseDamage = Fired.System.Values.Ammo.DefaultDamage;
+                var damage = (baseDamage + Fired.System.Values.Ammo.AreaEffectYield) * Hits;
                 SApi.PointAttackShield(Shield, HitPos, Fired.FiringCube.EntityId, damage, false, true);
-                if (kind.Ammo.Mass > 0) ApplyProjectileForce((MyEntity)Shield.CubeGrid, HitPos, Fired.Direction, (kind.Ammo.Mass * kind.Ammo.Trajectory.DesiredSpeed) / Hits);
+                if (Fired.System.Values.Ammo.Mass > 0) ApplyProjectileForce((MyEntity)Shield.CubeGrid, HitPos, Fired.Direction, (Fired.System.Values.Ammo.Mass * Fired.System.Values.Ammo.Trajectory.DesiredSpeed) / Hits);
             }
         }
 
@@ -63,14 +62,12 @@ namespace WeaponCore.Projectiles
             public void Execute()
             {
                 if (Block == null || Block.IsDestroyed || Block.CubeGrid.MarkedForClose) return;
-                var wSystem = Fired.WeaponSystem;
-                var kind = wSystem.Kind;
-                var baseDamage = kind.Ammo.DefaultDamage;
+                var baseDamage = Fired.System.Values.Ammo.DefaultDamage;
                 var damage = baseDamage * Hits;
                 Block.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
-                if (wSystem.AmmoAreaEffect)
-                    UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction,Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, kind.Ammo.AreaEffectRadius, kind.Ammo.AreaEffectYield);
-                else if (kind.Ammo.Mass > 0) ApplyProjectileForce((MyEntity)Block.CubeGrid, HitPos, Fired.Direction, (kind.Ammo.Mass * kind.Ammo.Trajectory.DesiredSpeed) / Hits);
+                if (Fired.System.AmmoAreaEffect)
+                    UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction,Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, Fired.System.Values.Ammo.AreaEffectRadius, Fired.System.Values.Ammo.AreaEffectYield);
+                else if (Fired.System.Values.Ammo.Mass > 0) ApplyProjectileForce((MyEntity)Block.CubeGrid, HitPos, Fired.Direction, (Fired.System.Values.Ammo.Mass * Fired.System.Values.Ammo.Trajectory.DesiredSpeed) / Hits);
             }
         }
 
@@ -90,13 +87,11 @@ namespace WeaponCore.Projectiles
             {
                 if (DestObj == null) return;
                 var damage = 100;
-                var wSystem = Fired.WeaponSystem;
-                var kind = wSystem.Kind;
                 DestObj.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
-                if (kind.Ammo.Mass > 0)
+                if (Fired.System.Values.Ammo.Mass > 0)
                 {
                     var entity = (MyEntity)DestObj;
-                    ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, Fired.Direction, (kind.Ammo.Mass * kind.Ammo.Trajectory.DesiredSpeed));
+                    ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, Fired.Direction, (Fired.System.Values.Ammo.Mass * Fired.System.Values.Ammo.Trajectory.DesiredSpeed));
                 }
             }
         }
@@ -119,10 +114,9 @@ namespace WeaponCore.Projectiles
 
             public void Execute()
             {
-                var kind = Fired.WeaponSystem.Kind;
                 if (Entity == null)
                 {
-                    UtilsStatic.CreateFakeExplosion(ActivatePos, kind.Ammo.AreaEffectRadius);
+                    UtilsStatic.CreateFakeExplosion(ActivatePos, Fired.System.Values.Ammo.AreaEffectRadius);
                     return;
                 }
                 var shield = Entity as IMyTerminalBlock;

@@ -118,7 +118,7 @@ namespace WeaponCore.Projectiles
                         Vector3D newVel;
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
-                            var trajInfo = p.Kind.Ammo.Trajectory;
+                            var trajInfo = p.System.Values.Ammo.Trajectory;
                             if (p.Target != null && !p.Target.MarkedForClose)
                             {
                                 var physics = p.Target.Physics ?? p.Target.Parent.Physics;
@@ -174,7 +174,7 @@ namespace WeaponCore.Projectiles
                         p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
                         if (p.Effect1 != null && p.System.AmmoParticle)
                         {
-                            var offVec = p.Position + Vector3D.Rotate(p.Kind.Graphics.Particles.AmmoOffset, p.EntityMatrix);
+                            var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.AmmoOffset, p.EntityMatrix);
                             p.Effect1.WorldMatrix = p.EntityMatrix;
                             p.Effect1.SetTranslation(offVec);
                         }
@@ -208,7 +208,7 @@ namespace WeaponCore.Projectiles
                             if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
                             {
                                 var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                                drawList.Add(new DrawProjectile(p.System, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
+                                drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
                             }
                             p.ProjectileClose(pool, checkPool, noAv);
                         }
@@ -249,7 +249,7 @@ namespace WeaponCore.Projectiles
                         {
                             p.FirstOffScreen = false;
                             p.LastEntityPos = p.Position;
-                            drawList.Add(new DrawProjectile(p.System, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
+                            drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
                         }
                         continue;
                     }
@@ -272,7 +272,9 @@ namespace WeaponCore.Projectiles
 
                     var bb = new BoundingBoxD(Vector3D.Min(p.CurrentLine.From, p.CurrentLine.To), Vector3D.Max(p.CurrentLine.From, p.CurrentLine.To));
                     if (camera.IsInFrustum(ref bb))
-                        drawList.Add(new DrawProjectile(p.System, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
+                    {
+                        drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
+                    }
                 }
 
                 if (modelClose)

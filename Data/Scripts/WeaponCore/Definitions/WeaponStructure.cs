@@ -6,10 +6,10 @@ using VRageMath;
 
 namespace WeaponCore.Support
 {
-    public struct WeaponSystem
+    public class WeaponSystem
     {
         public readonly MyStringHash PartName;
-        public readonly WeaponDefinition Kind;
+        public readonly WeaponDefinition Values;
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly int ModelId;
@@ -28,6 +28,7 @@ namespace WeaponCore.Support
         public readonly bool NoAmmoSound;
         public readonly bool HardPointRotationSound;
         public readonly bool BarrelRotationSound;
+        public readonly bool BarrelAxisRotation;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
         public readonly bool LineWidthVariance;
@@ -60,46 +61,47 @@ namespace WeaponCore.Support
 
         public readonly MyStringId ProjectileMaterial;
 
-        public WeaponSystem(MyStringHash partName, WeaponDefinition kind, string weaponName, MyDefinitionId ammoDefId)
+        public WeaponSystem(MyStringHash partName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
         {
             PartName = partName;
-            Kind = kind;
-            Barrels = kind.Assignments.Barrels;
+            Values = values;
+            Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
 
-            ProjectileMaterial = MyStringId.GetOrCompute(kind.Graphics.Line.Material);
-            AmmoParticle = kind.Graphics.Particles.AmmoParticle != string.Empty;
-            BarrelEffect1 = kind.Graphics.Particles.Barrel1Particle != string.Empty;
-            BarrelEffect2 = kind.Graphics.Particles.Barrel2Particle != string.Empty;
+            ProjectileMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Material);
+            AmmoParticle = values.Graphics.Particles.AmmoParticle != string.Empty;
+            BarrelEffect1 = values.Graphics.Particles.Barrel1Particle != string.Empty;
+            BarrelEffect2 = values.Graphics.Particles.Barrel2Particle != string.Empty;
 
-            LineColorVariance = kind.Graphics.Line.ColorVariance.Start > 0 && kind.Graphics.Line.ColorVariance.End > 0;
-            LineWidthVariance = kind.Graphics.Line.WidthVariance.Start > 0 || kind.Graphics.Line.WidthVariance.End > 0;
-            SpeedVariance = kind.Ammo.Trajectory.SpeedVariance.Start > 0 || kind.Ammo.Trajectory.SpeedVariance.End > 0;
-            RangeVariance = kind.Ammo.Trajectory.RangeVariance.Start > 0 || kind.Ammo.Trajectory.RangeVariance.End > 0;
+            LineColorVariance = values.Graphics.Line.ColorVariance.Start > 0 && values.Graphics.Line.ColorVariance.End > 0;
+            LineWidthVariance = values.Graphics.Line.WidthVariance.Start > 0 || values.Graphics.Line.WidthVariance.End > 0;
+            SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
+            RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
 
-            BurstMode = kind.HardPoint.Loading.ShotsInBurst > 0;
-            AmmoAreaEffect = kind.Ammo.AreaEffectRadius > 0;
-            AmmoSkipAccel = kind.Ammo.Trajectory.AccelPerSec <= 0;
+            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
+            AmmoAreaEffect = values.Ammo.AreaEffectRadius > 0;
+            AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
 
-            MaxTrajectorySqr = kind.Ammo.Trajectory.MaxTrajectory * kind.Ammo.Trajectory.MaxTrajectory;
-            ShotEnergyCost = kind.HardPoint.EnergyCost * kind.Ammo.DefaultDamage;
-            HasBackKickForce = kind.Ammo.BackKickForce > 0;
-            ReloadTime = kind.HardPoint.Loading.ReloadTime;
-            DelayToFire = kind.HardPoint.Loading.DelayUntilFire;
-            Barrel1AvTicks = kind.Graphics.Particles.Barrel1Duration;
-            Barrel2AvTicks = kind.Graphics.Particles.Barrel2Duration;
+            MaxTrajectorySqr = values.Ammo.Trajectory.MaxTrajectory * values.Ammo.Trajectory.MaxTrajectory;
+            ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.DefaultDamage;
+            HasBackKickForce = values.Ammo.BackKickForce > 0;
+            ReloadTime = values.HardPoint.Loading.ReloadTime;
+            DelayToFire = values.HardPoint.Loading.DelayUntilFire;
+            Barrel1AvTicks = values.Graphics.Particles.Barrel1Duration;
+            Barrel2AvTicks = values.Graphics.Particles.Barrel2Duration;
+            BarrelAxisRotation = values.HardPoint.RotateBarrelAxis != 0;
 
-            AmmoHitSound = kind.Audio.Ammo.HitSound != string.Empty;
-            AmmoTravelSound = kind.Audio.Ammo.TravelSound != string.Empty;
-            WeaponReloadSound = kind.Audio.HardPoint.ReloadSound != string.Empty;
-            HardPointRotationSound = kind.Audio.HardPoint.HardPointRotationSound != string.Empty;
-            BarrelRotationSound = kind.Audio.HardPoint.BarrelRotationSound != string.Empty;
-            NoAmmoSound = kind.Audio.HardPoint.NoAmmoSound != string.Empty;
+            AmmoHitSound = values.Audio.Ammo.HitSound != string.Empty;
+            AmmoTravelSound = values.Audio.Ammo.TravelSound != string.Empty;
+            WeaponReloadSound = values.Audio.HardPoint.ReloadSound != string.Empty;
+            HardPointRotationSound = values.Audio.HardPoint.HardPointRotationSound != string.Empty;
+            BarrelRotationSound = values.Audio.HardPoint.BarrelRotationSound != string.Empty;
+            NoAmmoSound = values.Audio.HardPoint.NoAmmoSound != string.Empty;
 
-            var audioDef = kind.Audio;
+            var audioDef = values.Audio;
             var fSoundStart = audioDef.HardPoint.FiringSound;
             if (fSoundStart != string.Empty && audioDef.HardPoint.FiringSoundPerShot)
                 FiringSound = FiringSoundState.PerShot;
@@ -117,13 +119,13 @@ namespace WeaponCore.Support
             HitSoundDistSqr = 0;
             HardPointSoundMaxDistSqr = 0;
             AmmoSoundMaxDistSqr = 0;
-            var fireSound = string.Concat(arc, kind.Audio.HardPoint.FiringSound);
-            var hitSound = string.Concat(arc, kind.Audio.Ammo.HitSound);
-            var travelSound = string.Concat(arc, kind.Audio.Ammo.TravelSound);
-            var reloadSound = string.Concat(arc, kind.Audio.HardPoint.ReloadSound);
-            var barrelSound = string.Concat(arc, kind.Audio.HardPoint.BarrelRotationSound);
-            var hardPointSound = string.Concat(arc, kind.Audio.HardPoint.HardPointRotationSound);
-            var noAmmoSound = string.Concat(arc, kind.Audio.HardPoint.NoAmmoSound);
+            var fireSound = string.Concat(arc, values.Audio.HardPoint.FiringSound);
+            var hitSound = string.Concat(arc, values.Audio.Ammo.HitSound);
+            var travelSound = string.Concat(arc, values.Audio.Ammo.TravelSound);
+            var reloadSound = string.Concat(arc, values.Audio.HardPoint.ReloadSound);
+            var barrelSound = string.Concat(arc, values.Audio.HardPoint.BarrelRotationSound);
+            var hardPointSound = string.Concat(arc, values.Audio.HardPoint.HardPointRotationSound);
+            var noAmmoSound = string.Concat(arc, values.Audio.HardPoint.NoAmmoSound);
             foreach (var def in Session.Instance.SoundDefinitions)
             {
                 var id = def.Id.SubtypeId.String;
@@ -172,10 +174,10 @@ namespace WeaponCore.Support
                 }
             }
 
-            if (kind.Graphics.ModelName != string.Empty && !kind.Graphics.Line.Trail)
+            if (values.Graphics.ModelName != string.Empty && !values.Graphics.Line.Trail)
             {
                 ModelId = Session.Instance.ModelCount++;
-                Session.Instance.ModelIdToName.Add(ModelId, kind.ModPath + kind.Graphics.ModelName);
+                Session.Instance.ModelIdToName.Add(ModelId, values.ModPath + values.Graphics.ModelName);
             }
             else ModelId = -1;
 

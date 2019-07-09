@@ -42,7 +42,6 @@ namespace WeaponCore.Platform
 
         internal IMyEntity EntityPart;
         internal WeaponSystem System;
-        internal WeaponDefinition Kind;
         internal Dummy[] Dummies;
         internal Muzzle[] Muzzles;
         internal WeaponComponent Comp;
@@ -80,7 +79,7 @@ namespace WeaponCore.Platform
         internal float MinAzimuthRadians;
         internal float MaxElevationRadians;
         internal float MinElevationRadians;
-        internal float RequiredPower => ((System.ShotEnergyCost * (System.Kind.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Kind.HardPoint.Loading.BarrelsPerShot) * System.Kind.HardPoint.Loading.TrajectilesPerBarrel;
+        internal float RequiredPower => ((System.ShotEnergyCost * (System.Values.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -124,7 +123,6 @@ namespace WeaponCore.Platform
             EntityPart = entity;
             _localTranslation = entity.LocalMatrix.Translation;
             System = system;
-            Kind = system.Kind;
             Comp = comp;
             AvCapable = System.HasBarrelShootAv && !Comp.MyAi.MySession.DedicatedServer;
 
@@ -132,36 +130,36 @@ namespace WeaponCore.Platform
             {
                 FiringEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 FiringSound = new MySoundPair();
-                FiringSound.Init(Kind.Audio.HardPoint.FiringSound);
+                FiringSound.Init(System.Values.Audio.HardPoint.FiringSound);
             }
 
             if (AvCapable && system.WeaponReloadSound)
             {
                 ReloadEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 ReloadSound = new MySoundPair();
-                ReloadSound.Init(Kind.Audio.HardPoint.ReloadSound);
+                ReloadSound.Init(System.Values.Audio.HardPoint.ReloadSound);
             }
 
-            if (AvCapable && system.BarrelRotationSound && system.Kind.HardPoint.RotateBarrelAxis != 0)
+            if (AvCapable && system.BarrelRotationSound && system.Values.HardPoint.RotateBarrelAxis != 0)
             {
                 RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 RotateSound = new MySoundPair();
-                RotateSound.Init(Kind.Audio.HardPoint.BarrelRotationSound);
+                RotateSound.Init(System.Values.Audio.HardPoint.BarrelRotationSound);
             }
 
             if (AvCapable)
             {
-                if (System.BarrelEffect1) BarrelEffects1 = new MyParticleEffect[System.Kind.Assignments.Barrels.Length];
-                if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Kind.Assignments.Barrels.Length];
+                if (System.BarrelEffect1) BarrelEffects1 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
+                if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
             WeaponId = weaponId;
-            IsTurret = Kind.HardPoint.IsTurret;
-            TurretMode = Kind.HardPoint.TurretController;
-            TrackTarget = Kind.HardPoint.TrackTargets;
-            AimingTolerance = Math.Cos(MathHelper.ToRadians(Kind.HardPoint.AimingTolerance));
-            _ticksPerShot = (uint)(3600 / Kind.HardPoint.Loading.RateOfFire);
-            _timePerShot = (3600d / Kind.HardPoint.Loading.RateOfFire);
+            IsTurret = System.Values.HardPoint.IsTurret;
+            TurretMode = System.Values.HardPoint.TurretController;
+            TrackTarget = System.Values.HardPoint.TrackTargets;
+            AimingTolerance = Math.Cos(MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance));
+            _ticksPerShot = (uint)(3600 / System.Values.HardPoint.Loading.RateOfFire);
+            _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire);
             _numOfBarrels = System.Barrels.Length;
             BeamSlot = new uint[_numOfBarrels];
         }

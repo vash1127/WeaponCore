@@ -31,7 +31,7 @@ namespace WeaponCore.Platform
                 };
 
                 var weapon = Weapons[i];
-                if (weapon.Kind.HardPoint.TurretController && comp.TrackingWeapon == null)
+                if (weapon.System.Values.HardPoint.TurretController && comp.TrackingWeapon == null)
                 {
                     weapon.TrackingAi = true;
                     comp.TrackingWeapon = weapon;
@@ -39,7 +39,7 @@ namespace WeaponCore.Platform
                     {
                         comp.RotationEmitter = new MyEntity3DSoundEmitter(comp.MyCube, true, 1f);
                         comp.RotationSound = new MySoundPair();
-                        comp.RotationSound.Init(weapon.Kind.Audio.HardPoint.HardPointRotationSound, false);
+                        comp.RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
                     }
                 }
             }

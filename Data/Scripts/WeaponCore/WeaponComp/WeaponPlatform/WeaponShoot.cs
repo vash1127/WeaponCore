@@ -15,16 +15,16 @@ namespace WeaponCore.Platform
         {
             var session = Comp.MyAi.MySession;
             var tick = session.Tick;
-            var bps = Kind.HardPoint.Loading.BarrelsPerShot;
+            var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
             var targetLock = Target != null;
 
             if (targetLock) _targetTick++;
 
             if (System.BurstMode)
             {
-                if (_shots > System.Kind.HardPoint.Loading.ShotsInBurst)
+                if (_shots > System.Values.HardPoint.Loading.ShotsInBurst)
                 {
-                    if (tick - _lastShotTick > System.Kind.HardPoint.Loading.DelayAfterBurst) _shots = 1;
+                    if (tick - _lastShotTick > System.Values.HardPoint.Loading.DelayAfterBurst) _shots = 1;
                     else
                     {
                         if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
@@ -37,7 +37,7 @@ namespace WeaponCore.Platform
             if (AvCapable && (!PlayTurretAv || Comp.MyAi.MySession.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointSoundMaxDistSqr;
 
-            if (Kind.HardPoint.RotateBarrelAxis != 0) MovePart(-1 * Kind.HardPoint.Loading.BarrelsPerShot);
+            if (System.BarrelAxisRotation) MovePart(-1 * bps);
 
             if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
             if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
@@ -57,30 +57,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
 
-            if (targetLock && _targetTick > 59)
-            {
-                _targetTick = 0;
-                var targetPos = Target.PositionComp.GetPosition();
-                if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
-                {
-                    Target = null;
-                    return;
-                }
-                if (!TrackingAi && !ValidTarget(this, Target))
-                {
-                    Log.Line("shootStep2: setting target null");
-                    Target = null;
-                    return;
-                }
-                IHitInfo hitInfo;
-                MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.PositionComp.GetPosition(), out hitInfo, 15);
-                if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target.Parent))
-                {
-                    Log.Line($"rayFail, setting target to null");
-                    Target = null;
-                    return;
-                }
-            }
+            if (targetLock && _targetTick > 59) ShootRayCheck();
 
             var isStatic = Comp.Physics.IsStatic;
             for (int i = 0; i < bps; i++)
@@ -105,18 +82,18 @@ namespace WeaponCore.Platform
                 }
 
                 if (System.HasBackKickForce && !isStatic)
-                    Comp.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Kind.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
+                    Comp.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                 muzzle.LastShot = tick;
                 if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
                 lock (session.Projectiles.Wait[session.ProCounter])
                 {
-                    for (int j = 0; j < Kind.HardPoint.Loading.TrajectilesPerBarrel; j++)
+                    for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++)
                     {
-                        if (Kind.HardPoint.DeviateShotAngle > 0)
+                        if (System.Values.HardPoint.DeviateShotAngle > 0)
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                            var randomFloat1 = MyUtils.GetRandomFloat(-Kind.HardPoint.DeviateShotAngle, Kind.HardPoint.DeviateShotAngle);
+                            var randomFloat1 = MyUtils.GetRandomFloat(-System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
                             var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
 
                             muzzle.DeviatedDir = Vector3.TransformNormal(
@@ -151,7 +128,32 @@ namespace WeaponCore.Platform
                 }
                 if (i == bps) NextMuzzle++;
 
-                NextMuzzle = (NextMuzzle + (Kind.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
+                NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
+            }
+        }
+
+        private void ShootRayCheck()
+        {
+            _targetTick = 0;
+            var targetPos = Target.PositionComp.GetPosition();
+            if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
+            {
+                Target = null;
+                return;
+            }
+            if (!TrackingAi && !ValidTarget(this, Target))
+            {
+                Log.Line("shootStep2: setting target null");
+                Target = null;
+                return;
+            }
+            IHitInfo hitInfo;
+            MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.PositionComp.GetPosition(), out hitInfo, 15);
+            if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target.Parent))
+            {
+                Log.Line($"rayFail, setting target to null");
+                Target = null;
+                return;
             }
         }
 
@@ -160,7 +162,7 @@ namespace WeaponCore.Platform
             BarrelMove = true;
             var radiansPerShot = 2 * Math.PI / _numOfBarrels;
             var radians = radiansPerShot / _timePerShot;
-            var axis = Kind.HardPoint.RotateBarrelAxis;
+            var axis = System.Values.HardPoint.RotateBarrelAxis;
             MatrixD rotationMatrix;
             if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
             else if (axis == 2 ) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
