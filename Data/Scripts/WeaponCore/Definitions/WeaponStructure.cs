@@ -185,7 +185,7 @@ namespace WeaponCore.Support
         }
     }
 
-    public struct WeaponStructure
+    public class WeaponStructure
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;

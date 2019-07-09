@@ -45,9 +45,11 @@ namespace WeaponCore.Platform
                     var particles = System.Values.Graphics.Particles;
                     var vel = Comp.Physics.LinearVelocity;
                     var pos = dummy.Info.Position;
-                    var matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
+                    var entityExists = EntityPart != null && !EntityPart.MarkedForClose;
+                    var matrix = MatrixD.Zero;
+                    if (entityExists) matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
 
-                    if (System.BarrelEffect1 && ticksAgo <= System.Barrel1AvTicks)
+                    if (entityExists && System.BarrelEffect1 && ticksAgo <= System.Barrel1AvTicks)
                     {
                         if (BarrelEffects1[id] == null)
                             MyParticlesManager.TryCreateParticleEffect(particles.Barrel1Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[id]);
@@ -66,7 +68,7 @@ namespace WeaponCore.Platform
                         BarrelEffects1[id] = null;
                     }
 
-                    if (System.BarrelEffect2 && ticksAgo <= System.Barrel2AvTicks)
+                    if (entityExists && System.BarrelEffect2 && ticksAgo <= System.Barrel2AvTicks)
                     {
                         if (BarrelEffects2[id] == null)
                             MyParticlesManager.TryCreateParticleEffect(particles.Barrel2Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);

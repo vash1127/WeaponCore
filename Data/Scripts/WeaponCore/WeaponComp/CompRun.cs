@@ -31,13 +31,17 @@ namespace WeaponCore.Support
 
         public override void OnAddedToScene()
         {
-            if (MainInit) return;
-            base.OnAddedToScene();
-            _isServer = Session.Instance.IsServer;
-            _isDedicated = Session.Instance.DedicatedServer;
-            _mpActive = Session.Instance.MpActive;
-            InitPlatform();
-            Log.Line("added to scene");
+            try
+            {
+                if (MainInit) return;
+                base.OnAddedToScene();
+                _isServer = Session.Instance.IsServer;
+                _isDedicated = Session.Instance.DedicatedServer;
+                _mpActive = Session.Instance.MpActive;
+                InitPlatform();
+                Log.Line("added to scene");
+            }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
 
         public void Run()
@@ -115,12 +119,16 @@ namespace WeaponCore.Support
 
         public override void OnRemovedFromScene()
         {
-            base.OnRemovedFromScene();
-            Platform.Parts.Entity = null;
-            RegisterEvents(false);
-            IsWorking = false;
-            IsFunctional = false;
-            StopAllSounds();
+            try
+            {
+                base.OnRemovedFromScene();
+                Platform.Parts.Entity = null;
+                RegisterEvents(false);
+                IsWorking = false;
+                IsFunctional = false;
+                StopAllSounds();
+            }
+            catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
 
         public override bool IsSerialized()
