@@ -15,6 +15,7 @@ namespace WeaponCore.Support
         public readonly int ModelId;
         public readonly int ReloadTime;
         public readonly int DelayToFire;
+        public readonly int TimeToCeaseFire;
         public readonly int Barrel1AvTicks;
         public readonly int Barrel2AvTicks;
         public readonly MyDefinitionId AmmoDefId;
@@ -51,6 +52,7 @@ namespace WeaponCore.Support
         public readonly float AmmoTravelSoundDistSqr;
         public readonly float HardPointSoundMaxDistSqr;
         public readonly float AmmoSoundMaxDistSqr;
+        private const string Arc = "Arc";
 
         public enum FiringSoundState
         {
@@ -90,6 +92,7 @@ namespace WeaponCore.Support
             HasBackKickForce = values.Ammo.BackKickForce > 0;
             ReloadTime = values.HardPoint.Loading.ReloadTime;
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
+            TimeToCeaseFire = values.HardPoint.DelayCeaseFire;
             Barrel1AvTicks = values.Graphics.Particles.Barrel1Duration;
             Barrel2AvTicks = values.Graphics.Particles.Barrel2Duration;
             BarrelAxisRotation = values.HardPoint.RotateBarrelAxis != 0;
@@ -101,31 +104,20 @@ namespace WeaponCore.Support
             BarrelRotationSound = values.Audio.HardPoint.BarrelRotationSound != string.Empty;
             NoAmmoSound = values.Audio.HardPoint.NoAmmoSound != string.Empty;
 
-            var audioDef = values.Audio;
-            var fSoundStart = audioDef.HardPoint.FiringSound;
-            if (fSoundStart != string.Empty && audioDef.HardPoint.FiringSoundPerShot)
+            var fSoundStart = values.Audio.HardPoint.FiringSound;
+            if (fSoundStart != string.Empty && values.Audio.HardPoint.FiringSoundPerShot)
                 FiringSound = FiringSoundState.PerShot;
-            else if (fSoundStart != string.Empty && !audioDef.HardPoint.FiringSoundPerShot)
+            else if (fSoundStart != string.Empty && !values.Audio.HardPoint.FiringSoundPerShot)
                 FiringSound = FiringSoundState.WhenDone;
             else FiringSound = FiringSoundState.None;
 
-            const string arc = "Arc";
-            FiringSoundDistSqr = 0;
-            AmmoTravelSoundDistSqr = 0;
-            ReloadSoundDistSqr = 0;
-            BarrelSoundDistSqr = 0;
-            HardPointSoundDistSqr = 0;
-            NoAmmoSoundDistSqr = 0;
-            HitSoundDistSqr = 0;
-            HardPointSoundMaxDistSqr = 0;
-            AmmoSoundMaxDistSqr = 0;
-            var fireSound = string.Concat(arc, values.Audio.HardPoint.FiringSound);
-            var hitSound = string.Concat(arc, values.Audio.Ammo.HitSound);
-            var travelSound = string.Concat(arc, values.Audio.Ammo.TravelSound);
-            var reloadSound = string.Concat(arc, values.Audio.HardPoint.ReloadSound);
-            var barrelSound = string.Concat(arc, values.Audio.HardPoint.BarrelRotationSound);
-            var hardPointSound = string.Concat(arc, values.Audio.HardPoint.HardPointRotationSound);
-            var noAmmoSound = string.Concat(arc, values.Audio.HardPoint.NoAmmoSound);
+            var fireSound = string.Concat(Arc, values.Audio.HardPoint.FiringSound);
+            var hitSound = string.Concat(Arc, values.Audio.Ammo.HitSound);
+            var travelSound = string.Concat(Arc, values.Audio.Ammo.TravelSound);
+            var reloadSound = string.Concat(Arc, values.Audio.HardPoint.ReloadSound);
+            var barrelSound = string.Concat(Arc, values.Audio.HardPoint.BarrelRotationSound);
+            var hardPointSound = string.Concat(Arc, values.Audio.HardPoint.HardPointRotationSound);
+            var noAmmoSound = string.Concat(Arc, values.Audio.HardPoint.NoAmmoSound);
             foreach (var def in Session.Instance.SoundDefinitions)
             {
                 var id = def.Id.SubtypeId.String;

@@ -38,14 +38,15 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal bool IsTurret;
         [ProtoMember(4)] internal bool TurretController;
         [ProtoMember(5)] internal bool TrackTargets;
-        [ProtoMember(6)] internal int RotateBarrelAxis;
-        [ProtoMember(7)] internal float RotateSpeed;
-        [ProtoMember(8)] internal float ElevationSpeed;
-        [ProtoMember(9)] internal float DeviateShotAngle;
-        [ProtoMember(10)] internal float EnergyCost;
-        [ProtoMember(11)] internal double AimingTolerance;
-        [ProtoMember(12)] internal Prediction TargetPrediction;
-        [ProtoMember(13)] internal AmmoLoading Loading;
+        [ProtoMember(6)] internal int DelayCeaseFire;
+        [ProtoMember(7)] internal int RotateBarrelAxis;
+        [ProtoMember(8)] internal float RotateSpeed;
+        [ProtoMember(9)] internal float ElevationSpeed;
+        [ProtoMember(10)] internal float DeviateShotAngle;
+        [ProtoMember(11)] internal float EnergyCost;
+        [ProtoMember(12)] internal double AimingTolerance;
+        [ProtoMember(13)] internal Prediction TargetPrediction;
+        [ProtoMember(14)] internal AmmoLoading Loading;
     }
 
     [ProtoContract]

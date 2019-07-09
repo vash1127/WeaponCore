@@ -65,13 +65,14 @@ namespace WeaponCore.Platform
         internal uint ShotCounter;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
+        internal int DelayFireCount;
+        internal int WeaponId;
         internal MyFixedPoint CurrentMags;
         internal float Azimuth;
         internal float Elevation;
         internal float DesiredAzimuth;
         internal float DesiredElevation;
         internal double AimingTolerance;
-        internal int WeaponId;
         internal uint CheckedForTargetTick;
         internal float RotationSpeed;
         internal float ElevationSpeed;
@@ -95,6 +96,8 @@ namespace WeaponCore.Platform
         internal bool BarrelMove;
         internal bool PlayTurretAv;
         internal bool AvCapable;
+        internal bool DelayCeaseFire;
+
         internal bool LoadAmmoMag
         {
             set

@@ -45,7 +45,7 @@ namespace WeaponCore.Platform
                     var particles = System.Values.Graphics.Particles;
                     var vel = Comp.Physics.LinearVelocity;
                     var pos = dummy.Info.Position;
-                    var entityExists = EntityPart != null && !EntityPart.MarkedForClose;
+                    var entityExists = EntityPart?.Parent != null && !EntityPart.MarkedForClose;
                     var matrix = MatrixD.Zero;
                     if (entityExists) matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
 

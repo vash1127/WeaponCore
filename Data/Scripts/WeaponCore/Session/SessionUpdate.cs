@@ -101,7 +101,17 @@ namespace WeaponCore
                                 if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
                             }
                         }
-                        w.AiReady = w.Target != null && !gunner && w.Comp.TurretTargetLock && !w.Target.MarkedForClose;
+
+                        if (w.DelayCeaseFire)
+                        {
+                            if (!w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
+                            {
+                                w.DelayFireCount = 0;
+                                w.AiReady = w.Target != null && !gunner && w.Comp.TurretTargetLock && !w.Target.MarkedForClose;
+                            }
+                        }
+                        else w.AiReady = w.Target != null && !gunner && w.Comp.TurretTargetLock && !w.Target.MarkedForClose;
+
                         w.SeekTarget = Tick20 && !gunner && (w.Target == null || w.Target != null && w.Target.MarkedForClose) && w.TrackTarget;
                         if (w.AiReady || w.SeekTarget || gunner) ai.Ready = true;
                     }
