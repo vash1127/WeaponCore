@@ -30,10 +30,15 @@ namespace WeaponCore.Support
         public readonly bool BarrelRotationSound;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
+        public readonly bool LineWidthVariance;
+        public readonly bool LineColorVariance;
         public readonly bool EnergyAmmo;
         public readonly bool BarrelEffect1;
         public readonly bool BarrelEffect2;
         public readonly bool HasBarrelShootAv;
+        public readonly bool HasBackKickForce;
+        public readonly bool SpeedVariance;
+        public readonly bool RangeVariance;
         public readonly double MaxTrajectorySqr;
         public readonly float ShotEnergyCost;
         public readonly float FiringSoundDistSqr;
@@ -69,6 +74,11 @@ namespace WeaponCore.Support
             BarrelEffect1 = kind.Graphics.Particles.Barrel1Particle != string.Empty;
             BarrelEffect2 = kind.Graphics.Particles.Barrel2Particle != string.Empty;
 
+            LineColorVariance = kind.Graphics.Line.ColorVariance.Start > 0 && kind.Graphics.Line.ColorVariance.End > 0;
+            LineWidthVariance = kind.Graphics.Line.WidthVariance.Start > 0 || kind.Graphics.Line.WidthVariance.End > 0;
+            SpeedVariance = kind.Ammo.Trajectory.SpeedVariance.Start > 0 || kind.Ammo.Trajectory.SpeedVariance.End > 0;
+            RangeVariance = kind.Ammo.Trajectory.RangeVariance.Start > 0 || kind.Ammo.Trajectory.RangeVariance.End > 0;
+
             BurstMode = kind.HardPoint.Loading.ShotsInBurst > 0;
             AmmoAreaEffect = kind.Ammo.AreaEffectRadius > 0;
             AmmoSkipAccel = kind.Ammo.Trajectory.AccelPerSec <= 0;
@@ -76,7 +86,7 @@ namespace WeaponCore.Support
 
             MaxTrajectorySqr = kind.Ammo.Trajectory.MaxTrajectory * kind.Ammo.Trajectory.MaxTrajectory;
             ShotEnergyCost = kind.HardPoint.EnergyCost * kind.Ammo.DefaultDamage;
-
+            HasBackKickForce = kind.Ammo.BackKickForce > 0;
             ReloadTime = kind.HardPoint.Loading.ReloadTime;
             DelayToFire = kind.HardPoint.Loading.DelayUntilFire;
             Barrel1AvTicks = kind.Graphics.Particles.Barrel1Duration;

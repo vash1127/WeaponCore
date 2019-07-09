@@ -81,7 +81,7 @@ namespace WeaponCore.Support
         [ProtoMember(5)] internal bool DetonateOnEnd;
         [ProtoMember(6)] internal float Mass;
         [ProtoMember(7)] internal float Health;
-        [ProtoMember(8)] internal float BackkickForce;
+        [ProtoMember(8)] internal float BackKickForce;
         [ProtoMember(9)] internal AmmoTrajectory Trajectory;
         [ProtoMember(10)] internal AmmoShieldBehavior ShieldBehavior;
     }
@@ -162,8 +162,8 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal float Width;
         [ProtoMember(3)] internal string Material;
         [ProtoMember(4)] internal Vector4 Color;
-        [ProtoMember(5)] internal Randomize RandomizeColor;
-        [ProtoMember(6)] internal Randomize RandomizeWidth;
+        [ProtoMember(5)] internal Randomize ColorVariance;
+        [ProtoMember(6)] internal Randomize WidthVariance;
     }
 
     [ProtoContract]

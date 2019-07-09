@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.ModAPI;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -81,6 +82,7 @@ namespace WeaponCore.Platform
                 }
             }
 
+            var isStatic = Comp.Physics.IsStatic;
             for (int i = 0; i < bps; i++)
             {
 
@@ -102,6 +104,9 @@ namespace WeaponCore.Platform
                     if (CurrentAmmo == 0) continue;
                     CurrentAmmo--;
                 }
+
+                if (System.HasBackKickForce && !isStatic)
+                    Comp.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Kind.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                 muzzle.LastShot = tick;
                 if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);

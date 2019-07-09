@@ -12,17 +12,19 @@ namespace WeaponCore.Support
         internal Vector3D Position;
         internal Vector3D Direction;
         internal double Length;
+        internal float Width;
         internal int ReSizeSteps;
         internal double LineReSizeLen;
         internal int ShrinkStep;
         internal MyStringId ProjectileMaterial;
 
-        internal void Init(WeaponDefinition kind, LineD line, MyStringId proejctileMaterial, int reSizeSteps, double lineReSizeLen)
+        internal void Init(WeaponDefinition kind, LineD line, MyStringId proejctileMaterial, int reSizeSteps, double lineReSizeLen, float width)
         {
             Kind = kind;
             Position = line.To;
             Direction = line.Direction;
             Length = line.Length;
+            Width = width;
             ProjectileMaterial = proejctileMaterial;
             ReSizeSteps = reSizeSteps;
             LineReSizeLen = lineReSizeLen;

@@ -115,7 +115,14 @@ namespace WeaponCore.Projectiles
             CheckList = checkList;
 
             DrawLine = Kind.Graphics.Line.Trail;
-            MaxTrajectory = Kind.Ammo.Trajectory.MaxTrajectory;
+            if (System.RangeVariance)
+            {
+                var min = Kind.Ammo.Trajectory.RangeVariance.Start;
+                var max = Kind.Ammo.Trajectory.RangeVariance.End;
+                MaxTrajectory = Kind.Ammo.Trajectory.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
+            }
+            else MaxTrajectory = Kind.Ammo.Trajectory.MaxTrajectory;
+
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             ShotLength = Kind.Ammo.ProjectileLength;
 
@@ -123,7 +130,15 @@ namespace WeaponCore.Projectiles
             SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
-            DesiredSpeed = Kind.Ammo.Trajectory.DesiredSpeed;
+
+            if (System.SpeedVariance)
+            {
+                var min = Kind.Ammo.Trajectory.SpeedVariance.Start;
+                var max = Kind.Ammo.Trajectory.SpeedVariance.End;
+                DesiredSpeed = Kind.Ammo.Trajectory.DesiredSpeed - MyUtils.GetRandomFloat(min, max);
+            }
+            else DesiredSpeed = Kind.Ammo.Trajectory.DesiredSpeed;
+
             DesiredSpeedSqr = DesiredSpeed * DesiredSpeed;
             Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
 

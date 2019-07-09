@@ -232,6 +232,7 @@ namespace WeaponCore.Projectiles
             internal readonly IMyEntity HitEntity;
             internal readonly bool PrimeProjectile;
             internal readonly double LineReSizeLen;
+            internal readonly float LineWidth;
             internal readonly int ReSizeSteps;
             internal readonly bool Shrink;
             internal readonly bool Last;
@@ -252,16 +253,25 @@ namespace WeaponCore.Projectiles
                 ReSizeSteps = reSizeSteps;
                 Shrink = shrink;
                 Last = last;
-                var kind = WeaponSystem.Kind;
-                var color = kind.Graphics.Line.Color;
-                var rcm = kind.Graphics.Line.RandomizeColor;
-                if (rcm.Start > 0 && rcm.End > 0)
+                var color = WeaponSystem.Kind.Graphics.Line.Color;
+                if (WeaponSystem.LineColorVariance)
                 {
-                    var randomValue = MyUtils.GetRandomFloat(rcm.Start, rcm.End);
+                    var cv = WeaponSystem.Kind.Graphics.Line.ColorVariance;
+                    var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                     color.X *= randomValue;
                     color.Y *= randomValue;
                     color.Z *= randomValue;
                 }
+
+                var width = WeaponSystem.Kind.Graphics.Line.Width;
+                if (WeaponSystem.LineWidthVariance)
+                {
+                    var wv = WeaponSystem.Kind.Graphics.Line.WidthVariance;
+                    var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
+                    width += randomValue;
+                }
+
+                LineWidth = width;
                 Color = color;
             }
         }

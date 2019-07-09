@@ -30,16 +30,16 @@ namespace WeaponCore
                 }
 
                 var line = p.Projectile;
+                var width = p.LineWidth;
 
                 if (p.Shrink)
                 {
                     sFound = true;
                     var shrink = _shrinkPool.Get();
-                    shrink.Init(kind, line, p.WeaponSystem.ProjectileMaterial, p.ReSizeSteps, p.LineReSizeLen);
+                    shrink.Init(kind, line, p.WeaponSystem.ProjectileMaterial, p.ReSizeSteps, p.LineReSizeLen, width);
                     _shrinking.Add(shrink);
                 }
                 var color = p.Color;
-                var width = kind.Graphics.Line.Width;
 
                 var newWidth = width;
 
@@ -70,7 +70,7 @@ namespace WeaponCore
                 {
                     var matrix = MatrixD.CreateFromDir(line.Direction);
                     matrix.Translation = line.From;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, kind.Graphics.Line.Width, (float)line.Length, 12, color, color, p.WeaponSystem.ProjectileMaterial, p.WeaponSystem.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)line.Length, 12, color, color, p.WeaponSystem.ProjectileMaterial, p.WeaponSystem.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
                 else
                     MyTransparentGeometry.AddLocalLineBillboard(p.WeaponSystem.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
