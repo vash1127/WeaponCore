@@ -28,12 +28,14 @@ namespace WeaponCore.Platform
         private int _rotationTime;
         private int _numOfBarrels;
         private int _shotsInCycle;
+        private int _shots;
+        private uint _ticksUntilShoot;
         private uint _lastPredictionTick;
         private uint _posChangedTick = 1;
         private uint _targetTick;
+        private uint _lastShotTick;
         private uint _ticksPerShot;
         private double _timePerShot;
-
 
         private bool _newCycle = false;
         //private bool _firstRun = true;
@@ -57,7 +59,7 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
-        internal readonly CachingDictionary<Dummy, uint> BarrelAvUpdater = new CachingDictionary<Dummy, uint>();
+        internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
 
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
@@ -72,14 +74,13 @@ namespace WeaponCore.Platform
         internal double AimingTolerance;
         internal int WeaponId;
         internal uint CheckedForTargetTick;
-        internal uint TicksUntilShoot;
         internal float RotationSpeed;
         internal float ElevationSpeed;
         internal float MaxAzimuthRadians;
         internal float MinAzimuthRadians;
         internal float MaxElevationRadians;
         internal float MinElevationRadians;
-        internal float RequiredPower => ((System.ShotEnergyCost * (System.Kind.HardPoint.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Kind.HardPoint.BarrelsPerShot) * System.Kind.HardPoint.ShotsPerBarrel;
+        internal float RequiredPower => ((System.ShotEnergyCost * (System.Kind.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Kind.HardPoint.Loading.BarrelsPerShot) * System.Kind.HardPoint.Loading.TrajectilesPerBarrel;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -150,8 +151,8 @@ namespace WeaponCore.Platform
 
             if (AvCapable)
             {
-                if (System.BarrelEffect1) BarrelEffects1 = new MyParticleEffect[System.Kind.HardPoint.Barrels.Length];
-                if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Kind.HardPoint.Barrels.Length];
+                if (System.BarrelEffect1) BarrelEffects1 = new MyParticleEffect[System.Kind.Assignments.Barrels.Length];
+                if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Kind.Assignments.Barrels.Length];
             }
 
             WeaponId = weaponId;
@@ -159,8 +160,8 @@ namespace WeaponCore.Platform
             TurretMode = Kind.HardPoint.TurretController;
             TrackTarget = Kind.HardPoint.TrackTargets;
             AimingTolerance = Math.Cos(MathHelper.ToRadians(Kind.HardPoint.AimingTolerance));
-            _ticksPerShot = (uint)(3600 / Kind.HardPoint.RateOfFire);
-            _timePerShot = (3600d / Kind.HardPoint.RateOfFire);
+            _ticksPerShot = (uint)(3600 / Kind.HardPoint.Loading.RateOfFire);
+            _timePerShot = (3600d / Kind.HardPoint.Loading.RateOfFire);
             _numOfBarrels = System.Barrels.Length;
             BeamSlot = new uint[_numOfBarrels];
         }

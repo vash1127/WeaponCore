@@ -15,11 +15,17 @@ namespace WeaponCore.Platform
 
         public class Muzzle
         {
+            public Muzzle(int id)
+            {
+                MuzzleId = id;
+            }
+
             public Vector3D Position;
             public Vector3D Direction;
             public Vector3D DeviatedDir;
             public uint LastShot;
             public uint LastUpdateTick;
+            public int MuzzleId;
         }
 
         public void ShootGraphics()
@@ -27,12 +33,12 @@ namespace WeaponCore.Platform
             if (System.BarrelEffect1 || System.BarrelEffect2)
             {
                 var removal = false;
-                var avSlot = 0;
                 foreach (var barrelPair in BarrelAvUpdater)
                 {
-                    var slot = avSlot++;
                     var lastUpdateTick = barrelPair.Value;
-                    var dummy = barrelPair.Key;
+                    var muzzle = barrelPair.Key;
+                    var id = muzzle.MuzzleId;
+                    var dummy = Dummies[id];
                     var tick = Comp.MyAi.MySession.Tick;
                     var ticksAgo = tick - lastUpdateTick;
 
@@ -43,46 +49,46 @@ namespace WeaponCore.Platform
 
                     if (System.BarrelEffect1 && ticksAgo <= System.Barrel1AvTicks)
                     {
-                        if (BarrelEffects1[slot] == null)
-                            MyParticlesManager.TryCreateParticleEffect(particles.Barrel1Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[slot]);
-                        else if (particles.Barrel1Restart && BarrelEffects1[slot].IsEmittingStopped)
-                            BarrelEffects1[slot].Play();
+                        if (BarrelEffects1[id] == null)
+                            MyParticlesManager.TryCreateParticleEffect(particles.Barrel1Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[id]);
+                        else if (particles.Barrel1Restart && BarrelEffects1[id].IsEmittingStopped)
+                            BarrelEffects1[id].Play();
 
-                        if (BarrelEffects1[slot] != null)
+                        if (BarrelEffects1[id] != null)
                         {
-                            BarrelEffects1[slot].WorldMatrix = matrix;
-                            BarrelEffects1[slot].Velocity = vel;
+                            BarrelEffects1[id].WorldMatrix = matrix;
+                            BarrelEffects1[id].Velocity = vel;
                         }
                     }
-                    else if (BarrelEffects1[slot] != null)
+                    else if (BarrelEffects1[id] != null)
                     {
-                        BarrelEffects1[slot].Stop(true);
-                        BarrelEffects1[slot] = null;
+                        BarrelEffects1[id].Stop(true);
+                        BarrelEffects1[id] = null;
                     }
 
                     if (System.BarrelEffect2 && ticksAgo <= System.Barrel2AvTicks)
                     {
-                        if (BarrelEffects2[slot] == null)
-                            MyParticlesManager.TryCreateParticleEffect(particles.Barrel2Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[slot]);
-                        else if (particles.Barrel2Restart && BarrelEffects2[slot].IsEmittingStopped)
-                            BarrelEffects2[slot].Play();
+                        if (BarrelEffects2[id] == null)
+                            MyParticlesManager.TryCreateParticleEffect(particles.Barrel2Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);
+                        else if (particles.Barrel2Restart && BarrelEffects2[id].IsEmittingStopped)
+                            BarrelEffects2[id].Play();
 
-                        if (BarrelEffects2[slot] != null)
+                        if (BarrelEffects2[id] != null)
                         {
-                            BarrelEffects2[slot].WorldMatrix = matrix;
-                            BarrelEffects2[slot].Velocity = vel;
+                            BarrelEffects2[id].WorldMatrix = matrix;
+                            BarrelEffects2[id].Velocity = vel;
                         }
                     }
-                    else if (BarrelEffects2[slot] != null)
+                    else if (BarrelEffects2[id] != null)
                     {
-                        BarrelEffects2[slot].Stop(true);
-                        BarrelEffects2[slot] = null;
+                        BarrelEffects2[id].Stop(true);
+                        BarrelEffects2[id] = null;
                     }
 
                     if (ticksAgo > System.Barrel1AvTicks && ticksAgo > System.Barrel2AvTicks)
                     {
                         removal = true;
-                        BarrelAvUpdater.Remove(dummy);
+                        BarrelAvUpdater.Remove(muzzle);
                     }
                 }
                 if (removal) BarrelAvUpdater.ApplyRemovals();
@@ -91,7 +97,7 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
-            Log.Line($"starting sound: Name:{System.WeaponName} - PartName:{System.PartName} - IsTurret:{Kind.HardPoint.IsTurret}");
+            //Log.Line($"starting sound: Name:{System.WeaponName} - PartName:{System.PartName} - IsTurret:{Kind.HardPoint.IsTurret}");
             if (FiringEmitter != null) StartFiringSound();
             if (System.ShotEnergyCost > 0)
             {
@@ -109,7 +115,7 @@ namespace WeaponCore.Platform
             ShootGraphics();
             if (!avOnly)
             {
-                TicksUntilShoot = 0;
+                _ticksUntilShoot = 0;
                 IsShooting = false;
                 Comp.SinkPower -= RequiredPower;
                 Comp.Sink.Update();

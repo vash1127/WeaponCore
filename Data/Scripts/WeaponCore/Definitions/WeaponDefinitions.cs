@@ -10,7 +10,16 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal AmmoDefinition Ammo;
         [ProtoMember(3)] internal GraphicDefinition Graphics;
         [ProtoMember(4)] internal AudioDefinition Audio;
-        [ProtoMember(5)] internal string ModPath;
+        [ProtoMember(5)] internal ModelAssignments Assignments;
+        [ProtoMember(6)] internal string ModPath;
+    }
+
+
+    [ProtoContract]
+    public struct ModelAssignments
+    {
+        [ProtoMember(1)] internal MountPoint[] MountPoints;
+        [ProtoMember(2)] internal string[] Barrels;
     }
 
     [ProtoContract]
@@ -24,29 +33,35 @@ namespace WeaponCore.Support
             Advanced,
         }
 
-        [ProtoMember(1)] internal MountPoint[] MountPoints;
-        [ProtoMember(2)] internal string[] Barrels;
-        [ProtoMember(3)] internal string DefinitionId;
-        [ProtoMember(4)] internal string AmmoMagazineId;
-        [ProtoMember(5)] internal bool IsTurret;
-        [ProtoMember(6)] internal bool TurretController;
-        [ProtoMember(7)] internal bool TrackTargets;
-        [ProtoMember(8)] internal int RotateBarrelAxis;
-        [ProtoMember(9)] internal int ReloadTime;
-        [ProtoMember(10)] internal int RateOfFire;
-        [ProtoMember(11)] internal int BarrelsPerShot;
-        [ProtoMember(12)] internal int SkipBarrels;
-        [ProtoMember(13)] internal int ShotsPerBarrel;
-        [ProtoMember(14)] internal int HeatPerRoF;
-        [ProtoMember(15)] internal int MaxHeat;
-        [ProtoMember(16)] internal int HeatSinkRate;
-        [ProtoMember(17)] internal float RotateSpeed;
-        [ProtoMember(18)] internal float ElevationSpeed;
-        [ProtoMember(19)] internal float DeviateShotAngle;
-        [ProtoMember(20)] internal int DelayUntilFire;
-        [ProtoMember(21)] internal float EnergyCost;
-        [ProtoMember(22)] internal double AimingTolerance;
-        [ProtoMember(23)] internal Prediction TargetPrediction;
+        [ProtoMember(1)] internal string DefinitionId;
+        [ProtoMember(2)] internal string AmmoMagazineId;
+        [ProtoMember(3)] internal bool IsTurret;
+        [ProtoMember(4)] internal bool TurretController;
+        [ProtoMember(5)] internal bool TrackTargets;
+        [ProtoMember(6)] internal int RotateBarrelAxis;
+        [ProtoMember(7)] internal float RotateSpeed;
+        [ProtoMember(8)] internal float ElevationSpeed;
+        [ProtoMember(9)] internal float DeviateShotAngle;
+        [ProtoMember(10)] internal float EnergyCost;
+        [ProtoMember(11)] internal double AimingTolerance;
+        [ProtoMember(12)] internal Prediction TargetPrediction;
+        [ProtoMember(13)] internal AmmoLoading Loading;
+    }
+
+    [ProtoContract]
+    public struct AmmoLoading
+    {
+        [ProtoMember(1)] internal int ReloadTime;
+        [ProtoMember(2)] internal int RateOfFire;
+        [ProtoMember(3)] internal int BarrelsPerShot;
+        [ProtoMember(4)] internal int SkipBarrels;
+        [ProtoMember(5)] internal int TrajectilesPerBarrel;
+        [ProtoMember(6)] internal int HeatPerRoF;
+        [ProtoMember(7)] internal int MaxHeat;
+        [ProtoMember(8)] internal int HeatSinkRate;
+        [ProtoMember(9)] internal int DelayUntilFire;
+        [ProtoMember(10)] internal int ShotsInBurst;
+        [ProtoMember(11)] internal int DelayAfterBurst;
     }
 
     [ProtoContract]

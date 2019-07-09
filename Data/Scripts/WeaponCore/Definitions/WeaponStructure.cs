@@ -20,6 +20,7 @@ namespace WeaponCore.Support
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly FiringSoundState FiringSound;
+        public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool AmmoHitSound;
         public readonly bool AmmoTravelSound;
@@ -58,7 +59,7 @@ namespace WeaponCore.Support
         {
             PartName = partName;
             Kind = kind;
-            Barrels = kind.HardPoint.Barrels;
+            Barrels = kind.Assignments.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
@@ -68,6 +69,7 @@ namespace WeaponCore.Support
             BarrelEffect1 = kind.Graphics.Particles.Barrel1Particle != string.Empty;
             BarrelEffect2 = kind.Graphics.Particles.Barrel2Particle != string.Empty;
 
+            BurstMode = kind.HardPoint.Loading.ShotsInBurst > 0;
             AmmoAreaEffect = kind.Ammo.AreaEffectRadius > 0;
             AmmoSkipAccel = kind.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
@@ -75,8 +77,8 @@ namespace WeaponCore.Support
             MaxTrajectorySqr = kind.Ammo.Trajectory.MaxTrajectory * kind.Ammo.Trajectory.MaxTrajectory;
             ShotEnergyCost = kind.HardPoint.EnergyCost * kind.Ammo.DefaultDamage;
 
-            ReloadTime = kind.HardPoint.ReloadTime;
-            DelayToFire = kind.HardPoint.DelayUntilFire;
+            ReloadTime = kind.HardPoint.Loading.ReloadTime;
+            DelayToFire = kind.HardPoint.Loading.DelayUntilFire;
             Barrel1AvTicks = kind.Graphics.Particles.Barrel1Duration;
             Barrel2AvTicks = kind.Graphics.Particles.Barrel2Duration;
 

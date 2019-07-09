@@ -57,7 +57,7 @@ namespace WeaponCore
 
             foreach (var weaponDef in _weaponDefinitions)
             {
-                foreach (var mount in weaponDef.HardPoint.MountPoints)
+                foreach (var mount in weaponDef.Assignments.MountPoints)
                 {
                     var subTypeId = mount.SubtypeId;
                     var partId = mount.SubpartId;
