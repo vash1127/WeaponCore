@@ -158,7 +158,7 @@ namespace WeaponCore.Projectiles
 
                     if (p.State == Projectile.ProjectileState.OneAndDone)
                     {
-                        var beamEnd = p.Position + (p.Direction * p.ShotLength);
+                        var beamEnd = p.Position + (p.Direction * p.MaxTrajectory);
                         p.TravelMagnitude = p.Position - beamEnd;
                         p.Position = beamEnd;
                     }
@@ -208,7 +208,8 @@ namespace WeaponCore.Projectiles
                             if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
                             {
                                 var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                                drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, new LineD(p.Position + -(p.Direction * p.ShotLength), hitInfo.HitPos), p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
+                                var hitLine = new LineD(p.LastPosition,  hitInfo.HitPos);
+                                drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
                             }
                             p.ProjectileClose(pool, checkPool, noAv);
                         }

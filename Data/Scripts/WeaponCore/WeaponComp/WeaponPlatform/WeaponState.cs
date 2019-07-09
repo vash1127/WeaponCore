@@ -32,7 +32,7 @@ namespace WeaponCore.Platform
         {
             if (System.BarrelEffect1 || System.BarrelEffect2)
             {
-                var removal = false;
+                var removal = false;    
                 foreach (var barrelPair in BarrelAvUpdater)
                 {
                     var lastUpdateTick = barrelPair.Value;
@@ -49,42 +49,48 @@ namespace WeaponCore.Platform
                     var matrix = MatrixD.Zero;
                     if (entityExists) matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
 
-                    if (entityExists && System.BarrelEffect1 && ticksAgo <= System.Barrel1AvTicks)
+                    if (System.BarrelEffect1)
                     {
-                        if (BarrelEffects1[id] == null)
-                            MyParticlesManager.TryCreateParticleEffect(particles.Barrel1Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[id]);
-                        else if (particles.Barrel1Restart && BarrelEffects1[id].IsEmittingStopped)
-                            BarrelEffects1[id].Play();
-
-                        if (BarrelEffects1[id] != null)
+                        if (entityExists && ticksAgo <= System.Barrel1AvTicks)
                         {
-                            BarrelEffects1[id].WorldMatrix = matrix;
-                            BarrelEffects1[id].Velocity = vel;
+                            if (BarrelEffects1[id] == null)
+                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel1Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[id]);
+                            else if (particles.Barrel1Restart && BarrelEffects1[id].IsEmittingStopped)
+                                BarrelEffects1[id].Play();
+
+                            if (BarrelEffects1[id] != null)
+                            {
+                                BarrelEffects1[id].WorldMatrix = matrix;
+                                BarrelEffects1[id].Velocity = vel;
+                            }
+                        }
+                        else if (BarrelEffects1[id] != null)
+                        {
+                            BarrelEffects1[id].Stop(true);
+                            BarrelEffects1[id] = null;
                         }
                     }
-                    else if (BarrelEffects1[id] != null)
-                    {
-                        BarrelEffects1[id].Stop(true);
-                        BarrelEffects1[id] = null;
-                    }
 
-                    if (entityExists && System.BarrelEffect2 && ticksAgo <= System.Barrel2AvTicks)
+                    if (System.BarrelEffect2)
                     {
-                        if (BarrelEffects2[id] == null)
-                            MyParticlesManager.TryCreateParticleEffect(particles.Barrel2Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);
-                        else if (particles.Barrel2Restart && BarrelEffects2[id].IsEmittingStopped)
-                            BarrelEffects2[id].Play();
-
-                        if (BarrelEffects2[id] != null)
+                        if (entityExists && ticksAgo <= System.Barrel2AvTicks)
                         {
-                            BarrelEffects2[id].WorldMatrix = matrix;
-                            BarrelEffects2[id].Velocity = vel;
+                            if (BarrelEffects2[id] == null)
+                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel2Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);
+                            else if (particles.Barrel2Restart && BarrelEffects2[id].IsEmittingStopped)
+                                BarrelEffects2[id].Play();
+
+                            if (BarrelEffects2[id] != null)
+                            {
+                                BarrelEffects2[id].WorldMatrix = matrix;
+                                BarrelEffects2[id].Velocity = vel;
+                            }
                         }
-                    }
-                    else if (BarrelEffects2[id] != null)
-                    {
-                        BarrelEffects2[id].Stop(true);
-                        BarrelEffects2[id] = null;
+                        else if (BarrelEffects2[id] != null)
+                        {
+                            BarrelEffects2[id].Stop(true);
+                            BarrelEffects2[id] = null;
+                        }
                     }
 
                     if (ticksAgo > System.Barrel1AvTicks && ticksAgo > System.Barrel2AvTicks)

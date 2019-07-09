@@ -25,7 +25,7 @@ namespace WeaponCore.Support
         internal LineD? GetLine()
         {
             if (ShrinkStep-- <= 0) return null;
-            return new LineD(Position + -(Direction * (DrawProjectile.ReSizeSteps * DrawProjectile.LineReSizeLen)), Position);
+            return new LineD(Position + -(Direction * (ShrinkStep * DrawProjectile.LineReSizeLen)), Position);
         }
     }
 
