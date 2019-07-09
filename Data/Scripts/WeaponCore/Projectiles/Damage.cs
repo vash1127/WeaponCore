@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
@@ -41,6 +41,7 @@ namespace WeaponCore.Projectiles
                 var baseDamage = kind.Ammo.DefaultDamage;
                 var damage = (baseDamage + kind.Ammo.AreaEffectYield) * Hits;
                 SApi.PointAttackShield(Shield, HitPos, Fired.FiringCube.EntityId, damage, false, true);
+                if (kind.Ammo.Mass > 0) ApplyProjectileForce((MyEntity)Shield.CubeGrid, HitPos, Fired.Direction, (kind.Ammo.Mass * kind.Ammo.Trajectory.DesiredSpeed) / Hits);
             }
         }
 
@@ -69,6 +70,7 @@ namespace WeaponCore.Projectiles
                 Block.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
                 if (wSystem.AmmoAreaEffect)
                     UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction,Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, kind.Ammo.AreaEffectRadius, kind.Ammo.AreaEffectYield);
+                else if (kind.Ammo.Mass > 0) ApplyProjectileForce((MyEntity)Block.CubeGrid, HitPos, Fired.Direction, (kind.Ammo.Mass * kind.Ammo.Trajectory.DesiredSpeed) / Hits);
             }
         }
 
@@ -88,7 +90,14 @@ namespace WeaponCore.Projectiles
             {
                 if (DestObj == null) return;
                 var damage = 100;
+                var wSystem = Fired.WeaponSystem;
+                var kind = wSystem.Kind;
                 DestObj.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
+                if (kind.Ammo.Mass > 0)
+                {
+                    var entity = (MyEntity)DestObj;
+                    ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, Fired.Direction, (kind.Ammo.Mass * kind.Ammo.Trajectory.DesiredSpeed));
+                }
             }
         }
 
@@ -129,6 +138,13 @@ namespace WeaponCore.Projectiles
             {
 
             }
+        }
+
+        public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)
+        {
+            if (entity.Physics == null || !entity.Physics.Enabled || entity.Physics.IsStatic || entity.Physics.Mass / impulse > 500)
+                return;
+            entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normalizedDirection * impulse, intersectionPosition, Vector3.Zero);
         }
     }
 }

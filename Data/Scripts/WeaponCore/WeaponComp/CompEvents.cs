@@ -76,28 +76,29 @@ namespace WeaponCore.Support
             IsWorking = myCubeBlock.IsWorking;
             IsFunctional = myCubeBlock.IsFunctional;
             State.Value.Online = IsWorking && IsFunctional;
+            TerminalRefresh();
         }
 
-        internal string GetShieldStatus()
+        internal string GetSystemStatus()
         {
-            if (!State.Value.Online && !MyCube.IsFunctional) return "[Controller Faulty]";
-            if (!State.Value.Online && !MyCube.IsWorking) return "[Controller Offline]";
-            return "[Shield Up]";
+            if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
+            if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
+            return "[Systems Online]";
         }
 
         private void AppendingCustomInfo(IMyTerminalBlock block, StringBuilder stringBuilder)
         {
             try
             {
-                var status = GetShieldStatus();
-                if (status == "[Shield Up]" || status == "[Shield Down]" || status == "[Shield Offline]" || status == "[Insufficient Power]")
+                var status = GetSystemStatus();
+                if (status == "[Systems Online]" || status == "[Systems Fault]" || status == "[Systems Offline]" || status == "[Insufficient Power]")
                 {
                     stringBuilder.Append(status +
                                          "\n" +
-                                         "\n[Shield Power]: " + SinkCurrentPower.ToString("0.0") + " Mw");
+                                         "\n[Required Power]: " + SinkPower.ToString("0.0") + " Mw");
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in Controller AppendingCustomInfo: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }
     }
 }

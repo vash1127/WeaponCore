@@ -119,7 +119,6 @@ namespace WeaponCore.Support
             return false;
         }
 
-
         internal void UpdateSettings(LogicSettingsValues newSettings)
         {
             if (newSettings.MId > Set.Value.MId)

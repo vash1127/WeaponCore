@@ -82,19 +82,5 @@ namespace WeaponCore.Projectiles
             return myEntity ?? entity;
         }
 
-        public static void ApplyProjectileForce(
-          MyEntity entity,
-          Vector3D intersectionPosition,
-          Vector3 normalizedDirection,
-          bool isPlayerShip,
-          float impulse)
-        {
-            if (entity.Physics == null || !entity.Physics.Enabled || entity.Physics.IsStatic)
-                return;
-            if (entity is IMyCharacter)
-                impulse *= 100f;
-            entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normalizedDirection * impulse, intersectionPosition, Vector3.Zero, new float?(), true, false);
-        }
-
     }
 }

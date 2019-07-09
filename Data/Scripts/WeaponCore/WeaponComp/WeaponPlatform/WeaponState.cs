@@ -103,6 +103,7 @@ namespace WeaponCore.Platform
             {
                 Comp.SinkPower += RequiredPower;
                 Comp.Sink.Update();
+                Comp.TerminalRefresh();
             }
             IsShooting = true;
         }
@@ -119,6 +120,7 @@ namespace WeaponCore.Platform
                 IsShooting = false;
                 Comp.SinkPower -= RequiredPower;
                 Comp.Sink.Update();
+                Comp.TerminalRefresh();
             }
         }
 

@@ -44,7 +44,6 @@ namespace WeaponCore.Support
         internal int PullingAmmoCnt;
         internal float MaxAmmoVolume;
         internal float MaxAmmoMass;
-        internal float SinkCurrentPower;
         internal float SinkPower = 0.01f;
         internal bool TurretTargetLock;
         internal bool Gunner;
