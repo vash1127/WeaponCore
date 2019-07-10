@@ -40,7 +40,11 @@ namespace WeaponCore.Projectiles
                 var baseDamage = Fired.System.Values.Ammo.DefaultDamage;
                 var damage = (baseDamage + Fired.System.Values.Ammo.AreaEffectYield) * Hits;
                 SApi.PointAttackShield(Shield, HitPos, Fired.FiringCube.EntityId, damage, false, true);
-                if (Fired.System.Values.Ammo.Mass > 0) ApplyProjectileForce((MyEntity)Shield.CubeGrid, HitPos, Fired.Direction, (Fired.System.Values.Ammo.Mass * Fired.System.Values.Ammo.Trajectory.DesiredSpeed) / Hits);
+                if (Fired.System.Values.Ammo.Mass > 0)
+                {
+                    var speed = Fired.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? Fired.System.Values.Ammo.Trajectory.DesiredSpeed : 1;
+                    ApplyProjectileForce((MyEntity)Shield.CubeGrid, HitPos, Fired.Direction, (Fired.System.Values.Ammo.Mass * speed) / Hits);
+                }
             }
         }
 
@@ -67,7 +71,11 @@ namespace WeaponCore.Projectiles
                 Block.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
                 if (Fired.System.AmmoAreaEffect)
                     UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction,Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, Fired.System.Values.Ammo.AreaEffectRadius, Fired.System.Values.Ammo.AreaEffectYield);
-                else if (Fired.System.Values.Ammo.Mass > 0) ApplyProjectileForce((MyEntity)Block.CubeGrid, HitPos, Fired.Direction, (Fired.System.Values.Ammo.Mass * Fired.System.Values.Ammo.Trajectory.DesiredSpeed) / Hits);
+                else if (Fired.System.Values.Ammo.Mass > 0)
+                {
+                    var speed = Fired.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? Fired.System.Values.Ammo.Trajectory.DesiredSpeed : 1;
+                    ApplyProjectileForce((MyEntity)Block.CubeGrid, HitPos, Fired.Direction, (Fired.System.Values.Ammo.Mass * speed) / Hits);
+                }
             }
         }
 
@@ -91,7 +99,8 @@ namespace WeaponCore.Projectiles
                 if (Fired.System.Values.Ammo.Mass > 0)
                 {
                     var entity = (MyEntity)DestObj;
-                    ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, Fired.Direction, (Fired.System.Values.Ammo.Mass * Fired.System.Values.Ammo.Trajectory.DesiredSpeed));
+                    var speed = Fired.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? Fired.System.Values.Ammo.Trajectory.DesiredSpeed : 1;
+                    ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, Fired.Direction, (Fired.System.Values.Ammo.Mass * speed));
                 }
             }
         }

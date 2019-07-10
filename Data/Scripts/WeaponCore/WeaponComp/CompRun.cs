@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Linq;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
+using IMyLargeTurretBase = Sandbox.ModAPI.Ingame.IMyLargeTurretBase;
 
 namespace WeaponCore.Support
 {

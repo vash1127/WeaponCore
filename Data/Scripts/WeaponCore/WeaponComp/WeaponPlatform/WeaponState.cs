@@ -109,8 +109,8 @@ namespace WeaponCore.Platform
             if (FiringEmitter != null) StartFiringSound();
             if (System.ShotEnergyCost > 0)
             {
-                Comp.SinkPower += RequiredPower;
-                Comp.Sink.Update();
+                //Comp.SinkPower += RequiredPower;
+                //Comp.Sink.Update();
                 Comp.TerminalRefresh();
             }
             IsShooting = true;
@@ -126,8 +126,8 @@ namespace WeaponCore.Platform
             {
                 _ticksUntilShoot = 0;
                 IsShooting = false;
-                Comp.SinkPower -= RequiredPower;
-                Comp.Sink.Update();
+                //Comp.SinkPower -= RequiredPower;
+                //Comp.Sink.Update();
                 Comp.TerminalRefresh();
             }
         }

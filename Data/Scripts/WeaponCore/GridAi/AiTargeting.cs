@@ -7,6 +7,7 @@ using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -60,33 +61,58 @@ namespace WeaponCore.Support
                     target = null;
                     return;
                 }
-                var bCount = TargetBlocks.Count;
                 var found = false;
-                var c = 0;
                 var physics = MyAPIGateway.Physics;
                 var weaponPos = weapon.Comp.MyPivotPos;
-                while (!found)
+                var blockCount = TargetBlocks.Count;
+                var deck = GetDeck(blockCount);
+
+                for (int i = 0; i < TargetBlocks.Count; i++)
                 {
-                    if (c++ > 100) break;
-                    var next = Rnd.Next(0, bCount);
-                    if (!TargetBlocks[next].MarkedForClose)
-                    {
-                        IHitInfo hitInfo;
-                        physics.CastRay(weaponPos, TargetBlocks[next].PositionComp.GetPosition(), out hitInfo, 15);
-                        if (hitInfo?.HitEntity == TargetBlocks[next].Parent)
-                        {
-                            target = TargetBlocks[next];
-                            found = true;
-                        }
-                    }
+                    if (!deck.Contains(i)) Log.Line($"deck missing:{i}");
                 }
 
+                for (int i = 0; i < blockCount; i++)
+                {
+                    var block = TargetBlocks[deck[i]];
+                    if (block.MarkedForClose)
+                    {
+                        block.Close();
+                        continue;
+                    }
+
+                    IHitInfo hitInfo;
+                    //physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out hitInfo, 15);
+                    //if (hitInfo?.HitEntity != block.Parent) continue;
+
+                    target = block;
+                    found = true;
+                }
                 if (!found)
                 {
                     target = null;
-                    Log.Line("while never picked block");
+                    Log.Line("never picked block");
                 }
             }
+        }
+
+        private int[] _deck = new int[0];
+        private int[] GetDeck(int targetCount)
+        {
+            var min = 0;
+            var max = targetCount - 1;
+            int count = max - min + 1;
+            Array.Resize(ref _deck, count);
+
+            for (int i = 0; i < count; i++)
+            {
+                var j = MyUtils.GetRandomInt(0, i + 1);
+
+                _deck[i] = _deck[j];
+                _deck[j] = min + i;
+            }
+
+            return _deck;
         }
 
         internal void GetTarget(ref MyEntity target, Weapon weapon)
