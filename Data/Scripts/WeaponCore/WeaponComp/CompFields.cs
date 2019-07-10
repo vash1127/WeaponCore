@@ -44,7 +44,8 @@ namespace WeaponCore.Support
         internal int PullingAmmoCnt;
         internal float MaxAmmoVolume;
         internal float MaxAmmoMass;
-        internal float SinkPower = 0.01f;
+        internal float SinkPower;
+        internal float IdlePower;
         internal bool TurretTargetLock;
         internal bool Gunner;
         internal bool NotFailed;
@@ -95,6 +96,8 @@ namespace WeaponCore.Support
             BlockInventory.Constraint.m_useDefaultIcon = false;
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
+            IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
+            SinkPower = IdlePower;
             var resourceInfo = new MyResourceSinkInfo()
             {
                 ResourceTypeId = GId,

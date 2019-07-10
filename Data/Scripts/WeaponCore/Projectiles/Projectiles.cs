@@ -171,13 +171,17 @@ namespace WeaponCore.Projectiles
 
                     if (p.ModelState == Projectile.EntityState.Exists)
                     {
-                        p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
-                        if (p.Effect1 != null && p.System.AmmoParticle)
+                        try
                         {
-                            var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.AmmoOffset, p.EntityMatrix);
-                            p.Effect1.WorldMatrix = p.EntityMatrix;
-                            p.Effect1.SetTranslation(offVec);
+                            p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+                            if (p.Effect1 != null && p.System.AmmoParticle)
+                            {
+                                var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.AmmoOffset, p.EntityMatrix);
+                                p.Effect1.WorldMatrix = p.EntityMatrix;
+                                p.Effect1.SetTranslation(offVec);
+                            }
                         }
+                        catch (Exception ex) { Log.Line($"Exception in EntityMatrix: {ex}"); }
                     }
                     else if (!p.ConstantSpeed && p.Effect1 != null && p.System.AmmoParticle)
                         p.Effect1.Velocity = p.Velocity;
@@ -191,28 +195,32 @@ namespace WeaponCore.Projectiles
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
                     {
-                        var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age);
-                        GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
-                        var hitInfo = GetHitEntities(p.CheckList, fired, beam);
-                        if (GetDamageInfo(fired, p.Entity, p.EntityMatrix, beam, hitInfo, hitEnts, hitBlocks, damagePool,0, false))
+                        try
                         {
-                            intersect = hitInfo.HitPos;
-                            DamageEntities(fired, hitEnts, hitBlocks, damagePool);
-                        }
-                        linePool.Return(fired.Shots);
-                        p.CheckList.Clear();
-                        segmentList.Clear();
-
-                        if (intersect != null)
-                        {
-                            if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
+                            var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age);
+                            GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
+                            var hitInfo = GetHitEntities(p.CheckList, fired, beam);
+                            if (GetDamageInfo(fired, p.Entity, p.EntityMatrix, beam, hitInfo, hitEnts, hitBlocks, damagePool, 0, false))
                             {
-                                var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                                var hitLine = new LineD(p.LastPosition,  hitInfo.HitPos);
-                                drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
+                                intersect = hitInfo.HitPos;
+                                DamageEntities(fired, hitEnts, hitBlocks, damagePool);
                             }
-                            p.ProjectileClose(pool, checkPool, noAv);
+                            linePool.Return(fired.Shots);
+                            p.CheckList.Clear();
+                            segmentList.Clear();
+
+                            if (intersect != null)
+                            {
+                                if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
+                                {
+                                    var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
+                                    var hitLine = new LineD(p.LastPosition, hitInfo.HitPos);
+                                    drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
+                                }
+                                p.ProjectileClose(pool, checkPool, noAv);
+                            }
                         }
+                        catch (Exception ex) { Log.Line($"Exception in GetTopmostEntitiesOverlappingRay: {ex}"); }
                     }
                     segmentPool.Return(segmentList);
                     if (intersect != null) continue;

@@ -107,10 +107,10 @@ namespace WeaponCore.Platform
         {
             //Log.Line($"starting sound: Name:{System.WeaponName} - PartName:{System.PartName} - IsTurret:{Values.HardPoint.IsTurret}");
             if (FiringEmitter != null) StartFiringSound();
-            if (System.ShotEnergyCost > 0)
+            if (System.ShotEnergyCost > 0 && !IsShooting)
             {
-                //Comp.SinkPower += RequiredPower;
-                //Comp.Sink.Update();
+                Comp.SinkPower += RequiredPower;
+                Comp.Sink.Update();
                 Comp.TerminalRefresh();
             }
             IsShooting = true;
@@ -125,10 +125,15 @@ namespace WeaponCore.Platform
             if (!avOnly)
             {
                 _ticksUntilShoot = 0;
+                if (IsShooting)
+                {
+                    Comp.SinkPower -= RequiredPower;
+                    if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
+                    Comp.Sink.Update();
+                    Comp.TerminalRefresh();
+                }
                 IsShooting = false;
-                //Comp.SinkPower -= RequiredPower;
-                //Comp.Sink.Update();
-                Comp.TerminalRefresh();
+
             }
         }
 

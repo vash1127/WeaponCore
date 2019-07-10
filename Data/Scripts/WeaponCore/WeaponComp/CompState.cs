@@ -65,7 +65,6 @@ namespace WeaponCore.Support
             NotFailed = false;
             if (clear)
             {
-                SinkPower = 0.001f;
                 Sink.Update();
 
                 if (_isServer && !keepHeat)
