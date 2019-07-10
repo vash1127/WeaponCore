@@ -97,6 +97,7 @@ namespace WeaponCore.Platform
         internal bool PlayTurretAv;
         internal bool AvCapable;
         internal bool DelayCeaseFire;
+        internal bool Enabled;
 
         internal bool LoadAmmoMag
         {
@@ -157,6 +158,7 @@ namespace WeaponCore.Platform
             }
 
             WeaponId = weaponId;
+            Enabled = true;
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;

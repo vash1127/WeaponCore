@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Common.ObjectBuilders.Definitions;
+using Sandbox.Definitions;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
-using IMyLargeTurretBase = Sandbox.ModAPI.Ingame.IMyLargeTurretBase;
 
 namespace WeaponCore.Support
 {
@@ -115,6 +117,8 @@ namespace WeaponCore.Support
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
 
             RegisterEvents();
+
+            CreateUi();
 
             MainInit = true;
         }

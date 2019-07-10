@@ -1,4 +1,6 @@
-﻿using WeaponCore.Platform;
+﻿using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -20,10 +22,12 @@ namespace WeaponCore
                     //DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Blue, 0.1f);
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
+
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
+                        if (!w.Enabled) continue;
                         var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)
                         {
@@ -87,6 +91,7 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
+                        if (!w.Enabled && comp.TrackingWeapon != w) continue;
                         if (!gunner)
                         {
                             if (w.TrackingAi && w.Target != null)

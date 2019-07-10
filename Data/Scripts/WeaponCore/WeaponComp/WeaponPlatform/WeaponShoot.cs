@@ -99,8 +99,8 @@ namespace WeaponCore.Platform
                             var randomFloat1 = MyUtils.GetRandomFloat(-System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
                             var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
 
-                            muzzle.DeviatedDir = Vector3.TransformNormal(
-                                -new Vector3(MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
+                            muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3(
+                                    MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
                                     MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
                                     MyMath.FastCos(randomFloat1)), dirMatrix);
                         }

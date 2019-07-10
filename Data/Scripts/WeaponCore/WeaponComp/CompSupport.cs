@@ -59,5 +59,6 @@ namespace WeaponCore.Support
                 w.StopShooting(true);
             }
         }
+
     }
 }

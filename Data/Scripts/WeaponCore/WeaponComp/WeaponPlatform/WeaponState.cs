@@ -140,7 +140,7 @@ namespace WeaponCore.Platform
 
         public void StartFiringSound()
         {
-            FiringEmitter.PlaySound(FiringSound, true);
+            FiringEmitter.PlaySound(FiringSound, false);
             Log.Line("Start Firing Sound");
         }
 

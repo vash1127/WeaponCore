@@ -1,4 +1,5 @@
-﻿using Sandbox.Game;
+﻿using Sandbox.Common.ObjectBuilders;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.Game.Weapons;
@@ -64,6 +65,7 @@ namespace WeaponCore.Support
         internal MyCubeGrid MyGrid;
         internal MyPhysicsComponentBase Physics;
         internal MyWeaponPlatform Platform;
+        internal MyObjectBuilder_TurretBase Ob;
         internal IMyLargeMissileTurret Turret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
@@ -106,6 +108,8 @@ namespace WeaponCore.Support
             };
             Sink.RemoveType(ref GId);
             Sink.AddType(ref resourceInfo);
+            Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
         }
+
     }
 }
