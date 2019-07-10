@@ -57,7 +57,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
 
-            if (targetLock && _targetTick > 59) ShootRayCheck();
+            if (!Comp.Gunner && targetLock && _targetTick > 59) ShootRayCheck();
 
             var isStatic = Comp.Physics.IsStatic;
             for (int i = 0; i < bps; i++)

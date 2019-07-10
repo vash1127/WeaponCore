@@ -104,7 +104,7 @@ namespace WeaponCore
 
                         if (w.DelayCeaseFire)
                         {
-                            if (!w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
+                            if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
                             {
                                 w.DelayFireCount = 0;
                                 w.AiReady = w.Target != null && !gunner && w.Comp.TurretTargetLock && !w.Target.MarkedForClose;

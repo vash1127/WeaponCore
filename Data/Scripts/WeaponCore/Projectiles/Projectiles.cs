@@ -64,11 +64,13 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+            MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+            /*
             for (int i = 0; i < Wait.Length; i++)
             {
                 Process(i);
             }
+            */
         }
 
         private void Process(int i)
@@ -269,6 +271,7 @@ namespace WeaponCore.Projectiles
 
                         if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength) p.Grow = false;
                     }
+                    else if (p.State == Projectile.ProjectileState.OneAndDone) p.CurrentLine = new LineD(p.LastPosition, p.Position);
                     else p.CurrentLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
 
                     var bb = new BoundingBoxD(Vector3D.Min(p.CurrentLine.From, p.CurrentLine.To), Vector3D.Max(p.CurrentLine.From, p.CurrentLine.To));
