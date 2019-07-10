@@ -115,35 +115,39 @@ namespace WeaponCore.Projectiles
 
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
                     {
-                        Vector3D newVel;
-                        if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
+                        try
                         {
-                            var trajInfo = p.System.Values.Ammo.Trajectory;
-                            if (p.Target != null && !p.Target.MarkedForClose)
+                            Vector3D newVel;
+                            if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                             {
-                                var physics = p.Target.Physics ?? p.Target.Parent.Physics;
-                                var targetPos = p.Target.PositionComp.WorldAABB.Center;
-                                if (targetPos != Vector3D.Zero) p.PrevTargetPos = targetPos;
-                                p.PrevTargetVel = physics.LinearVelocity;
+                                var trajInfo = p.System.Values.Ammo.Trajectory;
+                                var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
+                                if (physics != null && !p.Target.MarkedForClose)
+                                {
+                                    var targetPos = p.Target.PositionComp.WorldAABB.Center;
+                                    if (targetPos != Vector3D.Zero) p.PrevTargetPos = targetPos;
+                                    p.PrevTargetVel = physics.LinearVelocity;
+                                }
+                                else if (p.State != Projectile.ProjectileState.Zombie)
+                                {
+                                    p.DistanceTraveled = 0;
+                                    p.DistanceToTravelSqr = (Vector3D.DistanceSquared(p.Position, p.PrevTargetPos) + 100);
+                                    p.State = Projectile.ProjectileState.Zombie;
+                                }
+                                var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, trajInfo.AccelPerSec, trajInfo.SmartsFactor);
+                                newVel = p.Velocity + (commandedAccel * StepConst);
                             }
-                            else if (p.State != Projectile.ProjectileState.Zombie)
-                            {
-                                p.DistanceTraveled = 0;
-                                p.DistanceToTravelSqr = (Vector3D.DistanceSquared(p.Position, p.PrevTargetPos) + 100);
-                                p.State = Projectile.ProjectileState.Zombie;
-                            }
-                            var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, trajInfo.AccelPerSec, trajInfo.SmartsFactor);
-                            newVel = p.Velocity + (commandedAccel * StepConst);
-                        }
-                        else newVel = p.Velocity += (p.Direction * p.AccelLength);
+                            else newVel = p.Velocity += (p.Direction * p.AccelLength);
 
-                        if (newVel.LengthSquared() > p.DesiredSpeedSqr)
-                        {
-                            newVel.Normalize();
-                            newVel *= p.DesiredSpeed;
+                            if (newVel.LengthSquared() > p.DesiredSpeedSqr)
+                            {
+                                newVel.Normalize();
+                                newVel *= p.DesiredSpeed;
+                            }
+                            p.Velocity = newVel;
+                            p.Direction = Vector3D.Normalize(p.Velocity);
                         }
-                        p.Velocity = newVel;
-                        p.Direction = Vector3D.Normalize(p.Velocity);
+                        catch (Exception ex) { Log.Line($"Exception in GuidanceType.Smart: {ex}"); }
                     }
                     else if (p.AccelLength > 0)
                     {
