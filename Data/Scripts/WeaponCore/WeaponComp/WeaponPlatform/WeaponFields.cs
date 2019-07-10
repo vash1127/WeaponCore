@@ -164,6 +164,7 @@ namespace WeaponCore.Platform
             _ticksPerShot = (uint)(3600 / System.Values.HardPoint.Loading.RateOfFire);
             _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire);
             _numOfBarrels = System.Barrels.Length;
+            DelayCeaseFire = System.TimeToCeaseFire > 0;
             BeamSlot = new uint[_numOfBarrels];
         }
     }

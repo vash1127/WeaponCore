@@ -1,5 +1,7 @@
-﻿using Sandbox.Game.Entities;
+﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.ModAPI;
 
 namespace WeaponCore.Support
@@ -20,5 +22,15 @@ namespace WeaponCore.Support
 
             SubGridUpdate = false;
         }
+
+        public static bool GridEnemy(MyCubeBlock myCube, MyCubeGrid grid, List<long> owners = null)
+        {
+            if (owners == null) owners = grid.BigOwners;
+            if (owners.Count == 0) return true;
+            var relationship = myCube.GetUserRelationToOwner(owners[0]);
+            var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+            return enemy;
+        }
+
     }
 }

@@ -164,14 +164,6 @@ namespace WeaponCore.Projectiles
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
 
-            ConstantSpeed = System.Values.Ammo.Trajectory.AccelPerSec <= 0;
-            MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
-            MaxSpeedLength = MaxVelocity.Length() * StepConst;// * MyUtils.GetRandomFloat(1f, 1.5f);
-            AccelLength = System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
-            AccelVelocity = (Direction * AccelLength);
-            Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
-            TravelMagnitude = Velocity * StepConst;
-
             if (!noAv)
             {
                 if (System.AmmoParticle) ProjectileParticleStart();
@@ -201,7 +193,14 @@ namespace WeaponCore.Projectiles
                 else ModelState = EntityState.None;
             }
 
-            if (MaxSpeedLength > 0 && MaxTrajectory > 0)
+            ConstantSpeed = System.Values.Ammo.Trajectory.AccelPerSec <= 0;
+            MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
+            MaxSpeedLength = MaxVelocity.Length() * StepConst;
+            AccelLength = System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
+            AccelVelocity = (Direction * AccelLength);
+            Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
+            TravelMagnitude = Velocity * StepConst;
+            if (DesiredSpeed > 0 && MaxTrajectory > 0)
             {
                 var reSizeSteps = (int) (ShotLength / MaxSpeedLength);
                 ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;

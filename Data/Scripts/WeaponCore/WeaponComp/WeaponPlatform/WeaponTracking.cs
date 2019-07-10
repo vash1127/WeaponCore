@@ -112,7 +112,12 @@ namespace WeaponCore.Platform
 
             var alignedChange = wasAligned != isAligned;
             if (alignedChange && isAligned) weapon.StartShooting();
-            else if (alignedChange && !weapon.DelayCeaseFire) weapon.StopShooting();
+            else if (alignedChange && !weapon.DelayCeaseFire)
+            {
+                Log.Line("align check fail");
+                Log.Line($"{weapon.System.WeaponName} - {weapon.System.Values.HardPoint.TurretController} - {weapon == weapon.Comp.TrackingWeapon}");
+                weapon.StopShooting();
+            }
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
             return weapon.IsTracking;
         }

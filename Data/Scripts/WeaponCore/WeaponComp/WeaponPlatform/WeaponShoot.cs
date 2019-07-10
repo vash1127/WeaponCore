@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -138,12 +141,13 @@ namespace WeaponCore.Platform
             var targetPos = Target.PositionComp.GetPosition();
             if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
             {
+                Log.Line("ShootRayCheck: out of range");
                 Target = null;
                 return;
             }
             if (!TrackingAi && !ValidTarget(this, Target))
             {
-                Log.Line("shootStep2: setting target null");
+                Log.Line("ShootRayCheck: not trackingAi and notValid target");
                 Target = null;
                 return;
             }
@@ -151,9 +155,33 @@ namespace WeaponCore.Platform
             MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.PositionComp.GetPosition(), out hitInfo, 15);
             if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target.Parent))
             {
-                Log.Line($"rayFail, setting target to null");
+                if (hitInfo?.HitEntity == null && DelayCeaseFire)
+                {
+                    Log.Line($"ShootRayCheck: succeed due to null DelayCeaseFire");
+                    return;
+                }
+                if ((hitInfo?.HitEntity != null))
+                {
+                    var isGrid = hitInfo.HitEntity as MyCubeGrid;
+                    var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
+                    if (isGrid == null && parentIsGrid == null)
+                    {
+                        Log.Line($"ShootRayCheck: succeed junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                        return;
+                    }
+                    if (isGrid == Comp.MyGrid || isGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, isGrid) || parentIsGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, parentIsGrid))
+                    {
+                        Log.Line($"ShootRayCheck: succeed friendly grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                        Target = null;
+                        return;
+                    }
+                    Log.Line($"ShootRayCheck: succeed unknown reason: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    return;
+                }
+                if (hitInfo?.HitEntity == null) Log.Line($"ShootRayCheck: rayCheck Failed: null");
+                else if (hitInfo?.HitEntity != null) Log.Line($"ShootRayCheck: rayCheck Failed: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                else Log.Line("ShootRayCheck: failed for some unknown reason");
                 Target = null;
-                return;
             }
         }
 

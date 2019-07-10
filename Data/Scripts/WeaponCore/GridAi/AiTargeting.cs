@@ -66,7 +66,6 @@ namespace WeaponCore.Support
                 var weaponPos = weapon.Comp.MyPivotPos;
                 var blockCount = TargetBlocks.Count;
                 var deck = GetDeck(blockCount);
-
                 for (int i = 0; i < TargetBlocks.Count; i++)
                 {
                     if (!deck.Contains(i)) Log.Line($"deck missing:{i}");
@@ -75,15 +74,17 @@ namespace WeaponCore.Support
                 for (int i = 0; i < blockCount; i++)
                 {
                     var block = TargetBlocks[deck[i]];
-                    if (block.MarkedForClose)
-                    {
-                        block.Close();
-                        continue;
-                    }
+                    if (block.MarkedForClose) continue;
 
                     IHitInfo hitInfo;
-                    //physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out hitInfo, 15);
-                    //if (hitInfo?.HitEntity != block.Parent) continue;
+                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out hitInfo, 15);
+
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
+
+                    var isGrid = hitInfo.HitEntity as MyCubeGrid;
+                    var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
+                    if (isGrid == weapon.Comp.MyGrid) continue;
+                    if (isGrid != null && !GridEnemy(weapon.Comp.MyCube, isGrid) || parentIsGrid != null && !GridEnemy(weapon.Comp.MyCube, parentIsGrid)) continue;
 
                     target = block;
                     found = true;
@@ -97,12 +98,17 @@ namespace WeaponCore.Support
         }
 
         private int[] _deck = new int[0];
+        private int _prevDeckLen;
         private int[] GetDeck(int targetCount)
         {
             var min = 0;
             var max = targetCount - 1;
-            int count = max - min + 1;
-            Array.Resize(ref _deck, count);
+            var count = max - min + 1;
+            if (_prevDeckLen != count)
+            {
+                Array.Resize(ref _deck, count);
+                _prevDeckLen = count;
+            }
 
             for (int i = 0; i < count; i++)
             {
