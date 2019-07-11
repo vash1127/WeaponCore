@@ -112,6 +112,8 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     p.LastPosition = p.Position;
+                    p.LastAccelDir = p.AccelDir;
+                    p.LastVelocity = p.Velocity;
 
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
                     {
@@ -159,7 +161,7 @@ namespace WeaponCore.Projectiles
                         }
                         p.Velocity = newVel;
                     }
-
+                    p.AccelDir = ()
                     if (p.State == Projectile.ProjectileState.OneAndDone)
                     {
                         var beamEnd = p.Position + (p.Direction * p.MaxTrajectory);
@@ -187,7 +189,7 @@ namespace WeaponCore.Projectiles
                         }
                         catch (Exception ex) { Log.Line($"Exception in EntityMatrix: {ex}"); }
                     }
-                    else if (!p.ConstantSpeed && p.ParticleStopped && p.Effect1 != null && p.System.AmmoParticle)
+                    else if (!p.ConstantSpeed && p.Effect1 != null && p.System.AmmoParticle)
                         p.Effect1.Velocity = p.Velocity;
 
                     var segmentList = segmentPool.Get();
@@ -244,14 +246,14 @@ namespace WeaponCore.Projectiles
 
                     if (noAv || !p.Draw) continue;
 
-                    if (p.ModelState != Projectile.EntityState.Exists && p.System.AmmoParticle)
+                    if (p.System.AmmoParticle)
                     {
                         p.TestSphere.Center = p.Position;
-                        if (p.ParticleStopped && camera.IsInFrustum(ref p.TestSphere))
+                        if (camera.IsInFrustum(ref p.TestSphere))
                         {
-                            p.ProjectileParticleStart();
+                            if (p.ParticleStopped || p.ParticleLateStart) p.ProjectileParticleStart();
                         }
-                        else if (p.Effect1 != null)
+                        else if (!p.ParticleStopped && p.Effect1 != null)
                         {
                             p.Effect1.Stop(false);
                             p.Effect1 = null;

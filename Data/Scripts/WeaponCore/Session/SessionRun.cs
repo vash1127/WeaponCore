@@ -29,17 +29,11 @@ namespace WeaponCore
         {
             try
             {
-                //Log.Line("test4");
                 if (!DedicatedServer)
                 {
-                    var p = 0;
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         lock (Projectiles.Wait[i])
-                        {
-                            if (Tick180) p += Projectiles.ProjectilePool[i].Active.Count;
                             DrawLists(Projectiles.DrawProjectiles[i]);
-                        }
-                    if (Tick180) Log.Line($"projectileCount:{p}");
                     if (_shrinking.Count > 0)
                         Shrink();
                 }
@@ -51,22 +45,26 @@ namespace WeaponCore
         {
             try
             {
-                if (Tick180) Log.Line($"particles:{MyParticlesManager.ParticleEffectsForUpdate.Count}");
-
-                if (Tick180)
+                if (Tick60)
                 {
-                    var test = MyParticlesManager.ParticleEffectsForUpdate;
+                    var a = 0;
                     var c = 0;
                     var m = 0;
                     var w = 0;
-                    foreach (var p in test)
+                    var p = 0;
+                    var g = MyParticlesManager.ParticleEffectsForUpdate.Count;
+
+                    for (int i = 0; i < Projectiles.Wait.Length; i++)
+                        p += Projectiles.ProjectilePool[i].Active.Count;
+
+                    foreach (var y in MyParticlesManager.ParticleEffectsForUpdate)
                     {
-                        if (p.Name == "ShipWelderArc" || p.Name == "Smoke_Missile") c++;
-                        else if (p.Name == "Explosion_Missile") m++;
-                        else if (p.Name == "Explosion_Warhead_02") w++;
-                        //else Log.Line($"{p.Name} - {p.IsSimulationPaused} - {p.Enabled}");
+                        if (y.Name == "ShipWelderArc") a++;
+                        else if (y.Name == "Smoke_Missile") c++;
+                        else if (y.Name == "Explosion_Missile") m++;
+                        else if (y.Name == "Explosion_Warhead_02") w++;
                     }
-                    Log.Line($"arkCount + Smoke_Missile:{c} - missileExp:{m} - what:{w}");
+                    Log.Line($"projectiles:{p} - particles:{g} - eCount:{ExplosionCounter} - arkCount:{a} - Smoke_Missile:{c} - missileExp:{m} - what:{w}");
                 }
                 Timings();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();

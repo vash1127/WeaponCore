@@ -24,6 +24,7 @@ namespace WeaponCore.Projectiles
         internal RayD ReverseOriginRay;
         internal LineD CurrentLine;
         internal Vector3D Direction;
+        internal Vector3D AccelDir;
         internal Vector3D Position;
         internal Vector3D LastPosition;
         internal Vector3D Origin;
@@ -34,6 +35,8 @@ namespace WeaponCore.Projectiles
         internal Vector3D TravelMagnitude;
         internal Vector3D CameraStartPos;
         internal Vector3D LastEntityPos;
+        internal Vector3D LastAccelDir;
+        internal Vector3D LastVelocity;
         internal Vector3D OriginTargetPos;
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
@@ -58,7 +61,7 @@ namespace WeaponCore.Projectiles
         internal double SmartsDelayDistSqr;
         internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
-        internal int Age = -1;
+        internal int Age;
         internal int ReSizeSteps;
         internal int GrowStep = 1;
         internal int EndStep;
@@ -109,6 +112,7 @@ namespace WeaponCore.Projectiles
             ReverseOriginRay = new RayD(Origin, -Direction);
             OriginRay = new RayD(Origin, Direction);
             DummyFired = new Projectiles.Fired(System, null, FiringCube, OriginRay, Direction, WeaponId, MuzzleId, IsBeamWeapon, 0);
+            Age = 0;
 
             ParticleStopped = false;
             ParticleLateStart = false;
@@ -169,7 +173,6 @@ namespace WeaponCore.Projectiles
 
             FiringSoundState = System.FiringSound;
             AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
-            //_desiredSpeed = wDef.DesiredSpeed * ((double)ammoDefinition.SpeedVar > 0.0 ? MyUtils.GetRandomFloat(1f - ammoDefinition.SpeedVar, 1f + ammoDefinition.SpeedVar) : 1f);
             //_checkIntersectionIndex = _checkIntersectionCnt % 5;
             //_checkIntersectionCnt += 3;
 
@@ -220,26 +223,37 @@ namespace WeaponCore.Projectiles
             else State = ProjectileState.OneAndDone;
 
             CheckLength = MaxSpeedLength * 2;
+            LastAccelDir = Direction;
+            LastVelocity = Velocity;
         }
 
         internal void ProjectileParticleStart()
         {
-            if (ModelState != EntityState.Exists && !ParticleLateStart && !ParticleStopped)
+            if (Age == 0 && !ParticleLateStart)
             {
                 TestSphere.Center = Position;
                 if (!MyAPIGateway.Session.Camera.IsInFrustum(ref TestSphere))
                 {
+                    //Log.Line("queue start");
                     ParticleLateStart = true;
-                    ParticleStopped = true;
                     return;
                 }
             }
 
             var to = Position;
-            to += -TravelMagnitude; // we are in a thread, draw is delayed a frame.
+            //to += -TravelMagnitude; // we are in a thread, draw is delayed a frame.
 
+            var parentId = uint.MaxValue;
             MatrixD matrix;
-            uint parentId;
+            if (ModelState == EntityState.Exists)
+            {
+                matrix = MatrixD.CreateWorld(Position, Direction, Entity.PositionComp.WorldMatrix.Up);
+                var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.AmmoOffset, matrix);
+                matrix.Translation = offVec;
+                EntityMatrix = matrix;
+            }
+            else matrix = MatrixD.CreateTranslation(to);
+            /*
             if (ModelState == EntityState.Exists && false)
             {
                 parentId = Entity.Render.GetRenderObjectID();
@@ -251,20 +265,19 @@ namespace WeaponCore.Projectiles
                 matrix = MatrixD.CreateTranslation(to);
                 parentId = uint.MaxValue;
             }
+            */
             MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
+            //Log.Line($"started particle: Late:{ParticleLateStart} - Stopped:{ParticleStopped} - Age:{Age}");
+            Effect1.DistanceMax = 5000;
+            Effect1.UserColorMultiplier = System.Values.Graphics.Particles.AmmoColor;
+            var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
+            var scaler = reScale < 1 ? reScale : 1;
 
-            if (ParticleStopped || !ParticleLateStart || ModelState == EntityState.Exists)
-            {
-                Effect1.DistanceMax = 5000;
-                Effect1.UserColorMultiplier = System.Values.Graphics.Particles.AmmoColor;
-                var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
-                var scaler = reScale < 1 ? reScale : 1;
-
-                Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.AmmoScale * scaler;
-                Effect1.UserEmitterScale = 1 * scaler;
-                if (ModelState != EntityState.Exists) Effect1.Velocity = Velocity;
-            }
+            Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.AmmoScale * scaler;
+            Effect1.UserEmitterScale = 1 * scaler;
+            if (ConstantSpeed) Effect1.Velocity = Velocity;
+            ParticleLateStart = false;
             ParticleStopped = false;
         }
 

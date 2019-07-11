@@ -53,10 +53,8 @@ namespace WeaponCore
             {
                 if (++ExplosionCounter <= 5)
                 {
-                    Log.Line($"Explosions:{ExplosionCounter}");
                     return true;
                 }
-                Log.Line($"Explosions:{ExplosionCounter}");
                 return false;
             }
         }
