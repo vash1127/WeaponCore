@@ -35,8 +35,6 @@ namespace WeaponCore.Projectiles
         internal Vector3D TravelMagnitude;
         internal Vector3D CameraStartPos;
         internal Vector3D LastEntityPos;
-        internal Vector3D LastAccelDir;
-        internal Vector3D LastVelocity;
         internal Vector3D OriginTargetPos;
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
@@ -212,6 +210,7 @@ namespace WeaponCore.Projectiles
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
+            AccelDir = Direction;
             if (!IsBeamWeapon)
             {
                 var reSizeSteps = (int) (ShotLength / MaxSpeedLength);
@@ -223,8 +222,6 @@ namespace WeaponCore.Projectiles
             else State = ProjectileState.OneAndDone;
 
             CheckLength = MaxSpeedLength * 2;
-            LastAccelDir = Direction;
-            LastVelocity = Velocity;
         }
 
         internal void ProjectileParticleStart()
@@ -247,7 +244,7 @@ namespace WeaponCore.Projectiles
             MatrixD matrix;
             if (ModelState == EntityState.Exists)
             {
-                matrix = MatrixD.CreateWorld(Position, Direction, Entity.PositionComp.WorldMatrix.Up);
+                matrix = MatrixD.CreateWorld(Position, AccelDir, Entity.PositionComp.WorldMatrix.Up);
                 var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.AmmoOffset, matrix);
                 matrix.Translation = offVec;
                 EntityMatrix = matrix;

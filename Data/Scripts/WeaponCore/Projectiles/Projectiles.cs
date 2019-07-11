@@ -112,8 +112,6 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     p.LastPosition = p.Position;
-                    p.LastAccelDir = p.AccelDir;
-                    p.LastVelocity = p.Velocity;
 
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
                     {
@@ -138,6 +136,7 @@ namespace WeaponCore.Projectiles
                                 }
                                 var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, trajInfo.AccelPerSec, trajInfo.SmartsFactor);
                                 newVel = p.Velocity + (commandedAccel * StepConst);
+                                p.AccelDir = commandedAccel / trajInfo.AccelPerSec;
                             }
                             else newVel = p.Velocity += (p.Direction * p.AccelLength);
 
@@ -161,7 +160,6 @@ namespace WeaponCore.Projectiles
                         }
                         p.Velocity = newVel;
                     }
-                    p.AccelDir = ()
                     if (p.State == Projectile.ProjectileState.OneAndDone)
                     {
                         var beamEnd = p.Position + (p.Direction * p.MaxTrajectory);
@@ -179,7 +177,7 @@ namespace WeaponCore.Projectiles
                     {
                         try
                         {
-                            p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.Direction, p.Entity.PositionComp.WorldMatrix.Up);
+                            p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.AccelDir, p.Entity.PositionComp.WorldMatrix.Up);
                             if (p.Effect1 != null && p.System.AmmoParticle)
                             {
                                 var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.AmmoOffset, p.EntityMatrix);
