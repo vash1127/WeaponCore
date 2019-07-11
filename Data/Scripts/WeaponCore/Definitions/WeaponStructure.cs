@@ -23,8 +23,9 @@ namespace WeaponCore.Support
         public readonly FiringSoundState FiringSound;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
-        public readonly bool AmmoHitSound;
         public readonly bool AmmoTravelSound;
+        public readonly bool HitParticle;
+        public readonly bool HitSound;
         public readonly bool WeaponReloadSound;
         public readonly bool NoAmmoSound;
         public readonly bool HardPointRotationSound;
@@ -41,6 +42,7 @@ namespace WeaponCore.Support
         public readonly bool HasBackKickForce;
         public readonly bool SpeedVariance;
         public readonly bool RangeVariance;
+        public readonly bool IsBeamWeapon;
         public readonly double MaxTrajectorySqr;
         public readonly float ShotEnergyCost;
         public readonly float FiringSoundDistSqr;
@@ -97,13 +99,14 @@ namespace WeaponCore.Support
             Barrel2AvTicks = values.Graphics.Particles.Barrel2Duration;
             BarrelAxisRotation = values.HardPoint.RotateBarrelAxis != 0;
 
-            AmmoHitSound = values.Audio.Ammo.HitSound != string.Empty;
+            HitParticle = values.Graphics.Particles.HitParticle != string.Empty;
+            HitSound = values.Audio.Ammo.HitSound != string.Empty;
             AmmoTravelSound = values.Audio.Ammo.TravelSound != string.Empty;
             WeaponReloadSound = values.Audio.HardPoint.ReloadSound != string.Empty;
             HardPointRotationSound = values.Audio.HardPoint.HardPointRotationSound != string.Empty;
             BarrelRotationSound = values.Audio.HardPoint.BarrelRotationSound != string.Empty;
             NoAmmoSound = values.Audio.HardPoint.NoAmmoSound != string.Empty;
-
+            IsBeamWeapon = Values.Ammo.Trajectory.DesiredSpeed <= 0 && Values.Ammo.Trajectory.MaxTrajectory > 0;
             var fSoundStart = values.Audio.HardPoint.FiringSound;
             if (fSoundStart != string.Empty && values.Audio.HardPoint.FiringSoundPerShot)
                 FiringSound = FiringSoundState.PerShot;
@@ -127,7 +130,7 @@ namespace WeaponCore.Support
                     if (ob != null) FiringSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
                     if (FiringSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = FiringSoundDistSqr;
                 }
-                if (AmmoHitSound && id == hitSound)
+                if (HitSound && id == hitSound)
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) HitSoundDistSqr = ob.MaxDistance * ob.MaxDistance;

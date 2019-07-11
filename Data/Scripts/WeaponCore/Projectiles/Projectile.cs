@@ -38,11 +38,11 @@ namespace WeaponCore.Projectiles
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
         internal Vector3D PrevTargetVel;
+        internal Vector3D? HitPos;
         internal WeaponSystem System;
         internal List<MyEntity> CheckList;
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
-        internal MyEntity HitEntity;
         internal float DesiredSpeed;
         internal float DesiredSpeedSqr;
         internal double MaxSpeedLength;
@@ -63,6 +63,8 @@ namespace WeaponCore.Projectiles
         internal int GrowStep = 1;
         internal int EndStep;
         internal int ModelId;
+        internal int WeaponId;
+        internal int MuzzleId;
         internal bool Grow;
         internal bool Shrink;
         internal bool Draw;
@@ -76,8 +78,8 @@ namespace WeaponCore.Projectiles
         internal bool LockedTarget;
         internal bool FoundTarget;
         internal bool SeekTarget;
-        internal bool VariableRange;
         internal bool DynamicGuidance;
+        internal bool IsBeamWeapon;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal MyParticleEffect Effect1;
@@ -98,11 +100,11 @@ namespace WeaponCore.Projectiles
             LastEntityPos = Origin;
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
-            HitEntity = null;
+            HitPos = null;
             FiringGrid = FiringCube.CubeGrid;
             ReverseOriginRay = new RayD(Origin, -Direction);
             OriginRay = new RayD(Origin, Direction);
-            DummyFired = new Projectiles.Fired(System, null, FiringCube, OriginRay, Direction, 0);
+            DummyFired = new Projectiles.Fired(System, null, FiringCube, OriginRay, Direction, WeaponId, MuzzleId, IsBeamWeapon, 0);
 
             FirstOffScreen = true;
             AmmoSound = false;
@@ -175,7 +177,7 @@ namespace WeaponCore.Projectiles
                 }
                 else HasTravelSound = false;
 
-                if (System.AmmoHitSound)
+                if (System.HitSound)
                     HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
 
                 if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
@@ -200,7 +202,7 @@ namespace WeaponCore.Projectiles
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
-            if (DesiredSpeed > 0 && MaxTrajectory > 0)
+            if (!IsBeamWeapon)
             {
                 var reSizeSteps = (int) (ShotLength / MaxSpeedLength);
                 ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
@@ -245,8 +247,6 @@ namespace WeaponCore.Projectiles
 
         internal void FireSoundStart()
         {
-            //Sound1.CustomMaxDistance = Values.Audio.HardPoint.FiringRange;
-            //Sound1.CustomVolume = Values.Audio.HardPoint.FiringVolume;
             Sound1.SetPosition(Origin);
             Sound1.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
         }
@@ -273,7 +273,7 @@ namespace WeaponCore.Projectiles
         {
             if (ModelState == EntityState.Exists)
             {
-                drawList.Add(new Projectiles.DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, Vector3D.Zero, null, true, 0, 0, false, true));
+                drawList.Add(new Projectiles.DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, HitPos, null, true, 0, 0, false, true));
                 entPool.MarkForDeallocate(Entity);
                 ModelState = EntityState.Stale;
             }
@@ -281,8 +281,8 @@ namespace WeaponCore.Projectiles
             if (EndStep++ >= EndSteps)
             {
                 if (System.AmmoParticle) DisposeEffect();
-
-                if (System.AmmoHitSound)
+                if (System.HitParticle && !IsBeamWeapon) PlayHitParticle();
+                if (System.HitSound && HitPos.HasValue)
                 {
                     Sound1.SetPosition(Position);
                     Sound1.CanPlayLoopSounds = false;
@@ -296,11 +296,33 @@ namespace WeaponCore.Projectiles
             }
         }
 
+        private void PlayHitParticle()
+        {
+            if (!HitPos.HasValue) return;
+            var pos = HitPos.Value;
+
+            var matrix = MatrixD.CreateTranslation(pos); 
+            var parentId = uint.MaxValue;
+            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.HitParticle, ref matrix, ref pos, parentId, out Effect1);
+            if (Effect1 == null) return;
+            Effect1.Loop = false;
+            Effect1.DurationMax = 1f;
+            Effect1.DistanceMax = 5000;
+            Effect1.UserColorMultiplier = System.Values.Graphics.Particles.HitColor;
+            var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
+            var scaler = reScale < 1 ? reScale : 1;
+
+            Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.HitScale * scaler;
+            Effect1.UserEmitterScale = 1 * scaler;
+            if (ModelState != EntityState.Exists) Effect1.Velocity = Velocity;
+        }
+
         private void DisposeEffect()
         {
             if (Effect1 != null)
             {
-                MyParticlesManager.RemoveParticleEffect(Effect1);
+                Log.Line("Dispose Ammo Effect");
+                //MyParticlesManager.RemoveParticleEffect(Effect1);
                 Effect1.Stop(false);
                 Effect1 = null;
             }

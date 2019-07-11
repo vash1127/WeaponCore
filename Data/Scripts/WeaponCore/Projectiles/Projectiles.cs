@@ -190,7 +190,6 @@ namespace WeaponCore.Projectiles
                     else if (!p.ConstantSpeed && p.Effect1 != null && p.System.AmmoParticle)
                         p.Effect1.Velocity = p.Velocity;
 
-                    Vector3D? intersect = null;
                     var segmentList = segmentPool.Get();
                     LineD beam;
                     if (p.State == Projectile.ProjectileState.OneAndDone || p.Guidance != AmmoTrajectory.GuidanceType.None) beam = new LineD(p.LastPosition, p.Position);
@@ -201,25 +200,25 @@ namespace WeaponCore.Projectiles
                     {
                         try
                         {
-                            var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age);
+                            var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.WeaponId, p.MuzzleId, p.IsBeamWeapon, 0);
                             GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
                             var hitInfo = GetHitEntities(p.CheckList, fired, beam);
                             if (GetDamageInfo(fired, p.Entity, p.EntityMatrix, beam, hitInfo, hitEnts, hitBlocks, damagePool, 0, false))
                             {
-                                intersect = hitInfo.HitPos;
+                                p.HitPos = hitInfo.HitPos;
                                 DamageEntities(fired, hitEnts, hitBlocks, damagePool);
                             }
                             linePool.Return(fired.Shots);
                             p.CheckList.Clear();
                             segmentList.Clear();
 
-                            if (intersect != null)
+                            if (p.HitPos != null)
                             {
                                 if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
                                 {
                                     var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
                                     var hitLine = new LineD(p.LastPosition, hitInfo.HitPos);
-                                    drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, hitInfo.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
+                                    drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, p.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
                                 }
                                 p.ProjectileClose(pool, checkPool, noAv);
                             }
@@ -227,14 +226,14 @@ namespace WeaponCore.Projectiles
                         catch (Exception ex) { Log.Line($"Exception in GetTopmostEntitiesOverlappingRay: {ex}"); }
                     }
                     segmentPool.Return(segmentList);
-                    if (intersect != null) continue;
+                    if (p.HitPos != null) continue;
 
                     if (p.State != Projectile.ProjectileState.OneAndDone)
                     {
                         if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
                             if (p.MoveToAndActivate || p.System.AmmoAreaEffect)
-                                GetEntitiesInBlastRadius(new Fired(p.System, null, p.FiringCube, p.ReverseOriginRay, p.Direction, p.Age), p.Position, i);
+                                GetEntitiesInBlastRadius(new Fired(p.System, null, p.FiringCube, p.ReverseOriginRay, p.Direction, p.WeaponId, p.MuzzleId, p.IsBeamWeapon, p.Age), p.Position, i);
 
                             p.ProjectileClose(pool, checkPool, noAv);
                             continue;
@@ -262,7 +261,7 @@ namespace WeaponCore.Projectiles
                         {
                             p.FirstOffScreen = false;
                             p.LastEntityPos = p.Position;
-                            drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
+                            drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false));
                         }
                         continue;
                     }
@@ -287,7 +286,7 @@ namespace WeaponCore.Projectiles
                     var bb = new BoundingBoxD(Vector3D.Min(p.CurrentLine.From, p.CurrentLine.To), Vector3D.Max(p.CurrentLine.From, p.CurrentLine.To));
                     if (camera.IsInFrustum(ref bb))
                     {
-                        drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, Vector3D.Zero, null, true, 0, 0, false, false));
+                        drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false));
                     }
                 }
 

@@ -51,6 +51,7 @@ namespace WeaponCore.Platform
         internal Vector3D TargetDir;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
+        internal MyParticleEffect[] HitEffects;
 
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
@@ -155,6 +156,7 @@ namespace WeaponCore.Platform
             {
                 if (System.BarrelEffect1) BarrelEffects1 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
                 if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
+                if (System.HitParticle && System.IsBeamWeapon) HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
 
             WeaponId = weaponId;

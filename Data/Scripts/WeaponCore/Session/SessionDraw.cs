@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRageMath;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 namespace WeaponCore
@@ -73,6 +76,65 @@ namespace WeaponCore
                 }
                 else
                     MyTransparentGeometry.AddLocalLineBillboard(p.Fired.System.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
+
+                var f = p.Fired;
+                if (f.IsBeam)
+                {
+                    var c = f.FiringCube;
+                    if (f.FiringCube == null || f.FiringCube.MarkedForClose) continue;
+                    var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[f.WeaponId];
+                    if (weapon != null)
+                    {
+                        var effect = weapon.HitEffects[f.MuzzleId];
+                        //Log.Line($"particles:{MyParticlesManager.ParticleEffectsForUpdate.Count}");
+                        if (p.HitPos.HasValue)
+                        {
+                            if (effect != null)
+                            {
+                                var elapsedTime = effect.GetElapsedTime();
+                                if (elapsedTime <= 0 || elapsedTime >= 1)
+                                {
+                                    effect.Stop(true);
+                                    effect = null;
+                                }
+                            }
+                            var hitPos = p.HitPos.Value;
+                            MatrixD matrix;
+                            MatrixD.CreateTranslation(ref hitPos, out matrix);
+                            if (effect == null)
+                            {
+                                MyParticlesManager.TryCreateParticleEffect(f.System.Values.Graphics.Particles.HitParticle, ref matrix, ref hitPos, uint.MaxValue, out effect);
+                                if (effect == null)
+                                {
+                                    weapon.HitEffects[f.MuzzleId] = null;
+                                    continue;
+                                }
+
+                                effect.DistanceMax = 5000;
+                                effect.DurationMax = 1f;
+                                effect.UserColorMultiplier = f.System.Values.Graphics.Particles.HitColor;
+                                //var reScale = (float)Math.Log(195312.5, MyAPIGateway.); // wtf is up with particles and camera distance
+                                //var scaler = reScale < 1 ? reScale : 1;
+                                var scaler = 1;
+                                effect.Loop = false;
+
+                                effect.UserRadiusMultiplier = f.System.Values.Graphics.Particles.HitScale * scaler;
+                                effect.UserEmitterScale = 1 * scaler;
+                            }
+                            else if (effect.IsEmittingStopped)
+                                effect.Play();
+
+                            effect.WorldMatrix = matrix;
+                            effect.Velocity = p.Speed;
+                            weapon.HitEffects[f.MuzzleId] = effect;
+                        }
+                        else if (effect != null)
+                        {
+                            effect.Stop(false);
+                            weapon.HitEffects[f.MuzzleId] = null;
+                        }
+                    }
+                }
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();

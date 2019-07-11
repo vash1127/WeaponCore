@@ -227,7 +227,7 @@ namespace WeaponCore.Projectiles
             internal readonly MatrixD EntityMatrix;
             internal readonly LineD Projectile;
             internal readonly Vector3D Speed;
-            internal readonly Vector3D HitPos;
+            internal readonly Vector3D? HitPos;
             internal readonly IMyEntity HitEntity;
             internal readonly bool PrimeProjectile;
             internal readonly double LineReSizeLen;
@@ -237,7 +237,7 @@ namespace WeaponCore.Projectiles
             internal readonly bool Last;
             internal readonly Vector4 Color;
 
-            internal DrawProjectile(ref Fired fired, MyEntity entity, MatrixD entityMatrix, int projectileId, LineD projectile, Vector3D speed, Vector3D hitPos, IMyEntity hitEntity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last)
+            internal DrawProjectile(ref Fired fired, MyEntity entity, MatrixD entityMatrix, int projectileId, LineD projectile, Vector3D speed, Vector3D? hitPos, IMyEntity hitEntity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last)
             {
                 Fired = fired;
                 Entity = entity;
@@ -297,15 +297,24 @@ namespace WeaponCore.Projectiles
             public readonly MyCubeBlock FiringCube;
             public readonly RayD ReverseOriginRay;
             public readonly Vector3D Direction;
+            public readonly int WeaponId;
+            public readonly int MuzzleId;
+            public readonly bool IsBeam;
+
             public readonly int Age;
 
-            public Fired(WeaponSystem system, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay, Vector3D direction, int age)
+
+
+            public Fired(WeaponSystem system, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay, Vector3D direction, int weaponId, int muzzleId, bool isBeam,  int age)
             {
                 System = system;
                 Shots = shots;
                 FiringCube = firingCube;
                 ReverseOriginRay = reverseOriginRay;
                 Direction = direction;
+                WeaponId = weaponId;
+                MuzzleId = muzzleId;
+                IsBeam = isBeam;
                 Age = age;
             }
         }

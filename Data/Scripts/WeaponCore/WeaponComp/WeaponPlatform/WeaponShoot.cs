@@ -115,6 +115,10 @@ namespace WeaponCore.Platform
                         pro.Direction = muzzle.DeviatedDir;
                         pro.State = Projectile.ProjectileState.Start;
                         pro.Target = Target;
+                        pro.WeaponId = WeaponId;
+                        pro.MuzzleId = muzzle.MuzzleId;
+                        pro.IsBeamWeapon = System.IsBeamWeapon;
+
                         if (System.ModelId != -1)
                         {
                             MyEntity ent;
