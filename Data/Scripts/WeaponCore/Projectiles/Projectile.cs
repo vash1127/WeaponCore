@@ -175,8 +175,6 @@ namespace WeaponCore.Projectiles
 
             if (!noAv)
             {
-                if (System.AmmoParticle) ProjectileParticleStart();
-
                 if (System.AmmoTravelSound)
                 {
                     HasTravelSound = true;
@@ -201,6 +199,8 @@ namespace WeaponCore.Projectiles
                 }
                 else ModelState = EntityState.None;
             }
+
+            if (System.AmmoParticle) ProjectileParticleStart();
 
             ConstantSpeed = System.Values.Ammo.Trajectory.AccelPerSec <= 0;
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
@@ -240,7 +240,7 @@ namespace WeaponCore.Projectiles
 
             MatrixD matrix;
             uint parentId;
-            if (ModelState == EntityState.Exists)
+            if (ModelState == EntityState.Exists && false)
             {
                 parentId = Entity.Render.GetRenderObjectID();
                 matrix = MatrixD.Identity;
@@ -254,7 +254,7 @@ namespace WeaponCore.Projectiles
             MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
 
-            if (ParticleStopped)
+            if (ParticleStopped || !ParticleLateStart || ModelState == EntityState.Exists)
             {
                 Effect1.DistanceMax = 5000;
                 Effect1.UserColorMultiplier = System.Values.Graphics.Particles.AmmoColor;
