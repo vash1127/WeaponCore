@@ -24,6 +24,7 @@ namespace WeaponCore.Projectiles
         internal RayD ReverseOriginRay;
         internal LineD CurrentLine;
         internal Vector3D Direction;
+        internal Vector3D OriginUp;
         internal Vector3D AccelDir;
         internal Vector3D Position;
         internal Vector3D LastPosition;
@@ -59,6 +60,7 @@ namespace WeaponCore.Projectiles
         internal double SmartsDelayDistSqr;
         internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
+        internal double AccelPerSec;
         internal int Age;
         internal int ReSizeSteps;
         internal int GrowStep = 1;
@@ -102,7 +104,8 @@ namespace WeaponCore.Projectiles
             ModelState = EntityState.Stale;
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
             Position = Origin;
-            LastEntityPos = Origin;
+            AccelDir = Direction;
+            LastEntityPos = Position;
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             HitPos = null;
@@ -201,16 +204,15 @@ namespace WeaponCore.Projectiles
                 else ModelState = EntityState.None;
             }
 
-            if (System.AmmoParticle) ProjectileParticleStart();
-
-            ConstantSpeed = System.Values.Ammo.Trajectory.AccelPerSec <= 0;
+            var accelPerSec = System.Values.Ammo.Trajectory.AccelPerSec;
+            ConstantSpeed = accelPerSec <= 0;
+            AccelPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
             MaxSpeedLength = MaxVelocity.Length() * StepConst;
             AccelLength = System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
-            AccelDir = Direction;
             if (!IsBeamWeapon)
             {
                 var reSizeSteps = (int) (ShotLength / MaxSpeedLength);
@@ -222,6 +224,7 @@ namespace WeaponCore.Projectiles
             else State = ProjectileState.OneAndDone;
 
             CheckLength = MaxSpeedLength * 2;
+            if (System.AmmoParticle) ProjectileParticleStart();
         }
 
         internal void ProjectileParticleStart()
@@ -231,14 +234,11 @@ namespace WeaponCore.Projectiles
                 TestSphere.Center = Position;
                 if (!MyAPIGateway.Session.Camera.IsInFrustum(ref TestSphere))
                 {
-                    //Log.Line("queue start");
                     ParticleLateStart = true;
                     return;
                 }
             }
-
-            var to = Position;
-            //to += -TravelMagnitude; // we are in a thread, draw is delayed a frame.
+            //if (ParticleLateStart) Log.Line($"late start: c:{ConstantSpeed} - v:{Velocity.Length()}");
 
             var parentId = uint.MaxValue;
             MatrixD matrix;
@@ -249,23 +249,22 @@ namespace WeaponCore.Projectiles
                 matrix.Translation = offVec;
                 EntityMatrix = matrix;
             }
-            else matrix = MatrixD.CreateTranslation(to);
-            /*
-            if (ModelState == EntityState.Exists && false)
-            {
-                parentId = Entity.Render.GetRenderObjectID();
-                matrix = MatrixD.Identity;
-                to += Vector3D.Rotate(System.Values.Graphics.Particles.AmmoOffset, EntityMatrix);
-            }
             else
             {
-                matrix = MatrixD.CreateTranslation(to);
-                parentId = uint.MaxValue;
+                matrix = MatrixD.CreateWorld(Position, AccelDir, OriginUp);
+                var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.AmmoOffset, matrix);
+                matrix.Translation = offVec;
             }
-            */
-            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+
+            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.AmmoParticle, ref matrix, ref Position, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
-            //Log.Line($"started particle: Late:{ParticleLateStart} - Stopped:{ParticleStopped} - Age:{Age}");
+            if (ParticleStopped)
+            {
+                if (ConstantSpeed) Effect1.Velocity = Velocity;
+                ParticleStopped = false;
+                return;
+            }
+            //Log.Line($"create particle: p:{Position} - v:{Velocity} - c:{ConstantSpeed} - dSpeed:{DesiredSpeed} - sSpeed:{StartSpeed.Length()} - age:{Age}");
             Effect1.DistanceMax = 5000;
             Effect1.UserColorMultiplier = System.Values.Graphics.Particles.AmmoColor;
             var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
@@ -275,7 +274,6 @@ namespace WeaponCore.Projectiles
             Effect1.UserEmitterScale = 1 * scaler;
             if (ConstantSpeed) Effect1.Velocity = Velocity;
             ParticleLateStart = false;
-            ParticleStopped = false;
         }
 
         internal void FireSoundStart()

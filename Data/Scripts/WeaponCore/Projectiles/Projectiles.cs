@@ -120,7 +120,6 @@ namespace WeaponCore.Projectiles
                             Vector3D newVel;
                             if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                             {
-                                var trajInfo = p.System.Values.Ammo.Trajectory;
                                 var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
                                 if (physics != null && !p.Target.MarkedForClose)
                                 {
@@ -134,9 +133,9 @@ namespace WeaponCore.Projectiles
                                     p.DistanceToTravelSqr = (Vector3D.DistanceSquared(p.Position, p.PrevTargetPos) + 100);
                                     p.State = Projectile.ProjectileState.Zombie;
                                 }
-                                var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, trajInfo.AccelPerSec, trajInfo.SmartsFactor);
+                                var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.System.Values.Ammo.Trajectory.SmartsFactor);
                                 newVel = p.Velocity + (commandedAccel * StepConst);
-                                p.AccelDir = commandedAccel / trajInfo.AccelPerSec;
+                                p.AccelDir = commandedAccel / p.AccelPerSec;
                             }
                             else newVel = p.Velocity += (p.Direction * p.AccelLength);
 
@@ -249,7 +248,8 @@ namespace WeaponCore.Projectiles
                         p.TestSphere.Center = p.Position;
                         if (camera.IsInFrustum(ref p.TestSphere))
                         {
-                            if (p.ParticleStopped || p.ParticleLateStart) p.ProjectileParticleStart();
+                            if (p.ParticleStopped || p.ParticleLateStart)
+                                p.ProjectileParticleStart();
                         }
                         else if (!p.ParticleStopped && p.Effect1 != null)
                         {
@@ -282,7 +282,6 @@ namespace WeaponCore.Projectiles
                             drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false, true));
                         }
                         else p.OnScreen = false;
-
                         continue;
                     }
 

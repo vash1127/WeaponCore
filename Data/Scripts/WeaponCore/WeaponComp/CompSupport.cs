@@ -31,10 +31,12 @@ namespace WeaponCore.Support
             var weaponPComp = weapon.EntityPart.PositionComp;
             var weaponCenter = weaponPComp.WorldMatrix.Translation;
             var weaponForward = weaponPComp.WorldMatrix.Forward;
+            var weaponUp = weaponPComp.WorldMatrix.Up;
 
             var blockCenter = MyCube.PositionComp.WorldAABB.Center;
             var blockUp = MyCube.PositionComp.WorldMatrix.Up;
             MyPivotDir = weaponForward;
+            MyPivotUp = weaponUp;
             MyPivotPos = UtilsStatic.GetClosestPointOnLine1(blockCenter, blockUp, weaponCenter, weaponForward);
             //MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center, MyPivotPos);
         }

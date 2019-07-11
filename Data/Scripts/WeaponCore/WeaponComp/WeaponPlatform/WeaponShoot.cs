@@ -111,6 +111,7 @@ namespace WeaponCore.Platform
                         pro.System = System;
                         pro.FiringCube = Comp.MyCube;
                         pro.Origin = muzzle.Position;
+                        pro.OriginUp = Comp.MyPivotUp;
                         pro.PredictedTargetPos = TargetPos;
                         pro.Direction = muzzle.DeviatedDir;
                         pro.State = Projectile.ProjectileState.Start;

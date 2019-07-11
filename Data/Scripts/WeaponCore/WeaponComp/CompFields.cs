@@ -71,6 +71,7 @@ namespace WeaponCore.Support
         internal MyInventory BlockInventory;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
+        internal Vector3D MyPivotUp;
         internal LineD MyPivotTestLine;
         internal double MyPivotOffset;
         internal IMyGunObject<MyGunBase> Gun;
