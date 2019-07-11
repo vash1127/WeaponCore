@@ -80,14 +80,18 @@ namespace WeaponCore.Projectiles
         internal bool SeekTarget;
         internal bool DynamicGuidance;
         internal bool IsBeamWeapon;
+        internal bool OnScreen;
+        internal bool ParticleStopped;
+        internal bool ParticleLateStart;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
-        internal MyParticleEffect Effect1;
-        internal readonly MyEntity3DSoundEmitter Sound1 = new MyEntity3DSoundEmitter(null, false, 1f);
+        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal MyEntity Entity;
         internal MyEntity Target;
+        internal MyParticleEffect Effect1;
+        internal readonly MyEntity3DSoundEmitter Sound1 = new MyEntity3DSoundEmitter(null, false, 1f);
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
@@ -106,6 +110,9 @@ namespace WeaponCore.Projectiles
             OriginRay = new RayD(Origin, Direction);
             DummyFired = new Projectiles.Fired(System, null, FiringCube, OriginRay, Direction, WeaponId, MuzzleId, IsBeamWeapon, 0);
 
+            ParticleStopped = false;
+            ParticleLateStart = false;
+            OnScreen = true;
             FirstOffScreen = true;
             AmmoSound = false;
             PositionChecked = false;
@@ -215,9 +222,20 @@ namespace WeaponCore.Projectiles
             CheckLength = MaxSpeedLength * 2;
         }
 
-        private void ProjectileParticleStart()
+        internal void ProjectileParticleStart()
         {
-            var to = Origin;
+            if (ModelState != EntityState.Exists && !ParticleLateStart && !ParticleStopped)
+            {
+                TestSphere.Center = Position;
+                if (!MyAPIGateway.Session.Camera.IsInFrustum(ref TestSphere))
+                {
+                    ParticleLateStart = true;
+                    ParticleStopped = true;
+                    return;
+                }
+            }
+
+            var to = Position;
             to += -TravelMagnitude; // we are in a thread, draw is delayed a frame.
 
             MatrixD matrix;
@@ -235,14 +253,19 @@ namespace WeaponCore.Projectiles
             }
             MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.AmmoParticle, ref matrix, ref to, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (Effect1 == null) return;
-            Effect1.DistanceMax = 5000;
-            Effect1.UserColorMultiplier = System.Values.Graphics.Particles.AmmoColor;
-            var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
-            var scaler = reScale < 1 ? reScale : 1;
 
-            Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.AmmoScale * scaler;
-            Effect1.UserEmitterScale = 1 * scaler;
-            if (ModelState != EntityState.Exists) Effect1.Velocity = Velocity;
+            if (ParticleStopped)
+            {
+                Effect1.DistanceMax = 5000;
+                Effect1.UserColorMultiplier = System.Values.Graphics.Particles.AmmoColor;
+                var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
+                var scaler = reScale < 1 ? reScale : 1;
+
+                Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.AmmoScale * scaler;
+                Effect1.UserEmitterScale = 1 * scaler;
+                if (ModelState != EntityState.Exists) Effect1.Velocity = Velocity;
+            }
+            ParticleStopped = false;
         }
 
         internal void FireSoundStart()
@@ -273,7 +296,7 @@ namespace WeaponCore.Projectiles
         {
             if (ModelState == EntityState.Exists)
             {
-                drawList.Add(new Projectiles.DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, HitPos, null, true, 0, 0, false, true));
+                drawList.Add(new Projectiles.DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, HitPos, null, true, 0, 0, false, true, OnScreen));
                 entPool.MarkForDeallocate(Entity);
                 ModelState = EntityState.Stale;
             }
@@ -321,8 +344,6 @@ namespace WeaponCore.Projectiles
         {
             if (Effect1 != null)
             {
-                //Log.Line("Dispose Ammo Effect");
-                //MyParticlesManager.RemoveParticleEffect(Effect1);
                 Effect1.Stop(false);
                 Effect1 = null;
             }

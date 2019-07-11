@@ -192,7 +192,9 @@ namespace WeaponCore.Platform
         public void MovePart(int time)
         {
             BarrelMove = true;
-            var radiansPerShot = 2 * Math.PI / _numOfBarrels;
+            double radiansPerShot;
+            if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
+            else  radiansPerShot = 2 * Math.PI / _numOfBarrels;
             var radians = radiansPerShot / _timePerShot;
             var axis = System.Values.HardPoint.RotateBarrelAxis;
             MatrixD rotationMatrix;

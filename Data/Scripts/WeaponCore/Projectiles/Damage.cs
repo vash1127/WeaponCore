@@ -70,7 +70,10 @@ namespace WeaponCore.Projectiles
                 var damage = baseDamage * Hits;
                 Block.DoDamage(damage, TestDamage, true, null, Fired.FiringCube.EntityId);
                 if (Fired.System.AmmoAreaEffect)
-                    UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction,Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, Fired.System.Values.Ammo.AreaEffectRadius, Fired.System.Values.Ammo.AreaEffectYield);
+                {
+                    if (Session.Instance.ExplosionReady) UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction, Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, Fired.System.Values.Ammo.AreaEffectRadius, Fired.System.Values.Ammo.AreaEffectYield);
+                    else UtilsStatic.CreateMissileExplosion(HitPos, Fired.Direction, Fired.FiringCube, (MyCubeGrid)Block.CubeGrid, Fired.System.Values.Ammo.AreaEffectRadius, Fired.System.Values.Ammo.AreaEffectYield, true);
+                }
                 else if (Fired.System.Values.Ammo.Mass > 0)
                 {
                     var speed = Fired.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? Fired.System.Values.Ammo.Trajectory.DesiredSpeed : 1;

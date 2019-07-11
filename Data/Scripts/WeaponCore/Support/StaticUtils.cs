@@ -279,13 +279,13 @@
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateMissileExplosion(Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, float radius, float damage)
+        public static void CreateMissileExplosion(Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, float radius, float damage, bool noParticles = false)
         {
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
             cullSphere.Radius = radius * 5;
             MyExplosionFlags eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
-            if (!MyAPIGateway.Session.Camera.IsInFrustum(ref cullSphere))
+            if (noParticles || !MyAPIGateway.Session.Camera.IsInFrustum(ref cullSphere))
                 eFlags = MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
             var explosionInfo = new MyExplosionInfo
             {

@@ -45,6 +45,17 @@ namespace WeaponCore
         internal int PlayerEventId;
         internal int ProCounter;
         internal int ModelCount;
+        internal int ExplosionCounter;
+
+        internal bool ExplosionReady
+        {
+            get
+            {
+                if (++ExplosionCounter <= 5) return true;
+                return false;
+            }
+        }
+
         internal ulong AuthorSteamId = 76561197969691953;
         internal long AuthorPlayerId;
         internal long LastTerminalId;

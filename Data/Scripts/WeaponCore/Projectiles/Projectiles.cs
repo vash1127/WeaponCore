@@ -187,7 +187,7 @@ namespace WeaponCore.Projectiles
                         }
                         catch (Exception ex) { Log.Line($"Exception in EntityMatrix: {ex}"); }
                     }
-                    else if (!p.ConstantSpeed && p.Effect1 != null && p.System.AmmoParticle)
+                    else if (!p.ConstantSpeed && p.ParticleStopped && p.Effect1 != null && p.System.AmmoParticle)
                         p.Effect1.Velocity = p.Velocity;
 
                     var segmentList = segmentPool.Get();
@@ -218,7 +218,9 @@ namespace WeaponCore.Projectiles
                                 {
                                     var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
                                     var hitLine = new LineD(p.LastPosition, hitInfo.HitPos);
-                                    drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, p.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false));
+                                    var sphere = new BoundingSphereD(p.HitPos.Value, 25f);
+                                    var hitOnScreen = camera.IsInFrustum(ref sphere);
+                                    drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, p.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, hitOnScreen));
                                 }
                                 p.ProjectileClose(pool, checkPool, noAv);
                             }
@@ -242,6 +244,21 @@ namespace WeaponCore.Projectiles
 
                     if (noAv || !p.Draw) continue;
 
+                    if (p.ModelState != Projectile.EntityState.Exists && p.System.AmmoParticle)
+                    {
+                        p.TestSphere.Center = p.Position;
+                        if (p.ParticleStopped && camera.IsInFrustum(ref p.TestSphere))
+                        {
+                            p.ProjectileParticleStart();
+                        }
+                        else if (p.Effect1 != null)
+                        {
+                            p.Effect1.Stop(false);
+                            p.Effect1 = null;
+                            p.ParticleStopped = true;
+                        }
+                    }
+
                     if (p.HasTravelSound)
                     {
                         if (!p.AmmoSound)
@@ -260,9 +277,12 @@ namespace WeaponCore.Projectiles
                         if (camera.IsInFrustum(ref lastSphere) || camera.IsInFrustum(ref currentSphere) || p.FirstOffScreen)
                         {
                             p.FirstOffScreen = false;
+                            p.OnScreen = true;
                             p.LastEntityPos = p.Position;
-                            drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false));
+                            drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false, true));
                         }
+                        else p.OnScreen = false;
+
                         continue;
                     }
 
@@ -286,8 +306,10 @@ namespace WeaponCore.Projectiles
                     var bb = new BoundingBoxD(Vector3D.Min(p.CurrentLine.From, p.CurrentLine.To), Vector3D.Max(p.CurrentLine.From, p.CurrentLine.To));
                     if (camera.IsInFrustum(ref bb))
                     {
-                        drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false));
+                        p.OnScreen = true;
+                        drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false, true));
                     }
+                    else p.OnScreen = false;
                 }
 
                 if (modelClose)

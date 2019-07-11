@@ -176,7 +176,7 @@ namespace WeaponCore.Projectiles
                 }
                 return true;
             }
-            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(ref fired, entity, entityMatrix, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false, 0,0, false, false));
+            if (draw && !Session.Instance.DedicatedServer) Session.Instance.DrawBeams.Enqueue(new DrawProjectile(ref fired, entity, entityMatrix, beamId, beam, Vector3D.Zero, Vector3D.Zero, null, false, 0,0, false, false, false));
             return false;
         }
 
@@ -235,9 +235,10 @@ namespace WeaponCore.Projectiles
             internal readonly int ReSizeSteps;
             internal readonly bool Shrink;
             internal readonly bool Last;
+            internal readonly bool OnScreen;
             internal readonly Vector4 Color;
 
-            internal DrawProjectile(ref Fired fired, MyEntity entity, MatrixD entityMatrix, int projectileId, LineD projectile, Vector3D speed, Vector3D? hitPos, IMyEntity hitEntity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last)
+            internal DrawProjectile(ref Fired fired, MyEntity entity, MatrixD entityMatrix, int projectileId, LineD projectile, Vector3D speed, Vector3D? hitPos, IMyEntity hitEntity, bool primeProjectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last, bool onScreen)
             {
                 Fired = fired;
                 Entity = entity;
@@ -252,6 +253,7 @@ namespace WeaponCore.Projectiles
                 ReSizeSteps = reSizeSteps;
                 Shrink = shrink;
                 Last = last;
+                OnScreen = onScreen;
                 var color = Fired.System.Values.Graphics.Line.Color;
                 if (Fired.System.LineColorVariance)
                 {

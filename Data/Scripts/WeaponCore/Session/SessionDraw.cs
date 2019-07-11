@@ -86,7 +86,7 @@ namespace WeaponCore
                     if (weapon != null)
                     {
                         var effect = weapon.HitEffects[f.MuzzleId];
-                        if (p.HitPos.HasValue)
+                        if (p.HitPos.HasValue && p.OnScreen)
                         {
                             if (effect != null)
                             {
