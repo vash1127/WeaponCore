@@ -86,7 +86,6 @@ namespace WeaponCore
                     if (weapon != null)
                     {
                         var effect = weapon.HitEffects[f.MuzzleId];
-                        //Log.Line($"particles:{MyParticlesManager.ParticleEffectsForUpdate.Count}");
                         if (p.HitPos.HasValue)
                         {
                             if (effect != null)

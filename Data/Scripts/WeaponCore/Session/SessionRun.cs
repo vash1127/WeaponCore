@@ -5,6 +5,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using WeaponCore.Support;
@@ -31,8 +32,14 @@ namespace WeaponCore
                 //Log.Line("test4");
                 if (!DedicatedServer)
                 {
+                    var p = 0;
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
-                        lock (Projectiles.Wait[i]) DrawLists(Projectiles.DrawProjectiles[i]);
+                        lock (Projectiles.Wait[i])
+                        {
+                            if (Tick180) p += Projectiles.ProjectilePool[i].Active.Count;
+                            DrawLists(Projectiles.DrawProjectiles[i]);
+                        }
+                    if (Tick180) Log.Line($"projectileCount:{p}");
                     if (_shrinking.Count > 0)
                         Shrink();
                 }
@@ -44,6 +51,23 @@ namespace WeaponCore
         {
             try
             {
+                if (Tick180) Log.Line($"particles:{MyParticlesManager.ParticleEffectsForUpdate.Count}");
+
+                if (Tick180)
+                {
+                    var test = MyParticlesManager.ParticleEffectsForUpdate;
+                    var c = 0;
+                    var m = 0;
+                    var w = 0;
+                    foreach (var p in test)
+                    {
+                        if (p.Name == "ShipWelderArc" || p.Name == "Smoke_Missile") c++;
+                        else if (p.Name == "Explosion_Missile") m++;
+                        else if (p.Name == "Explosion_Warhead_02") w++;
+                        //else Log.Line($"{p.Name} - {p.IsSimulationPaused} - {p.Enabled}");
+                    }
+                    Log.Line($"arkCount + Smoke_Missile:{c} - missileExp:{m} - what:{w}");
+                }
                 Timings();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();

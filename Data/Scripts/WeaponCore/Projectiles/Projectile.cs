@@ -321,7 +321,7 @@ namespace WeaponCore.Projectiles
         {
             if (Effect1 != null)
             {
-                Log.Line("Dispose Ammo Effect");
+                //Log.Line("Dispose Ammo Effect");
                 //MyParticlesManager.RemoveParticleEffect(Effect1);
                 Effect1.Stop(false);
                 Effect1 = null;
