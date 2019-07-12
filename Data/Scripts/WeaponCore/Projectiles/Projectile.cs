@@ -39,7 +39,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D OriginTargetPos;
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
-        internal Vector3D PrevTargetVel;
+        internal Vector3 PrevTargetVel;
         internal Vector3D? HitPos;
         internal WeaponSystem System;
         internal List<MyEntity> CheckList;

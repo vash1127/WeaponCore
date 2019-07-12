@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -114,15 +115,19 @@ namespace WeaponCore.Projectiles
                             Vector3D newVel;
                             if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                             {
-                                var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
-                                if (physics != null && !p.Target.MarkedForClose)
+                                if (p.Target != null && !p.Target.MarkedForClose)
                                 {
+                                    var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
+                                    var tVel = physics?.LinearVelocity ?? Vector3.Zero;
                                     var targetPos = p.Target.PositionComp.WorldAABB.Center;
-                                    if (targetPos != Vector3D.Zero) p.PrevTargetPos = targetPos;
-                                    p.PrevTargetVel = physics.LinearVelocity;
+                                    if (physics == null || targetPos == Vector3D.Zero) p.PrevTargetPos = p.PredictedTargetPos;
+                                    else p.PrevTargetPos = targetPos;
+                                    p.PrevTargetVel = tVel;
                                 }
                                 else if (p.State != Projectile.ProjectileState.Zombie)
                                 {
+                                    p.PrevTargetVel = Vector3.Zero;
+                                    p.PrevTargetPos = p.PredictedTargetPos;
                                     p.DistanceTraveled = 0;
                                     p.DistanceToTravelSqr = (Vector3D.DistanceSquared(p.Position, p.PrevTargetPos) + 100);
                                     p.State = Projectile.ProjectileState.Zombie;
