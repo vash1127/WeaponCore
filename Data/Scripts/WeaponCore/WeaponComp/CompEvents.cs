@@ -77,6 +77,11 @@ namespace WeaponCore.Support
             IsFunctional = myCubeBlock.IsFunctional;
             State.Value.Online = IsWorking && IsFunctional;
             TerminalRefresh();
+            if (!IsWorking)
+            {
+                foreach (var w in Platform.Weapons)
+                    WepUi.SetEnable((IMyTerminalBlock)MyCube, w.WeaponId, false);
+            }
         }
 
         internal string GetSystemStatus()

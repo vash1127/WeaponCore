@@ -5,7 +5,9 @@ using System.Linq;
 using System.Text;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
+using SpaceEngineers.Game.ModAPI;
 using VRage.ModAPI;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -32,22 +34,26 @@ namespace WeaponCore
         internal IMyTerminalControlCombobox WeaponMode { get; set; }
         internal IMyTerminalControlSlider PowerSlider { get; set; }
         internal IMyTerminalControlCheckbox DoubleRate { get; set; }
-        public void CreateLogicElements(IMyTerminalBlock block)
+        public void CreateLogicElements(WeaponComponent comp)
         {
             try
             {
-                var logic = block?.GameLogic?.GetAs<WeaponComponent>();
-                if (WepControl || logic == null) return;
+                if (WepControl || comp == null) return;
+                //TerminalHelpers.HideButton(comp.MyCube);
+                TerminalHelpers.Separator(comp.MyCube, "WC-L_sep0", WepUi.EnableModes, WepUi.VisibleAll);
+                foreach (var w in comp.Platform.Weapons)
+                {
+                    TerminalHelpers.AddOnOff(comp.MyCube, w.WeaponId, "WC-L" + $"-{w.System.WeaponName}", "Enable " + $"{w.System.WeaponName}", "Enable " + $"{w.System.WeaponName}", "On", "Off", WepUi.GetEnable, WepUi.SetEnable, WepUi.EnableModes, WepUi.VisibleAll);
+                }
+                TerminalHelpers.Separator(comp.MyCube, "WC-L_sep1", WepUi.EnableModes, WepUi.VisibleAll);
+                Guidance = TerminalHelpers.AddOnOff(comp.MyCube, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.EnableModes, WepUi.VisibleAll);
+                WeaponMode = TerminalHelpers.AddCombobox(comp.MyCube, "WC-L_WeaponMode", "Weapon Mode", "Weapon Mode", WepUi.GetModes, WepUi.SetModes, WepUi.ListAll, WepUi.EnableModes, WepUi.VisibleAll);
 
-                TerminalHelpers.Separator(logic.Turret, "WC-L_sep0");
-                Guidance = TerminalHelpers.AddOnOff(logic.Turret, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance);
-                WeaponMode = TerminalHelpers.AddCombobox(logic.Turret, "WC-L_WeaponMode", "Weapon Mode", "Weapon Mode", WepUi.GetModes, WepUi.SetModes, WepUi.ListAll, WepUi.EnableModes, WepUi.VisibleAll);
-
-                TerminalHelpers.Separator(logic.Turret, "WC-L_sep1");
-                PowerSlider = TerminalHelpers.AddSlider(logic.Turret, "WC-L_PowerLevel", "Change Power Level", "Change Power Level", WepUi.GetPowerLevel, WepUi.SetPowerLevel);
+                TerminalHelpers.Separator(comp.MyCube, "WC-L_sep2",WepUi.EnableModes, WepUi.VisibleAll);
+                PowerSlider = TerminalHelpers.AddSlider(comp.MyCube, "WC-L_PowerLevel", "Change Power Level", "Change Power Level", WepUi.GetPowerLevel, WepUi.SetPowerLevel, WepUi.EnableModes, WepUi.VisibleAll);
                 PowerSlider.SetLimits(0, 100);
 
-                DoubleRate = TerminalHelpers.AddCheckbox(logic.Turret, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate);
+                DoubleRate = TerminalHelpers.AddCheckbox(comp.MyCube, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate, WepUi.EnableModes, WepUi.VisibleAll);
                 CreateAction<IMyLargeTurretBase>(Guidance);
 
                 CreateActionChargeRate<IMyLargeTurretBase>(PowerSlider);
@@ -55,6 +61,20 @@ namespace WeaponCore
                 WepControl = true;
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
+        }
+
+
+        internal void CustomControls(IMyTerminalBlock tBlock, List<IMyTerminalControl> myTerminalControls)
+        {
+            try
+            {
+                LastTerminalId = tBlock.EntityId;
+                if (_subTypeIdToWeaponDefs.ContainsKey(tBlock.BlockDefinition.SubtypeId))
+                {
+                    TerminalHelpers.HideButton((IMyLargeTurretBase)tBlock);
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in CustomControls: {ex}"); }
         }
 
         public void CreateAction<T>(IMyTerminalControlOnOffSwitch c)
@@ -100,61 +120,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in CreateAction: {ex}"); }
         }
 
-        internal void CustomControls(IMyTerminalBlock tBlock, List<IMyTerminalControl> myTerminalControls)
-        {
-            try
-            {
-                LastTerminalId = tBlock.EntityId;
-                switch (tBlock.BlockDefinition.SubtypeId)
-                {
-                    case "LargeShieldModulator":
-                        //SetCustomDataToPassword(myTerminalControls);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in CustomControls: {ex}"); }
-        }
-        /*
-        private static void OrderShieldButton(List<IMyTerminalControl> controls)
-        {
-            var startIndex = -1;
-            var sep1 = -1;
-            //var sep2 = -1;
-            var shield = -1;
-            for (int i = 0; i < controls.Count; i++)
-            {
-                var c = controls[i];
-                switch (c.Id)
-                {
-                    case "CustomData":
-                        startIndex = i;
-                        c.Visible = ShowDisplayControl;
-                        break;
-                    case "WC-L_Report":
-                        sep1 = i - 1;
-                        shield = i;
-                        //sep2 = i + 1;
-                        break;
-                    case "ImageList":
-                    case "SelectTextures":
-                    case "SelectedImageList":
-                    case "ShowTextPanel":
-                    case "ShowTextOnScreen":
-                    case "BackgroundColor":
-                    case "Title":
-                    case "ChangeIntervalSlider":
-                    case "RemoveSelectedTextures":
-                        c.Visible = ShowDisplayControl;
-                        break;
-                }
-            }
-            controls.Move(sep1, startIndex + 1);
-            controls.Move(shield, startIndex + 2);
-            //controls.Move(sep2, startIndex + 3);
-        }
-        */
         private void WarheadSetter(IMyTerminalBlock tBlock, bool isSet)
         {
             var customData = tBlock.CustomData;

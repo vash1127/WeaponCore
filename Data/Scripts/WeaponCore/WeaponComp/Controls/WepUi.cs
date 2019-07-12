@@ -16,19 +16,31 @@ namespace WeaponCore
             new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute("Visible On Hit") }
         };
 
-        internal static void CreateUi(IMyTerminalBlock shield)
+        internal static bool GetEnable(IMyTerminalBlock block, int weaponId)
         {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null) return false;
+            return comp.Platform.Weapons[weaponId].Enabled;
         }
 
-        internal static bool GetGuidance(IMyTerminalBlock block)
+        internal static void SetEnable(IMyTerminalBlock block, int weaponId, bool newValue)
         {
-            var comp = block?.GameLogic?.GetAs<WeaponComponent>();
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null) return;
+            var weapon = comp.Platform.Weapons[weaponId];
+            weapon.Enabled = newValue;
+            weapon.StopShooting();
+        }
+
+        internal static bool GetGuidance(IMyTerminalBlock block, int i)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
             return comp?.Set.Value.Guidance ?? false;
         }
 
-        internal static void SetGuidance(IMyTerminalBlock block, bool newValue)
+        internal static void SetGuidance(IMyTerminalBlock block, int weaponId, bool newValue)
         {
-            var comp = block?.GameLogic?.GetAs<WeaponComponent>();
+            var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return;
             comp.Set.Value.Guidance = newValue;
             comp.SettingsUpdated = true;
@@ -37,13 +49,13 @@ namespace WeaponCore
 
         internal static float GetPowerLevel(IMyTerminalBlock block)
         {
-            var comp = block?.GameLogic?.GetAs<WeaponComponent>();
+            var comp = block?.Components?.Get<WeaponComponent>();
             return comp?.Set.Value.PowerScale ?? 0f;
         }
 
         internal static void SetPowerLevel(IMyTerminalBlock block, float newValue)
         {
-            var logic = block?.GameLogic?.GetAs<WeaponComponent>();
+            var logic = block?.Components?.Get<WeaponComponent>();
             if (logic == null) return;
             logic.Set.Value.PowerScale = newValue;
             logic.SettingsUpdated = true;
@@ -52,13 +64,13 @@ namespace WeaponCore
 
         internal static bool GetDoubleRate(IMyTerminalBlock block)
         {
-            var comp = block?.GameLogic?.GetAs<WeaponComponent>();
+            var comp = block?.Components?.Get<WeaponComponent>();
             return comp?.Set.Value.Guidance ?? false;
         }
 
         internal static void SetDoubleRate(IMyTerminalBlock block, bool newValue)
         {
-            var comp = block?.GameLogic?.GetAs<WeaponComponent>();
+            var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return;
             comp.Set.Value.Guidance = newValue;
             comp.SettingsUpdated = true;
@@ -72,25 +84,25 @@ namespace WeaponCore
 
         internal static bool VisibleAll(IMyTerminalBlock block)
         {
-            var logic = block?.GameLogic?.GetAs<WeaponComponent>();
+            var logic = block?.Components?.Get<WeaponComponent>();
             return logic != null;
         }
 
         internal static bool EnableModes(IMyTerminalBlock block)
         {
-            var logic = block?.GameLogic?.GetAs<WeaponComponent>();
+            var logic = block?.Components?.Get<WeaponComponent>();
             return logic != null;
         }
 
         internal static long GetModes(IMyTerminalBlock block)
         {
-            var logic = block?.GameLogic?.GetAs<WeaponComponent>();
+            var logic = block?.Components?.Get<WeaponComponent>();
             return logic?.Set.Value.Modes ?? 0;
         }
 
         internal static void SetModes(IMyTerminalBlock block, long newValue)
         {
-            var logic = block?.GameLogic?.GetAs<WeaponComponent>();
+            var logic = block?.Components?.Get<WeaponComponent>();
             if (logic == null) return;
             logic.Set.Value.Modes = newValue;
             logic.SettingsUpdated = true;

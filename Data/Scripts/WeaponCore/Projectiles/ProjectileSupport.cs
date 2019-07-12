@@ -79,6 +79,5 @@ namespace WeaponCore.Projectiles
                 myEntity = myEntity.Parent;
             return myEntity ?? entity;
         }
-
     }
 }
