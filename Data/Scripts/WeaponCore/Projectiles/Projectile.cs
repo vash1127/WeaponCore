@@ -174,8 +174,6 @@ namespace WeaponCore.Projectiles
 
             FiringSoundState = System.FiringSound;
             AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
-            //_checkIntersectionIndex = _checkIntersectionCnt % 5;
-            //_checkIntersectionCnt += 3;
 
             if (!noAv)
             {
@@ -238,7 +236,6 @@ namespace WeaponCore.Projectiles
                     return;
                 }
             }
-            //if (ParticleLateStart) Log.Line($"late start: c:{ConstantSpeed} - v:{Velocity.Length()}");
 
             var parentId = uint.MaxValue;
             MatrixD matrix;

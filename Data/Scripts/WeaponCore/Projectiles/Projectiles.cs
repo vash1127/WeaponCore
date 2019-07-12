@@ -2,14 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
-using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 
@@ -19,7 +16,7 @@ namespace WeaponCore.Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int PoolCount = 16;
-        internal readonly ConcurrentQueue<IThreadHits> Hits = new ConcurrentQueue<IThreadHits>();
+        internal readonly ConcurrentQueue<Session.DamageEvent> Hits = new ConcurrentQueue<Session.DamageEvent>();
 
         internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
         internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
@@ -65,10 +62,7 @@ namespace WeaponCore.Projectiles
         internal void Update()
         {
             //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
-            for (int i = 0; i < Wait.Length; i++)
-            {
-                Process(i);
-            }
+            for (int i = 0; i < Wait.Length; i++) Process(i);
         }
 
         private void Process(int i)

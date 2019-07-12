@@ -95,12 +95,6 @@ namespace WeaponCore
             if (!DedicatedServer) CameraPos = Session.Camera.Position;
         }
 
-        internal void ProcessHits()
-        {
-            IThreadHits hitEvent;
-            while (Projectiles.Hits.TryDequeue(out hitEvent)) hitEvent.Execute();
-        }
-
         private void WebDispatchDone()
         {
             Dispatched = false;

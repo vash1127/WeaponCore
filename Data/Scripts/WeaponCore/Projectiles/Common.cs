@@ -10,7 +10,7 @@ using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-
+using static WeaponCore.Session.DamageEvent;
 namespace WeaponCore.Projectiles
 {
     internal partial class Projectiles
@@ -28,14 +28,17 @@ namespace WeaponCore.Projectiles
             }
             entCheckList.Clear();
             CheckPool[poolId].Return(entCheckList);
-            if (fired.System.Values.Ammo.DetonateOnEnd || entsFound.Count > 0)
-                Hits.Enqueue(new ProximityEvent(fired, null, position, Session.Instance.SApi));
-
-            foreach (var ent in entsFound)
+            if (fired.System.Values.Ammo.DetonateOnEnd && entsFound.Count <= 0)
+                Hits.Enqueue(new Session.DamageEvent(Type.Proximity, fired.System, position, fired.Direction, 1, null, null, fired.FiringCube));
+            else
             {
-                if (Session.Instance.IsServer)
-                    Hits.Enqueue(new ProximityEvent(fired, ent, position, Session.Instance.SApi));
+                foreach (var ent in entsFound)
+                {
+                    if (Session.Instance.IsServer)
+                        Hits.Enqueue(new Session.DamageEvent(Type.Proximity, fired.System, position, fired.Direction, 1, ent, null, fired.FiringCube));
+                }
             }
+
             entsFound.Clear();
             CheckPool[poolId].Return(entsFound);
         }
@@ -86,7 +89,7 @@ namespace WeaponCore.Projectiles
                         if (dist < nearestDist)
                         {
                             nearestDist = dist;
-                            nearestHit = new HitInfo((Vector3D)hitPos, new LineD(beam.From, (Vector3D)hitPos), shield, null);
+                            nearestHit = new HitInfo((Vector3D)hitPos, new LineD(beam.From, (Vector3D)hitPos), (MyEntity)shield, null);
                         }
                     }
                 }
@@ -191,7 +194,7 @@ namespace WeaponCore.Projectiles
                 var info = pair.Value;
                 info.HitPos /= info.HitCount;
 
-                if (Session.Instance.IsServer) Hits.Enqueue(new GridEvent(pair.Key, info.HitPos, pair.Value.HitCount, fired));
+                if (Session.Instance.IsServer) Hits.Enqueue(new Session.DamageEvent(Type.Grid, fired.System, info.HitPos, fired.Direction, pair.Value.HitCount, (MyEntity)pair.Key.CubeGrid, pair.Key, fired.FiringCube));
                 info.Clean();
                 damagePool.Return(info);
             }
@@ -208,9 +211,9 @@ namespace WeaponCore.Projectiles
 
                 if (Session.Instance.IsServer)
                 {
-                    if (shield != null) Hits.Enqueue(new ShieldEvent(shield, Session.Instance.SApi, info.HitPos / info.HitCount, info.HitCount, fired));
-                    if (voxel != null) Hits.Enqueue(new VoxelEvent());
-                    if (destroyable != null) Hits.Enqueue(new DestroyableEvent(destroyable, fired));
+                    if (shield != null) Hits.Enqueue(new Session.DamageEvent(Type.Shield,fired.System, info.HitPos, fired.Direction, info.HitCount, (MyEntity)pair.Key, null, fired.FiringCube));
+                    if (voxel != null) Hits.Enqueue(new Session.DamageEvent(Type.Voxel, fired.System, info.HitPos, fired.Direction, info.HitCount, (MyEntity)pair.Key, null, fired.FiringCube));
+                    if (destroyable != null) Hits.Enqueue(new Session.DamageEvent(Type.Destroyable, fired.System, info.HitPos, fired.Direction, info.HitCount, (MyEntity)pair.Key, null, fired.FiringCube));
                 }
                 info.Clean();
                 damagePool.Return(info);
@@ -302,10 +305,7 @@ namespace WeaponCore.Projectiles
             public readonly int WeaponId;
             public readonly int MuzzleId;
             public readonly bool IsBeam;
-
             public readonly int Age;
-
-
 
             public Fired(WeaponSystem system, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay, Vector3D direction, int weaponId, int muzzleId, bool isBeam,  int age)
             {
