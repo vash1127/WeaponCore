@@ -16,19 +16,16 @@ namespace WeaponCore
             for (int i = 0; i < drawList.Count; i++)
             {
                 var p = drawList[i];
-                var drawLine = p.Fired.System.Values.Graphics.Line.Trail;
-                if (!drawLine)
+                if (p.Entity != null)
                 {
-                    if (p.Entity != null)
+                    var drawLine = p.Fired.System.Values.Graphics.Line.Trail;
+                    p.Entity.PositionComp.SetWorldMatrix(p.EntityMatrix, null, false, false, false);
+                    if (p.Last)
                     {
-                        p.Entity.PositionComp.SetWorldMatrix(p.EntityMatrix, null, false, false, false);
-                        if (p.Last)
-                        {
-                            p.Entity.InScene = false;
-                            p.Entity.Render.RemoveRenderObjects();
-                        }
+                        p.Entity.InScene = false;
+                        p.Entity.Render.RemoveRenderObjects();
                     }
-                    continue;
+                    if (!drawLine) continue;
                 }
 
                 var line = p.Projectile;

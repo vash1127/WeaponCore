@@ -1,6 +1,4 @@
-﻿using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
-using WeaponCore.Platform;
+﻿using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -94,8 +92,7 @@ namespace WeaponCore
                         if (!w.Enabled && comp.TrackingWeapon != w) continue;
                         if (!gunner)
                         {
-                            if (w.TrackingAi && w.Target != null)
-                                Weapon.TrackingTarget(w, w.Target, true);
+                            if (w.TrackingAi && w.Target != null) Weapon.TrackingTarget(w, w.Target, true);
                             else 
                             {
                                 if (w.IsTurret && !w.TrackTarget) w.Target = comp.TrackingWeapon.Target;

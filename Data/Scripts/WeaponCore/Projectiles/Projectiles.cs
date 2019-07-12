@@ -92,18 +92,19 @@ namespace WeaponCore.Projectiles
                             continue;
                         case Projectile.ProjectileState.Start:
                             p.Start(checkPool.Get(), noAv);
+                            if (p.ModelState == Projectile.EntityState.NoDraw)
+                                modelClose = p.CloseModel(entPool[p.ModelId], drawList);
                             break;
                         case Projectile.ProjectileState.Ending:
-                            if (p.ModelId == -1)
-                                p.Stop(pool, checkPool, null, null);
+                            if (p.ModelState != Projectile.EntityState.Exists) p.Stop(pool, checkPool);
                             else
                             {
-                                p.Stop(pool, checkPool, entPool[p.ModelId], drawList);
-                                modelClose = true;
+                                modelClose = p.CloseModel(entPool[p.ModelId], drawList);
+                                p.Stop(pool, checkPool);
                             }
                             continue;
                         case Projectile.ProjectileState.OneAndDone:
-                            p.Stop(pool, checkPool, null, null);
+                            p.Stop(pool, checkPool);
                             continue;
                     }
                     p.LastPosition = p.Position;
@@ -176,7 +177,7 @@ namespace WeaponCore.Projectiles
                         try
                         {
                             p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.AccelDir, p.Entity.PositionComp.WorldMatrix.Up);
-                            if (p.Effect1 != null && p.System.AmmoParticle)
+                            if (p.EnableAv && p.Effect1 != null && p.System.AmmoParticle)
                             {
                                 var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.AmmoOffset, p.EntityMatrix);
                                 p.Effect1.WorldMatrix = p.EntityMatrix;
@@ -185,7 +186,7 @@ namespace WeaponCore.Projectiles
                         }
                         catch (Exception ex) { Log.Line($"Exception in EntityMatrix: {ex}"); }
                     }
-                    else if (!p.ConstantSpeed && p.Effect1 != null && p.System.AmmoParticle)
+                    else if (!p.ConstantSpeed && p.EnableAv && p.Effect1 != null && p.System.AmmoParticle)
                         p.Effect1.Velocity = p.Velocity;
 
                     var segmentList = segmentPool.Get();
@@ -212,7 +213,7 @@ namespace WeaponCore.Projectiles
 
                             if (p.HitPos != null)
                             {
-                                if (!noAv && p.Draw && (p.DrawLine || p.ModelId != -1))
+                                if (!noAv && p.EnableAv && (p.DrawLine || p.ModelId != -1))
                                 {
                                     var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
                                     var hitLine = new LineD(p.LastPosition, hitInfo.HitPos);
@@ -240,7 +241,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    if (noAv || !p.Draw) continue;
+                    if (noAv || !p.EnableAv) continue;
 
                     if (p.System.AmmoParticle)
                     {

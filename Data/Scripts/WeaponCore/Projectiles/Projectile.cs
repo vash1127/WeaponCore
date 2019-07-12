@@ -70,7 +70,7 @@ namespace WeaponCore.Projectiles
         internal int MuzzleId;
         internal bool Grow;
         internal bool Shrink;
-        internal bool Draw;
+        internal bool EnableAv;
         internal bool DrawLine;
         internal bool AmmoSound;
         internal bool FirstOffScreen;
@@ -101,7 +101,7 @@ namespace WeaponCore.Projectiles
 
         internal void Start(List<MyEntity> checkList, bool noAv)
         {
-            ModelState = EntityState.Stale;
+            ModelState = EntityState.None;
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
             Position = Origin;
             AccelDir = Direction;
@@ -159,8 +159,8 @@ namespace WeaponCore.Projectiles
             DesiredSpeedSqr = DesiredSpeed * DesiredSpeed;
             Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
 
-            Draw = DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && System.Values.Graphics.VisualProbability >= MyUtils.GetRandomDouble(0.0f, 1f);
-
+            var probability = System.Values.Graphics.VisualProbability;
+            EnableAv = DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
             MoveToAndActivate = FoundTarget && Guidance == AmmoTrajectory.GuidanceType.TravelTo;
@@ -175,7 +175,7 @@ namespace WeaponCore.Projectiles
             FiringSoundState = System.FiringSound;
             AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
 
-            if (!noAv)
+            if (!noAv && EnableAv)
             {
                 if (System.AmmoTravelSound)
                 {
@@ -192,14 +192,18 @@ namespace WeaponCore.Projectiles
                     FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
                     FireSoundStart();
                 }
+            }
 
-                ModelId = System.ModelId;
-                if (ModelId != -1)
+            ModelId = System.ModelId;
+            if (ModelId == -1) ModelState = EntityState.None;
+            else
+            {
+                if (!noAv && EnableAv)
                 {
                     ModelState = EntityState.Exists;
                     ScreenCheckRadius = Entity.PositionComp.WorldVolume.Radius * 2;
                 }
-                else ModelState = EntityState.None;
+                else ModelState = EntityState.NoDraw;
             }
 
             var accelPerSec = System.Values.Ammo.Trajectory.AccelPerSec;
@@ -222,7 +226,7 @@ namespace WeaponCore.Projectiles
             else State = ProjectileState.OneAndDone;
 
             CheckLength = MaxSpeedLength * 2;
-            if (System.AmmoParticle) ProjectileParticleStart();
+            if (System.AmmoParticle && EnableAv) ProjectileParticleStart();
         }
 
         internal void ProjectileParticleStart()
@@ -288,7 +292,7 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool, bool noAv)
         {
-            if (noAv)
+            if (noAv && ModelId == -1)
             {
                 checkPool.Return(CheckList);
                 pool.MarkForDeallocate(this);
@@ -297,31 +301,36 @@ namespace WeaponCore.Projectiles
             else State = ProjectileState.Ending;
         }
 
-        internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool, EntityPool<MyEntity> entPool, List<Projectiles.DrawProjectile> drawList)
+        internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool)
         {
-            if (ModelState == EntityState.Exists)
-            {
-                drawList.Add(new Projectiles.DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, HitPos, null, true, 0, 0, false, true, OnScreen));
-                entPool.MarkForDeallocate(Entity);
-                ModelState = EntityState.Stale;
-            }
-
             if (EndStep++ >= EndSteps)
             {
-                if (System.AmmoParticle) DisposeEffect();
-                if (System.HitParticle && !IsBeamWeapon) PlayHitParticle();
-                if (System.HitSound && HitPos.HasValue)
+                if (EnableAv)
                 {
-                    Sound1.SetPosition(Position);
-                    Sound1.CanPlayLoopSounds = false;
-                    Sound1.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
+                    if (System.AmmoParticle) DisposeEffect();
+                    if (System.HitParticle && !IsBeamWeapon) PlayHitParticle();
+                    if (System.HitSound && HitPos.HasValue)
+                    {
+                        Sound1.SetPosition(Position);
+                        Sound1.CanPlayLoopSounds = false;
+                        Sound1.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
+                    }
+                    else if (AmmoSound) Sound1.StopSound(false, true);
                 }
-                else if (AmmoSound) Sound1.StopSound(false, true);
 
                 checkPool.Return(CheckList);
                 pool.MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
+        }
+
+        internal bool CloseModel(EntityPool<MyEntity> entPool, List<Projectiles.DrawProjectile> drawList)
+        {
+            EntityMatrix = MatrixD.Identity;
+            drawList.Add(new Projectiles.DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, HitPos, null, true, 0, 0, false, true, OnScreen));
+            entPool.MarkForDeallocate(Entity);
+            ModelState = EntityState.None;
+            return true;
         }
 
         private void PlayHitParticle()
@@ -367,7 +376,7 @@ namespace WeaponCore.Projectiles
         internal enum EntityState
         {
             Exists,
-            Stale,
+            NoDraw,
             None
         }
     }
