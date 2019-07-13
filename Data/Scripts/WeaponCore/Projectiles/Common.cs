@@ -24,7 +24,7 @@ namespace WeaponCore.Projectiles
             foreach (var ent in entityList)
             {
                 var blastLine = new LineD(position, ent.PositionComp.WorldAABB.Center);
-                GetAllEntitiesInLine(firingCube, blastLine, null, hitList, poolId);
+                GetAllEntitiesInLine(firingCube, blastLine, null, hitList, poolId, true);
             }
             entityList.Clear();
             MyEntityPool[poolId].Return(entityList);
@@ -44,7 +44,7 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal void GetAllEntitiesInLine(MyCubeBlock firingCube, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList,  List<HitEntity> hitList, int poolId)
+        internal void GetAllEntitiesInLine(MyCubeBlock firingCube, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList,  List<HitEntity> hitList, int poolId, bool quickCheck = false)
         {
             var listCnt = segmentList?.Count ?? hitList.Count;
             for (int i = 0; i < listCnt; i++)
@@ -62,6 +62,11 @@ namespace WeaponCore.Projectiles
                         hitEntity.Entity = (MyEntity)shieldBlock;
                         hitEntity.Beam = beam;
                         hitEntity.EventType = Shield;
+                        if (quickCheck)
+                        {
+                            hitEntity.HitPos = Session.Instance.SApi.LineIntersectShield(shieldBlock, beam);
+                            hitEntity.Hit = true;
+                        }
                         hitList.Add(hitEntity);
                     }
                     else continue;
@@ -71,7 +76,8 @@ namespace WeaponCore.Projectiles
                 var extBeam = new LineD(extFrom, beam.To);
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                 var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                if (obb.Intersects(ref extBeam) == null) continue;
+                var dist = obb.Intersects(ref extBeam);
+                if (dist == null && !quickCheck) continue;
 
                 if (ent.Physics != null && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                 {
@@ -80,6 +86,12 @@ namespace WeaponCore.Projectiles
                     hitEntity.Entity = ent;
                     hitEntity.Beam = beam;
                     hitEntity.EventType = Grid;
+                    if (quickCheck)
+                    {
+                        var tmpDist = dist ?? 0;
+                        hitEntity.HitPos = (beam.From + (beam.Direction * tmpDist));
+                        hitEntity.Hit = true;
+                    }
                     hitList.Add(hitEntity);
                 }
             }

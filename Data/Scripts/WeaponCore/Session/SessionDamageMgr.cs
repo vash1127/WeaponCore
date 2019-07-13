@@ -101,6 +101,7 @@ namespace WeaponCore
                 else damagePool -= damage;
 
                 if (damagePool <= 0) continue;
+                Log.Line($"test1");
                 block.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
                 if (system.AmmoAreaEffect)
                 {
@@ -159,12 +160,12 @@ namespace WeaponCore
         private void DamageProximity(HitEntity hitEnt, ref DamageEvent dEvent, ref float damagePool)
         {
             var system = dEvent.System;
-            if (hitEnt.Hit)
+            if (hitEnt.HitPos.HasValue)
             {
                 if (ExplosionReady) UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, dEvent.Direction, dEvent.Attacker, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
                 else UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, dEvent.Direction, dEvent.Attacker, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield, true);
             }
-            else if (hitEnt.HitPos.HasValue) UtilsStatic.CreateFakeExplosion(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffectRadius);
+            else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue) UtilsStatic.CreateFakeExplosion(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffectRadius);
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)
