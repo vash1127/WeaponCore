@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
@@ -8,40 +9,26 @@ using VRage.Game.ModAPI.Interfaces;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles;
+using static WeaponCore.Projectiles.Projectiles.HitEntity;
 namespace WeaponCore
 {
     public partial class Session
     {
         internal struct DamageEvent
         {
-            internal enum Type
-            {
-                Shield,
-                Grid,
-                Voxel,
-                Proximity,
-                Destroyable,
-            }
-
-            internal readonly Type DamageType;
             internal readonly WeaponSystem System;
-            internal readonly MyEntity HitEntity;
+            internal readonly List<HitEntity> HitEntity;
             internal readonly MyEntity Attacker;
-            internal readonly IMySlimBlock Block;
-            internal readonly Vector3D HitPos;
             internal readonly Vector3D Direction;
-            internal readonly int Hits;
+            internal readonly int PoolId;
 
-            internal DamageEvent(Type damageType, WeaponSystem system, Vector3D hitPos, Vector3D direction, int hits, MyEntity hitEntity, IMySlimBlock block, MyEntity attacker)
+            internal DamageEvent(WeaponSystem system, Vector3D direction, List<HitEntity> hitEntity, MyEntity attacker, int poolId)
             {
-                DamageType = damageType;
                 System = system;
-                HitPos = hitPos;
                 Direction = direction;
-                Hits = hits;
                 HitEntity = hitEntity;
-                Block = block;
                 Attacker = attacker;
+                PoolId = poolId;
             }
         }
 
@@ -50,74 +37,87 @@ namespace WeaponCore
             DamageEvent damageEvent;
             while (Projectiles.Hits.TryDequeue(out damageEvent))
             {
-                switch (damageEvent.DamageType)
+                var pId = damageEvent.PoolId;
+                var damagePool = damageEvent.System.Values.Ammo.DefaultDamage;
+                if (damageEvent.HitEntity == null) Log.Line($"hitListIsNull");
+                foreach (var hitEnt in damageEvent.HitEntity)
                 {
-                    case DamageEvent.Type.Shield:
-                        DamageShield(ref damageEvent);
-                        continue;
-                    case DamageEvent.Type.Grid:
-                        DamageGrid(ref damageEvent);
-                        break;
-                    case DamageEvent.Type.Destroyable:
-                        DamageDestObj(ref damageEvent);
-                        continue;
-                    case DamageEvent.Type.Voxel:
-                        DamageVoxel(ref damageEvent);
-                        continue;
-                    case DamageEvent.Type.Proximity:
-                        DamageProximity(ref damageEvent);
-                        continue;
+                    if (hitEnt == null) Log.Line($"hitEnt is null");
+                    switch (hitEnt.EventType)
+                    {
+                        case Type.Shield:
+                            DamageShield(hitEnt, ref damageEvent, ref damagePool);
+                            continue;
+                        case Type.Grid:
+                            DamageGrid(hitEnt, ref damageEvent, ref damagePool);
+                            break;
+                        case Type.Destroyable:
+                            DamageDestObj(hitEnt, ref damageEvent, ref damagePool);
+                            continue;
+                        case Type.Voxel:
+                            DamageVoxel(hitEnt, ref damageEvent, ref damagePool);
+                            continue;
+                        case Type.Proximity:
+                            DamageProximity(hitEnt, ref damageEvent, ref damagePool);
+                            continue;
+                    }
+                    Projectiles.HitEntityPool[pId].Return(hitEnt);
+                }
+                damageEvent.HitEntity.Clear();
+                Projectiles.HitsPool[pId].Return(damageEvent.HitEntity);
+            }
+        }
+
+        private void DamageShield(HitEntity hitEnt, ref DamageEvent dEvent, ref float damagePool)
+        {
+            var shield = hitEnt.Entity as IMyTerminalBlock;
+            var system = dEvent.System;
+            if (shield == null || !hitEnt.HitPos.HasValue) return;
+            var baseDamage = system.Values.Ammo.DefaultDamage;
+            var damage = (baseDamage + system.Values.Ammo.AreaEffectYield);
+            SApi.PointAttackShield(shield, hitEnt.HitPos.Value, dEvent.Attacker.EntityId, damage, false, true);
+            if (system.Values.Ammo.Mass > 0)
+            {
+                var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
+                ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, dEvent.Direction, system.Values.Ammo.Mass * speed);
+            }
+        }
+
+        private void DamageGrid(HitEntity hitEnt, ref DamageEvent dEvent, ref float damagePool)
+        {
+            var grid = hitEnt.Entity as MyCubeGrid;
+            var system = dEvent.System;
+
+            if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null) return;
+
+            var baseDamage = system.Values.Ammo.DefaultDamage;
+            var damage = baseDamage;
+            for (int i = 0; i < hitEnt.Blocks.Count; i++)
+            {
+                var block = hitEnt.Blocks[i];
+                block.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
+                if (system.AmmoAreaEffect)
+                {
+                    if (ExplosionReady) UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, dEvent.Direction, dEvent.Attacker, grid, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
+                    else UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, dEvent.Direction, dEvent.Attacker, grid, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield, true);
+                }
+                else if (system.Values.Ammo.Mass > 0)
+                {
+                    var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
+                    ApplyProjectileForce(grid, hitEnt.HitPos.Value, dEvent.Direction, (system.Values.Ammo.Mass * speed));
                 }
             }
         }
 
-        private void DamageShield(ref DamageEvent dEvent)
+        private void DamageDestObj(HitEntity hitEnt, ref DamageEvent dEvent, ref float damagePool)
         {
-            var shield = dEvent.HitEntity as IMyTerminalBlock;
-            var system = dEvent.System;
-            if (shield == null) return;
-            var baseDamage = system.Values.Ammo.DefaultDamage;
-            var damage = (baseDamage + system.Values.Ammo.AreaEffectYield) * dEvent.Hits;
-            SApi.PointAttackShield(shield, dEvent.HitPos, dEvent.Attacker.EntityId, damage, false, true);
-            if (system.Values.Ammo.Mass > 0)
-            {
-                var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                ApplyProjectileForce((MyEntity)shield.CubeGrid, dEvent.HitPos, dEvent.Direction, (system.Values.Ammo.Mass * speed) / dEvent.Hits);
-            }
-        }
-
-        private void DamageGrid(ref DamageEvent dEvent)
-        {
-            var grid = dEvent.HitEntity as MyCubeGrid;
-            var block = dEvent.Block;
-            var system = dEvent.System;
-
-            if (block == null || grid == null || block.IsDestroyed || grid.MarkedForClose) return;
-
-            var baseDamage = system.Values.Ammo.DefaultDamage;
-            var damage = baseDamage * dEvent.Hits;
-            block.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
-            if (system.AmmoAreaEffect)
-            {
-                if (ExplosionReady) UtilsStatic.CreateMissileExplosion(dEvent.HitPos, dEvent.Direction, dEvent.Attacker, grid, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
-                else UtilsStatic.CreateMissileExplosion(dEvent.HitPos, dEvent.Direction, dEvent.Attacker, grid, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield, true);
-            }
-            else if (system.Values.Ammo.Mass > 0)
-            {
-                var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                ApplyProjectileForce(grid, dEvent.HitPos, dEvent.Direction, (system.Values.Ammo.Mass * speed) / dEvent.Hits);
-            }
-        }
-
-        private void DamageDestObj(ref DamageEvent dEvent)
-        {
-            var entity = dEvent.HitEntity;
-            var destObj = dEvent.HitEntity as IMyDestroyableObject;
+            var entity = hitEnt.Entity;
+            var destObj = hitEnt.Entity as IMyDestroyableObject;
             var system = dEvent.System;
             if (destObj == null || entity == null) return;
 
             var baseDamage = system.Values.Ammo.DefaultDamage;
-            var damage = baseDamage * dEvent.Hits;
+            var damage = baseDamage;
 
             destObj.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
             if (system.Values.Ammo.Mass > 0)
@@ -127,15 +127,15 @@ namespace WeaponCore
             }
         }
 
-        private void DamageVoxel(ref DamageEvent dEvent)
+        private void DamageVoxel(HitEntity hitEnt, ref DamageEvent dEvent, ref float damagePool)
         {
-            var entity = dEvent.HitEntity;
-            var destObj = dEvent.HitEntity as MyVoxelBase;
+            var entity = hitEnt.Entity;
+            var destObj = hitEnt.Entity as MyVoxelBase;
             var system = dEvent.System;
             if (destObj == null || entity == null) return;
 
             var baseDamage = system.Values.Ammo.DefaultDamage;
-            var damage = baseDamage * dEvent.Hits;
+            var damage = baseDamage;
 
             //destObj.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
             if (system.Values.Ammo.Mass > 0)
@@ -145,15 +145,15 @@ namespace WeaponCore
             }
         }
 
-        private void DamageProximity(ref DamageEvent dEvent)
+        private void DamageProximity(HitEntity hitEnt, ref DamageEvent dEvent, ref float damagePool)
         {
             var system = dEvent.System;
-            if (dEvent.HitEntity != null)
+            if (hitEnt.Hit)
             {
-                if (ExplosionReady) UtilsStatic.CreateMissileExplosion(dEvent.HitPos, dEvent.Direction, dEvent.Attacker, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
-                else UtilsStatic.CreateMissileExplosion(dEvent.HitPos, dEvent.Direction, dEvent.Attacker, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield, true);
+                if (ExplosionReady) UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, dEvent.Direction, dEvent.Attacker, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
+                else UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, dEvent.Direction, dEvent.Attacker, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield, true);
             }
-            else UtilsStatic.CreateFakeExplosion(dEvent.HitPos, system.Values.Ammo.AreaEffectRadius);
+            else UtilsStatic.CreateFakeExplosion(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffectRadius);
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)

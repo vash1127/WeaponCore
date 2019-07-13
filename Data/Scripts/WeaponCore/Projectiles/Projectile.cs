@@ -8,7 +8,7 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-
+using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore.Projectiles
 {
     internal class Projectile
@@ -19,7 +19,7 @@ namespace WeaponCore.Projectiles
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MatrixD EntityMatrix;
-        internal Projectiles.Fired DummyFired;
+        internal Fired DummyFired;
         internal RayD OriginRay;
         internal RayD ReverseOriginRay;
         internal LineD CurrentLine;
@@ -42,7 +42,7 @@ namespace WeaponCore.Projectiles
         internal Vector3 PrevTargetVel;
         internal Vector3D? HitPos;
         internal WeaponSystem System;
-        internal List<MyEntity> CheckList;
+        internal List<HitEntity> HitList;
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
         internal float DesiredSpeed;
@@ -99,7 +99,7 @@ namespace WeaponCore.Projectiles
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
 
-        internal void Start(List<MyEntity> checkList, bool noAv)
+        internal void Start(List<HitEntity> hitList, bool noAv)
         {
             ModelState = EntityState.None;
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
@@ -112,7 +112,7 @@ namespace WeaponCore.Projectiles
             FiringGrid = FiringCube.CubeGrid;
             ReverseOriginRay = new RayD(Origin, -Direction);
             OriginRay = new RayD(Origin, Direction);
-            DummyFired = new Projectiles.Fired(System, null, FiringCube, OriginRay, Direction, WeaponId, MuzzleId, IsBeamWeapon, 0);
+            DummyFired = new Fired(System, null, FiringCube, OriginRay, Direction, WeaponId, MuzzleId, IsBeamWeapon, 0);
             Age = 0;
 
             ParticleStopped = false;
@@ -129,7 +129,7 @@ namespace WeaponCore.Projectiles
             LockedTarget = Target != null && !Target.MarkedForClose;
             SmartsFactor = System.Values.Ammo.Trajectory.SmartsFactor;
             if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
-            CheckList = checkList;
+            HitList = hitList;
 
             DrawLine = System.Values.Graphics.Line.Trail;
             if (System.RangeVariance)
@@ -290,18 +290,18 @@ namespace WeaponCore.Projectiles
             AmmoSound = true;
         }
 
-        internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool, bool noAv)
+        internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool, bool noAv)
         {
             if (noAv && ModelId == -1)
             {
-                checkPool.Return(CheckList);
+                if (!HitPos.HasValue)hitPool.Return(HitList);
                 pool.MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
             else State = ProjectileState.Ending;
         }
 
-        internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<MyEntity>> checkPool)
+        internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool)
         {
             if (EndStep++ >= EndSteps)
             {
@@ -318,16 +318,16 @@ namespace WeaponCore.Projectiles
                     else if (AmmoSound) Sound1.StopSound(false, true);
                 }
 
-                checkPool.Return(CheckList);
+                if (!HitPos.HasValue) hitPool.Return(HitList);
                 pool.MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
         }
 
-        internal bool CloseModel(EntityPool<MyEntity> entPool, List<Projectiles.DrawProjectile> drawList)
+        internal bool CloseModel(EntityPool<MyEntity> entPool, List<DrawProjectile> drawList)
         {
             EntityMatrix = MatrixD.Identity;
-            drawList.Add(new Projectiles.DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, HitPos, null, true, 0, 0, false, true, OnScreen));
+            drawList.Add(new DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, HitPos, null, true, 0, 0, false, true, OnScreen));
             entPool.MarkForDeallocate(Entity);
             ModelState = EntityState.None;
             return true;

@@ -13,7 +13,7 @@ using static Sandbox.Definitions.MyDefinitionManager;
 
 namespace WeaponCore
 {
-    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation | MyUpdateOrder.AfterSimulation | MyUpdateOrder.Simulation, int.MaxValue)]
+    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation | MyUpdateOrder.AfterSimulation | MyUpdateOrder.Simulation, int.MinValue)]
     public partial class Session : MySessionComponentBase
     {
         public override void BeforeStart()

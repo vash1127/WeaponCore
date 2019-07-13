@@ -121,7 +121,8 @@ namespace WeaponCore
                                 effect.Play();
 
                             effect.WorldMatrix = matrix;
-                            effect.Velocity = p.Speed;
+                            if (p.HitEntity?.Physics != null)
+                                effect.Velocity = p.HitEntity.Physics.LinearVelocity;
                             weapon.HitEffects[f.MuzzleId] = effect;
                         }
                         else if (effect != null)

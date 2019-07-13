@@ -22,11 +22,10 @@ namespace WeaponCore.Projectiles
         internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
         internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
         internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[] SegmentPool = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[PoolCount];
-        internal readonly MyConcurrentPool<List<MyEntity>>[] CheckPool = new MyConcurrentPool<List<MyEntity>>[PoolCount];
+        internal readonly MyConcurrentPool<List<HitEntity>>[] HitsPool = new MyConcurrentPool<List<HitEntity>>[PoolCount];
+        internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
+        internal readonly MyConcurrentPool<List<MyEntity>>[] MyEntityPool = new MyConcurrentPool<List<MyEntity>>[PoolCount];
         internal readonly MyConcurrentPool<List<LineD>>[] LinePool = new MyConcurrentPool<List<LineD>>[PoolCount];
-        internal readonly MyConcurrentPool<DamageInfo>[] DamagePool = new MyConcurrentPool<DamageInfo>[PoolCount];
-        internal readonly MyConcurrentDictionary<IMySlimBlock, DamageInfo>[] HitBlocks = new MyConcurrentDictionary<IMySlimBlock, DamageInfo>[PoolCount];
-        internal readonly MyConcurrentDictionary<IMyEntity, DamageInfo>[] HitEnts = new MyConcurrentDictionary<IMyEntity, DamageInfo>[PoolCount];
         internal readonly List<DrawProjectile>[] DrawProjectiles = new List<DrawProjectile>[PoolCount];
         internal readonly object[] Wait = new object[PoolCount];
 
@@ -37,11 +36,10 @@ namespace WeaponCore.Projectiles
                 Wait[i] = new object();
                 ProjectilePool[i] = new ObjectsPool<Projectile>(1250);
                 SegmentPool[i] = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(1250);
-                CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(1250);
+                HitsPool[i] = new MyConcurrentPool<List<HitEntity>>(1250);
+                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(1250);
+                MyEntityPool[i] = new MyConcurrentPool<List<MyEntity>>(100);
                 LinePool[i] = new MyConcurrentPool<List<LineD>>(1250);
-                DamagePool[i] = new MyConcurrentPool<DamageInfo>(500);
-                HitBlocks[i] = new MyConcurrentDictionary<IMySlimBlock, DamageInfo>(500);
-                HitEnts[i] = new MyConcurrentDictionary<IMyEntity, DamageInfo>(50);
                 DrawProjectiles[i] = new List<DrawProjectile>(500);
             }
         }
@@ -62,8 +60,8 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
-            for (int i = 0; i < Wait.Length; i++) Process(i);
+            MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+            //for (int i = 0; i < Wait.Length; i++) Process(i);
         }
 
         private void Process(int i)
@@ -77,11 +75,8 @@ namespace WeaponCore.Projectiles
                 var entPool = EntityPool[i];
                 var drawList = DrawProjectiles[i];
                 var segmentPool = SegmentPool[i];
-                var checkPool = CheckPool[i];
+                var hitsPool = HitsPool[i];
                 var linePool = LinePool[i];
-                var damagePool = DamagePool[i];
-                var hitBlocks = HitBlocks[i];
-                var hitEnts = HitEnts[i];
                 var modelClose = false;
                 foreach (var p in pool.Active)
                 {
@@ -91,20 +86,20 @@ namespace WeaponCore.Projectiles
                         case Projectile.ProjectileState.Dead:
                             continue;
                         case Projectile.ProjectileState.Start:
-                            p.Start(checkPool.Get(), noAv);
+                            p.Start(hitsPool.Get(), noAv);
                             if (p.ModelState == Projectile.EntityState.NoDraw)
                                 modelClose = p.CloseModel(entPool[p.ModelId], drawList);
                             break;
                         case Projectile.ProjectileState.Ending:
-                            if (p.ModelState != Projectile.EntityState.Exists) p.Stop(pool, checkPool);
+                            if (p.ModelState != Projectile.EntityState.Exists) p.Stop(pool, hitsPool);
                             else
                             {
                                 modelClose = p.CloseModel(entPool[p.ModelId], drawList);
-                                p.Stop(pool, checkPool);
+                                p.Stop(pool, hitsPool);
                             }
                             continue;
                         case Projectile.ProjectileState.OneAndDone:
-                            p.Stop(pool, checkPool);
+                            p.Stop(pool, hitsPool);
                             continue;
                     }
                     p.LastPosition = p.Position;
@@ -189,6 +184,22 @@ namespace WeaponCore.Projectiles
                     else if (!p.ConstantSpeed && p.EnableAv && p.Effect1 != null && p.System.AmmoParticle)
                         p.Effect1.Velocity = p.Velocity;
 
+                    if (p.State != Projectile.ProjectileState.OneAndDone)
+                    {
+                        if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
+                        {
+                            if (p.MoveToAndActivate || p.System.AmmoAreaEffect)
+                            {
+                                GetEntitiesInBlastRadius(p.HitList, p.FiringCube, p.System, p.Direction, p.Position, i);
+                                p.HitPos = p.Position;
+                            }
+
+                            p.ProjectileClose(pool, hitsPool, noAv);
+                            continue;
+                        }
+                    }
+                    if (p.HitPos != null) continue;
+
                     var segmentList = segmentPool.Get();
                     LineD beam;
                     if (p.State == Projectile.ProjectileState.OneAndDone || p.Guidance != AmmoTrajectory.GuidanceType.None) beam = new LineD(p.LastPosition, p.Position);
@@ -200,46 +211,33 @@ namespace WeaponCore.Projectiles
                         try
                         {
                             var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.WeaponId, p.MuzzleId, p.IsBeamWeapon, 0);
-                            GetAllEntitiesInLine(p.CheckList, fired, beam, segmentList, null);
-                            var hitInfo = GetHitEntities(p.CheckList, fired, beam);
-                            if (GetDamageInfo(fired, p.Entity, p.EntityMatrix, beam, hitInfo, hitEnts, hitBlocks, damagePool, 0, false))
-                            {
-                                p.HitPos = hitInfo.HitPos;
-                                DamageEntities(fired, hitEnts, hitBlocks, damagePool);
-                            }
+                            GetAllEntitiesInLine(p.FiringCube, beam, segmentList, p.HitList, i);
+
+                            HitEntity hitEnt = null;
+                            if (p.HitList.Count > 0) hitEnt = GenerateHitInfo(p.HitList, i);
+
                             linePool.Return(fired.Shots);
-                            p.CheckList.Clear();
                             segmentList.Clear();
 
-                            if (p.HitPos != null)
+                            if (hitEnt?.HitPos != null)
                             {
+                                p.HitPos = hitEnt.HitPos;
                                 if (!noAv && p.EnableAv && (p.DrawLine || p.ModelId != -1))
                                 {
-                                    var entity = hitInfo.Slim == null ? hitInfo.Entity : hitInfo.Slim.CubeGrid;
-                                    var hitLine = new LineD(p.LastPosition, hitInfo.HitPos);
-                                    var sphere = new BoundingSphereD(p.HitPos.Value, 25f);
-                                    var hitOnScreen = camera.IsInFrustum(ref sphere);
-                                    drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, p.HitPos, entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, hitOnScreen));
+                                    var hitLine = new LineD(p.LastPosition, p.HitPos.Value);
+                                    p.TestSphere.Center = p.HitPos.Value;
+                                    var hitOnScreen = camera.IsInFrustum(ref p.TestSphere);
+                                    drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, p.HitPos, hitEnt.Entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, hitOnScreen));
                                 }
-                                p.ProjectileClose(pool, checkPool, noAv);
+                                Hits.Enqueue(new Session.DamageEvent(fired.System, fired.Direction, p.HitList, fired.FiringCube, i));
+                                p.ProjectileClose(pool, hitsPool, noAv);
+                                continue;
                             }
+                            p.HitList.Clear();
                         }
-                        catch (Exception ex) { Log.Line($"Exception in GetTopmostEntitiesOverlappingRay: {ex}"); }
+                        catch (Exception ex) { Log.Line($"Exception in Intersect check: {ex}"); }
                     }
                     segmentPool.Return(segmentList);
-                    if (p.HitPos != null) continue;
-
-                    if (p.State != Projectile.ProjectileState.OneAndDone)
-                    {
-                        if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
-                        {
-                            if (p.MoveToAndActivate || p.System.AmmoAreaEffect)
-                                GetEntitiesInBlastRadius(new Fired(p.System, null, p.FiringCube, p.ReverseOriginRay, p.Direction, p.WeaponId, p.MuzzleId, p.IsBeamWeapon, p.Age), p.Position, i);
-
-                            p.ProjectileClose(pool, checkPool, noAv);
-                            continue;
-                        }
-                    }
 
                     if (noAv || !p.EnableAv) continue;
 
