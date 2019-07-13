@@ -18,7 +18,7 @@ namespace WeaponCore
                 var p = drawList[i];
                 if (p.Entity != null)
                 {
-                    var drawLine = p.Fired.System.Values.Graphics.Line.Trail;
+                    var drawLine = p.System.Values.Graphics.Line.Trail;
                     p.Entity.PositionComp.SetWorldMatrix(p.EntityMatrix, null, false, false, false);
                     if (p.Last)
                     {
@@ -28,21 +28,21 @@ namespace WeaponCore
                     if (!drawLine) continue;
                 }
 
-                var line = p.Projectile;
+                var trajectile = p.Trajectile;
                 var width = p.LineWidth;
 
-                if (p.Shrink)
+                if (p.Shrink && p.HitEntity != null)
                 {
                     sFound = true;
                     var shrink = _shrinkPool.Get();
-                    shrink.Init(line, ref p);
+                    shrink.Init(trajectile, ref p);
                     _shrinking.Add(shrink);
                 }
                 var color = p.Color;
 
                 var newWidth = width;
 
-                if (p.Fired.System.Values.Ammo.Trajectory.DesiredSpeed <= 0)
+                if (p.System.Values.Ammo.Trajectory.DesiredSpeed <= 0)
                 {
                     var changeValue = 0.01f;
                     if (_lCount < 60)
@@ -67,23 +67,21 @@ namespace WeaponCore
 
                 if (InTurret)
                 {
-                    var matrix = MatrixD.CreateFromDir(line.Direction);
-                    matrix.Translation = line.From;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)line.Length, 12, color, color, p.Fired.System.ProjectileMaterial, p.Fired.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    var matrix = MatrixD.CreateFromDir(trajectile.Direction);
+                    matrix.Translation = trajectile.PrevPosition;
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)trajectile.Length, 12, color, color, p.System.ProjectileMaterial, p.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
                 else
-                    MyTransparentGeometry.AddLocalLineBillboard(p.Fired.System.ProjectileMaterial, color, line.From, 0, line.Direction, (float)line.Length, newWidth);
-
-                var f = p.Fired;
-                if (f.IsBeam)
+                    MyTransparentGeometry.AddLocalLineBillboard(p.System.ProjectileMaterial, color, trajectile.PrevPosition, 0, trajectile.Direction, (float)trajectile.Length, newWidth);
+                if (p.System.IsBeamWeapon)
                 {
-                    var c = f.FiringCube;
-                    if (f.FiringCube == null || f.FiringCube.MarkedForClose) continue;
-                    var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[f.WeaponId];
+                    var c = p.FiringCube;
+                    if (p.FiringCube == null || p.FiringCube.MarkedForClose) continue;
+                    var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[p.WeaponId];
                     if (weapon != null)
                     {
-                        var effect = weapon.HitEffects[f.MuzzleId];
-                        if (p.HitPos.HasValue && p.OnScreen)
+                        var effect = weapon.HitEffects[p.MuzzleId];
+                        if (p.HitEntity?.HitPos != null && p.OnScreen)
                         {
                             if (effect != null)
                             {
@@ -94,41 +92,41 @@ namespace WeaponCore
                                     effect = null;
                                 }
                             }
-                            var hitPos = p.HitPos.Value;
+                            var hitPos = p.HitEntity.HitPos.Value;
                             MatrixD matrix;
                             MatrixD.CreateTranslation(ref hitPos, out matrix);
                             if (effect == null)
                             {
-                                MyParticlesManager.TryCreateParticleEffect(f.System.Values.Graphics.Particles.HitParticle, ref matrix, ref hitPos, uint.MaxValue, out effect);
+                                MyParticlesManager.TryCreateParticleEffect(p.System.Values.Graphics.Particles.HitParticle, ref matrix, ref hitPos, uint.MaxValue, out effect);
                                 if (effect == null)
                                 {
-                                    weapon.HitEffects[f.MuzzleId] = null;
+                                    weapon.HitEffects[p.MuzzleId] = null;
                                     continue;
                                 }
 
                                 effect.DistanceMax = 5000;
                                 effect.DurationMax = 1f;
-                                effect.UserColorMultiplier = f.System.Values.Graphics.Particles.HitColor;
+                                effect.UserColorMultiplier = p.System.Values.Graphics.Particles.HitColor;
                                 //var reScale = (float)Math.Log(195312.5, MyAPIGateway.); // wtf is up with particles and camera distance
                                 //var scaler = reScale < 1 ? reScale : 1;
                                 var scaler = 1;
                                 effect.Loop = false;
 
-                                effect.UserRadiusMultiplier = f.System.Values.Graphics.Particles.HitScale * scaler;
+                                effect.UserRadiusMultiplier = p.System.Values.Graphics.Particles.HitScale * scaler;
                                 effect.UserEmitterScale = 1 * scaler;
                             }
                             else if (effect.IsEmittingStopped)
                                 effect.Play();
 
                             effect.WorldMatrix = matrix;
-                            if (p.HitEntity?.Physics != null)
-                                effect.Velocity = p.HitEntity.Physics.LinearVelocity;
-                            weapon.HitEffects[f.MuzzleId] = effect;
+                            if (p.HitEntity.Entity.Physics != null)
+                                effect.Velocity = p.HitEntity.Entity.Physics.LinearVelocity;
+                            weapon.HitEffects[p.MuzzleId] = effect;
                         }
                         else if (effect != null)
                         {
                             effect.Stop(false);
-                            weapon.HitEffects[f.MuzzleId] = null;
+                            weapon.HitEffects[p.MuzzleId] = null;
                         }
                     }
                 }
@@ -142,17 +140,17 @@ namespace WeaponCore
             var sRemove = false;
             foreach (var s in _shrinking)
             {
-                var line = s.GetLine();
-                if (line.HasValue)
+                var trajectile = s.GetLine();
+                if (trajectile.HasValue)
                 {
                     if (InTurret)
                     {
-                        var matrix = MatrixD.CreateFromDir(line.Value.Direction);
-                        matrix.Translation = line.Value.From;
+                        var matrix = MatrixD.CreateFromDir(trajectile.Value.Direction);
+                        matrix.Translation = trajectile.Value.PrevPosition;
 
-                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.DrawProjectile.Fired.System.Values.Graphics.Line.Width, s.DrawProjectile.Fired.System.Values.Graphics.Line.Width, (float)line.Value.Length, 6, s.DrawProjectile.Fired.System.Values.Graphics.Line.Color, s.DrawProjectile.Fired.System.Values.Graphics.Line.Color, s.DrawProjectile.Fired.System.ProjectileMaterial, s.DrawProjectile.Fired.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.System.Values.Graphics.Line.Width, s.System.Values.Graphics.Line.Width, (float)trajectile.Value.Length, 6, s.System.Values.Graphics.Line.Color, s.System.Values.Graphics.Line.Color, s.System.ProjectileMaterial, s.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                     }
-                    else MyTransparentGeometry.AddLocalLineBillboard(s.DrawProjectile.Fired.System.ProjectileMaterial, s.DrawProjectile.Fired.System.Values.Graphics.Line.Color, line.Value.From, 0, line.Value.Direction, (float)line.Value.Length, s.DrawProjectile.Fired.System.Values.Graphics.Line.Width);
+                    else MyTransparentGeometry.AddLocalLineBillboard(s.System.ProjectileMaterial, s.System.Values.Graphics.Line.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, s.System.Values.Graphics.Line.Width);
                 }
                 else
                 {

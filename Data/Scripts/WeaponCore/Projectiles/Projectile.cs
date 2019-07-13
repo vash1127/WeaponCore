@@ -22,7 +22,7 @@ namespace WeaponCore.Projectiles
         internal Fired DummyFired;
         internal RayD OriginRay;
         internal RayD ReverseOriginRay;
-        internal LineD CurrentLine;
+        internal Trajectile Trajectile;
         internal Vector3D Direction;
         internal Vector3D OriginUp;
         internal Vector3D AccelDir;
@@ -40,7 +40,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
         internal Vector3 PrevTargetVel;
-        internal Vector3D? HitPos;
+        internal HitEntity HitEntity;
         internal WeaponSystem System;
         internal List<HitEntity> HitList;
         internal MyCubeBlock FiringCube;
@@ -108,7 +108,7 @@ namespace WeaponCore.Projectiles
             LastEntityPos = Position;
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
-            HitPos = null;
+            HitEntity = null;
             FiringGrid = FiringCube.CubeGrid;
             ReverseOriginRay = new RayD(Origin, -Direction);
             OriginRay = new RayD(Origin, Direction);
@@ -294,7 +294,7 @@ namespace WeaponCore.Projectiles
         {
             if (noAv && ModelId == -1)
             {
-                if (!HitPos.HasValue)hitPool.Return(HitList);
+                if (HitEntity == null) hitPool.Return(HitList);
                 pool.MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
@@ -309,7 +309,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (System.AmmoParticle) DisposeEffect();
                     if (System.HitParticle && !IsBeamWeapon) PlayHitParticle();
-                    if (System.HitSound && HitPos.HasValue)
+                    if (System.HitSound && HitEntity != null)
                     {
                         Sound1.SetPosition(Position);
                         Sound1.CanPlayLoopSounds = false;
@@ -318,7 +318,7 @@ namespace WeaponCore.Projectiles
                     else if (AmmoSound) Sound1.StopSound(false, true);
                 }
 
-                if (!HitPos.HasValue) hitPool.Return(HitList);
+                if (HitEntity == null) hitPool.Return(HitList);
                 pool.MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
@@ -327,7 +327,7 @@ namespace WeaponCore.Projectiles
         internal bool CloseModel(EntityPool<MyEntity> entPool, List<DrawProjectile> drawList)
         {
             EntityMatrix = MatrixD.Identity;
-            drawList.Add(new DrawProjectile(ref DummyFired, Entity, EntityMatrix, 0, new LineD(), Velocity, HitPos, null, true, 0, 0, false, true, OnScreen));
+            drawList.Add(new DrawProjectile(System, FiringCube, WeaponId, MuzzleId, Entity, EntityMatrix, null, new Trajectile(), MaxSpeedLength, ReSizeSteps, Shrink, true, OnScreen));
             entPool.MarkForDeallocate(Entity);
             ModelState = EntityState.None;
             return true;
@@ -335,23 +335,25 @@ namespace WeaponCore.Projectiles
 
         private void PlayHitParticle()
         {
-            if (!HitPos.HasValue) return;
-            var pos = HitPos.Value;
+            if (HitEntity.HitPos.HasValue)
+            {
+                var pos = HitEntity.HitPos.Value;
+                var matrix = MatrixD.CreateTranslation(pos);
+                var parentId = uint.MaxValue;
+                MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.HitParticle, ref matrix, ref pos, parentId, out Effect1);
+                if (Effect1 == null) return;
+                Effect1.Loop = false;
+                Effect1.DurationMax = 1f;
+                Effect1.DistanceMax = 5000;
+                Effect1.UserColorMultiplier = System.Values.Graphics.Particles.HitColor;
+                var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
+                var scaler = reScale < 1 ? reScale : 1;
 
-            var matrix = MatrixD.CreateTranslation(pos); 
-            var parentId = uint.MaxValue;
-            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.HitParticle, ref matrix, ref pos, parentId, out Effect1);
-            if (Effect1 == null) return;
-            Effect1.Loop = false;
-            Effect1.DurationMax = 1f;
-            Effect1.DistanceMax = 5000;
-            Effect1.UserColorMultiplier = System.Values.Graphics.Particles.HitColor;
-            var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
-            var scaler = reScale < 1 ? reScale : 1;
-
-            Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.HitScale * scaler;
-            Effect1.UserEmitterScale = 1 * scaler;
-            if (ModelState != EntityState.Exists) Effect1.Velocity = Velocity;
+                Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.HitScale * scaler;
+                Effect1.UserEmitterScale = 1 * scaler;
+                var hitVel = HitEntity.Entity.Physics?.LinearVelocity ?? Vector3.Zero;
+                if (ModelState != EntityState.Exists) Effect1.Velocity = hitVel;
+            }
         }
 
         private void DisposeEffect()

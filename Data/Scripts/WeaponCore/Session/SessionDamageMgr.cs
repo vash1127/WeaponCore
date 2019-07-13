@@ -39,9 +39,12 @@ namespace WeaponCore
             {
                 var pId = damageEvent.PoolId;
                 var damagePool = damageEvent.System.Values.Ammo.DefaultDamage;
-                foreach (var hitEnt in damageEvent.HitEntity)
+                Log.Line($"damagePoolStart:{damagePool}");
+                for (int i = 0; i < damageEvent.HitEntity.Count; i++)
                 {
+                    Log.Line($"step{i} - poolSize:{damagePool}");
                     if (damagePool <= 0) continue;
+                    var hitEnt = damageEvent.HitEntity[i];
                     switch (hitEnt.EventType)
                     {
                         case Type.Shield:
@@ -72,13 +75,13 @@ namespace WeaponCore
             var shield = hitEnt.Entity as IMyTerminalBlock;
             var system = dEvent.System;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
-            damagePool = 0;
             SApi.PointAttackShield(shield, hitEnt.HitPos.Value, dEvent.Attacker.EntityId, damagePool, false, true);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
                 ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, dEvent.Direction, system.Values.Ammo.Mass * speed);
             }
+            damagePool = 0;
         }
 
         private void DamageGrid(HitEntity hitEnt, ref DamageEvent dEvent, ref float damagePool)
@@ -86,13 +89,18 @@ namespace WeaponCore
             var grid = hitEnt.Entity as MyCubeGrid;
             var system = dEvent.System;
 
-            if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null) return;
+            if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
+            {
+                Log.Line($"something null/closed in grid damage");
+                return;
+            }
 
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 var block = hitEnt.Blocks[i];
                 var blockHp = block.Integrity;
                 var damage = blockHp;
+                if (damagePool <= 0) continue;
                 if (damagePool < blockHp)
                 {
                     damage = damagePool;
@@ -100,8 +108,6 @@ namespace WeaponCore
                 }
                 else damagePool -= damage;
 
-                if (damagePool <= 0) continue;
-                Log.Line($"test1");
                 block.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
                 if (system.AmmoAreaEffect)
                 {
@@ -122,7 +128,7 @@ namespace WeaponCore
             var destObj = hitEnt.Entity as IMyDestroyableObject;
             var system = dEvent.System;
             if (destObj == null || entity == null) return;
-
+            Log.Line("Test");
             var objHp = destObj.Integrity;
             if (damagePool < objHp)
             {

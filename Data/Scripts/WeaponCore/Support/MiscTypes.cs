@@ -7,25 +7,24 @@ namespace WeaponCore.Support
 {
     public class Shrinking
     {
-        internal DrawProjectile DrawProjectile;
-        internal Vector3D Position;
-        internal Vector3D Direction;
-        internal double Length;
-        internal int ShrinkStep;
+        internal Trajectile Trajectile;
+        internal WeaponSystem System;
+        internal int ReSizeSteps;
+        internal double LineReSizeLen;
 
-        internal void Init(LineD line, ref DrawProjectile projectile)
+        internal void Init(Trajectile trajectile, ref DrawProjectile drawProjectile)
         {
-            DrawProjectile = projectile;
-            Position = line.To;
-            Direction = line.Direction;
-            Length = line.Length;
-            ShrinkStep = DrawProjectile.ReSizeSteps;
+            Trajectile = trajectile;
+            System = drawProjectile.System;
+            ReSizeSteps = drawProjectile.ReSizeSteps;
+            LineReSizeLen = drawProjectile.LineReSizeLen;
         }
 
-        internal LineD? GetLine()
+        internal Trajectile? GetLine()
         {
-            if (ShrinkStep-- <= 0) return null;
-            return new LineD(Position + -(Direction * (ShrinkStep * DrawProjectile.LineReSizeLen)), Position);
+            if (ReSizeSteps-- <= 0) return null;
+            var length = ReSizeSteps * LineReSizeLen;
+            return new Trajectile(Trajectile.PrevPosition + -(Trajectile.Direction * length), Trajectile.Position, Trajectile.Direction, length);
         }
     }
 
@@ -60,28 +59,6 @@ namespace WeaponCore.Support
             Logic = logic;
             HitPos = hitPos;
             Size = size;
-        }
-    }
-
-    public struct TargetInfo
-    {
-        public enum TargetType
-        {
-            Player,
-            Grid,
-            Other
-        }
-
-        public readonly MyEntity Entity;
-        public readonly double Distance;
-        public readonly float Size;
-        public readonly TargetType Type;
-        public TargetInfo(MyEntity entity, double distance, float size, TargetType type)
-        {
-            Entity = entity;
-            Distance = distance;
-            Size = size;
-            Type = type;
         }
     }
 

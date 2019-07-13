@@ -191,14 +191,15 @@ namespace WeaponCore.Projectiles
                             if (p.MoveToAndActivate || p.System.AmmoAreaEffect)
                             {
                                 GetEntitiesInBlastRadius(p.HitList, p.FiringCube, p.System, p.Direction, p.Position, i);
-                                p.HitPos = p.Position;
+                                p.HitEntity = p.HitList[0];
                             }
 
                             p.ProjectileClose(pool, hitsPool, noAv);
                             continue;
                         }
                     }
-                    if (p.HitPos != null) continue;
+
+                    if (p.HitEntity != null) continue;
 
                     var segmentList = segmentPool.Get();
                     LineD beam;
@@ -211,23 +212,22 @@ namespace WeaponCore.Projectiles
                         try
                         {
                             var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.WeaponId, p.MuzzleId, p.IsBeamWeapon, 0);
-                            GetAllEntitiesInLine(p.FiringCube, beam, segmentList, p.HitList, i);
 
-                            HitEntity hitEnt = null;
-                            if (p.HitList.Count > 0) hitEnt = GenerateHitInfo(p.HitList, i);
+                            if (GetAllEntitiesInLine(p.FiringCube, beam, segmentList, p.HitList, i))
+                                p.HitEntity = GenerateHitInfo(p.HitList, i);
 
                             linePool.Return(fired.Shots);
                             segmentList.Clear();
 
-                            if (hitEnt?.HitPos != null)
+                            if (p.HitEntity != null)
                             {
-                                p.HitPos = hitEnt.HitPos;
                                 if (!noAv && p.EnableAv && (p.DrawLine || p.ModelId != -1))
                                 {
-                                    var hitLine = new LineD(p.LastPosition, p.HitPos.Value);
-                                    p.TestSphere.Center = p.HitPos.Value;
+                                    var length = Vector3D.Distance(p.LastPosition, p.HitEntity.HitPos.Value);
+                                    p.Trajectile = new Trajectile(p.LastPosition, p.HitEntity.HitPos.Value, p.Direction, length);
+                                    p.TestSphere.Center = p.HitEntity.HitPos.Value;
                                     var hitOnScreen = camera.IsInFrustum(ref p.TestSphere);
-                                    drawList.Add(new DrawProjectile(ref fired, p.Entity, p.EntityMatrix, 0, hitLine, p.Velocity, p.HitPos, hitEnt.Entity, true, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, hitOnScreen));
+                                    drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, p.HitEntity, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, true, hitOnScreen));
                                 }
                                 Hits.Enqueue(new Session.DamageEvent(fired.System, fired.Direction, p.HitList, fired.FiringCube, i));
                                 p.ProjectileClose(pool, hitsPool, noAv);
@@ -277,7 +277,7 @@ namespace WeaponCore.Projectiles
                             p.FirstOffScreen = false;
                             p.OnScreen = true;
                             p.LastEntityPos = p.Position;
-                            drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false, true));
+                            drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, null, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, p.OnScreen));
                         }
                         else p.OnScreen = false;
                         continue;
@@ -289,22 +289,24 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.AccelLength <= 0)
                         {
-                            p.CurrentLine = new LineD(p.Position, p.Position + -(p.Direction * (p.GrowStep * p.MaxSpeedLength)));
+                            p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
                             if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
                         }
                         else
-                            p.CurrentLine = new LineD(p.Position, p.Position + - (p.Direction * Vector3D.Distance(p.Origin, p.Position)));
+                            p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
 
                         if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength) p.Grow = false;
                     }
-                    else if (p.State == Projectile.ProjectileState.OneAndDone) p.CurrentLine = new LineD(p.LastPosition, p.Position);
-                    else p.CurrentLine = new LineD(p.Position + -(p.Direction * p.ShotLength), p.Position);
+                    else if (p.State == Projectile.ProjectileState.OneAndDone)
+                        p.Trajectile = new Trajectile(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
+                    else
+                        p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.ShotLength), p.Position, p.Direction, p.ShotLength);
 
-                    var bb = new BoundingBoxD(Vector3D.Min(p.CurrentLine.From, p.CurrentLine.To), Vector3D.Max(p.CurrentLine.From, p.CurrentLine.To));
+                    var bb = new BoundingBoxD(Vector3D.Min(p.Trajectile.PrevPosition, p.Trajectile.Position), Vector3D.Max(p.Trajectile.PrevPosition, p.Trajectile.Position));
                     if (camera.IsInFrustum(ref bb))
                     {
                         p.OnScreen = true;
-                        drawList.Add(new DrawProjectile(ref p.DummyFired, p.Entity, p.EntityMatrix, 0, p.CurrentLine, p.Velocity, p.HitPos, null, true, 0, 0, false, false, true));
+                        drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, null, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, p.OnScreen));
                     }
                     else p.OnScreen = false;
                 }
