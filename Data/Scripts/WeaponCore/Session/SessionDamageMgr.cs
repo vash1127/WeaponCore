@@ -39,10 +39,9 @@ namespace WeaponCore
             {
                 var pId = damageEvent.PoolId;
                 var damagePool = damageEvent.System.Values.Ammo.DefaultDamage;
-                if (damageEvent.HitEntity == null) Log.Line($"hitListIsNull");
                 foreach (var hitEnt in damageEvent.HitEntity)
                 {
-                    if (hitEnt == null) Log.Line($"hitEnt is null");
+                    if (damagePool <= 0) continue;
                     switch (hitEnt.EventType)
                     {
                         case Type.Shield:
@@ -73,9 +72,8 @@ namespace WeaponCore
             var shield = hitEnt.Entity as IMyTerminalBlock;
             var system = dEvent.System;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
-            var baseDamage = system.Values.Ammo.DefaultDamage;
-            var damage = (baseDamage + system.Values.Ammo.AreaEffectYield);
-            SApi.PointAttackShield(shield, hitEnt.HitPos.Value, dEvent.Attacker.EntityId, damage, false, true);
+            damagePool = 0;
+            SApi.PointAttackShield(shield, hitEnt.HitPos.Value, dEvent.Attacker.EntityId, damagePool, false, true);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
@@ -90,11 +88,19 @@ namespace WeaponCore
 
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null) return;
 
-            var baseDamage = system.Values.Ammo.DefaultDamage;
-            var damage = baseDamage;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 var block = hitEnt.Blocks[i];
+                var blockHp = block.Integrity;
+                var damage = blockHp;
+                if (damagePool < blockHp)
+                {
+                    damage = damagePool;
+                    damagePool = 0;
+                }
+                else damagePool -= damage;
+
+                if (damagePool <= 0) continue;
                 block.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
                 if (system.AmmoAreaEffect)
                 {
@@ -116,10 +122,15 @@ namespace WeaponCore
             var system = dEvent.System;
             if (destObj == null || entity == null) return;
 
-            var baseDamage = system.Values.Ammo.DefaultDamage;
-            var damage = baseDamage;
+            var objHp = destObj.Integrity;
+            if (damagePool < objHp)
+            {
+                objHp = damagePool;
+                damagePool = 0;
+            }
+            else damagePool -= objHp;
 
-            destObj.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
+            destObj.DoDamage(objHp, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
@@ -153,7 +164,7 @@ namespace WeaponCore
                 if (ExplosionReady) UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, dEvent.Direction, dEvent.Attacker, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
                 else UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, dEvent.Direction, dEvent.Attacker, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield, true);
             }
-            else UtilsStatic.CreateFakeExplosion(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffectRadius);
+            else if (hitEnt.HitPos.HasValue) UtilsStatic.CreateFakeExplosion(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffectRadius);
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)
