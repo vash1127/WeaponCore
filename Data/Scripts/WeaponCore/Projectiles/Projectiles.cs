@@ -320,7 +320,7 @@ namespace WeaponCore.Projectiles
 
         //Relative velocity proportional navigation
         //aka: Whip-Nav
-        private Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1)
+        private Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1, double maxLateralThrustProportion = 0.5)
         {
             var missileToTarget = Vector3D.Normalize(targetPosition - missilePos);
             var relativeVelocity = targetVelocity - missileVelocity;
@@ -332,12 +332,14 @@ namespace WeaponCore.Projectiles
             if (Vector3D.IsZero(normalMissileAcceleration))
                 return missileToTarget * missileAcceleration;
 
-            double diff = missileAcceleration * missileAcceleration - normalMissileAcceleration.LengthSquared();
-            if (diff < 0)
+            double maxLateralThrust = missileAcceleration * Math.Min(1, Math.Max(0, maxLateralThrustProportion));
+            if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust)
             {
-                return Vector3D.Normalize(normalMissileAcceleration) * missileAcceleration; //fly parallel to the target
+                Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
+                normalMissileAcceleration *= maxLateralThrustProportion;
             }
 
+            double diff = missileAcceleration * missileAcceleration - normalMissileAcceleration.LengthSquared();
             return Math.Sqrt(diff) * missileToTarget + normalMissileAcceleration;
         }
     }
