@@ -123,7 +123,6 @@ namespace WeaponCore
             var destObj = hitEnt.Entity as IMyDestroyableObject;
             var system = dEvent.Projectile.System;
             if (destObj == null || entity == null) return;
-            Log.Line("Test");
             var objHp = destObj.Integrity;
             if (dEvent.Projectile.DamagePool < objHp)
             {
