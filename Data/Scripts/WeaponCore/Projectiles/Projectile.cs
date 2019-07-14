@@ -52,7 +52,7 @@ namespace WeaponCore.Projectiles
         internal double CheckLength;
         internal float AmmoTravelSoundRangeSqr;
         internal float MaxTrajectory;
-        internal float SmartsFactor;
+        internal double SmartsFactor;
         internal double MaxTrajectorySqr;
         internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
@@ -61,6 +61,7 @@ namespace WeaponCore.Projectiles
         internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
         internal double AccelPerSec;
+        internal int PoolId;
         internal int Age;
         internal int ObjectsHit;
         internal int ReSizeSteps;
@@ -103,22 +104,27 @@ namespace WeaponCore.Projectiles
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
 
-        internal void Start(List<HitEntity> hitList, bool noAv)
+        internal void Start(List<HitEntity> hitList, bool noAv, int poolId)
         {
-            ModelState = EntityState.None;
+            HitList = hitList;
+            PoolId = poolId;
+
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
             Position = Origin;
             AccelDir = Direction;
+            Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
+            var probability = System.Values.Graphics.VisualProbability;
+            EnableAv = !noAv && DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
+
+            ModelState = EntityState.None;
             LastEntityPos = Position;
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             LastHitPos = null;
             LastHitEntVel = null;
-            FiringGrid = FiringCube.CubeGrid;
             Age = 0;
             ObjectsHit = 0;
             Colliding = false;
-
             ParticleStopped = false;
             ParticleLateStart = false;
             OnScreen = true;
@@ -128,13 +134,14 @@ namespace WeaponCore.Projectiles
             EndStep = 0;
             GrowStep = 1;
             DistanceTraveled = 0;
+
+            FiringGrid = FiringCube.CubeGrid;
             DamagePool = System.Values.Ammo.DefaultDamage;
             Guidance = System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
             LockedTarget = Target != null && !Target.MarkedForClose;
             SmartsFactor = System.Values.Ammo.Trajectory.SmartsFactor;
             if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
-            HitList = hitList;
 
             DrawLine = System.Values.Graphics.Line.Trail;
             if (System.RangeVariance)
@@ -162,10 +169,7 @@ namespace WeaponCore.Projectiles
             else DesiredSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
 
             DesiredSpeedSqr = DesiredSpeed * DesiredSpeed;
-            Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
 
-            var probability = System.Values.Graphics.VisualProbability;
-            EnableAv = !noAv && DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
             MoveToAndActivate = FoundTarget && Guidance == AmmoTrajectory.GuidanceType.TravelTo;
@@ -297,6 +301,7 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool, bool noAv)
         {
+            Log.Line("projectile close");
             if (noAv && ModelId == -1)
             {
                 HitList.Clear();
@@ -309,6 +314,7 @@ namespace WeaponCore.Projectiles
 
         internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool)
         {
+            Log.Line("projectile stop");
             if (EndStep++ >= EndSteps)
             {
                 if (EnableAv)
@@ -327,6 +333,7 @@ namespace WeaponCore.Projectiles
 
         internal bool CloseModel(EntityPool<MyEntity> entPool, List<DrawProjectile> drawList)
         {
+            Log.Line("close model");
             EntityMatrix = MatrixD.Identity;
             drawList.Add(new DrawProjectile(System, FiringCube, WeaponId, MuzzleId, Entity, EntityMatrix, null, new Trajectile(), MaxSpeedLength, ReSizeSteps, Shrink, true, OnScreen));
             entPool.MarkForDeallocate(Entity);

@@ -18,11 +18,16 @@ namespace WeaponCore
             Projectile projectile;
             while (Projectiles.Hits.TryDequeue(out projectile))
             {
-                var maxObjects = projectile.System.Values.Ammo.MaxObjectsHit;
+                var maxObjects = projectile.System.MaxObjectsHit;
                 for (int i = 0; i < projectile.HitList.Count; i++)
                 {
-                    if (projectile.DamagePool <= 0 || projectile.ObjectsHit >= maxObjects) break;
                     var hitEnt = projectile.HitList[i];
+                    if (projectile.DamagePool <= 0 || projectile.ObjectsHit >= maxObjects)
+                    {
+                        projectile.State = Projectile.ProjectileState.Depleted;
+                        Projectiles.HitEntityPool[projectile.PoolId].Return(hitEnt);
+                        continue;
+                    }
                     switch (hitEnt.EventType)
                     {
                         case Type.Shield:
@@ -41,6 +46,7 @@ namespace WeaponCore
                             DamageProximity(hitEnt, projectile);
                             continue;
                     }
+                    Projectiles.HitEntityPool[projectile.PoolId].Return(hitEnt);
                 }
                 if (projectile.DamagePool <= 0) projectile.State = Projectile.ProjectileState.Depleted;
                 projectile.HitList.Clear();
@@ -68,8 +74,11 @@ namespace WeaponCore
             var system = projectile.System;
 
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
+            {
+                Log.Line("grid something is null");
                 return;
-            var maxObjects = projectile.System.Values.Ammo.MaxObjectsHit;
+            }
+            var maxObjects = projectile.System.MaxObjectsHit;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 var block = hitEnt.Blocks[i];
@@ -141,12 +150,16 @@ namespace WeaponCore
         private void DamageProximity(HitEntity hitEnt, Projectile projectile)
         {
             var system = projectile.System;
+            projectile.DamagePool = 0;
             if (hitEnt.HitPos.HasValue)
             {
-                if (ExplosionReady) UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
-                else UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, null, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield, true);
+                if (ExplosionReady)
+                    UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, hitEnt.Entity, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
+                else
+                    UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, hitEnt.Entity, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield, true);
             }
-            else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue) UtilsStatic.CreateFakeExplosion(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffectRadius);
+            else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue)
+                UtilsStatic.CreateFakeExplosion(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffectRadius);
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)

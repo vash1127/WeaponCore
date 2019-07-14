@@ -82,13 +82,14 @@ namespace WeaponCore.Projectiles
                         case Projectile.ProjectileState.Dead:
                             continue;
                         case Projectile.ProjectileState.Start:
-                            p.Start(hitsPool.Get(), noAv);
+                            p.Start(hitsPool.Get(), noAv, i);
                             if (p.ModelState == Projectile.EntityState.NoDraw)
                                 modelClose = p.CloseModel(entPool[p.ModelId], drawList);
                             break;
                         case Projectile.ProjectileState.Ending:
                         case Projectile.ProjectileState.OneAndDone:
                         case Projectile.ProjectileState.Depleted:
+                            Log.Line($"{p.State}");
                             if (p.State == Projectile.ProjectileState.Depleted)
                                 p.ProjectileClose(pool, hitsPool, noAv);
                             if (p.ModelState != Projectile.EntityState.Exists) p.Stop(pool, hitsPool);
@@ -125,7 +126,7 @@ namespace WeaponCore.Projectiles
                                     p.DistanceToTravelSqr = (Vector3D.DistanceSquared(p.Position, p.PrevTargetPos) + 100);
                                     p.State = Projectile.ProjectileState.Zombie;
                                 }
-                                var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.System.Values.Ammo.Trajectory.SmartsFactor);
+                                var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.System.Values.Ammo.Trajectory.SmartsFactor, p.System.Values.Ammo.Trajectory.SmartsMaxLateralThrust);
                                 newVel = p.Velocity + (commandedAccel * StepConst);
                                 p.AccelDir = commandedAccel / p.AccelPerSec;
                             }
@@ -185,19 +186,17 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
-                            HitEntity hitEntity = null;
-                            if (p.MoveToAndActivate || p.System.AmmoAreaEffect)
+                            if (p.MoveToAndActivate || p.System.Values.Ammo.DetonateOnEnd)
                             {
                                 GetEntitiesInBlastRadius(p, i);
-                                hitEntity = p.HitList[0];
+                                var hitEntity = p.HitList[0];
+                                if (hitEntity != null)
+                                {
+                                    p.LastHitPos = hitEntity.HitPos;
+                                    p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
+                                }
                             }
-
-                            if (hitEntity == null) p.ProjectileClose(pool, hitsPool, noAv);
-                            else
-                            {
-                                p.LastHitPos = hitEntity.HitPos;
-                                p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
-                            }
+                            else p.ProjectileClose(pool, hitsPool, noAv);
                             continue;
                         }
                     }

@@ -18,6 +18,7 @@ namespace WeaponCore.Support
         public readonly int TimeToCeaseFire;
         public readonly int Barrel1AvTicks;
         public readonly int Barrel2AvTicks;
+        public readonly int MaxObjectsHit;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly FiringSoundState FiringSound;
@@ -84,6 +85,7 @@ namespace WeaponCore.Support
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
 
+            MaxObjectsHit = values.Ammo.MaxObjectsHit > 0 ? values.Ammo.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
             AmmoAreaEffect = values.Ammo.AreaEffectRadius > 0;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;

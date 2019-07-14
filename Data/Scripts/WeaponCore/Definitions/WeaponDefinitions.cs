@@ -3,7 +3,6 @@ using VRageMath;
 
 namespace WeaponCore.Support
 {
-
     [ProtoContract]
     public struct WeaponDefinition
     {
@@ -111,12 +110,13 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal float MaxTrajectory;
         [ProtoMember(2)] internal float AccelPerSec;
         [ProtoMember(3)] internal float DesiredSpeed;
-        [ProtoMember(4)] internal float SmartsFactor;
-        [ProtoMember(5)] internal float SmartsTrackingDelay;
-        [ProtoMember(6)] internal float TargetLossDegree;
-        [ProtoMember(7)] internal Randomize SpeedVariance;
-        [ProtoMember(8)] internal Randomize RangeVariance;
-        [ProtoMember(9)] internal GuidanceType Guidance;
+        [ProtoMember(4)] internal double SmartsFactor;
+        [ProtoMember(5)] internal double SmartsTrackingDelay;
+        [ProtoMember(6)] internal double SmartsMaxLateralThrust;
+        [ProtoMember(7)] internal float TargetLossDegree;
+        [ProtoMember(8)] internal Randomize SpeedVariance;
+        [ProtoMember(9)] internal Randomize RangeVariance;
+        [ProtoMember(10)] internal GuidanceType Guidance;
     }
 
     [ProtoContract]

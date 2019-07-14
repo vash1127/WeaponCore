@@ -25,7 +25,8 @@ namespace WeaponCore.Projectiles
             }
             entityList.Clear();
             MyEntityPool[poolId].Return(entityList);
-            if (projectile.HitList.Count <= 0)
+            var count = projectile.HitList.Count;
+            if (!Session.Instance.DedicatedServer && count <= 0)
             {
                 var hitEntity = HitEntityPool[poolId].Get();
                 hitEntity.Clean();
@@ -35,10 +36,8 @@ namespace WeaponCore.Projectiles
                 projectile.HitList.Add(hitEntity);
                 Hits.Enqueue(projectile);
             }
-            else if (Session.Instance.IsServer)
-            {
+            else if (Session.Instance.IsServer && count > 0)
                 Hits.Enqueue(projectile);
-            }
         }
 
         internal bool GetAllEntitiesInLine(Projectile projectile, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList, int poolId, bool quickCheck = false)
@@ -63,6 +62,7 @@ namespace WeaponCore.Projectiles
                         {
                             hitEntity.HitPos = Session.Instance.SApi.LineIntersectShield(shieldBlock, beam);
                             hitEntity.Hit = true;
+                            hitEntity.EventType = Proximity;
                         }
                         found = true;
                         projectile.HitList.Add(hitEntity);
@@ -88,6 +88,7 @@ namespace WeaponCore.Projectiles
                         var tmpDist = dist ?? 0;
                         hitEntity.HitPos = (beam.From + (beam.Direction * tmpDist));
                         hitEntity.Hit = true;
+                        hitEntity.EventType = Proximity;
                     }
                     found = true;
                     projectile.HitList.Add(hitEntity);
