@@ -91,15 +91,16 @@ namespace WeaponCore.Projectiles
                                 modelClose = p.CloseModel(entPool[p.ModelId], drawList);
                             break;
                         case Projectile.ProjectileState.Ending:
+                        case Projectile.ProjectileState.OneAndDone:
+                        case Projectile.ProjectileState.Depleted:
+                            if (p.State == Projectile.ProjectileState.Depleted)
+                                p.ProjectileClose(pool, hitsPool, noAv);
                             if (p.ModelState != Projectile.EntityState.Exists) p.Stop(pool, hitsPool);
                             else
                             {
                                 modelClose = p.CloseModel(entPool[p.ModelId], drawList);
                                 p.Stop(pool, hitsPool);
                             }
-                            continue;
-                        case Projectile.ProjectileState.OneAndDone:
-                            p.Stop(pool, hitsPool);
                             continue;
                     }
                     p.LastPosition = p.Position;
@@ -188,18 +189,23 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
+                            HitEntity hitEntity = null;
                             if (p.MoveToAndActivate || p.System.AmmoAreaEffect)
                             {
-                                GetEntitiesInBlastRadius(p.HitList, p.FiringCube, p.System, p.Direction, p.Position, i);
-                                p.HitEntity = p.HitList[0];
+                                GetEntitiesInBlastRadius(p.HitList, p.FiringCube, p, p.Direction, p.Position, i);
+                                hitEntity = p.HitList[0];
+
                             }
 
-                            p.ProjectileClose(pool, hitsPool, noAv);
+                            if (hitEntity == null) p.ProjectileClose(pool, hitsPool, noAv);
+                            else
+                            {
+                                p.LastHitPos = hitEntity.HitPos;
+                                p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
+                            }
                             continue;
                         }
                     }
-
-                    if (p.HitEntity != null) continue;
 
                     var segmentList = segmentPool.Get();
                     LineD beam;
@@ -213,24 +219,27 @@ namespace WeaponCore.Projectiles
                         {
                             var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.WeaponId, p.MuzzleId, p.IsBeamWeapon, 0);
 
+                            HitEntity hitEntity = null;
                             if (GetAllEntitiesInLine(p.FiringCube, beam, segmentList, p.HitList, i))
-                                p.HitEntity = GenerateHitInfo(p.HitList, i);
+                                hitEntity = GenerateHitInfo(p.HitList, i);
 
                             linePool.Return(fired.Shots);
                             segmentList.Clear();
 
-                            if (p.HitEntity != null)
+                            if (hitEntity != null)
                             {
                                 if (!noAv && p.EnableAv && (p.DrawLine || p.ModelId != -1))
                                 {
-                                    var length = Vector3D.Distance(p.LastPosition, p.HitEntity.HitPos.Value);
-                                    p.Trajectile = new Trajectile(p.LastPosition, p.HitEntity.HitPos.Value, p.Direction, length);
-                                    p.TestSphere.Center = p.HitEntity.HitPos.Value;
+                                    var length = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
+                                    p.Trajectile = new Trajectile(p.LastPosition, hitEntity.HitPos.Value, p.Direction, length);
+                                    p.TestSphere.Center = hitEntity.HitPos.Value;
                                     var hitOnScreen = camera.IsInFrustum(ref p.TestSphere);
-                                    drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, p.HitEntity, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, true, hitOnScreen));
+                                    drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, hitEntity, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, true, hitOnScreen));
                                 }
-                                Hits.Enqueue(new Session.DamageEvent(fired.System, fired.Direction, p.HitList, fired.FiringCube, i));
-                                p.ProjectileClose(pool, hitsPool, noAv);
+                                Hits.Enqueue(new Session.DamageEvent(p, fired.Direction, p.HitList, fired.FiringCube));
+                                p.LastHitPos = hitEntity.HitPos;
+                                p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
+                                //p.ProjectileClose(pool, hitsPool, noAv);
                                 continue;
                             }
                             p.HitList.Clear();

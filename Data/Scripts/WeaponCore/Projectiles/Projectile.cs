@@ -16,6 +16,8 @@ namespace WeaponCore.Projectiles
         //private static int _checkIntersectionCnt = 0;
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int EndSteps = 2;
+        internal volatile float DamagePool;
+        internal volatile bool Colliding;
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MatrixD EntityMatrix;
@@ -40,7 +42,8 @@ namespace WeaponCore.Projectiles
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
         internal Vector3 PrevTargetVel;
-        internal HitEntity HitEntity;
+        internal Vector3D? LastHitPos;
+        internal Vector3D? LastHitEntVel;
         internal WeaponSystem System;
         internal List<HitEntity> HitList;
         internal MyCubeBlock FiringCube;
@@ -108,7 +111,8 @@ namespace WeaponCore.Projectiles
             LastEntityPos = Position;
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
-            HitEntity = null;
+            LastHitPos = null;
+            LastHitEntVel = null;
             FiringGrid = FiringCube.CubeGrid;
             ReverseOriginRay = new RayD(Origin, -Direction);
             OriginRay = new RayD(Origin, Direction);
@@ -124,6 +128,7 @@ namespace WeaponCore.Projectiles
             EndStep = 0;
             GrowStep = 1;
             DistanceTraveled = 0;
+            DamagePool = System.Values.Ammo.DefaultDamage;
             Guidance = System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
             LockedTarget = Target != null && !Target.MarkedForClose;
@@ -294,7 +299,8 @@ namespace WeaponCore.Projectiles
         {
             if (noAv && ModelId == -1)
             {
-                if (HitEntity == null) hitPool.Return(HitList);
+                HitList.Clear();
+                hitPool.Return(HitList);
                 pool.MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
@@ -309,7 +315,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (System.AmmoParticle) DisposeEffect();
                     if (System.HitParticle && !IsBeamWeapon) PlayHitParticle();
-                    if (System.HitSound && HitEntity != null)
+                    if (System.HitSound && Colliding)
                     {
                         Sound1.SetPosition(Position);
                         Sound1.CanPlayLoopSounds = false;
@@ -317,8 +323,8 @@ namespace WeaponCore.Projectiles
                     }
                     else if (AmmoSound) Sound1.StopSound(false, true);
                 }
-
-                if (HitEntity == null) hitPool.Return(HitList);
+                HitList.Clear();
+                hitPool.Return(HitList);
                 pool.MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
@@ -335,9 +341,9 @@ namespace WeaponCore.Projectiles
 
         private void PlayHitParticle()
         {
-            if (HitEntity.HitPos.HasValue)
+            if (Colliding && LastHitPos.HasValue)
             {
-                var pos = HitEntity.HitPos.Value;
+                var pos = LastHitPos.Value;
                 var matrix = MatrixD.CreateTranslation(pos);
                 var parentId = uint.MaxValue;
                 MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.HitParticle, ref matrix, ref pos, parentId, out Effect1);
@@ -351,7 +357,7 @@ namespace WeaponCore.Projectiles
 
                 Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.HitScale * scaler;
                 Effect1.UserEmitterScale = 1 * scaler;
-                var hitVel = HitEntity.Entity.Physics?.LinearVelocity ?? Vector3.Zero;
+                var hitVel = LastHitEntVel ?? Vector3.Zero;
                 if (ModelState != EntityState.Exists) Effect1.Velocity = hitVel;
             }
         }
@@ -373,6 +379,7 @@ namespace WeaponCore.Projectiles
             Dead,
             OneAndDone,
             Zombie,
+            Depleted,
         }
 
         internal enum EntityState

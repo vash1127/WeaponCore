@@ -17,9 +17,9 @@ namespace WeaponCore.Projectiles
 {
     internal partial class Projectiles
     {
-        private void GetEntitiesInBlastRadius(List<HitEntity> hitList, MyCubeBlock firingCube, WeaponSystem system, Vector3D position, Vector3D direction, int poolId)
+        private void GetEntitiesInBlastRadius(List<HitEntity> hitList, MyCubeBlock firingCube, Projectile projectile, Vector3D position, Vector3D direction, int poolId)
         {
-            var sphere = new BoundingSphereD(position, system.Values.Ammo.AreaEffectRadius);
+            var sphere = new BoundingSphereD(position, projectile.System.Values.Ammo.AreaEffectRadius);
             var entityList = MyEntityPool[poolId].Get();
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, entityList);
             foreach (var ent in entityList)
@@ -37,11 +37,11 @@ namespace WeaponCore.Projectiles
                 hitEntity.Hit = false;
                 hitEntity.HitPos = position;
                 hitList.Add(hitEntity);
-                Hits.Enqueue(new Session.DamageEvent(system, direction, hitList, firingCube, poolId));
+                Hits.Enqueue(new Session.DamageEvent(projectile, direction, hitList, firingCube));
             }
             else if (Session.Instance.IsServer)
             {
-                Hits.Enqueue(new Session.DamageEvent(system, direction, hitList, firingCube, poolId));
+                Hits.Enqueue(new Session.DamageEvent(projectile, direction, hitList, firingCube));
             }
         }
 
