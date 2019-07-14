@@ -89,7 +89,6 @@ namespace WeaponCore.Projectiles
                         case Projectile.ProjectileState.Ending:
                         case Projectile.ProjectileState.OneAndDone:
                         case Projectile.ProjectileState.Depleted:
-                            Log.Line($"{p.State}");
                             if (p.State == Projectile.ProjectileState.Depleted)
                                 p.ProjectileClose(pool, hitsPool, noAv);
                             if (p.ModelState != Projectile.EntityState.Exists) p.Stop(pool, hitsPool);
