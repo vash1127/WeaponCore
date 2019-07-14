@@ -301,7 +301,6 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool, bool noAv)
         {
-            Log.Line("projectile close");
             if (noAv && ModelId == -1)
             {
                 HitList.Clear();
@@ -314,7 +313,6 @@ namespace WeaponCore.Projectiles
 
         internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool)
         {
-            Log.Line("projectile stop");
             if (EndStep++ >= EndSteps)
             {
                 if (EnableAv)
@@ -333,7 +331,6 @@ namespace WeaponCore.Projectiles
 
         internal bool CloseModel(EntityPool<MyEntity> entPool, List<DrawProjectile> drawList)
         {
-            Log.Line("close model");
             EntityMatrix = MatrixD.Identity;
             drawList.Add(new DrawProjectile(System, FiringCube, WeaponId, MuzzleId, Entity, EntityMatrix, null, new Trajectile(), MaxSpeedLength, ReSizeSteps, Shrink, true, OnScreen));
             entPool.MarkForDeallocate(Entity);
