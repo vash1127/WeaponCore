@@ -6,7 +6,6 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
@@ -17,7 +16,7 @@ namespace WeaponCore.Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int PoolCount = 16;
-        internal readonly ConcurrentQueue<Session.DamageEvent> Hits = new ConcurrentQueue<Session.DamageEvent>();
+        internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
 
         internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
         internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
@@ -25,7 +24,6 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<List<HitEntity>>[] HitsPool = new MyConcurrentPool<List<HitEntity>>[PoolCount];
         internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
         internal readonly MyConcurrentPool<List<MyEntity>>[] MyEntityPool = new MyConcurrentPool<List<MyEntity>>[PoolCount];
-        internal readonly MyConcurrentPool<List<LineD>>[] LinePool = new MyConcurrentPool<List<LineD>>[PoolCount];
         internal readonly List<DrawProjectile>[] DrawProjectiles = new List<DrawProjectile>[PoolCount];
         internal readonly object[] Wait = new object[PoolCount];
 
@@ -37,9 +35,8 @@ namespace WeaponCore.Projectiles
                 ProjectilePool[i] = new ObjectsPool<Projectile>(1250);
                 SegmentPool[i] = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(1250);
                 HitsPool[i] = new MyConcurrentPool<List<HitEntity>>(1250);
-                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(1250);
-                MyEntityPool[i] = new MyConcurrentPool<List<MyEntity>>(100);
-                LinePool[i] = new MyConcurrentPool<List<LineD>>(1250);
+                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(250);
+                MyEntityPool[i] = new MyConcurrentPool<List<MyEntity>>(500);
                 DrawProjectiles[i] = new List<DrawProjectile>(500);
             }
         }
@@ -76,7 +73,6 @@ namespace WeaponCore.Projectiles
                 var drawList = DrawProjectiles[i];
                 var segmentPool = SegmentPool[i];
                 var hitsPool = HitsPool[i];
-                var linePool = LinePool[i];
                 var modelClose = false;
                 foreach (var p in pool.Active)
                 {
@@ -192,9 +188,8 @@ namespace WeaponCore.Projectiles
                             HitEntity hitEntity = null;
                             if (p.MoveToAndActivate || p.System.AmmoAreaEffect)
                             {
-                                GetEntitiesInBlastRadius(p.HitList, p.FiringCube, p, p.Direction, p.Position, i);
+                                GetEntitiesInBlastRadius(p, i);
                                 hitEntity = p.HitList[0];
-
                             }
 
                             if (hitEntity == null) p.ProjectileClose(pool, hitsPool, noAv);
@@ -208,22 +203,17 @@ namespace WeaponCore.Projectiles
                     }
 
                     var segmentList = segmentPool.Get();
-                    LineD beam;
-                    if (p.State == Projectile.ProjectileState.OneAndDone || p.Guidance != AmmoTrajectory.GuidanceType.None) beam = new LineD(p.LastPosition, p.Position);
-                    else beam = new LineD(p.LastPosition, p.Position);
+                    var beam = new LineD(p.LastPosition, p.Position);
                     MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
                     var segCount = segmentList.Count;
                     if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
                     {
                         try
                         {
-                            var fired = new Fired(p.System, linePool.Get(), p.FiringCube, p.ReverseOriginRay, p.Direction, p.WeaponId, p.MuzzleId, p.IsBeamWeapon, 0);
-
                             HitEntity hitEntity = null;
-                            if (GetAllEntitiesInLine(p.FiringCube, beam, segmentList, p.HitList, i))
+                            if (GetAllEntitiesInLine(p, beam, segmentList, i))
                                 hitEntity = GenerateHitInfo(p.HitList, i);
 
-                            linePool.Return(fired.Shots);
                             segmentList.Clear();
 
                             if (hitEntity != null)
@@ -236,10 +226,10 @@ namespace WeaponCore.Projectiles
                                     var hitOnScreen = camera.IsInFrustum(ref p.TestSphere);
                                     drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, hitEntity, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, true, hitOnScreen));
                                 }
-                                Hits.Enqueue(new Session.DamageEvent(p, fired.Direction, p.HitList, fired.FiringCube));
+                                Hits.Enqueue(p);
                                 p.LastHitPos = hitEntity.HitPos;
                                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
-                                //p.ProjectileClose(pool, hitsPool, noAv);
+                                if (p.EnableAv) p.HitEffects();
                                 continue;
                             }
                             p.HitList.Clear();
@@ -274,7 +264,7 @@ namespace WeaponCore.Projectiles
                             Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
                             if (dist <= p.AmmoTravelSoundRangeSqr) p.AmmoSoundStart();
                         }
-                        else p.Sound1.SetPosition(p.Position);
+                        else p.TravelEmitter.SetPosition(p.Position);
                     }
 
                     if (p.ModelState == Projectile.EntityState.Exists)

@@ -21,9 +21,6 @@ namespace WeaponCore.Projectiles
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MatrixD EntityMatrix;
-        internal Fired DummyFired;
-        internal RayD OriginRay;
-        internal RayD ReverseOriginRay;
         internal Trajectile Trajectile;
         internal Vector3D Direction;
         internal Vector3D OriginUp;
@@ -65,6 +62,7 @@ namespace WeaponCore.Projectiles
         internal double DistanceFromCameraSqr;
         internal double AccelPerSec;
         internal int Age;
+        internal int ObjectsHit;
         internal int ReSizeSteps;
         internal int GrowStep = 1;
         internal int EndStep;
@@ -97,7 +95,10 @@ namespace WeaponCore.Projectiles
         internal MyEntity Entity;
         internal MyEntity Target;
         internal MyParticleEffect Effect1;
-        internal readonly MyEntity3DSoundEmitter Sound1 = new MyEntity3DSoundEmitter(null, false, 1f);
+        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
+        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
+        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
+
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
@@ -114,10 +115,9 @@ namespace WeaponCore.Projectiles
             LastHitPos = null;
             LastHitEntVel = null;
             FiringGrid = FiringCube.CubeGrid;
-            ReverseOriginRay = new RayD(Origin, -Direction);
-            OriginRay = new RayD(Origin, Direction);
-            DummyFired = new Fired(System, null, FiringCube, OriginRay, Direction, WeaponId, MuzzleId, IsBeamWeapon, 0);
             Age = 0;
+            ObjectsHit = 0;
+            Colliding = false;
 
             ParticleStopped = false;
             ParticleLateStart = false;
@@ -165,7 +165,7 @@ namespace WeaponCore.Projectiles
             Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
 
             var probability = System.Values.Graphics.VisualProbability;
-            EnableAv = DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
+            EnableAv = !noAv && DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
             MoveToAndActivate = FoundTarget && Guidance == AmmoTrajectory.GuidanceType.TravelTo;
@@ -180,7 +180,7 @@ namespace WeaponCore.Projectiles
             FiringSoundState = System.FiringSound;
             AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
 
-            if (!noAv && EnableAv)
+            if (EnableAv)
             {
                 if (System.AmmoTravelSound)
                 {
@@ -203,7 +203,7 @@ namespace WeaponCore.Projectiles
             if (ModelId == -1) ModelState = EntityState.None;
             else
             {
-                if (!noAv && EnableAv)
+                if (EnableAv)
                 {
                     ModelState = EntityState.Exists;
                     ScreenCheckRadius = Entity.PositionComp.WorldVolume.Radius * 2;
@@ -284,14 +284,14 @@ namespace WeaponCore.Projectiles
 
         internal void FireSoundStart()
         {
-            Sound1.SetPosition(Origin);
-            Sound1.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
+            FireEmitter.SetPosition(Origin);
+            FireEmitter.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
         }
 
         internal void AmmoSoundStart()
         {
-            Sound1.SetPosition(Position);
-            Sound1.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
+            TravelEmitter.SetPosition(Position);
+            TravelEmitter.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
             AmmoSound = true;
         }
 
@@ -314,15 +314,10 @@ namespace WeaponCore.Projectiles
                 if (EnableAv)
                 {
                     if (System.AmmoParticle) DisposeEffect();
-                    if (System.HitParticle && !IsBeamWeapon) PlayHitParticle();
-                    if (System.HitSound && Colliding)
-                    {
-                        Sound1.SetPosition(Position);
-                        Sound1.CanPlayLoopSounds = false;
-                        Sound1.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
-                    }
-                    else if (AmmoSound) Sound1.StopSound(false, true);
+                    HitEffects();
+                    if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
+
                 HitList.Clear();
                 hitPool.Return(HitList);
                 pool.MarkForDeallocate(this);
@@ -339,9 +334,24 @@ namespace WeaponCore.Projectiles
             return true;
         }
 
+        internal void HitEffects()
+        {
+            if (Colliding)
+            {
+                if (System.HitParticle && !IsBeamWeapon) PlayHitParticle();
+                if (System.HitSound)
+                {
+                    HitEmitter.SetPosition(Position);
+                    HitEmitter.CanPlayLoopSounds = false;
+                    HitEmitter.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
+                }
+            }
+            Colliding = false;
+        }
+
         private void PlayHitParticle()
         {
-            if (Colliding && LastHitPos.HasValue)
+            if (LastHitPos.HasValue)
             {
                 var pos = LastHitPos.Value;
                 var matrix = MatrixD.CreateTranslation(pos);

@@ -1,9 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.ModAPI;
+﻿using System.Collections.Generic;
 using VRage.Game;
 using VRageMath;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 namespace WeaponCore

@@ -1,63 +1,59 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
-using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles.HitEntity.Type;
 namespace WeaponCore.Projectiles
 {
     internal partial class Projectiles
     {
-        private void GetEntitiesInBlastRadius(List<HitEntity> hitList, MyCubeBlock firingCube, Projectile projectile, Vector3D position, Vector3D direction, int poolId)
+        private void GetEntitiesInBlastRadius(Projectile projectile, int poolId)
         {
-            var sphere = new BoundingSphereD(position, projectile.System.Values.Ammo.AreaEffectRadius);
+            var sphere = new BoundingSphereD(projectile.Position, projectile.System.Values.Ammo.AreaEffectRadius);
             var entityList = MyEntityPool[poolId].Get();
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, entityList);
             foreach (var ent in entityList)
             {
-                var blastLine = new LineD(position, ent.PositionComp.WorldAABB.Center);
-                GetAllEntitiesInLine(firingCube, blastLine, null, hitList, poolId, true);
+                var blastLine = new LineD(projectile.Position, ent.PositionComp.WorldAABB.Center);
+                GetAllEntitiesInLine(projectile, blastLine, null, poolId, true);
             }
             entityList.Clear();
             MyEntityPool[poolId].Return(entityList);
-            if (hitList.Count <= 0)
+            if (projectile.HitList.Count <= 0)
             {
                 var hitEntity = HitEntityPool[poolId].Get();
                 hitEntity.Clean();
                 hitEntity.EventType = Proximity;
                 hitEntity.Hit = false;
-                hitEntity.HitPos = position;
-                hitList.Add(hitEntity);
-                Hits.Enqueue(new Session.DamageEvent(projectile, direction, hitList, firingCube));
+                hitEntity.HitPos = projectile.Position;
+                projectile.HitList.Add(hitEntity);
+                Hits.Enqueue(projectile);
             }
             else if (Session.Instance.IsServer)
             {
-                Hits.Enqueue(new Session.DamageEvent(projectile, direction, hitList, firingCube));
+                Hits.Enqueue(projectile);
             }
         }
 
-        internal bool GetAllEntitiesInLine(MyCubeBlock firingCube, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList,  List<HitEntity> hitList, int poolId, bool quickCheck = false)
+        internal bool GetAllEntitiesInLine(Projectile projectile, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList, int poolId, bool quickCheck = false)
         {
-            var listCnt = segmentList?.Count ?? hitList.Count;
+            var listCnt = segmentList?.Count ?? projectile.HitList.Count;
             var found = false;
             for (int i = 0; i < listCnt; i++)
             {
-                var ent = segmentList != null ? segmentList[i].Element : hitList[i].Entity;
-                if (ent == firingCube.CubeGrid) continue;
+                var ent = segmentList != null ? segmentList[i].Element : projectile.HitList[i].Entity;
+                if (ent == projectile.FiringCube.CubeGrid) continue;
                 //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
-                    if (ent.Physics == null && shieldBlock.CubeGrid != firingCube.CubeGrid)
+                    if (ent.Physics == null && shieldBlock.CubeGrid != projectile.FiringCube.CubeGrid)
                     {
                         var hitEntity = HitEntityPool[poolId].Get();
                         hitEntity.Clean();
@@ -69,7 +65,7 @@ namespace WeaponCore.Projectiles
                             hitEntity.Hit = true;
                         }
                         found = true;
-                        hitList.Add(hitEntity);
+                        projectile.HitList.Add(hitEntity);
                     }
                     else continue;
                 }
@@ -94,7 +90,7 @@ namespace WeaponCore.Projectiles
                         hitEntity.Hit = true;
                     }
                     found = true;
-                    hitList.Add(hitEntity);
+                    projectile.HitList.Add(hitEntity);
                 }
             }
             return found;
@@ -104,7 +100,7 @@ namespace WeaponCore.Projectiles
         {
             var count = ents.Count;
 
-            if (count > 1) ents.Sort(GetEntityCompareDist);
+            if (count > 1) ents.Sort((x, y) => GetEntityCompareDist(x, y));
             else GetEntityCompareDist(ents[0], null);
 
             //var afterSort = ents.Count;
@@ -141,7 +137,7 @@ namespace WeaponCore.Projectiles
             return hitEnt;
         }
 
-        internal int GetEntityCompareDist(HitEntity x, HitEntity y)
+        internal static int GetEntityCompareDist(HitEntity x, HitEntity y)
         {
             var xDist = double.MaxValue;
             var yDist = double.MaxValue;
@@ -163,7 +159,6 @@ namespace WeaponCore.Projectiles
                     hitEnt = y;
                     ent = hitEnt.Entity;
                 }
-                //hitEnt.Hit = false;
 
                 var shield = ent as IMyTerminalBlock;
                 var grid = ent as MyCubeGrid;
@@ -342,12 +337,6 @@ namespace WeaponCore.Projectiles
             public Vector3D? HitPos;
             public Type EventType;
 
-            public HitEntity(MyEntity entity, LineD beam)
-            {
-                Entity = entity;
-                Beam = beam;
-            }
-
             public HitEntity()
             {
             }
@@ -362,33 +351,7 @@ namespace WeaponCore.Projectiles
                 Blocks.Clear();
                 Hit = false;
                 HitPos = null;
-                EventType = Type.Stale;
-            }
-        }
-
-        internal struct Fired
-        {
-            public readonly List<LineD> Shots;
-            public readonly WeaponSystem System;
-            public readonly MyCubeBlock FiringCube;
-            public readonly RayD ReverseOriginRay;
-            public readonly Vector3D Direction;
-            public readonly int WeaponId;
-            public readonly int MuzzleId;
-            public readonly bool IsBeam;
-            public readonly int Age;
-
-            public Fired(WeaponSystem system, List<LineD> shots, MyCubeBlock firingCube, RayD reverseOriginRay, Vector3D direction, int weaponId, int muzzleId, bool isBeam,  int age)
-            {
-                System = system;
-                Shots = shots;
-                FiringCube = firingCube;
-                ReverseOriginRay = reverseOriginRay;
-                Direction = direction;
-                WeaponId = weaponId;
-                MuzzleId = muzzleId;
-                IsBeam = isBeam;
-                Age = age;
+                EventType = Stale;
             }
         }
     }
