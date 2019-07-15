@@ -101,13 +101,13 @@ namespace WeaponCore
                                     continue;
                                 }
 
-                                effect.DistanceMax = 5000;
-                                effect.DurationMax = 1f;
+                                effect.DistanceMax = p.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
+                                effect.DurationMax = p.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
                                 effect.UserColorMultiplier = p.System.Values.Graphics.Particles.Hit.Color;
                                 //var reScale = (float)Math.Log(195312.5, MyAPIGateway.); // wtf is up with particles and camera distance
                                 //var scaler = reScale < 1 ? reScale : 1;
                                 var scaler = 1;
-                                effect.Loop = false;
+                                effect.Loop = p.System.Values.Graphics.Particles.Hit.Extras.Loop;
 
                                 effect.UserRadiusMultiplier = p.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
                                 effect.UserEmitterScale = 1 * scaler;
