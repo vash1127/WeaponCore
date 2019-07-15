@@ -16,9 +16,8 @@ namespace WeaponCore.Support
         public readonly int ReloadTime;
         public readonly int DelayToFire;
         public readonly int TimeToCeaseFire;
-        public readonly int Barrel1AvTicks;
-        public readonly int Barrel2AvTicks;
         public readonly int MaxObjectsHit;
+        public readonly int TargetLossTime;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly FiringSoundState FiringSound;
@@ -45,6 +44,8 @@ namespace WeaponCore.Support
         public readonly bool RangeVariance;
         public readonly bool IsBeamWeapon;
         public readonly double MaxTrajectorySqr;
+        public readonly float Barrel1AvTicks;
+        public readonly float Barrel2AvTicks;
         public readonly float ShotEnergyCost;
         public readonly float FiringSoundDistSqr;
         public readonly float ReloadSoundDistSqr;
@@ -76,15 +77,16 @@ namespace WeaponCore.Support
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
 
             ProjectileMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Material);
-            AmmoParticle = values.Graphics.Particles.AmmoParticle != string.Empty;
-            BarrelEffect1 = values.Graphics.Particles.Barrel1Particle != string.Empty;
-            BarrelEffect2 = values.Graphics.Particles.Barrel2Particle != string.Empty;
+            AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
+            BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
+            BarrelEffect2 = values.Graphics.Particles.Barrel2.Name != string.Empty;
 
             LineColorVariance = values.Graphics.Line.ColorVariance.Start > 0 && values.Graphics.Line.ColorVariance.End > 0;
             LineWidthVariance = values.Graphics.Line.WidthVariance.Start > 0 || values.Graphics.Line.WidthVariance.End > 0;
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
 
+            TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.MaxObjectsHit > 0 ? values.Ammo.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
             AmmoAreaEffect = values.Ammo.AreaEffectRadius > 0;
@@ -97,11 +99,11 @@ namespace WeaponCore.Support
             ReloadTime = values.HardPoint.Loading.ReloadTime;
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
             TimeToCeaseFire = values.HardPoint.DelayCeaseFire;
-            Barrel1AvTicks = values.Graphics.Particles.Barrel1Duration;
-            Barrel2AvTicks = values.Graphics.Particles.Barrel2Duration;
+            Barrel1AvTicks = values.Graphics.Particles.Barrel1.Extras.MaxDuration;
+            Barrel2AvTicks = values.Graphics.Particles.Barrel2.Extras.MaxDuration;
             BarrelAxisRotation = values.HardPoint.RotateBarrelAxis != 0;
 
-            HitParticle = values.Graphics.Particles.HitParticle != string.Empty;
+            HitParticle = values.Graphics.Particles.Hit.Name != string.Empty;
             HitSound = values.Audio.Ammo.HitSound != string.Empty;
             AmmoTravelSound = values.Audio.Ammo.TravelSound != string.Empty;
             WeaponReloadSound = values.Audio.HardPoint.ReloadSound != string.Empty;
@@ -171,7 +173,7 @@ namespace WeaponCore.Support
                 }
             }
 
-            if (values.Graphics.ModelName != string.Empty && !values.Graphics.Line.Trail)
+            if (values.Graphics.ModelName != string.Empty)
             {
                 ModelId = Session.Instance.ModelCount++;
                 Session.Instance.ModelIdToName.Add(ModelId, values.ModPath + values.Graphics.ModelName);

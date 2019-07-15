@@ -63,6 +63,7 @@ namespace WeaponCore
                         else if (y.Name == "Smoke_Missile") c++;
                         else if (y.Name == "Explosion_Missile") m++;
                         else if (y.Name == "Explosion_Warhead_02") w++;
+                        //else Log.Line($"{y.Name}");
                     }
                     Log.Line($"projectiles:{p} - particles:{g} - eCount:{ExplosionCounter} - arkCount:{a} - Smoke_Missile:{c} - missileExp:{m} - what:{w}");
                 }

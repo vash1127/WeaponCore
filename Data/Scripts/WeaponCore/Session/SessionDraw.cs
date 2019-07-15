@@ -94,7 +94,7 @@ namespace WeaponCore
                             MatrixD.CreateTranslation(ref hitPos, out matrix);
                             if (effect == null)
                             {
-                                MyParticlesManager.TryCreateParticleEffect(p.System.Values.Graphics.Particles.HitParticle, ref matrix, ref hitPos, uint.MaxValue, out effect);
+                                MyParticlesManager.TryCreateParticleEffect(p.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, uint.MaxValue, out effect);
                                 if (effect == null)
                                 {
                                     weapon.HitEffects[p.MuzzleId] = null;
@@ -103,13 +103,13 @@ namespace WeaponCore
 
                                 effect.DistanceMax = 5000;
                                 effect.DurationMax = 1f;
-                                effect.UserColorMultiplier = p.System.Values.Graphics.Particles.HitColor;
+                                effect.UserColorMultiplier = p.System.Values.Graphics.Particles.Hit.Color;
                                 //var reScale = (float)Math.Log(195312.5, MyAPIGateway.); // wtf is up with particles and camera distance
                                 //var scaler = reScale < 1 ? reScale : 1;
                                 var scaler = 1;
                                 effect.Loop = false;
 
-                                effect.UserRadiusMultiplier = p.System.Values.Graphics.Particles.HitScale * scaler;
+                                effect.UserRadiusMultiplier = p.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
                                 effect.UserEmitterScale = 1 * scaler;
                             }
                             else if (effect.IsEmittingStopped)

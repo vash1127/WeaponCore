@@ -54,8 +54,8 @@ namespace WeaponCore.Platform
                         if (entityExists && ticksAgo <= System.Barrel1AvTicks)
                         {
                             if (BarrelEffects1[id] == null)
-                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel1Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[id]);
-                            else if (particles.Barrel1Restart && BarrelEffects1[id].IsEmittingStopped)
+                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[id]);
+                            else if (particles.Barrel1.Extras.Restart && BarrelEffects1[id].IsEmittingStopped)
                                 BarrelEffects1[id].Play();
 
                             if (BarrelEffects1[id] != null)
@@ -76,8 +76,8 @@ namespace WeaponCore.Platform
                         if (entityExists && ticksAgo <= System.Barrel2AvTicks)
                         {
                             if (BarrelEffects2[id] == null)
-                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel2Particle, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);
-                            else if (particles.Barrel2Restart && BarrelEffects2[id].IsEmittingStopped)
+                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);
+                            else if (particles.Barrel2.Extras.Restart && BarrelEffects2[id].IsEmittingStopped)
                                 BarrelEffects2[id].Play();
 
                             if (BarrelEffects2[id] != null)

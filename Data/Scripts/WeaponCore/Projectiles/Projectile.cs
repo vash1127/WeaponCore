@@ -15,12 +15,12 @@ namespace WeaponCore.Projectiles
     {
         //private static int _checkIntersectionCnt = 0;
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+        internal MatrixD EntityMatrix = MatrixD.Identity;
         internal const int EndSteps = 2;
         internal volatile float DamagePool;
         internal volatile bool Colliding;
         internal ProjectileState State;
         internal EntityState ModelState;
-        internal MatrixD EntityMatrix;
         internal Trajectile Trajectile;
         internal Vector3D Direction;
         internal Vector3D OriginUp;
@@ -40,13 +40,15 @@ namespace WeaponCore.Projectiles
         internal Vector3D PrevTargetPos;
         internal Vector3 PrevTargetVel;
         internal Vector3D? LastHitPos;
-        internal Vector3D? LastHitEntVel;
+        internal Vector3? LastHitEntVel;
         internal WeaponSystem System;
         internal List<HitEntity> HitList;
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
+        internal GridTargetingAi Ai;
         internal float DesiredSpeed;
         internal float DesiredSpeedSqr;
+        internal double MaxSpeed;
         internal double MaxSpeedLength;
         internal double AccelLength;
         internal double CheckLength;
@@ -70,6 +72,7 @@ namespace WeaponCore.Projectiles
         internal int ModelId;
         internal int WeaponId;
         internal int MuzzleId;
+        internal int ZombieLifeTime;
         internal bool Grow;
         internal bool Shrink;
         internal bool EnableAv;
@@ -90,12 +93,13 @@ namespace WeaponCore.Projectiles
         internal bool ParticleLateStart;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
-        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 5f);
+        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal MyEntity Entity;
         internal MyEntity Target;
-        internal MyParticleEffect Effect1;
+        internal MyParticleEffect AmmoEffect;
+        internal MyParticleEffect HitEffect;
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
@@ -116,6 +120,7 @@ namespace WeaponCore.Projectiles
             var probability = System.Values.Graphics.VisualProbability;
             EnableAv = !noAv && DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
 
+            EntityMatrix = MatrixD.Identity;
             ModelState = EntityState.None;
             LastEntityPos = Position;
             PrevTargetPos = PredictedTargetPos;
@@ -123,6 +128,7 @@ namespace WeaponCore.Projectiles
             LastHitPos = null;
             LastHitEntVel = null;
             Age = 0;
+            ZombieLifeTime = 0;
             ObjectsHit = 0;
             Colliding = false;
             ParticleStopped = false;
@@ -139,6 +145,10 @@ namespace WeaponCore.Projectiles
             DamagePool = System.Values.Ammo.DefaultDamage;
             Guidance = System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
+
+            if (Guidance == AmmoTrajectory.GuidanceType.Smart)
+                Session.Instance.GridTargetingAIs.TryGetValue(FiringGrid, out Ai);
+
             LockedTarget = Target != null && !Target.MarkedForClose;
             SmartsFactor = System.Values.Ammo.Trajectory.SmartsFactor;
             if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
@@ -219,7 +229,8 @@ namespace WeaponCore.Projectiles
             ConstantSpeed = accelPerSec <= 0;
             AccelPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
-            MaxSpeedLength = MaxVelocity.Length() * StepConst;
+            MaxSpeed = MaxVelocity.Length();
+            MaxSpeedLength = MaxSpeed * StepConst;
             AccelLength = System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
@@ -235,55 +246,7 @@ namespace WeaponCore.Projectiles
             else State = ProjectileState.OneAndDone;
 
             CheckLength = MaxSpeedLength * 2;
-            if (System.AmmoParticle && EnableAv) ProjectileParticleStart();
-        }
-
-        internal void ProjectileParticleStart()
-        {
-            if (Age == 0 && !ParticleLateStart)
-            {
-                TestSphere.Center = Position;
-                if (!MyAPIGateway.Session.Camera.IsInFrustum(ref TestSphere))
-                {
-                    ParticleLateStart = true;
-                    return;
-                }
-            }
-
-            var parentId = uint.MaxValue;
-            MatrixD matrix;
-            if (ModelState == EntityState.Exists)
-            {
-                matrix = MatrixD.CreateWorld(Position, AccelDir, Entity.PositionComp.WorldMatrix.Up);
-                var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.AmmoOffset, matrix);
-                matrix.Translation = offVec;
-                EntityMatrix = matrix;
-            }
-            else
-            {
-                matrix = MatrixD.CreateWorld(Position, AccelDir, OriginUp);
-                var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.AmmoOffset, matrix);
-                matrix.Translation = offVec;
-            }
-
-            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.AmmoParticle, ref matrix, ref Position, parentId, out Effect1); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
-            if (Effect1 == null) return;
-            if (ParticleStopped)
-            {
-                if (ConstantSpeed) Effect1.Velocity = Velocity;
-                ParticleStopped = false;
-                return;
-            }
-            //Log.Line($"create particle: p:{Position} - v:{Velocity} - c:{ConstantSpeed} - dSpeed:{DesiredSpeed} - sSpeed:{StartSpeed.Length()} - age:{Age}");
-            Effect1.DistanceMax = 5000;
-            Effect1.UserColorMultiplier = System.Values.Graphics.Particles.AmmoColor;
-            var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
-            var scaler = reScale < 1 ? reScale : 1;
-
-            Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.AmmoScale * scaler;
-            Effect1.UserEmitterScale = 1 * scaler;
-            if (ConstantSpeed) Effect1.Velocity = Velocity;
-            ParticleLateStart = false;
+            if (System.AmmoParticle && EnableAv) PlayAmmoParticle();
         }
 
         internal void FireSoundStart()
@@ -301,7 +264,7 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool, bool noAv)
         {
-            if (noAv && ModelId == -1)
+            if (!EnableAv && ModelId == -1)
             {
                 HitList.Clear();
                 hitPool.Return(HitList);
@@ -317,7 +280,7 @@ namespace WeaponCore.Projectiles
             {
                 if (EnableAv)
                 {
-                    if (System.AmmoParticle) DisposeEffect();
+                    if (System.AmmoParticle) DisposeAmmoEffect();
                     HitEffects();
                     if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
@@ -353,35 +316,104 @@ namespace WeaponCore.Projectiles
             Colliding = false;
         }
 
+        internal void PlayAmmoParticle()
+        {
+            //Log.Line($"Particle Start:{Age} - EntMat!=Id:{EntityMatrix != MatrixD.Identity} - Ent!=Id:{Entity.WorldMatrix != MatrixD.Identity}");
+
+            if (Age == 0 && !ParticleLateStart)
+            {
+                TestSphere.Center = Position;
+                if (!MyAPIGateway.Session.Camera.IsInFrustum(ref TestSphere))
+                {
+                    ParticleLateStart = true;
+                    return;
+                }
+            }
+            var parentId = uint.MaxValue;
+            MatrixD matrix;
+            if (ModelState == EntityState.Exists)
+            {
+                matrix = MatrixD.CreateWorld(Position, AccelDir, Entity.PositionComp.WorldMatrix.Up);
+                var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.Ammo.Offset, matrix);
+                matrix.Translation = offVec;
+                EntityMatrix = matrix;
+            }
+            else
+            {
+                matrix = MatrixD.CreateWorld(Position, AccelDir, OriginUp);
+                var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.Ammo.Offset, matrix);
+                matrix.Translation = offVec;
+            }
+
+            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Ammo.Name, ref matrix, ref Position, parentId, out AmmoEffect); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+            if (AmmoEffect == null) return;
+            //Log.Line($"create particle: p:{Position} - v:{Velocity} - c:{ConstantSpeed} - dSpeed:{DesiredSpeed} - sSpeed:{StartSpeed.Length()} - age:{Age}");
+            AmmoEffect.DistanceMax = System.Values.Graphics.Particles.Ammo.Extras.MaxDistance;
+            AmmoEffect.UserColorMultiplier = System.Values.Graphics.Particles.Ammo.Color;
+            //var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
+            var reScale = 1;
+            var scaler = reScale < 1 ? reScale : 1;
+
+            AmmoEffect.UserRadiusMultiplier = System.Values.Graphics.Particles.Ammo.Extras.Scale * scaler;
+            AmmoEffect.UserEmitterScale = 1 * scaler;
+            if (ConstantSpeed) AmmoEffect.Velocity = Velocity;
+            ParticleStopped = false;
+            ParticleLateStart = false;
+        }
+
+
         private void PlayHitParticle()
         {
+            if (HitEffect != null) DisposeHitEffect();
             if (LastHitPos.HasValue)
             {
                 var pos = LastHitPos.Value;
                 var matrix = MatrixD.CreateTranslation(pos);
                 var parentId = uint.MaxValue;
-                MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.HitParticle, ref matrix, ref pos, parentId, out Effect1);
-                if (Effect1 == null) return;
-                Effect1.Loop = false;
-                Effect1.DurationMax = 1f;
-                Effect1.DistanceMax = 5000;
-                Effect1.UserColorMultiplier = System.Values.Graphics.Particles.HitColor;
-                var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
+                MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Hit.Name, ref matrix, ref pos, parentId, out HitEffect);
+                if (HitEffect == null) return;
+                HitEffect.Loop = false;
+                HitEffect.DurationMax = System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
+                HitEffect.DistanceMax = System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
+                HitEffect.UserColorMultiplier = System.Values.Graphics.Particles.Hit.Color;
+                //var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
+                var reScale = 1;
                 var scaler = reScale < 1 ? reScale : 1;
 
-                Effect1.UserRadiusMultiplier = System.Values.Graphics.Particles.HitScale * scaler;
-                Effect1.UserEmitterScale = 1 * scaler;
+                HitEffect.UserRadiusMultiplier = System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
+                HitEffect.UserEmitterScale = 1 * scaler;
                 var hitVel = LastHitEntVel ?? Vector3.Zero;
-                if (ModelState != EntityState.Exists) Effect1.Velocity = hitVel;
+                Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
+                HitEffect.Velocity = hitVel;
             }
         }
 
-        private void DisposeEffect()
+        private void DisposeAmmoEffect()
         {
-            if (Effect1 != null)
+            Log.Line($"Particle Stop:{Age}");
+            if (AmmoEffect != null)
             {
-                Effect1.Stop(false);
-                Effect1 = null;
+                AmmoEffect.Stop(false);
+                AmmoEffect = null;
+            }
+        }
+
+        private void DisposeHitEffect()
+        {
+            if (HitEffect != null)
+            {
+                HitEffect.Stop(false);
+                HitEffect = null;
+            }
+        }
+
+        internal void UpdateZombie(bool reset = false)
+        {
+            if (reset) ZombieLifeTime = 0;
+            else
+            {
+                PrevTargetPos = PredictedTargetPos;
+                if (ZombieLifeTime++ > System.TargetLossTime) DistanceToTravelSqr = DistanceTraveled * DistanceTraveled;
             }
         }
 
@@ -392,7 +424,6 @@ namespace WeaponCore.Projectiles
             Ending,
             Dead,
             OneAndDone,
-            Zombie,
             Depleted,
         }
 

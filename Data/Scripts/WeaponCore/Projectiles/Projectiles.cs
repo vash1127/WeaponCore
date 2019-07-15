@@ -9,7 +9,7 @@ using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
-
+using static WeaponCore.Projectiles.Projectile;
 namespace WeaponCore.Projectiles
 {
     internal partial class Projectiles
@@ -57,8 +57,8 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
-            //for (int i = 0; i < Wait.Length; i++) Process(i);
+            //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+            for (int i = 0; i < Wait.Length; i++) Process(i);
         }
 
         private void Process(int i)
@@ -79,19 +79,19 @@ namespace WeaponCore.Projectiles
                     p.Age++;
                     switch (p.State)
                     {
-                        case Projectile.ProjectileState.Dead:
+                        case ProjectileState.Dead:
                             continue;
-                        case Projectile.ProjectileState.Start:
+                        case ProjectileState.Start:
                             p.Start(hitsPool.Get(), noAv, i);
-                            if (p.ModelState == Projectile.EntityState.NoDraw)
+                            if (p.ModelState == EntityState.NoDraw)
                                 modelClose = p.CloseModel(entPool[p.ModelId], drawList);
                             break;
-                        case Projectile.ProjectileState.Ending:
-                        case Projectile.ProjectileState.OneAndDone:
-                        case Projectile.ProjectileState.Depleted:
-                            if (p.State == Projectile.ProjectileState.Depleted)
+                        case ProjectileState.Ending:
+                        case ProjectileState.OneAndDone:
+                        case ProjectileState.Depleted:
+                            if (p.State == ProjectileState.Depleted)
                                 p.ProjectileClose(pool, hitsPool, noAv);
-                            if (p.ModelState != Projectile.EntityState.Exists) p.Stop(pool, hitsPool);
+                            if (p.ModelState != EntityState.Exists) p.Stop(pool, hitsPool);
                             else
                             {
                                 modelClose = p.CloseModel(entPool[p.ModelId], drawList);
@@ -108,23 +108,20 @@ namespace WeaponCore.Projectiles
                             Vector3D newVel;
                             if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                             {
-                                if (p.Target != null && !p.Target.MarkedForClose)
+                                var myCube = p.Target as MyCubeBlock;
+                                if (myCube != null && !myCube.MarkedForClose || p.Ai.ReacquireTarget(ref p.Target, p.FiringCube, p.Position, double.MaxValue))
                                 {
+                                    if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                     var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
                                     var tVel = physics?.LinearVelocity ?? Vector3.Zero;
                                     var targetPos = p.Target.PositionComp.WorldAABB.Center;
-                                    if (physics == null || targetPos == Vector3D.Zero) p.PrevTargetPos = p.PredictedTargetPos;
+                                    if (physics == null || targetPos == Vector3D.Zero)
+                                        p.PrevTargetPos = p.PredictedTargetPos;
                                     else p.PrevTargetPos = targetPos;
                                     p.PrevTargetVel = tVel;
                                 }
-                                else if (p.State != Projectile.ProjectileState.Zombie)
-                                {
-                                    p.PrevTargetVel = Vector3.Zero;
-                                    p.PrevTargetPos = p.PredictedTargetPos;
-                                    p.DistanceTraveled = 0;
-                                    p.DistanceToTravelSqr = (Vector3D.DistanceSquared(p.Position, p.PrevTargetPos) + 100);
-                                    p.State = Projectile.ProjectileState.Zombie;
-                                }
+                                else p.UpdateZombie();
+
                                 var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.System.Values.Ammo.Trajectory.SmartsFactor, p.System.Values.Ammo.Trajectory.SmartsMaxLateralThrust);
                                 newVel = p.Velocity + (commandedAccel * StepConst);
                                 p.AccelDir = commandedAccel / p.AccelPerSec;
@@ -151,7 +148,7 @@ namespace WeaponCore.Projectiles
                         }
                         p.Velocity = newVel;
                     }
-                    if (p.State == Projectile.ProjectileState.OneAndDone)
+                    if (p.State == ProjectileState.OneAndDone)
                     {
                         var beamEnd = p.Position + (p.Direction * p.MaxTrajectory);
                         p.TravelMagnitude = p.Position - beamEnd;
@@ -164,24 +161,24 @@ namespace WeaponCore.Projectiles
                     }
                     p.DistanceTraveled += Vector3D.Dot(p.Direction, p.Velocity * StepConst);
 
-                    if (p.ModelState == Projectile.EntityState.Exists)
+                    if (p.ModelState == EntityState.Exists)
                     {
                         try
                         {
                             p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.AccelDir, p.Entity.PositionComp.WorldMatrix.Up);
-                            if (p.EnableAv && p.Effect1 != null && p.System.AmmoParticle)
+                            if (p.EnableAv && p.AmmoEffect != null && p.System.AmmoParticle)
                             {
-                                var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.AmmoOffset, p.EntityMatrix);
-                                p.Effect1.WorldMatrix = p.EntityMatrix;
-                                p.Effect1.SetTranslation(offVec);
+                                var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.Ammo.Offset, p.EntityMatrix);
+                                p.AmmoEffect.WorldMatrix = p.EntityMatrix;
+                                p.AmmoEffect.SetTranslation(offVec);
                             }
                         }
                         catch (Exception ex) { Log.Line($"Exception in EntityMatrix: {ex}"); }
                     }
-                    else if (!p.ConstantSpeed && p.EnableAv && p.Effect1 != null && p.System.AmmoParticle)
-                        p.Effect1.Velocity = p.Velocity;
+                    else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.System.AmmoParticle)
+                        p.AmmoEffect.Velocity = p.Velocity;
 
-                    if (p.State != Projectile.ProjectileState.OneAndDone)
+                    if (p.State != ProjectileState.OneAndDone)
                     {
                         if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
@@ -224,6 +221,8 @@ namespace WeaponCore.Projectiles
                                     var hitOnScreen = camera.IsInFrustum(ref p.TestSphere);
                                     drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, hitEntity, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, true, hitOnScreen));
                                 }
+
+                                p.Colliding = true;
                                 Hits.Enqueue(p);
                                 p.LastHitPos = hitEntity.HitPos;
                                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
@@ -243,13 +242,13 @@ namespace WeaponCore.Projectiles
                         p.TestSphere.Center = p.Position;
                         if (camera.IsInFrustum(ref p.TestSphere))
                         {
-                            if (p.ParticleStopped || p.ParticleLateStart)
-                                p.ProjectileParticleStart();
+                            if ((p.ParticleStopped || p.ParticleLateStart))
+                                p.PlayAmmoParticle();
                         }
-                        else if (!p.ParticleStopped && p.Effect1 != null)
+                        else if (!p.ParticleStopped && p.AmmoEffect != null)
                         {
-                            p.Effect1.Stop(false);
-                            p.Effect1 = null;
+                            p.AmmoEffect.Stop(false);
+                            p.AmmoEffect = null;
                             p.ParticleStopped = true;
                         }
                     }
@@ -265,7 +264,7 @@ namespace WeaponCore.Projectiles
                         else p.TravelEmitter.SetPosition(p.Position);
                     }
 
-                    if (p.ModelState == Projectile.EntityState.Exists)
+                    if (p.ModelState == EntityState.Exists)
                     {
                         var lastSphere = new BoundingSphereD(p.LastEntityPos, p.ScreenCheckRadius);
                         var currentSphere = new BoundingSphereD(p.Position, p.ScreenCheckRadius);
@@ -277,7 +276,6 @@ namespace WeaponCore.Projectiles
                             drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, null, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, p.OnScreen));
                         }
                         else p.OnScreen = false;
-                        continue;
                     }
 
                     if (!p.DrawLine) continue;
@@ -294,7 +292,7 @@ namespace WeaponCore.Projectiles
 
                         if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength) p.Grow = false;
                     }
-                    else if (p.State == Projectile.ProjectileState.OneAndDone)
+                    else if (p.State == ProjectileState.OneAndDone)
                         p.Trajectile = new Trajectile(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
                     else
                         p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.ShotLength), p.Position, p.Direction, p.ShotLength);

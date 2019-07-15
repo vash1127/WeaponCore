@@ -76,6 +76,7 @@ namespace WeaponCore
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
                 Log.Line("grid something is null");
+                hitEnt.Blocks?.Clear();
                 return;
             }
             var maxObjects = projectile.System.MaxObjectsHit;
@@ -106,6 +107,7 @@ namespace WeaponCore
                     ApplyProjectileForce(grid, hitEnt.HitPos.Value, projectile.Direction, (system.Values.Ammo.Mass * speed));
                 }
             }
+            hitEnt.Blocks.Clear();
         }
 
         private void DamageDestObj(HitEntity hitEnt, Projectile projectile)

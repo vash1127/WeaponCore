@@ -114,9 +114,10 @@ namespace WeaponCore.Support
         [ProtoMember(5)] internal double SmartsTrackingDelay;
         [ProtoMember(6)] internal double SmartsMaxLateralThrust;
         [ProtoMember(7)] internal float TargetLossDegree;
-        [ProtoMember(8)] internal Randomize SpeedVariance;
-        [ProtoMember(9)] internal Randomize RangeVariance;
-        [ProtoMember(10)] internal GuidanceType Guidance;
+        [ProtoMember(8)] internal int TargetLossTime;
+        [ProtoMember(9)] internal Randomize SpeedVariance;
+        [ProtoMember(10)] internal Randomize RangeVariance;
+        [ProtoMember(11)] internal GuidanceType Guidance;
     }
 
     [ProtoContract]
@@ -147,23 +148,29 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct ParticleDefinition
     {
-        [ProtoMember(1)] internal string AmmoParticle;
-        [ProtoMember(2)] internal Vector4 AmmoColor;
-        [ProtoMember(3)] internal Vector3D AmmoOffset;
-        [ProtoMember(4)] internal float AmmoScale;
-        [ProtoMember(5)] internal string HitParticle;
-        [ProtoMember(6)] internal Vector4 HitColor;
-        [ProtoMember(7)] internal float HitScale;
-        [ProtoMember(8)] internal string Barrel1Particle;
-        [ProtoMember(9)] internal Vector4 Barrel1Color;
-        [ProtoMember(10)] internal float Barrel1Scale;
-        [ProtoMember(11)] internal bool Barrel1Restart;
-        [ProtoMember(12)] internal int Barrel1Duration;
-        [ProtoMember(13)] internal string Barrel2Particle;
-        [ProtoMember(14)] internal Vector4 Barrel2Color;
-        [ProtoMember(15)] internal float Barrel2Scale;
-        [ProtoMember(16)] internal bool Barrel2Restart;
-        [ProtoMember(17)] internal int Barrel2Duration;
+        [ProtoMember(1)] internal Particle Ammo;
+        [ProtoMember(2)] internal Particle Hit;
+        [ProtoMember(3)] internal Particle Barrel1;
+        [ProtoMember(4)] internal Particle Barrel2;
+    }
+
+    [ProtoContract]
+    public struct Particle
+    {
+        [ProtoMember(1)] internal string Name;
+        [ProtoMember(2)] internal Vector4 Color;
+        [ProtoMember(3)] internal Vector3D Offset;
+        [ProtoMember(4)] internal ParticleOptions Extras;
+    }
+
+    [ProtoContract]
+    public struct ParticleOptions
+    {
+        [ProtoMember(1)] internal float Scale;
+        [ProtoMember(2)] internal float MaxDistance;
+        [ProtoMember(3)] internal float MaxDuration;
+        [ProtoMember(4)] internal bool DisableLoop;
+        [ProtoMember(5)] internal bool Restart;
     }
 
     [ProtoContract]

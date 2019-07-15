@@ -49,7 +49,7 @@ namespace WeaponCore.Support
             if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
 
             weapon.CheckedForTargetTick = MySession.Tick;
-            GetTarget(ref target, weapon);
+            UpdateTarget(ref target, weapon);
             if (target != null)
             {
                 weapon.Comp.Turret.EnableIdleRotation = false;
@@ -66,10 +66,6 @@ namespace WeaponCore.Support
                 var weaponPos = weapon.Comp.MyPivotPos;
                 var blockCount = TargetBlocks.Count;
                 var deck = GetDeck(blockCount);
-                for (int i = 0; i < TargetBlocks.Count; i++)
-                {
-                    if (!deck.Contains(i)) Log.Line($"deck missing:{i}");
-                }
 
                 for (int i = 0; i < blockCount; i++)
                 {
@@ -97,31 +93,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private int[] _deck = new int[0];
-        private int _prevDeckLen;
-        private int[] GetDeck(int targetCount)
-        {
-            var min = 0;
-            var max = targetCount - 1;
-            var count = max - min + 1;
-            if (_prevDeckLen != count)
-            {
-                Array.Resize(ref _deck, count);
-                _prevDeckLen = count;
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                var j = MyUtils.GetRandomInt(0, i + 1);
-
-                _deck[i] = _deck[j];
-                _deck[j] = min + i;
-            }
-
-            return _deck;
-        }
-
-        internal void GetTarget(ref MyEntity target, Weapon weapon)
+        internal void UpdateTarget(ref MyEntity target, Weapon weapon)
         {
             var physics = MyAPIGateway.Physics;
             var found = false;
@@ -216,6 +188,97 @@ namespace WeaponCore.Support
                 SortedTargets.Add(new TargetInfo(entInfo, ent, isGrid, partCount, MyGrid));
             }
             SortedTargets.Sort(_targetCompare);
+        }
+
+        private int[] _deck = new int[0];
+        private int _prevDeckLen;
+        private int[] GetDeck(int targetCount)
+        {
+            var min = 0;
+            var max = targetCount - 1;
+            var count = max - min + 1;
+            if (_prevDeckLen != count)
+            {
+                Array.Resize(ref _deck, count);
+                _prevDeckLen = count;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var j = MyUtils.GetRandomInt(0, i + 1);
+
+                _deck[i] = _deck[j];
+                _deck[j] = min + i;
+            }
+
+            return _deck;
+        }
+
+        internal bool ReacquireTarget(ref MyEntity target, MyCubeBlock myParent, Vector3D currentPos, double distanceLeftToTravel)
+        {
+            if (myParent == null || myParent.MarkedForClose || myParent.CubeGrid.MarkedForClose)
+            {
+                target = null;
+                return false;
+            }
+
+            GetTarget(ref target, currentPos, distanceLeftToTravel);
+            if (target != null)
+            {
+                var targetGrid = target as MyCubeGrid;
+                if (targetGrid == null)
+                {
+                    target = null;
+                    return false;
+                }
+                MyEntity entity = null;
+
+                try
+                {
+                    IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = Targeting.TargetBlocks;
+                    foreach (var targets in allTargets)
+                    {
+                        var rootGrid = targets.Key;
+                        if (rootGrid != targetGrid || targetGrid == myParent.CubeGrid || !GridEnemy(myParent, targetGrid)) continue;
+                        if (rootGrid.MarkedForClose) return false;
+
+                        foreach (var e in targets.Value)
+                        {
+                            if (e == null || e.MarkedForClose) continue;
+                            entity = e;
+                            break;
+                        }
+                    }
+                }
+                catch (Exception ex) { Log.Line($"Exception in Targeting.TargetBlocks: {ex}"); }
+
+                var block = entity as MyCubeBlock;
+                if (block == null) return false;
+
+                target = block;
+                //Log.Line("reaquired");
+                return true;
+            }
+            Log.Line("could not reacquire a target");
+            target = null;
+            return false;
+        }
+
+        internal void GetTarget(ref MyEntity target, Vector3D currentPos, double distanceLeftToTravel)
+        {
+            for (int i = 0; i < SortedTargets.Count; i++)
+            {
+                var targetInfo = SortedTargets[i];
+                if (targetInfo.Target == null || targetInfo.Target.MarkedForClose ||
+                    Vector3D.DistanceSquared(targetInfo.EntInfo.Position, currentPos) >= distanceLeftToTravel)
+                {
+                    Log.Line($"null, closed or out of distance: {targetInfo.Target == null} - {targetInfo.Target?.MarkedForClose} - {Vector3D.DistanceSquared(targetInfo.EntInfo.Position, currentPos)} - {distanceLeftToTravel}");
+                    continue;
+                }
+                //Log.Line($"got target: grid:{targetInfo.IsGrid}");
+                target = targetInfo.Target;
+                break;
+            }
         }
     }
 }
