@@ -8,6 +8,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
+using VRageRender;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
 namespace WeaponCore.Projectiles
@@ -213,7 +214,7 @@ namespace WeaponCore.Projectiles
 
                             if (hitEntity != null)
                             {
-                                if (!noAv && p.EnableAv && (p.DrawLine || p.ModelId != -1))
+                                if (p.EnableAv && (p.DrawLine || p.ModelId != -1))
                                 {
                                     var length = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
                                     p.Trajectile = new Trajectile(p.LastPosition, hitEntity.HitPos.Value, p.Direction, length);
@@ -260,46 +261,49 @@ namespace WeaponCore.Projectiles
                         else p.TravelEmitter.SetPosition(p.Position);
                     }
 
+                    if (p.DrawLine)
+                    {
+                        if (p.Grow)
+                        {
+                            if (p.AccelLength <= 0)
+                            {
+                                p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
+                                if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
+                            }
+                            else p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
+
+                            if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength) p.Grow = false;
+                        }
+                        else if (p.State == ProjectileState.OneAndDone)
+                            p.Trajectile = new Trajectile(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
+                        else
+                        {
+                            var pointDir = p.Guidance == AmmoTrajectory.GuidanceType.Smart ? p.AccelDir : p.Direction;
+                            p.Trajectile = new Trajectile(p.Position + -(pointDir * p.ShotLength), p.Position, pointDir, p.ShotLength);
+                        }
+                    }
+
+                    var onScreen = false;
                     if (p.ModelState == EntityState.Exists)
                     {
                         var lastSphere = new BoundingSphereD(p.LastEntityPos, p.ScreenCheckRadius);
                         var currentSphere = new BoundingSphereD(p.Position, p.ScreenCheckRadius);
                         if (camera.IsInFrustum(ref lastSphere) || camera.IsInFrustum(ref currentSphere) || p.FirstOffScreen)
                         {
+                            onScreen = true;
                             p.FirstOffScreen = false;
-                            p.OnScreen = true;
                             p.LastEntityPos = p.Position;
-                            drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, null, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, p.OnScreen));
                         }
-                        else p.OnScreen = false;
                     }
 
-                    if (!p.DrawLine) continue;
-
-                    if (p.Grow)
+                    if (p.DrawLine)
                     {
-                        if (p.AccelLength <= 0)
-                        {
-                            p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
-                            if (p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
-                        }
-                        else
-                            p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
-
-                        if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength) p.Grow = false;
+                        var bb = new BoundingBoxD(Vector3D.Min(p.Trajectile.PrevPosition, p.Trajectile.Position), Vector3D.Max(p.Trajectile.PrevPosition, p.Trajectile.Position));
+                        if (camera.IsInFrustum(ref bb)) onScreen = true;
                     }
-                    else if (p.State == ProjectileState.OneAndDone)
-                        p.Trajectile = new Trajectile(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
-                    else
-                        p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.ShotLength), p.Position, p.Direction, p.ShotLength);
+                    p.OnScreen = onScreen;
 
-                    var bb = new BoundingBoxD(Vector3D.Min(p.Trajectile.PrevPosition, p.Trajectile.Position), Vector3D.Max(p.Trajectile.PrevPosition, p.Trajectile.Position));
-                    if (camera.IsInFrustum(ref bb))
-                    {
-                        p.OnScreen = true;
-                        drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, null, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, p.OnScreen));
-                    }
-                    else p.OnScreen = false;
+                    if (onScreen) drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, null, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, p.OnScreen));
                 }
 
                 if (modelClose)
