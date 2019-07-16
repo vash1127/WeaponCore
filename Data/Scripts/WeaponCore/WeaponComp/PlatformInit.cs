@@ -49,7 +49,6 @@ namespace WeaponCore.Platform
         private void CompileTurret()
         {
             var c = 0;
-
             foreach (var m in Structure.WeaponSystems)
             {
                 var part = Parts.NameToEntity[m.Key.String];

@@ -98,6 +98,7 @@ namespace WeaponCore
                                 if (w.IsTurret && !w.TrackTarget) w.Target = comp.TrackingWeapon.Target;
                                 else if (w.Target != null && !Weapon.ValidTarget(w, w.Target)) w.Target = null;
                             }
+                            //if (!w.TrackingAi) Log.Line($"Target:{w.Target != null} - Aligned:{w.IsAligned} - Tracking:{w.IsTracking} - Seeking:{w.SeekTarget} - Lock:{w.Comp.TurretTargetLock}");
                         }
                         else
                         {

@@ -388,14 +388,14 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        private void DisposeAmmoEffect()
+        internal void DisposeAmmoEffect(bool pause = false)
         {
-            Log.Line($"Particle Stop:{Age}");
             if (AmmoEffect != null)
             {
                 AmmoEffect.Stop(false);
                 AmmoEffect = null;
             }
+            if (pause) ParticleStopped = true;
         }
 
         private void DisposeHitEffect()

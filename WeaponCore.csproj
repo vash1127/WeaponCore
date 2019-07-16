@@ -205,7 +205,7 @@
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompRun.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\PlatformInit.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\PlatformInit.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponState.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Controls\WepUi.cs" />

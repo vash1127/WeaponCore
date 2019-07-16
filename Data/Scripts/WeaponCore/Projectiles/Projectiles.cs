@@ -165,7 +165,7 @@ namespace WeaponCore.Projectiles
                     {
                         try
                         {
-                            p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.AccelDir, p.Entity.PositionComp.WorldMatrix.Up);
+                            p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.AccelDir, MatrixD.Identity.Up);
                             if (p.EnableAv && p.AmmoEffect != null && p.System.AmmoParticle)
                             {
                                 var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.Ammo.Offset, p.EntityMatrix);
@@ -246,11 +246,7 @@ namespace WeaponCore.Projectiles
                                 p.PlayAmmoParticle();
                         }
                         else if (!p.ParticleStopped && p.AmmoEffect != null)
-                        {
-                            p.AmmoEffect.Stop(false);
-                            p.AmmoEffect = null;
-                            p.ParticleStopped = true;
-                        }
+                            p.DisposeAmmoEffect(true);
                     }
 
                     if (p.HasTravelSound)

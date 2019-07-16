@@ -105,7 +105,6 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
-            //Log.Line($"starting sound: Name:{System.WeaponName} - PartName:{System.PartName} - IsTurret:{Values.HardPoint.IsTurret}");
             if (FiringEmitter != null) StartFiringSound();
             if (System.ShotEnergyCost > 0 && !IsShooting)
             {

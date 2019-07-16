@@ -158,7 +158,6 @@ namespace WeaponCore.Platform
                 if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
                 if (System.HitParticle && System.IsBeamWeapon) HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
-
             WeaponId = weaponId;
             Enabled = true;
             IsTurret = System.Values.HardPoint.IsTurret;

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
@@ -15,14 +16,19 @@ namespace WeaponCore
                 var p = drawList[i];
                 if (p.Entity != null)
                 {
-                    var drawLine = p.System.Values.Graphics.Line.Trail;
+                    if (!p.Entity.InScene)
+                    {
+                        p.Entity.InScene = true;
+                        p.Entity.Render.UpdateRenderObject(true, false);
+                    }
+
                     p.Entity.PositionComp.SetWorldMatrix(p.EntityMatrix, null, false, false, false);
                     if (p.Last)
                     {
                         p.Entity.InScene = false;
                         p.Entity.Render.RemoveRenderObjects();
                     }
-                    if (!drawLine) continue;
+                    if (!p.System.Values.Graphics.Line.Trail) continue;
                 }
 
                 var trajectile = p.Trajectile;
