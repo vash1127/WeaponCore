@@ -3,6 +3,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -144,20 +145,27 @@ namespace WeaponCore
             var destObj = hitEnt.Entity as IMyDestroyableObject;
             var system = projectile.System;
             if (destObj == null || entity == null) return;
-
             projectile.ObjectsHit++;
 
             var objHp = destObj.Integrity;
             var integrityCheck = system.Values.DamageScales.MaxIntegrity > 0;
             if (integrityCheck && objHp > system.Values.DamageScales.MaxIntegrity) return;
-            if (projectile.DamagePool < objHp)
+
+            var character = hitEnt.Entity is IMyCharacter;
+            float damageScale = 1;
+            if (character && system.Values.DamageScales.Character > 0)
+                damageScale *= system.Values.DamageScales.Character;
+
+            var realDamage = objHp;
+            var scaledDamage = realDamage * damageScale;
+            if (projectile.DamagePool < scaledDamage)
             {
-                objHp = projectile.DamagePool;
+                realDamage = (projectile.DamagePool / scaledDamage) * objHp;
                 projectile.DamagePool = 0;
             }
-            else projectile.DamagePool -= objHp;
+            else projectile.DamagePool -= scaledDamage;
 
-            destObj.DoDamage(objHp, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
+            destObj.DoDamage(realDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
