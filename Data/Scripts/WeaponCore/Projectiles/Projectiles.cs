@@ -2,14 +2,11 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
-using VRage.ObjectBuilders;
 using VRageMath;
-using VRageRender;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
 namespace WeaponCore.Projectiles
@@ -220,7 +217,7 @@ namespace WeaponCore.Projectiles
                         if (p.Grow)
                         {
                             if (p.AccelLength <= 0 && p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
-                            else if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.ShotLength * p.ShotLength) p.Grow = false;
+                            else if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.LineLength * p.LineLength) p.Grow = false;
                             p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
                         }
                         else if (p.State == ProjectileState.OneAndDone)
@@ -228,7 +225,7 @@ namespace WeaponCore.Projectiles
                         else
                         {
                             var pointDir = p.Guidance == AmmoTrajectory.GuidanceType.Smart ? p.AccelDir : p.Direction;
-                            p.Trajectile = new Trajectile(p.Position + -(pointDir * p.ShotLength), p.Position, pointDir, p.ShotLength);
+                            p.Trajectile = new Trajectile(p.Position + -(pointDir * p.LineLength), p.Position, pointDir, p.LineLength);
                         }
                     }
 

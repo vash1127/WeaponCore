@@ -96,11 +96,19 @@ namespace WeaponCore
                     if (d.Large > 0 && largeGrid) damageScale *= d.Large;
                     else if (d.Small > 0 && !largeGrid) damageScale *= d.Small;
 
-                    if (d.NonArmor > 0 || d.Armor > 0)
+                    if (system.ArmorScaling)
                     {
-                        var isArmor = block.FatBlock == null;
-                        if (isArmor && d.Armor > 0) damageScale *= d.Armor;
-                        else if (!isArmor && d.NonArmor > 0) damageScale *= d.NonArmor;
+                        var blockDef = block.BlockDefinition;
+                        var isArmor = AllArmorBaseDefinitions.Contains(blockDef);
+                        if (isArmor && d.Armor.Armor > 0) damageScale *= d.Armor.Armor;
+                        else if (!isArmor && d.Armor.NonArmor > 0) damageScale *= d.Armor.NonArmor;
+
+                        if (isArmor && (d.Armor.Light > 0 || d.Armor.Heavy > 0))
+                        {
+                            var isHeavy = HeavyArmorBaseDefinitions.Contains(blockDef);
+                            if (isHeavy && d.Armor.Heavy > 0) damageScale *= d.Armor.Heavy;
+                            else if (!isHeavy && d.Armor.Light > 0) damageScale *= d.Armor.Light;
+                        }
                     }
                 }
                 if (projectile.DamagePool <= 0 || projectile.ObjectsHit >= maxObjects) break;

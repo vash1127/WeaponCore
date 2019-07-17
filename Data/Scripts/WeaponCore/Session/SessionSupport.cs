@@ -57,6 +57,16 @@ namespace WeaponCore
                 else if (!FirstLoop)
                 {
                     FirstLoop = true;
+                    foreach (var t in AllDefinitions)
+                    {
+                        var name = t.Id.SubtypeName;
+                        var contains = name.Contains("BlockArmor");
+                        if (contains)
+                        {
+                            AllArmorBaseDefinitions.Add(t);
+                            if (name.Contains("Heavy")) HeavyArmorBaseDefinitions.Add(t);
+                        }
+                    }
                 }
             }
 

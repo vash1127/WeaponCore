@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game;
@@ -107,7 +108,6 @@ namespace WeaponCore
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
-
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",
@@ -117,6 +117,8 @@ namespace WeaponCore
         internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
+        internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
+        internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal ShieldApi SApi = new ShieldApi();
         internal FutureEvents FutureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);

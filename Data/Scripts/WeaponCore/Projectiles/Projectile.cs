@@ -58,7 +58,7 @@ namespace WeaponCore.Projectiles
         internal double MaxTrajectorySqr;
         internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
-        internal double ShotLength;
+        internal double LineLength;
         internal double SmartsDelayDistSqr;
         internal double DistanceFromCameraSqr;
         internal double AccelPerSec;
@@ -164,9 +164,9 @@ namespace WeaponCore.Projectiles
             else MaxTrajectory = System.Values.Ammo.Trajectory.MaxTrajectory;
 
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
-            ShotLength = System.Values.Graphics.Line.Length;
+            LineLength = System.Values.Graphics.Line.Length;
 
-            var smartsDelayDist = ShotLength * System.Values.Ammo.Trajectory.SmartsTrackingDelay;
+            var smartsDelayDist = LineLength * System.Values.Ammo.Trajectory.SmartsTrackingDelay;
             SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
@@ -239,9 +239,9 @@ namespace WeaponCore.Projectiles
             TravelMagnitude = Velocity * StepConst;
             if (!IsBeamWeapon)
             {
-                var reSizeSteps = (int) (ShotLength / MaxSpeedLength);
+                var reSizeSteps = (int) (LineLength / MaxSpeedLength);
                 ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
-                Grow = ReSizeSteps > 1 || AccelLength > 0 && AccelLength < ShotLength;
+                Grow = ReSizeSteps > 1 || AccelLength > 0 && AccelLength < LineLength;
                 Shrink = Grow;
                 State = ProjectileState.Alive;
             }

@@ -94,7 +94,6 @@ namespace WeaponCore.Support
         [ProtoMember(7)] internal int MaxObjectsHit;
         [ProtoMember(8)] internal float BackKickForce;
         [ProtoMember(9)] internal AmmoTrajectory Trajectory;
-        [ProtoMember(10)] internal AmmoShieldBehavior ShieldBehavior;
     }
 
     [ProtoContract]
@@ -119,21 +118,6 @@ namespace WeaponCore.Support
         [ProtoMember(9)] internal Randomize SpeedVariance;
         [ProtoMember(10)] internal Randomize RangeVariance;
         [ProtoMember(11)] internal GuidanceType Guidance;
-    }
-
-    [ProtoContract]
-    public struct AmmoShieldBehavior
-    {
-        internal enum ShieldType
-        {
-            Bypass,
-            Emp,
-            Energy,
-            Kinetic
-        }
-
-        [ProtoMember(1)] internal float ShieldDmgMultiplier;
-        [ProtoMember(2)] internal ShieldType ShieldDamage;
     }
 
     [ProtoContract]
@@ -231,9 +215,34 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal float Large;
         [ProtoMember(2)] internal float Small;
-        [ProtoMember(3)] internal float NonArmor;
-        [ProtoMember(4)] internal float Armor;
-        [ProtoMember(5)] internal float MaxIntegrity;
-        [ProtoMember(6)] internal bool DamageVoxels;
+        [ProtoMember(3)] internal ArmorDefinition Armor;
+        [ProtoMember(4)] internal float MaxIntegrity;
+        [ProtoMember(5)] internal bool DamageVoxels;
+        [ProtoMember(6)] internal ShieldDefinition Shield;
+    }
+
+    [ProtoContract]
+    public struct ArmorDefinition
+    {
+        [ProtoMember(1)] internal float Armor;
+        [ProtoMember(2)] internal float Heavy;
+        [ProtoMember(3)] internal float Light;
+        [ProtoMember(4)] internal float NonArmor;
+    }
+
+
+    [ProtoContract]
+    public struct ShieldDefinition
+    {
+        internal enum ShieldType
+        {
+            Bypass,
+            Emp,
+            Energy,
+            Kinetic
+        }
+
+        [ProtoMember(1)] internal float DamageModifer;
+        [ProtoMember(2)] internal ShieldType Type;
     }
 }
