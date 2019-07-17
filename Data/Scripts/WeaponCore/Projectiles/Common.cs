@@ -40,19 +40,19 @@ namespace WeaponCore.Projectiles
                 Hits.Enqueue(projectile);
         }
 
-        internal bool GetAllEntitiesInLine(Projectile projectile, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList, int poolId, bool quickCheck = false)
+        internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList, int poolId, bool quickCheck = false)
         {
-            var listCnt = segmentList?.Count ?? projectile.HitList.Count;
+            var listCnt = segmentList?.Count ?? p.HitList.Count;
             var found = false;
             for (int i = 0; i < listCnt; i++)
             {
-                var ent = segmentList != null ? segmentList[i].Element : projectile.HitList[i].Entity;
-                if (ent == projectile.FiringCube.CubeGrid) continue;
+                var ent = segmentList != null ? segmentList[i].Element : p.HitList[i].Entity;
+                if (ent == p.FiringCube.CubeGrid) continue;
                 //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
-                    if (ent.Physics == null && shieldBlock.CubeGrid != projectile.FiringCube.CubeGrid)
+                    if (ent.Physics == null && shieldBlock.CubeGrid != p.FiringCube.CubeGrid)
                     {
                         var hitEntity = HitEntityPool[poolId].Get();
                         hitEntity.Clean();
@@ -65,7 +65,7 @@ namespace WeaponCore.Projectiles
                             hitEntity.EventType = Proximity;
                         }
                         found = true;
-                        projectile.HitList.Add(hitEntity);
+                        p.HitList.Add(hitEntity);
                     }
                     else continue;
                 }
@@ -91,26 +91,27 @@ namespace WeaponCore.Projectiles
                         hitEntity.EventType = Proximity;
                     }
                     found = true;
-                    projectile.HitList.Add(hitEntity);
+                    p.HitList.Add(hitEntity);
                 }
             }
-            return found;
+            segmentList?.Clear();
+            return found ? GenerateHitInfo(p, poolId) : null;
         }
 
-        internal HitEntity GenerateHitInfo(List<HitEntity> ents, int poolId)
+        internal HitEntity GenerateHitInfo(Projectile p,  int poolId)
         {
-            var count = ents.Count;
+            var count = p.HitList.Count;
 
-            if (count > 1) ents.Sort((x, y) => GetEntityCompareDist(x, y));
-            else GetEntityCompareDist(ents[0], null);
+            if (count > 1) p.HitList.Sort((x, y) => GetEntityCompareDist(x, y));
+            else GetEntityCompareDist(p.HitList[0], null);
 
             //var afterSort = ents.Count;
-            var endOfIndex = ents.Count - 1;
+            var endOfIndex = p.HitList.Count - 1;
             var lastValidEntry = int.MaxValue;
 
             for (int i = endOfIndex; i >= 0; i--)
             {
-                if (ents[i].Hit)
+                if (p.HitList[i].Hit)
                 {
                     lastValidEntry = i + 1;
                     //Log.Line($"lastValidEntry:{lastValidEntry} - endOfIndex:{endOfIndex}");
@@ -124,18 +125,21 @@ namespace WeaponCore.Projectiles
             while (howManyToRemove-- > 0)
             {
                 //Log.Line($"removing: {endOfIndex} - hit:{ents[endOfIndex].Hit}");
-                var ent = ents[endOfIndex];
-                ents.RemoveAt(endOfIndex);
+                var ent = p.HitList[endOfIndex];
+                p.HitList.RemoveAt(endOfIndex);
                 HitEntityPool[poolId].Return(ent);
                 endOfIndex--;
             }
-            HitEntity hitEnt = null;
-            if (ents.Count > 0)
+            var finalCount = p.HitList.Count;
+            HitEntity hitEntity = null;
+            if (finalCount > 0)
             {
-                hitEnt = ents[0];
+                hitEntity = p.HitList[0];
+                p.LastHitPos = hitEntity.HitPos;
+                p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
                 //Log.Line($"start:{count} - ASort:{afterSort} - Final:{ents.Count} - howMany:{howMany} - hit:{ents[0].Hit} - hitPos:{ents[0].HitPos.HasValue} - {ents[0].Entity.DebugName} ");
             }
-            return hitEnt;
+            return hitEntity;
         }
 
         internal static int GetEntityCompareDist(HitEntity x, HitEntity y)

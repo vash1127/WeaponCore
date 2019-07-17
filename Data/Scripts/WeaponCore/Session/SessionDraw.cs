@@ -2,6 +2,8 @@
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRageMath;
+using VRageRender;
+using VRageRender.Messages;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 namespace WeaponCore
@@ -76,7 +78,7 @@ namespace WeaponCore
                 }
                 else
                     MyTransparentGeometry.AddLocalLineBillboard(p.System.ProjectileMaterial, color, trajectile.PrevPosition, 0, trajectile.Direction, (float)trajectile.Length, newWidth);
-                if (p.System.IsBeamWeapon)
+                if (p.System.IsBeamWeapon && p.System.HitParticle)
                 {
                     var c = p.FiringCube;
                     if (p.FiringCube == null || p.FiringCube.MarkedForClose) continue;

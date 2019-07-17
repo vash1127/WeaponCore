@@ -47,7 +47,7 @@ namespace WeaponCore.Projectiles
         internal MyCubeGrid FiringGrid;
         internal GridTargetingAi Ai;
         internal float DesiredSpeed;
-        internal float DesiredSpeedSqr;
+        internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double MaxSpeedLength;
         internal double AccelLength;
@@ -60,7 +60,6 @@ namespace WeaponCore.Projectiles
         internal double DistanceToTravelSqr;
         internal double ShotLength;
         internal double SmartsDelayDistSqr;
-        internal double ScreenCheckRadius;
         internal double DistanceFromCameraSqr;
         internal double AccelPerSec;
         internal int PoolId;
@@ -94,6 +93,8 @@ namespace WeaponCore.Projectiles
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
+        internal BoundingSphereD ModelSphereCurrent = new BoundingSphereD();
+        internal BoundingSphereD ModelSphereLast = new BoundingSphereD();
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal MyEntity Entity;
@@ -178,7 +179,6 @@ namespace WeaponCore.Projectiles
             }
             else DesiredSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
 
-            DesiredSpeedSqr = DesiredSpeed * DesiredSpeed;
 
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
@@ -220,7 +220,8 @@ namespace WeaponCore.Projectiles
                 if (EnableAv)
                 {
                     ModelState = EntityState.Exists;
-                    ScreenCheckRadius = Entity.PositionComp.WorldVolume.Radius * 2;
+                    ModelSphereCurrent.Radius = Entity.PositionComp.WorldVolume.Radius * 2;
+                    ModelSphereLast.Radius = Entity.PositionComp.WorldVolume.Radius * 2;
                 }
                 else ModelState = EntityState.NoDraw;
             }
@@ -230,6 +231,7 @@ namespace WeaponCore.Projectiles
             AccelPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
             MaxSpeed = MaxVelocity.Length();
+            MaxSpeedSqr = MaxSpeed * MaxSpeed;
             MaxSpeedLength = MaxSpeed * StepConst;
             AccelLength = System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
@@ -262,19 +264,19 @@ namespace WeaponCore.Projectiles
             AmmoSound = true;
         }
 
-        internal void ProjectileClose(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool, bool noAv)
+        internal void ProjectileClose(Projectiles manager, int poolId)
         {
             if (!EnableAv && ModelId == -1)
             {
                 HitList.Clear();
-                hitPool.Return(HitList);
-                pool.MarkForDeallocate(this);
+                manager.HitsPool[poolId].Return(HitList);
+                manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
             else State = ProjectileState.Ending;
         }
 
-        internal void Stop(ObjectsPool<Projectile> pool, MyConcurrentPool<List<HitEntity>> hitPool)
+        internal void Stop(Projectiles manager, int poolId)
         {
             if (EndStep++ >= EndSteps)
             {
@@ -286,17 +288,17 @@ namespace WeaponCore.Projectiles
                 }
 
                 HitList.Clear();
-                hitPool.Return(HitList);
-                pool.MarkForDeallocate(this);
+                manager.HitsPool[poolId].Return(HitList);
+                manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
         }
 
-        internal bool CloseModel(EntityPool<MyEntity> entPool, List<DrawProjectile> drawList)
+        internal bool CloseModel(Projectiles manager, int poolId)
         {
             EntityMatrix = MatrixD.Identity;
-            drawList.Add(new DrawProjectile(System, FiringCube, WeaponId, MuzzleId, Entity, EntityMatrix, null, new Trajectile(), MaxSpeedLength, ReSizeSteps, Shrink, true, OnScreen));
-            entPool.MarkForDeallocate(Entity);
+            manager.DrawProjectiles[poolId].Add(new DrawProjectile(System, FiringCube, WeaponId, MuzzleId, Entity, EntityMatrix, null, new Trajectile(), MaxSpeedLength, ReSizeSteps, Shrink, true, OnScreen));
+            manager.EntityPool[poolId][ModelId].MarkForDeallocate(Entity);
             ModelState = EntityState.None;
             return true;
         }
