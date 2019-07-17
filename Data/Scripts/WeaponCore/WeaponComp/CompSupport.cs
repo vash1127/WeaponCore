@@ -38,7 +38,7 @@ namespace WeaponCore.Support
             MyPivotDir = weaponForward;
             MyPivotUp = weaponUp;
             MyPivotPos = UtilsStatic.GetClosestPointOnLine1(blockCenter, blockUp, weaponCenter, weaponForward);
-            MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center, MyPivotPos);
+            //MyPivotTestLine = new LineD(MyCube.PositionComp.WorldAABB.Center, MyPivotPos);
         }
 
         public void StopRotSound(bool force)

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.ModAPI;
 using VRageMath;
 using VRageRender;
 using VRageRender.Messages;
@@ -15,39 +16,39 @@ namespace WeaponCore
             var sFound = false;
             for (int i = 0; i < drawList.Count; i++)
             {
-                var p = drawList[i];
-                if (p.Entity != null)
+                var d = drawList[i];
+                if (d.Projectile.Entity != null)
                 {
-                    if (!p.Entity.InScene)
+                    if (!d.Last && !d.Projectile.Entity.InScene)
                     {
-                        p.Entity.InScene = true;
-                        p.Entity.Render.UpdateRenderObject(true, false);
+                        d.Projectile.Entity.InScene = true;
+                        d.Projectile.Entity.Render.UpdateRenderObject(true, false);
                     }
 
-                    p.Entity.PositionComp.SetWorldMatrix(p.EntityMatrix, null, false, false, false);
-                    if (p.Last)
+                    d.Projectile.Entity.PositionComp.SetWorldMatrix(d.Projectile.EntityMatrix, null, false, false, false);
+                    if (d.Last)
                     {
-                        p.Entity.InScene = false;
-                        p.Entity.Render.RemoveRenderObjects();
+                        d.Projectile.Entity.InScene = false;
+                        d.Projectile.Entity.Render.RemoveRenderObjects();
                     }
-                    if (!p.System.Values.Graphics.Line.Trail) continue;
+                    if (!d.Projectile.System.Values.Graphics.Line.Trail) continue;
                 }
 
-                var trajectile = p.Trajectile;
-                var width = p.LineWidth;
+                var trajectile = d.Projectile.Trajectile;
+                var width = d.LineWidth;
 
-                if (p.Shrink && p.HitEntity != null)
+                if (d.Projectile.Shrink && d.HitEntity != null)
                 {
                     sFound = true;
                     var shrink = _shrinkPool.Get();
-                    shrink.Init(trajectile, ref p);
+                    shrink.Init(trajectile, ref d);
                     _shrinking.Add(shrink);
                 }
-                var color = p.Color;
+                var color = d.Color;
 
                 var newWidth = width;
 
-                if (p.System.Values.Ammo.Trajectory.DesiredSpeed <= 0)
+                if (d.Projectile.System.Values.Ammo.Trajectory.DesiredSpeed <= 0)
                 {
                     var changeValue = 0.01f;
                     if (_lCount < 60)
@@ -74,19 +75,19 @@ namespace WeaponCore
                 {
                     var matrix = MatrixD.CreateFromDir(trajectile.Direction);
                     matrix.Translation = trajectile.PrevPosition;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)trajectile.Length, 12, color, color, p.System.ProjectileMaterial, p.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
+                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)trajectile.Length, 12, color, color, d.Projectile.System.ProjectileMaterial, d.Projectile.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
                 else
-                    MyTransparentGeometry.AddLocalLineBillboard(p.System.ProjectileMaterial, color, trajectile.PrevPosition, 0, trajectile.Direction, (float)trajectile.Length, newWidth);
-                if (p.System.IsBeamWeapon && p.System.HitParticle)
+                    MyTransparentGeometry.AddLocalLineBillboard(d.Projectile.System.ProjectileMaterial, color, trajectile.PrevPosition, 0, trajectile.Direction, (float)trajectile.Length, newWidth);
+                if (d.Projectile.System.IsBeamWeapon && d.Projectile.System.HitParticle)
                 {
-                    var c = p.FiringCube;
-                    if (p.FiringCube == null || p.FiringCube.MarkedForClose) continue;
-                    var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[p.WeaponId];
+                    var c = d.Projectile.FiringCube;
+                    if (d.Projectile.FiringCube == null || d.Projectile.FiringCube.MarkedForClose) continue;
+                    var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[d.Projectile.WeaponId];
                     if (weapon != null)
                     {
-                        var effect = weapon.HitEffects[p.MuzzleId];
-                        if (p.HitEntity?.HitPos != null && p.OnScreen)
+                        var effect = weapon.HitEffects[d.Projectile.MuzzleId];
+                        if (d.HitEntity?.HitPos != null && d.Projectile.OnScreen)
                         {
                             if (effect != null)
                             {
@@ -97,41 +98,41 @@ namespace WeaponCore
                                     effect = null;
                                 }
                             }
-                            var hitPos = p.HitEntity.HitPos.Value;
+                            var hitPos = d.HitEntity.HitPos.Value;
                             MatrixD matrix;
                             MatrixD.CreateTranslation(ref hitPos, out matrix);
                             if (effect == null)
                             {
-                                MyParticlesManager.TryCreateParticleEffect(p.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, uint.MaxValue, out effect);
+                                MyParticlesManager.TryCreateParticleEffect(d.Projectile.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, uint.MaxValue, out effect);
                                 if (effect == null)
                                 {
-                                    weapon.HitEffects[p.MuzzleId] = null;
+                                    weapon.HitEffects[d.Projectile.MuzzleId] = null;
                                     continue;
                                 }
 
-                                effect.DistanceMax = p.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
-                                effect.DurationMax = p.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
-                                effect.UserColorMultiplier = p.System.Values.Graphics.Particles.Hit.Color;
+                                effect.DistanceMax = d.Projectile.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
+                                effect.DurationMax = d.Projectile.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
+                                effect.UserColorMultiplier = d.Projectile.System.Values.Graphics.Particles.Hit.Color;
                                 //var reScale = (float)Math.Log(195312.5, MyAPIGateway.); // wtf is up with particles and camera distance
                                 //var scaler = reScale < 1 ? reScale : 1;
                                 var scaler = 1;
-                                effect.Loop = p.System.Values.Graphics.Particles.Hit.Extras.Loop;
+                                effect.Loop = d.Projectile.System.Values.Graphics.Particles.Hit.Extras.Loop;
 
-                                effect.UserRadiusMultiplier = p.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
+                                effect.UserRadiusMultiplier = d.Projectile.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
                                 effect.UserEmitterScale = 1 * scaler;
                             }
                             else if (effect.IsEmittingStopped)
                                 effect.Play();
 
                             effect.WorldMatrix = matrix;
-                            if (p.HitEntity.Entity.Physics != null)
-                                effect.Velocity = p.HitEntity.Entity.Physics.LinearVelocity;
-                            weapon.HitEffects[p.MuzzleId] = effect;
+                            if (d.HitEntity.Entity.Physics != null)
+                                effect.Velocity = d.Projectile.Entity.Physics.LinearVelocity;
+                            weapon.HitEffects[d.Projectile.MuzzleId] = effect;
                         }
                         else if (effect != null)
                         {
                             effect.Stop(false);
-                            weapon.HitEffects[p.MuzzleId] = null;
+                            weapon.HitEffects[d.Projectile.MuzzleId] = null;
                         }
                     }
                 }

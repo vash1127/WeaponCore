@@ -254,51 +254,31 @@ namespace WeaponCore.Projectiles
 
         internal struct DrawProjectile
         {
-            internal readonly WeaponSystem System;
-            internal readonly int WeaponId;
-            internal readonly int MuzzleId;
-            internal readonly MyCubeBlock FiringCube;
-            internal readonly MyEntity Entity;
-            internal readonly MatrixD EntityMatrix;
+            internal readonly Projectile Projectile;
             internal readonly HitEntity HitEntity;
-            internal readonly Trajectile Trajectile;
-            internal readonly double LineReSizeLen;
             internal readonly float LineWidth;
-            internal readonly int ReSizeSteps;
-            internal readonly bool Shrink;
             internal readonly bool Last;
-            internal readonly bool OnScreen;
             internal readonly Vector4 Color;
 
-            internal DrawProjectile(WeaponSystem system, MyCubeBlock firingCube, int weaponId, int muzzleId, MyEntity entity, MatrixD entityMatrix, HitEntity hitEntity, Trajectile trajectile, double lineReSizeLen, int reSizeSteps, bool shrink, bool last, bool onScreen)
+            internal DrawProjectile(Projectile projectile, HitEntity hitEntity, bool last)
             {
-                System = system;
-                FiringCube = firingCube;
-                WeaponId = weaponId;
-                MuzzleId = muzzleId;
-                Entity = entity;
-                EntityMatrix = entityMatrix;
-                Trajectile = trajectile;
+                Projectile = projectile;
                 HitEntity = hitEntity;
-                LineReSizeLen = lineReSizeLen;
-                ReSizeSteps = reSizeSteps;
-                Shrink = shrink;
                 Last = last;
-                OnScreen = onScreen;
-                var color = System.Values.Graphics.Line.Color;
-                if (System.LineColorVariance)
+                var color = Projectile.System.Values.Graphics.Line.Color;
+                if (Projectile.System.LineColorVariance)
                 {
-                    var cv = System.Values.Graphics.Line.ColorVariance;
+                    var cv = Projectile.System.Values.Graphics.Line.ColorVariance;
                     var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                     color.X *= randomValue;
                     color.Y *= randomValue;
                     color.Z *= randomValue;
                 }
 
-                var width = System.Values.Graphics.Line.Width;
-                if (System.LineWidthVariance)
+                var width = Projectile.System.Values.Graphics.Line.Width;
+                if (Projectile.System.LineWidthVariance)
                 {
-                    var wv = System.Values.Graphics.Line.WidthVariance;
+                    var wv = Projectile.System.Values.Graphics.Line.WidthVariance;
                     var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                     width += randomValue;
                 }

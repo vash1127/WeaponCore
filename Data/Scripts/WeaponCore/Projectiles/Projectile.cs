@@ -164,7 +164,7 @@ namespace WeaponCore.Projectiles
             else MaxTrajectory = System.Values.Ammo.Trajectory.MaxTrajectory;
 
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
-            ShotLength = System.Values.Ammo.ProjectileLength;
+            ShotLength = System.Values.Graphics.Line.Length;
 
             var smartsDelayDist = ShotLength * System.Values.Ammo.Trajectory.SmartsTrackingDelay;
             SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
@@ -297,7 +297,7 @@ namespace WeaponCore.Projectiles
         internal bool CloseModel(Projectiles manager, int poolId)
         {
             EntityMatrix = MatrixD.Identity;
-            manager.DrawProjectiles[poolId].Add(new DrawProjectile(System, FiringCube, WeaponId, MuzzleId, Entity, EntityMatrix, null, new Trajectile(), MaxSpeedLength, ReSizeSteps, Shrink, true, OnScreen));
+            manager.DrawProjectiles[poolId].Add(new DrawProjectile(this, null, true));
             manager.EntityPool[poolId][ModelId].MarkForDeallocate(Entity);
             ModelState = EntityState.None;
             return true;

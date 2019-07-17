@@ -7,6 +7,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
+using VRage.ObjectBuilders;
 using VRageMath;
 using VRageRender;
 using WeaponCore.Support;
@@ -250,7 +251,7 @@ namespace WeaponCore.Projectiles
                         if (camera.IsInFrustum(ref bb)) p.OnScreen = true;
                     }
 
-                    if (p.OnScreen) drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, null, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, false, p.OnScreen));
+                    if (p.OnScreen) drawList.Add(new DrawProjectile(p, null, false));
                 }
 
                 if (modelClose)
@@ -269,8 +270,8 @@ namespace WeaponCore.Projectiles
                 var length = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
                 p.Trajectile = new Trajectile(p.LastPosition, hitEntity.HitPos.Value, p.Direction, length);
                 p.TestSphere.Center = hitEntity.HitPos.Value;
-                var hitOnScreen = Session.Instance.Session.Camera.IsInFrustum(ref p.TestSphere);
-                drawList.Add(new DrawProjectile(p.System, p.FiringCube, p.WeaponId, p.MuzzleId, p.Entity, p.EntityMatrix, hitEntity, p.Trajectile, p.MaxSpeedLength, p.ReSizeSteps, p.Shrink, true, hitOnScreen));
+                p.OnScreen = Session.Instance.Session.Camera.IsInFrustum(ref p.TestSphere);
+                drawList.Add(new DrawProjectile(p, hitEntity, true));
             }
 
             p.Colliding = true;

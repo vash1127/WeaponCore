@@ -15,9 +15,9 @@ namespace WeaponCore.Support
         internal void Init(Trajectile trajectile, ref DrawProjectile drawProjectile)
         {
             Trajectile = trajectile;
-            System = drawProjectile.System;
-            ReSizeSteps = drawProjectile.ReSizeSteps;
-            LineReSizeLen = drawProjectile.LineReSizeLen;
+            System = drawProjectile.Projectile.System;
+            ReSizeSteps = drawProjectile.Projectile.ReSizeSteps;
+            LineReSizeLen = drawProjectile.Projectile.MaxSpeedLength;
         }
 
         internal Trajectile? GetLine()
