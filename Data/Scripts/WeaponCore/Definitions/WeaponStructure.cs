@@ -21,6 +21,7 @@ namespace WeaponCore.Support
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly FiringSoundState FiringSound;
+        public readonly bool DamageScaling;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool AmmoTravelSound;
@@ -85,7 +86,8 @@ namespace WeaponCore.Support
             LineWidthVariance = values.Graphics.Line.WidthVariance.Start > 0 || values.Graphics.Line.WidthVariance.End > 0;
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
-
+            var d = values.DamageScales;
+            DamageScaling =  d.MaxIntegrity > 0 || d.Armor > 0 || d.NonArmor > 0 || d.Large > 0 || d.Small > 0;
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.MaxObjectsHit > 0 ? values.Ammo.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;

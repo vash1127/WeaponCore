@@ -35,7 +35,7 @@ namespace WeaponCore
                             continue;
                         case Type.Grid:
                             DamageGrid(hitEnt, projectile);
-                            break;
+                            continue;
                         case Type.Destroyable:
                             DamageDestObj(hitEnt, projectile);
                             continue;
@@ -80,22 +80,42 @@ namespace WeaponCore
                 return;
             }
             var maxObjects = projectile.System.MaxObjectsHit;
+            var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
+            var d = system.Values.DamageScales;
+            var integrityCheck = d.MaxIntegrity > 0;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 var block = hitEnt.Blocks[i];
                 var blockHp = block.Integrity;
-                var damage = blockHp;
+                if (block.IsDestroyed || blockHp <= 0) continue;
+                float damageScale = 1;
+                if (system.DamageScaling)
+                {
+                    if (integrityCheck && blockHp > d.MaxIntegrity) continue;
+
+                    if (d.Large > 0 && largeGrid) damageScale *= d.Large;
+                    else if (d.Small > 0 && !largeGrid) damageScale *= d.Small;
+
+                    if (d.NonArmor > 0 || d.Armor > 0)
+                    {
+                        var isArmor = block.FatBlock == null;
+                        if (isArmor && d.Armor > 0) damageScale *= d.Armor;
+                        else if (!isArmor && d.NonArmor > 0) damageScale *= d.NonArmor;
+                    }
+                }
                 if (projectile.DamagePool <= 0 || projectile.ObjectsHit >= maxObjects) break;
                 projectile.ObjectsHit++;
 
-                if (projectile.DamagePool < blockHp)
+                var realDamage = blockHp;
+                var scaledDamage = realDamage * damageScale;
+                if (projectile.DamagePool < scaledDamage)
                 {
-                    damage = projectile.DamagePool;
+                    realDamage = (projectile.DamagePool / scaledDamage) * blockHp;
                     projectile.DamagePool = 0;
                 }
-                else projectile.DamagePool -= damage;
+                else projectile.DamagePool -= scaledDamage;
 
-                block.DoDamage(damage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
+                block.DoDamage(realDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
                 if (system.AmmoAreaEffect)
                 {
                     if (ExplosionReady) UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
@@ -120,6 +140,8 @@ namespace WeaponCore
             projectile.ObjectsHit++;
 
             var objHp = destObj.Integrity;
+            var integrityCheck = system.Values.DamageScales.MaxIntegrity > 0;
+            if (integrityCheck && objHp > system.Values.DamageScales.MaxIntegrity) return;
             if (projectile.DamagePool < objHp)
             {
                 objHp = projectile.DamagePool;
@@ -140,7 +162,7 @@ namespace WeaponCore
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as MyVoxelBase;
             var system = projectile.System;
-            if (destObj == null || entity == null) return;
+            if (destObj == null || entity == null || !system.Values.DamageScales.DamageVoxels) return;
 
             var baseDamage = system.Values.Ammo.DefaultDamage;
             var damage = baseDamage;

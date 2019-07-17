@@ -9,15 +9,11 @@ namespace WeaponCore
             if (!GameLoaded) return;
             foreach (var aiPair in GridTargetingAIs)
             {
-                //var grid = aiPair.Key;
                 var gridAi = aiPair.Value;
                 if (!gridAi.Ready) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
-                    //var myCube = basePair.Key;
                     var comp = basePair.Value;
-                    //DsDebugDraw.DrawSingleVec(comp.MyPivotPos, 0.5f, Color.Red);
-                    //DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Blue, 0.1f);
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
 
@@ -34,7 +30,6 @@ namespace WeaponCore
                             else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.System.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
                         }
-                        //Log.Line($"Turret: AiReady:{w.AiReady}({w.Comp.TurretTargetLock} - ValidTarget:{w.Target != null} - TrackingAi:{w.TrackingAi}  - Multi:{comp.MultiInventory} - FullInv:{comp.FullInventory}) - AmmoMa: AmmoSuspend:{w.AmmoSuspend} - AmmoFull:{w.AmmoFull} - AmmoCheck:{ammoCheck} - CurrAmmo:{w.CurrentAmmo} - CurrentMags:{w.CurrentMags} - Energy:{energyAmmo}");
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
