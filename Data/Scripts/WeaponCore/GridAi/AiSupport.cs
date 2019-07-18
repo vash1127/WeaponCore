@@ -31,6 +31,5 @@ namespace WeaponCore.Support
             var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
             return enemy;
         }
-
     }
 }

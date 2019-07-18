@@ -90,22 +90,20 @@ namespace WeaponCore.Support
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
             var d = values.DamageScales;
-            DamageScaling =  d.MaxIntegrity >= 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || d.Custom.Types != null && d.Custom.Types.Length > 0;
-            if (DamageScaling)
+            if (d.Custom.Types != null && d.Custom.Types.Length > 0)
             {
-                ArmorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
-                if (d.Custom.Types != null && d.Custom.Types.Length > 0)
-                {
-                    foreach (var def in MyDefinitionManager.Static.GetAllDefinitions())
-                        foreach (var customDef in d.Custom.Types)
-                            if (customDef.Modifier >= 0 && def.Id.SubtypeId.String == customDef.SubTypeId)
-                            {
-                                if (CustomBlockDefinitionBasesToScales == null) CustomBlockDefinitionBasesToScales = new Dictionary<MyDefinitionBase, float>();
-                                CustomBlockDefinitionBasesToScales.Add(def, customDef.Modifier);
-                            }
-                }
-                CustomDamageScales = CustomBlockDefinitionBasesToScales != null && CustomBlockDefinitionBasesToScales.Count > 0;
+                foreach (var def in MyDefinitionManager.Static.GetAllDefinitions())
+                foreach (var customDef in d.Custom.Types)
+                    if (customDef.Modifier >= 0 && def.Id.SubtypeId.String == customDef.SubTypeId)
+                    {
+                        if (CustomBlockDefinitionBasesToScales == null) CustomBlockDefinitionBasesToScales = new Dictionary<MyDefinitionBase, float>();
+                        CustomBlockDefinitionBasesToScales.Add(def, customDef.Modifier);
+                        CustomDamageScales = CustomBlockDefinitionBasesToScales != null && CustomBlockDefinitionBasesToScales.Count > 0;
+                        Log.Line("found custom def");
+                    }
             }
+            DamageScaling =  d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || CustomDamageScales;
+            if (DamageScaling) ArmorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.MaxObjectsHit > 0 ? values.Ammo.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;

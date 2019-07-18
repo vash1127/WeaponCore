@@ -43,6 +43,7 @@ namespace WeaponCore.Projectiles
         internal Vector3? LastHitEntVel;
         internal WeaponSystem System;
         internal List<HitEntity> HitList;
+        internal List<MyEntity> MyEntityList;
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
         internal GridTargetingAi Ai;
@@ -109,9 +110,10 @@ namespace WeaponCore.Projectiles
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
 
-        internal void Start(List<HitEntity> hitList, bool noAv, int poolId)
+        internal void Start(List<HitEntity> hitList, List<MyEntity> myEntityList, bool noAv, int poolId)
         {
             HitList = hitList;
+            MyEntityList = myEntityList;
             PoolId = poolId;
 
             CameraStartPos = MyAPIGateway.Session.Camera.Position;

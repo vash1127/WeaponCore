@@ -83,7 +83,6 @@ namespace WeaponCore
             var maxObjects = projectile.System.MaxObjectsHit;
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var d = system.Values.DamageScales;
-            var integrityCheck = d.MaxIntegrity > 0;
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 var block = hitEnt.Blocks[i];
@@ -92,7 +91,7 @@ namespace WeaponCore
                 float damageScale = 1;
                 if (system.DamageScaling)
                 {
-                    if (integrityCheck && blockHp > d.MaxIntegrity) continue;
+                    if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity) continue;
 
                     if (d.Grids.Large >= 0 && largeGrid) damageScale *= d.Grids.Large;
                     else if (d.Grids.Small >= 0 && !largeGrid) damageScale *= d.Grids.Small;
@@ -119,16 +118,20 @@ namespace WeaponCore
                         var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
 
                         if (found) damageScale *= modifier;
-                        else if (system.Values.DamageScales.Custom.IgnoreAllOthers) continue;
+                        else if (system.Values.DamageScales.Custom.IgnoreAllOthers)
+                        {
+                            Log.Line("ignoringAllOther");
+                            continue;
+                        }
                     }
                 }
+
                 if (projectile.DamagePool <= 0 || projectile.ObjectsHit >= maxObjects) break;
                 projectile.ObjectsHit++;
 
                 var scaledDamage = projectile.DamagePool * damageScale;
-
                 if (scaledDamage < blockHp) projectile.DamagePool = 0;
-                else projectile.DamagePool -= scaledDamage;
+                else projectile.DamagePool -= blockHp;
 
                 block.DoDamage(scaledDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
                 if (system.AmmoAreaEffect)
@@ -165,7 +168,7 @@ namespace WeaponCore
             var scaledDamage = projectile.DamagePool * damageScale;
 
             if (scaledDamage < objHp) projectile.DamagePool = 0;
-            else projectile.DamagePool -= scaledDamage;
+            else projectile.DamagePool -= objHp;
 
             destObj.DoDamage(scaledDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
             if (system.Values.Ammo.Mass > 0)

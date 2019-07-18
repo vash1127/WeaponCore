@@ -72,6 +72,7 @@ namespace WeaponCore.Projectiles
                 var drawList = DrawProjectiles[i];
                 var segmentPool = SegmentPool[i];
                 var hitsPool = HitsPool[i];
+                var myEntityPool = MyEntityPool[i];
                 var modelClose = false;
                 foreach (var p in pool.Active)
                 {
@@ -81,7 +82,7 @@ namespace WeaponCore.Projectiles
                         case ProjectileState.Dead:
                             continue;
                         case ProjectileState.Start:
-                            p.Start(hitsPool.Get(), noAv, i);
+                            p.Start(hitsPool.Get(), myEntityPool.Get(), noAv, i);
                             if (p.ModelState == EntityState.NoDraw)
                                 modelClose = p.CloseModel(this, i);
                             break;
@@ -106,8 +107,13 @@ namespace WeaponCore.Projectiles
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
                             var myCube = p.Target as MyCubeBlock;
-                            if (myCube != null && !myCube.MarkedForClose || p.Ai.ReacquireTarget(ref p.Target, p.FiringCube, p.Position, double.MaxValue))
+                            if (myCube != null && !myCube.MarkedForClose || p.Ai.ReacquireTarget(p))
                             {
+                                if (p.Target == null)
+                                {
+                                    Log.Line("target went null!!");
+                                    continue;
+                                }
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                 var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
                                 var tVel = physics?.LinearVelocity ?? Vector3.Zero;

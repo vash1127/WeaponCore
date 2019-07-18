@@ -10,6 +10,7 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Projectiles;
 
 namespace WeaponCore.Support
 {
@@ -43,9 +44,9 @@ namespace WeaponCore.Support
                 UpdateTargets();
                 _targetsUpdatedTick = MySession.Tick;
                 _myOwner = MyGrid.BigOwners[0];
-
             }
-            if (target != null && !target.MarkedForClose) return;
+            var cube = target as MyCubeBlock;
+            if (target != null && !target.MarkedForClose && (cube == null || !cube.MarkedForClose)) return;
             if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
 
             weapon.CheckedForTargetTick = MySession.Tick;
@@ -56,7 +57,7 @@ namespace WeaponCore.Support
                 var grid = target as MyCubeGrid;
                 if (grid == null) return;
 
-                if (!GetTargetBlocks(grid))
+                if (!GetTargetBlocks(grid, 10, Targeting, TargetBlocks))
                 {
                     target = null;
                     return;
@@ -65,7 +66,7 @@ namespace WeaponCore.Support
                 var physics = MyAPIGateway.Physics;
                 var weaponPos = weapon.Comp.MyPivotPos;
                 var blockCount = TargetBlocks.Count;
-                var deck = GetDeck(blockCount);
+                var deck = GetDeck(0, blockCount);
 
                 for (int i = 0; i < blockCount; i++)
                 {
@@ -121,29 +122,6 @@ namespace WeaponCore.Support
             if (!found) target = null;
         }
 
-        private bool GetTargetBlocks(MyEntity targetGrid)
-        {
-            TargetBlocks.Clear();
-            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = Targeting.TargetBlocks;
-            var g = 0;
-            var f = 0;
-            foreach (var targets in allTargets)
-            {
-                var rootGrid = targets.Key;
-                if (rootGrid != targetGrid) continue;
-                if (rootGrid.MarkedForClose) return false;
-
-                if (g++ > 0) break;
-                foreach (var b in targets.Value)
-                {
-                    if (b == null) continue;
-                    if (f++ > 9) return true;
-                    TargetBlocks.Add(b);
-                }
-            }
-            return f > 0;
-        }
-
         private void UpdateTargets()
         {
             ValidTargets.Clear();
@@ -190,12 +168,116 @@ namespace WeaponCore.Support
             SortedTargets.Sort(_targetCompare);
         }
 
+        internal bool ReacquireTarget(Projectile p)
+        {
+            if (p.FiringCube == null || p.FiringCube.MarkedForClose || p.FiringCube.CubeGrid.MarkedForClose)
+            {
+                p.Target = null;
+                Log.Line("could not reacquire a target");
+                return false;
+            }
+
+            GetTarget(ref p.Target, p.Position, p.DistanceToTravelSqr);
+            if (p.Target != null)
+            {
+                var targetGrid = p.Target as MyCubeGrid;
+                if (targetGrid == null)
+                {
+                    Log.Line("could not reacquire a target");
+                    return false;
+                }
+                if (!GetTargetBlocks(targetGrid, 10, Targeting, p.MyEntityList))
+                {
+                    p.Target = null;
+                    Log.Line("could not reacquire a target");
+                    return false;
+                }
+                var gotBlock = GetBlock(out p.Target, p.MyEntityList, p.Position, p.FiringCube, false);
+                if (!gotBlock) Log.Line($"couldn't get block");
+                return gotBlock;
+            }
+            Log.Line("could not reacquire a target");
+            return false;
+        }
+
+        private static bool GetTargetBlocks(MyEntity targetGrid, int numOfBlocks, MyGridTargeting targeting, List<MyEntity> targetBlocks)
+        {
+            targetBlocks.Clear();
+            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
+            var g = 0;
+            var f = 0;
+            foreach (var targets in allTargets)
+            {
+                var rootGrid = targets.Key;
+                if (rootGrid != targetGrid) continue;
+                if (rootGrid.MarkedForClose) return false;
+
+                if (g++ > 0) break;
+                foreach (var b in targets.Value)
+                {
+                    var cube = b as MyCubeBlock;
+                    if (cube == null || cube.MarkedForClose) continue;
+                    if (f++ > numOfBlocks) return true;
+                    targetBlocks.Add(b);
+                }
+            }
+            return f > 0;
+        }
+
+        internal void GetTarget(ref MyEntity target, Vector3D currentPos, double distanceLeftToTravelSqr)
+        {
+            for (int i = 0; i < SortedTargets.Count; i++)
+            {
+                var targetInfo = SortedTargets[i];
+                if (targetInfo.Target == null || targetInfo.Target.MarkedForClose || Vector3D.DistanceSquared(targetInfo.EntInfo.Position, currentPos) >= distanceLeftToTravelSqr)
+                {
+                    Log.Line($"null, closed or out of distance: {targetInfo.Target == null} - {targetInfo.Target?.MarkedForClose} - {Vector3D.DistanceSquared(targetInfo.EntInfo.Position, currentPos)} - {distanceLeftToTravelSqr}");
+                    continue;
+                }
+                //Log.Line($"got target: grid:{targetInfo.IsGrid}");
+                target = targetInfo.Target;
+                break;
+            }
+        }
+
+        internal bool GetBlock(out MyEntity target, List<MyEntity> blocks, Vector3D weaponPos, MyCubeBlock weaponBlock, bool checkRay = false)
+        {
+            var physics = MyAPIGateway.Physics;
+            var blockCount = blocks.Count;
+            var deck = GetDeck(0, blockCount);
+            for (int i = 0; i < blockCount; i++)
+            {
+                var block = TargetBlocks[deck[i]];
+                if (block.MarkedForClose) continue;
+
+                if (checkRay)
+                {
+                    IHitInfo hitInfo;
+                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out hitInfo, 15);
+
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
+
+                    var isGrid = hitInfo.HitEntity as MyCubeGrid;
+                    var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
+                    if (isGrid == weaponBlock.CubeGrid) continue;
+                    if (isGrid != null && !GridEnemy(weaponBlock, isGrid) || parentIsGrid != null && !GridEnemy(weaponBlock, parentIsGrid)) continue;
+                }
+
+                target = block;
+                blocks.Clear();
+                return true;
+            }
+            blocks.Clear();
+            target = null;
+            return false;
+        }
+
         private int[] _deck = new int[0];
         private int _prevDeckLen;
-        private int[] GetDeck(int targetCount)
+        private int[] GetDeck(int firstBlock, int blocksToSort)
         {
-            var min = 0;
-            var max = targetCount - 1;
+            var min = firstBlock;
+            var max = blocksToSort - 1;
             var count = max - min + 1;
             if (_prevDeckLen != count)
             {
@@ -214,71 +296,5 @@ namespace WeaponCore.Support
             return _deck;
         }
 
-        internal bool ReacquireTarget(ref MyEntity target, MyCubeBlock myParent, Vector3D currentPos, double distanceLeftToTravel)
-        {
-            if (myParent == null || myParent.MarkedForClose || myParent.CubeGrid.MarkedForClose)
-            {
-                target = null;
-                return false;
-            }
-
-            GetTarget(ref target, currentPos, distanceLeftToTravel);
-            if (target != null)
-            {
-                var targetGrid = target as MyCubeGrid;
-                if (targetGrid == null)
-                {
-                    target = null;
-                    return false;
-                }
-                MyEntity entity = null;
-
-                try
-                {
-                    IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = Targeting.TargetBlocks;
-                    foreach (var targets in allTargets)
-                    {
-                        var rootGrid = targets.Key;
-                        if (rootGrid != targetGrid || targetGrid == myParent.CubeGrid || !GridEnemy(myParent, targetGrid)) continue;
-                        if (rootGrid.MarkedForClose) return false;
-
-                        foreach (var e in targets.Value)
-                        {
-                            if (e == null || e.MarkedForClose) continue;
-                            entity = e;
-                            break;
-                        }
-                    }
-                }
-                catch (Exception ex) { Log.Line($"Exception in Targeting.TargetBlocks: {ex}"); }
-
-                var block = entity as MyCubeBlock;
-                if (block == null) return false;
-
-                target = block;
-                //Log.Line("reaquired");
-                return true;
-            }
-            Log.Line("could not reacquire a target");
-            target = null;
-            return false;
-        }
-
-        internal void GetTarget(ref MyEntity target, Vector3D currentPos, double distanceLeftToTravel)
-        {
-            for (int i = 0; i < SortedTargets.Count; i++)
-            {
-                var targetInfo = SortedTargets[i];
-                if (targetInfo.Target == null || targetInfo.Target.MarkedForClose ||
-                    Vector3D.DistanceSquared(targetInfo.EntInfo.Position, currentPos) >= distanceLeftToTravel)
-                {
-                    Log.Line($"null, closed or out of distance: {targetInfo.Target == null} - {targetInfo.Target?.MarkedForClose} - {Vector3D.DistanceSquared(targetInfo.EntInfo.Position, currentPos)} - {distanceLeftToTravel}");
-                    continue;
-                }
-                //Log.Line($"got target: grid:{targetInfo.IsGrid}");
-                target = targetInfo.Target;
-                break;
-            }
-        }
     }
 }

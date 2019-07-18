@@ -1,11 +1,6 @@
 ﻿using System.Collections.Generic;
-using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.ModAPI;
-using VRage.Utils;
 using VRageMath;
-using VRageRender;
-using VRageRender.Messages;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 namespace WeaponCore
@@ -46,7 +41,6 @@ namespace WeaponCore
                     _shrinking.Add(shrink);
                 }
                 var color = d.Color;
-
                 var newWidth = width;
 
                 if (d.Projectile.System.Values.Ammo.Trajectory.DesiredSpeed <= 0)
@@ -80,6 +74,7 @@ namespace WeaponCore
                 }
                 else
                     MyTransparentGeometry.AddLocalLineBillboard(d.Projectile.System.ProjectileMaterial, color, trajectile.PrevPosition, 0, trajectile.Direction, (float)trajectile.Length, newWidth);
+
                 if (d.Projectile.System.IsBeamWeapon && d.Projectile.System.HitParticle)
                 {
                     var c = d.Projectile.FiringCube;
@@ -127,7 +122,7 @@ namespace WeaponCore
 
                             effect.WorldMatrix = matrix;
                             if (d.HitEntity.Entity.Physics != null)
-                                effect.Velocity = d.Projectile.Entity.Physics.LinearVelocity;
+                                effect.Velocity = d.HitEntity.Entity.Physics.LinearVelocity;
                             weapon.HitEffects[d.Projectile.MuzzleId] = effect;
                         }
                         else if (effect != null)
