@@ -3,6 +3,7 @@ using VRageMath;
 
 namespace WeaponCore.Support
 {
+
     [ProtoContract]
     public struct WeaponDefinition
     {
@@ -213,13 +214,20 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct DamageScaleDefinition
     {
+        [ProtoMember(1)] internal GridSizeDefinition Grids;
+        [ProtoMember(2)] internal ArmorDefinition Armor;
+        [ProtoMember(3)] internal float MaxIntegrity;
+        [ProtoMember(4)] internal bool DamageVoxels;
+        [ProtoMember(5)] internal ShieldDefinition Shields;
+        [ProtoMember(6)] internal float Characters;
+        [ProtoMember(7)] internal CustomScalesDefinition Custom;
+    }
+
+    [ProtoContract]
+    public struct GridSizeDefinition
+    {
         [ProtoMember(1)] internal float Large;
         [ProtoMember(2)] internal float Small;
-        [ProtoMember(3)] internal ArmorDefinition Armor;
-        [ProtoMember(4)] internal float MaxIntegrity;
-        [ProtoMember(5)] internal bool DamageVoxels;
-        [ProtoMember(6)] internal ShieldDefinition Shield;
-        [ProtoMember(7)] internal float Character;
     }
 
     [ProtoContract]
@@ -231,6 +239,19 @@ namespace WeaponCore.Support
         [ProtoMember(4)] internal float NonArmor;
     }
 
+    [ProtoContract]
+    public struct CustomBlocksDefinition
+    {
+        [ProtoMember(1)] internal string SubTypeId;
+        [ProtoMember(2)] internal float Modifier;
+    }
+
+    [ProtoContract]
+    public struct CustomScalesDefinition
+    {
+        [ProtoMember(1)] internal CustomBlocksDefinition[] Types;
+        [ProtoMember(2)] internal bool IgnoreAllOthers;
+    }
 
     [ProtoContract]
     public struct ShieldDefinition
@@ -243,7 +264,7 @@ namespace WeaponCore.Support
             Kinetic
         }
 
-        [ProtoMember(1)] internal float DamageModifer;
+        [ProtoMember(1)] internal float Modifier;
         [ProtoMember(2)] internal ShieldType Type;
     }
 }

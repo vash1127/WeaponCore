@@ -43,9 +43,9 @@ namespace WeaponCore
                 _eCount++;
                 if (_eCount == 10) _eCount = 0;
             }
-            if (!GameLoaded && Tick > 100)
+            if (!GameLoaded)
             {
-                if (FirstLoop && Tick > 100)
+                if (FirstLoop)
                 {
                     if (!MiscLoaded)
                     {
@@ -64,7 +64,7 @@ namespace WeaponCore
                         if (contains)
                         {
                             AllArmorBaseDefinitions.Add(t);
-                            if (name.Contains("Heavy")) HeavyArmorBaseDefinitions.Add(t);
+                            if (name.Contains("HeavyBlockArmor")) HeavyArmorBaseDefinitions.Add(t);
                         }
                     }
                 }

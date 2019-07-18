@@ -94,37 +94,43 @@ namespace WeaponCore
                 {
                     if (integrityCheck && blockHp > d.MaxIntegrity) continue;
 
-                    if (d.Large > 0 && largeGrid) damageScale *= d.Large;
-                    else if (d.Small > 0 && !largeGrid) damageScale *= d.Small;
+                    if (d.Grids.Large >= 0 && largeGrid) damageScale *= d.Grids.Large;
+                    else if (d.Grids.Small >= 0 && !largeGrid) damageScale *= d.Grids.Small;
 
+                    MyDefinitionBase blockDef = null;
                     if (system.ArmorScaling)
                     {
-                        var blockDef = block.BlockDefinition;
+                        blockDef = block.BlockDefinition;
                         var isArmor = AllArmorBaseDefinitions.Contains(blockDef);
-                        if (isArmor && d.Armor.Armor > 0) damageScale *= d.Armor.Armor;
-                        else if (!isArmor && d.Armor.NonArmor > 0) damageScale *= d.Armor.NonArmor;
+                        if (isArmor && d.Armor.Armor >= 0) damageScale *= d.Armor.Armor;
+                        else if (!isArmor && d.Armor.NonArmor >= 0) damageScale *= d.Armor.NonArmor;
 
-                        if (isArmor && (d.Armor.Light > 0 || d.Armor.Heavy > 0))
+                        if (isArmor && (d.Armor.Light >= 0 || d.Armor.Heavy >= 0))
                         {
                             var isHeavy = HeavyArmorBaseDefinitions.Contains(blockDef);
-                            if (isHeavy && d.Armor.Heavy > 0) damageScale *= d.Armor.Heavy;
-                            else if (!isHeavy && d.Armor.Light > 0) damageScale *= d.Armor.Light;
+                            if (isHeavy && d.Armor.Heavy >= 0) damageScale *= d.Armor.Heavy;
+                            else if (!isHeavy && d.Armor.Light >= 0) damageScale *= d.Armor.Light;
                         }
+                    }
+                    if (system.CustomDamageScales)
+                    {
+                        if (blockDef == null) blockDef = block.BlockDefinition;
+                        float modifier;
+                        var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
+
+                        if (found) damageScale *= modifier;
+                        else if (system.Values.DamageScales.Custom.IgnoreAllOthers) continue;
                     }
                 }
                 if (projectile.DamagePool <= 0 || projectile.ObjectsHit >= maxObjects) break;
                 projectile.ObjectsHit++;
 
-                var realDamage = blockHp;
-                var scaledDamage = realDamage * damageScale;
-                if (projectile.DamagePool < scaledDamage)
-                {
-                    realDamage = (projectile.DamagePool / scaledDamage) * blockHp;
-                    projectile.DamagePool = 0;
-                }
+                var scaledDamage = projectile.DamagePool * damageScale;
+
+                if (scaledDamage < blockHp) projectile.DamagePool = 0;
                 else projectile.DamagePool -= scaledDamage;
 
-                block.DoDamage(realDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
+                block.DoDamage(scaledDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
                 if (system.AmmoAreaEffect)
                 {
                     if (ExplosionReady) UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system.Values.Ammo.AreaEffectRadius, system.Values.Ammo.AreaEffectYield);
@@ -153,19 +159,15 @@ namespace WeaponCore
 
             var character = hitEnt.Entity is IMyCharacter;
             float damageScale = 1;
-            if (character && system.Values.DamageScales.Character > 0)
-                damageScale *= system.Values.DamageScales.Character;
+            if (character && system.Values.DamageScales.Characters >= 0)
+                damageScale *= system.Values.DamageScales.Characters;
 
-            var realDamage = objHp;
-            var scaledDamage = realDamage * damageScale;
-            if (projectile.DamagePool < scaledDamage)
-            {
-                realDamage = (projectile.DamagePool / scaledDamage) * objHp;
-                projectile.DamagePool = 0;
-            }
+            var scaledDamage = projectile.DamagePool * damageScale;
+
+            if (scaledDamage < objHp) projectile.DamagePool = 0;
             else projectile.DamagePool -= scaledDamage;
 
-            destObj.DoDamage(realDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
+            destObj.DoDamage(scaledDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;

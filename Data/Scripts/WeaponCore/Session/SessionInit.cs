@@ -76,7 +76,6 @@ namespace WeaponCore
                     }
                 }
             }
-            DsUtil.Sw.Restart();
             foreach (var tDef in _turretDefinitions)
             {
                 var subTypeIdHash = MyStringHash.GetOrCompute(tDef.Key);
@@ -84,7 +83,6 @@ namespace WeaponCore
 
                 WeaponPlatforms.Add(subTypeIdHash, new WeaponStructure(tDef, _subTypeIdToWeaponDefs[tDef.Key]));
             }
-            DsUtil.StopWatchReport("test", -1);
             for (int i = 0; i < Projectiles.Wait.Length; i++)
             {
                 Projectiles.EntityPool[i] = new EntityPool<MyEntity>[ModelCount];
