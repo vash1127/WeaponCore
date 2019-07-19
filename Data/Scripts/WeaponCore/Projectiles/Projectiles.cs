@@ -18,6 +18,7 @@ namespace WeaponCore.Projectiles
         internal const int PoolCount = 16;
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
 
+        internal readonly MyConcurrentPool<List<MyEntity>>[] CheckPool = new MyConcurrentPool<List<MyEntity>>[PoolCount];
         internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
         internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
         internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
@@ -29,6 +30,7 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Wait.Length; i++)
             {
                 Wait[i] = new object();
+                CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(50);
                 ProjectilePool[i] = new ObjectsPool<Projectile>(1250);
                 HitEntityPool[i] = new MyConcurrentPool<HitEntity>(250);
                 DrawProjectiles[i] = new List<DrawProjectile>(500);
@@ -98,8 +100,9 @@ namespace WeaponCore.Projectiles
                         Vector3D newVel;
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
+                            var newChase = p.Age - p.ChaseAge > p.MaxChaseAge && p.EndChase();
                             var myCube = p.Target as MyCubeBlock;
-                            if (myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
+                            if (newChase || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                 var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
@@ -114,7 +117,7 @@ namespace WeaponCore.Projectiles
                             }
                             else p.UpdateZombie();
 
-                            var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.System.Values.Ammo.Trajectory.SmartsFactor, p.System.Values.Ammo.Trajectory.SmartsMaxLateralThrust);
+                            var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, p.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
                             newVel = p.Velocity + (commandedAccel * StepConst);
                             p.AccelDir = commandedAccel / p.AccelPerSec;
                         }

@@ -53,7 +53,6 @@ namespace WeaponCore.Projectiles
         internal double CheckLength;
         internal float AmmoTravelSoundRangeSqr;
         internal float MaxTrajectory;
-        internal double SmartsFactor;
         internal double MaxTrajectorySqr;
         internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
@@ -63,6 +62,8 @@ namespace WeaponCore.Projectiles
         internal double AccelPerSec;
         internal int PoolId;
         internal int Age;
+        internal int ChaseAge;
+        internal int MaxChaseAge;
         internal int ObjectsHit;
         internal int ReSizeSteps;
         internal int GrowStep = 1;
@@ -104,10 +105,11 @@ namespace WeaponCore.Projectiles
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
-        internal readonly List<MyEntity> CheckList = new List<MyEntity>();
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
-        internal readonly int[] DeckStorage = new int[0];
-        internal int StorageLength;
+        internal readonly int[] TargetShuffle = new int[0];
+        internal readonly int[] BlockSuffle = new int[0];
+        internal int TargetShuffleLen;
+        internal int BlockShuffleLen;
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
@@ -131,6 +133,7 @@ namespace WeaponCore.Projectiles
             LastHitPos = null;
             LastHitEntVel = null;
             Age = 0;
+            ChaseAge = 0;
             ZombieLifeTime = 0;
             ObjectsHit = 0;
             Colliding = false;
@@ -150,10 +153,13 @@ namespace WeaponCore.Projectiles
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
 
             if (Guidance == AmmoTrajectory.GuidanceType.Smart)
+            {
                 Session.Instance.GridTargetingAIs.TryGetValue(FiringGrid, out Ai);
+                MaxChaseAge = System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
+            }
+            else MaxChaseAge = int.MaxValue;
 
             LockedTarget = Target != null && !Target.MarkedForClose;
-            SmartsFactor = System.Values.Ammo.Trajectory.SmartsFactor;
             if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
 
             DrawLine = System.Values.Graphics.Line.Trail;
@@ -168,7 +174,7 @@ namespace WeaponCore.Projectiles
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             LineLength = System.Values.Graphics.Line.Length;
 
-            var smartsDelayDist = LineLength * System.Values.Ammo.Trajectory.SmartsTrackingDelay;
+            var smartsDelayDist = LineLength * System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
             SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
@@ -301,6 +307,14 @@ namespace WeaponCore.Projectiles
             manager.EntityPool[poolId][ModelId].MarkForDeallocate(Entity);
             ModelState = EntityState.None;
             return true;
+        }
+
+        internal bool  EndChase()
+        {
+            ChaseAge = Age;
+            var reaquire = GridTargetingAi.ReacquireTarget(this);
+            if (!reaquire) Target = null;
+            return reaquire;
         }
 
         internal void HitEffects()

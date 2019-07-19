@@ -16,13 +16,15 @@ namespace WeaponCore.Projectiles
         private void GetEntitiesInBlastRadius(Projectile projectile, int poolId)
         {
             var sphere = new BoundingSphereD(projectile.Position, projectile.System.Values.Ammo.AreaEffectRadius);
-            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, projectile.CheckList);
-            foreach (var ent in projectile.CheckList)
+            var checkList = CheckPool[poolId].Get();
+            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, checkList);
+            foreach (var ent in checkList)
             {
                 var blastLine = new LineD(projectile.Position, ent.PositionComp.WorldAABB.Center);
                 GetAllEntitiesInLine(projectile, blastLine, null, poolId, true);
             }
-            projectile.CheckList.Clear();
+            checkList.Clear();
+            CheckPool[poolId].Return(checkList);
             var count = projectile.HitList.Count;
             if (!Session.Instance.DedicatedServer && count <= 0)
             {

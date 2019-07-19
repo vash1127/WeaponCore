@@ -111,14 +111,23 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal float MaxTrajectory;
         [ProtoMember(2)] internal float AccelPerSec;
         [ProtoMember(3)] internal float DesiredSpeed;
-        [ProtoMember(4)] internal double SmartsFactor;
-        [ProtoMember(5)] internal double SmartsTrackingDelay;
-        [ProtoMember(6)] internal double SmartsMaxLateralThrust;
-        [ProtoMember(7)] internal float TargetLossDegree;
-        [ProtoMember(8)] internal int TargetLossTime;
-        [ProtoMember(9)] internal Randomize SpeedVariance;
-        [ProtoMember(10)] internal Randomize RangeVariance;
-        [ProtoMember(11)] internal GuidanceType Guidance;
+        [ProtoMember(4)] internal float TargetLossDegree;
+        [ProtoMember(5)] internal int TargetLossTime;
+        [ProtoMember(6)] internal Randomize SpeedVariance;
+        [ProtoMember(7)] internal Randomize RangeVariance;
+        [ProtoMember(8)] internal GuidanceType Guidance;
+        [ProtoMember(9)] internal Smarts Smarts;
+    }
+
+    [ProtoContract]
+    public struct Smarts
+    {
+        [ProtoMember(1)] internal double Aggressiveness;
+        [ProtoMember(2)] internal double MaxLateralThrust;
+        [ProtoMember(3)] internal double TrackingDelay;
+        [ProtoMember(4)] internal int MaxChaseTime;
+        [ProtoMember(5)] internal int TopTargets;
+        [ProtoMember(6)] internal int TopBlocks;
     }
 
     [ProtoContract]
