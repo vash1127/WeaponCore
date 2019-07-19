@@ -44,8 +44,9 @@ namespace WeaponCore.Platform
         internal WeaponSystem System;
         internal Dummy[] Dummies;
         internal Muzzle[] Muzzles;
+        internal uint[] BeamSlot;
         internal WeaponComponent Comp;
-        internal uint[] BeamSlot { get; set; }
+
         internal MyEntity Target;
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
@@ -64,6 +65,8 @@ namespace WeaponCore.Platform
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
+        internal int[] Deck = new int[0];
+        internal int PrevDeckLength;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;

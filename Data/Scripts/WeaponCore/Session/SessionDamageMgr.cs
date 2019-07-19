@@ -76,7 +76,7 @@ namespace WeaponCore
 
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
-                Log.Line("grid something is null");
+                Log.Line($"grid something is null: gridNull:{grid == null} - gridMarked:{grid?.MarkedForClose} - noHitValue:{!hitEnt.HitPos.HasValue} - blocksNull:{hitEnt.Blocks == null}");
                 hitEnt.Blocks?.Clear();
                 return;
             }

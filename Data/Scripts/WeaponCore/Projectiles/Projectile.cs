@@ -42,8 +42,6 @@ namespace WeaponCore.Projectiles
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
         internal WeaponSystem System;
-        internal List<HitEntity> HitList;
-        internal List<MyEntity> MyEntityList;
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
         internal GridTargetingAi Ai;
@@ -94,8 +92,8 @@ namespace WeaponCore.Projectiles
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
-        internal BoundingSphereD ModelSphereCurrent = new BoundingSphereD();
-        internal BoundingSphereD ModelSphereLast = new BoundingSphereD();
+        internal BoundingSphereD ModelSphereCurrent;
+        internal BoundingSphereD ModelSphereLast;
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal MyEntity Entity;
@@ -105,15 +103,17 @@ namespace WeaponCore.Projectiles
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
-
+        internal readonly List<HitEntity> HitList = new List<HitEntity>();
+        internal readonly List<MyEntity> CheckList = new List<MyEntity>();
+        internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
+        internal readonly int[] DeckStorage = new int[0];
+        internal int StorageLength;
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
 
-        internal void Start(List<HitEntity> hitList, List<MyEntity> myEntityList, bool noAv, int poolId)
+        internal void Start(bool noAv, int poolId)
         {
-            HitList = hitList;
-            MyEntityList = myEntityList;
             PoolId = poolId;
 
             CameraStartPos = MyAPIGateway.Session.Camera.Position;
@@ -271,7 +271,6 @@ namespace WeaponCore.Projectiles
             if (!EnableAv && ModelId == -1)
             {
                 HitList.Clear();
-                manager.HitsPool[poolId].Return(HitList);
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
@@ -290,7 +289,6 @@ namespace WeaponCore.Projectiles
                 }
 
                 HitList.Clear();
-                manager.HitsPool[poolId].Return(HitList);
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }

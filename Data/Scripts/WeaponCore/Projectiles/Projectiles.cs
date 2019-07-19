@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -19,10 +20,7 @@ namespace WeaponCore.Projectiles
 
         internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
         internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
-        internal readonly MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[] SegmentPool = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>[PoolCount];
-        internal readonly MyConcurrentPool<List<HitEntity>>[] HitsPool = new MyConcurrentPool<List<HitEntity>>[PoolCount];
         internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
-        internal readonly MyConcurrentPool<List<MyEntity>>[] MyEntityPool = new MyConcurrentPool<List<MyEntity>>[PoolCount];
         internal readonly List<DrawProjectile>[] DrawProjectiles = new List<DrawProjectile>[PoolCount];
         internal readonly object[] Wait = new object[PoolCount];
 
@@ -32,10 +30,7 @@ namespace WeaponCore.Projectiles
             {
                 Wait[i] = new object();
                 ProjectilePool[i] = new ObjectsPool<Projectile>(1250);
-                SegmentPool[i] = new MyConcurrentPool<List<MyLineSegmentOverlapResult<MyEntity>>>(1250);
-                HitsPool[i] = new MyConcurrentPool<List<HitEntity>>(1250);
                 HitEntityPool[i] = new MyConcurrentPool<HitEntity>(250);
-                MyEntityPool[i] = new MyConcurrentPool<List<MyEntity>>(500);
                 DrawProjectiles[i] = new List<DrawProjectile>(500);
             }
         }
@@ -56,8 +51,8 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
-            for (int i = 0; i < Wait.Length; i++) Process(i);
+            MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+            //for (int i = 0; i < Wait.Length; i++) Process(i);
         }
 
         private void Process(int i)
@@ -70,9 +65,6 @@ namespace WeaponCore.Projectiles
                 var pool = ProjectilePool[i];
                 var entPool = EntityPool[i];
                 var drawList = DrawProjectiles[i];
-                var segmentPool = SegmentPool[i];
-                var hitsPool = HitsPool[i];
-                var myEntityPool = MyEntityPool[i];
                 var modelClose = false;
                 foreach (var p in pool.Active)
                 {
@@ -82,7 +74,7 @@ namespace WeaponCore.Projectiles
                         case ProjectileState.Dead:
                             continue;
                         case ProjectileState.Start:
-                            p.Start(hitsPool.Get(), myEntityPool.Get(), noAv, i);
+                            p.Start(noAv, i);
                             if (p.ModelState == EntityState.NoDraw)
                                 modelClose = p.CloseModel(this, i);
                             break;
@@ -107,13 +99,8 @@ namespace WeaponCore.Projectiles
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
                             var myCube = p.Target as MyCubeBlock;
-                            if (myCube != null && !myCube.MarkedForClose || p.Ai.ReacquireTarget(p))
+                            if (myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
                             {
-                                if (p.Target == null)
-                                {
-                                    Log.Line("target went null!!");
-                                    continue;
-                                }
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                 var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
                                 var tVel = physics?.LinearVelocity ?? Vector3.Zero;
@@ -181,17 +168,15 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    var segmentList = segmentPool.Get();
                     var beam = new LineD(p.LastPosition, p.Position);
-                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, segmentList);
-                    var segCount = segmentList.Count;
-                    if (segCount > 1 || segCount == 1 && segmentList[0].Element != p.FiringGrid)
+                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
+                    var segCount = p.SegmentList.Count;
+                    if (segCount > 1 || segCount == 1 && p.SegmentList[0].Element != p.FiringGrid)
                     {
-                        var nearestHitEnt = GetAllEntitiesInLine(p, beam, segmentList, i);
+                        var nearestHitEnt = GetAllEntitiesInLine(p, beam, p.SegmentList, i);
                         if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
                         p.HitList.Clear();
                     }
-                    segmentPool.Return(segmentList);
 
                     if (!p.EnableAv) continue;
 

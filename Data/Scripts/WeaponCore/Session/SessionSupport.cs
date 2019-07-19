@@ -4,7 +4,6 @@ using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRage.Input;
 using WeaponCore.Support;
-using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore
 {
     public partial class Session
