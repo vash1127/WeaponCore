@@ -39,14 +39,6 @@ namespace WeaponCore.Support
 
         internal void SelectTarget(ref MyEntity target, Weapon weapon)
         {
-            if (MySession.Tick - _targetsUpdatedTick > 100)
-            {
-                Targeting.AllowScanning = true;
-                UpdateTargets();
-                Targeting.AllowScanning = false;
-                _targetsUpdatedTick = MySession.Tick;
-                _myOwner = MyGrid.BigOwners[0];
-            }
             var cube = target as MyCubeBlock;
             if (target != null && !target.MarkedForClose && (cube == null || !cube.MarkedForClose)) return;
             if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
@@ -66,7 +58,7 @@ namespace WeaponCore.Support
                 }
 
                 if (Targeting.AllowScanning) Log.Line($"allow scanning was true!");
-                if (!targetInfo.Value.ValidCubes)
+                if (!targetInfo.Value.IsGrid || targetInfo.Value.Cubes.Count <= 0)
                 {
                     Log.Line($"weapon sees no valid cubes");
                     target = null;
@@ -128,16 +120,23 @@ namespace WeaponCore.Support
             targetInfo = null;
         }
 
+        internal void UpdateTargetDb()
+        {
+            Targeting.AllowScanning = true;
+            UpdateTargets();
+            Targeting.AllowScanning = false;
+            TargetsUpdatedTick = MySession.Tick;
+            _myOwner = MyGrid.BigOwners[0];
+        }
+
         private void UpdateTargets()
         {
-            ValidTargets.Clear();
+            ValidGrids.Clear();
             SortedTargets.RemoveAll(x => x.Clean());
-
             foreach (var ent in Targeting.TargetRoots)
             {
                 if (ent == null || ent.MarkedForClose) continue;
                 var entInfo = MyDetectedEntityInfoHelper.Create(ent, _myOwner);
-
                 switch (entInfo.Type)
                 {
                     case MyDetectedEntityType.Asteroid:
@@ -164,17 +163,44 @@ namespace WeaponCore.Support
                         if (!TargetNeutrals) continue;
                         break;
                 }
-                ValidTargets.Add(ent, entInfo);
 
                 var grid = ent as MyCubeGrid;
                 var isGrid = grid != null;
-                var partCount = isGrid ? grid.GetFatBlocks().Count : 1;
-                SortedTargets.Add(new TargetInfo(entInfo, ent, isGrid, partCount, MyGrid, this, 10));
+                if (!isGrid)
+                {
+                    var partCount = 1;
+                    var targetInfo = new TargetInfo(entInfo, ent, false, partCount, MyGrid, this);
+                    SortedTargets.Add(targetInfo);
+                }
+
+                if (isGrid)
+                    ValidGrids.Add(ent, entInfo);
             }
+
+            GetTargetBlocks(Targeting, this);
             SortedTargets.Sort(_targetCompare);
         }
 
-        private static bool GetTargetBlocks(MyEntity targetGrid, int numOfBlocks, MyGridTargeting targeting, List<MyEntity> targetBlocks)
+        private static void GetTargetBlocks(MyGridTargeting targeting, GridTargetingAi ai)
+        {
+            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
+            foreach (var targets in allTargets)
+            {
+                var rootGrid = targets.Key;
+                MyDetectedEntityInfo entInfo;
+                if (ai.ValidGrids.TryGetValue(rootGrid, out entInfo))
+                {
+                    var partCount = rootGrid.GetFatBlocks().Count;
+                    var targetInfo = new TargetInfo(entInfo, rootGrid, true, partCount, ai.MyGrid, ai)
+                    {
+                        Cubes = targets.Value
+                    };
+                    ai.SortedTargets.Add(targetInfo);
+                }
+            }
+        }
+
+        private static bool GetTargetBlocksOld(MyEntity targetGrid, int numOfBlocks, MyGridTargeting targeting, List<MyEntity> targetBlocks)
         {
             var g = 0;
             var f = 0;
@@ -184,7 +210,6 @@ namespace WeaponCore.Support
                 var rootGrid = targets.Key;
                 if (rootGrid != targetGrid) continue;
                 if (rootGrid.MarkedForClose) return false;
-
                 if (g++ > 0) break;
                 foreach (var b in targets.Value)
                 {
@@ -223,7 +248,7 @@ namespace WeaponCore.Support
                     return true;
                 }
                 if (p.Ai.Targeting.AllowScanning) Log.Line($"allow scanning was true!");
-                if (!targetInfo.Value.ValidCubes)
+                if (!targetInfo.Value.IsGrid || targetInfo.Value.Cubes.Count <= 0)
                 {
                     p.Target = null;
                     Log.Line("reacquired new target was not null and is grid but could not get target blocks");
@@ -255,10 +280,8 @@ namespace WeaponCore.Support
                 }
                 var info = ai.SortedTargets[next];
                 if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, currentPos) >= distanceLeftToTravelSqr)
-                {
-                    Log.Line($"null, closed or out of distance: {info.Target == null} - {info.Target?.MarkedForClose} - {Vector3D.DistanceSquared(info.EntInfo.Position, currentPos)} - {distanceLeftToTravelSqr}");
                     continue;
-                }
+
                 targetInfo = info;
                 return;
             }

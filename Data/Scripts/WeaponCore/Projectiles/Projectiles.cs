@@ -53,8 +53,8 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
-            //for (int i = 0; i < Wait.Length; i++) Process(i);
+            //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+            for (int i = 0; i < Wait.Length; i++) Process(i);
         }
 
         private void Process(int i)
@@ -106,13 +106,13 @@ namespace WeaponCore.Projectiles
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                 var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
-                                var tVel = physics?.LinearVelocity ?? Vector3.Zero;
                                 var targetPos = p.Target.PositionComp.WorldAABB.Center;
 
                                 if (physics == null || targetPos == Vector3D.Zero)
                                     p.PrevTargetPos = p.PredictedTargetPos;
                                 else p.PrevTargetPos = targetPos;
 
+                                var tVel = physics?.LinearVelocity ?? Vector3.Zero;
                                 p.PrevTargetVel = tVel;
                             }
                             else p.UpdateZombie();
@@ -132,7 +132,6 @@ namespace WeaponCore.Projectiles
                     {
                         var newVel = p.Velocity + p.AccelVelocity;
                         if (newVel.LengthSquared() > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
-
                         p.Velocity = newVel;
                     }
 
@@ -304,11 +303,11 @@ namespace WeaponCore.Projectiles
             if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust)
             {
                 Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
-                normalMissileAcceleration *= maxLateralThrustProportion;
+                normalMissileAcceleration *= maxLateralThrust;
             }
-
             double diff = missileAcceleration * missileAcceleration - normalMissileAcceleration.LengthSquared();
-            return Math.Sqrt(diff) * missileToTarget + normalMissileAcceleration;
+            var maxedDiff = Math.Max(0, diff); 
+            return Math.Sqrt(maxedDiff) * missileToTarget + normalMissileAcceleration;
         }
     }
 }

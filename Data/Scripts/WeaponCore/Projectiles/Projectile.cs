@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
@@ -13,12 +11,15 @@ namespace WeaponCore.Projectiles
 {
     internal class Projectile
     {
-        //private static int _checkIntersectionCnt = 0;
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal MatrixD EntityMatrix = MatrixD.Identity;
         internal const int EndSteps = 2;
         internal volatile float DamagePool;
         internal volatile bool Colliding;
+        internal WeaponSystem System;
+        internal MyCubeBlock FiringCube;
+        internal MyCubeGrid FiringGrid;
+        internal GridTargetingAi Ai;
         internal ProjectileState State;
         internal EntityState ModelState;
         internal Trajectile Trajectile;
@@ -33,7 +34,6 @@ namespace WeaponCore.Projectiles
         internal Vector3D AccelVelocity;
         internal Vector3D MaxVelocity;
         internal Vector3D TravelMagnitude;
-        internal Vector3D CameraStartPos;
         internal Vector3D LastEntityPos;
         internal Vector3D OriginTargetPos;
         internal Vector3D PredictedTargetPos;
@@ -41,18 +41,7 @@ namespace WeaponCore.Projectiles
         internal Vector3 PrevTargetVel;
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
-        internal WeaponSystem System;
-        internal MyCubeBlock FiringCube;
-        internal MyCubeGrid FiringGrid;
-        internal GridTargetingAi Ai;
-        internal float DesiredSpeed;
-        internal double MaxSpeedSqr;
-        internal double MaxSpeed;
-        internal double MaxSpeedLength;
         internal double AccelLength;
-        internal double CheckLength;
-        internal float AmmoTravelSoundRangeSqr;
-        internal float MaxTrajectory;
         internal double MaxTrajectorySqr;
         internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
@@ -60,6 +49,12 @@ namespace WeaponCore.Projectiles
         internal double SmartsDelayDistSqr;
         internal double DistanceFromCameraSqr;
         internal double AccelPerSec;
+        internal double MaxSpeedSqr;
+        internal double MaxSpeed;
+        internal double MaxSpeedLength;
+        internal float DesiredSpeed;
+        internal float AmmoTravelSoundRangeSqr;
+        internal float MaxTrajectory;
         internal int PoolId;
         internal int Age;
         internal int ChaseAge;
@@ -118,10 +113,10 @@ namespace WeaponCore.Projectiles
         {
             PoolId = poolId;
 
-            CameraStartPos = MyAPIGateway.Session.Camera.Position;
             Position = Origin;
             AccelDir = Direction;
-            Vector3D.DistanceSquared(ref CameraStartPos, ref Origin, out DistanceFromCameraSqr);
+            var cameraStart = MyAPIGateway.Session.Camera.Position;
+            Vector3D.DistanceSquared(ref cameraStart, ref Origin, out DistanceFromCameraSqr);
             var probability = System.Values.Graphics.VisualProbability;
             EnableAv = !noAv && DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
 
@@ -152,7 +147,7 @@ namespace WeaponCore.Projectiles
             Guidance = System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
 
-            if (Guidance == AmmoTrajectory.GuidanceType.Smart)
+            if (Guidance == AmmoTrajectory.GuidanceType.Smart && !IsBeamWeapon)
             {
                 Session.Instance.GridTargetingAIs.TryGetValue(FiringGrid, out Ai);
                 MaxChaseAge = System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
@@ -179,7 +174,7 @@ namespace WeaponCore.Projectiles
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
 
-            if (System.SpeedVariance)
+            if (System.SpeedVariance && !IsBeamWeapon)
             {
                 var min = System.Values.Ammo.Trajectory.SpeedVariance.Start;
                 var max = System.Values.Ammo.Trajectory.SpeedVariance.End;
@@ -190,7 +185,7 @@ namespace WeaponCore.Projectiles
 
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
-            MoveToAndActivate = FoundTarget && Guidance == AmmoTrajectory.GuidanceType.TravelTo;
+            MoveToAndActivate = FoundTarget && !IsBeamWeapon &&Guidance == AmmoTrajectory.GuidanceType.TravelTo;
 
             if (MoveToAndActivate)
             {
@@ -204,7 +199,7 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                if (System.AmmoTravelSound)
+                if (!IsBeamWeapon && System.AmmoTravelSound)
                 {
                     HasTravelSound = true;
                     TravelSound.Init(System.Values.Audio.Ammo.TravelSound, false);
@@ -222,7 +217,7 @@ namespace WeaponCore.Projectiles
             }
 
             ModelId = System.ModelId;
-            if (ModelId == -1) ModelState = EntityState.None;
+            if (ModelId == -1 || IsBeamWeapon) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)
@@ -255,8 +250,7 @@ namespace WeaponCore.Projectiles
             }
             else State = ProjectileState.OneAndDone;
 
-            CheckLength = MaxSpeedLength * 2;
-            if (System.AmmoParticle && EnableAv) PlayAmmoParticle();
+            if (System.AmmoParticle && EnableAv && !IsBeamWeapon) PlayAmmoParticle();
         }
 
         internal void FireSoundStart()
@@ -309,12 +303,24 @@ namespace WeaponCore.Projectiles
             return true;
         }
 
-        internal bool  EndChase()
+        internal bool EndChase()
         {
+            Log.Line("end chase");
             ChaseAge = Age;
             var reaquire = GridTargetingAi.ReacquireTarget(this);
             if (!reaquire) Target = null;
             return reaquire;
+        }
+
+
+        internal void UpdateZombie(bool reset = false)
+        {
+            if (reset) ZombieLifeTime = 0;
+            else
+            {
+                PrevTargetPos = PredictedTargetPos;
+                if (ZombieLifeTime++ > System.TargetLossTime) DistanceToTravelSqr = DistanceTraveled * DistanceTraveled;
+            }
         }
 
         internal void HitEffects()
@@ -420,16 +426,6 @@ namespace WeaponCore.Projectiles
             {
                 HitEffect.Stop(false);
                 HitEffect = null;
-            }
-        }
-
-        internal void UpdateZombie(bool reset = false)
-        {
-            if (reset) ZombieLifeTime = 0;
-            else
-            {
-                PrevTargetPos = PredictedTargetPos;
-                if (ZombieLifeTime++ > System.TargetLossTime) DistanceToTravelSqr = DistanceTraveled * DistanceTraveled;
             }
         }
 

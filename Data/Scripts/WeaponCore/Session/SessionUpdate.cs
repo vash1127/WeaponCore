@@ -11,6 +11,8 @@ namespace WeaponCore
             {
                 var gridAi = aiPair.Value;
                 if (!gridAi.Ready) continue;
+                if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.UpdateTargetDb();
+
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;

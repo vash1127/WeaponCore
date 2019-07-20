@@ -15,6 +15,7 @@ namespace WeaponCore.Support
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly MyStringId ProjectileMaterial;
+        public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly int ReloadTime;
@@ -23,7 +24,6 @@ namespace WeaponCore.Support
         public readonly int MaxObjectsHit;
         public readonly int TargetLossTime;
         public readonly int ModelId;
-
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -40,7 +40,7 @@ namespace WeaponCore.Support
         public readonly bool SpeedVariance;
         public readonly bool RangeVariance;
         public readonly bool IsBeamWeapon;
-                public readonly bool DamageScaling;
+        public readonly bool DamageScaling;
         public readonly bool ArmorScaling;
         public readonly bool CustomDamageScales;
         public readonly double MaxTrajectorySqr;
@@ -58,7 +58,6 @@ namespace WeaponCore.Support
         public float AmmoTravelSoundDistSqr;
         public float HardPointSoundMaxDistSqr;
         public float AmmoSoundMaxDistSqr;
-        public Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public FiringSoundState FiringSound;
         public bool HitSound;
         public bool WeaponReloadSound;
@@ -112,31 +111,32 @@ namespace WeaponCore.Support
             MaxTrajectorySqr = values.Ammo.Trajectory.MaxTrajectory * values.Ammo.Trajectory.MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
 
-            DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales);
+            DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales);
             Sound();
             Models(out ModelId);
 
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
         }
 
-        private void DamageScales(out bool damageScaling, out bool armorScaling, out bool customDamageScales)
+        private void DamageScales(out bool damageScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef)
         {
             armorScaling = false;
             customDamageScales = false;
             var d = Values.DamageScales;
+            customBlockDef = null;
             if (d.Custom.Types != null && d.Custom.Types.Length > 0)
             {
                 foreach (var def in MyDefinitionManager.Static.GetAllDefinitions())
                 foreach (var customDef in d.Custom.Types)
                     if (customDef.Modifier >= 0 && def.Id.SubtypeId.String == customDef.SubTypeId)
                     {
-                        if (CustomBlockDefinitionBasesToScales == null) CustomBlockDefinitionBasesToScales = new Dictionary<MyDefinitionBase, float>();
-                        CustomBlockDefinitionBasesToScales.Add(def, customDef.Modifier);
-                        customDamageScales = CustomBlockDefinitionBasesToScales != null && CustomBlockDefinitionBasesToScales.Count > 0;
+                        if (customBlockDef == null) customBlockDef = new Dictionary<MyDefinitionBase, float>();
+                        customBlockDef.Add(def, customDef.Modifier);
+                        customDamageScales = customBlockDef.Count > 0;
                     }
             }
-            damageScaling = d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || CustomDamageScales;
-            if (DamageScaling) armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
+            damageScaling = d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
+            if (damageScaling) armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
         }
 
         private void Sound()
