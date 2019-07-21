@@ -45,7 +45,6 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (Targeting.AllowScanning) Log.Line($"allow scanning was true!");
                 if (!targetInfo.Value.IsGrid || targetInfo.Value.Cubes.Count <= 0)
                 {
                     Log.Line($"weapon sees no valid cubes");

@@ -122,12 +122,14 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct Smarts
     {
-        [ProtoMember(1)] internal double Aggressiveness;
-        [ProtoMember(2)] internal double MaxLateralThrust;
-        [ProtoMember(3)] internal double TrackingDelay;
-        [ProtoMember(4)] internal int MaxChaseTime;
-        [ProtoMember(5)] internal int TopTargets;
-        [ProtoMember(6)] internal int TopBlocks;
+        [ProtoMember(1)] internal double Inaccuracy;
+        [ProtoMember(2)] internal double Aggressiveness;
+        [ProtoMember(3)] internal double MaxLateralThrust;
+        [ProtoMember(4)] internal double TrackingDelay;
+        [ProtoMember(5)] internal int MaxChaseTime;
+        [ProtoMember(6)] internal int TopTargets;
+        [ProtoMember(7)] internal int TopBlocks;
+        [ProtoMember(8)] internal bool OverideTarget;
     }
 
     [ProtoContract]

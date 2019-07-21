@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -38,6 +39,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D OriginTargetPos;
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
+        internal Vector3D TargetOffSet;
         internal Vector3 PrevTargetVel;
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
@@ -48,6 +50,7 @@ namespace WeaponCore.Projectiles
         internal double LineLength;
         internal double SmartsDelayDistSqr;
         internal double DistanceFromCameraSqr;
+        internal double OffsetSqr;
         internal double AccelPerSec;
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
@@ -67,6 +70,7 @@ namespace WeaponCore.Projectiles
         internal int WeaponId;
         internal int MuzzleId;
         internal int ZombieLifeTime;
+        internal int LastOffsetTime;
         internal bool Grow;
         internal bool Shrink;
         internal bool EnableAv;
@@ -125,11 +129,13 @@ namespace WeaponCore.Projectiles
             LastEntityPos = Position;
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
+
             LastHitPos = null;
             LastHitEntVel = null;
             Age = 0;
             ChaseAge = 0;
             ZombieLifeTime = 0;
+            LastOffsetTime = 0;
             ObjectsHit = 0;
             Colliding = false;
             ParticleStopped = false;
@@ -156,6 +162,17 @@ namespace WeaponCore.Projectiles
 
             LockedTarget = Target != null && !Target.MarkedForClose;
             if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
+
+            if (System.TargetOffSet && LockedTarget)
+            {
+                OffSetTarget(out TargetOffSet);
+                OffsetSqr = System.Values.Ammo.Trajectory.Smarts.Inaccuracy * System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
+            }
+            else
+            {
+                TargetOffSet = Vector3D.Zero;
+                OffsetSqr = 0;
+            }
 
             DrawLine = System.Values.Graphics.Line.Trail;
             if (System.RangeVariance)
@@ -314,12 +331,28 @@ namespace WeaponCore.Projectiles
 
         internal void UpdateZombie(bool reset = false)
         {
-            if (reset) ZombieLifeTime = 0;
+            if (reset)
+            {
+                ZombieLifeTime = 0;
+                OffSetTarget(out TargetOffSet);
+            }
             else
             {
                 PrevTargetPos = PredictedTargetPos;
                 if (ZombieLifeTime++ > System.TargetLossTime) DistanceToTravelSqr = DistanceTraveled * DistanceTraveled;
             }
+        }
+
+        internal void OffSetTarget(out Vector3D targetOffset)
+        {
+            double randAzimuth = MyUtils.GetRandomDouble(0, 1) * 2 * Math.PI;
+            double randElevation = (MyUtils.GetRandomDouble(0, 1) * 2 - 1) * 0.5 * Math.PI;
+
+            Vector3D randomDirection;
+            Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out randomDirection); // this is already normalized
+
+            targetOffset = (randomDirection * System.Values.Ammo.Trajectory.Smarts.Inaccuracy);
+            if (Age != 0) LastOffsetTime = Age;
         }
 
         internal void HitEffects()

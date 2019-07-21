@@ -105,8 +105,21 @@ namespace WeaponCore.Projectiles
                             if (newChase || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
+
                                 var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
                                 var targetPos = p.Target.PositionComp.WorldAABB.Center;
+
+                                if (p.System.TargetOffSet)
+                                {
+                                    if (p.Age - p.LastOffsetTime > 300)
+                                    {
+                                        double dist;
+                                        Vector3D.DistanceSquared(ref p.Position, ref targetPos, out dist);
+                                        if (dist < p.OffsetSqr && Vector3.Dot(p.Direction, p.Position - targetPos) > 0)
+                                            p.OffSetTarget(out p.TargetOffSet);
+                                    }
+                                    targetPos += p.TargetOffSet;
+                                }
 
                                 if (physics == null || targetPos == Vector3D.Zero)
                                     p.PrevTargetPos = p.PredictedTargetPos;
