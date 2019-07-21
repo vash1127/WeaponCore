@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game;
@@ -10,7 +9,6 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Projectiles.Projectiles;
 
 namespace WeaponCore
 {
@@ -23,7 +21,7 @@ namespace WeaponCore
 
         internal volatile bool Inited;
         internal volatile bool Dispatched;
-
+        internal volatile bool DbCleanUp;
         private int _count = -1;
         private int _lCount;
         private int _eCount;
@@ -36,6 +34,7 @@ namespace WeaponCore
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
         private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
+        internal readonly List<GridTargetingAi> DbsToUpdate = new List<GridTargetingAi>();
 
         internal DSUtils DsUtil { get; set; } = new DSUtils();
 

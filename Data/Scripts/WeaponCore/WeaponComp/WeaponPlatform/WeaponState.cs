@@ -136,7 +136,6 @@ namespace WeaponCore.Platform
             }
         }
 
-
         public void StartFiringSound()
         {
             FiringEmitter.PlaySound(FiringSound, false);

@@ -15,7 +15,7 @@ namespace WeaponCore.Platform
             var prediction = weapon.System.Values.HardPoint.TargetPrediction;
 
             Vector3D targetPos;
-            var timeToIntercept = double.MinValue;
+            double timeToIntercept;
 
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
@@ -23,7 +23,12 @@ namespace WeaponCore.Platform
                 targetPos = target.PositionComp.WorldMatrix.Translation;
 
             var targetDir = targetPos - weapon.Comp.MyPivotPos;
-            var isAligned = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+
+            double rangeToTarget;
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
+            var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
+
+            var isAligned = inRange && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             if (checkOnly) return isAligned;
 
             weapon.TargetPos = targetPos;
@@ -40,12 +45,16 @@ namespace WeaponCore.Platform
             var prediction = weapon.System.Values.HardPoint.TargetPrediction;
 
             Vector3D targetPos;
-            var timeToIntercept = double.MinValue;
+            double timeToIntercept;
 
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
             else
                 targetPos = target.PositionComp.WorldMatrix.Translation;
+
+            double rangeToTarget;
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
+            var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
@@ -72,7 +81,7 @@ namespace WeaponCore.Platform
             var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
-            weapon.IsTracking = !azConstrained && !elConstrained;
+            weapon.IsTracking = inRange && !azConstrained && !elConstrained;
             if (!step) return weapon.IsTracking;
 
             if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
@@ -97,6 +106,7 @@ namespace WeaponCore.Platform
 
             var isInView = false;
             var isAligned = false;
+
             if (weapon.IsTracking)
             {
                 isInView = IsTargetInView(weapon, targetPos);
@@ -113,8 +123,7 @@ namespace WeaponCore.Platform
             if (alignedChange && isAligned) weapon.StartShooting();
             else if (alignedChange && !weapon.DelayCeaseFire)
             {
-                Log.Line("align check fail");
-                Log.Line($"{weapon.System.WeaponName} - {weapon.System.Values.HardPoint.TurretController} - {weapon == weapon.Comp.TrackingWeapon}");
+                Log.Line($"align check fail: {weapon.System.WeaponName} - {weapon.System.Values.HardPoint.TurretController} - {weapon == weapon.Comp.TrackingWeapon}");
                 weapon.StopShooting();
             }
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
@@ -125,7 +134,6 @@ namespace WeaponCore.Platform
         {
             var lookAtPositionEuler = weapon.LookAt(predPos);
             var inRange = weapon.IsInRange(ref lookAtPositionEuler);
-            //Log.Line($"isInRange: {inRange}");
             return inRange;
         }
 
@@ -194,19 +202,11 @@ namespace WeaponCore.Platform
         {
             var tick = Comp.MyAi.MySession.Tick;
 
-            if (target == null || target.MarkedForClose)
-            {
-                _lastTimeToIntercept = -1;
-                timeToIntercept = _lastTimeToIntercept;
-                return _lastPredictedPos;
-            }
-
             if (tick == _lastPredictionTick && _lastTarget == target)
             {
                 timeToIntercept = _lastTimeToIntercept;
                 return _lastPredictedPos;
             }
-
             _lastTarget = target;
             _lastPredictionTick = tick;
 
@@ -350,14 +350,6 @@ namespace WeaponCore.Platform
             return interceptPoint;
         }
 
-        /// <summary>
-        /// Returns if the normalized dot product between two vectors is greater than the tolerance.
-        /// This is helpful for determining if two vectors are "more parallel" than the tolerance.
-        /// </summary>
-        /// <param name="a">First vector</param>
-        /// <param name="b">Second vector</param>
-        /// <param name="tolerance">Cosine of maximum angle</param>
-        /// <returns></returns>
         public static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
         {
             double dot = Vector3D.Dot(a, b);
@@ -367,11 +359,6 @@ namespace WeaponCore.Platform
 
         internal void InitTracking()
         {
-            //_randomStandbyChange_ms = MyAPIGateway.Session.ElapsedPlayTime.Milliseconds;
-            //_randomStandbyChangeConst_ms = MyUtils.GetRandomInt(3500, 4500);
-            //_randomStandbyRotation = 0.0f;
-            //_randomStandbyElevation = 0.0f;
-
             RotationSpeed = Comp.Platform.BaseDefinition.RotationSpeed;
             ElevationSpeed = Comp.Platform.BaseDefinition.ElevationSpeed;
             MinElevationRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinElevationDegrees));
@@ -379,8 +366,6 @@ namespace WeaponCore.Platform
 
             if ((double)MinElevationRadians > (double)MaxElevationRadians)
                 MinElevationRadians -= 6.283185f;
-            //_minSinElevationRadians = (float)Math.Sin((double)MinElevationRadians);
-            //_maxSinElevationRadians = (float)Math.Sin((double)MaxElevationRadians);
             MinAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinAzimuthDegrees));
             MaxAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxAzimuthDegrees));
             if ((double)MinAzimuthRadians > (double)MaxAzimuthRadians)
@@ -394,17 +379,5 @@ namespace WeaponCore.Platform
                 return 360f;
             return num;
         }
-
-        /*
-        private int _randomStandbyChange_ms;
-        private int _randomStandbyChangeConst_ms;
-        private float _randomStandbyElevation;
-        private void GetCameraDummy()
-        {
-            if (this.m_base2.Model == null || !this.m_base2.Model.Dummies.ContainsKey("camera"))
-                return;
-            this.CameraDummy = this.m_base2.Model.Dummies["camera"];
-        }
-        */
     }
 }

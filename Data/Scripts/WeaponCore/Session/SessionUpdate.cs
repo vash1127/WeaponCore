@@ -1,4 +1,9 @@
-﻿using WeaponCore.Platform;
+﻿using System.Threading;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
+using VRage.Game;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -7,12 +12,12 @@ namespace WeaponCore
         private void UpdateWeaponPlatforms()
         {
             if (!GameLoaded) return;
+            if (DbsToUpdate.Count > 0) MyAPIGateway.Parallel.Start(UpdateTargetingDbs, UpdateTargetingDbsCallBack);
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
                 if (!gridAi.Ready) continue;
-                if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.UpdateTargetDb();
-
+                if (gridAi.Stale && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.TimeToUpdateDb();
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -89,13 +94,12 @@ namespace WeaponCore
                         if (!w.Enabled && comp.TrackingWeapon != w) continue;
                         if (!gunner)
                         {
-                            if (w.TrackingAi && w.Target != null) Weapon.TrackingTarget(w, w.Target, true);
+                            if (w.TrackingAi && w.Target != null && !w.Target.MarkedForClose) Weapon.TrackingTarget(w, w.Target, true);
                             else 
                             {
                                 if (w.IsTurret && !w.TrackTarget) w.Target = comp.TrackingWeapon.Target;
-                                else if (w.Target != null && !Weapon.ValidTarget(w, w.Target)) w.Target = null;
+                                else if (w.Target != null && (w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target))) w.Target = null;
                             }
-                            //if (!w.TrackingAi) Log.Line($"Target:{w.Target != null} - Aligned:{w.IsAligned} - Tracking:{w.IsTracking} - Seeking:{w.SeekTarget} - Lock:{w.Comp.TurretTargetLock}");
                         }
                         else
                         {
@@ -121,6 +125,39 @@ namespace WeaponCore
                     }
                 }
             }
+        }
+
+        private void UpdateTargetingDbs()
+        {
+            MyAPIGateway.Parallel.For(0, DbsToUpdate.Count, x => DbsToUpdate[x].UpdateTargetDb(), 6);
+        }
+
+        private void UpdateTargetingDbsCallBack()
+        {
+            foreach (var db in DbsToUpdate)
+            {
+                for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
+                db.SortedTargets.Clear();
+                for (int i = 0; i < db.NewEntities.Count; i++)
+                {
+                    var detectInfo = db.NewEntities[i];
+                    var ent = detectInfo.Parent;
+                    var blocks = detectInfo.Cubes;
+                    var grid = ent as MyCubeGrid;
+                    GridTargetingAi.TargetInfo targetInfo;
+
+                    if (grid == null)
+                        targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
+                    else
+                        targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, grid, true, blocks, grid.GetFatBlocks().Count, db.MyGrid, db) { Cubes = blocks };
+
+                    db.SortedTargets.Add(targetInfo);
+                }
+                db.SortedTargets.Sort(db.TargetCompare1);
+                Log.Line($"[DB] targets:{db.SortedTargets.Count}");
+                Interlocked.Exchange(ref db.DbUpdating, 0);
+            }
+            DbsToUpdate.Clear();
         }
     }
 }

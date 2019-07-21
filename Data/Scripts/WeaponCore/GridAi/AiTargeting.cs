@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using Sandbox.ModAPI.Ingame;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Utils;
 using VRageMath;
+using VRageRender;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 
@@ -25,24 +23,14 @@ namespace WeaponCore.Support
             RegisterGridEvents(grid);
         }
 
-        internal class TargetCompare : IComparer<TargetInfo>
-        {
-            public int Compare(TargetInfo x, TargetInfo y)
-            {
-                var compareParts = x.PartCount.CompareTo(y.PartCount);
-                if (compareParts != 0) return -compareParts;
-                var xApproching = Vector3.Dot(x.Target.Physics.LinearVelocity, x.Target.PositionComp.GetPosition() - x.MyGrid.PositionComp.GetPosition()) < 0;
-                var yApproching = Vector3.Dot(y.Target.Physics.LinearVelocity, y.Target.PositionComp.GetPosition() - y.MyGrid.PositionComp.GetPosition()) < 0;
-                return xApproching.CompareTo(yApproching);
-            }
-        }
-
         internal void SelectTarget(ref MyEntity target, Weapon weapon)
         {
             var cube = target as MyCubeBlock;
             if (target != null && !target.MarkedForClose && (cube == null || !cube.MarkedForClose)) return;
-            if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
 
+            Stale = true;
+
+            if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
             weapon.CheckedForTargetTick = MySession.Tick;
             TargetInfo? targetInfo;
             UpdateTarget(weapon, out targetInfo);
@@ -120,108 +108,6 @@ namespace WeaponCore.Support
             targetInfo = null;
         }
 
-        internal void UpdateTargetDb()
-        {
-            Targeting.AllowScanning = true;
-            UpdateTargets();
-            Targeting.AllowScanning = false;
-            TargetsUpdatedTick = MySession.Tick;
-            _myOwner = MyGrid.BigOwners[0];
-        }
-
-        private void UpdateTargets()
-        {
-            ValidGrids.Clear();
-            SortedTargets.RemoveAll(x => x.Clean());
-            foreach (var ent in Targeting.TargetRoots)
-            {
-                if (ent == null || ent.MarkedForClose) continue;
-                var entInfo = MyDetectedEntityInfoHelper.Create(ent, _myOwner);
-                switch (entInfo.Type)
-                {
-                    case MyDetectedEntityType.Asteroid:
-                        continue;
-                    case MyDetectedEntityType.Planet:
-                        continue;
-                    case MyDetectedEntityType.FloatingObject:
-                        continue;
-                    case MyDetectedEntityType.None:
-                        continue;
-                    case MyDetectedEntityType.Unknown:
-                        continue;
-                }
-                switch (entInfo.Relationship)
-                {
-                    case MyRelationsBetweenPlayerAndBlock.Owner:
-                        continue;
-                    case MyRelationsBetweenPlayerAndBlock.FactionShare:
-                        continue;
-                    case MyRelationsBetweenPlayerAndBlock.NoOwnership:
-                        if (!TargetNoOwners) continue;
-                        break;
-                    case MyRelationsBetweenPlayerAndBlock.Neutral:
-                        if (!TargetNeutrals) continue;
-                        break;
-                }
-
-                var grid = ent as MyCubeGrid;
-                var isGrid = grid != null;
-                if (!isGrid)
-                {
-                    var partCount = 1;
-                    var targetInfo = new TargetInfo(entInfo, ent, false, partCount, MyGrid, this);
-                    SortedTargets.Add(targetInfo);
-                }
-
-                if (isGrid)
-                    ValidGrids.Add(ent, entInfo);
-            }
-
-            GetTargetBlocks(Targeting, this);
-            SortedTargets.Sort(_targetCompare);
-        }
-
-        private static void GetTargetBlocks(MyGridTargeting targeting, GridTargetingAi ai)
-        {
-            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
-            foreach (var targets in allTargets)
-            {
-                var rootGrid = targets.Key;
-                MyDetectedEntityInfo entInfo;
-                if (ai.ValidGrids.TryGetValue(rootGrid, out entInfo))
-                {
-                    var partCount = rootGrid.GetFatBlocks().Count;
-                    var targetInfo = new TargetInfo(entInfo, rootGrid, true, partCount, ai.MyGrid, ai)
-                    {
-                        Cubes = targets.Value
-                    };
-                    ai.SortedTargets.Add(targetInfo);
-                }
-            }
-        }
-
-        private static bool GetTargetBlocksOld(MyEntity targetGrid, int numOfBlocks, MyGridTargeting targeting, List<MyEntity> targetBlocks)
-        {
-            var g = 0;
-            var f = 0;
-            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
-            foreach (var targets in allTargets)
-            {
-                var rootGrid = targets.Key;
-                if (rootGrid != targetGrid) continue;
-                if (rootGrid.MarkedForClose) return false;
-                if (g++ > 0) break;
-                foreach (var b in targets.Value)
-                {
-                    var cube = b as MyCubeBlock;
-                    if (cube == null || cube.MarkedForClose) continue;
-                    if (f++ > numOfBlocks) return true;
-                    targetBlocks.Add(b);
-                }
-            }
-            return f > 0;
-        }
-
         internal static bool ReacquireTarget(Projectile p)
         {
             p.ChaseAge = p.Age;
@@ -232,10 +118,11 @@ namespace WeaponCore.Support
                 return false;
             }
 
+            p.Ai.Stale = true;
+
             var totalTargets = p.Ai.SortedTargets.Count;
             var topTargets = p.System.Values.Ammo.Trajectory.Smarts.TopTargets;
             if (topTargets > 0 && totalTargets < topTargets) topTargets = totalTargets;
-
             TargetInfo? targetInfo;
             GetTarget(p.Ai, p.Position, p.DistanceToTravelSqr, p.TargetShuffle, p.TargetShuffleLen, topTargets, out targetInfo);
             if (targetInfo.HasValue)
@@ -246,6 +133,12 @@ namespace WeaponCore.Support
                 {
                     Log.Line($"reacquired a new non-grid target: {p.Target.DebugName}");
                     return true;
+                }
+
+                if (targetInfo.Value.Cubes == null)
+                {
+                    Log.Line($"cube list is null");
+                    return false;
                 }
                 if (p.Ai.Targeting.AllowScanning) Log.Line($"allow scanning was true!");
                 if (!targetInfo.Value.IsGrid || targetInfo.Value.Cubes.Count <= 0)
@@ -260,10 +153,9 @@ namespace WeaponCore.Support
                 if (firstBlocks > 0 && totalBlocks < firstBlocks) firstBlocks = totalBlocks;
 
                 var gotBlock = GetBlock(out p.Target, targetInfo.Value.Cubes, p.BlockSuffle, p.BlockShuffleLen, firstBlocks, p.Position, p.FiringCube, false);
-                if (!gotBlock) Log.Line($"couldn't sort a target block");
                 return gotBlock;
             }
-            Log.Line("GetTarget returned null");
+            Log.Line($"GetTarget returned null: sortedTargets:{p.Ai.SortedTargets.Count}");
             return false;
         }
 
@@ -314,9 +206,9 @@ namespace WeaponCore.Support
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
 
                     var isGrid = hitInfo.HitEntity as MyCubeGrid;
-                    var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
+                    //var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
                     if (isGrid == weaponBlock.CubeGrid) continue;
-                    if (isGrid != null && !GridEnemy(weaponBlock, isGrid) || parentIsGrid != null && !GridEnemy(weaponBlock, parentIsGrid)) continue;
+                    //if (isGrid != null && !GridEnemy(weaponBlock, isGrid) || parentIsGrid != null && !GridEnemy(weaponBlock, parentIsGrid)) continue;
                 }
                 newTarget = block;
                 break;
@@ -325,25 +217,5 @@ namespace WeaponCore.Support
             return newTarget != null;
         }
 
-        private static int[] GetDeck(ref int[] deck , ref int prevDeckLen, int firstCard, int cardsToSort)
-        {
-            var min = firstCard;
-            var max = cardsToSort - 1;
-            var count = max - min + 1;
-            if (prevDeckLen != count)
-            {
-                Array.Resize(ref deck, count);
-                prevDeckLen = count;
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                var j = MyUtils.GetRandomInt(0, i + 1);
-
-                deck[i] = deck[j];
-                deck[j] = min + i;
-            }
-            return deck;
-        }
     }
 }

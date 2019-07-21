@@ -53,7 +53,7 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            //MyAPIGateway.Parallel.For(0, Wait.Length, Process, 1);
+            //MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
             for (int i = 0; i < Wait.Length; i++) Process(i);
         }
 
@@ -191,7 +191,7 @@ namespace WeaponCore.Projectiles
                                 p.PlayAmmoParticle();
                         }
                         else if (!p.ParticleStopped && p.AmmoEffect != null)
-                            p.DisposeAmmoEffect(true);
+                            p.DisposeAmmoEffect(false,true);
                     }
 
                     if (p.HasTravelSound)

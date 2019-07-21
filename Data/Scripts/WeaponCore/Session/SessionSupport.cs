@@ -111,15 +111,17 @@ namespace WeaponCore
 
         private void Paused()
         {
-            Log.Line($"Stopping all sounds due to pause");
+            Log.Line($"Stopping all AV due to pause");
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
                 foreach (var comp in gridAi.WeaponBase.Values)
-                {
-                    comp.StopAllSounds();
-                }
+                    comp.StopAllAv();
             }
+
+            for (int i = 0; i < Projectiles.Wait.Length; i++)
+                foreach (var p in Projectiles.ProjectilePool[i].Active)
+                    p.PauseAv();
         }
 
         #region Events

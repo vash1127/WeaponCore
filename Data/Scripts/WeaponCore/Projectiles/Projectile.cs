@@ -283,7 +283,7 @@ namespace WeaponCore.Projectiles
             {
                 if (EnableAv)
                 {
-                    if (System.AmmoParticle) DisposeAmmoEffect();
+                    if (System.AmmoParticle) DisposeAmmoEffect(false, false);
                     HitEffects();
                     if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
@@ -305,7 +305,6 @@ namespace WeaponCore.Projectiles
 
         internal bool EndChase()
         {
-            Log.Line("end chase");
             ChaseAge = Age;
             var reaquire = GridTargetingAi.ReacquireTarget(this);
             if (!reaquire) Target = null;
@@ -386,7 +385,7 @@ namespace WeaponCore.Projectiles
 
         private void PlayHitParticle()
         {
-            if (HitEffect != null) DisposeHitEffect();
+            if (HitEffect != null) DisposeHitEffect(false);
             if (LastHitPos.HasValue)
             {
                 var pos = LastHitPos.Value;
@@ -410,23 +409,30 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal void DisposeAmmoEffect(bool pause = false)
+        internal void DisposeAmmoEffect(bool instant, bool pause)
         {
             if (AmmoEffect != null)
             {
-                AmmoEffect.Stop(false);
+                AmmoEffect.Stop(instant);
                 AmmoEffect = null;
             }
+
             if (pause) ParticleStopped = true;
         }
 
-        private void DisposeHitEffect()
+        private void DisposeHitEffect(bool instant)
         {
             if (HitEffect != null)
             {
-                HitEffect.Stop(false);
+                HitEffect.Stop(instant);
                 HitEffect = null;
             }
+        }
+
+        internal void PauseAv()
+        {
+            DisposeAmmoEffect(true, true);
+            DisposeHitEffect(true);
         }
 
         internal enum ProjectileState

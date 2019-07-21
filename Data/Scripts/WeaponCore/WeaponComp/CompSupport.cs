@@ -62,5 +62,43 @@ namespace WeaponCore.Support
             }
         }
 
+        public void StopAllGraphics()
+        {
+            foreach (var w in Platform.Weapons)
+            {
+                foreach (var barrels in w.BarrelAvUpdater)
+                {
+                    var id = barrels.Key.MuzzleId;
+                    var dummy = w.Dummies[id];
+                    if (w.System.BarrelEffect1)
+                    {
+                        if (w.BarrelEffects1[id] != null)
+                        {
+                            w.BarrelEffects1[id].Stop(true);
+                            w.BarrelEffects1[id] = null;
+                        }
+                    }
+                    if (w.System.BarrelEffect2)
+                    {
+                        if (w.BarrelEffects2[id] != null)
+                        {
+                            w.BarrelEffects2[id].Stop(true);
+                            w.BarrelEffects2[id] = null;
+                        }
+                    }
+                    if (w.HitEffects[id] != null)
+                    {
+                        w.HitEffects[id].Stop(true);
+                        w.HitEffects[id] = null;
+                    }
+                }
+            }
+        }
+
+        public void StopAllAv()
+        {
+            StopAllSounds();
+            StopAllGraphics();
+        }
     }
 }

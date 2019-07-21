@@ -65,7 +65,7 @@ namespace WeaponCore
                         else if (y.Name == "Explosion_Warhead_02") w++;
                         //else Log.Line($"{y.Name}");
                     }
-                    Log.Line($"projectiles:{p} - particles:{g} - eCount:{ExplosionCounter} - arkCount:{a} - Smoke_Missile:{c} - missileExp:{m} - what:{w}");
+                    //Log.Line($"projectiles:{p} - particles:{g} - eCount:{ExplosionCounter} - arkCount:{a} - Smoke_Missile:{c} - missileExp:{m} - what:{w}");
                 }
                 Timings();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
