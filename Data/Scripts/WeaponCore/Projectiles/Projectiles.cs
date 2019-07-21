@@ -100,7 +100,7 @@ namespace WeaponCore.Projectiles
                         Vector3D newVel;
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
-                            var newChase = p.Age - p.ChaseAge > p.MaxChaseAge && p.EndChase();
+                            var newChase = p.Age - p.ChaseAge > p.MaxChaseAge || p.PickTarget && p.EndChase();
                             var myCube = p.Target as MyCubeBlock;
                             if (newChase || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
                             {

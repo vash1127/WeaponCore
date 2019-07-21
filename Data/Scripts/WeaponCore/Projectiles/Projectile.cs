@@ -89,6 +89,7 @@ namespace WeaponCore.Projectiles
         internal bool OnScreen;
         internal bool ParticleStopped;
         internal bool ParticleLateStart;
+        internal bool PickTarget;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
@@ -211,6 +212,7 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
+            PickTarget = LockedTarget && System.Values.Ammo.Trajectory.Smarts.OverideTarget;
             FiringSoundState = System.FiringSound;
             AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
 
@@ -323,6 +325,7 @@ namespace WeaponCore.Projectiles
         internal bool EndChase()
         {
             ChaseAge = Age;
+            PickTarget = false;
             var reaquire = GridTargetingAi.ReacquireTarget(this);
             if (!reaquire) Target = null;
             return reaquire;
