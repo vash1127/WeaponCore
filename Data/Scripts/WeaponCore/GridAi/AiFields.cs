@@ -33,7 +33,7 @@ namespace WeaponCore.Support
         internal uint SubTick;
         internal uint TargetsUpdatedTick;
         internal long MyOwner;
-        internal long DbUpdating;
+        internal int DbUpdating;
 
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();

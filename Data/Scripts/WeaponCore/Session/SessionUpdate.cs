@@ -1,8 +1,7 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Sandbox.ModAPI.Ingame;
-using VRage.Game;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
@@ -12,7 +11,7 @@ namespace WeaponCore
         private void UpdateWeaponPlatforms()
         {
             if (!GameLoaded) return;
-            if (DbsToUpdate.Count > 0) MyAPIGateway.Parallel.Start(UpdateTargetingDbs, UpdateTargetingDbsCallBack);
+            if (!DbUpdating && DbsToUpdate.Count > 0) StartUpdatingDbs();
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
@@ -39,7 +38,7 @@ namespace WeaponCore
                         }
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
-                            if (w.AmmoMagTimer == int.MaxValue)
+                            if (w.AmmoMagTimer == Int32.MaxValue)
                             {
                                 if (w.CurrentMags != 0)
                                 {
@@ -125,39 +124,6 @@ namespace WeaponCore
                     }
                 }
             }
-        }
-
-        private void UpdateTargetingDbs()
-        {
-            MyAPIGateway.Parallel.For(0, DbsToUpdate.Count, x => DbsToUpdate[x].UpdateTargetDb(), 6);
-        }
-
-        private void UpdateTargetingDbsCallBack()
-        {
-            foreach (var db in DbsToUpdate)
-            {
-                for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
-                db.SortedTargets.Clear();
-                for (int i = 0; i < db.NewEntities.Count; i++)
-                {
-                    var detectInfo = db.NewEntities[i];
-                    var ent = detectInfo.Parent;
-                    var blocks = detectInfo.Cubes;
-                    var grid = ent as MyCubeGrid;
-                    GridTargetingAi.TargetInfo targetInfo;
-
-                    if (grid == null)
-                        targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
-                    else
-                        targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, grid, true, blocks, grid.GetFatBlocks().Count, db.MyGrid, db) { Cubes = blocks };
-
-                    db.SortedTargets.Add(targetInfo);
-                }
-                db.SortedTargets.Sort(db.TargetCompare1);
-                Log.Line($"[DB] targets:{db.SortedTargets.Count}");
-                Interlocked.Exchange(ref db.DbUpdating, 0);
-            }
-            DbsToUpdate.Clear();
         }
     }
 }

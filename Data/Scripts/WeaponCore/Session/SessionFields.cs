@@ -16,12 +16,13 @@ namespace WeaponCore
     {
         internal const ushort PACKET_ID = 62518;
         internal const double TickTimeDiv = 0.0625;
-
+        internal const double VisDirToleranceAngle = 2; //in degrees
+        internal static readonly double VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
         internal static Session Instance { get; private set; }
 
         internal volatile bool Inited;
         internal volatile bool Dispatched;
-        internal volatile bool DbCleanUp;
+        internal bool DbUpdating;
         private int _count = -1;
         private int _lCount;
         private int _eCount;

@@ -7,6 +7,7 @@ using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using SpaceEngineers.Game.ModAPI;
 using VRage.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 
@@ -162,7 +163,7 @@ namespace WeaponCore
 
                 if (iconToggle == null && iconOn == null && iconOff == null)
                 {
-                    var pack = iconPack ?? string.Empty;
+                    var pack = iconPack ?? String.Empty;
                     var gamePath = MyAPIGateway.Utilities.GamePaths.ContentPath;
                     iconToggle = gamePath + @"\Textures\GUI\Icons\Actions\" + pack + "Toggle.dds";
                     iconOn = gamePath + @"\Textures\GUI\Icons\Actions\" + pack + "SwitchOn.dds";

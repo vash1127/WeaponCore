@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
@@ -99,7 +100,7 @@ namespace WeaponCore
                             MatrixD.CreateTranslation(ref hitPos, out matrix);
                             if (effect == null)
                             {
-                                MyParticlesManager.TryCreateParticleEffect(d.Projectile.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, uint.MaxValue, out effect);
+                                MyParticlesManager.TryCreateParticleEffect(d.Projectile.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, UInt32.MaxValue, out effect);
                                 if (effect == null)
                                 {
                                     weapon.HitEffects[d.Projectile.MuzzleId] = null;

@@ -27,6 +27,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D Direction;
         internal Vector3D OriginUp;
         internal Vector3D AccelDir;
+        internal Vector3D VisualDir;
         internal Vector3D Position;
         internal Vector3D LastPosition;
         internal Vector3D Origin;
@@ -55,6 +56,7 @@ namespace WeaponCore.Projectiles
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double MaxSpeedLength;
+        internal double VisualStep;
         internal float DesiredSpeed;
         internal float AmmoTravelSoundRangeSqr;
         internal float MaxTrajectory;
@@ -120,6 +122,7 @@ namespace WeaponCore.Projectiles
 
             Position = Origin;
             AccelDir = Direction;
+            VisualDir = Direction;
             var cameraStart = MyAPIGateway.Session.Camera.Position;
             Vector3D.DistanceSquared(ref cameraStart, ref Origin, out DistanceFromCameraSqr);
             var probability = System.Values.Graphics.VisualProbability;
@@ -353,9 +356,17 @@ namespace WeaponCore.Projectiles
 
             Vector3D randomDirection;
             Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out randomDirection); // this is already normalized
-
             targetOffset = (randomDirection * System.Values.Ammo.Trajectory.Smarts.Inaccuracy);
+            VisualStep = 0;
             if (Age != 0) LastOffsetTime = Age;
+        }
+
+        internal void UpdateVisualDir(double newVisalStep)
+        {
+            VisualStep = newVisalStep;
+            Vector3D lerpDir;
+            Vector3D.Lerp(ref Direction, ref AccelDir, VisualStep, out lerpDir);
+            Vector3D.Normalize(ref lerpDir, out VisualDir);
         }
 
         internal void HitEffects()
@@ -375,8 +386,6 @@ namespace WeaponCore.Projectiles
 
         internal void PlayAmmoParticle()
         {
-            //Log.Line($"Particle Start:{Age} - EntMat!=Id:{EntityMatrix != MatrixD.Identity} - Ent!=Id:{Entity.WorldMatrix != MatrixD.Identity}");
-
             if (Age == 0 && !ParticleLateStart)
             {
                 TestSphere.Center = Position;

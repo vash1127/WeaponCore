@@ -105,7 +105,6 @@ namespace WeaponCore.Projectiles
                             if (newChase || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
-
                                 var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
                                 var targetPos = p.Target.PositionComp.WorldAABB.Center;
 
@@ -116,7 +115,10 @@ namespace WeaponCore.Projectiles
                                         double dist;
                                         Vector3D.DistanceSquared(ref p.Position, ref targetPos, out dist);
                                         if (dist < p.OffsetSqr && Vector3.Dot(p.Direction, p.Position - targetPos) > 0)
+                                        {
+                                            Log.Line("offset changed");
                                             p.OffSetTarget(out p.TargetOffSet);
+                                        }
                                     }
                                     targetPos += p.TargetOffSet;
                                 }
@@ -140,6 +142,17 @@ namespace WeaponCore.Projectiles
                         if (newVel.LengthSquared() > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
 
                         p.Velocity = newVel;
+
+                        var newVisalStep = p.VisualStep + 0.00416666666;
+                        if (newVisalStep < 1 && Vector3D.Dot(p.Direction, p.AccelDir) < Session.VisDirToleranceCosine)
+                        {
+                            p.VisualStep = newVisalStep;
+                            Vector3D lerpDir;
+                            Vector3D.Lerp(ref p.Direction, ref p.AccelDir, p.VisualStep, out lerpDir);
+                            Vector3D.Normalize(ref lerpDir, out p.VisualDir);
+                        }
+                        else
+                            p.VisualStep = 0;
                     }
                     else if (p.AccelLength > 0)
                     {
@@ -163,7 +176,7 @@ namespace WeaponCore.Projectiles
 
                     if (p.ModelState == EntityState.Exists)
                     {
-                        p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.AccelDir, MatrixD.Identity.Up);
+                        p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
                         if (p.EnableAv && p.AmmoEffect != null && p.System.AmmoParticle)
                         {
                             var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.Ammo.Offset, p.EntityMatrix);

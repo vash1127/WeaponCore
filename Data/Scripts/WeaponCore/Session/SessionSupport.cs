@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
@@ -8,6 +9,46 @@ namespace WeaponCore
 {
     public partial class Session
     {
+        public void StartUpdatingDbs()
+        {
+            DbUpdating = true;
+            MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+        }
+
+        private void ProcessDbs()
+        {
+            MyAPIGateway.Parallel.For(0, DbsToUpdate.Count, x => DbsToUpdate[x].UpdateTargetDb(), 6);
+        }
+
+        private void ProcessDbsCallBack()
+        {
+            foreach (var db in DbsToUpdate)
+            {
+                for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
+                db.SortedTargets.Clear();
+                for (int i = 0; i < db.NewEntities.Count; i++)
+                {
+                    var detectInfo = db.NewEntities[i];
+                    var ent = detectInfo.Parent;
+                    var blocks = detectInfo.Cubes;
+                    var grid = ent as MyCubeGrid;
+                    GridTargetingAi.TargetInfo targetInfo;
+
+                    if (grid == null)
+                        targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
+                    else
+                        targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, grid, true, blocks, grid.GetFatBlocks().Count, db.MyGrid, db) { Cubes = blocks };
+
+                    db.SortedTargets.Add(targetInfo);
+                }
+                db.SortedTargets.Sort(db.TargetCompare1);
+                Log.Line($"[DB] targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
+                Interlocked.Exchange(ref db.DbUpdating, 0);
+            }
+            DbsToUpdate.Clear();
+            DbUpdating = false;
+        }
+
         public void Handler(object o)
         {
             try
