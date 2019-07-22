@@ -133,10 +133,10 @@ namespace WeaponCore.Support
         internal struct DetectInfo
         {
             internal MyEntity Parent;
-            internal List<MyEntity> Cubes;
+            internal List<MyCubeBlock> Cubes;
             internal MyDetectedEntityInfo EntInfo;
 
-            public DetectInfo(MyEntity parent, List<MyEntity> cubes, MyDetectedEntityInfo entInfo)
+            public DetectInfo(MyEntity parent, List<MyCubeBlock> cubes, MyDetectedEntityInfo entInfo)
             {
                 Parent = parent;
                 Cubes = cubes;
@@ -164,9 +164,9 @@ namespace WeaponCore.Support
             internal readonly int PartCount;
             internal readonly MyCubeGrid MyGrid;
             internal readonly GridTargetingAi Ai;
-            internal List<MyEntity> Cubes;
+            internal List<MyCubeBlock> Cubes;
 
-            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, List<MyEntity> cubes, int partCount, MyCubeGrid myGrid, GridTargetingAi ai)
+            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, List<MyCubeBlock> cubes, int partCount, MyCubeGrid myGrid, GridTargetingAi ai)
             {
                 EntInfo = entInfo;
                 Target = target;

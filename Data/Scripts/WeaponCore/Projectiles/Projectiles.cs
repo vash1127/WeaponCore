@@ -115,10 +115,7 @@ namespace WeaponCore.Projectiles
                                         double dist;
                                         Vector3D.DistanceSquared(ref p.Position, ref targetPos, out dist);
                                         if (dist < p.OffsetSqr && Vector3.Dot(p.Direction, p.Position - targetPos) > 0)
-                                        {
-                                            Log.Line("offset changed");
                                             p.OffSetTarget(out p.TargetOffSet);
-                                        }
                                     }
                                     targetPos += p.TargetOffSet;
                                 }
@@ -143,16 +140,19 @@ namespace WeaponCore.Projectiles
 
                         p.Velocity = newVel;
 
-                        var newVisalStep = p.VisualStep + 0.00416666666;
-                        if (newVisalStep < 1 && Vector3D.Dot(p.Direction, p.AccelDir) < Session.VisDirToleranceCosine)
+                        if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
                         {
-                            p.VisualStep = newVisalStep;
+                            p.VisualStep += 0.0025;
+                            if (p.VisualStep > 1) p.VisualStep = 1;
                             Vector3D lerpDir;
-                            Vector3D.Lerp(ref p.Direction, ref p.AccelDir, p.VisualStep, out lerpDir);
+                            Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
                             Vector3D.Normalize(ref lerpDir, out p.VisualDir);
                         }
-                        else
+                        else if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
+                        {
+                            p.VisualDir = p.AccelDir;
                             p.VisualStep = 0;
+                        }
                     }
                     else if (p.AccelLength > 0)
                     {
@@ -243,7 +243,7 @@ namespace WeaponCore.Projectiles
                             p.Trajectile = new Trajectile(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
                         else
                         {
-                            var pointDir = p.Guidance == AmmoTrajectory.GuidanceType.Smart ? p.AccelDir : p.Direction;
+                            var pointDir = p.Guidance == AmmoTrajectory.GuidanceType.Smart ? p.VisualDir : p.Direction;
                             p.Trajectile = new Trajectile(p.Position + -(pointDir * p.LineLength), p.Position, pointDir, p.LineLength);
                         }
                     }

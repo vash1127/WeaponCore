@@ -44,8 +44,9 @@ namespace WeaponCore.Support
                 }
                 else NewEntities.Add(new DetectInfo(ent, null, entInfo));
             }
-
+            DsWatch.Sw.Restart();
             GetTargetBlocks(Targeting, this);
+            DsWatch.StopWatchReport("test", -1);
             Targeting.AllowScanning = false;
 
             ValidGrids.Clear();
@@ -57,11 +58,14 @@ namespace WeaponCore.Support
             foreach (var targets in allTargets)
             {
                 var rootGrid = targets.Key;
-                List<MyEntity> cubes;
+                List<MyCubeBlock> cubes;
                 if (ai.ValidGrids.TryGetValue(rootGrid, out cubes))
                 {
                     for (int i = 0; i < targets.Value.Count; i++)
-                        cubes.Add(targets.Value[i]);
+                    {
+                        var cube = targets.Value[i] as MyCubeBlock;
+                        if (cube != null && !cube.MarkedForClose) cubes.Add(cube);
+                    }
                 }
             }
         }

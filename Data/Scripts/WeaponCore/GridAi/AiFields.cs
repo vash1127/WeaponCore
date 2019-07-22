@@ -15,9 +15,9 @@ namespace WeaponCore.Support
         internal volatile bool Stale;
         internal static volatile bool SubGridUpdate;
         internal readonly MyCubeGrid MyGrid;
-        internal readonly MyConcurrentPool<List<MyEntity>> CubePool = new MyConcurrentPool<List<MyEntity>>(50);
+        internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(50);
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
-        internal readonly Dictionary<MyEntity, List<MyEntity>> ValidGrids = new Dictionary<MyEntity, List<MyEntity>>();
+        internal readonly Dictionary<MyEntity, List<MyCubeBlock>> ValidGrids = new Dictionary<MyEntity, List<MyCubeBlock>>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
 

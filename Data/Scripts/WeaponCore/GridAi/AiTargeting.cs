@@ -45,7 +45,7 @@ namespace WeaponCore.Support
                     return;
                 }
 
-                if (!targetInfo.Value.IsGrid || targetInfo.Value.Cubes.Count <= 0)
+                if (targetInfo.Value.Cubes.Count <= 0)
                 {
                     Log.Line($"weapon sees no valid cubes");
                     target = null;
@@ -179,7 +179,7 @@ namespace WeaponCore.Support
             targetInfo = null;
         }
 
-        internal static bool GetBlock(out MyEntity target, List<MyEntity> blocks, int[] blockSuffle, int blockSuffleLen, int randomizeFirstBlocks, Vector3D weaponPos, MyCubeBlock weaponBlock, bool checkRay = false)
+        internal static bool GetBlock(out MyEntity target, List<MyCubeBlock> blocks, int[] blockSuffle, int blockSuffleLen, int randomizeFirstBlocks, Vector3D weaponPos, MyCubeBlock weaponBlock, bool checkRay = false)
         {
             var physics = MyAPIGateway.Physics;
             var blockCount = blocks.Count;

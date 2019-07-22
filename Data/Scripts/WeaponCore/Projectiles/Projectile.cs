@@ -361,14 +361,6 @@ namespace WeaponCore.Projectiles
             if (Age != 0) LastOffsetTime = Age;
         }
 
-        internal void UpdateVisualDir(double newVisalStep)
-        {
-            VisualStep = newVisalStep;
-            Vector3D lerpDir;
-            Vector3D.Lerp(ref Direction, ref AccelDir, VisualStep, out lerpDir);
-            Vector3D.Normalize(ref lerpDir, out VisualDir);
-        }
-
         internal void HitEffects()
         {
             if (Colliding)
