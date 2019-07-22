@@ -405,7 +405,6 @@ namespace WeaponCore.Projectiles
 
             MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Ammo.Name, ref matrix, ref Position, parentId, out AmmoEffect); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (AmmoEffect == null) return;
-            //Log.Line($"create particle: p:{Position} - v:{Velocity} - c:{ConstantSpeed} - dSpeed:{DesiredSpeed} - sSpeed:{StartSpeed.Length()} - age:{Age}");
             AmmoEffect.DistanceMax = System.Values.Graphics.Particles.Ammo.Extras.MaxDistance;
             AmmoEffect.UserColorMultiplier = System.Values.Graphics.Particles.Ammo.Color;
             //var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
