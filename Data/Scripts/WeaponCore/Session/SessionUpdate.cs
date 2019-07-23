@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using WeaponCore.Platform;
+﻿using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -38,7 +34,7 @@ namespace WeaponCore
                         }
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
-                            if (w.AmmoMagTimer == Int32.MaxValue)
+                            if (w.AmmoMagTimer == int.MaxValue)
                             {
                                 if (w.CurrentMags != 0)
                                 {
@@ -63,7 +59,7 @@ namespace WeaponCore
                         if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                         else if (w.IsShooting)
                         {
-                            Log.Line($"ai not ready");
+                            //Log.Line($"ai not ready");
                             w.StopShooting();
                         }
                         if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();

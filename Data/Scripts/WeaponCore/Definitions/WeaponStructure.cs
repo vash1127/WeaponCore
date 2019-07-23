@@ -49,7 +49,6 @@ namespace WeaponCore.Support
         public readonly float Barrel2AvTicks;
         public readonly float ShotEnergyCost;
 
-
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -104,11 +103,11 @@ namespace WeaponCore.Support
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.MaxObjectsHit > 0 ? values.Ammo.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
-            AmmoAreaEffect = values.Ammo.AreaEffectRadius > 0;
+            AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
             IsBeamWeapon = Values.Ammo.Trajectory.DesiredSpeed <= 0 && Values.Ammo.Trajectory.MaxTrajectory > 0;
-            ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.DefaultDamage;
+            ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.BaseDamage;
 
             MaxTrajectorySqr = values.Ammo.Trajectory.MaxTrajectory * values.Ammo.Trajectory.MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;

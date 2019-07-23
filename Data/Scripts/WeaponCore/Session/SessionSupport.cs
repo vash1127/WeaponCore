@@ -42,7 +42,7 @@ namespace WeaponCore
                     db.SortedTargets.Add(targetInfo);
                 }
                 db.SortedTargets.Sort(db.TargetCompare1);
-                Log.Line($"[DB] targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
+                //Log.Line($"[DB] targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
             DbsToUpdate.Clear();
@@ -143,11 +143,6 @@ namespace WeaponCore
                 Log.Line($"added to comp");
             }
             if (!DedicatedServer) CameraPos = Session.Camera.Position;
-        }
-
-        private void WebDispatchDone()
-        {
-            Dispatched = false;
         }
 
         private void Paused()

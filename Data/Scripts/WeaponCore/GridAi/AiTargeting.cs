@@ -6,7 +6,6 @@ using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
-using VRageRender;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 
@@ -20,7 +19,7 @@ namespace WeaponCore.Support
             MySession = mySession;
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
             Rnd = new Random((int)MyGrid.EntityId);
-            RegisterGridEvents(grid);
+            //RegisterGridEvents(grid);
         }
 
         internal void SelectTarget(ref MyEntity target, Weapon weapon)

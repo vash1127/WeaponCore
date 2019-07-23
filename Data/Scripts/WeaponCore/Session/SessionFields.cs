@@ -29,13 +29,36 @@ namespace WeaponCore
         private double _syncDistSqr;
 
         private readonly object _configLock = new object();
+
+        internal readonly List<GridTargetingAi> DbsToUpdate = new List<GridTargetingAi>();
+        internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
+        internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridTargetingAi>();
+        internal readonly MyConcurrentDictionary<MyEntity, Dictionary<Vector3I, IMySlimBlock>> SlimSpace = new MyConcurrentDictionary<MyEntity, Dictionary<Vector3I, IMySlimBlock>>();
+        internal readonly ConcurrentQueue<InventoryChange> InventoryEvent = new ConcurrentQueue<InventoryChange>();
+        internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
+        internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
+        internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
+        internal readonly HashSet<string> WepActions = new HashSet<string>()
+        {
+            "WC-L_PowerLevel",
+            "WC-L_Guidance"
+        };
+
+        internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
+        internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
+        internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
+        internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
+        internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
+
+
+        private readonly MyConcurrentPool<Dictionary<Vector3I, IMySlimBlock>> _slimSpacePool = new MyConcurrentPool<Dictionary<Vector3I, IMySlimBlock>>(50);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private readonly Dictionary<string, Dictionary<string, string>> _turretDefinitions = new Dictionary<string, Dictionary<string, string>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
         private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
-        internal readonly List<GridTargetingAi> DbsToUpdate = new List<GridTargetingAi>();
 
         internal DSUtils DsUtil { get; set; } = new DSUtils();
 
@@ -100,24 +123,6 @@ namespace WeaponCore
         internal readonly Guid LogictateGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811500");
         internal readonly Guid LogicettingsGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811501");
 
-        internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
-        internal readonly ConcurrentQueue<InventoryChange> InventoryEvent = new ConcurrentQueue<InventoryChange>();
-        internal readonly ConcurrentDictionary<MyCubeGrid, GridTargetingAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridTargetingAi>();
-        internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
-        internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
-        internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
-        internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
-        internal readonly HashSet<string> WepActions = new HashSet<string>()
-        {
-            "WC-L_PowerLevel",
-            "WC-L_Guidance"
-        };
-
-        internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
-        internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
-        internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
-        internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
-        internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal ShieldApi SApi = new ShieldApi();
         internal FutureEvents FutureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);

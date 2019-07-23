@@ -86,15 +86,30 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct AmmoDefinition
     {
-        [ProtoMember(1)] internal float DefaultDamage;
-        [ProtoMember(2)] internal float AreaEffectYield;
-        [ProtoMember(3)] internal float AreaEffectRadius;
-        [ProtoMember(4)] internal bool DetonateOnEnd;
-        [ProtoMember(5)] internal float Mass;
-        [ProtoMember(6)] internal float Health;
-        [ProtoMember(7)] internal int MaxObjectsHit;
-        [ProtoMember(8)] internal float BackKickForce;
-        [ProtoMember(9)] internal AmmoTrajectory Trajectory;
+        [ProtoMember(1)] internal float BaseDamage;
+        [ProtoMember(2)] internal float Mass;
+        [ProtoMember(3)] internal float Health;
+        [ProtoMember(4)] internal int MaxObjectsHit;
+        [ProtoMember(5)] internal float BackKickForce;
+        [ProtoMember(6)] internal AmmoTrajectory Trajectory;
+        [ProtoMember(7)] internal AreaDamage AreaEffect;
+    }
+
+    [ProtoContract]
+    public struct AreaDamage
+    {
+        public enum AreaEffectType
+        {
+            Disabled,
+            Explosive,
+            Radiant,
+        }
+
+        [ProtoMember(1)] internal float AreaEffectRadius;
+        [ProtoMember(2)] internal float AreaEffectDamage;
+        [ProtoMember(3)] internal AreaEffectType AreaEffect;
+        [ProtoMember(4)] internal bool DisableExplosionVisuals;
+        [ProtoMember(5)] internal bool DetonateOnEnd;
     }
 
     [ProtoContract]

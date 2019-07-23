@@ -150,8 +150,11 @@ namespace WeaponCore.Support
             {
                 var compareParts = x.PartCount.CompareTo(y.PartCount);
                 if (compareParts != 0) return -compareParts;
-                var xApproching = Vector3.Dot(x.Target.Physics.LinearVelocity, x.Target.PositionComp.GetPosition() - x.MyGrid.PositionComp.GetPosition()) < 0;
-                var yApproching = Vector3.Dot(y.Target.Physics.LinearVelocity, y.Target.PositionComp.GetPosition() - y.MyGrid.PositionComp.GetPosition()) < 0;
+                var xNull = x.Target.Physics == null;
+                var yNull = y.Target.Physics == null;
+                var xandYNull = xNull && yNull;
+                var xApproching = xandYNull || !xNull && Vector3.Dot(x.Target.Physics.LinearVelocity, x.Target.PositionComp.GetPosition() - x.MyGrid.PositionComp.GetPosition()) < 0;
+                var yApproching = !xandYNull && !yNull && Vector3.Dot(y.Target.Physics.LinearVelocity, y.Target.PositionComp.GetPosition() - y.MyGrid.PositionComp.GetPosition()) < 0;
                 return xApproching.CompareTo(yApproching);
             }
         }

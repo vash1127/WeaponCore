@@ -117,7 +117,7 @@ namespace WeaponCore.Platform
 
         public void StopShooting(bool avOnly = false)
         {
-            Log.Line("stop shooting");
+            //Log.Line("stop shooting");
             StopFiringSound(false);
             StopRotateSound();
             ShootGraphics();
@@ -166,14 +166,14 @@ namespace WeaponCore.Platform
 
         public void StartRotateSound()
         {
-            //Log.Line("Start Rotate Sound");
+            Log.Line("Start Rotate Sound");
             RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);
         }
 
         public void StopRotateSound()
         {
             if (RotateEmitter == null) return;
-            //Log.Line("Stop Rotate Sound");
+            Log.Line("Stop Rotate Sound");
             RotateEmitter.StopSound(true, true);
         }
     }

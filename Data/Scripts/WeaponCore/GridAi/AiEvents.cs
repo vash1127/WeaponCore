@@ -6,17 +6,17 @@ namespace WeaponCore.Support
 {
     public partial class GridTargetingAi
     {
-        public void RegisterGridEvents(MyCubeGrid grid, bool register = true)
+        public void TargetGridEvents(MyCubeGrid grid, bool register = true)
         {
             if (register)
             {
-                //grid.OnBlockAdded += BlockAddedEvent;
-                //grid.OnBlockRemoved += BlockRemovedEvent;
+                grid.OnBlockAdded += BlockAddedEvent;
+                grid.OnBlockRemoved += BlockRemovedEvent;
             }
             else
             {
-                //grid.OnBlockAdded -= BlockAddedEvent;
-                //grid.OnBlockRemoved -= BlockRemovedEvent;
+                grid.OnBlockAdded -= BlockAddedEvent;
+                grid.OnBlockRemoved -= BlockRemovedEvent;
             }
         }
 
@@ -24,7 +24,7 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (SubTick < MySession.Tick + 10) SubGridInfo();
+                //if (SubTick < MySession.Tick + 10) SubGridInfo();
             }
             catch (Exception ex) { Log.Line($"Exception in Controller BlockAdded: {ex}"); }
         }
@@ -33,7 +33,7 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (SubTick < MySession.Tick + 10) SubGridInfo();
+                //if (SubTick < MySession.Tick + 10) SubGridInfo();
             }
             catch (Exception ex) { Log.Line($"Exception in Controller BlockRemoved: {ex}"); }
         }

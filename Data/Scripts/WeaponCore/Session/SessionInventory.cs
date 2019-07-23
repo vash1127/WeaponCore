@@ -16,7 +16,6 @@ namespace WeaponCore
                 var weapon = change.Weapon;
                 var comp = weapon.Comp;
                 ComputeStorage(weapon);
-                Log.Line("updateinv");
                 if (comp.MultiInventory && change.Type == InventoryChange.ChangeType.Add)
                 {
                     Log.Line("add mag");

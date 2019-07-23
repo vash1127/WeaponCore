@@ -15,7 +15,7 @@ namespace WeaponCore.Projectiles
     {
         private void GetEntitiesInBlastRadius(Projectile projectile, int poolId)
         {
-            var sphere = new BoundingSphereD(projectile.Position, projectile.System.Values.Ammo.AreaEffectRadius);
+            var sphere = new BoundingSphereD(projectile.Position, projectile.System.Values.Ammo.AreaEffect.AreaEffectRadius);
             var checkList = CheckPool[poolId].Get();
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, checkList);
             foreach (var ent in checkList)

@@ -15,7 +15,8 @@ namespace WeaponCore.Projectiles
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal MatrixD EntityMatrix = MatrixD.Identity;
         internal const int EndSteps = 2;
-        internal volatile float DamagePool;
+        internal volatile float BaseDamagePool;
+        internal volatile float AreaDamagePool;
         internal volatile bool Colliding;
         internal WeaponSystem System;
         internal MyCubeBlock FiringCube;
@@ -153,13 +154,15 @@ namespace WeaponCore.Projectiles
             DistanceTraveled = 0;
 
             FiringGrid = FiringCube.CubeGrid;
-            DamagePool = System.Values.Ammo.DefaultDamage;
+            BaseDamagePool = System.Values.Ammo.BaseDamage;
+            AreaDamagePool = System.Values.Ammo.AreaEffect.AreaEffectDamage;
+
             Guidance = System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
 
             if (Guidance == AmmoTrajectory.GuidanceType.Smart && !IsBeamWeapon)
             {
-                Session.Instance.GridTargetingAIs.TryGetValue(FiringGrid, out Ai);
+                //Session.Instance.GridTargetingAIs.TryGetValue(FiringGrid, out Ai);
                 MaxChaseAge = System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
             }
             else MaxChaseAge = int.MaxValue;

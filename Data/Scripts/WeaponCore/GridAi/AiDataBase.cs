@@ -36,7 +36,9 @@ namespace WeaponCore.Support
                         if (!TargetNeutrals) continue;
                         break;
                 }
-                if (ent is MyCubeGrid)
+
+                var grid = ent as MyCubeGrid;
+                if (grid != null)
                 {
                     var cubeList = CubePool.Get();
                     NewEntities.Add(new DetectInfo(ent, cubeList, entInfo));
@@ -44,11 +46,8 @@ namespace WeaponCore.Support
                 }
                 else NewEntities.Add(new DetectInfo(ent, null, entInfo));
             }
-            DsWatch.Sw.Restart();
             GetTargetBlocks(Targeting, this);
-            DsWatch.StopWatchReport("test", -1);
             Targeting.AllowScanning = false;
-
             ValidGrids.Clear();
         }
 

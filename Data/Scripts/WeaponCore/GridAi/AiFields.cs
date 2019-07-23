@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using VRage.Collections;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRageMath;
 
 namespace WeaponCore.Support
@@ -16,6 +17,7 @@ namespace WeaponCore.Support
         internal static volatile bool SubGridUpdate;
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(50);
+
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyEntity, List<MyCubeBlock>> ValidGrids = new Dictionary<MyEntity, List<MyCubeBlock>>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();

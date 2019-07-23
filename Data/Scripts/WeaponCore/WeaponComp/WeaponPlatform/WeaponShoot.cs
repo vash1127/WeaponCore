@@ -114,6 +114,7 @@ namespace WeaponCore.Platform
                         pro.Direction = muzzle.DeviatedDir;
                         pro.State = Projectile.ProjectileState.Start;
                         pro.Target = Target;
+                        pro.Ai = Comp.MyAi;
                         pro.WeaponId = WeaponId;
                         pro.MuzzleId = muzzle.MuzzleId;
                         pro.IsBeamWeapon = System.IsBeamWeapon;
