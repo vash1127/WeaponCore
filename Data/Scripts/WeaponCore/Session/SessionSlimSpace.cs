@@ -76,22 +76,13 @@ namespace WeaponCore
                 var next = vector3IRangeIterator.Current;
                 while (vector3IRangeIterator.IsValid())
                 {
-                    IMySlimBlock slim;
-                    if (cubes.TryGetValue(next, out slim))
+                    IMySlimBlock cube;
+                    if (cubes.TryGetValue(next, out cube))
                     {
-                        if (!new BoundingBox(slim.Min * grid.GridSize - grid.GridSizeHalf, slim.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
-                            continue;
-                        if (checkTriangles)
+                        if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                         {
-                            if (slim.FatBlock != null && !slim.FatBlock.GetIntersectionWithAABB(ref fromSphere1))
-                                continue;
-                            if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, slim));
-                            else _slimsSet.Add(slim);
-                        }
-                        else
-                        {
-                            if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, slim));
-                            else _slimsSet.Add(slim);
+                            if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, cube));
+                            else _slimsSet.Add(cube);
                         }
                     }
                     vector3IRangeIterator.GetNext(out next);
@@ -99,21 +90,12 @@ namespace WeaponCore
             }
             else
             {
-                foreach (var slim in cubes.Values)
+                foreach (var cube in cubes.Values)
                 {
-                    if (!new BoundingBox(slim.Min * grid.GridSize - grid.GridSizeHalf, slim.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
-                        continue;
-                    if (checkTriangles)
+                    if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                     {
-                        if (slim.FatBlock != null && !slim.FatBlock.GetIntersectionWithAABB(ref fromSphere1))
-                            continue;
-                        if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, slim));
-                        else _slimsSet.Add(slim);
-                    }
-                    else
-                    {
-                        if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, slim));
-                        else _slimsSet.Add(slim);
+                        if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, cube));
+                        else _slimsSet.Add(cube);
                     }
                 }
             }
@@ -124,8 +106,8 @@ namespace WeaponCore
 
         private void AddBlockInSphere(MyCubeGrid grid, ref BoundingBoxD aabb, bool sorted, Vector3I center, bool checkTriangles, ref BoundingSphere localSphere, IMySlimBlock slim)
         {
-            if (!new BoundingBox(slim.Min * grid.GridSize - grid.GridSizeHalf, slim.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
-                return;
+            //if (!new BoundingBox(slim.Min * grid.GridSize - grid.GridSizeHalf, slim.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                //return;
             if (checkTriangles)
             {
                 if (slim.FatBlock != null && !slim.FatBlock.GetIntersectionWithAABB(ref aabb))
