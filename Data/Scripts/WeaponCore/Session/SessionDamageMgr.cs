@@ -188,15 +188,15 @@ namespace WeaponCore
                         }
                     }
 
-                    if (damagePool <= 0 || objectsHit >= maxObjects)
+                    var blockIsRoot = block == rootBlock;
+                    var primaryDamage = !radiantCascade || radiantCascade && blockIsRoot;
+
+                    if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects)
                     {
                         //Log.Line($"[break1] endGame:{endGame} - radiantBomb:{radiantBomb} - radiant:{radiant} - explosive:{explosive} - i:{i} - j:{j}");
                         break;
                     }
                     var scaledDamage = damagePool * damageScale;
-
-                    var blockIsRoot = block == rootBlock;
-                    var primaryDamage = !radiantCascade || blockIsRoot;
 
                     if (primaryDamage)
                     {
