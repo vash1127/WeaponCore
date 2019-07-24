@@ -101,7 +101,7 @@ namespace WeaponCore.Support
             ReloadTime = values.HardPoint.Loading.ReloadTime;
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
-            MaxObjectsHit = values.Ammo.MaxObjectsHit > 0 ? values.Ammo.MaxObjectsHit : int.MaxValue;
+            MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;

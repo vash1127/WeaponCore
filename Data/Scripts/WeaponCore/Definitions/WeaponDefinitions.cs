@@ -89,10 +89,17 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal float BaseDamage;
         [ProtoMember(2)] internal float Mass;
         [ProtoMember(3)] internal float Health;
-        [ProtoMember(4)] internal int MaxObjectsHit;
+        [ProtoMember(4)] internal ObjectsHit ObjectsHit;
         [ProtoMember(5)] internal float BackKickForce;
         [ProtoMember(6)] internal AmmoTrajectory Trajectory;
         [ProtoMember(7)] internal AreaDamage AreaEffect;
+    }
+
+    [ProtoContract]
+    public struct ObjectsHit
+    {
+        [ProtoMember(1)] internal int MaxObjectsHit;
+        [ProtoMember(2)] internal bool CountBlocks;
     }
 
     [ProtoContract]
@@ -108,8 +115,27 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal float AreaEffectRadius;
         [ProtoMember(2)] internal float AreaEffectDamage;
         [ProtoMember(3)] internal AreaEffectType AreaEffect;
-        [ProtoMember(4)] internal bool DisableExplosionVisuals;
-        [ProtoMember(5)] internal bool DetonateOnEnd;
+        [ProtoMember(4)] internal Detonate Detonation;
+        [ProtoMember(5)] internal Explosion Explosions;
+    }
+
+    [ProtoContract]
+    public struct Detonate
+    {
+        [ProtoMember(1)] internal bool DetonateOnEnd;
+        [ProtoMember(2)] internal bool ArmOnlyOnHit;
+        [ProtoMember(3)] internal float DetonationRadius;
+        [ProtoMember(4)] internal float DetonationDamage;
+    }
+
+    [ProtoContract]
+    public struct Explosion
+    {
+        [ProtoMember(1)] internal bool NoVisuals;
+        [ProtoMember(2)] internal bool NoSound;
+        [ProtoMember(3)] internal float Scale;
+        [ProtoMember(4)] internal string CustomParticle;
+        [ProtoMember(5)] internal string CustomSound;
     }
 
     [ProtoContract]

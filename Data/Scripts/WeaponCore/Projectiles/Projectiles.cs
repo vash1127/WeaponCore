@@ -298,7 +298,8 @@ namespace WeaponCore.Projectiles
 
         private void Die(Projectile p, int poolId)
         {
-            if (p.MoveToAndActivate || p.System.Values.Ammo.AreaEffect.DetonateOnEnd)
+            var dInfo = p.System.Values.Ammo.AreaEffect.Detonation;
+            if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.ObjectsHit > 0))
             {
                 GetEntitiesInBlastRadius(p, poolId);
                 var hitEntity = p.HitList[0];

@@ -248,108 +248,75 @@
             return surfaceArea;
         }
 
-        public static void CreateExplosion(Vector3D position, float radius, float damage)
+        public static void CreateMissileExplosion(float damage, float radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponSystem weaponSystem, bool forceNoDraw = false)
         {
-            MyExplosionTypeEnum explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_50;
-            if (radius < 3.75)
-                explosionTypeEnum = MyExplosionTypeEnum.MISSILE_EXPLOSION;
-            else if (radius < 7.5)
-                explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_02;
-            else if (radius < 15.0)
-                explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_15;
-            else if (radius < 30.0)
-                explosionTypeEnum = MyExplosionTypeEnum.WARHEAD_EXPLOSION_30;
-            MyExplosionInfo explosionInfo = new MyExplosionInfo()
-            {
-                PlayerDamage = 0.0f,
-                Damage = damage,
-                ExplosionType = explosionTypeEnum,
-                ExplosionSphere = new BoundingSphereD(position, radius),
-                LifespanMiliseconds = 700,
-                ParticleScale = 1f,
-                Direction = Vector3.Down,
-                VoxelExplosionCenter = position,
-                ExplosionFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION,
-                VoxelCutoutScale = 1f,
-                PlaySound = true,
-                ApplyForceAndDamage = true,
-                ObjectsRemoveDelayInMiliseconds = 40,
-                KeepAffectedBlocks = true
-            };
-            MyExplosions.AddExplosion(ref explosionInfo);
-        }
-
-        public static void CreateMissileExplosion(Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, float radius, float damage, bool noParticles = false)
-        {
+            var af = weaponSystem.Values.Ammo.AreaEffect;
+            var eInfo = af.Explosions;
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
             cullSphere.Radius = radius * 5;
-            MyExplosionFlags eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
-            if (noParticles || !MyAPIGateway.Session.Camera.IsInFrustum(ref cullSphere))
+            MyExplosionFlags eFlags;
+            var drawParticles = !forceNoDraw && !eInfo.NoVisuals && MyAPIGateway.Session.Camera.IsInFrustum(ref cullSphere);
+            if (drawParticles)
+                eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
+            else
                 eFlags = MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
+
+            var customParticle = eInfo.CustomParticle != string.Empty;
+            var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
+
             var explosionInfo = new MyExplosionInfo
             {
                 PlayerDamage = 0.0f,
                 Damage = damage,
-                ExplosionType = MyExplosionTypeEnum.MISSILE_EXPLOSION,
+                ExplosionType = explosionType,
                 ExplosionSphere = sphere,
                 LifespanMiliseconds = 700,
                 HitEntity = hitEnt,
-                ParticleScale = 1f,
+                ParticleScale = eInfo.Scale,
                 OwnerEntity = owner,
                 Direction = direction,
                 VoxelExplosionCenter = sphere.Center + radius * direction * 0.25,
                 ExplosionFlags = eFlags,
                 VoxelCutoutScale = 0.3f,
-                PlaySound = true,
+                PlaySound = !eInfo.NoSound,
                 ApplyForceAndDamage = true,
-                KeepAffectedBlocks = true
+                KeepAffectedBlocks = true,
+                CustomEffect = eInfo.CustomParticle,
+                CreateParticleEffect = drawParticles,
             };
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateFakeExplosion(Vector3D position, double radius)
+        public static void CreateFakeExplosion(float radius, Vector3D position, WeaponSystem weaponSystem)
         {
+            var af = weaponSystem.Values.Ammo.AreaEffect;
+            var eInfo = af.Explosions;
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
-            cullSphere.Radius = radius * 5;
-            if (!MyAPIGateway.Session.Camera.IsInFrustum(ref cullSphere)) return;
+            cullSphere.Radius = af.AreaEffectRadius * 5;
+            const MyExplosionFlags eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT; ;
+            var drawParticles = !eInfo.NoVisuals && MyAPIGateway.Session.Camera.IsInFrustum(ref cullSphere);
+
+            var customParticle = eInfo.CustomParticle != string.Empty;
+            var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
             MyExplosionInfo explosionInfo = new MyExplosionInfo()
             {
                 PlayerDamage = 0.0f,
                 Damage = 0f,
-                ExplosionType = MyExplosionTypeEnum.WARHEAD_EXPLOSION_02,
+                ExplosionType = explosionType,
                 ExplosionSphere = sphere,
                 LifespanMiliseconds = 0,
-                ParticleScale = 1f,
+                ParticleScale = eInfo.Scale,
                 Direction = Vector3.Down,
                 VoxelExplosionCenter = position,
-                ExplosionFlags = MyExplosionFlags.CREATE_PARTICLE_EFFECT,
+                ExplosionFlags = eFlags,
                 VoxelCutoutScale = 0f,
-                PlaySound = true,
+                PlaySound = !eInfo.NoSound,
                 ApplyForceAndDamage = false,
-                ObjectsRemoveDelayInMiliseconds = 0
-            };
-            MyExplosions.AddExplosion(ref explosionInfo);
-        }
-
-        public static void CreateFakeSmallExplosion(Vector3D position)
-        {
-            MyExplosionInfo explosionInfo = new MyExplosionInfo()
-            {
-                PlayerDamage = 0.0f,
-                Damage = 0f,
-                ExplosionType = MyExplosionTypeEnum.MISSILE_EXPLOSION,
-                ExplosionSphere = new BoundingSphereD(position, 0d),
-                LifespanMiliseconds = 0,
-                ParticleScale = 1f,
-                Direction = Vector3.Down,
-                VoxelExplosionCenter = position,
-                ExplosionFlags = MyExplosionFlags.CREATE_PARTICLE_EFFECT,
-                VoxelCutoutScale = 0f,
-                PlaySound = true,
-                ApplyForceAndDamage = false,
-                ObjectsRemoveDelayInMiliseconds = 0
+                ObjectsRemoveDelayInMiliseconds = 0,
+                CustomEffect = eInfo.CustomParticle,
+                CreateParticleEffect = drawParticles,
             };
             MyExplosions.AddExplosion(ref explosionInfo);
         }

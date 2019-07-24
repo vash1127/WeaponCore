@@ -7,6 +7,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -95,51 +96,59 @@ namespace WeaponCore
             var sphere = new BoundingSphereD(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffect.AreaEffectRadius);
             var maxObjects = projectile.System.MaxObjectsHit;
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-            var d = system.Values.DamageScales;
-
             var areaEffect = system.Values.Ammo.AreaEffect.AreaEffect;
             var explosive = areaEffect == AreaDamage.AreaEffectType.Explosive;
             var radiant = areaEffect == AreaDamage.AreaEffectType.Radiant;
-            var detonateOnEnd = system.Values.Ammo.AreaEffect.DetonateOnEnd;
+            var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
+
             var radiantCascade = radiant && !detonateOnEnd;
             var radiantBomb = radiant && detonateOnEnd;
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
             var damagePool = projectile.BaseDamagePool;
             var objectsHit = projectile.ObjectsHit;
-            var areaAffectDmg = system.Values.Ammo.AreaEffect.AreaEffectDamage;
+            var countBlocksAsObjects = system.Values.Ammo.ObjectsHit.CountBlocks;
 
+            var areaAffectDmg = system.Values.Ammo.AreaEffect.AreaEffectDamage;
             var done = false;
             var endGame = false;
+
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
+                if (done) break;
+
                 var rootBlock = hitEnt.Blocks[i];
-                if (done || !endGame && _destroyedSlims.Contains(rootBlock)) continue;
 
-                if (!endGame && rootBlock.IsDestroyed)
+                if (!endGame)
                 {
-                    _destroyedSlims.Add(rootBlock);
-                    continue;
+                    if (_destroyedSlims.Contains(rootBlock)) continue;
+                    if (rootBlock.IsDestroyed)
+                    {
+                        _destroyedSlims.Add(rootBlock);
+                        continue;
+                    }
                 }
+                var radiate = radiantCascade || endGame;
 
-                if (radiantCascade || endGame)
+                var dmgCount = 1;
+                if (radiate)
                 {
                     sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
                     GetBlocksInsideSphere(grid, cubes, ref sphere, true, rootBlock.Position);
                     done = endGame;
-                    //Log.Line($"[start endGame]: i:{i} - endGame:{endGame} - done:{done} - victims:{_slimsSortedList.Count} - pool:{damagePool}({projectile.BaseDamagePool}) - objHit:{projectile.ObjectsHit} - gridBlocks:{grid.CubeBlocks.Count}({((MyCubeGrid)rootBlock.CubeGrid).BlocksCount})");
+                    dmgCount = _slimsSortedList.Count;
                 }
-                var radiate = radiantCascade || endGame;
 
-                var dmgCount = radiate ? _slimsSortedList.Count : 1;
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = radiate ? _slimsSortedList[j].Item2 : rootBlock;
-
                     //if (_destroyedSlims.Contains(block)) Log.Line($"Why:{block.IsDestroyed} - {block.Integrity}");
+
                     var blockHp = block.Integrity;
                     float damageScale = 1;
+
                     if (system.DamageScaling)
                     {
+                        var d = system.Values.DamageScales;
                         if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity)
                         {
                             //Log.Line($"[continue1] endGame:{endGame} - radiantBomb:{radiantBomb} - radiant:{radiant} - explosive:{explosive} - i:{i} - j:{j}");
@@ -184,14 +193,15 @@ namespace WeaponCore
                         //Log.Line($"[break1] endGame:{endGame} - radiantBomb:{radiantBomb} - radiant:{radiant} - explosive:{explosive} - i:{i} - j:{j}");
                         break;
                     }
-                    var blockIsRoot = block == rootBlock;
-
                     var scaledDamage = damagePool * damageScale;
+
+                    var blockIsRoot = block == rootBlock;
                     var primaryDamage = !radiantCascade || blockIsRoot;
 
                     if (primaryDamage)
                     {
-                        objectsHit++;
+                        if (countBlocksAsObjects) objectsHit++;
+
                         if (scaledDamage < blockHp) damagePool = 0;
                         else
                         {
@@ -203,15 +213,19 @@ namespace WeaponCore
                     {
                         scaledDamage = areaAffectDmg * damageScale;
                         if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
-                    } 
-                    block.DoDamage(scaledDamage, damageType, true, null, projectile.FiringCube.EntityId);
+                    }
 
+                    block.DoDamage(scaledDamage, damageType, true, null, projectile.FiringCube.EntityId);
                     var theEnd = damagePool < 1 || objectsHit >= maxObjects;
 
                     if (explosive && !endGame && ((!detonateOnEnd && blockIsRoot) || detonateOnEnd && theEnd))
                     {
-                        if (ExplosionReady) UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system.Values.Ammo.AreaEffect.AreaEffectRadius, system.Values.Ammo.AreaEffect.AreaEffectDamage, !system.Values.Ammo.AreaEffect.DisableExplosionVisuals);
-                        else UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system.Values.Ammo.AreaEffect.AreaEffectRadius, system.Values.Ammo.AreaEffect.AreaEffectDamage, true);
+                        var aInfo = system.Values.Ammo.AreaEffect;
+                        var dInfo = aInfo.Detonation;
+                        var damage = detonateOnEnd && theEnd ? dInfo.DetonationDamage : aInfo.AreaEffectDamage;
+                        var radius = detonateOnEnd && theEnd ? dInfo.DetonationRadius : aInfo.AreaEffectRadius;
+                        if (ExplosionReady) UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system);
+                        else UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system, true);
                     }
                     else if (!endGame)
                     {
@@ -224,18 +238,26 @@ namespace WeaponCore
                         if (radiantBomb && theEnd)
                         {
                             endGame = true;
+                            i--;
                             projectile.BaseDamagePool = 0;
                             projectile.ObjectsHit = maxObjects;
-                            projectile.HitEffect.UserRadiusMultiplier = system.Values.Ammo.AreaEffect.AreaEffectRadius;
-                            damagePool = system.Values.Ammo.AreaEffect.AreaEffectDamage > 0 ? system.Values.Ammo.AreaEffect.AreaEffectDamage : scaledDamage;
                             objectsHit = int.MinValue;
-                            i--;
+                            var aInfo = system.Values.Ammo.AreaEffect;
+                            var dInfo = aInfo.Detonation;
+
+                            sphere.Radius = dInfo.DetonationRadius;
+
+                            if (dInfo.DetonationDamage > 0) damagePool = dInfo.DetonationDamage;
+                            else if (aInfo.AreaEffectDamage > 0) damagePool = aInfo.AreaEffectDamage;
+                            else damagePool = scaledDamage;
                             //Log.Line($"[raidant end] scaled:{scaledDamage} - area:{system.Values.Ammo.AreaEffect.AreaEffectDamage} - pool:{damagePool}({projectile.BaseDamagePool}) - objHit:{projectile.ObjectsHit} - gridBlocks:{grid.CubeBlocks.Count}({((MyCubeGrid)rootBlock.CubeGrid).BlocksCount}) - i:{i} j:{j}");
                             break;
                         }
                     }
                 }
             }
+
+            if (!countBlocksAsObjects) projectile.ObjectsHit += 1;
 
             if (!endGame)
             {
@@ -294,15 +316,18 @@ namespace WeaponCore
         {
             var system = projectile.System;
             projectile.BaseDamagePool = 0;
+            var radius = system.Values.Ammo.AreaEffect.AreaEffectRadius;
+            var damage = system.Values.Ammo.AreaEffect.AreaEffectDamage;
+
             if (hitEnt.HitPos.HasValue)
             {
                 if (ExplosionReady)
-                    UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, hitEnt.Entity, system.Values.Ammo.AreaEffect.AreaEffectRadius, system.Values.Ammo.AreaEffect.AreaEffectDamage, !system.Values.Ammo.AreaEffect.DisableExplosionVisuals);
+                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, hitEnt.Entity, system);
                 else
-                    UtilsStatic.CreateMissileExplosion(hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, hitEnt.Entity, system.Values.Ammo.AreaEffect.AreaEffectRadius, system.Values.Ammo.AreaEffect.AreaEffectDamage, true);
+                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, hitEnt.Entity, system, true);
             }
             else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue)
-                UtilsStatic.CreateFakeExplosion(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffect.AreaEffectRadius);
+                UtilsStatic.CreateFakeExplosion(radius, hitEnt.HitPos.Value, system);
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)

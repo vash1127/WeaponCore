@@ -1,13 +1,9 @@
 using System;
-using System.Collections.Generic;
-using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.Entity;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
