@@ -7,7 +7,6 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -110,15 +109,16 @@ namespace WeaponCore
 
             var areaAffectDmg = system.Values.Ammo.AreaEffect.AreaEffectDamage;
             var done = false;
-            var endGame = false;
+            var nova = false;
+            var outOfPew = false;
 
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
-                if (done) break;
+                if (done || outOfPew) break;
 
                 var rootBlock = hitEnt.Blocks[i];
 
-                if (!endGame)
+                if (!nova)
                 {
                     if (_destroyedSlims.Contains(rootBlock)) continue;
                     if (rootBlock.IsDestroyed)
@@ -127,14 +127,14 @@ namespace WeaponCore
                         continue;
                     }
                 }
-                var radiate = radiantCascade || endGame;
+                var radiate = radiantCascade || nova;
 
                 var dmgCount = 1;
                 if (radiate)
                 {
                     sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
                     GetBlocksInsideSphere(grid, cubes, ref sphere, true, rootBlock.Position);
-                    done = endGame;
+                    done = nova;
                     dmgCount = _slimsSortedList.Count;
                 }
 
@@ -193,7 +193,7 @@ namespace WeaponCore
 
                     if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects)
                     {
-                        //Log.Line($"[break1] endGame:{endGame} - radiantBomb:{radiantBomb} - radiant:{radiant} - explosive:{explosive} - i:{i} - j:{j}");
+                        //Log.Line($"[break1] pool: outOfPew:{outOfPew} - {damagePool} - radiantBomb:{radiantBomb} - radiant:{radiant} - explosive:{explosive} - i:{i} - j:{j}");
                         break;
                     }
                     var scaledDamage = damagePool * damageScale;
@@ -202,7 +202,11 @@ namespace WeaponCore
                     {
                         if (countBlocksAsObjects) objectsHit++;
 
-                        if (scaledDamage < blockHp) damagePool = 0;
+                        if (scaledDamage <= blockHp)
+                        {
+                            outOfPew = true;
+                            damagePool = 0;
+                        }
                         else
                         {
                             _destroyedSlims.Add(block);
@@ -216,9 +220,9 @@ namespace WeaponCore
                     }
 
                     block.DoDamage(scaledDamage, damageType, true, null, projectile.FiringCube.EntityId);
-                    var theEnd = damagePool < 1 || objectsHit >= maxObjects;
+                    var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
-                    if (explosive && !endGame && ((!detonateOnEnd && blockIsRoot) || detonateOnEnd && theEnd))
+                    if (explosive && !nova && ((!detonateOnEnd && blockIsRoot) || detonateOnEnd && theEnd))
                     {
                         var aInfo = system.Values.Ammo.AreaEffect;
                         var dInfo = aInfo.Detonation;
@@ -227,7 +231,7 @@ namespace WeaponCore
                         if (ExplosionReady) UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system);
                         else UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system, true);
                     }
-                    else if (!endGame)
+                    else if (!nova)
                     {
                         if (system.Values.Ammo.Mass > 0 && blockIsRoot)
                         {
@@ -237,7 +241,7 @@ namespace WeaponCore
 
                         if (radiantBomb && theEnd)
                         {
-                            endGame = true;
+                            nova = true;
                             i--;
                             projectile.BaseDamagePool = 0;
                             projectile.ObjectsHit = maxObjects;
@@ -258,8 +262,7 @@ namespace WeaponCore
             }
 
             if (!countBlocksAsObjects) projectile.ObjectsHit += 1;
-
-            if (!endGame)
+            if (!nova)
             {
                 projectile.BaseDamagePool = damagePool;
                 projectile.ObjectsHit = objectsHit;

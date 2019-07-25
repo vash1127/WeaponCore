@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using VRage;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -12,15 +11,13 @@ namespace WeaponCore
     public partial class Session
     {
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
-        private readonly List<MyTuple<Vector3I, IMySlimBlock>> _slimsSortedList = new List<MyTuple<Vector3I, IMySlimBlock>>();
-
+        private readonly List<(Vector3I, IMySlimBlock)> _slimsSortedList = new List<(Vector3I, IMySlimBlock)>();
         private void AddToSlimSpace(MyEntity entity)
         {
             var grid = (MyCubeGrid)entity;
             var slimDict = _slimSpacePool.Get();
             foreach (IMySlimBlock slim in grid.CubeBlocks)
                 slimDict.Add(slim.Position, slim);
-
             SlimSpace.Add(grid, slimDict);
             grid.OnBlockAdded += BlockAdd;
             grid.OnBlockRemoved += BlockRemove;
@@ -58,7 +55,7 @@ namespace WeaponCore
             if (sorted) _slimsSortedList.Clear();
             else _slimsSet.Clear();
 
-            var fromSphere1 = BoundingBoxD.CreateFromSphere(sphere);
+            //var fromSphere1 = BoundingBoxD.CreateFromSphere(sphere);
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
             Vector3D result;
             Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
@@ -81,7 +78,7 @@ namespace WeaponCore
                     {
                         if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                         {
-                            if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, cube));
+                            if (sorted) _slimsSortedList.Add((center, cube));
                             else _slimsSet.Add(cube);
                         }
                     }
@@ -94,7 +91,7 @@ namespace WeaponCore
                 {
                     if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                     {
-                        if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, cube));
+                        if (sorted) _slimsSortedList.Add((center, cube));
                         else _slimsSet.Add(cube);
                     }
                 }
@@ -112,12 +109,12 @@ namespace WeaponCore
             {
                 if (slim.FatBlock != null && !slim.FatBlock.GetIntersectionWithAABB(ref aabb))
                     return;
-                if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, slim));
+                if (sorted) _slimsSortedList.Add((center, slim));
                 else _slimsSet.Add(slim);
             }
             else
             {
-                if (sorted) _slimsSortedList.Add(new MyTuple<Vector3I, IMySlimBlock>(center, slim));
+                if (sorted) _slimsSortedList.Add((center, slim));
                 else _slimsSet.Add(slim);
             }
         }

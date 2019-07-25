@@ -37,12 +37,15 @@ namespace WeaponCore
                     if (grid == null)
                         targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
                     else
+                    {
+                        if (blocks == null || grid.GetFatBlocks().Count > 0 && blocks.Count < 0) Log.Line($"{grid.DebugName} has no cubes in ProcessDbsCallBack");
                         targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, grid, true, blocks, grid.GetFatBlocks().Count, db.MyGrid, db) { Cubes = blocks };
+                    }
 
                     db.SortedTargets.Add(targetInfo);
                 }
                 db.SortedTargets.Sort(db.TargetCompare1);
-                //Log.Line($"[DB] targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
+                Log.Line($"[DB] targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
             DbsToUpdate.Clear();

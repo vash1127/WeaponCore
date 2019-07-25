@@ -264,7 +264,6 @@
 
             var customParticle = eInfo.CustomParticle != string.Empty;
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
-
             var explosionInfo = new MyExplosionInfo
             {
                 PlayerDamage = 0.0f,

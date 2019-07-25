@@ -65,6 +65,7 @@ namespace WeaponCore.Support
                         var cube = targets.Value[i] as MyCubeBlock;
                         if (cube != null && !cube.MarkedForClose) cubes.Add(cube);
                     }
+                    if (rootGrid.GetFatBlocks().Count > 0 && cubes.Count <= 0) Log.Line($"{rootGrid.DebugName} has no cubes in GetTargetBlocks");
                 }
             }
         }
