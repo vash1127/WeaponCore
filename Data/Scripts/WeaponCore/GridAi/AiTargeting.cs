@@ -79,6 +79,7 @@ namespace WeaponCore.Support
                     Log.Line("never picked block");
                 }
             }
+            Log.Line($"no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
         }
 
         internal void UpdateTarget(Weapon weapon, out TargetInfo? targetInfo)
