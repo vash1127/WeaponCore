@@ -15,17 +15,15 @@ namespace WeaponCore.Platform
             var prediction = weapon.System.Values.HardPoint.TargetPrediction;
 
             Vector3D targetPos;
-            double timeToIntercept;
 
             if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
+                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out var timeToIntercept);
             else
                 targetPos = target.PositionComp.WorldMatrix.Translation;
 
             var targetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            double rangeToTarget;
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out var rangeToTarget);
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             var isAligned = inRange && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
@@ -45,15 +43,13 @@ namespace WeaponCore.Platform
             var prediction = weapon.System.Values.HardPoint.TargetPrediction;
 
             Vector3D targetPos;
-            double timeToIntercept;
 
             if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
+                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out var timeToIntercept);
             else
                 targetPos = target.PositionComp.WorldMatrix.Translation;
 
-            double rangeToTarget;
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out var rangeToTarget);
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             weapon.TargetPos = targetPos;
@@ -61,8 +57,7 @@ namespace WeaponCore.Platform
 
             var maxAzimuthStep = step ? weapon.System.Values.HardPoint.RotateSpeed : float.MinValue;
             var maxElevationStep = step ? weapon.System.Values.HardPoint.ElevationSpeed : float.MinValue;
-            Vector3D currentVector;
-            Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
+            Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out var currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
 
             var up = cube.WorldMatrix.Up;
@@ -73,15 +68,14 @@ namespace WeaponCore.Platform
 
             var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
-            float desiredAzimuth;
-            float desiredElevation;
-            GetRotationAngles(ref weapon.TargetDir, ref matrix, out desiredAzimuth, out desiredElevation);
+            GetRotationAngles(ref weapon.TargetDir, ref matrix, out var desiredAzimuth, out var desiredElevation);
 
             var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
             var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
+            if (!weapon.IsTracking) Log.Line($"Weapon is not tracking: inTurnRange:{inRange} - azvalid:{!azConstrained} - elValid:{!elConstrained}");
             if (!step) return weapon.IsTracking;
 
             if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
@@ -113,7 +107,11 @@ namespace WeaponCore.Platform
                 if (isInView)
                     isAligned = IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref weapon.TargetDir, weapon.AimingTolerance);
             }
-            else weapon.Target = null;
+            else
+            {
+                Log.Line($"not traacking, setting target null");
+                weapon.Target = null;
+            }
 
             weapon.IsInView = isInView;
             var wasAligned = weapon.IsAligned;

@@ -11,7 +11,7 @@ namespace WeaponCore
     public partial class Session
     {
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
-        private readonly List<(Vector3I, IMySlimBlock)> _slimsSortedList = new List<(Vector3I, IMySlimBlock)>();
+        private readonly List<(Vector3I, IMySlimBlock, Vector3I)> _slimsSortedList = new List<(Vector3I, IMySlimBlock, Vector3I)>();
         private void AddToSlimSpace(MyEntity entity)
         {
             var grid = (MyCubeGrid)entity;
@@ -47,6 +47,28 @@ namespace WeaponCore
             SlimSpace[grid].Remove(slim.Position);
         }
 
+        static void GetIntVectorsInSphere(MyCubeGrid grid, Vector3I center, double radius, List<(Vector3I, IMySlimBlock, Vector3I)> points)
+        {
+            points.Clear();
+            double radiusSq = radius * radius;
+            int radiusCeil = (int)Math.Ceiling(radius);
+            int i, j, k;
+            for (i = -radiusCeil; i <= radiusCeil; ++i)
+            {
+                for (j = -radiusCeil; j <= radiusCeil; ++j)
+                {
+                    for (k = -radiusCeil; k <= radiusCeil; ++k)
+                    {
+                        if (i * i + j * j + k * k < radiusSq)
+                        {
+                            var vector3I = center + new Vector3I(i, j, k);
+                            IMySlimBlock slim = grid.GetCubeBlock(vector3I);
+                            if (slim != null) points.Add((center, slim, vector3I));
+                        }
+                    }
+                }
+            }
+        }
 
         public void GetBlocksInsideSphere(MyCubeGrid grid, Dictionary<Vector3I, IMySlimBlock> cubes, ref BoundingSphereD sphere, bool sorted, Vector3I center, bool checkTriangles = false)
         {
@@ -55,11 +77,9 @@ namespace WeaponCore
             if (sorted) _slimsSortedList.Clear();
             else _slimsSet.Clear();
 
-            //var fromSphere1 = BoundingBoxD.CreateFromSphere(sphere);
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
-            Vector3D result;
-            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
-            var localSphere = new BoundingSphere((Vector3)result, (float)sphere.Radius);
+            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out var result);
+            var localSphere = new BoundingSphere(result, (float)sphere.Radius);
             var fromSphere2 = BoundingBox.CreateFromSphere(localSphere);
             var min = (Vector3D)fromSphere2.Min;
             var max = (Vector3D)fromSphere2.Max;
@@ -73,12 +93,11 @@ namespace WeaponCore
                 var next = vector3IRangeIterator.Current;
                 while (vector3IRangeIterator.IsValid())
                 {
-                    IMySlimBlock cube;
-                    if (cubes.TryGetValue(next, out cube))
+                    if (cubes.TryGetValue(next, out var cube))
                     {
                         if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                         {
-                            if (sorted) _slimsSortedList.Add((center, cube));
+                            if (sorted) _slimsSortedList.Add((center, cube, cube.Position));
                             else _slimsSet.Add(cube);
                         }
                     }
@@ -91,46 +110,13 @@ namespace WeaponCore
                 {
                     if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                     {
-                        if (sorted) _slimsSortedList.Add((center, cube));
+                        if (sorted) _slimsSortedList.Add((center, cube, cube.Position));
                         else _slimsSet.Add(cube);
                     }
                 }
             }
-
-            if (sorted)
+            if (sorted) 
                 _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Item1, x.Item2.Position).CompareTo(Vector3I.DistanceManhattan(y.Item1, y.Item2.Position)));
-        }
-
-        private void AddBlockInSphere(MyCubeGrid grid, ref BoundingBoxD aabb, bool sorted, Vector3I center, bool checkTriangles, ref BoundingSphere localSphere, IMySlimBlock slim)
-        {
-            //if (!new BoundingBox(slim.Min * grid.GridSize - grid.GridSizeHalf, slim.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
-                //return;
-            if (checkTriangles)
-            {
-                if (slim.FatBlock != null && !slim.FatBlock.GetIntersectionWithAABB(ref aabb))
-                    return;
-                if (sorted) _slimsSortedList.Add((center, slim));
-                else _slimsSet.Add(slim);
-            }
-            else
-            {
-                if (sorted) _slimsSortedList.Add((center, slim));
-                else _slimsSet.Add(slim);
-            }
-        }
-
-        internal struct SlimDistance
-        {
-            internal readonly Vector3I Center;
-            internal readonly Vector3I Position;
-            internal readonly IMySlimBlock Block;
-
-            internal SlimDistance(Vector3I center, IMySlimBlock block)
-            {
-                Center = center;
-                Block = block;
-                Position = block.Position;
-            }
         }
     }
 }

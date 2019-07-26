@@ -420,20 +420,17 @@ namespace WeaponCore.Support
         private double _last;
         public Stopwatch Sw { get; } = new Stopwatch();
 
-        public void StopWatchReport(string message, float log)
+        public string StopWatchReport(string message)
         {
             Sw.Stop();
             var ticks = Sw.ElapsedTicks;
             var ns = 1000000000.0 * ticks / Stopwatch.Frequency;
             var ms = ns / 1000000.0;
             var s = ms / 1000;
-            if (log <= -1) Log.Line($"{message} ms:{(float)ms} last-ms:{(float)_last} s:{(int)s}");
-            else
-            {
-                if (ms >= log) Log.Line($"{message} ms:{(float)ms} last-ms:{(float)_last} s:{(int)s}");
-            }
-            _last = ms;
             Sw.Reset();
+            var result = $"{message} ms:{(float) ms} last-ms:{(float) _last} s:{(int) s}";
+            _last = ms;
+            return result;
         }
     }
 

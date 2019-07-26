@@ -31,8 +31,7 @@ namespace WeaponCore.Support
 
             if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
             weapon.CheckedForTargetTick = MySession.Tick;
-            TargetInfo? targetInfo;
-            UpdateTarget(weapon, out targetInfo);
+            UpdateTarget(weapon, out var targetInfo);
             if (targetInfo.HasValue)
             {
                 target = targetInfo.Value.Target;
@@ -40,13 +39,13 @@ namespace WeaponCore.Support
                 var grid = target as MyCubeGrid;
                 if (grid == null)
                 {
-                    Log.Line($"wepaon targetting nonGrid");
+                    Log.Line($"wepaon targetting nonGrid: {weapon.System.WeaponName}");
                     return;
                 }
 
                 if (targetInfo.Value.Cubes.Count <= 0)
                 {
-                    Log.Line($"weapon sees no valid cubes");
+                    Log.Line($"weapon sees no valid cubes: {weapon.System.WeaponName}");
                     target = null;
                     return;
                 }
@@ -60,8 +59,7 @@ namespace WeaponCore.Support
                     var block = targetInfo.Value.Cubes[deck[i]];
                     if (block.MarkedForClose) continue;
 
-                    IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out hitInfo, 15);
+                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out var hitInfo, 15);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
 
@@ -76,10 +74,10 @@ namespace WeaponCore.Support
                 if (!found)
                 {
                     target = null;
-                    Log.Line("never picked block");
+                    Log.Line($"never picked block: {weapon.System.WeaponName}");
                 }
             }
-            Log.Line($"no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
+            Log.Line($"{weapon.System.WeaponName} no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
         }
 
         internal void UpdateTarget(Weapon weapon, out TargetInfo? targetInfo)
@@ -89,21 +87,33 @@ namespace WeaponCore.Support
             {
                 var info = SortedTargets[i];
                 if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, weapon.Comp.MyPivotPos) > weapon.System.MaxTrajectorySqr) continue;
-                if (weapon.TrackingAi && !Weapon.TrackingTarget(weapon, info.Target) || !weapon.TrackingAi && !Weapon.ValidTarget(weapon, info.Target, true)) continue;
+
+                if (weapon.TrackTarget)
+                    if (!Weapon.TrackingTarget(weapon, info.Target))
+                    {
+                        Log.Line($"no trackingTarget: {weapon.System.WeaponName}");
+                        continue;
+                    }
+                else if (!Weapon.ValidTarget(weapon, info.Target, true))
+                    {
+                        Log.Line($"no valid target: {weapon.System.WeaponName}");
+                        continue;
+                    }
+
                 if (info.IsGrid)
                 {
                     targetInfo = info;
                     return;
                 }
                 var weaponPos = weapon.Comp.MyPivotPos;
-                IHitInfo hitInfo;
-                physics.CastRay(weaponPos, info.Target.PositionComp.GetPosition(), out hitInfo,15, true);
+                physics.CastRay(weaponPos, info.Target.PositionComp.GetPosition(), out var hitInfo,15, true);
                 if (hitInfo?.HitEntity == info.Target)
                 {
                     targetInfo = info;
                     return;
                 }
             }
+            Log.Line($"failed to update targets: {weapon.System.WeaponName}");
             targetInfo = null;
         }
 

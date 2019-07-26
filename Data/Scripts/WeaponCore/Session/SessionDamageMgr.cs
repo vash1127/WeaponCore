@@ -18,8 +18,7 @@ namespace WeaponCore
     {
         internal void ProcessHits()
         {
-            Projectile projectile;
-            while (Projectiles.Hits.TryDequeue(out projectile))
+            while (Projectiles.Hits.TryDequeue(out var projectile))
             {
                 var maxObjects = projectile.System.MaxObjectsHit;
                 for (int i = 0; i < projectile.HitList.Count; i++)
@@ -133,7 +132,19 @@ namespace WeaponCore
                 if (radiate)
                 {
                     sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
+
+                    string result;
+
+                    //DsUtil.Sw.Restart();
                     GetBlocksInsideSphere(grid, cubes, ref sphere, true, rootBlock.Position);
+                    //result = DsUtil.StopWatchReport("");
+                    //Log.Line($"[old] - time:{result} - cubesGot:{_slimsSortedList.Count}");
+                    /*
+                    DsUtil.Sw.Restart();
+                    GetIntVectorsInSphere(grid, rootBlock.Position, sphere.Radius, _slimsSortedList);
+                    result = DsUtil.StopWatchReport("");
+                    Log.Line($"[new] - time:{result} - cubesGot:{_slimsSortedList.Count}");
+                    */
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
                 }
@@ -176,8 +187,7 @@ namespace WeaponCore
                         if (system.CustomDamageScales)
                         {
                             if (blockDef == null) blockDef = block.BlockDefinition;
-                            float modifier;
-                            var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
+                            var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out var modifier);
 
                             if (found) damageScale *= modifier;
                             else if (system.Values.DamageScales.Custom.IgnoreAllOthers)

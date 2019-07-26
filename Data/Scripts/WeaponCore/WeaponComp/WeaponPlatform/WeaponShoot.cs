@@ -155,8 +155,8 @@ namespace WeaponCore.Platform
                 Target = null;
                 return;
             }
-            IHitInfo hitInfo;
-            MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.PositionComp.GetPosition(), out hitInfo, 15);
+
+            MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.PositionComp.GetPosition(), out var hitInfo, 15);
             if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target.Parent))
             {
                 if (hitInfo?.HitEntity == null && DelayCeaseFire)
