@@ -37,7 +37,10 @@ namespace WeaponCore
                             DamageShield(hitEnt, projectile);
                             continue;
                         case HitEntity.Type.Grid:
+                            DsUtil.Sw.Restart();
                             DamageGrid(hitEnt, projectile);
+                            var test = DsUtil.StopWatchReport("");
+                            Log.Line($"{test}");
                             continue;
                         case HitEntity.Type.Destroyable:
                             DamageDestObj(hitEnt, projectile);
@@ -90,7 +93,7 @@ namespace WeaponCore
             }
             //Log.Line($"new hit: blockCnt:{grid.BlocksCount} - pool:{projectile.BaseDamagePool} - objHit:{projectile.ObjectsHit}");
             _destroyedSlims.Clear();
-            var cubes = SlimSpace[grid];
+            //var cubes = SlimSpace[grid];
             var sphere = new BoundingSphereD(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffect.AreaEffectRadius);
             var maxObjects = projectile.System.MaxObjectsHit;
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -110,7 +113,6 @@ namespace WeaponCore
             var done = false;
             var nova = false;
             var outOfPew = false;
-
             for (int i = 0; i < hitEnt.Blocks.Count; i++)
             {
                 if (done || outOfPew) break;
@@ -132,19 +134,8 @@ namespace WeaponCore
                 if (radiate)
                 {
                     sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
-
-                    string result;
-
-                    //DsUtil.Sw.Restart();
-                    GetBlocksInsideSphere(grid, cubes, ref sphere, true, rootBlock.Position);
-                    //result = DsUtil.StopWatchReport("");
-                    //Log.Line($"[old] - time:{result} - cubesGot:{_slimsSortedList.Count}");
-                    /*
-                    DsUtil.Sw.Restart();
-                    GetIntVectorsInSphere(grid, rootBlock.Position, sphere.Radius, _slimsSortedList);
-                    result = DsUtil.StopWatchReport("");
-                    Log.Line($"[new] - time:{result} - cubesGot:{_slimsSortedList.Count}");
-                    */
+                    //GetBlocksInsideSphere(grid, cubes, ref sphere, true, rootBlock.Position);
+                    GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius, _slimsSortedList);
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
                 }

@@ -20,9 +20,9 @@ namespace WeaponCore
                 var cube = myEntity as MyCubeBlock;
                 var weaponBase = cube as IMyLargeMissileTurret;
 
-                if (myEntity is MyCubeGrid)
-                    AddToSlimSpace(myEntity);
-                else if (weaponBase != null)
+                //if (myEntity is MyCubeGrid)
+                    //AddToSlimSpace(myEntity);
+                if (weaponBase != null)
                 {
                     if (!Inited) lock (_configLock) Init();
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
@@ -47,9 +47,9 @@ namespace WeaponCore
                 var cube = myEntity as MyCubeBlock;
                 var weaponBase = cube as IMyLargeMissileTurret;
 
-                if (myEntity is MyCubeGrid)
-                    RemoveFromSlimSpace(myEntity);
-                else if (weaponBase != null)
+                //if (myEntity is MyCubeGrid)
+                    //RemoveFromSlimSpace(myEntity);
+                if (weaponBase != null)
                 {
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 

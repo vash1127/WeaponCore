@@ -139,41 +139,41 @@ namespace WeaponCore.Platform
         public void StartFiringSound()
         {
             FiringEmitter.PlaySound(FiringSound, false);
-            Log.Line("Start Firing Sound");
+            //Log.Line("Start Firing Sound");
         }
 
         public void StopFiringSound(bool force)
         {
             if (FiringEmitter == null)
                 return;
-            Log.Line("Stop Firing Sound");
+            //Log.Line("Stop Firing Sound");
             FiringEmitter.StopSound(force, true);
         }
 
         public void StartReloadSound()
         {
             if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
-            Log.Line("Start Reload Sound");
+            //Log.Line("Start Reload Sound");
             ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
         }
 
         public void StopReloadSound()
         {
             if (ReloadEmitter == null) return;
-            Log.Line("Stop Reload Sound");
+            //Log.Line("Stop Reload Sound");
             ReloadEmitter?.StopSound(true, true);
         }
 
         public void StartRotateSound()
         {
-            Log.Line("Start Rotate Sound");
+            //Log.Line("Start Rotate Sound");
             RotateEmitter.PlaySound(RotateSound, true, false, false, false, false, false);
         }
 
         public void StopRotateSound()
         {
             if (RotateEmitter == null) return;
-            Log.Line("Stop Rotate Sound");
+            //Log.Line("Stop Rotate Sound");
             RotateEmitter.StopSound(true, true);
         }
     }

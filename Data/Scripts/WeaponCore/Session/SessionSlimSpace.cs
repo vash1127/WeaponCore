@@ -50,6 +50,7 @@ namespace WeaponCore
         static void GetIntVectorsInSphere(MyCubeGrid grid, Vector3I center, double radius, List<(Vector3I, IMySlimBlock, Vector3I)> points)
         {
             points.Clear();
+            radius *= grid.GridSizeR;
             double radiusSq = radius * radius;
             int radiusCeil = (int)Math.Ceiling(radius);
             int i, j, k;
@@ -64,6 +65,35 @@ namespace WeaponCore
                             var vector3I = center + new Vector3I(i, j, k);
                             IMySlimBlock slim = grid.GetCubeBlock(vector3I);
                             if (slim != null) points.Add((center, slim, vector3I));
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void GetIntVectorsInSphere2(MyCubeGrid grid, Vector3I center, double radius, List<(Vector3I, IMySlimBlock, Vector3I)> points)
+        {
+            points.Clear();
+            radius *= grid.GridSizeR;
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+            double radiusSq = radius * radius;
+            int radiusCeil = (int)Math.Ceiling(radius);
+            int i, j, k;
+            Vector3I max = Vector3I.Min(Vector3I.One * radiusCeil, gridMax - center);
+            Vector3I min = Vector3I.Max(Vector3I.One * -radiusCeil, gridMin - center);
+
+            for (i = min.X; i <= max.X; ++i)
+            {
+                for (j = min.Y; j <= max.Y; ++j)
+                {
+                    for (k = min.Z; k <= max.Z; ++k)
+                    {
+                        if (i * i + j * j + k * k < radiusSq)
+                        {
+                            var vector3I = center + new Vector3I(i, j, k);
+                            IMySlimBlock slim = grid.GetCubeBlock(vector3I);
+                            if (slim != null && slim.Position == vector3I) points.Add((center, slim, vector3I));
                         }
                     }
                 }

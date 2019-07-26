@@ -96,7 +96,7 @@ namespace WeaponCore.Support
                     }
                 else if (!Weapon.ValidTarget(weapon, info.Target, true))
                     {
-                        Log.Line($"no valid target: {weapon.System.WeaponName}");
+                        Log.Line($"no valid target: {weapon.System.WeaponName} - targetClosed:{info.Target.MarkedForClose} - trackingTarget:{weapon.Comp.TrackingWeapon.Target != null} - trackingClosed:{weapon.Comp.TrackingWeapon.Target?.MarkedForClose}");
                         continue;
                     }
 

@@ -33,6 +33,7 @@ namespace WeaponCore.Platform
                 var weapon = Weapons[i];
                 if (weapon.System.Values.HardPoint.TurretController && comp.TrackingWeapon == null)
                 {
+                    Log.Line($"{weapon.System.WeaponName}");
                     weapon.TrackingAi = true;
                     comp.TrackingWeapon = weapon;
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
