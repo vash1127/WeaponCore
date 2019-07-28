@@ -16,10 +16,9 @@ namespace WeaponCore.Support
     {
         internal void TimeToUpdateDb()
         {
-            if (!UpdateOwner()) return;
-            if (Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
-            Session.Instance.DbsToUpdate.Add(this);
+            if (!UpdateOwner() || Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
 
+            Session.Instance.DbsToUpdate.Add(this);
             TargetsUpdatedTick = MySession.Tick;
         }
 
