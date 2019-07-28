@@ -81,7 +81,6 @@ namespace WeaponCore.Platform
         internal float DesiredAzimuth;
         internal float DesiredElevation;
         internal double AimingTolerance;
-        internal uint CheckedForTargetTick;
         internal float RotationSpeed;
         internal float ElevationSpeed;
         internal float MaxAzimuthRadians;

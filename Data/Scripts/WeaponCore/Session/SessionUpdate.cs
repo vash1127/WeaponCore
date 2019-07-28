@@ -47,14 +47,14 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 20) gridAi.SelectTarget(ref w.NewTarget, w);
+                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 30) gridAi.SelectTarget(ref w.NewTarget, w);
                             w.TargetExpired = w.NewTarget == null || w.NewTarget.MarkedForClose;
                             w.Target = w.NewTarget;
 
                         }
                         else if (!w.TrackTarget && w.TargetExpired)
                         {
-                            w.Target = w.NewTarget;
+                            w.Target = w.Comp.TrackingWeapon.Target;
                             w.TargetExpired = false;
                         }
 
@@ -110,11 +110,9 @@ namespace WeaponCore
                                     if (!w.TrackTarget)
                                     {
                                         if (comp.TrackingWeapon.Target != w.Target)
-                                        {
                                             w.TargetExpired = true;
-                                            w.NewTarget = comp.TrackingWeapon.Target;
-                                        }
-                                        else if (w.Target == null) w.TargetExpired = true;
+                                        else if (w.Target == null)
+                                            w.TargetExpired = true;
                                     }
                                     else if (w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target))
                                         w.TargetExpired = true;
