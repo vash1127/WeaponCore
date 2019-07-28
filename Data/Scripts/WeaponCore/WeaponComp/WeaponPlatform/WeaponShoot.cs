@@ -181,6 +181,15 @@ namespace WeaponCore.Platform
                         Log.Line($"ShootRayCheck: succeed junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
                         return;
                     }
+
+                    if (isGrid != null && isGrid.MarkedForClose || parentIsGrid != null && parentIsGrid.MarkedForClose)
+                    {
+                        Log.Line($"ShootRayCheck: failed grid/parent marked: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                        masterWeapon.TargetExpired = true;
+                        if (masterWeapon != this) TargetExpired = true;
+                        return;
+                    }
+
                     if (isGrid == Comp.MyGrid)
                     {
                         Log.Line($"ShootRayCheck: succeed my own grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
