@@ -106,6 +106,7 @@ namespace WeaponCore.Platform
         internal bool AvCapable;
         internal bool DelayCeaseFire;
         internal bool Enabled;
+        internal bool OrderedTargets;
         internal bool LoadAmmoMag
         {
             set
@@ -166,6 +167,7 @@ namespace WeaponCore.Platform
             }
             WeaponId = weaponId;
             Enabled = true;
+            OrderedTargets = System.Values.HardPoint.EnableTargeting;
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;
