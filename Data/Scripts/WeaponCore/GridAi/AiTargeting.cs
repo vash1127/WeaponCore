@@ -49,7 +49,7 @@ namespace WeaponCore.Support
 
                 var allBlocks = targetInfo.Value.TypeDict[BlockTypes.All];
 
-                if (weapon.OrderedTargets) {
+                if (weapon.System.Values.HardPoint.OrderedTargets) {
                     foreach(BlockTypes bt in weapon.System.Values.HardPoint.Targeting.priorities) {
                         if (targetInfo.Value.TypeDict[bt].Count > 0) {
                             allBlocks = targetInfo.Value.TypeDict[bt];
