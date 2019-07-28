@@ -28,7 +28,6 @@ namespace WeaponCore.Support
             if (Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
             Session.Instance.DbsToUpdate.Add(this);
 
-            Stale = false;
             TargetsUpdatedTick = MySession.Tick;
         }
 

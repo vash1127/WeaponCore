@@ -14,7 +14,7 @@ namespace WeaponCore.Support
     {
         public enum BlockTypes
         {
-            All,
+            Any,
             Offense,
             Defense,
             Power,
@@ -23,7 +23,6 @@ namespace WeaponCore.Support
         }
 
         internal volatile bool Ready;
-        internal volatile bool Stale = true;
         internal static volatile bool SubGridUpdate;
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(50);

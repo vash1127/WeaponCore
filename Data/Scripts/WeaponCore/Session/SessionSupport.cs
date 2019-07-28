@@ -38,7 +38,7 @@ namespace WeaponCore
                         targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
                     else
                     {
-                        if (dictTypes == null || grid.GetFatBlocks().Count > 0 && dictTypes[GridTargetingAi.BlockTypes.All].Count < 0) Log.Line($"{grid.DebugName} has no cubes in ProcessDbsCallBack");
+                        if (dictTypes == null || grid.GetFatBlocks().Count > 0 && dictTypes[GridTargetingAi.BlockTypes.Any].Count < 0) Log.Line($"{grid.DebugName} has no cubes in ProcessDbsCallBack");
                         targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, grid, true, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db) { TypeDict = dictTypes };
                     }
 

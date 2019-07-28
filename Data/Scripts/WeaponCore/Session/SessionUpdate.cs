@@ -11,7 +11,7 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-                if (gridAi.Stale && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.TimeToUpdateDb();
+                if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.TimeToUpdateDb();
                 if (!gridAi.Ready || !gridAi.DbReady) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {

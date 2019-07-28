@@ -39,7 +39,7 @@ namespace WeaponCore.Support
                 if (grid != null && !grid.MarkedForClose)
                 {
                     var typeDict = BlockTypePool.Get();
-                    typeDict.Add(BlockTypes.All, CubePool.Get());
+                    typeDict.Add(BlockTypes.Any, CubePool.Get());
                     typeDict.Add(BlockTypes.Offense, CubePool.Get());
                     typeDict.Add(BlockTypes.Defense, CubePool.Get());
                     typeDict.Add(BlockTypes.Navigation, CubePool.Get());
@@ -69,7 +69,7 @@ namespace WeaponCore.Support
                         var cube = targets.Value[i] as MyCubeBlock;
                         if (cube != null && !cube.MarkedForClose)
                         {
-                            typeDict[BlockTypes.All].Add(cube);
+                            typeDict[BlockTypes.Any].Add(cube);
                             if (cube is IMyProductionBlock) typeDict[BlockTypes.Production].Add(cube);
                             else if (cube is IMyPowerProducer) typeDict[BlockTypes.Power].Add(cube);
                             else if (cube is IMyGunBaseUser) typeDict[BlockTypes.Offense].Add(cube);
@@ -77,7 +77,7 @@ namespace WeaponCore.Support
                             else if (cube is IMyThrust || cube is IMyJumpDrive) typeDict[BlockTypes.Navigation].Add(cube);
                         }
                     }
-                    if (rootGrid.GetFatBlocks().Count > 0 && typeDict[BlockTypes.All].Count <= 0) Log.Line($"{rootGrid.DebugName} has no cubes in GetTargetBlocks");
+                    if (rootGrid.GetFatBlocks().Count > 0 && typeDict[BlockTypes.Any].Count <= 0) Log.Line($"{rootGrid.DebugName} has no cubes in GetTargetBlocks");
                 }
             }
         }

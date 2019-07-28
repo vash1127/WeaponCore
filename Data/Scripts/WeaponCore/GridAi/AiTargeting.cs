@@ -24,7 +24,6 @@ namespace WeaponCore.Support
 
         internal void SelectTarget(ref MyEntity newTarget, Weapon weapon)
         {
-            Stale = true;
             Log.Line($"{weapon.System.WeaponName} - running select target");
             UpdateTarget(weapon, out var targetInfo);
             if (targetInfo.HasValue)
@@ -47,11 +46,11 @@ namespace WeaponCore.Support
                 var physics = MyAPIGateway.Physics;
                 var weaponPos = weapon.Comp.MyPivotPos;
 
-                var allBlocks = targetInfo.Value.TypeDict[BlockTypes.All];
+                var allBlocks = targetInfo.Value.TypeDict[BlockTypes.Any];
                 if (weapon.OrderedTargets) {
                     foreach(var bt in weapon.System.Values.HardPoint.Targeting.Priorities) {
-                        if (targetInfo.Value.TypeDict[(BlockTypes) bt].Count > 0) {
-                            allBlocks = targetInfo.Value.TypeDict[(BlockTypes) bt];
+                        if (targetInfo.Value.TypeDict[bt].Count > 0) {
+                            allBlocks = targetInfo.Value.TypeDict[bt];
                         }
                     }
                 }
@@ -128,8 +127,6 @@ namespace WeaponCore.Support
                 return false;
             }
 
-            p.Ai.Stale = true;
-
             var totalTargets = p.Ai.SortedTargets.Count;
             var topTargets = p.System.Values.Ammo.Trajectory.Smarts.TopTargets;
             if (topTargets > 0 && totalTargets < topTargets) topTargets = totalTargets;
@@ -144,7 +141,7 @@ namespace WeaponCore.Support
                     return true;
                 }
 
-                var cubes = targetInfo.Value.TypeDict[BlockTypes.All];
+                var cubes = targetInfo.Value.TypeDict[BlockTypes.Any];
 
                 if (p.System.OrderedTargets)
                 {
