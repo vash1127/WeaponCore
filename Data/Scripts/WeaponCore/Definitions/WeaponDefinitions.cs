@@ -65,16 +65,6 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct TargetOrder
     {
-        public enum BlockTypes
-        {
-            All,
-            Offense,
-            Defense,
-            Power,
-            Production,
-            Navigation
-        }
-
         [ProtoMember(1)] internal BlockTypes[] Priorities;
         [ProtoMember(2)] internal bool Enable;
     }
