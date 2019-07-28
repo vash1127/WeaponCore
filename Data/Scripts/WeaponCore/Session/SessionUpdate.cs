@@ -114,12 +114,12 @@ namespace WeaponCore
                                         else if (w.Target == null)
                                             w.TargetExpired = true;
                                     }
-                                    else if (w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target))
+                                    else if (!w.TargetExpired && (w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target)))
                                         w.TargetExpired = true;
                                 }
                                 else
                                 {
-                                    if (w.TrackTarget && w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target))
+                                    if (w.TrackTarget && !w.TargetExpired && (w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target)))
                                         w.TargetExpired = true;
                                 }
                             }

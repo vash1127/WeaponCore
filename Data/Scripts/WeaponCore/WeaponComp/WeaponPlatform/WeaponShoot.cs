@@ -143,6 +143,7 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (Target == null || Target.MarkedForClose)
             {
+                Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null or marked");
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon != this) TargetExpired = true;
                 return;
@@ -151,14 +152,14 @@ namespace WeaponCore.Platform
             var targetPos = Target.PositionComp.GetPosition();
             if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
             {
-                Log.Line("ShootRayCheck: out of range");
+                Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon !=  this) TargetExpired = true;
                 return;
             }
             if (!TrackingAi && !ValidTarget(this, Target))
             {
-                Log.Line("ShootRayCheck: not trackingAi and notValid target");
+                Log.Line($"{System.WeaponName} - ShootRayCheck Fail - not trackingAi and notValid target");
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon != this) TargetExpired = true;
                 return;
@@ -169,7 +170,7 @@ namespace WeaponCore.Platform
             {
                 if (hitInfo?.HitEntity == null && DelayCeaseFire)
                 {
-                    Log.Line($"ShootRayCheck: succeed due to null DelayCeaseFire");
+                    Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - due to null DelayCeaseFire");
                     return;
                 }
                 if ((hitInfo?.HitEntity != null))
@@ -178,13 +179,13 @@ namespace WeaponCore.Platform
                     var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
                     if (isGrid == null && parentIsGrid == null)
                     {
-                        Log.Line($"ShootRayCheck: succeed junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                        Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
                         return;
                     }
 
                     if (isGrid != null && isGrid.MarkedForClose || parentIsGrid != null && parentIsGrid.MarkedForClose)
                     {
-                        Log.Line($"ShootRayCheck: failed grid/parent marked: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                        Log.Line($"{System.WeaponName} - ShootRayCheck Fail - grid/parent marked: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
                         masterWeapon.TargetExpired = true;
                         if (masterWeapon != this) TargetExpired = true;
                         return;
@@ -192,7 +193,7 @@ namespace WeaponCore.Platform
 
                     if (isGrid == Comp.MyGrid)
                     {
-                        Log.Line($"ShootRayCheck: succeed my own grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                        Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - own grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
                         return;
                     }
 
@@ -200,7 +201,7 @@ namespace WeaponCore.Platform
                     {
                         if (!isGrid.IsInSameLogicalGroupAs(Comp.MyGrid))
                         {
-                            Log.Line($"ShootRayCheck: failed friendly grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                            Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
                             masterWeapon.TargetExpired = true;
                             if (masterWeapon != this) TargetExpired = true;
                         }
@@ -210,18 +211,18 @@ namespace WeaponCore.Platform
                     {
                         if (!parentIsGrid.IsInSameLogicalGroupAs(Comp.MyGrid))
                         {
-                            Log.Line($"ShootRayCheck: failed friendly parentGrid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                            Log.Line($"{System.WeaponName} - ShootRayCheck Fail - friendly parentGrid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
                             masterWeapon.TargetExpired = true;
                             if (masterWeapon != this) TargetExpired = true;
                         }
                         return;
                     }
-                    Log.Line($"ShootRayCheck: non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
-                if (hitInfo?.HitEntity == null) Log.Line($"ShootRayCheck: rayCheck Failed: null");
-                else if (hitInfo.HitEntity != null) Log.Line($"ShootRayCheck: rayCheck Failed: {((MyEntity)hitInfo.HitEntity).DebugName}");
-                else Log.Line("ShootRayCheck: failed for some unknown reason");
+                if (hitInfo?.HitEntity == null) Log.Line($"{System.WeaponName} - ShootRayCheck Fail - null");
+                else if (hitInfo.HitEntity != null) Log.Line($"{System.WeaponName} - ShootRayCheck Fail - General: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Unknown");
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon != this) TargetExpired = true;
             }
