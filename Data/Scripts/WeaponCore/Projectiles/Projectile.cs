@@ -161,10 +161,7 @@ namespace WeaponCore.Projectiles
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
 
             if (Guidance == AmmoTrajectory.GuidanceType.Smart && !IsBeamWeapon)
-            {
-                //Session.Instance.GridTargetingAIs.TryGetValue(FiringGrid, out Ai);
                 MaxChaseAge = System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
-            }
             else MaxChaseAge = int.MaxValue;
 
             LockedTarget = Target != null && !Target.MarkedForClose;
