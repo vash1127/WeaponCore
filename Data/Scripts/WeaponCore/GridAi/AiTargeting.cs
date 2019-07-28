@@ -48,14 +48,14 @@ namespace WeaponCore.Support
                 var weaponPos = weapon.Comp.MyPivotPos;
 
                 var allBlocks = targetInfo.Value.TypeDict[BlockTypes.All];
-
-                if (weapon.System.Values.HardPoint.OrderedTargets) {
-                    foreach(BlockTypes bt in weapon.System.Values.HardPoint.Targeting.priorities) {
-                        if (targetInfo.Value.TypeDict[bt].Count > 0) {
-                            allBlocks = targetInfo.Value.TypeDict[bt];
+                if (weapon.OrderedTargets) {
+                    foreach(var bt in weapon.System.Values.HardPoint.Targeting.Priorities) {
+                        if (targetInfo.Value.TypeDict[(BlockTypes) bt].Count > 0) {
+                            allBlocks = targetInfo.Value.TypeDict[(BlockTypes) bt];
                         }
                     }
                 }
+
                 var blockCount = allBlocks.Count;
                 var deck = GetDeck(ref weapon.Deck, ref weapon.PrevDeckLength,0, blockCount);
                 for (int i = 0; i < blockCount; i++)
@@ -146,9 +146,9 @@ namespace WeaponCore.Support
 
                 var cubes = targetInfo.Value.TypeDict[BlockTypes.All];
 
-                if (p.System.Values.HardPoint.EnableTargeting)
+                if (p.System.OrderedTargets)
                 {
-                    foreach (BlockTypes bt in p.System.Values.HardPoint.Targeting.priorities)
+                    foreach (BlockTypes bt in p.System.Values.HardPoint.Targeting.Priorities)
                     {
                         if (targetInfo.Value.TypeDict[bt].Count > 0)
                         {

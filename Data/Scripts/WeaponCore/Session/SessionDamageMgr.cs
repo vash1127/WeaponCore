@@ -139,7 +139,6 @@ namespace WeaponCore
                     GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius, _slimsSortedList);
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
-                    Log.Line($"{dmgCount}");
                 }
 
                 for (int j = 0; j < dmgCount; j++)

@@ -50,23 +50,33 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal bool IsTurret;
         [ProtoMember(4)] internal bool TurretController;
         [ProtoMember(5)] internal bool TrackTargets;
-        [ProtoMember(6)] internal bool EnableTargeting;
-        [ProtoMember(7)] internal int DelayCeaseFire;
-        [ProtoMember(8)] internal int RotateBarrelAxis;
-        [ProtoMember(9)] internal float RotateSpeed;
-        [ProtoMember(10)] internal float ElevationSpeed;
-        [ProtoMember(11)] internal float DeviateShotAngle;
-        [ProtoMember(12)] internal float EnergyCost;
-        [ProtoMember(13)] internal double AimingTolerance;
-        [ProtoMember(14)] internal Prediction TargetPrediction;
-        [ProtoMember(15)] internal AmmoLoading Loading;
-        [ProtoMember(16)] internal Order Targeting;
+        [ProtoMember(6)] internal int DelayCeaseFire;
+        [ProtoMember(7)] internal int RotateBarrelAxis;
+        [ProtoMember(8)] internal float RotateSpeed;
+        [ProtoMember(9)] internal float ElevationSpeed;
+        [ProtoMember(10)] internal float DeviateShotAngle;
+        [ProtoMember(11)] internal float EnergyCost;
+        [ProtoMember(12)] internal double AimingTolerance;
+        [ProtoMember(13)] internal Prediction TargetPrediction;
+        [ProtoMember(14)] internal AmmoLoading Loading;
+        [ProtoMember(15)] internal TargetOrder Targeting;
     }
 
     [ProtoContract]
-    public struct Order
+    public struct TargetOrder
     {
-        [ProtoMember(1)] internal BlockTypes[] priorities;
+        public enum BlockTypes
+        {
+            All,
+            Offense,
+            Defense,
+            Power,
+            Production,
+            Navigation
+        }
+
+        [ProtoMember(1)] internal BlockTypes[] Priorities;
+        [ProtoMember(2)] internal bool Enable;
     }
 
     [ProtoContract]

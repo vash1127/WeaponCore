@@ -44,6 +44,7 @@ namespace WeaponCore.Support
         public readonly bool ArmorScaling;
         public readonly bool CustomDamageScales;
         public readonly bool TargetOffSet;
+        public readonly bool OrderedTargets;
         public readonly double MaxTrajectorySqr;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
@@ -96,6 +97,7 @@ namespace WeaponCore.Support
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
 
+            OrderedTargets = values.HardPoint.Targeting.Enable;
             TargetOffSet = values.Ammo.Trajectory.Smarts.Inaccuracy > 0;
             TimeToCeaseFire = values.HardPoint.DelayCeaseFire;
             ReloadTime = values.HardPoint.Loading.ReloadTime;

@@ -21,10 +21,6 @@ namespace WeaponCore.Platform
         private readonly Vector3 _localTranslation;
 
         private MyEntity _lastTarget;
-        //private MatrixD _weaponMatrix;
-        //private MatrixD _oldWeaponMatrix;
-        ///private Vector3D _weaponPosition;
-        //private Vector3D _oldWeaponPosition;
         private Vector3D _lastPredictedPos;
         private double _lastTimeToIntercept;
         private int _rotationTime;
@@ -165,7 +161,7 @@ namespace WeaponCore.Platform
             }
             WeaponId = weaponId;
             Enabled = true;
-            OrderedTargets = System.Values.HardPoint.EnableTargeting;
+            OrderedTargets = System.Values.HardPoint.Targeting.Enable;
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;
