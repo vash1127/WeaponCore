@@ -34,7 +34,6 @@ namespace WeaponCore.Platform
         private uint _ticksUntilShoot;
         private uint _lastPredictionTick;
         private uint _posChangedTick = 1;
-        private uint _targetTick;
         private uint _lastShotTick;
         private uint _ticksPerShot;
         private double _timePerShot;

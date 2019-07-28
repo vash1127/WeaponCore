@@ -18,9 +18,9 @@ namespace WeaponCore.Platform
             var session = Comp.MyAi.MySession;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            var targetLock = Target != null;
-
-            if (targetLock) _targetTick++;
+            DsDebugDraw.DrawLine(Comp.MyPivotPos, Comp.MyPivotPos + (Comp.MyPivotDir * 5000), Color.Purple, 0.1f);
+            if (this == Comp.TrackingWeapon) DsDebugDraw.DrawLine(Comp.MyPivotPos, TargetPos, Color.White, 0.1f);
+            else DsDebugDraw.DrawLine(Comp.MyPivotPos, TargetPos, Color.Black, 0.1f);
 
             if (System.BurstMode)
             {
@@ -58,7 +58,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
 
-            if (!Comp.Gunner && targetLock && _targetTick > 59) ShootRayCheck();
+            if (!Comp.Gunner && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
 
             var isStatic = Comp.Physics.IsStatic;
             for (int i = 0; i < bps; i++)
@@ -104,8 +104,7 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        Projectile pro;
-                        session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
+                        session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out var pro);
                         pro.System = System;
                         pro.FiringCube = Comp.MyCube;
                         pro.Origin = muzzle.Position;
@@ -121,8 +120,7 @@ namespace WeaponCore.Platform
 
                         if (System.ModelId != -1)
                         {
-                            MyEntity ent;
-                            session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out ent);
+                            session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out var ent);
                             if (!ent.InScene)
                             {
                                 ent.InScene = true;
@@ -141,18 +139,21 @@ namespace WeaponCore.Platform
 
         private void ShootRayCheck()
         {
-            _targetTick = 0;
+            Comp.LastRayCastTick = Comp.MyAi.MySession.Tick;
             var targetPos = Target.PositionComp.GetPosition();
+            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
             {
                 Log.Line("ShootRayCheck: out of range");
-                TargetExpired = true;
+                masterWeapon.TargetExpired = true;
+                if (masterWeapon !=  this) TargetExpired = true;
                 return;
             }
             if (!TrackingAi && !ValidTarget(this, Target))
             {
                 Log.Line("ShootRayCheck: not trackingAi and notValid target");
-                TargetExpired = true;
+                masterWeapon.TargetExpired = true;
+                if (masterWeapon != this) TargetExpired = true;
                 return;
             }
 
@@ -173,19 +174,40 @@ namespace WeaponCore.Platform
                         Log.Line($"ShootRayCheck: succeed junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
                         return;
                     }
-                    if (isGrid == Comp.MyGrid || isGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, isGrid) || parentIsGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, parentIsGrid))
+                    if (isGrid == Comp.MyGrid)
                     {
-                        Log.Line($"ShootRayCheck: succeed friendly grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
-                        TargetExpired = true;
+                        Log.Line($"ShootRayCheck: succeed my own grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                        return;
+                    }
+
+                    if (isGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, isGrid))
+                    {
+                        if (!isGrid.IsInSameLogicalGroupAs(Comp.MyGrid))
+                        {
+                            Log.Line($"ShootRayCheck: failed friendly grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                            masterWeapon.TargetExpired = true;
+                            if (masterWeapon != this) TargetExpired = true;
+                        }
+                        return;
+                    }
+                    if (parentIsGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, parentIsGrid))
+                    {
+                        if (!parentIsGrid.IsInSameLogicalGroupAs(Comp.MyGrid))
+                        {
+                            Log.Line($"ShootRayCheck: failed friendly parentGrid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                            masterWeapon.TargetExpired = true;
+                            if (masterWeapon != this) TargetExpired = true;
+                        }
                         return;
                     }
                     Log.Line($"ShootRayCheck: succeed unknown reason: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
                 if (hitInfo?.HitEntity == null) Log.Line($"ShootRayCheck: rayCheck Failed: null");
-                else if (hitInfo?.HitEntity != null) Log.Line($"ShootRayCheck: rayCheck Failed: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                else if (hitInfo.HitEntity != null) Log.Line($"ShootRayCheck: rayCheck Failed: {((MyEntity)hitInfo.HitEntity).DebugName}");
                 else Log.Line("ShootRayCheck: failed for some unknown reason");
-                TargetExpired = true;
+                masterWeapon.TargetExpired = true;
+                if (masterWeapon != this) TargetExpired = true;
             }
         }
 

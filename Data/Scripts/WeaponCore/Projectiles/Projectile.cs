@@ -354,11 +354,10 @@ namespace WeaponCore.Projectiles
 
         internal void OffSetTarget(out Vector3D targetOffset)
         {
-            double randAzimuth = MyUtils.GetRandomDouble(0, 1) * 2 * Math.PI;
-            double randElevation = (MyUtils.GetRandomDouble(0, 1) * 2 - 1) * 0.5 * Math.PI;
+            var randAzimuth = MyUtils.GetRandomDouble(0, 1) * 2 * Math.PI;
+            var randElevation = (MyUtils.GetRandomDouble(0, 1) * 2 - 1) * 0.5 * Math.PI;
 
-            Vector3D randomDirection;
-            Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out randomDirection); // this is already normalized
+            Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out var randomDirection); // this is already normalized
             targetOffset = (randomDirection * System.Values.Ammo.Trajectory.Smarts.Inaccuracy);
             VisualStep = 0;
             if (Age != 0) LastOffsetTime = Age;
@@ -390,7 +389,6 @@ namespace WeaponCore.Projectiles
                     return;
                 }
             }
-            var parentId = uint.MaxValue;
             MatrixD matrix;
             if (ModelState == EntityState.Exists)
             {
@@ -406,7 +404,7 @@ namespace WeaponCore.Projectiles
                 matrix.Translation = offVec;
             }
 
-            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Ammo.Name, ref matrix, ref Position, parentId, out AmmoEffect); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Ammo.Name, ref matrix, ref Position, uint.MaxValue, out AmmoEffect); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (AmmoEffect == null) return;
             AmmoEffect.DistanceMax = System.Values.Graphics.Particles.Ammo.Extras.MaxDistance;
             AmmoEffect.UserColorMultiplier = System.Values.Graphics.Particles.Ammo.Color;
@@ -429,8 +427,7 @@ namespace WeaponCore.Projectiles
             {
                 var pos = LastHitPos.Value;
                 var matrix = MatrixD.CreateTranslation(pos);
-                var parentId = uint.MaxValue;
-                MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Hit.Name, ref matrix, ref pos, parentId, out HitEffect);
+                MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect);
                 if (HitEffect == null) return;
                 HitEffect.Loop = false;
                 HitEffect.DurationMax = System.Values.Graphics.Particles.Hit.Extras.MaxDuration;

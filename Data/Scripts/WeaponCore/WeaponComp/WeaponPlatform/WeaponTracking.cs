@@ -34,7 +34,7 @@ namespace WeaponCore.Platform
             {
                 if (!isAligned)
                 {
-                    DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                    DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Green, 0.1f);
                     Log.Line($"[ValidTarget - CheckOnly] {weapon.System.WeaponName} - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
                 }
                 return isAligned;
@@ -45,7 +45,7 @@ namespace WeaponCore.Platform
             weapon.IsAligned = isAligned;
             if (!isAligned)
             {
-                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Green, 0.1f);
                 Log.Line($"[ValidTarget] {weapon.System.WeaponName} - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
             }
             return isAligned;
@@ -166,13 +166,11 @@ namespace WeaponCore.Platform
         private float _gunIdleAzimuth;
         private Vector3 LookAt(Vector3D target)
         {
-            Vector3D muzzleWorldPosition = Comp.MyPivotPos;
-            float azimuth;
-            float elevation;
-            Vector3.GetAzimuthAndElevation(Vector3.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
+            var muzzleWorldPosition = Comp.MyPivotPos;
+            Vector3.GetAzimuthAndElevation(Vector3.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out var azimuth, out var elevation);
             if (_gunIdleElevationAzimuthUnknown)
             {
-                Vector3.GetAzimuthAndElevation((Vector3)Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
+                Vector3.GetAzimuthAndElevation(Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
                 _gunIdleElevationAzimuthUnknown = false;
             }
             return new Vector3(elevation - _gunIdleElevation, MathHelper.WrapAngle(azimuth - _gunIdleAzimuth), 0.0f);
@@ -388,11 +386,11 @@ namespace WeaponCore.Platform
             MinElevationRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinElevationDegrees));
             MaxElevationRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxElevationDegrees));
 
-            if ((double)MinElevationRadians > (double)MaxElevationRadians)
+            if (MinElevationRadians > MaxElevationRadians)
                 MinElevationRadians -= 6.283185f;
             MinAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinAzimuthDegrees));
             MaxAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxAzimuthDegrees));
-            if ((double)MinAzimuthRadians > (double)MaxAzimuthRadians)
+            if (MinAzimuthRadians > MaxAzimuthRadians)
                 MinAzimuthRadians -= 6.283185f;
         }
 

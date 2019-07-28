@@ -101,15 +101,17 @@ namespace WeaponCore
             var explosive = areaEffect == AreaDamage.AreaEffectType.Explosive;
             var radiant = areaEffect == AreaDamage.AreaEffectType.Radiant;
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
+            var areaEffectDmg = system.Values.Ammo.AreaEffect.AreaEffectDamage;
 
+            var hasAreaDmg = areaEffectDmg > 0;
             var radiantCascade = radiant && !detonateOnEnd;
+            var primeDamage = !radiantCascade || !hasAreaDmg;
             var radiantBomb = radiant && detonateOnEnd;
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
             var damagePool = projectile.BaseDamagePool;
             var objectsHit = projectile.ObjectsHit;
             var countBlocksAsObjects = system.Values.Ammo.ObjectsHit.CountBlocks;
 
-            var areaAffectDmg = system.Values.Ammo.AreaEffect.AreaEffectDamage;
             var done = false;
             var nova = false;
             var outOfPew = false;
@@ -134,16 +136,15 @@ namespace WeaponCore
                 if (radiate)
                 {
                     sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
-                    //GetBlocksInsideSphere(grid, cubes, ref sphere, true, rootBlock.Position);
                     GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius, _slimsSortedList);
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
+                    Log.Line($"{dmgCount}");
                 }
 
                 for (int j = 0; j < dmgCount; j++)
                 {
                     var block = radiate ? _slimsSortedList[j].Item2 : rootBlock;
-                    //if (_destroyedSlims.Contains(block)) Log.Line($"Why:{block.IsDestroyed} - {block.Integrity}");
 
                     var blockHp = block.Integrity;
                     float damageScale = 1;
@@ -151,11 +152,7 @@ namespace WeaponCore
                     if (system.DamageScaling)
                     {
                         var d = system.Values.DamageScales;
-                        if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity)
-                        {
-                            //Log.Line($"[continue1] endGame:{endGame} - radiantBomb:{radiantBomb} - radiant:{radiant} - explosive:{explosive} - i:{i} - j:{j}");
-                            continue;
-                        }
+                        if (d.MaxIntegrity > 0 && blockHp > d.MaxIntegrity) continue;
 
                         if (d.Grids.Large >= 0 && largeGrid) damageScale *= d.Grids.Large;
                         else if (d.Grids.Small >= 0 && !largeGrid) damageScale *= d.Grids.Small;
@@ -181,16 +178,12 @@ namespace WeaponCore
                             var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out var modifier);
 
                             if (found) damageScale *= modifier;
-                            else if (system.Values.DamageScales.Custom.IgnoreAllOthers)
-                            {
-                                //Log.Line($"[continue2] endGame:{endGame} - radiantBomb:{radiantBomb} - radiant:{radiant} - explosive:{explosive} - i:{i} - j:{j}");
-                                continue;
-                            }
+                            else if (system.Values.DamageScales.Custom.IgnoreAllOthers) continue;
                         }
                     }
 
                     var blockIsRoot = block == rootBlock;
-                    var primaryDamage = !radiantCascade || radiantCascade && blockIsRoot;
+                    var primaryDamage = primeDamage || blockIsRoot;
 
                     if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects)
                     {
@@ -216,7 +209,7 @@ namespace WeaponCore
                     }
                     else
                     {
-                        scaledDamage = areaAffectDmg * damageScale;
+                        scaledDamage = areaEffectDmg * damageScale;
                         if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
                     }
 

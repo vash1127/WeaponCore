@@ -64,8 +64,8 @@ namespace WeaponCore.Support
                 }
             }
             weapon.LastTargetCheck = 1;
+            Log.Line($"{weapon.System.WeaponName} - oldTargetNull:{newTarget == null} - oldTargetMarked:{newTarget?.MarkedForClose} - no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
             newTarget = null;
-            Log.Line($"{weapon.System.WeaponName} - no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
         }
 
         internal void UpdateTarget(Weapon weapon, out TargetInfo? targetInfo)
@@ -76,17 +76,19 @@ namespace WeaponCore.Support
                 var info = SortedTargets[i];
                 if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, weapon.Comp.MyPivotPos) > weapon.System.MaxTrajectorySqr) continue;
 
-                if (weapon.TrackTarget)
+                if (weapon.TrackingAi)
+                {
                     if (!Weapon.TrackingTarget(weapon, info.Target))
                     {
                         //Log.Line($"{weapon.System.WeaponName} - no trackingTarget - marked:{info.Target.MarkedForClose}");
                         continue;
                     }
+                }
                 else if (!Weapon.ValidTarget(weapon, info.Target, true))
-                    {
-                        Log.Line($"{weapon.System.WeaponName} - no valid target - marked:{info.Target.MarkedForClose} - trackingTarget:{weapon.Comp.TrackingWeapon.Target != null} - trackingClosed:{weapon.Comp.TrackingWeapon.Target?.MarkedForClose}");
-                        continue;
-                    }
+                {
+                    Log.Line($"{weapon.System.WeaponName} - no valid target - marked:{info.Target.MarkedForClose} - trackingTarget:{weapon.Comp.TrackingWeapon.Target != null} - trackingClosed:{weapon.Comp.TrackingWeapon.Target?.MarkedForClose}");
+                    continue;
+                }
 
                 if (info.IsGrid)
                 {
