@@ -70,8 +70,8 @@ namespace WeaponCore.Platform
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            var maxAzimuthStep = step ? weapon.System.Values.HardPoint.RotateSpeed : float.MinValue;
-            var maxElevationStep = step ? weapon.System.Values.HardPoint.ElevationSpeed : float.MinValue;
+            var maxAzimuthStep = step ? weapon.System.Values.HardPoint.RotateSpeed : double.MinValue;
+            var maxElevationStep = step ? weapon.System.Values.HardPoint.ElevationSpeed : double.MinValue;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out var currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
 
@@ -102,19 +102,23 @@ namespace WeaponCore.Platform
             {
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
-                weapon.Azimuth = turret.Azimuth + MathHelper.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                weapon.Elevation = turret.Elevation + MathHelper.Clamp(desiredElevation - turret.Elevation, -maxElevationStep, maxElevationStep);
+                weapon.Azimuth = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
+                weapon.Elevation = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                 weapon.DesiredAzimuth = desiredAzimuth;
                 weapon.DesiredElevation = desiredElevation;
-                var azLocked = MathHelper.IsZero(oldAz - weapon.Azimuth);
-                var elLocked = MathHelper.IsZero(oldEl - weapon.Elevation);
+                var azDiff = oldAz - weapon.Azimuth;
+                var elDiff = oldEl - weapon.Elevation;
+                var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
+                var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
+                //var azLocked = MathHelper.IsZero(oldAz - weapon.Azimuth);
+                //var elLocked = MathHelper.IsZero(oldEl - weapon.Elevation);
                 var aim = !azLocked || !elLocked;
                 weapon.Comp.AiMoving = aim;
                 if (aim)
                 {
                     weapon.Comp.LastTrackedTick = weapon.Comp.MyAi.MySession.Tick;
-                    turret.Azimuth = weapon.Azimuth;
-                    turret.Elevation = weapon.Elevation;
+                    turret.Azimuth = (float) weapon.Azimuth;
+                    turret.Elevation = (float) weapon.Elevation;
                 }
             }
 
@@ -162,35 +166,53 @@ namespace WeaponCore.Platform
         }
 
         private bool _gunIdleElevationAzimuthUnknown = true;
-        private float _gunIdleElevation;
-        private float _gunIdleAzimuth;
-        private Vector3 LookAt(Vector3D target)
+        private double _gunIdleElevation;
+        private double _gunIdleAzimuth;
+        private Vector3D LookAt(Vector3D target)
         {
             var muzzleWorldPosition = Comp.MyPivotPos;
-            Vector3.GetAzimuthAndElevation(Vector3.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out var azimuth, out var elevation);
+            Vector3D.GetAzimuthAndElevation(Vector3D.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out var azimuth, out var elevation);
             if (_gunIdleElevationAzimuthUnknown)
             {
-                Vector3.GetAzimuthAndElevation(Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
+                Vector3D.GetAzimuthAndElevation(Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
                 _gunIdleElevationAzimuthUnknown = false;
             }
-            return new Vector3(elevation - _gunIdleElevation, MathHelper.WrapAngle(azimuth - _gunIdleAzimuth), 0.0f);
+
+            var angle = azimuth - _gunIdleAzimuth;
+            angle = Math.IEEERemainder(angle, MathHelperD.TwoPi);
+            if (angle <= -Math.PI)
+                angle += MathHelperD.TwoPi;
+            else if (angle > Math.PI)
+                angle -= MathHelperD.TwoPi;
+
+            return new Vector3D(elevation - _gunIdleElevation, angle, 0.0d);
         }
 
-        private bool IsInRange(ref Vector3 lookAtPositionEuler)
+        public static double WrapAngle(double angle)
         {
-            float y = lookAtPositionEuler.Y;
-            float x = lookAtPositionEuler.X;
+            angle = Math.IEEERemainder(angle, MathHelperD.TwoPi);
+            if (angle <= -Math.PI)
+                angle += MathHelperD.TwoPi;
+            else if (angle > Math.PI)
+                angle -= MathHelperD.TwoPi;
+            return angle;
+        }
+
+        private bool IsInRange(ref Vector3D lookAtPositionEuler)
+        {
+            double y = lookAtPositionEuler.Y;
+            double x = lookAtPositionEuler.X;
             if (y > MinAzimuthRadians && y < MaxAzimuthRadians && x > MinElevationRadians)
                 return x < MaxElevationRadians;
             return false;
         }
 
-        public static float AngleBetween(Vector3D a, Vector3D b) //returns radians
+        public static double AngleBetween(Vector3D a, Vector3D b) //returns radians
         {
             if (Vector3D.IsZero(a) || Vector3D.IsZero(b))
                 return 0;
             else
-                return (float)Math.Acos(MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
+                return Math.Acos(MathHelperD.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
         }
 
         private static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
@@ -208,7 +230,7 @@ namespace WeaponCore.Platform
         /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
         Dependencies: AngleBetween
         */
-        static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out float yaw, out float pitch)
+        static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
         {
             var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
             var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
@@ -383,13 +405,13 @@ namespace WeaponCore.Platform
         {
             RotationSpeed = Comp.Platform.BaseDefinition.RotationSpeed;
             ElevationSpeed = Comp.Platform.BaseDefinition.ElevationSpeed;
-            MinElevationRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinElevationDegrees));
-            MaxElevationRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxElevationDegrees));
+            MinElevationRadians = MathHelperD.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinElevationDegrees));
+            MaxElevationRadians = MathHelperD.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxElevationDegrees));
 
             if (MinElevationRadians > MaxElevationRadians)
                 MinElevationRadians -= 6.283185f;
-            MinAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinAzimuthDegrees));
-            MaxAzimuthRadians = MathHelper.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxAzimuthDegrees));
+            MinAzimuthRadians = MathHelperD.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MinAzimuthDegrees));
+            MaxAzimuthRadians = MathHelperD.ToRadians(NormalizeAngle(Comp.Platform.BaseDefinition.MaxAzimuthDegrees));
             if (MinAzimuthRadians > MaxAzimuthRadians)
                 MinAzimuthRadians -= 6.283185f;
         }

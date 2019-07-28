@@ -52,8 +52,8 @@ namespace WeaponCore.Support
         [ProtoMember(5)] internal bool TrackTargets;
         [ProtoMember(6)] internal int DelayCeaseFire;
         [ProtoMember(7)] internal int RotateBarrelAxis;
-        [ProtoMember(8)] internal float RotateSpeed;
-        [ProtoMember(9)] internal float ElevationSpeed;
+        [ProtoMember(8)] internal double RotateSpeed;
+        [ProtoMember(9)] internal double ElevationSpeed;
         [ProtoMember(10)] internal float DeviateShotAngle;
         [ProtoMember(11)] internal float EnergyCost;
         [ProtoMember(12)] internal double AimingTolerance;

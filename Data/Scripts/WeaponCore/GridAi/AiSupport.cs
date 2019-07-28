@@ -16,10 +16,14 @@ namespace WeaponCore.Support
     {
         internal void TimeToUpdateDb()
         {
+            var bigOwners = MyGrid?.BigOwners;
+            var id = bigOwners?.Count > 0 ? bigOwners[0] : 0;
+            MyOwner = id;
+            if (id == 0) return;
+
             if (Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
             Session.Instance.DbsToUpdate.Add(this);
-            var bigOwners = MyGrid.BigOwners;
-            MyOwner = bigOwners.Count > 0 ? bigOwners[0] : 0;
+
             Stale = false;
             TargetsUpdatedTick = MySession.Tick;
         }
