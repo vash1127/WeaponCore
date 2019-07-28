@@ -79,8 +79,8 @@ namespace WeaponCore.Support
             TerminalRefresh();
             if (!IsWorking)
             {
-                foreach (var w in Platform.Weapons)
-                    WepUi.SetEnable((IMyTerminalBlock)MyCube, w.WeaponId, false);
+                //foreach (var w in Platform.Weapons)
+                    //WepUi.SetEnable((IMyTerminalBlock)MyCube, w.WeaponId, false);
             }
         }
 

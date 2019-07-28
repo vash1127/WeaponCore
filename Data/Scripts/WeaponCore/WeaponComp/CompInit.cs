@@ -61,7 +61,7 @@ namespace WeaponCore.Support
         {
             if (Session.Instance.ControlInit) return;
             Session.Instance.ControlInit = true;
-            Session.Instance.CreateLogicElements(this);
+            Session.Instance.CreateLogicElements(Turret);
         }
 
     }

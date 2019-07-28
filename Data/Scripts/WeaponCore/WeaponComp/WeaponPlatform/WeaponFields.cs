@@ -15,6 +15,8 @@ namespace WeaponCore.Platform
         internal const uint SuspendAmmoCount = 300;
         internal const uint UnSuspendAmmoCount = 1200;
         internal int NextMuzzle;
+        internal static bool UiSet;
+        internal volatile bool TargetExpired;
 
         private readonly Vector3 _localTranslation;
 
@@ -47,6 +49,7 @@ namespace WeaponCore.Platform
         internal uint[] BeamSlot;
         internal WeaponComponent Comp;
 
+        internal MyEntity NewTarget;
         internal MyEntity Target;
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
@@ -65,6 +68,7 @@ namespace WeaponCore.Platform
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
+        internal uint LastTargetCheck;
         internal int[] Deck = new int[0];
         internal int PrevDeckLength;
         internal int CurrentAmmo;
@@ -102,7 +106,6 @@ namespace WeaponCore.Platform
         internal bool AvCapable;
         internal bool DelayCeaseFire;
         internal bool Enabled;
-
         internal bool LoadAmmoMag
         {
             set

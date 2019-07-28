@@ -27,17 +27,30 @@ namespace WeaponCore.Platform
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             var isAligned = inRange && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
-            if (checkOnly) return isAligned;
+            if (checkOnly)
+            {
+                if (!isAligned)
+                {
+                    DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                    Log.Line($"[ValidTarget - CheckOnly] {weapon.System.WeaponName} - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
+                }
+                return isAligned;
+            }
 
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetDir;
             weapon.IsAligned = isAligned;
-
+            if (!isAligned)
+            {
+                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                Log.Line($"[ValidTarget] {weapon.System.WeaponName} - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
+            }
             return isAligned;
         }
 
         internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
         {
+            if (weapon.LastTargetCheck >= 20) weapon.LastTargetCheck = 0;
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var prediction = weapon.System.Values.HardPoint.TargetPrediction;
@@ -75,7 +88,11 @@ namespace WeaponCore.Platform
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
-            if (!weapon.IsTracking) Log.Line($"Weapon is not tracking: inTurnRange:{inRange} - azvalid:{!azConstrained} - elValid:{!elConstrained}");
+            if (!weapon.IsTracking)
+            {
+                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                Log.Line($"[TrackingTarget] {weapon.System.WeaponName} is not tracking: marked:{target.MarkedForClose} - inTurnRange:{inRange} - azvalid:{!azConstrained} - elValid:{!elConstrained}");
+            }
             if (!step) return weapon.IsTracking;
 
             if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
@@ -109,8 +126,9 @@ namespace WeaponCore.Platform
             }
             else
             {
-                Log.Line($"not traacking, setting target null");
-                weapon.Target = null;
+                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                Log.Line($"[TrackingTarget] {weapon.System.WeaponName} is not tracking: marked:{target.MarkedForClose} - Pos:{target.PositionComp.GetPosition()}");
+                weapon.SeekTarget = true;
             }
 
             weapon.IsInView = isInView;
@@ -121,7 +139,8 @@ namespace WeaponCore.Platform
             if (alignedChange && isAligned) weapon.StartShooting();
             else if (alignedChange && !weapon.DelayCeaseFire)
             {
-                Log.Line($"align check fail: {weapon.System.WeaponName} - {weapon.System.Values.HardPoint.TurretController} - {weapon == weapon.Comp.TrackingWeapon}");
+                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                Log.Line($"[align fail] {weapon.System.WeaponName} - marked:{target.MarkedForClose} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon;{weapon == weapon.Comp.TrackingWeapon}");
                 weapon.StopShooting();
             }
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;

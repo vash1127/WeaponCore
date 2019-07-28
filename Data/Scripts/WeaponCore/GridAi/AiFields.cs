@@ -12,14 +12,25 @@ namespace WeaponCore.Support
 {
     public partial class GridTargetingAi
     {
+        public enum BlockTypes
+        {
+            All,
+            Offense,
+            Defense,
+            Power,
+            Production,
+            Navigation
+        }
+
         internal volatile bool Ready;
-        internal volatile bool Stale;
+        internal volatile bool Stale = true;
         internal static volatile bool SubGridUpdate;
         internal readonly MyCubeGrid MyGrid;
+        internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(50);
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(50);
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
-        internal readonly Dictionary<MyEntity, List<MyCubeBlock>> ValidGrids = new Dictionary<MyEntity, List<MyCubeBlock>>();
+        internal readonly Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>> ValidGrids = new Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
 
@@ -36,6 +47,7 @@ namespace WeaponCore.Support
         internal uint TargetsUpdatedTick;
         internal long MyOwner;
         internal int DbUpdating;
+        internal bool DbReady;
 
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();

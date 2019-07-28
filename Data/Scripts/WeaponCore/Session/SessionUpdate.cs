@@ -11,8 +11,8 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-                if (!gridAi.Ready) continue;
                 if (gridAi.Stale && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.TimeToUpdateDb();
+                if (!gridAi.Ready || !gridAi.DbReady) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -45,8 +45,18 @@ namespace WeaponCore
                             }
                             if (!w.AmmoMagLoaded) continue;
                         }
+                        if (w.SeekTarget)
+                        {
+                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 20) gridAi.SelectTarget(ref w.NewTarget, w);
+                            w.TargetExpired = w.NewTarget == null || w.NewTarget.MarkedForClose;
+                            w.Target = w.NewTarget;
 
-                        if (w.SeekTarget && w.TrackTarget) gridAi.SelectTarget(ref w.Target, w);
+                        }
+                        else if (!w.TrackTarget && w.TargetExpired)
+                        {
+                            w.Target = w.NewTarget;
+                            w.TargetExpired = false;
+                        }
 
                         if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null)
                         {
@@ -74,11 +84,10 @@ namespace WeaponCore
             if (!GameLoaded) return;
             foreach (var aiPair in GridTargetingAIs)
             {
-                //var grid = aiPair.Key;
-                var ai = aiPair.Value;
-                foreach (var basePair in ai.WeaponBase)
+                var gridAi = aiPair.Value;
+                if (!gridAi.DbReady) continue;
+                foreach (var basePair in gridAi.WeaponBase)
                 {
-                    //var myCube = basePair.Key;
                     var comp = basePair.Value;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     InTurret = gunner;
@@ -89,11 +98,32 @@ namespace WeaponCore
                         if (!w.Enabled && comp.TrackingWeapon != w) continue;
                         if (!gunner)
                         {
-                            if (w.TrackingAi && w.Target != null && !w.Target.MarkedForClose) Weapon.TrackingTarget(w, w.Target, true);
-                            else 
+                            if (w.TrackingAi)
                             {
-                                if (w.IsTurret && !w.TrackTarget) w.Target = comp.TrackingWeapon.Target;
-                                else if (w.Target != null && (w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target))) w.Target = null;
+                                if (w.Target == null || w.Target.MarkedForClose || !Weapon.TrackingTarget(w, w.Target, true))
+                                    w.TargetExpired = true;
+                            }
+                            else
+                            {
+                                if (w.IsTurret)
+                                {
+                                    if (!w.TrackTarget)
+                                    {
+                                        if (comp.TrackingWeapon.Target != w.Target)
+                                        {
+                                            w.TargetExpired = true;
+                                            w.NewTarget = comp.TrackingWeapon.Target;
+                                        }
+                                        else if (w.Target == null) w.TargetExpired = true;
+                                    }
+                                    else if (w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target))
+                                        w.TargetExpired = true;
+                                }
+                                else
+                                {
+                                    if (w.TrackTarget && w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target))
+                                        w.TargetExpired = true;
+                                }
                             }
                         }
                         else
@@ -110,13 +140,13 @@ namespace WeaponCore
                             if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
                             {
                                 w.DelayFireCount = 0;
-                                w.AiReady = w.Target != null && !gunner && w.Comp.TurretTargetLock && !w.Target.MarkedForClose;
+                                w.AiReady = (!w.TargetExpired && !gunner) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.TargetExpired;
                             }
                         }
-                        else w.AiReady = w.Target != null && !gunner && w.Comp.TurretTargetLock && !w.Target.MarkedForClose;
+                        else w.AiReady = (!w.TargetExpired && !gunner) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.TargetExpired;
 
-                        w.SeekTarget = Tick20 && !gunner && (w.Target == null || w.Target != null && w.Target.MarkedForClose) && w.TrackTarget;
-                        if (w.AiReady || w.SeekTarget || gunner) ai.Ready = true;
+                        w.SeekTarget = !gunner && w.TargetExpired && w.TrackTarget;
+                        if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
                     }
                 }
             }

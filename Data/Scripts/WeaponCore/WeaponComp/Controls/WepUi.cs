@@ -16,29 +16,45 @@ namespace WeaponCore
             new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute("Visible On Hit") }
         };
 
-        internal static bool GetEnable(IMyTerminalBlock block, int weaponId)
+        internal static bool GetEnable0(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return false;
-            return comp.Platform.Weapons[weaponId].Enabled;
+            return comp.Platform.Weapons[0].Enabled;
         }
 
-        internal static void SetEnable(IMyTerminalBlock block, int weaponId, bool newValue)
+        internal static void SetEnable0(IMyTerminalBlock block, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return;
-            var weapon = comp.Platform.Weapons[weaponId];
+            var weapon = comp.Platform.Weapons[0];
             weapon.Enabled = newValue;
             weapon.StopShooting();
         }
 
-        internal static bool GetGuidance(IMyTerminalBlock block, int i)
+        internal static bool GetEnable1(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null) return false;
+            return comp.Platform.Weapons[1].Enabled;
+        }
+
+        internal static void SetEnable1(IMyTerminalBlock block, bool newValue)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null) return;
+            var weapon = comp.Platform.Weapons[1];
+            weapon.Enabled = newValue;
+            weapon.StopShooting();
+        }
+
+        internal static bool GetGuidance(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             return comp?.Set.Value.Guidance ?? false;
         }
 
-        internal static void SetGuidance(IMyTerminalBlock block, int weaponId, bool newValue)
+        internal static void SetGuidance(IMyTerminalBlock block, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return;
@@ -82,16 +98,19 @@ namespace WeaponCore
             foreach (var mode in VisibleModes) modeList.Add(mode);
         }
 
-        internal static bool VisibleAll(IMyTerminalBlock block)
+        internal static bool VisibleAll(IMyTerminalBlock block, int id)
         {
             var logic = block?.Components?.Get<WeaponComponent>();
             return logic != null;
         }
 
-        internal static bool EnableModes(IMyTerminalBlock block)
+        internal static bool EnableModes(IMyTerminalBlock block, int count, int id)
         {
             var logic = block?.Components?.Get<WeaponComponent>();
-            return logic != null;
+            var enable = logic != null && logic.Platform.Weapons.Length -1 >= id;
+            Log.Line($"{count} - {id} - {enable}");
+
+            return enable;
         }
 
         internal static long GetModes(IMyTerminalBlock block)

@@ -48,7 +48,7 @@ namespace WeaponCore.Platform
             _ticksUntilShoot++;
             if (ShotCounter != 0) return;
             _shots++;
-
+            if (Target != null) Log.Line($"TargetMarked:{Target.MarkedForClose} - {(Target as MyCubeBlock).MarkedForClose}");
             if (!IsShooting) StartShooting();
             if (_ticksUntilShoot < System.DelayToFire) return;
 
@@ -146,13 +146,13 @@ namespace WeaponCore.Platform
             if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
             {
                 Log.Line("ShootRayCheck: out of range");
-                Target = null;
+                TargetExpired = true;
                 return;
             }
             if (!TrackingAi && !ValidTarget(this, Target))
             {
                 Log.Line("ShootRayCheck: not trackingAi and notValid target");
-                Target = null;
+                TargetExpired = true;
                 return;
             }
 
@@ -176,7 +176,7 @@ namespace WeaponCore.Platform
                     if (isGrid == Comp.MyGrid || isGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, isGrid) || parentIsGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, parentIsGrid))
                     {
                         Log.Line($"ShootRayCheck: succeed friendly grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
-                        Target = null;
+                        TargetExpired = true;
                         return;
                     }
                     Log.Line($"ShootRayCheck: succeed unknown reason: {((MyEntity)hitInfo.HitEntity).DebugName}");
@@ -185,7 +185,7 @@ namespace WeaponCore.Platform
                 if (hitInfo?.HitEntity == null) Log.Line($"ShootRayCheck: rayCheck Failed: null");
                 else if (hitInfo?.HitEntity != null) Log.Line($"ShootRayCheck: rayCheck Failed: {((MyEntity)hitInfo.HitEntity).DebugName}");
                 else Log.Line("ShootRayCheck: failed for some unknown reason");
-                Target = null;
+                TargetExpired = true;
             }
         }
 

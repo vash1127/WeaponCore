@@ -22,62 +22,53 @@ namespace WeaponCore.Support
             //RegisterGridEvents(grid);
         }
 
-        internal void SelectTarget(ref MyEntity target, Weapon weapon)
+        internal void SelectTarget(ref MyEntity newTarget, Weapon weapon)
         {
-            var cube = target as MyCubeBlock;
-            if (target != null && !target.MarkedForClose && (cube == null || !cube.MarkedForClose)) return;
+            //var cube = target as MyCubeBlock;
+            //if (target != null && !target.MarkedForClose && (cube != null && !cube.MarkedForClose)) return;
 
             Stale = true;
-
-            if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
+            //if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
+            Log.Line($"{weapon.System.WeaponName} - running select target");
             weapon.CheckedForTargetTick = MySession.Tick;
             UpdateTarget(weapon, out var targetInfo);
             if (targetInfo.HasValue)
             {
-                target = targetInfo.Value.Target;
-                weapon.Comp.Turret.EnableIdleRotation = false;
-                var grid = target as MyCubeGrid;
+                newTarget = targetInfo.Value.Target;
+                //weapon.Comp.Turret.EnableIdleRotation = false;
+                var grid = newTarget as MyCubeGrid;
                 if (grid == null)
                 {
-                    Log.Line($"wepaon targetting nonGrid: {weapon.System.WeaponName}");
+                    Log.Line($"{weapon.System.WeaponName} - targetting nonGrid: {weapon.System.WeaponName}");
                     return;
                 }
 
-                if (targetInfo.Value.Cubes.Count <= 0)
+                if (targetInfo.Value.TypeDict.Count <= 0)
                 {
-                    Log.Line($"weapon sees no valid cubes: {weapon.System.WeaponName}");
-                    target = null;
+                    Log.Line($"{weapon.System.WeaponName} - sees no valid cubes: {weapon.System.WeaponName}");
+                    newTarget = null;
                     return;
                 }
-                var found = false;
                 var physics = MyAPIGateway.Physics;
                 var weaponPos = weapon.Comp.MyPivotPos;
-                var blockCount = targetInfo.Value.Cubes.Count;
+                var allBlocks = targetInfo.Value.TypeDict[BlockTypes.All];
+                var blockCount = allBlocks.Count;
                 var deck = GetDeck(ref weapon.Deck, ref weapon.PrevDeckLength,0, blockCount);
                 for (int i = 0; i < blockCount; i++)
                 {
-                    var block = targetInfo.Value.Cubes[deck[i]];
+                    var block = allBlocks[deck[i]];
                     if (block.MarkedForClose) continue;
 
                     physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out var hitInfo, 15);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
 
-                    var isGrid = hitInfo.HitEntity as MyCubeGrid;
-                    var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
-                    if (isGrid == weapon.Comp.MyGrid) continue;
-                    if (isGrid != null && !GridEnemy(weapon.Comp.MyCube, isGrid) || parentIsGrid != null && !GridEnemy(weapon.Comp.MyCube, parentIsGrid)) continue;
-
-                    target = block;
-                    found = true;
-                }
-                if (!found)
-                {
-                    target = null;
-                    Log.Line($"never picked block: {weapon.System.WeaponName}");
+                    Log.Line($"{weapon.System.WeaponName} - found block");
+                    newTarget = block;
+                    return;
                 }
             }
-            Log.Line($"{weapon.System.WeaponName} no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
+            Log.Line($"{weapon.System.WeaponName} - no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
         }
 
         internal void UpdateTarget(Weapon weapon, out TargetInfo? targetInfo)
@@ -91,17 +82,18 @@ namespace WeaponCore.Support
                 if (weapon.TrackTarget)
                     if (!Weapon.TrackingTarget(weapon, info.Target))
                     {
-                        Log.Line($"no trackingTarget: {weapon.System.WeaponName}");
+                        Log.Line($"{weapon.System.WeaponName} - no trackingTarget - marked:{info.Target.MarkedForClose}");
                         continue;
                     }
                 else if (!Weapon.ValidTarget(weapon, info.Target, true))
                     {
-                        Log.Line($"no valid target: {weapon.System.WeaponName} - targetClosed:{info.Target.MarkedForClose} - trackingTarget:{weapon.Comp.TrackingWeapon.Target != null} - trackingClosed:{weapon.Comp.TrackingWeapon.Target?.MarkedForClose}");
+                        Log.Line($"{weapon.System.WeaponName} - no valid target - marked:{info.Target.MarkedForClose} - trackingTarget:{weapon.Comp.TrackingWeapon.Target != null} - trackingClosed:{weapon.Comp.TrackingWeapon.Target?.MarkedForClose}");
                         continue;
                     }
 
                 if (info.IsGrid)
                 {
+                    Log.Line($"{weapon.System.WeaponName} - found grid");
                     targetInfo = info;
                     return;
                 }
@@ -109,11 +101,12 @@ namespace WeaponCore.Support
                 physics.CastRay(weaponPos, info.Target.PositionComp.GetPosition(), out var hitInfo,15, true);
                 if (hitInfo?.HitEntity == info.Target)
                 {
+                    Log.Line($"{weapon.System.WeaponName} - found something");
                     targetInfo = info;
                     return;
                 }
             }
-            Log.Line($"failed to update targets: {weapon.System.WeaponName}");
+            Log.Line($"{weapon.System.WeaponName} - failed to update targets");
             targetInfo = null;
         }
 
@@ -132,8 +125,7 @@ namespace WeaponCore.Support
             var totalTargets = p.Ai.SortedTargets.Count;
             var topTargets = p.System.Values.Ammo.Trajectory.Smarts.TopTargets;
             if (topTargets > 0 && totalTargets < topTargets) topTargets = totalTargets;
-            TargetInfo? targetInfo;
-            GetTarget(p.Ai, p.Position, p.DistanceToTravelSqr, p.TargetShuffle, p.TargetShuffleLen, topTargets, out targetInfo);
+            GetTarget(p.Ai, p.Position, p.DistanceToTravelSqr, p.TargetShuffle, p.TargetShuffleLen, topTargets, out var targetInfo);
             if (targetInfo.HasValue)
             {
                 p.Target = targetInfo.Value.Target;
@@ -144,24 +136,25 @@ namespace WeaponCore.Support
                     return true;
                 }
 
-                if (targetInfo.Value.Cubes == null)
+                var cubes = targetInfo.Value.TypeDict[BlockTypes.All];
+                if (cubes == null)
                 {
                     Log.Line($"cube list is null");
                     return false;
                 }
                 if (p.Ai.Targeting.AllowScanning) Log.Line($"allow scanning was true!");
-                if (!targetInfo.Value.IsGrid || targetInfo.Value.Cubes.Count <= 0)
+                if (!targetInfo.Value.IsGrid || cubes.Count <= 0)
                 {
                     p.Target = null;
                     Log.Line("reacquired new target was not null and is grid but could not get target blocks");
                     return false;
                 }
 
-                var totalBlocks = targetInfo.Value.Cubes.Count;
+                var totalBlocks = cubes.Count;
                 var firstBlocks = p.System.Values.Ammo.Trajectory.Smarts.TopBlocks;
                 if (firstBlocks > 0 && totalBlocks < firstBlocks) firstBlocks = totalBlocks;
 
-                var gotBlock = GetBlock(out p.Target, targetInfo.Value.Cubes, p.BlockSuffle, p.BlockShuffleLen, firstBlocks, p.Position, p.FiringCube, false);
+                var gotBlock = GetBlock(out p.Target, cubes, p.BlockSuffle, p.BlockShuffleLen, firstBlocks, p.Position, p.FiringCube, false);
                 return gotBlock;
             }
             Log.Line($"GetTarget returned null: sortedTargets:{p.Ai.SortedTargets.Count}");
@@ -209,8 +202,7 @@ namespace WeaponCore.Support
 
                 if (checkRay)
                 {
-                    IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out hitInfo, 15);
+                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out var hitInfo, 15);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
 
@@ -225,6 +217,5 @@ namespace WeaponCore.Support
             target = newTarget;
             return newTarget != null;
         }
-
     }
 }

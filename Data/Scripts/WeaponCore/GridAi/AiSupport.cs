@@ -50,9 +50,7 @@ namespace WeaponCore.Support
 
         private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort)
         {
-            var min = firstCard;
-            var max = cardsToSort - 1;
-            var count = max - min + 1;
+            var count = cardsToSort - firstCard;
             if (prevDeckLen != count)
             {
                 Array.Resize(ref deck, count);
@@ -64,7 +62,7 @@ namespace WeaponCore.Support
                 var j = MyUtils.GetRandomInt(0, i + 1);
 
                 deck[i] = deck[j];
-                deck[j] = min + i;
+                deck[j] = firstCard + i;
             }
             return deck;
         }
@@ -133,13 +131,13 @@ namespace WeaponCore.Support
         internal struct DetectInfo
         {
             internal MyEntity Parent;
-            internal List<MyCubeBlock> Cubes;
+            internal Dictionary<BlockTypes, List<MyCubeBlock>> DictTypes;
             internal MyDetectedEntityInfo EntInfo;
 
-            public DetectInfo(MyEntity parent, List<MyCubeBlock> cubes, MyDetectedEntityInfo entInfo)
+            public DetectInfo(MyEntity parent, Dictionary<BlockTypes, List<MyCubeBlock>> dictTypes, MyDetectedEntityInfo entInfo)
             {
                 Parent = parent;
-                Cubes = cubes;
+                DictTypes = dictTypes;
                 EntInfo = entInfo;
             }
         }
@@ -167,9 +165,9 @@ namespace WeaponCore.Support
             internal readonly int PartCount;
             internal readonly MyCubeGrid MyGrid;
             internal readonly GridTargetingAi Ai;
-            internal List<MyCubeBlock> Cubes;
+            internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
 
-            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, List<MyCubeBlock> cubes, int partCount, MyCubeGrid myGrid, GridTargetingAi ai)
+            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridTargetingAi ai)
             {
                 EntInfo = entInfo;
                 Target = target;
@@ -177,16 +175,21 @@ namespace WeaponCore.Support
                 PartCount = partCount;
                 MyGrid = myGrid;
                 Ai = ai;
-                Cubes = cubes;
+                TypeDict = typeDict;
             }
 
             internal bool Clean()
             {
-                if (Cubes != null)
+                if (TypeDict != null)
                 {
-                    Cubes.Clear();
-                    Ai.CubePool.Return(Cubes);
-                    Cubes = null;
+                    foreach (var type in TypeDict)
+                    {
+                        type.Value.Clear();
+                        Ai.CubePool.Return(type.Value);
+                    }
+                    TypeDict.Clear();
+                    Ai.BlockTypePool.Return(TypeDict);
+                    TypeDict = null;
                 }
                 return true;
             }
