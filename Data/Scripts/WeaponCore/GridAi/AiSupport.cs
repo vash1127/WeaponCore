@@ -16,19 +16,29 @@ namespace WeaponCore.Support
     {
         internal void TimeToUpdateDb()
         {
-            var notValid = MyGrid == null || MyGrid.MarkedForClose;
-            var bigOwners = MyGrid?.BigOwners;
-            if (notValid || bigOwners == null || bigOwners.Count <= 0)
-            {
-                MyOwner = 0;
-                return;
-            }
-            MyOwner = bigOwners[0];
-
+            if (!UpdateOwner()) return;
             if (Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
             Session.Instance.DbsToUpdate.Add(this);
 
             TargetsUpdatedTick = MySession.Tick;
+        }
+
+        private bool UpdateOwner()
+        {
+            if (MyGrid == null || MyGrid.MarkedForClose)
+            {
+                MyOwner = 0;
+                return false;
+            }
+
+            var bigOwners = MyGrid.BigOwners;
+            if (bigOwners == null || bigOwners.Count <= 0)
+            {
+                MyOwner = 0;
+                return false;
+            }
+            MyOwner = bigOwners[0];
+            return true;
         }
 
         public void SubGridInfo()
