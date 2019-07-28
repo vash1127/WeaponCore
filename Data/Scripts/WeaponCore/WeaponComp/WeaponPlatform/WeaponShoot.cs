@@ -216,7 +216,7 @@ namespace WeaponCore.Platform
                         }
                         return;
                     }
-                    Log.Line($"ShootRayCheck: succeed unknown reason: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    Log.Line($"ShootRayCheck: non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
                 if (hitInfo?.HitEntity == null) Log.Line($"ShootRayCheck: rayCheck Failed: null");

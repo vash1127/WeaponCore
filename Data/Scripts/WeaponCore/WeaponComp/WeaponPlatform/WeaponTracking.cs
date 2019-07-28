@@ -35,7 +35,7 @@ namespace WeaponCore.Platform
                 if (!isAligned)
                 {
                     DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Green, 0.1f);
-                    Log.Line($"[ValidTarget - CheckOnly] {weapon.System.WeaponName} - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
+                    //Log.Line($"[ValidTarget - CheckOnly] {weapon.System.WeaponName} - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
                 }
                 return isAligned;
             }
@@ -46,7 +46,7 @@ namespace WeaponCore.Platform
             if (!isAligned)
             {
                 DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Green, 0.1f);
-                Log.Line($"[ValidTarget] {weapon.System.WeaponName} - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
+                Log.Line($"{weapon.System.WeaponName} - notAligned - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon:{weapon == weapon.Comp.TrackingWeapon}");
             }
             return isAligned;
         }
@@ -135,7 +135,7 @@ namespace WeaponCore.Platform
             {
                 if (inRange) DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Blue, 0.1f);
                 else DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
-                Log.Line($"[TrackingTarget] {weapon.System.WeaponName} is not tracking: marked:{target.MarkedForClose} - Pos:{target.PositionComp.GetPosition()}");
+                Log.Line($"{weapon.System.WeaponName} - is not tracking - marked:{target.MarkedForClose} - Pos:{target.PositionComp.GetPosition()} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon:{weapon == weapon.Comp.TrackingWeapon}");
                 weapon.SeekTarget = true;
             }
 
@@ -150,7 +150,7 @@ namespace WeaponCore.Platform
 
                 if (inRange) DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Blue, 0.1f);
                 else DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
-                Log.Line($"[align fail] {weapon.System.WeaponName} - marked:{target.MarkedForClose} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon;{weapon == weapon.Comp.TrackingWeapon}");
+                Log.Line($"{weapon.System.WeaponName} - align change NoDelayCeaseFire - inRange:{inRange} - isAligned:{isAligned} - wasAligned:{wasAligned} - marked:{target.MarkedForClose} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon:{weapon == weapon.Comp.TrackingWeapon}");
                 weapon.StopShooting();
             }
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
