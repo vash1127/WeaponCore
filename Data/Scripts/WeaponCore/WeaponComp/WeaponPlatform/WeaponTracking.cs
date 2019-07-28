@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.HardPointDefinition;
@@ -50,7 +53,6 @@ namespace WeaponCore.Platform
 
         internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
         {
-            if (weapon.LastTargetCheck >= 20) weapon.LastTargetCheck = 0;
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var prediction = weapon.System.Values.HardPoint.TargetPrediction;
@@ -90,8 +92,9 @@ namespace WeaponCore.Platform
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
             if (!weapon.IsTracking)
             {
-                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
-                Log.Line($"[TrackingTarget] {weapon.System.WeaponName} is not tracking: marked:{target.MarkedForClose} - inTurnRange:{inRange} - azvalid:{!azConstrained} - elValid:{!elConstrained}");
+                if (inRange) DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Blue, 0.1f);
+                else DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                //Log.Line($"[TrackingTarget] {weapon.System.WeaponName} is not tracking: marked:{target.MarkedForClose} - inRange:{inRange} - azvalid:{!azConstrained} - elValid:{!elConstrained}");
             }
             if (!step) return weapon.IsTracking;
 
@@ -126,7 +129,8 @@ namespace WeaponCore.Platform
             }
             else
             {
-                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+                if (inRange) DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Blue, 0.1f);
+                else DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
                 Log.Line($"[TrackingTarget] {weapon.System.WeaponName} is not tracking: marked:{target.MarkedForClose} - Pos:{target.PositionComp.GetPosition()}");
                 weapon.SeekTarget = true;
             }
@@ -139,13 +143,16 @@ namespace WeaponCore.Platform
             if (alignedChange && isAligned) weapon.StartShooting();
             else if (alignedChange && !weapon.DelayCeaseFire)
             {
-                DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
+
+                if (inRange) DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Blue, 0.1f);
+                else DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Red, 0.1f);
                 Log.Line($"[align fail] {weapon.System.WeaponName} - marked:{target.MarkedForClose} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon;{weapon == weapon.Comp.TrackingWeapon}");
                 weapon.StopShooting();
             }
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
             return weapon.IsTracking;
         }
+
 
         private static bool IsTargetInView(Weapon weapon, Vector3D predPos)
         {

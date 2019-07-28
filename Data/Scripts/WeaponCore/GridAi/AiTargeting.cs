@@ -24,18 +24,13 @@ namespace WeaponCore.Support
 
         internal void SelectTarget(ref MyEntity newTarget, Weapon weapon)
         {
-            //var cube = target as MyCubeBlock;
-            //if (target != null && !target.MarkedForClose && (cube != null && !cube.MarkedForClose)) return;
-
             Stale = true;
-            //if (MySession.Tick - weapon.CheckedForTargetTick < 100) return;
             Log.Line($"{weapon.System.WeaponName} - running select target");
-            weapon.CheckedForTargetTick = MySession.Tick;
             UpdateTarget(weapon, out var targetInfo);
             if (targetInfo.HasValue)
             {
+                weapon.LastTargetCheck = 0;
                 newTarget = targetInfo.Value.Target;
-                //weapon.Comp.Turret.EnableIdleRotation = false;
                 var grid = newTarget as MyCubeGrid;
                 if (grid == null)
                 {
@@ -68,6 +63,8 @@ namespace WeaponCore.Support
                     return;
                 }
             }
+            weapon.LastTargetCheck = 1;
+            newTarget = null;
             Log.Line($"{weapon.System.WeaponName} - no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
         }
 
@@ -82,7 +79,7 @@ namespace WeaponCore.Support
                 if (weapon.TrackTarget)
                     if (!Weapon.TrackingTarget(weapon, info.Target))
                     {
-                        Log.Line($"{weapon.System.WeaponName} - no trackingTarget - marked:{info.Target.MarkedForClose}");
+                        //Log.Line($"{weapon.System.WeaponName} - no trackingTarget - marked:{info.Target.MarkedForClose}");
                         continue;
                     }
                 else if (!Weapon.ValidTarget(weapon, info.Target, true))

@@ -37,10 +37,10 @@ namespace WeaponCore
                             DamageShield(hitEnt, projectile);
                             continue;
                         case HitEntity.Type.Grid:
-                            DsUtil.Sw.Restart();
+                            //DsUtil.Sw.Restart();
                             DamageGrid(hitEnt, projectile);
-                            var test = DsUtil.StopWatchReport("");
-                            Log.Line($"{test}");
+                            //var test = DsUtil.StopWatchReport("");
+                            //Log.Line($"{test}");
                             continue;
                         case HitEntity.Type.Destroyable:
                             DamageDestObj(hitEnt, projectile);
@@ -87,7 +87,7 @@ namespace WeaponCore
 
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
-                Log.Line($"grid something is null: gridNull:{grid == null} - gridMarked:{grid?.MarkedForClose} - noHitValue:{!hitEnt.HitPos.HasValue} - blocksNull:{hitEnt.Blocks == null}");
+                //Log.Line($"grid something is null: gridNull:{grid == null} - gridMarked:{grid?.MarkedForClose} - noHitValue:{!hitEnt.HitPos.HasValue} - blocksNull:{hitEnt.Blocks == null}");
                 hitEnt.Blocks?.Clear();
                 return;
             }

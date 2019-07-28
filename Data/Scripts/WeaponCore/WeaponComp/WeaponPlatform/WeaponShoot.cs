@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
@@ -48,7 +49,6 @@ namespace WeaponCore.Platform
             _ticksUntilShoot++;
             if (ShotCounter != 0) return;
             _shots++;
-            if (Target != null) Log.Line($"TargetMarked:{Target.MarkedForClose} - {(Target as MyCubeBlock).MarkedForClose}");
             if (!IsShooting) StartShooting();
             if (_ticksUntilShoot < System.DelayToFire) return;
 
