@@ -140,8 +140,15 @@ namespace WeaponCore.Platform
         private void ShootRayCheck()
         {
             Comp.LastRayCastTick = Comp.MyAi.MySession.Tick;
-            var targetPos = Target.PositionComp.GetPosition();
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
+            if (Target == null || Target.MarkedForClose)
+            {
+                masterWeapon.TargetExpired = true;
+                if (masterWeapon != this) TargetExpired = true;
+                return;
+            }
+
+            var targetPos = Target.PositionComp.GetPosition();
             if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
             {
                 Log.Line("ShootRayCheck: out of range");
