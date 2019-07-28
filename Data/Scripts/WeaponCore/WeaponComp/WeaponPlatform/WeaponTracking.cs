@@ -35,7 +35,7 @@ namespace WeaponCore.Platform
                 if (!isAligned)
                 {
                     DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Green, 0.1f);
-                    //Log.Line($"[ValidTarget - CheckOnly] {weapon.System.WeaponName} - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
+                    Log.Line($"{weapon.System.WeaponName} - secondary weapon notAligned - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)}");
                 }
                 return isAligned;
             }
@@ -46,7 +46,7 @@ namespace WeaponCore.Platform
             if (!isAligned)
             {
                 DsDebugDraw.DrawLine(weapon.Comp.MyPivotPos, targetPos, Color.Green, 0.1f);
-                Log.Line($"{weapon.System.WeaponName} - notAligned - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon:{weapon == weapon.Comp.TrackingWeapon}");
+                Log.Line($"{weapon.System.WeaponName} - secondary weapon notAligned - inRange:{inRange} - isAligned:{IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance)} ");
             }
             return isAligned;
         }

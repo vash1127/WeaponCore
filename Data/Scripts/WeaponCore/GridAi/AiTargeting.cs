@@ -72,7 +72,7 @@ namespace WeaponCore.Support
                 }
             }
             weapon.LastTargetCheck = 1;
-            Log.Line($"{weapon.System.WeaponName} - oldTargetNull:{newTarget == null} - oldTargetMarked:{newTarget?.MarkedForClose} - no valid target returned, checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
+            Log.Line($"{weapon.System.WeaponName} - no valid target returned - oldTargetNull:{newTarget == null} - oldTargetMarked:{newTarget?.MarkedForClose} - checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
             newTarget = null;
         }
 
@@ -86,17 +86,9 @@ namespace WeaponCore.Support
 
                 if (weapon.TrackingAi)
                 {
-                    if (!Weapon.TrackingTarget(weapon, info.Target))
-                    {
-                        //Log.Line($"{weapon.System.WeaponName} - no trackingTarget - marked:{info.Target.MarkedForClose}");
-                        continue;
-                    }
+                    if (!Weapon.TrackingTarget(weapon, info.Target)) continue;
                 }
-                else if (!Weapon.ValidTarget(weapon, info.Target, true))
-                {
-                    Log.Line($"{weapon.System.WeaponName} - no valid target - marked:{info.Target.MarkedForClose} - trackingTarget:{weapon.Comp.TrackingWeapon.Target != null} - trackingClosed:{weapon.Comp.TrackingWeapon.Target?.MarkedForClose}");
-                    continue;
-                }
+                else if (!Weapon.ValidTarget(weapon, info.Target, true)) continue;
 
                 if (info.IsGrid)
                 {
