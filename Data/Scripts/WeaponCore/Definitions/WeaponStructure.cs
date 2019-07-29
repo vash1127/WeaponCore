@@ -53,6 +53,7 @@ namespace WeaponCore.Support
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float ShotEnergyCost;
+        public readonly float WepCooldown;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -112,6 +113,9 @@ namespace WeaponCore.Support
             DegROF = values.HardPoint.Loading.DegradeROF;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             HeatPShot = values.HardPoint.Loading.HeatPerShot;
+            WepCooldown = values.HardPoint.Loading.Cooldown;
+            if(WepCooldown < .2) WepCooldown = .2;
+            if(WepCooldown > .95) WepCooldown = .95;
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";

@@ -81,10 +81,11 @@ namespace WeaponCore.Support
         [ProtoMember(6)] internal int HeatPerShot;
         [ProtoMember(7)] internal int MaxHeat;
         [ProtoMember(8)] internal int HeatSinkRate;
-        [ProtoMember(9)] internal int DelayUntilFire;
-        [ProtoMember(10)] internal int ShotsInBurst;
-        [ProtoMember(11)] internal int DelayAfterBurst;
-        [ProtoMember(12)] internal bool DegradeROF;
+        [ProtoMember(9)] internal float Cooldown;
+        [ProtoMember(10)] internal int DelayUntilFire;
+        [ProtoMember(11)] internal int ShotsInBurst;
+        [ProtoMember(12)] internal int DelayAfterBurst;
+        [ProtoMember(13)] internal bool DegradeROF;
     }
 
     [ProtoContract]
