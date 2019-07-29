@@ -36,12 +36,6 @@ namespace WeaponCore.Platform
                 _lastShotTick = tick;
             }
 
-            if(Comp.MyAi.MySession.Tick60)
-            {
-                CurrentHeat -= System.Values.HardPoint.Loading.HeatSinkRate;
-                if(CurrentHeat < 0) CurrentHeat = 0;
-            }
-
             if (AvCapable && (!PlayTurretAv || Comp.MyAi.MySession.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointSoundMaxDistSqr;
 
@@ -55,12 +49,6 @@ namespace WeaponCore.Platform
             _ticksUntilShoot++;
             if (ShotCounter != 0) return;
             _shots++;
-
-
-            if(!Overheated && CurrentHeat > _maxHeat) Overheated = true;
-
-            if (Overheated && CurrentHeat > (_maxHeat * .7)) return;
-            else Overheated = false;
 
             if (!IsShooting) StartShooting();
 
@@ -146,7 +134,9 @@ namespace WeaponCore.Platform
                     }
                 }
 
-                CurrentHeat += System.Values.HardPoint.Loading.HeatPerRoF;
+                CurrentHeat += System.HeatROF;
+
+                if(CurrentHeat > System.MaxHeat) Overheated = true;
 
                 if (i == bps) NextMuzzle++;
 
@@ -249,7 +239,7 @@ namespace WeaponCore.Platform
         {
             BarrelMove = true;
             double radiansPerShot;
-            if(DegROF && CurrentHeat > (_maxHeat *.8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (CurrentHeat/_maxHeat);
+            if(System.DegROF && CurrentHeat > (System.MaxHeat *.8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (CurrentHeat/System.MaxHeat);
             if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
             else  radiansPerShot = 2 * Math.PI / _numOfBarrels;
             var radians = radiansPerShot / _timePerShot;

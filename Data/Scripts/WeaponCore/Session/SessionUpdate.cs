@@ -66,7 +66,14 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
+                        if(Tick60){
+                            w.CurrentHeat -= w.HSRate;
+                            if(w.CurrentHeat < 0) w.CurrentHeat = 0;
+                        }
+
+                        if(w.CurrentHeat <= (w.System.MaxHeat*.6)) w.Overheated = false;
+
+                        if (!w.Overheated && w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                         else if (w.IsShooting)
                         {
                             //Log.Line($"ai not ready");

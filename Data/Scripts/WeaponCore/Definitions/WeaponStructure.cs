@@ -24,6 +24,8 @@ namespace WeaponCore.Support
         public readonly int MaxObjectsHit;
         public readonly int TargetLossTime;
         public readonly int ModelId;
+        public readonly int MaxHeat;
+        public readonly int HeatROF;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -46,6 +48,7 @@ namespace WeaponCore.Support
         public readonly bool TargetOffSet;
         public readonly bool OrderedTargets;
         public readonly bool SortBlocks;
+        public readonly bool DegROF;
         public readonly double MaxTrajectorySqr;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
@@ -106,6 +109,9 @@ namespace WeaponCore.Support
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
+            DegROF = values.HardPoint.Loading.DegradeROF;
+            MaxHeat = values.HardPoint.Loading.MaxHeat;
+            HeatROF = values.HardPoint.Loading.HeatPerRoF;
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
