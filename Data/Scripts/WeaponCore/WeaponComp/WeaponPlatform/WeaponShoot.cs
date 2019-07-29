@@ -134,7 +134,7 @@ namespace WeaponCore.Platform
                     }
                 }
 
-                CurrentHeat += System.HeatROF;
+                CurrentHeat += System.HeatPShot;
 
                 if(CurrentHeat > System.MaxHeat) Overheated = true;
 

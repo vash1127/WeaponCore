@@ -25,7 +25,7 @@ namespace WeaponCore.Support
         public readonly int TargetLossTime;
         public readonly int ModelId;
         public readonly int MaxHeat;
-        public readonly int HeatROF;
+        public readonly int HeatPShot;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -111,7 +111,7 @@ namespace WeaponCore.Support
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
             DegROF = values.HardPoint.Loading.DegradeROF;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
-            HeatROF = values.HardPoint.Loading.HeatPerRoF;
+            HeatPShot = values.HardPoint.Loading.HeatPerShot;
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
