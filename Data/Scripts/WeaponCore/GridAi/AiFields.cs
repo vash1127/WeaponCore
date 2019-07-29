@@ -32,6 +32,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>> ValidGrids = new Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<BlockTypes> BlockTypeIsSorted = new HashSet<BlockTypes>();
 
         internal List<TargetInfo> SortedTargets = new List<TargetInfo>();
 

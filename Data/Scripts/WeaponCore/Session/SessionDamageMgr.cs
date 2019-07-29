@@ -26,7 +26,6 @@ namespace WeaponCore
                     var hitEnt = projectile.HitList[i];
                     if (projectile.BaseDamagePool <= 0 || projectile.ObjectsHit >= maxObjects)
                     {
-                        //Log.Line($"Depleted1: pool:{projectile.BaseDamagePool} - objHit:{projectile.ObjectsHit}");
                         projectile.State = Projectile.ProjectileState.Depleted;
                         Projectiles.HitEntityPool[projectile.PoolId].Return(hitEnt);
                         continue;
@@ -184,11 +183,8 @@ namespace WeaponCore
                     var blockIsRoot = block == rootBlock;
                     var primaryDamage = primeDamage || blockIsRoot;
 
-                    if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects)
-                    {
-                        //Log.Line($"[break1] pool: outOfPew:{outOfPew} - {damagePool} - radiantBomb:{radiantBomb} - radiant:{radiant} - explosive:{explosive} - i:{i} - j:{j}");
-                        break;
-                    }
+                    if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects) break;
+
                     var scaledDamage = damagePool * damageScale;
 
                     if (primaryDamage)

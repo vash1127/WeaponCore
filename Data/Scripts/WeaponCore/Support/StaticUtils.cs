@@ -1,4 +1,6 @@
-﻿namespace WeaponCore.Support
+﻿using WeaponCore.Platform;
+
+namespace WeaponCore.Support
 {
     using System;
     using System.Collections.Generic;
@@ -16,6 +18,211 @@
 
     internal static class UtilsStatic
     {
+        public static MyCubeBlock GetClosestSortedBlockThatCanBeShot(List<MyCubeBlock> cubes, Weapon weapon)
+        {
+            var minValue = double.MaxValue;
+
+            MyCubeBlock closestCube = null;
+            for (int i = 0; i < cubes.Count; i++)
+            {
+                var cube = cubes[i];
+                if (cube.MarkedForClose) continue;
+                var cubePos = cube.PositionComp.WorldMatrix.Translation;
+                var testPos = weapon.Comp.MyPivotPos;
+                var range = cubePos - testPos;
+                var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
+
+                if (test < minValue)
+                {
+                    if ((weapon.TrackingAi && Weapon.TrackingTarget(weapon, cube, false) || !weapon.TrackingAi && Weapon.ValidTarget(weapon, cube, true)))
+                    {
+                        //MyAPIGateway.Physics.CastRay(cubePos, testPos, out var hitInfo, 15, true);
+                        //var hitent = hitInfo.HitEntity;
+                        //if (hitent != null && !(hitent is MyVoxelBase) && (hitent == cube || hitent == cube.Parent || hitent is MyCubeGrid grid && GridTargetingAi.GridEnemy(weapon.Comp.MyCube, grid)))
+                        {
+                            minValue = test;
+                            closestCube = cube;
+                        }
+                    }
+
+                }
+            }
+            return closestCube;
+        }
+
+        public static bool GetClosestBlocksOfType(List<MyCubeBlock> cubes, MyCubeBlock[] top5, Vector3D testPos, Weapon weapon)
+        {
+            var minValue = double.MaxValue;
+            var minValue0 = double.MaxValue;
+            var minValue1 = double.MaxValue;
+            var minValue2 = double.MaxValue;
+            var minValue3 = double.MaxValue;
+
+            MyCubeBlock closestCube = null;
+            MyCubeBlock closestCube0 = null;
+            MyCubeBlock closestCube1 = null;
+            MyCubeBlock closestCube2 = null;
+            MyCubeBlock closestCube3 = null;
+            var populated = false;
+
+            for (int i = 0; i < cubes.Count; i++)
+            {
+                var cube = cubes[i];
+                if (cube.MarkedForClose) continue;
+                var cubePos = cube.PositionComp.WorldMatrix.Translation;
+                var range = cubePos - testPos;
+                var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
+                if (test < minValue3 )
+                {
+                    if (test < minValue && (weapon.TrackingAi && Weapon.TrackingTarget(weapon, cube, false) || !weapon.TrackingAi && Weapon.ValidTarget(weapon, cube, true) && cube.CubeGrid.RayCastBlocks(testPos, cubePos) == cube.Position))
+                    {
+                        populated = true;
+                        minValue3 = minValue2;
+                        closestCube3 = closestCube2;
+                        minValue2 = minValue1;
+                        closestCube2 = closestCube1;
+                        minValue1 = minValue0;
+                        closestCube1 = closestCube0;
+                        minValue0 = minValue;
+                        closestCube0 = closestCube;
+                        minValue = test;
+                        closestCube = cube;
+                    }
+                    else if (test < minValue0)
+                    {
+                        minValue3 = minValue2;
+                        closestCube3 = closestCube2;
+                        minValue2 = minValue1;
+                        closestCube2 = closestCube1;
+                        minValue1 = minValue0;
+                        closestCube1 = closestCube0;
+                        minValue0 = test;
+                        closestCube0 = cube;
+                    }
+                    else if (test < minValue1)
+                    {
+                        minValue3 = minValue2;
+                        closestCube3 = closestCube2;
+                        minValue2 = minValue1;
+                        closestCube2 = closestCube1;
+                        minValue1 = test;
+                        closestCube1 = cube;
+                    }
+                    else if (test < minValue2)
+                    {
+                        minValue3 = minValue2;
+                        closestCube3 = closestCube2;
+                        minValue2 = test;
+                        closestCube2 = cube;
+                    }
+                    else
+                    {
+                        minValue3 = test;
+                        closestCube3 = cube;
+                    }
+                }
+                top5[0] = closestCube;
+                top5[1] = closestCube0;
+                top5[2] = closestCube1;
+                top5[3] = closestCube2;
+                top5[4] = closestCube3;
+            }
+            return populated;
+        }
+
+        public static class QS
+        {
+
+            public static void swap<T>(List<T> list, int i, int j)
+            {
+                // Swap two element in an array with given indexes.
+                var temp = list[i];
+                list[i] = list[j];
+                list[j] = temp;
+            }
+
+            private static int partition<T>(List<T> list, int lo, int hi)
+              where T : IComparable<T>
+            {
+                /* 
+                ** Partition an array according to a selected pivot, return the index of the pivot.
+                ** Result: Values of elements before pivot are less than the pivot, 
+                ** Values of elements after pivot are greater than or equals to the pivot
+                */
+                int j = lo;
+                var pivot = list[lo];
+                for (int i = lo; i <= hi; i++)
+                {
+                    if (list[i].CompareTo(pivot) >= 0)
+                    {
+                        continue;
+                    }
+                    j++;
+                    swap(list, i, j);
+                }
+                swap(list, lo, j);
+                return j;
+            }
+
+            private static void InsertionSort<T>(List<T> list, int lo, int hi)
+              where T : IComparable<T>
+            {
+                /* To deal with small arrays
+                ** Loop through the array from the second element, insert the element to the correct position
+                ** 
+                */
+                for (int i = lo + 1; i <= hi; i++)
+                {
+
+                    int j = i - 1;
+                    var x = list[i];
+                    while (j >= lo && list[j].CompareTo(x) > 0)
+                    {
+                        list[j + 1] = list[j];
+                        j--;
+                    }
+                    list[j + 1] = x;
+                }
+            }
+
+            public static void QuickSort<T>(List<T> list, int lo, int hi)
+              where T : IComparable<T>
+            {
+                /*
+                ** QuickSort an array, if the array length is less than 40, use InsertionSort instead. 
+                ** 
+                */
+                if (hi - lo < 40)
+                {
+                    InsertionSort(list, lo, hi);
+                }
+                else
+                {
+                    int p = partition(list, lo, hi);
+                    QuickSort(list, lo, p - 1);
+                    QuickSort(list, p + 1, hi);
+                }
+            }
+
+
+            public static void QuickSortParallel<T>(List<T> list, int lo, int hi)
+              where T : IComparable<T>
+            {
+                if (hi - lo < 2000)
+                {
+                    QuickSort(list, lo, hi);
+                }
+                else
+                {
+                    int p = partition(list, lo, hi);
+                    MyAPIGateway.Parallel.Start(
+                      () => QuickSortParallel(list, lo, p - 1),
+                      () => QuickSortParallel(list, p + 1, hi)
+                    );
+                }
+            }
+        }
+
         public static void UpdateTerminal(this MyCubeBlock block)
         {
             MyOwnershipShareModeEnum shareMode;

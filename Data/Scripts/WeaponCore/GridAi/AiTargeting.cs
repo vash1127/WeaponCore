@@ -19,7 +19,6 @@ namespace WeaponCore.Support
             MySession = mySession;
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
             Rnd = new Random((int)MyGrid.EntityId);
-            //RegisterGridEvents(grid);
         }
 
         internal void SelectTarget(ref MyEntity newTarget, Weapon weapon)
@@ -45,21 +44,52 @@ namespace WeaponCore.Support
                 }
                 var physics = MyAPIGateway.Physics;
                 var weaponPos = weapon.Comp.MyPivotPos;
-
-                var allBlocks = targetInfo.Value.TypeDict[BlockTypes.Any];
+                var blockList = targetInfo.Value.TypeDict[BlockTypes.Any];
                 if (weapon.OrderedTargets) {
                     foreach(var bt in weapon.System.Values.HardPoint.Targeting.Priorities) {
                         if (targetInfo.Value.TypeDict[bt].Count > 0) {
-                            allBlocks = targetInfo.Value.TypeDict[bt];
+                            blockList = targetInfo.Value.TypeDict[bt];
+                            DsWatch.Sw.Restart();
+                            //UtilsStatic.GetClosestBlocksOfType(blockList, weapon.ClosestBlocksByType, weaponPos, weapon);
+                            newTarget = UtilsStatic.GetClosestSortedBlockThatCanBeShot(blockList, weapon);
+                            var result = DsWatch.StopWatchReport("");
+                            Log.Line($"top5SortTime: {result} - sortedBlocks:{blockList.Count}");
+                            if (newTarget != null) return;
+                            break;
                         }
                     }
                 }
 
-                var blockCount = allBlocks.Count;
-                var deck = GetDeck(ref weapon.Deck, ref weapon.PrevDeckLength,0, blockCount);
-                for (int i = 0; i < blockCount; i++)
+                /*
+                if (weapon.System.SortBlocks && !BlockTypeIsSorted.Contains(bt))
                 {
-                    var block = allBlocks[deck[i]];
+                    BlockTypeIsSorted.Add(bt);
+                    blockList.Sort((x, y) =>
+                    {
+                        var testPos = MyGrid.PositionComp.WorldAABB.Center;
+                        var xPos = x.PositionComp.WorldMatrix.Translation;
+                        if (xPos == Vector3D.Zero) xPos = Vector3D.MaxValue;
+                        var yPos = y.PositionComp.WorldMatrix.Translation;
+                        if (yPos == Vector3D.Zero) yPos = Vector3D.MaxValue;
+                        return Vector3D.DistanceSquared(testPos, xPos).CompareTo(Vector3D.DistanceSquared(testPos, yPos));
+                    });
+                }
+                */
+
+                var totalBlocks = blockList.Count;
+                var lastBlocks = weapon.System.Values.Ammo.Trajectory.Smarts.TopBlocks;
+                if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
+                int[] deck = null;
+                if (lastBlocks > 0) deck = GetDeck(ref weapon.Deck, ref weapon.PrevDeckLength, 0, lastBlocks);
+
+                for (int i = 0; i < totalBlocks; i++)
+                {
+                    int next = i;
+                    if (i < lastBlocks)
+                    {
+                        if (deck != null) next = deck[i];
+                    }
+                    var block = blockList[next];
                     if (block.MarkedForClose) continue;
 
                     physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out var hitInfo, 15);
@@ -72,8 +102,9 @@ namespace WeaponCore.Support
                 }
             }
             weapon.LastTargetCheck = 1;
-            Log.Line($"{weapon.System.WeaponName} - no valid target returned - oldTargetNull:{newTarget == null} - oldTargetMarked:{newTarget?.MarkedForClose} - checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
             newTarget = null;
+            Log.Line($"{weapon.System.WeaponName} - no valid target returned - oldTargetNull:{newTarget == null} - oldTargetMarked:{newTarget?.MarkedForClose} - checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
+            weapon.TargetExpired = true;
         }
 
         internal void UpdateTarget(Weapon weapon, out TargetInfo? targetInfo)

@@ -45,11 +45,11 @@ namespace WeaponCore.Support
         public readonly bool CustomDamageScales;
         public readonly bool TargetOffSet;
         public readonly bool OrderedTargets;
+        public readonly bool SortBlocks;
         public readonly double MaxTrajectorySqr;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float ShotEnergyCost;
-
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -97,6 +97,7 @@ namespace WeaponCore.Support
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
 
+            SortBlocks = values.HardPoint.Targeting.Sort;
             OrderedTargets = values.HardPoint.Targeting.Enable;
             TargetOffSet = values.Ammo.Trajectory.Smarts.Inaccuracy > 0;
             TimeToCeaseFire = values.HardPoint.DelayCeaseFire;

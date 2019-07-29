@@ -67,6 +67,7 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal BlockTypes[] Priorities;
         [ProtoMember(2)] internal bool Enable;
+        [ProtoMember(3)] internal bool Sort;
     }
 
     [ProtoContract]

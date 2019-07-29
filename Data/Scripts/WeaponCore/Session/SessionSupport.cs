@@ -37,16 +37,14 @@ namespace WeaponCore
                     if (grid == null)
                         targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
                     else
-                    {
-                        if (dictTypes == null || grid.GetFatBlocks().Count > 0 && dictTypes[GridTargetingAi.BlockTypes.Any].Count < 0) Log.Line($"{grid.DebugName} has no cubes in ProcessDbsCallBack");
                         targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, grid, true, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db) { TypeDict = dictTypes };
-                    }
 
                     db.SortedTargets.Add(targetInfo);
                 }
                 db.SortedTargets.Sort(db.TargetCompare1);
                 //Log.Line($"[DB] targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.DbReady = db.SortedTargets.Count > 0;
+                db.BlockTypeIsSorted.Clear();
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
             DbsToUpdate.Clear();

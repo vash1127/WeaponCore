@@ -35,8 +35,7 @@ namespace WeaponCore.Support
                         break;
                 }
 
-                var grid = ent as MyCubeGrid;
-                if (grid != null && !grid.MarkedForClose)
+                if (ent is MyCubeGrid grid && !grid.MarkedForClose)
                 {
                     var typeDict = BlockTypePool.Get();
                     typeDict.Add(BlockTypes.Any, CubePool.Get());
@@ -66,8 +65,7 @@ namespace WeaponCore.Support
                 {
                     for (int i = 0; i < targets.Value.Count; i++)
                     {
-                        var cube = targets.Value[i] as MyCubeBlock;
-                        if (cube != null && !cube.MarkedForClose)
+                        if (targets.Value[i] is MyCubeBlock cube && !cube.MarkedForClose)
                         {
                             typeDict[BlockTypes.Any].Add(cube);
                             if (cube is IMyProductionBlock) typeDict[BlockTypes.Production].Add(cube);

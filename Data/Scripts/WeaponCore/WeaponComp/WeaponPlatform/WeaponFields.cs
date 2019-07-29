@@ -51,7 +51,7 @@ namespace WeaponCore.Platform
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
-
+        internal MyCubeBlock[] ClosestBlocksByType = new MyCubeBlock[5];
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
@@ -159,6 +159,7 @@ namespace WeaponCore.Platform
                 if (System.BarrelEffect2) BarrelEffects2 = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
                 if (System.HitParticle && System.IsBeamWeapon) HitEffects = new MyParticleEffect[System.Values.Assignments.Barrels.Length];
             }
+
             WeaponId = weaponId;
             Enabled = true;
             OrderedTargets = System.Values.HardPoint.Targeting.Enable;
