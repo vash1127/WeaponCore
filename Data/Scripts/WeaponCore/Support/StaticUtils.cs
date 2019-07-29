@@ -1,4 +1,5 @@
-﻿using WeaponCore.Platform;
+﻿using VRage.ModAPI;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -21,8 +22,9 @@ namespace WeaponCore.Support
         public static MyCubeBlock GetClosestSortedBlockThatCanBeShot(List<MyCubeBlock> cubes, Weapon weapon)
         {
             var minValue = double.MaxValue;
-
             MyCubeBlock closestCube = null;
+            var center = cubes[0].CubeGrid.PositionComp.WorldAABB.Center;
+            var goodSphere = new BoundingSphereD(center, 0.01);
             for (int i = 0; i < cubes.Count; i++)
             {
                 var cube = cubes[i];
@@ -32,19 +34,47 @@ namespace WeaponCore.Support
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
 
-                if (test < minValue)
+                if (test < minValue && test <= weapon.System.MaxTrajectorySqr)
                 {
-                    if ((weapon.TrackingAi && Weapon.TrackingTarget(weapon, cube, false) || !weapon.TrackingAi && Weapon.ValidTarget(weapon, cube, true)))
+                    var hit = goodSphere.Contains(cubePos) != ContainmentType.Disjoint;
+                    if (!hit && Weapon.IsTargetInView(weapon, cubePos))
                     {
-                        //MyAPIGateway.Physics.CastRay(cubePos, testPos, out var hitInfo, 15, true);
-                        //var hitent = hitInfo.HitEntity;
-                        //if (hitent != null && !(hitent is MyVoxelBase) && (hitent == cube || hitent == cube.Parent || hitent is MyCubeGrid grid && GridTargetingAi.GridEnemy(weapon.Comp.MyCube, grid)))
+                        MyAPIGateway.Physics.CastRay(cubePos, testPos, out var hitInfo, 0, true);
+                        var hitent = hitInfo.HitEntity;
+                        var targetGrid = hitent as MyCubeGrid;
+                        if (hitent == null) continue;
+                        if (hitent == cube.CubeGrid)
                         {
-                            minValue = test;
-                            closestCube = cube;
+                            var cubeSphere = cube.PositionComp.WorldVolume;
+                            cubeSphere.Radius = 10;
+                            BoundingSphereD.CreateMerged(ref goodSphere, ref cubeSphere, out goodSphere);
+                            hit = true;
+                        }
+                        else if (targetGrid != null)
+                        {
+                            var goThrough = false;
+                            var owners = targetGrid.BigOwners;
+                            if (owners.Count == 0) goThrough = true;
+                            else
+                            {
+                                var relationship = weapon.Comp.MyCube.GetUserRelationToOwner(owners[0]);
+                                if (relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare)
+                                    goThrough = true;
+                            }
+                            if (goThrough)
+                            {
+                                var cubeSphere = cube.PositionComp.WorldVolume;
+                                cubeSphere.Radius = 10;
+                                BoundingSphereD.CreateMerged(ref goodSphere, ref cubeSphere, out goodSphere);
+                                hit = true;
+                            }
                         }
                     }
-
+                    if (hit)
+                    {
+                        minValue = test;
+                        closestCube = cube;
+                    }
                 }
             }
             return closestCube;

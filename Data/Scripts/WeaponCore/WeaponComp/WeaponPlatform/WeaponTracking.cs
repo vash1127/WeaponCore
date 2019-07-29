@@ -158,7 +158,7 @@ namespace WeaponCore.Platform
         }
 
 
-        private static bool IsTargetInView(Weapon weapon, Vector3D predPos)
+        internal static bool IsTargetInView(Weapon weapon, Vector3D predPos)
         {
             var lookAtPositionEuler = weapon.LookAt(predPos);
             var inRange = weapon.IsInRange(ref lookAtPositionEuler);
@@ -230,7 +230,7 @@ namespace WeaponCore.Platform
         /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
         Dependencies: AngleBetween
         */
-        static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
+        internal static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
         {
             var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
             var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
