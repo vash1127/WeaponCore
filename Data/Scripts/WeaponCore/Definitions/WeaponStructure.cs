@@ -114,8 +114,8 @@ namespace WeaponCore.Support
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             HeatPShot = values.HardPoint.Loading.HeatPerShot;
             WepCooldown = values.HardPoint.Loading.Cooldown;
-            if(WepCooldown < .2) WepCooldown = .2;
-            if(WepCooldown > .95) WepCooldown = .95;
+            if(WepCooldown < .2f) WepCooldown = .2f;
+            if(WepCooldown > .95f) WepCooldown = .95f;
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
