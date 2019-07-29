@@ -84,6 +84,7 @@ namespace WeaponCore.Support
         [ProtoMember(9)] internal int DelayUntilFire;
         [ProtoMember(10)] internal int ShotsInBurst;
         [ProtoMember(11)] internal int DelayAfterBurst;
+        [ProtoMember(12)] internal bool DegradeROF;
     }
 
     [ProtoContract]

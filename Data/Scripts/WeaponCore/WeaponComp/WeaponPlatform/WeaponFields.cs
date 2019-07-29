@@ -27,6 +27,7 @@ namespace WeaponCore.Platform
         private int _numOfBarrels;
         private int _shotsInCycle;
         private int _shots = 1;
+        private int _maxHeat;
         private uint _ticksUntilShoot;
         private uint _lastPredictionTick;
         private uint _posChangedTick = 1;
@@ -70,6 +71,7 @@ namespace WeaponCore.Platform
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
         internal int WeaponId;
+        internal int CurrentHeat = 0;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
@@ -101,6 +103,8 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool Enabled;
         internal bool OrderedTargets;
+        internal bool DegROF;
+        internal bool Overheated = false;
         internal bool LoadAmmoMag
         {
             set
@@ -166,9 +170,11 @@ namespace WeaponCore.Platform
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;
+            DegROF = system.Values.HardPoint.Loading.DegradeROF;
             AimingTolerance = Math.Cos(MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance));
             _ticksPerShot = (uint)(3600 / System.Values.HardPoint.Loading.RateOfFire);
             _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire);
+            _maxHeat = System.Values.HardPoint.Loading.MaxHeat;
             _numOfBarrels = System.Barrels.Length;
             DelayCeaseFire = System.TimeToCeaseFire > 0;
             BeamSlot = new uint[_numOfBarrels];
