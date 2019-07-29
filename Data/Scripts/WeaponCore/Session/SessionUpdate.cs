@@ -73,7 +73,7 @@ namespace WeaponCore
 
                         if(w.CurrentHeat <= (w.System.MaxHeat* w.System.WepCooldown)) w.Overheated = false;
 
-                        if (!w.Overheated && w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
+                        if (!w.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
                         else if (w.IsShooting)
                         {
                             //Log.Line($"ai not ready");
