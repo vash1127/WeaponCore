@@ -73,7 +73,7 @@ namespace WeaponCore.Support
                 var index = i < top5Count ? i : i - top5Count;
                 var cube = i < top5Count ? weapon.Top5[index] : cubes[index];
                 if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1  || cube == newEntity2 || cube == newEntity3) continue;
-                var cubePos = cube.PositionComp.WorldMatrix.Translation;
+                var cubePos = cube.PositionComp.WorldAABB.Center;
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
                 if (test < minValue3)
@@ -162,6 +162,58 @@ namespace WeaponCore.Support
             }
 
             return returnEntity;
+        }
+
+
+        public static void SortBlocksOnly(List<MyCubeBlock> cubes, Weapon weapon)
+        {
+            var minValue = double.MaxValue;
+            var minValue0 = double.MaxValue;
+            var minValue1 = double.MaxValue;
+            var minValue2 = double.MaxValue;
+            var minValue3 = double.MaxValue;
+            var testPos = weapon.Comp.MyPivotPos;
+            for (int i = 0; i < cubes.Count; i++)
+            {
+                var cube =  cubes[i];
+                if (cube.MarkedForClose) continue;
+                var cubePos = cube.PositionComp.WorldMatrix.Translation;
+                var range = cubePos - testPos;
+                var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
+                if (test < minValue3)
+                {
+                    if (test < minValue)
+                    {
+                        minValue3 = minValue2;
+                        minValue2 = minValue1;
+                        minValue1 = minValue0;
+                        minValue0 = minValue;
+                        minValue = test;
+                    }
+                    else if (test < minValue0)
+                    {
+                        minValue3 = minValue2;
+                        minValue2 = minValue1;
+                        minValue1 = minValue0;
+                        minValue0 = test;
+                    }
+                    else if (test < minValue1)
+                    {
+                        minValue3 = minValue2;
+                        minValue2 = minValue1;
+                        minValue1 = test;
+                    }
+                    else if (test < minValue2)
+                    {
+                        minValue3 = minValue2;
+                        minValue2 = test;
+                    }
+                    else
+                    {
+                        minValue3 = test;
+                    }
+                }
+            }
         }
 
         public static class QS

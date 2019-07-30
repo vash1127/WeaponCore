@@ -53,6 +53,7 @@ namespace WeaponCore.Support
                             w.NewTarget = UtilsStatic.GetClosestBlocksOfType(blockList, w);
                             var result = DsWatch.StopWatchReport("");
                             Log.Line($"top5SortTime: {result} - sortedBlocks:{blockList.Count}");
+
                             if (w.NewTarget.Entity != null) return;
                             break;
                         }
