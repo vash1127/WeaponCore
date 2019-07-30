@@ -16,7 +16,7 @@ namespace WeaponCore.Support
     using Color = VRageMath.Color;
     using Quaternion = VRageMath.Quaternion;
     using Vector3 = VRageMath.Vector3;
-
+    using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
     internal static class UtilsStatic
     {
         public static (MyEntity, Vector3D, double) GetClosestSortedBlockThatCanBeShot(List<MyCubeBlock> cubes, Weapon weapon)
@@ -64,21 +64,21 @@ namespace WeaponCore.Support
             MyCubeBlock newEntity1 = null;
             MyCubeBlock newEntity2 = null;
             MyCubeBlock newEntity3 = null;
-            Vector3D hitPos = Vector3D.Zero;
+            var hitPos = Vector3D.Zero;
             var top5Count = weapon.Top5.Count;
             var testPos = weapon.Comp.MyPivotPos;
-
+            var physics = MyAPIGateway.Physics;
             for (int i = 0; i < cubes.Count + top5Count; i++)
             {
                 var index = i < top5Count ? i : i - top5Count;
                 var cube = i < top5Count ? weapon.Top5[index] : cubes[index];
                 if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1  || cube == newEntity2 || cube == newEntity3) continue;
-                var cubePos = cube.PositionComp.WorldAABB.Center;
+                var cubePos = cube.CubeGrid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
                 if (test < minValue3)
                 {
-                    if (test < minValue && Weapon.IsTargetInView(weapon, cubePos) && MyAPIGateway.Physics.CastRay(testPos, cubePos, out var hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid)
+                    if (test < minValue && Weapon.IsTargetInView(weapon, cubePos) && physics.CastRay(testPos, cubePos, out var hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid)
                     {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
