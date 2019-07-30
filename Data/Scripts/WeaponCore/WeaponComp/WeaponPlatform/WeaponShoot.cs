@@ -18,9 +18,9 @@ namespace WeaponCore.Platform
             var session = Comp.MyAi.MySession;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            DsDebugDraw.DrawLine(Comp.MyPivotPos, Comp.MyPivotPos + (Comp.MyPivotDir * 5000), Color.Purple, 0.1f);
-            if (this == Comp.TrackingWeapon) DsDebugDraw.DrawLine(Comp.MyPivotPos, TargetPos, Color.White, 0.1f);
-            else DsDebugDraw.DrawLine(Comp.MyPivotPos, TargetPos, Color.Black, 0.1f);
+            //DsDebugDraw.DrawLine(Comp.MyPivotPos, Comp.MyPivotPos + (Comp.MyPivotDir * 5000), Color.Purple, 0.1f);
+            //if (this == Comp.TrackingWeapon) DsDebugDraw.DrawLine(Comp.MyPivotPos, TargetPos, Color.White, 0.1f);
+            //else DsDebugDraw.DrawLine(Comp.MyPivotPos, TargetPos, Color.Black, 0.1f);
 
             if (System.BurstMode)
             {

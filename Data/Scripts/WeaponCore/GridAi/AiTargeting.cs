@@ -42,12 +42,11 @@ namespace WeaponCore.Support
                     w.NewTarget.Entity = null;
                     return;
                 }
-                var physics = MyAPIGateway.Physics;
                 var weaponPos = w.Comp.MyPivotPos;
                 var blockList = targetInfo.Value.TypeDict[BlockTypes.Any];
                 if (w.OrderedTargets) {
                     foreach(var bt in w.System.Values.HardPoint.Targeting.Priorities) {
-                        if (targetInfo.Value.TypeDict[bt].Count > 0) {
+                        if (bt != BlockTypes.Any && targetInfo.Value.TypeDict[bt].Count > 0) {
                             blockList = targetInfo.Value.TypeDict[bt];
                             DsWatch.Sw.Restart();
                             w.NewTarget = UtilsStatic.GetClosestBlocksOfType(blockList, w);
@@ -55,7 +54,6 @@ namespace WeaponCore.Support
                             Log.Line($"top5SortTime: {result} - sortedBlocks:{blockList.Count}");
 
                             if (w.NewTarget.Entity != null) return;
-                            break;
                         }
                     }
                 }
@@ -81,7 +79,7 @@ namespace WeaponCore.Support
                 if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
                 int[] deck = null;
                 if (lastBlocks > 0) deck = GetDeck(ref w.Deck, ref w.PrevDeckLength, 0, lastBlocks);
-
+                var physics = MyAPIGateway.Physics;
                 for (int i = 0; i < totalBlocks; i++)
                 {
                     int next = i;
@@ -92,7 +90,7 @@ namespace WeaponCore.Support
                     var block = blockList[next];
                     if (block.MarkedForClose) continue;
 
-                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out var hitInfo, 15);
+                    physics.CastRay(weaponPos, block.CubeGrid.GridIntegerToWorld(block.Position), out var hitInfo, 0, true);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
 
