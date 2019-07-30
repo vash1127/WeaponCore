@@ -21,40 +21,39 @@ namespace WeaponCore.Support
             Rnd = new Random((int)MyGrid.EntityId);
         }
 
-        internal void SelectTarget(ref MyEntity newTarget, Weapon weapon)
+        internal void SelectTarget(Weapon w)
         {
-            Log.Line($"{weapon.System.WeaponName} - running select target");
-            UpdateTarget(weapon, out var targetInfo);
+            Log.Line($"{w.System.WeaponName} - running select target");
+            UpdateTarget(w, out var targetInfo);
             if (targetInfo.HasValue)
             {
-                weapon.LastTargetCheck = 0;
-                newTarget = targetInfo.Value.Target;
-                var grid = newTarget as MyCubeGrid;
+                w.LastTargetCheck = 0;
+                w.NewTarget.Entity = targetInfo.Value.Target;
+                var grid = w.NewTarget.Entity as MyCubeGrid;
                 if (grid == null)
                 {
-                    Log.Line($"{weapon.System.WeaponName} - targetting nonGrid: {weapon.System.WeaponName}");
+                    Log.Line($"{w.System.WeaponName} - targetting nonGrid: {w.System.WeaponName}");
                     return;
                 }
 
                 if (targetInfo.Value.TypeDict.Count <= 0)
                 {
-                    Log.Line($"{weapon.System.WeaponName} - sees no valid cubes: {weapon.System.WeaponName}");
-                    newTarget = null;
+                    Log.Line($"{w.System.WeaponName} - sees no valid cubes: {w.System.WeaponName}");
+                    w.NewTarget.Entity = null;
                     return;
                 }
                 var physics = MyAPIGateway.Physics;
-                var weaponPos = weapon.Comp.MyPivotPos;
+                var weaponPos = w.Comp.MyPivotPos;
                 var blockList = targetInfo.Value.TypeDict[BlockTypes.Any];
-                if (weapon.OrderedTargets) {
-                    foreach(var bt in weapon.System.Values.HardPoint.Targeting.Priorities) {
+                if (w.OrderedTargets) {
+                    foreach(var bt in w.System.Values.HardPoint.Targeting.Priorities) {
                         if (targetInfo.Value.TypeDict[bt].Count > 0) {
                             blockList = targetInfo.Value.TypeDict[bt];
                             DsWatch.Sw.Restart();
-                            //UtilsStatic.GetClosestBlocksOfType(blockList, weapon.ClosestBlocksByType, weaponPos, weapon);
-                            newTarget = UtilsStatic.GetClosestSortedBlockThatCanBeShot(blockList, weapon);
+                            w.NewTarget = UtilsStatic.GetClosestBlocksOfType(blockList, w);
                             var result = DsWatch.StopWatchReport("");
                             Log.Line($"top5SortTime: {result} - sortedBlocks:{blockList.Count}");
-                            if (newTarget != null) return;
+                            if (w.NewTarget.Entity != null) return;
                             break;
                         }
                     }
@@ -77,10 +76,10 @@ namespace WeaponCore.Support
                 */
 
                 var totalBlocks = blockList.Count;
-                var lastBlocks = weapon.System.Values.Ammo.Trajectory.Smarts.TopBlocks;
+                var lastBlocks = w.System.Values.Ammo.Trajectory.Smarts.TopBlocks;
                 if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
                 int[] deck = null;
-                if (lastBlocks > 0) deck = GetDeck(ref weapon.Deck, ref weapon.PrevDeckLength, 0, lastBlocks);
+                if (lastBlocks > 0) deck = GetDeck(ref w.Deck, ref w.PrevDeckLength, 0, lastBlocks);
 
                 for (int i = 0; i < totalBlocks; i++)
                 {
@@ -96,15 +95,15 @@ namespace WeaponCore.Support
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
 
-                    Log.Line($"{weapon.System.WeaponName} - found block");
-                    newTarget = block;
+                    Log.Line($"{w.System.WeaponName} - found block");
+                    w.NewTarget.Entity = block;
                     return;
                 }
             }
-            weapon.LastTargetCheck = 1;
-            newTarget = null;
-            Log.Line($"{weapon.System.WeaponName} - no valid target returned - oldTargetNull:{newTarget == null} - oldTargetMarked:{newTarget?.MarkedForClose} - checked: {weapon.Comp.MyAi.SortedTargets.Count} - Total:{weapon.Comp.MyAi.Targeting.TargetRoots.Count}");
-            weapon.TargetExpired = true;
+            w.LastTargetCheck = 1;
+            Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{w.NewTarget.Entity == null} - oldTargetMarked:{w.NewTarget.Entity?.MarkedForClose} - checked: {w.Comp.MyAi.SortedTargets.Count} - Total:{w.Comp.MyAi.Targeting.TargetRoots.Count}");
+            w.NewTarget.Entity = null;
+            w.TargetExpired = true;
         }
 
         internal void UpdateTarget(Weapon weapon, out TargetInfo? targetInfo)

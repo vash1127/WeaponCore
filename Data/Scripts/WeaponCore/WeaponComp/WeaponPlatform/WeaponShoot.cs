@@ -114,7 +114,7 @@ namespace WeaponCore.Platform
                         pro.PredictedTargetPos = TargetPos;
                         pro.Direction = muzzle.DeviatedDir;
                         pro.State = Projectile.ProjectileState.Start;
-                        pro.Target = Target;
+                        pro.Target = Target.Entity;
                         pro.Ai = Comp.MyAi;
                         pro.WeaponId = WeaponId;
                         pro.MuzzleId = muzzle.MuzzleId;
@@ -148,7 +148,7 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.MyAi.MySession.Tick;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
-            if (Target == null || Target.MarkedForClose)
+            if (Target.Entity == null || Target.Entity.MarkedForClose)
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null or marked");
                 masterWeapon.TargetExpired = true;
@@ -156,7 +156,7 @@ namespace WeaponCore.Platform
                 return;
             }
 
-            var targetPos = Target.PositionComp.GetPosition();
+            var targetPos = Target.Entity.PositionComp.GetPosition();
             if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
@@ -164,16 +164,15 @@ namespace WeaponCore.Platform
                 if (masterWeapon !=  this) TargetExpired = true;
                 return;
             }
-            if (!TrackingAi && !ValidTarget(this, Target))
+            if (!TrackingAi && !ValidTarget(this, Target.Entity))
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheck Fail - not trackingAi and notValid target");
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon != this) TargetExpired = true;
                 return;
             }
-
-            MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.PositionComp.GetPosition(), out var hitInfo, 15);
-            if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target && hitInfo.HitEntity != Target.Parent))
+            MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.Entity.PositionComp.WorldMatrix.Translation, out var hitInfo, 15, true);
+            if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target.Entity && hitInfo.HitEntity != Target.Entity.Parent))
             {
                 if (hitInfo?.HitEntity == null && DelayCeaseFire)
                 {
@@ -182,43 +181,27 @@ namespace WeaponCore.Platform
                 }
                 if ((hitInfo?.HitEntity != null))
                 {
-                    var isGrid = hitInfo.HitEntity as MyCubeGrid;
-                    var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
-                    if (isGrid == null && parentIsGrid == null)
+                    var rootAsGrid = hitInfo.HitEntity as MyCubeGrid;
+                    var parentAsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
+                    if (hitInfo.HitEntity.Parent != null) Log.Line("parent is not null!");
+                    if (rootAsGrid == null && parentAsGrid == null)
                     {
                         Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
                         return;
                     }
 
-                    if (isGrid != null && isGrid.MarkedForClose || parentIsGrid != null && parentIsGrid.MarkedForClose)
+                    var grid = parentAsGrid ?? rootAsGrid;
+                    if (grid == Comp.MyGrid)
                     {
-                        Log.Line($"{System.WeaponName} - ShootRayCheck Fail - grid/parent marked: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
-                        masterWeapon.TargetExpired = true;
-                        if (masterWeapon != this) TargetExpired = true;
+                        Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - own grid: {grid?.DebugName}");
                         return;
                     }
 
-                    if (isGrid == Comp.MyGrid)
+                    if (!GridTargetingAi.GridEnemy(Comp.MyCube, grid))
                     {
-                        Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - own grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
-                        return;
-                    }
-
-                    if (isGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, isGrid))
-                    {
-                        if (!isGrid.IsInSameLogicalGroupAs(Comp.MyGrid))
+                        if (!grid.IsInSameLogicalGroupAs(Comp.MyGrid))
                         {
-                            Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
-                            masterWeapon.TargetExpired = true;
-                            if (masterWeapon != this) TargetExpired = true;
-                        }
-                        return;
-                    }
-                    if (parentIsGrid != null && !GridTargetingAi.GridEnemy(Comp.MyCube, parentIsGrid))
-                    {
-                        if (!parentIsGrid.IsInSameLogicalGroupAs(Comp.MyGrid))
-                        {
-                            Log.Line($"{System.WeaponName} - ShootRayCheck Fail - friendly parentGrid: {isGrid?.DebugName} - {parentIsGrid?.DebugName}");
+                            Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
                             masterWeapon.TargetExpired = true;
                             if (masterWeapon != this) TargetExpired = true;
                         }
@@ -232,6 +215,10 @@ namespace WeaponCore.Platform
                 else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Unknown");
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon != this) TargetExpired = true;
+            }
+            else if (hitInfo.HitEntity is MyCubeGrid grid && Target.Entity.GetTopMostParent() == grid)
+            {
+                Log.Line($"hit: {((MyEntity)hitInfo.HitEntity).DebugName} - HitDistanceToTarget: {Vector3D.Distance(hitInfo.Position, Target.Entity.PositionComp.WorldMatrix.Translation)} - OrigDistToTarget:{Target.Distance}");
             }
         }
 

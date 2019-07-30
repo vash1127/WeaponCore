@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 
 namespace WeaponCore.Support

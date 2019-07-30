@@ -47,8 +47,9 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 30) gridAi.SelectTarget(ref w.NewTarget, w);
-                            w.TargetExpired = w.NewTarget == null || w.NewTarget.MarkedForClose;
+                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 30) gridAi.SelectTarget(w);
+                            w.TargetExpired = w.NewTarget.Entity == null || w.NewTarget.Entity.MarkedForClose;
+                            Log.Line($"{w.NewTarget}");
                             w.Target = w.NewTarget;
 
                         }
@@ -66,13 +67,12 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if(Tick60){
+                        if(Tick60)
+                        {
                             w.CurrentHeat -= w.HSRate;
                             if(w.CurrentHeat < 0) w.CurrentHeat = 0;
                             if(w.CurrentHeat <= (w.System.MaxHeat* w.System.WepCooldown)) w.Overheated = false;
                         }
-
-                        
 
                         if (!w.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
                         else if (w.IsShooting)
@@ -108,7 +108,7 @@ namespace WeaponCore
                         {
                             if (w.TrackingAi)
                             {
-                                if (w.Target == null || w.Target.MarkedForClose || !Weapon.TrackingTarget(w, w.Target, true))
+                                if (w.Target.Entity == null || w.Target.Entity.MarkedForClose || !Weapon.TrackingTarget(w, w.Target.Entity, true))
                                     w.TargetExpired = true;
                             }
                             else
@@ -117,17 +117,17 @@ namespace WeaponCore
                                 {
                                     if (!w.TrackTarget)
                                     {
-                                        if (comp.TrackingWeapon.Target != w.Target)
+                                        if (comp.TrackingWeapon.Target.Entity != w.Target.Entity)
                                             w.TargetExpired = true;
-                                        else if (w.Target == null)
+                                        else if (w.Target.Entity == null)
                                             w.TargetExpired = true;
                                     }
-                                    else if (!w.TargetExpired && (w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target)))
+                                    else if (!w.TargetExpired && (w.Target.Entity == null || w.Target.Entity.MarkedForClose || !Weapon.ValidTarget(w, w.Target.Entity)))
                                         w.TargetExpired = true;
                                 }
                                 else
                                 {
-                                    if (w.TrackTarget && !w.TargetExpired && (w.Target == null || w.Target.MarkedForClose || !Weapon.ValidTarget(w, w.Target)))
+                                    if (w.TrackTarget && !w.TargetExpired && (w.Target.Entity == null || w.Target.Entity.MarkedForClose || !Weapon.ValidTarget(w, w.Target.Entity)))
                                         w.TargetExpired = true;
                                 }
                             }

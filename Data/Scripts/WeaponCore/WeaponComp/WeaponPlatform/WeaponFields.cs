@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage;
 using VRage.Collections;
@@ -44,14 +45,14 @@ namespace WeaponCore.Platform
         internal uint[] BeamSlot;
         internal WeaponComponent Comp;
 
-        internal MyEntity NewTarget;
-        internal MyEntity Target;
+        internal (MyEntity Entity, Vector3D HitPos, double Distance) Target;
+        internal (MyEntity Entity, Vector3D HitPos, double Distance) NewTarget;
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
-        internal MyCubeBlock[] ClosestBlocksByType = new MyCubeBlock[5];
+        internal List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;

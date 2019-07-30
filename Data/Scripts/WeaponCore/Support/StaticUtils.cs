@@ -19,12 +19,10 @@ namespace WeaponCore.Support
 
     internal static class UtilsStatic
     {
-        public static MyCubeBlock GetClosestSortedBlockThatCanBeShot(List<MyCubeBlock> cubes, Weapon weapon)
+        public static (MyEntity, Vector3D, double) GetClosestSortedBlockThatCanBeShot(List<MyCubeBlock> cubes, Weapon weapon)
         {
             var minValue = double.MaxValue;
-            MyCubeBlock closestCube = null;
-            var center = cubes[0].CubeGrid.PositionComp.WorldAABB.Center;
-            var goodSphere = new BoundingSphereD(center, 0.01);
+            (MyEntity, Vector3D, double) newEntity = (null, new Vector3D(), 0);
             for (int i = 0; i < cubes.Count; i++)
             {
                 var cube = cubes[i];
@@ -33,131 +31,137 @@ namespace WeaponCore.Support
                 var testPos = weapon.Comp.MyPivotPos;
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
-
                 if (test < minValue && test <= weapon.System.MaxTrajectorySqr)
                 {
-                    var hit = goodSphere.Contains(cubePos) != ContainmentType.Disjoint;
-                    if (!hit && Weapon.IsTargetInView(weapon, cubePos))
+                    if (Weapon.IsTargetInView(weapon, cubePos))
                     {
-                        MyAPIGateway.Physics.CastRay(cubePos, testPos, out var hitInfo, 0, true);
-                        var hitent = hitInfo.HitEntity;
-                        var targetGrid = hitent as MyCubeGrid;
-                        if (hitent == null) continue;
-                        if (hitent == cube.CubeGrid)
+                        MyAPIGateway.Physics.CastRay(testPos, cubePos, out var hitInfo, 15, true);
+                        if (hitInfo.HitEntity == cube.GetTopMostParent())
                         {
-                            var cubeSphere = cube.PositionComp.WorldVolume;
-                            cubeSphere.Radius = 10;
-                            BoundingSphereD.CreateMerged(ref goodSphere, ref cubeSphere, out goodSphere);
-                            hit = true;
-                        }
-                        else if (targetGrid != null)
-                        {
-                            var goThrough = false;
-                            var owners = targetGrid.BigOwners;
-                            if (owners.Count == 0) goThrough = true;
-                            else
-                            {
-                                var relationship = weapon.Comp.MyCube.GetUserRelationToOwner(owners[0]);
-                                if (relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare)
-                                    goThrough = true;
-                            }
-                            if (goThrough)
-                            {
-                                var cubeSphere = cube.PositionComp.WorldVolume;
-                                cubeSphere.Radius = 10;
-                                BoundingSphereD.CreateMerged(ref goodSphere, ref cubeSphere, out goodSphere);
-                                hit = true;
-                            }
+                            minValue = test;
+                            newEntity.Item1 = cube;
+                            newEntity.Item2 = hitInfo.Position;
+                            newEntity.Item3 = Vector3D.Distance(newEntity.Item2, cubePos);
                         }
                     }
-                    if (hit)
-                    {
-                        minValue = test;
-                        closestCube = cube;
-                    }
+
                 }
             }
-            return closestCube;
+            return newEntity;
         }
 
-        public static bool GetClosestBlocksOfType(List<MyCubeBlock> cubes, MyCubeBlock[] top5, Vector3D testPos, Weapon weapon)
+        public static (MyEntity, Vector3D, double) GetClosestBlocksOfType(List<MyCubeBlock> cubes, Weapon weapon)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
             var minValue1 = double.MaxValue;
             var minValue2 = double.MaxValue;
             var minValue3 = double.MaxValue;
+            (MyCubeBlock, Vector3D, double) returnEntity;
 
-            MyCubeBlock closestCube = null;
-            MyCubeBlock closestCube0 = null;
-            MyCubeBlock closestCube1 = null;
-            MyCubeBlock closestCube2 = null;
-            MyCubeBlock closestCube3 = null;
-            var populated = false;
+            MyCubeBlock newEntity = null;
+            MyCubeBlock newEntity0 = null;
+            MyCubeBlock newEntity1 = null;
+            MyCubeBlock newEntity2 = null;
+            MyCubeBlock newEntity3 = null;
+            Vector3D hitPos = Vector3D.Zero;
+            var top5Count = weapon.Top5.Count;
+            var testPos = weapon.Comp.MyPivotPos;
 
-            for (int i = 0; i < cubes.Count; i++)
+            for (int i = 0; i < cubes.Count + top5Count; i++)
             {
-                var cube = cubes[i];
-                if (cube.MarkedForClose) continue;
+                var index = i < top5Count ? i : i - top5Count;
+                var cube = i < top5Count ? weapon.Top5[index] : cubes[index];
+                if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1  || cube == newEntity2 || cube == newEntity3) continue;
                 var cubePos = cube.PositionComp.WorldMatrix.Translation;
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
-                if (test < minValue3 )
+                if (test < minValue3)
                 {
-                    if (test < minValue && (weapon.TrackingAi && Weapon.TrackingTarget(weapon, cube, false) || !weapon.TrackingAi && Weapon.ValidTarget(weapon, cube, true) && cube.CubeGrid.RayCastBlocks(testPos, cubePos) == cube.Position))
+                    if (test < minValue && Weapon.IsTargetInView(weapon, cubePos) && MyAPIGateway.Physics.CastRay(testPos, cubePos, out var hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid)
                     {
-                        populated = true;
                         minValue3 = minValue2;
-                        closestCube3 = closestCube2;
+                        newEntity3 = newEntity2;
                         minValue2 = minValue1;
-                        closestCube2 = closestCube1;
+                        newEntity2 = newEntity1;
                         minValue1 = minValue0;
-                        closestCube1 = closestCube0;
+                        newEntity1 = newEntity0;
                         minValue0 = minValue;
-                        closestCube0 = closestCube;
+                        newEntity0 = newEntity;
                         minValue = test;
-                        closestCube = cube;
+
+                        newEntity = cube;
+                        hitPos = hitInfo.Position;
                     }
                     else if (test < minValue0)
                     {
                         minValue3 = minValue2;
-                        closestCube3 = closestCube2;
+                        newEntity3 = newEntity2;
                         minValue2 = minValue1;
-                        closestCube2 = closestCube1;
+                        newEntity2 = newEntity1;
                         minValue1 = minValue0;
-                        closestCube1 = closestCube0;
+                        newEntity1 = newEntity0;
                         minValue0 = test;
-                        closestCube0 = cube;
+
+                        newEntity0 = cube;
                     }
                     else if (test < minValue1)
                     {
                         minValue3 = minValue2;
-                        closestCube3 = closestCube2;
+                        newEntity3 = newEntity2;
                         minValue2 = minValue1;
-                        closestCube2 = closestCube1;
+                        newEntity2 = newEntity1;
                         minValue1 = test;
-                        closestCube1 = cube;
+
+                        newEntity1 = cube;
                     }
                     else if (test < minValue2)
                     {
                         minValue3 = minValue2;
-                        closestCube3 = closestCube2;
+                        newEntity3 = newEntity2;
                         minValue2 = test;
-                        closestCube2 = cube;
+
+                        newEntity2 = cube;
                     }
-                    else
+                    else 
                     {
                         minValue3 = test;
-                        closestCube3 = cube;
+                        newEntity3 = cube;
                     }
                 }
-                top5[0] = closestCube;
-                top5[1] = closestCube0;
-                top5[2] = closestCube1;
-                top5[3] = closestCube2;
-                top5[4] = closestCube3;
+
             }
-            return populated;
+            weapon.Top5.Clear();
+            if (newEntity != null)
+            {
+                returnEntity.Item1 = newEntity;
+                returnEntity.Item2 = hitPos;
+                returnEntity.Item3 = Vector3D.Distance(newEntity.WorldMatrix.Translation, hitPos);
+                weapon.Top5.Add(newEntity);
+            }
+            else returnEntity = (null, new Vector3D(), 0);
+
+            if (newEntity0 != null)
+            {
+                weapon.Top5.Add(newEntity0);
+            }
+
+            if (newEntity1 != null)
+            {
+                weapon.Top5.Add(newEntity1);
+            }
+
+            if (newEntity2 != null)
+            {
+                weapon.Top5.Add(newEntity2);
+            }
+
+            if (newEntity3 != null)
+            {
+                weapon.Top5.Add(newEntity3);
+            }
+
+            return returnEntity;
         }
 
         public static class QS
