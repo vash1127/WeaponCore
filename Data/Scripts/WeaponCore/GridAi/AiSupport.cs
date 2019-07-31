@@ -9,6 +9,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
 {
@@ -181,7 +182,7 @@ namespace WeaponCore.Support
             internal readonly int PartCount;
             internal readonly MyCubeGrid MyGrid;
             internal readonly GridTargetingAi Ai;
-            internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
+            internal Dictionary<SubSystemDefinition.BlockTypes, List<MyCubeBlock>> TypeDict;
 
             internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridTargetingAi ai)
             {

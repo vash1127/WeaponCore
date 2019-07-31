@@ -101,8 +101,8 @@ namespace WeaponCore.Support
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
 
-            SortBlocks = values.HardPoint.Targeting.Sort;
-            OrderedTargets = values.HardPoint.Targeting.Enable;
+            SortBlocks = values.Targeting.SubSystems.ClosestFirst;
+            OrderedTargets = values.Targeting.SubSystems.SubSystemPriority;
             TargetOffSet = values.Ammo.Trajectory.Smarts.Inaccuracy > 0;
             TimeToCeaseFire = values.HardPoint.DelayCeaseFire;
             ReloadTime = values.HardPoint.Loading.ReloadTime;

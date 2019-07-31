@@ -15,7 +15,7 @@ namespace WeaponCore.Platform
         internal static bool ValidTarget(Weapon weapon, MyEntity target, bool checkOnly = false)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
-            var prediction = weapon.System.Values.HardPoint.TargetPrediction;
+            var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
 
             Vector3D targetPos;
 
@@ -55,7 +55,7 @@ namespace WeaponCore.Platform
         {
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
-            var prediction = weapon.System.Values.HardPoint.TargetPrediction;
+            var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
 
             Vector3D targetPos;
 

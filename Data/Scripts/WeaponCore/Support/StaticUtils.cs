@@ -50,7 +50,7 @@ namespace WeaponCore.Support
             return newEntity;
         }
 
-        public static (MyEntity, Vector3D, double) GetClosestBlocksOfType(List<MyCubeBlock> cubes, Weapon weapon)
+        public static (MyEntity, Vector3D, double) GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Weapon weapon)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;

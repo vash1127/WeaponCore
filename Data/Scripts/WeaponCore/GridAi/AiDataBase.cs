@@ -6,6 +6,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
+using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
 {

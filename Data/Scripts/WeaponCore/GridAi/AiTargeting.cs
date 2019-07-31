@@ -8,6 +8,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
+using static WeaponCore.Support.SubSystemDefinition.BlockTypes;
 
 namespace WeaponCore.Support
 {
@@ -43,39 +44,22 @@ namespace WeaponCore.Support
                     return;
                 }
                 var weaponPos = w.Comp.MyPivotPos;
-                var blockList = targetInfo.Value.TypeDict[BlockTypes.Any];
+                var blockList = targetInfo.Value.TypeDict[Any];
                 if (w.OrderedTargets) {
-                    foreach(var bt in w.System.Values.HardPoint.Targeting.Priorities) {
-                        if (bt != BlockTypes.Any && targetInfo.Value.TypeDict[bt].Count > 0) {
+                    foreach(var bt in w.System.Values.Targeting.SubSystems.Systems) {
+                        if (bt != Any && targetInfo.Value.TypeDict[bt].Count > 0) {
                             blockList = targetInfo.Value.TypeDict[bt];
-                            DsWatch.Sw.Restart();
-                            w.NewTarget = UtilsStatic.GetClosestBlocksOfType(blockList, w);
-                            var result = DsWatch.StopWatchReport("");
-                            Log.Line($"top5SortTime: {result} - sortedBlocks:{blockList.Count}");
-
-                            if (w.NewTarget.Entity != null) return;
+                            if (w.System.Values.Targeting.SubSystems.ClosestFirst)
+                            {
+                                w.NewTarget = UtilsStatic.GetClosestHitableBlockOfType(blockList, w);
+                                if (w.NewTarget.Entity != null) return;
+                            }
                         }
                     }
                 }
 
-                /*
-                if (weapon.System.SortBlocks && !BlockTypeIsSorted.Contains(bt))
-                {
-                    BlockTypeIsSorted.Add(bt);
-                    blockList.Sort((x, y) =>
-                    {
-                        var testPos = MyGrid.PositionComp.WorldAABB.Center;
-                        var xPos = x.PositionComp.WorldMatrix.Translation;
-                        if (xPos == Vector3D.Zero) xPos = Vector3D.MaxValue;
-                        var yPos = y.PositionComp.WorldMatrix.Translation;
-                        if (yPos == Vector3D.Zero) yPos = Vector3D.MaxValue;
-                        return Vector3D.DistanceSquared(testPos, xPos).CompareTo(Vector3D.DistanceSquared(testPos, yPos));
-                    });
-                }
-                */
-
                 var totalBlocks = blockList.Count;
-                var lastBlocks = w.System.Values.Ammo.Trajectory.Smarts.TopBlocks;
+                var lastBlocks = w.System.Values.Targeting.TopBlocks;
                 if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
                 int[] deck = null;
                 if (lastBlocks > 0) deck = GetDeck(ref w.Deck, ref w.PrevDeckLength, 0, lastBlocks);
@@ -149,7 +133,7 @@ namespace WeaponCore.Support
             }
 
             var totalTargets = p.Ai.SortedTargets.Count;
-            var topTargets = p.System.Values.Ammo.Trajectory.Smarts.TopTargets;
+            var topTargets = p.System.Values.Targeting.TopTargets;
             if (topTargets > 0 && totalTargets < topTargets) topTargets = totalTargets;
             GetTarget(p.Ai, p.Position, p.DistanceToTravelSqr, p.TargetShuffle, p.TargetShuffleLen, topTargets, out var targetInfo);
             if (targetInfo.HasValue)
@@ -162,11 +146,11 @@ namespace WeaponCore.Support
                     return true;
                 }
 
-                var cubes = targetInfo.Value.TypeDict[BlockTypes.Any];
+                var cubes = targetInfo.Value.TypeDict[Any];
 
                 if (p.System.OrderedTargets)
                 {
-                    foreach (BlockTypes bt in p.System.Values.HardPoint.Targeting.Priorities)
+                    foreach (var bt in p.System.Values.Targeting.SubSystems.Systems)
                     {
                         if (targetInfo.Value.TypeDict[bt].Count > 0)
                         {
@@ -189,7 +173,7 @@ namespace WeaponCore.Support
                 }
 
                 var totalBlocks = cubes.Count;
-                var firstBlocks = p.System.Values.Ammo.Trajectory.Smarts.TopBlocks;
+                var firstBlocks = p.System.Values.Targeting.TopBlocks;
                 if (firstBlocks > 0 && totalBlocks < firstBlocks) firstBlocks = totalBlocks;
 
                 var gotBlock = GetBlock(out p.Target, cubes, p.BlockSuffle, p.BlockShuffleLen, firstBlocks, p.Position, p.FiringCube, false);

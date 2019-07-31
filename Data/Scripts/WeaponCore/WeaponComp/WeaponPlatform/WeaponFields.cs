@@ -166,7 +166,7 @@ namespace WeaponCore.Platform
 
             WeaponId = weaponId;
             Enabled = true;
-            OrderedTargets = System.Values.HardPoint.Targeting.Enable;
+            OrderedTargets = System.Values.Targeting.SubSystems.SubSystemPriority;
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;

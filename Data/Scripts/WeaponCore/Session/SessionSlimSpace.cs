@@ -71,7 +71,30 @@ namespace WeaponCore
             }
         }
 
-        private static void GetIntVectorsInSphere2(MyCubeGrid grid, Vector3I center, double radius, List<(Vector3I, IMySlimBlock, Vector3I)> points)
+        private void GenerateBlockSphere(MyCubeGrid grid, Vector3I center, double radius)
+        {
+            var blockSphereLst = _blockSpherePool.Get();
+            radius *= grid.GridSizeR;
+            var gridMin = grid.Min;
+            var gridMax = grid.Max;
+            var radiusSq = radius * radius;
+            var radiusCeil = (int)Math.Ceiling(radius);
+            int i, j, k;
+            var max = Vector3I.Min(Vector3I.One * radiusCeil, gridMax - center);
+            var min = Vector3I.Max(Vector3I.One * -radiusCeil, gridMin - center);
+
+            for (i = min.X; i <= max.X; ++i)
+                for (j = min.Y; j <= max.Y; ++j)
+                    for (k = min.Z; k <= max.Z; ++k)
+                        if (i * i + j * j + k * k < radiusSq)
+                            blockSphereLst.Add(new Vector3I(i, j, k));
+
+            blockSphereLst.Sort((a, b) => Vector3I.Dot(a, a).CompareTo(Vector3I.Dot(b, b)));
+            BlockSphereDb.Add(radius, blockSphereLst);
+        }
+
+
+        private void GetIntVectorsInSphere2(MyCubeGrid grid, Vector3I center, double radius, List<(Vector3I, IMySlimBlock, Vector3I)> points)
         {
             points.Clear();
             radius *= grid.GridSizeR;
@@ -98,6 +121,7 @@ namespace WeaponCore
                     }
                 }
             }
+            points.Sort((a, b) => Vector3I.Dot(a.Item3, a.Item3).CompareTo(Vector3I.Dot(b.Item3, b.Item3)));
         }
 
         public void GetBlocksInsideSphere(MyCubeGrid grid, Dictionary<Vector3I, IMySlimBlock> cubes, ref BoundingSphereD sphere, bool sorted, Vector3I center, bool checkTriangles = false)

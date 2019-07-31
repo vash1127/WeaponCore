@@ -7,21 +7,12 @@ using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
+using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
 {
     public partial class GridTargetingAi
     {
-        public enum BlockTypes
-        {
-            Any,
-            Offense,
-            Defense,
-            Power,
-            Production,
-            Navigation
-        }
-
         internal volatile bool Ready;
         internal static volatile bool SubGridUpdate;
         internal readonly MyCubeGrid MyGrid;
@@ -30,9 +21,10 @@ namespace WeaponCore.Support
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>> ValidGrids = new Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>>();
+        internal readonly HashSet<BlockTypes> BlockTypeIsSorted = new HashSet<BlockTypes>();
+
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
-        internal readonly HashSet<BlockTypes> BlockTypeIsSorted = new HashSet<BlockTypes>();
 
         internal List<TargetInfo> SortedTargets = new List<TargetInfo>();
 

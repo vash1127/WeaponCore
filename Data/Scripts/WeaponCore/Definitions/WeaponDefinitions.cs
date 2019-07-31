@@ -4,7 +4,6 @@ using static WeaponCore.Support.GridTargetingAi;
 
 namespace WeaponCore.Support
 {
-
     [ProtoContract]
     public struct WeaponDefinition
     {
@@ -15,7 +14,8 @@ namespace WeaponCore.Support
         [ProtoMember(5)] internal ModelAssignments Assignments;
         [ProtoMember(6)] internal UiDefinition Ui;
         [ProtoMember(7)] internal DamageScaleDefinition DamageScales;
-        [ProtoMember(8)] internal string ModPath;
+        [ProtoMember(8)] internal TargetingDefinition Targeting;
+        [ProtoMember(9)] internal string ModPath;
     }
 
 
@@ -57,17 +57,8 @@ namespace WeaponCore.Support
         [ProtoMember(10)] internal float DeviateShotAngle;
         [ProtoMember(11)] internal float EnergyCost;
         [ProtoMember(12)] internal double AimingTolerance;
-        [ProtoMember(13)] internal Prediction TargetPrediction;
+        [ProtoMember(13)] internal Prediction AimLeadingPrediction;
         [ProtoMember(14)] internal AmmoLoading Loading;
-        [ProtoMember(15)] internal TargetOrder Targeting;
-    }
-
-    [ProtoContract]
-    public struct TargetOrder
-    {
-        [ProtoMember(1)] internal BlockTypes[] Priorities;
-        [ProtoMember(2)] internal bool Enable;
-        [ProtoMember(3)] internal bool Sort;
     }
 
     [ProtoContract]
@@ -93,6 +84,32 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal string SubtypeId;
         [ProtoMember(2)] internal string SubpartId;
+    }
+
+    [ProtoContract]
+    public struct TargetingDefinition
+    {
+        [ProtoMember(1)] internal int TopTargets;
+        [ProtoMember(2)] internal int TopBlocks;
+        [ProtoMember(3)] internal SubSystemDefinition SubSystems;
+    }
+
+    [ProtoContract]
+    public struct SubSystemDefinition
+    {
+        public enum BlockTypes
+        {
+            Any,
+            Offense,
+            Defense,
+            Power,
+            Production,
+            Navigation
+        }
+
+        [ProtoMember(1)] internal BlockTypes[] Systems;
+        [ProtoMember(2)] internal bool SubSystemPriority;
+        [ProtoMember(3)] internal bool ClosestFirst;
     }
 
     [ProtoContract]
@@ -180,9 +197,7 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal double MaxLateralThrust;
         [ProtoMember(4)] internal double TrackingDelay;
         [ProtoMember(5)] internal int MaxChaseTime;
-        [ProtoMember(6)] internal int TopTargets;
-        [ProtoMember(7)] internal int TopBlocks;
-        [ProtoMember(8)] internal bool OverideTarget;
+        [ProtoMember(6)] internal bool OverideTarget;
     }
 
     [ProtoContract]

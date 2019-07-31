@@ -30,6 +30,7 @@ namespace WeaponCore
 
         private readonly object _configLock = new object();
 
+        internal readonly Dictionary<double, List<Vector3I>> BlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly List<GridTargetingAi> DbsToUpdate = new List<GridTargetingAi>();
         internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
@@ -52,6 +53,7 @@ namespace WeaponCore
         internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
 
 
+        private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
         private readonly MyConcurrentPool<Dictionary<Vector3I, IMySlimBlock>> _slimSpacePool = new MyConcurrentPool<Dictionary<Vector3I, IMySlimBlock>>(50);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private readonly Dictionary<string, Dictionary<string, string>> _turretDefinitions = new Dictionary<string, Dictionary<string, string>>();
