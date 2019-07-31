@@ -30,7 +30,9 @@ namespace WeaponCore
 
         private readonly object _configLock = new object();
 
-        internal readonly Dictionary<double, List<Vector3I>> BlockSphereDb = new Dictionary<double, List<Vector3I>>();
+        internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
+        internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
+
         internal readonly List<GridTargetingAi> DbsToUpdate = new List<GridTargetingAi>();
         internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();

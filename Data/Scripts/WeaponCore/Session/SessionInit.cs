@@ -2,6 +2,7 @@
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using WeaponCore.Support;
@@ -54,7 +55,20 @@ namespace WeaponCore
             if (Inited) return;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
+            DsUtil.Sw.Restart();
 
+            foreach (var x in _weaponDefinitions)
+            {
+                var radius = x.Ammo.AreaEffect.AreaEffectRadius;
+                if (radius > 0)
+                {
+                    var smallRadius = x.Ammo.AreaEffect.AreaEffectRadius > 5 ? 5 : x.Ammo.AreaEffect.AreaEffectRadius;
+                    var largeRadius = x.Ammo.AreaEffect.AreaEffectRadius > 25 ? 25 : x.Ammo.AreaEffect.AreaEffectRadius;
+                    if (!LargeBlockSphereDb.ContainsKey(largeRadius)) GenerateBlockSphere(MyCubeSize.Large, largeRadius);
+                    if (!SmallBlockSphereDb.ContainsKey(smallRadius)) GenerateBlockSphere(MyCubeSize.Small, smallRadius);
+                }
+            }
+            Log.Line(DsUtil.StopWatchReport(""));
             foreach (var weaponDef in _weaponDefinitions)
             {
                 foreach (var mount in weaponDef.Assignments.MountPoints)
@@ -76,6 +90,7 @@ namespace WeaponCore
                     }
                 }
             }
+
             foreach (var tDef in _turretDefinitions)
             {
                 var subTypeIdHash = MyStringHash.GetOrCompute(tDef.Key);

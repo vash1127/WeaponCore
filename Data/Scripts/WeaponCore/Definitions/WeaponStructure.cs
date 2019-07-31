@@ -50,6 +50,8 @@ namespace WeaponCore.Support
         public readonly bool SortBlocks;
         public readonly bool DegROF;
         public readonly double MaxTrajectorySqr;
+        public readonly double AreaRadiusSmall;
+        public readonly double AreaRadiusLarge;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float ShotEnergyCost;
@@ -117,6 +119,8 @@ namespace WeaponCore.Support
             if(WepCooldown < .2f) WepCooldown = .2f;
             if(WepCooldown > .95f) WepCooldown = .95f;
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
+            AreaRadiusSmall = values.Ammo.AreaEffect.AreaEffectRadius > 5 ? 5 : values.Ammo.AreaEffect.AreaEffectRadius;
+            AreaRadiusLarge = values.Ammo.AreaEffect.AreaEffectRadius > 25 ? 25 : values.Ammo.AreaEffect.AreaEffectRadius;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
             IsBeamWeapon = Values.Ammo.Trajectory.DesiredSpeed <= 0 && Values.Ammo.Trajectory.MaxTrajectory > 0;

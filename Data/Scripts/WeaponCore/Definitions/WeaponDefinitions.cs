@@ -141,7 +141,7 @@ namespace WeaponCore.Support
             Radiant,
         }
 
-        [ProtoMember(1)] internal float AreaEffectRadius;
+        [ProtoMember(1)] internal double AreaEffectRadius;
         [ProtoMember(2)] internal float AreaEffectDamage;
         [ProtoMember(3)] internal AreaEffectType AreaEffect;
         [ProtoMember(4)] internal Detonate Detonation;

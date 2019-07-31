@@ -541,7 +541,7 @@ namespace WeaponCore.Support
             return surfaceArea;
         }
 
-        public static void CreateMissileExplosion(float damage, float radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponSystem weaponSystem, bool forceNoDraw = false)
+        public static void CreateMissileExplosion(float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponSystem weaponSystem, bool forceNoDraw = false)
         {
             var af = weaponSystem.Values.Ammo.AreaEffect;
             var eInfo = af.Explosions;
@@ -580,7 +580,7 @@ namespace WeaponCore.Support
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateFakeExplosion(float radius, Vector3D position, WeaponSystem weaponSystem)
+        public static void CreateFakeExplosion(double radius, Vector3D position, WeaponSystem weaponSystem)
         {
             var af = weaponSystem.Values.Ammo.AreaEffect;
             var eInfo = af.Explosions;

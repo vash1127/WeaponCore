@@ -93,9 +93,10 @@ namespace WeaponCore
             //Log.Line($"new hit: blockCnt:{grid.BlocksCount} - pool:{projectile.BaseDamagePool} - objHit:{projectile.ObjectsHit}");
             _destroyedSlims.Clear();
             //var cubes = SlimSpace[grid];
-            var sphere = new BoundingSphereD(hitEnt.HitPos.Value, system.Values.Ammo.AreaEffect.AreaEffectRadius);
-            var maxObjects = projectile.System.MaxObjectsHit;
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
+            var areaRadius = largeGrid ? system.AreaRadiusLarge : system.AreaRadiusSmall;
+            var sphere = new BoundingSphereD(hitEnt.HitPos.Value, areaRadius);
+            var maxObjects = projectile.System.MaxObjectsHit;
             var areaEffect = system.Values.Ammo.AreaEffect.AreaEffect;
             var explosive = areaEffect == AreaDamage.AreaEffectType.Explosive;
             var radiant = areaEffect == AreaDamage.AreaEffectType.Radiant;
@@ -110,7 +111,12 @@ namespace WeaponCore
             var damagePool = projectile.BaseDamagePool;
             var objectsHit = projectile.ObjectsHit;
             var countBlocksAsObjects = system.Values.Ammo.ObjectsHit.CountBlocks;
-
+            List<Vector3I> radiatedBlocks = null;
+            if (radiant)
+            {
+                if (largeGrid) LargeBlockSphereDb.TryGetValue(areaRadius, out radiatedBlocks);
+                else SmallBlockSphereDb.TryGetValue(areaRadius, out radiatedBlocks);
+            }
             var done = false;
             var nova = false;
             var outOfPew = false;
@@ -136,6 +142,7 @@ namespace WeaponCore
                 {
                     sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
                     GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius, _slimsSortedList);
+                    //ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
                 }
@@ -249,7 +256,6 @@ namespace WeaponCore
                     }
                 }
             }
-
             if (!countBlocksAsObjects) projectile.ObjectsHit += 1;
             if (!nova)
             {
