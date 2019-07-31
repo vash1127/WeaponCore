@@ -49,7 +49,6 @@ namespace WeaponCore
                         {
                             if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 30) gridAi.SelectTarget(w);
                             w.TargetExpired = w.NewTarget.Entity == null || w.NewTarget.Entity.MarkedForClose;
-                            Log.Line($"{w.NewTarget}");
                             w.Target = w.NewTarget;
 
                         }
