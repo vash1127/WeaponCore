@@ -66,10 +66,8 @@ namespace WeaponCore
                 Timings();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
-                DsUtil.Start("");
                 UpdateWeaponPlatforms();
                 AiLoop();
-                DsUtil.Complete();
                 //MyAPIGateway.Parallel.Start(AiLoop);
                 //MyAPIGateway.Parallel.Start(Projectiles.Update);
                 Projectiles.Update();
