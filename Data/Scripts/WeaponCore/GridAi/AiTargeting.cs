@@ -74,9 +74,9 @@ namespace WeaponCore.Support
                     var block = blockList[next];
                     if (block.MarkedForClose) continue;
 
-                    physics.CastRay(weaponPos, block.CubeGrid.GridIntegerToWorld(block.Position), out var hitInfo, 0, true);
+                    physics.CastRay(weaponPos, block.CubeGrid.GridIntegerToWorld(block.Position), out var hitInfo, 15, true);
 
-                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == MyGrid || hitInfo.HitEntity is MyCubeGrid hitGrid && !GridEnemy(w.Comp.MyCube, hitGrid, hitGrid.BigOwners)) continue;
 
                     Log.Line($"{w.System.WeaponName} - found block");
                     w.NewTarget.Entity = block;
@@ -103,14 +103,8 @@ namespace WeaponCore.Support
                 }
                 else if (!Weapon.ValidTarget(weapon, info.Target, true)) continue;
 
-                if (info.IsGrid)
-                {
-                    Log.Line($"{weapon.System.WeaponName} - found grid");
-                    targetInfo = info;
-                    return;
-                }
                 var weaponPos = weapon.Comp.MyPivotPos;
-                physics.CastRay(weaponPos, info.Target.PositionComp.WorldAABB.Center, out var hitInfo,15, true);
+                physics.CastRay(weaponPos, info.Target.PositionComp.WorldAABB.Center, out var hitInfo, 15, true);
                 if (hitInfo?.HitEntity == info.Target)
                 {
                     Log.Line($"{weapon.System.WeaponName} - found something");
