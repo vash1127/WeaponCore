@@ -423,7 +423,7 @@ namespace WeaponCore.Support
         private bool _time;
         private Stopwatch Sw { get; } = new Stopwatch();
 
-        public void Start(string message, bool time)
+        public void Start(string message, bool time = true)
         {
             _message = message;
             _time = time;

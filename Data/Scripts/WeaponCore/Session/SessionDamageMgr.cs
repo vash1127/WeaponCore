@@ -137,9 +137,10 @@ namespace WeaponCore
                 var dmgCount = 1;
                 if (radiate)
                 {
-                    sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
-                    GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius, _slimsSortedList);
+                    //GetBlocksInsideSphereBrute(grid, rootBlock.Position, ref sphere, true);
                     //ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
+                    sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
+                    GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius);
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
                 }

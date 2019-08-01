@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -117,9 +118,9 @@ namespace WeaponCore
             }
         }
 
-        private void GetIntVectorsInSphere2(MyCubeGrid grid, Vector3I center, double radius, List<(Vector3I, IMySlimBlock, Vector3I)> points)
+        private void GetIntVectorsInSphere2(MyCubeGrid grid, Vector3I center, double radius)
         {
-            points.Clear();
+            _slimsSortedList.Clear();
             radius *= grid.GridSizeR;
             var gridMin = grid.Min;
             var gridMax = grid.Max;
@@ -128,6 +129,7 @@ namespace WeaponCore
             int i, j, k;
             Vector3I max = Vector3I.Min(Vector3I.One * radiusCeil, gridMax - center);
             Vector3I min = Vector3I.Max(Vector3I.One * -radiusCeil, gridMin - center);
+
 
             for (i = min.X; i <= max.X; ++i)
             {
@@ -139,16 +141,42 @@ namespace WeaponCore
                         {
                             var vector3I = center + new Vector3I(i, j, k);
                             IMySlimBlock slim = grid.GetCubeBlock(vector3I);
-                            if (slim != null && slim.Position == vector3I) points.Add((center, slim, vector3I));
+                            if (slim != null && slim.Position == vector3I) _slimsSortedList.Add((center, slim, vector3I));
                         }
                     }
                 }
             }
-            DsUtil.Start($"[sort] - radius:{radius} - time:", true);
-            points.Sort((a, b) => Vector3I.DistanceManhattan(a.Item1, a.Item3).CompareTo(Vector3I.DistanceManhattan(b.Item1, b.Item3)));
-            DsUtil.Complete();
+            //_slimsSortedList.Sort((a, b) => Vector3I.DistanceManhattan(a.Item1, a.Item3).CompareTo(Vector3I.DistanceManhattan(b.Item1, b.Item3)));
+            _slimsSortedList.Sort((a, b) => Vector3I.Dot(a.Item3, a.Item3).CompareTo(Vector3I.Dot(b.Item3, b.Item3)));
         }
+        /*
+        public void DistributeInteger(int total, int divider)
+        {
+            if (divider == 0) return;
 
+            int rest = total % divider;
+            double result = total / (double)divider;
+
+            int start = 0;
+            for (int i = 0; i < divider; i++)
+            {
+                if (rest-- > 0)
+                {
+                    var newValue = (int)Math.Ceiling(result);
+                    _start[i] = start;
+                    _end[i] = start + newValue;
+                    start = newValue + 1;
+                }
+                else
+                {
+                    var newValue = (int)Math.Floor(result);
+                    _start[i] = start;
+                    _end[i] = start + newValue;
+                    start = newValue + 1;
+                }
+            }
+        }
+        */
         public void GetBlocksInsideSphere(MyCubeGrid grid, Dictionary<Vector3I, IMySlimBlock> cubes, ref BoundingSphereD sphere, bool sorted, Vector3I center, bool checkTriangles = false)
         {
             if (grid.PositionComp == null) return;
@@ -195,6 +223,28 @@ namespace WeaponCore
                 }
             }
             if (sorted) 
+                _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Item1, x.Item2.Position).CompareTo(Vector3I.DistanceManhattan(y.Item1, y.Item2.Position)));
+        }
+
+        public void GetBlocksInsideSphereBrute(MyCubeGrid grid, Vector3I center, ref BoundingSphereD sphere, bool sorted)
+        {
+            if (grid.PositionComp == null) return;
+
+            if (sorted) _slimsSortedList.Clear();
+            else _slimsSet.Clear();
+
+            var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
+            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out var result);
+            var localSphere = new BoundingSphere(result, (float)sphere.Radius);
+            foreach (IMySlimBlock cube in grid.CubeBlocks)
+            {
+                if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                {
+                    if (sorted) _slimsSortedList.Add((center, cube, cube.Position));
+                    else _slimsSet.Add(cube);
+                }
+            }
+            if (sorted)
                 _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Item1, x.Item2.Position).CompareTo(Vector3I.DistanceManhattan(y.Item1, y.Item2.Position)));
         }
     }

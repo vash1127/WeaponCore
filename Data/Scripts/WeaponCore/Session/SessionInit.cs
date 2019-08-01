@@ -4,7 +4,9 @@ using Sandbox.Game;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
+using VRageMath;
 using WeaponCore.Support;
 
 namespace WeaponCore
