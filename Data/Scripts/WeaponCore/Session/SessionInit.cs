@@ -55,7 +55,7 @@ namespace WeaponCore
             if (Inited) return;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
-            DsUtil.Sw.Restart();
+            DsUtil.Start("blockSpheres", true);
 
             foreach (var x in _weaponDefinitions)
             {
@@ -68,7 +68,7 @@ namespace WeaponCore
                     if (!SmallBlockSphereDb.ContainsKey(smallRadius)) GenerateBlockSphere(MyCubeSize.Small, smallRadius);
                 }
             }
-            Log.Line(DsUtil.StopWatchReport(""));
+            DsUtil.Complete();
             foreach (var weaponDef in _weaponDefinitions)
             {
                 foreach (var mount in weaponDef.Assignments.MountPoints)

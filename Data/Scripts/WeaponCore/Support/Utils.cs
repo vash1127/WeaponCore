@@ -419,9 +419,18 @@ namespace WeaponCore.Support
     internal class DSUtils
     {
         private double _last;
-        public Stopwatch Sw { get; } = new Stopwatch();
+        private string _message;
+        private bool _time;
+        private Stopwatch Sw { get; } = new Stopwatch();
 
-        public string StopWatchReport(string message)
+        public void Start(string message, bool time)
+        {
+            _message = message;
+            _time = time;
+            Sw.Restart();
+        }
+
+        public void Complete()
         {
             Sw.Stop();
             var ticks = Sw.ElapsedTicks;
@@ -429,9 +438,10 @@ namespace WeaponCore.Support
             var ms = ns / 1000000.0;
             var s = ms / 1000;
             Sw.Reset();
-            var result = $"{message} ms:{(float) ms} last-ms:{(float) _last} s:{(int) s}";
+            var message = $"{_message} ms:{(float) ms} last-ms:{(float) _last} s:{(int) s}";
+            if (_time) Log.Line(message);
+            else Log.CleanLine(message);
             _last = ms;
-            return result;
         }
     }
 

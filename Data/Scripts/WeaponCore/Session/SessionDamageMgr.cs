@@ -36,10 +36,7 @@ namespace WeaponCore
                             DamageShield(hitEnt, projectile);
                             continue;
                         case HitEntity.Type.Grid:
-                            //DsUtil.Sw.Restart();
                             DamageGrid(hitEnt, projectile);
-                            //var test = DsUtil.StopWatchReport("");
-                            //Log.Line($"{test}");
                             continue;
                         case HitEntity.Type.Destroyable:
                             DamageDestObj(hitEnt, projectile);

@@ -117,7 +117,6 @@ namespace WeaponCore
             }
         }
 
-
         private void GetIntVectorsInSphere2(MyCubeGrid grid, Vector3I center, double radius, List<(Vector3I, IMySlimBlock, Vector3I)> points)
         {
             points.Clear();
@@ -145,7 +144,9 @@ namespace WeaponCore
                     }
                 }
             }
+            DsUtil.Start($"[sort] - radius:{radius} - time:", true);
             points.Sort((a, b) => Vector3I.DistanceManhattan(a.Item1, a.Item3).CompareTo(Vector3I.DistanceManhattan(b.Item1, b.Item3)));
+            DsUtil.Complete();
         }
 
         public void GetBlocksInsideSphere(MyCubeGrid grid, Dictionary<Vector3I, IMySlimBlock> cubes, ref BoundingSphereD sphere, bool sorted, Vector3I center, bool checkTriangles = false)

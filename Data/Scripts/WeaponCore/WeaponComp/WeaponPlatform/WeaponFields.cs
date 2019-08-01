@@ -18,6 +18,7 @@ namespace WeaponCore.Platform
         internal int NextMuzzle;
         internal static bool UiSet;
         internal volatile bool TargetExpired;
+        internal volatile bool Casting;
 
         private readonly Vector3 _localTranslation;
 

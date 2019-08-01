@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
-using  WeaponCore.Support;
+using WeaponCore.Support;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
+
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -58,7 +62,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
 
-            if (!Comp.Gunner && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
+            if (!Comp.Gunner  && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
 
             var isStatic = Comp.Physics.IsStatic;
             for (int i = 0; i < bps; i++)
@@ -154,7 +158,7 @@ namespace WeaponCore.Platform
                 return;
             }
 
-            var targetPos = Target.Entity.PositionComp.GetPosition();
+            var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
             if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
@@ -169,7 +173,36 @@ namespace WeaponCore.Platform
                 if (masterWeapon != this) TargetExpired = true;
                 return;
             }
-            MyAPIGateway.Physics.CastRay(Comp.MyPivotPos, Target.Entity.PositionComp.WorldMatrix.Translation, out var hitInfo, 15, true);
+            Casting = true;
+            MyAPIGateway.Physics.CastRayParallel(ref Comp.MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
+        }
+
+        public void MovePart(int time)
+        {
+            BarrelMove = true;
+            double radiansPerShot;
+            if(System.DegROF && CurrentHeat > (System.MaxHeat *.8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (CurrentHeat/System.MaxHeat);
+            if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
+            else  radiansPerShot = 2 * Math.PI / _numOfBarrels;
+            var radians = radiansPerShot / _timePerShot;
+            var axis = System.Values.HardPoint.RotateBarrelAxis;
+            MatrixD rotationMatrix;
+            if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
+            else if (axis == 2 ) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
+            else if (axis == 3) rotationMatrix = MatrixD.CreateRotationZ(radians * _rotationTime);
+            else return;
+
+            _rotationTime += time;
+            rotationMatrix.Translation = _localTranslation;
+            EntityPart.PositionComp.LocalMatrix = rotationMatrix;
+            BarrelMove = false;
+            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
+                StartRotateSound();
+        }
+
+        public void ShootRayCheckCallBack(IHitInfo hitInfo)
+        {
+            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target.Entity && hitInfo.HitEntity != Target.Entity.Parent))
             {
                 if (hitInfo?.HitEntity == null && DelayCeaseFire)
@@ -214,33 +247,19 @@ namespace WeaponCore.Platform
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon != this) TargetExpired = true;
             }
-            else if (hitInfo.HitEntity is MyCubeGrid grid && Target.Entity.GetTopMostParent() == grid)
+            else if (System.SortBlocks && hitInfo.HitEntity is MyCubeGrid grid && Target.Entity.GetTopMostParent() == grid)
             {
-                Log.Line($"hit: {((MyEntity)hitInfo.HitEntity).DebugName} - HitDistanceToTarget: {Vector3D.Distance(hitInfo.Position, Target.Entity.PositionComp.WorldMatrix.Translation)} - OrigDistToTarget:{Target.Distance}");
+                var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
+                var distanceToTarget = Vector3D.Distance(hitInfo.Position, Target.Entity.PositionComp.WorldMatrix.Translation);
+                if (distanceToTarget - Target.Distance > maxChange)
+                {
+                    masterWeapon.TargetExpired = true;
+                    if (masterWeapon != this) TargetExpired = true;
+                    Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
+                }
+                return;
             }
-        }
-
-        public void MovePart(int time)
-        {
-            BarrelMove = true;
-            double radiansPerShot;
-            if(System.DegROF && CurrentHeat > (System.MaxHeat *.8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (CurrentHeat/System.MaxHeat);
-            if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
-            else  radiansPerShot = 2 * Math.PI / _numOfBarrels;
-            var radians = radiansPerShot / _timePerShot;
-            var axis = System.Values.HardPoint.RotateBarrelAxis;
-            MatrixD rotationMatrix;
-            if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
-            else if (axis == 2 ) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
-            else if (axis == 3) rotationMatrix = MatrixD.CreateRotationZ(radians * _rotationTime);
-            else return;
-
-            _rotationTime += time;
-            rotationMatrix.Translation = _localTranslation;
-            EntityPart.PositionComp.LocalMatrix = rotationMatrix;
-            BarrelMove = false;
-            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-                StartRotateSound();
+            Casting = false;
         }
     }
 }
