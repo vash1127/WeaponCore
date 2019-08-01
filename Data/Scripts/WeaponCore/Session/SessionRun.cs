@@ -67,8 +67,8 @@ namespace WeaponCore
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
                 UpdateWeaponPlatforms();
-                //MyAPIGateway.Parallel.Start(AiLoop);
-                AiLoop();
+                MyAPIGateway.Parallel.Start(AiLoop);
+                //AiLoop();
                 //MyAPIGateway.Parallel.Start(Projectiles.Update);
                 Projectiles.Update();
             }
