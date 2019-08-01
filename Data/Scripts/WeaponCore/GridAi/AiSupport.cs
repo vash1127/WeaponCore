@@ -181,16 +181,16 @@ namespace WeaponCore.Support
                 var compareApproch = xApproching.CompareTo(yApproching);
                 if (compareApproch != 0 && (xDist < 640000 || yDist < 640000)) return -compareApproch;
 
-                var compareDist = xDist.CompareTo(yDist);
-                if (compareDist != 0 && (xDist < 1000000 || yDist < 1000000)) return compareDist;
-
-                if (!xNull && !yNull)
+                if (!xNull && !yNull && (xDist < 1000000 || yDist < 1000000))
                 {
                     var xVelLen = xVel.Value.LengthSquared();
                     var yVelLen = yVel.Value.LengthSquared();
                     var compareVelocity = xVelLen.CompareTo(yVelLen);
-                    if (compareVelocity != 0 && (xVelLen > 900 || yVelLen > 900)) return -compareVelocity;
+                    if (compareVelocity != 0 && (xVelLen > 3600 || yVelLen > 3600)) return -compareVelocity;
                 }
+
+                var compareDist = xDist.CompareTo(yDist);
+                if (compareDist != 0 && (xDist < 360000 || yDist < 360000)) return compareDist;
 
                 var compareParts = x.PartCount.CompareTo(y.PartCount);
                 return -compareParts;
