@@ -110,7 +110,7 @@ namespace WeaponCore.Support
                     return;
                 }
                 var weaponPos = weapon.Comp.MyPivotPos;
-                physics.CastRay(weaponPos, info.Target.PositionComp.GetPosition(), out var hitInfo,15, true);
+                physics.CastRay(weaponPos, info.Target.PositionComp.WorldAABB.Center, out var hitInfo,15, true);
                 if (hitInfo?.HitEntity == info.Target)
                 {
                     Log.Line($"{weapon.System.WeaponName} - found something");
