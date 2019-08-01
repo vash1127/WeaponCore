@@ -173,20 +173,24 @@ namespace WeaponCore.Support
                 var yTargetPos = y.Target.PositionComp.GetPosition();
                 var yMyPos = y.MyGrid.PositionComp.GetPosition();
 
+                Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out var xDist);
+                Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out var yDist);
+
                 var xApproching = xandYNull || !xNull && Vector3.Dot(xVel.Value, xTargetPos - xMyPos) < 0;
                 var yApproching = !xandYNull && !yNull && Vector3.Dot(yVel.Value, yTargetPos - yMyPos) < 0;
                 var compareApproch = xApproching.CompareTo(yApproching);
-                if (compareApproch != 0 || xNull || yNull) return -compareApproch;
+                if (compareApproch != 0 && (xDist < 640000 || yDist < 640000)) return -compareApproch;
 
-                Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out var xDist);
-                Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out var yDist);
                 var compareDist = xDist.CompareTo(yDist);
-                if (compareDist != 0 && (xDist < 1000000 || yDist < 1000000) ) return compareDist;
+                if (compareDist != 0 && (xDist < 1000000 || yDist < 1000000)) return compareDist;
 
-                var xVelLen = xVel.Value.LengthSquared();
-                var yVelLen = yVel.Value.LengthSquared();
-                var compareVelocity = xVelLen.CompareTo(yVelLen);
-                if (compareVelocity != 0 && (xVelLen > 900 || yVelLen > 900)) return -compareVelocity;
+                if (!xNull && !yNull)
+                {
+                    var xVelLen = xVel.Value.LengthSquared();
+                    var yVelLen = yVel.Value.LengthSquared();
+                    var compareVelocity = xVelLen.CompareTo(yVelLen);
+                    if (compareVelocity != 0 && (xVelLen > 900 || yVelLen > 900)) return -compareVelocity;
+                }
 
                 var compareParts = x.PartCount.CompareTo(y.PartCount);
                 return -compareParts;
