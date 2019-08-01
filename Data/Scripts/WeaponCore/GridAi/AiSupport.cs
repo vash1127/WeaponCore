@@ -163,14 +163,33 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
-                var compareParts = x.PartCount.CompareTo(y.PartCount);
-                if (compareParts != 0) return -compareParts;
                 var xNull = x.Target.Physics == null;
                 var yNull = y.Target.Physics == null;
                 var xandYNull = xNull && yNull;
-                var xApproching = xandYNull || !xNull && Vector3.Dot(x.Target.Physics.LinearVelocity, x.Target.PositionComp.GetPosition() - x.MyGrid.PositionComp.GetPosition()) < 0;
-                var yApproching = !xandYNull && !yNull && Vector3.Dot(y.Target.Physics.LinearVelocity, y.Target.PositionComp.GetPosition() - y.MyGrid.PositionComp.GetPosition()) < 0;
-                return xApproching.CompareTo(yApproching);
+                var xVel = xNull ? (Vector3?) null : x.Target.Physics.LinearVelocity;
+                var yVel = yNull ? (Vector3?)null : y.Target.Physics.LinearVelocity;
+                var xTargetPos = x.Target.PositionComp.GetPosition();
+                var xMyPos = x.MyGrid.PositionComp.GetPosition();
+                var yTargetPos = y.Target.PositionComp.GetPosition();
+                var yMyPos = y.MyGrid.PositionComp.GetPosition();
+
+                var xApproching = xandYNull || !xNull && Vector3.Dot(xVel.Value, xTargetPos - xMyPos) < 0;
+                var yApproching = !xandYNull && !yNull && Vector3.Dot(yVel.Value, yTargetPos - yMyPos) < 0;
+                var compareApproch = xApproching.CompareTo(yApproching);
+                if (compareApproch != 0 || xNull || yNull) return -compareApproch;
+
+                Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out var xDist);
+                Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out var yDist);
+                var compareDist = xDist.CompareTo(yDist);
+                if (compareDist != 0 && (xDist < 1000000 || yDist < 1000000) ) return compareDist;
+
+                var xVelLen = xVel.Value.LengthSquared();
+                var yVelLen = yVel.Value.LengthSquared();
+                var compareVelocity = xVelLen.CompareTo(yVelLen);
+                if (compareVelocity != 0 && (xVelLen > 900 || yVelLen > 900)) return -compareVelocity;
+
+                var compareParts = x.PartCount.CompareTo(y.PartCount);
+                return -compareParts;
             }
         }
 
