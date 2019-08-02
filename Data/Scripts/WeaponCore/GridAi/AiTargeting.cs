@@ -76,10 +76,18 @@ namespace WeaponCore.Support
                 }
 
                 var weaponPos = w.Comp.MyPivotPos;
-                physics.CastRay(weaponPos, info.Target.PositionComp.WorldAABB.Center, out var hitInfo, 15, true);
+                var targetPos = info.Target.PositionComp.WorldAABB.Center;
+                physics.CastRay(weaponPos, targetPos, out var hitInfo, 15, true);
                 if (hitInfo?.HitEntity == info.Target)
                 {
                     Log.Line($"{w.System.WeaponName} - found something");
+
+                    double rayDist;
+                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                    w.NewTarget.Entity = info.Target;
+                    w.NewTarget.HitPos = hitInfo.Position;
+                    w.NewTarget.HitShortDist = rayDist * (1 - hitInfo.Fraction);
+                    w.NewTarget.OrigDistance = rayDist * hitInfo.Fraction;
                     targetInfo = info;
                     return;
                 }

@@ -88,6 +88,7 @@ namespace WeaponCore.Support
     {
         public MyEntity Entity;
         public Vector3D HitPos;
-        public double Distance;
+        public double HitShortDist;
+        public double OrigDistance;
     }
 }

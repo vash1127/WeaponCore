@@ -202,6 +202,7 @@ namespace WeaponCore.Platform
 
         public void ShootRayCheckCallBack(IHitInfo hitInfo)
         {
+            Casting = false;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target.Entity && hitInfo.HitEntity != Target.Entity.Parent))
             {
@@ -250,16 +251,25 @@ namespace WeaponCore.Platform
             else if (System.SortBlocks && hitInfo.HitEntity is MyCubeGrid grid && Target.Entity.GetTopMostParent() == grid)
             {
                 var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
-                var distanceToTarget = Vector3D.Distance(hitInfo.Position, Target.Entity.PositionComp.WorldMatrix.Translation);
-                if (distanceToTarget - Target.Distance > maxChange)
+                var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
+                //var distanceToTarget = Vector3D.Distance(hitInfo.Position, targetPos);
+                var weaponPos = Comp.MyPivotPos;
+
+                double rayDist;
+                Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                var newHitShortDist = rayDist * (1 - hitInfo.Fraction);
+                var distanceToTarget = rayDist * hitInfo.Fraction;
+
+                var shortDistExceed = newHitShortDist - Target.HitShortDist > maxChange;
+                var escapeDistExceed = distanceToTarget - Target.OrigDistance > Target.OrigDistance;
+                if (shortDistExceed || escapeDistExceed)
                 {
                     masterWeapon.TargetExpired = true;
                     if (masterWeapon != this) TargetExpired = true;
-                    Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
+                    if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
+                    else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met");
                 }
-                return;
             }
-            Casting = false;
         }
     }
 }

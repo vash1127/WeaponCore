@@ -23,7 +23,8 @@ namespace WeaponCore.Support
         {
             var minValue = double.MaxValue;
             target.Entity = null;
-            target.Distance = 0;
+            target.HitShortDist = 0;
+            target.OrigDistance = 0;
             target.HitPos = Vector3D.Zero;
 
             for (int i = 0; i < cubes.Count; i++)
@@ -41,10 +42,13 @@ namespace WeaponCore.Support
                         MyAPIGateway.Physics.CastRay(testPos, cubePos, out var hitInfo, 15, true);
                         if (hitInfo.HitEntity == cube.GetTopMostParent())
                         {
+                            double rayDist;
+                            Vector3D.Distance(ref testPos, ref cubePos, out rayDist);
                             minValue = test;
                             target.Entity = cube;
                             target.HitPos = hitInfo.Position;
-                            target.Distance = Vector3D.Distance(target.HitPos, cubePos);
+                            target.HitShortDist = rayDist * (1 - hitInfo.Fraction);
+                            target.OrigDistance = rayDist * hitInfo.Fraction;
                         }
                     }
 
@@ -66,10 +70,11 @@ namespace WeaponCore.Support
             MyCubeBlock newEntity1 = null;
             MyCubeBlock newEntity2 = null;
             MyCubeBlock newEntity3 = null;
-            var hitPos = Vector3D.Zero;
+            var bestCubePos = Vector3D.Zero;
             var top5Count = w.Top5.Count;
             var testPos = w.Comp.MyPivotPos;
             var physics = MyAPIGateway.Physics;
+            IHitInfo hitInfo = null;
             for (int i = 0; i < cubes.Count + top5Count; i++)
             {
                 var index = i < top5Count ? i : i - top5Count;
@@ -80,7 +85,7 @@ namespace WeaponCore.Support
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
                 if (test < minValue3)
                 {
-                    if (test < minValue && Weapon.IsTargetInView(w, cubePos) && physics.CastRay(testPos, cubePos, out var hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid)
+                    if (test < minValue && Weapon.IsTargetInView(w, cubePos) && physics.CastRay(testPos, cubePos, out hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid)
                     {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
@@ -93,7 +98,7 @@ namespace WeaponCore.Support
                         minValue = test;
 
                         newEntity = cube;
-                        hitPos = hitInfo.Position;
+                        bestCubePos = cubePos;
                     }
                     else if (test < minValue0)
                     {
@@ -136,16 +141,21 @@ namespace WeaponCore.Support
             w.Top5.Clear();
             if (newEntity != null)
             {
+                double rayDist;
+                Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
                 w.NewTarget.Entity = newEntity;
-                w.NewTarget.HitPos = hitPos;
-                w.NewTarget.Distance = Vector3D.Distance(newEntity.WorldMatrix.Translation, hitPos);
+                w.NewTarget.HitPos = hitInfo.Position;
+                w.NewTarget.HitShortDist = rayDist * (1 - hitInfo.Fraction);
+                w.NewTarget.OrigDistance = rayDist * hitInfo.Fraction;
+
                 w.Top5.Add(newEntity);
             }
             else
             {
                 w.NewTarget.Entity = null;
                 w.NewTarget.HitPos = Vector3D.Zero;
-                w.NewTarget.Distance = 0;
+                w.NewTarget.HitShortDist = 0;
+                w.NewTarget.OrigDistance = 0;
             }
 
             if (newEntity0 != null)
