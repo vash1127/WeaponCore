@@ -15,7 +15,7 @@ namespace WeaponCore.Support
 {
     public partial class GridTargetingAi
     {
-        internal void TimeToUpdateDb()
+        internal void RequestDbUpdate()
         {
             if (!UpdateOwner() || Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
 

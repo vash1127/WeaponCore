@@ -88,6 +88,7 @@ namespace WeaponCore.Support
                     w.NewTarget.HitPos = hitInfo.Position;
                     w.NewTarget.HitShortDist = rayDist * (1 - hitInfo.Fraction);
                     w.NewTarget.OrigDistance = rayDist * hitInfo.Fraction;
+                    w.NewTarget.TopEntityId = info.Target.GetTopMostParent().EntityId;
                     targetInfo = info;
                     return;
                 }
@@ -183,7 +184,6 @@ namespace WeaponCore.Support
                     Log.Line($"cube list is null");
                     return false;
                 }
-                if (p.Ai.Targeting.AllowScanning) Log.Line($"allow scanning was true!");
                 if (!targetInfo.Value.IsGrid || cubes.Count <= 0)
                 {
                     p.Target = null;

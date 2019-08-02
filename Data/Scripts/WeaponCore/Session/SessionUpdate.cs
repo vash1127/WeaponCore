@@ -1,4 +1,6 @@
-﻿using WeaponCore.Platform;
+﻿using Sandbox.ModAPI;
+using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -7,11 +9,11 @@ namespace WeaponCore
         private void UpdateWeaponPlatforms()
         {
             if (!GameLoaded) return;
-            if (!DbUpdating && DbsToUpdate.Count > 0) StartUpdatingDbs();
+            if (!DbUpdating && DbsToUpdate.Count > 0) UpdateDbsInQueue();
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-                if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.TimeToUpdateDb();
+                if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
                 if (!gridAi.Ready || !gridAi.DbReady) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
@@ -58,7 +60,7 @@ namespace WeaponCore
                             w.TargetExpired = false;
                         }
 
-                        if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null)
+                        if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(Session.Camera.Position, comp.MyPivotPos) < 10000)
                         {
                             if (w.IsTracking && comp.AiMoving && !comp.RotationEmitter.IsPlaying)
                                 comp.RotationEmitter.PlaySound(comp.RotationSound, true, false, false, false, false, false);
@@ -72,14 +74,10 @@ namespace WeaponCore
                             if(w.CurrentHeat < 0) w.CurrentHeat = 0;
                             if(w.CurrentHeat <= (w.System.MaxHeat* w.System.WepCooldown)) w.Overheated = false;
                         }
-
                         if (!w.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
-                        else if (w.IsShooting)
-                        {
-                            //Log.Line($"ai not ready");
-                            w.StopShooting();
-                        }
+                        else if (w.IsShooting) w.StopShooting();
                         if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
+
                     }
                 }
                 gridAi.Ready = false;

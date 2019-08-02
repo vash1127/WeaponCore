@@ -90,5 +90,6 @@ namespace WeaponCore.Support
         public Vector3D HitPos;
         public double HitShortDist;
         public double OrigDistance;
+        public long TopEntityId;
     }
 }

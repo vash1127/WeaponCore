@@ -150,7 +150,7 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.MyAi.MySession.Tick;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
-            if (Target.Entity == null || Target.Entity.MarkedForClose)
+            if (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId)
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null or marked");
                 masterWeapon.TargetExpired = true;
@@ -252,7 +252,6 @@ namespace WeaponCore.Platform
             {
                 var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
                 var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
-                //var distanceToTarget = Vector3D.Distance(hitInfo.Position, targetPos);
                 var weaponPos = Comp.MyPivotPos;
 
                 double rayDist;

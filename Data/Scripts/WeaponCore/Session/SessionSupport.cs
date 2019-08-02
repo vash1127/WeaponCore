@@ -9,7 +9,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        public void StartUpdatingDbs()
+        public void UpdateDbsInQueue()
         {
             DbUpdating = true;
             MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);

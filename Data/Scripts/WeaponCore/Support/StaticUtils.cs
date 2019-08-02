@@ -26,6 +26,8 @@ namespace WeaponCore.Support
             target.HitShortDist = 0;
             target.OrigDistance = 0;
             target.HitPos = Vector3D.Zero;
+            target.TopEntityId = 0;
+
 
             for (int i = 0; i < cubes.Count; i++)
             {
@@ -49,6 +51,7 @@ namespace WeaponCore.Support
                             target.HitPos = hitInfo.Position;
                             target.HitShortDist = rayDist * (1 - hitInfo.Fraction);
                             target.OrigDistance = rayDist * hitInfo.Fraction;
+                            target.TopEntityId = cube.GetTopMostParent().EntityId;
                         }
                     }
 
@@ -147,6 +150,7 @@ namespace WeaponCore.Support
                 w.NewTarget.HitPos = hitInfo.Position;
                 w.NewTarget.HitShortDist = rayDist * (1 - hitInfo.Fraction);
                 w.NewTarget.OrigDistance = rayDist * hitInfo.Fraction;
+                w.NewTarget.TopEntityId = newEntity.GetTopMostParent().EntityId;
 
                 w.Top5.Add(newEntity);
             }
@@ -156,6 +160,7 @@ namespace WeaponCore.Support
                 w.NewTarget.HitPos = Vector3D.Zero;
                 w.NewTarget.HitShortDist = 0;
                 w.NewTarget.OrigDistance = 0;
+                w.NewTarget.TopEntityId = 0;
             }
 
             if (newEntity0 != null)
