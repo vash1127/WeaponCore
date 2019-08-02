@@ -46,8 +46,8 @@ namespace WeaponCore.Platform
         internal uint[] BeamSlot;
         internal WeaponComponent Comp;
 
-        internal (MyEntity Entity, Vector3D HitPos, double Distance) Target;
-        internal (MyEntity Entity, Vector3D HitPos, double Distance) NewTarget;
+        internal Target Target = new Target();
+        internal Target NewTarget = new Target();
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
         internal MyParticleEffect[] BarrelEffects1;

@@ -205,7 +205,7 @@ namespace WeaponCore.Support
             internal readonly int PartCount;
             internal readonly MyCubeGrid MyGrid;
             internal readonly GridTargetingAi Ai;
-            internal Dictionary<SubSystemDefinition.BlockTypes, List<MyCubeBlock>> TypeDict;
+            internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
 
             internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridTargetingAi ai)
             {

@@ -83,4 +83,11 @@ namespace WeaponCore.Support
             Type = type;
         }
     }
+
+    public class Target
+    {
+        public MyEntity Entity;
+        public Vector3D HitPos;
+        public double Distance;
+    }
 }

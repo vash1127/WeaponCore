@@ -19,10 +19,13 @@ namespace WeaponCore.Support
     using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
     internal static class UtilsStatic
     {
-        public static (MyEntity, Vector3D, double) GetClosestSortedBlockThatCanBeShot(List<MyCubeBlock> cubes, Weapon weapon)
+        public static Target GetClosestSortedBlockThatCanBeShot(List<MyCubeBlock> cubes, Weapon weapon, Target target)
         {
             var minValue = double.MaxValue;
-            (MyEntity, Vector3D, double) newEntity = (null, new Vector3D(), 0);
+            target.Entity = null;
+            target.Distance = 0;
+            target.HitPos = Vector3D.Zero;
+
             for (int i = 0; i < cubes.Count; i++)
             {
                 var cube = cubes[i];
@@ -39,25 +42,24 @@ namespace WeaponCore.Support
                         if (hitInfo.HitEntity == cube.GetTopMostParent())
                         {
                             minValue = test;
-                            newEntity.Item1 = cube;
-                            newEntity.Item2 = hitInfo.Position;
-                            newEntity.Item3 = Vector3D.Distance(newEntity.Item2, cubePos);
+                            target.Entity = cube;
+                            target.HitPos = hitInfo.Position;
+                            target.Distance = Vector3D.Distance(target.HitPos, cubePos);
                         }
                     }
 
                 }
             }
-            return newEntity;
+            return target;
         }
 
-        public static (MyEntity, Vector3D, double) GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Weapon weapon)
+        public static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Weapon w)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
             var minValue1 = double.MaxValue;
             var minValue2 = double.MaxValue;
             var minValue3 = double.MaxValue;
-            (MyCubeBlock, Vector3D, double) returnEntity;
 
             MyCubeBlock newEntity = null;
             MyCubeBlock newEntity0 = null;
@@ -65,20 +67,20 @@ namespace WeaponCore.Support
             MyCubeBlock newEntity2 = null;
             MyCubeBlock newEntity3 = null;
             var hitPos = Vector3D.Zero;
-            var top5Count = weapon.Top5.Count;
-            var testPos = weapon.Comp.MyPivotPos;
+            var top5Count = w.Top5.Count;
+            var testPos = w.Comp.MyPivotPos;
             var physics = MyAPIGateway.Physics;
             for (int i = 0; i < cubes.Count + top5Count; i++)
             {
                 var index = i < top5Count ? i : i - top5Count;
-                var cube = i < top5Count ? weapon.Top5[index] : cubes[index];
+                var cube = i < top5Count ? w.Top5[index] : cubes[index];
                 if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1  || cube == newEntity2 || cube == newEntity3) continue;
                 var cubePos = cube.CubeGrid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
                 if (test < minValue3)
                 {
-                    if (test < minValue && Weapon.IsTargetInView(weapon, cubePos) && physics.CastRay(testPos, cubePos, out var hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid)
+                    if (test < minValue && Weapon.IsTargetInView(w, cubePos) && physics.CastRay(testPos, cubePos, out var hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid)
                     {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
@@ -131,37 +133,40 @@ namespace WeaponCore.Support
                 }
 
             }
-            weapon.Top5.Clear();
+            w.Top5.Clear();
             if (newEntity != null)
             {
-                returnEntity.Item1 = newEntity;
-                returnEntity.Item2 = hitPos;
-                returnEntity.Item3 = Vector3D.Distance(newEntity.WorldMatrix.Translation, hitPos);
-                weapon.Top5.Add(newEntity);
+                w.NewTarget.Entity = newEntity;
+                w.NewTarget.HitPos = hitPos;
+                w.NewTarget.Distance = Vector3D.Distance(newEntity.WorldMatrix.Translation, hitPos);
+                w.Top5.Add(newEntity);
             }
-            else returnEntity = (null, new Vector3D(), 0);
+            else
+            {
+                w.NewTarget.Entity = null;
+                w.NewTarget.HitPos = Vector3D.Zero;
+                w.NewTarget.Distance = 0;
+            }
 
             if (newEntity0 != null)
             {
-                weapon.Top5.Add(newEntity0);
+                w.Top5.Add(newEntity0);
             }
 
             if (newEntity1 != null)
             {
-                weapon.Top5.Add(newEntity1);
+                w.Top5.Add(newEntity1);
             }
 
             if (newEntity2 != null)
             {
-                weapon.Top5.Add(newEntity2);
+                w.Top5.Add(newEntity2);
             }
 
             if (newEntity3 != null)
             {
-                weapon.Top5.Add(newEntity3);
+                w.Top5.Add(newEntity3);
             }
-
-            return returnEntity;
         }
 
 

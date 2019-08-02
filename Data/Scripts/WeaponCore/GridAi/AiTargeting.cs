@@ -29,8 +29,7 @@ namespace WeaponCore.Support
             if (targetInfo.HasValue)
             {
                 w.LastTargetCheck = 0;
-                w.NewTarget.Entity = targetInfo.Value.Target;
-                var grid = w.NewTarget.Entity as MyCubeGrid;
+                var grid = targetInfo.Value.Target as MyCubeGrid;
                 if (grid == null)
                 {
                     Log.Line($"{w.System.WeaponName} - targetting nonGrid: {w.System.WeaponName}");
@@ -43,45 +42,7 @@ namespace WeaponCore.Support
                     w.NewTarget.Entity = null;
                     return;
                 }
-                var weaponPos = w.Comp.MyPivotPos;
-                var blockList = targetInfo.Value.TypeDict[Any];
-                if (w.OrderedTargets) {
-                    foreach(var bt in w.System.Values.Targeting.SubSystems.Systems) {
-                        if (bt != Any && targetInfo.Value.TypeDict[bt].Count > 0) {
-                            blockList = targetInfo.Value.TypeDict[bt];
-                            if (w.System.Values.Targeting.SubSystems.ClosestFirst)
-                            {
-                                w.NewTarget = UtilsStatic.GetClosestHitableBlockOfType(blockList, w);
-                                if (w.NewTarget.Entity != null) return;
-                            }
-                        }
-                    }
-                }
-
-                var totalBlocks = blockList.Count;
-                var lastBlocks = w.System.Values.Targeting.TopBlocks;
-                if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-                int[] deck = null;
-                if (lastBlocks > 0) deck = GetDeck(ref w.Deck, ref w.PrevDeckLength, 0, lastBlocks);
-                var physics = MyAPIGateway.Physics;
-                for (int i = 0; i < totalBlocks; i++)
-                {
-                    int next = i;
-                    if (i < lastBlocks)
-                    {
-                        if (deck != null) next = deck[i];
-                    }
-                    var block = blockList[next];
-                    if (block.MarkedForClose) continue;
-
-                    physics.CastRay(weaponPos, block.CubeGrid.GridIntegerToWorld(block.Position), out var hitInfo, 15, true);
-
-                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == MyGrid || hitInfo.HitEntity is MyCubeGrid hitGrid && !GridEnemy(w.Comp.MyCube, hitGrid, hitGrid.BigOwners)) continue;
-
-                    Log.Line($"{w.System.WeaponName} - found block");
-                    w.NewTarget.Entity = block;
-                    return;
-                }
+                return;
             }
             w.LastTargetCheck = 1;
             Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{w.NewTarget.Entity == null} - oldTargetMarked:{w.NewTarget.Entity?.MarkedForClose} - checked: {w.Comp.MyAi.SortedTargets.Count} - Total:{w.Comp.MyAi.Targeting.TargetRoots.Count}");
@@ -89,31 +50,87 @@ namespace WeaponCore.Support
             w.TargetExpired = true;
         }
 
-        internal void UpdateTarget(Weapon weapon, out TargetInfo? targetInfo)
+        internal void UpdateTarget(Weapon w, out TargetInfo? targetInfo)
         {
             var physics = MyAPIGateway.Physics;
             for (int i = 0; i < SortedTargets.Count; i++)
             {
                 var info = SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, weapon.Comp.MyPivotPos) > weapon.System.MaxTrajectorySqr) continue;
+                if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
 
-                if (weapon.TrackingAi)
+                if (w.TrackingAi)
                 {
-                    if (!Weapon.TrackingTarget(weapon, info.Target)) continue;
+                    if (!Weapon.TrackingTarget(w, info.Target)) continue;
                 }
-                else if (!Weapon.ValidTarget(weapon, info.Target, true)) continue;
+                else if (!Weapon.ValidTarget(w, info.Target, true)) continue;
 
-                var weaponPos = weapon.Comp.MyPivotPos;
+                if (info.IsGrid)
+                {
+                    AcquireBlock(w, info);
+                    if (w.NewTarget.Entity == info.Target)
+                    {
+                        continue;
+                    }
+                    targetInfo = info;
+                    return;
+                }
+
+                var weaponPos = w.Comp.MyPivotPos;
                 physics.CastRay(weaponPos, info.Target.PositionComp.WorldAABB.Center, out var hitInfo, 15, true);
                 if (hitInfo?.HitEntity == info.Target)
                 {
-                    Log.Line($"{weapon.System.WeaponName} - found something");
+                    Log.Line($"{w.System.WeaponName} - found something");
                     targetInfo = info;
                     return;
                 }
             }
-            Log.Line($"{weapon.System.WeaponName} - failed to update targets");
+            Log.Line($"{w.System.WeaponName} - failed to update targets");
             targetInfo = null;
+        }
+
+        private void AcquireBlock(Weapon w, TargetInfo info)
+        {
+            var weaponPos = w.Comp.MyPivotPos;
+            var blockList = info.TypeDict[Any];
+            if (w.OrderedTargets)
+            {
+                foreach (var bt in w.System.Values.Targeting.SubSystems.Systems)
+                {
+                    if (bt != Any && info.TypeDict[bt].Count > 0)
+                    {
+                        blockList = info.TypeDict[bt];
+                        if (w.System.Values.Targeting.SubSystems.ClosestFirst)
+                        {
+                            UtilsStatic.GetClosestHitableBlockOfType(blockList, w);
+                            if (w.NewTarget.Entity != null) return;
+                        }
+                    }
+                }
+            }
+
+            var totalBlocks = blockList.Count;
+            var lastBlocks = w.System.Values.Targeting.TopBlocks;
+            if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
+            int[] deck = null;
+            if (lastBlocks > 0) deck = GetDeck(ref w.Deck, ref w.PrevDeckLength, 0, lastBlocks);
+            var physics = MyAPIGateway.Physics;
+            for (int i = 0; i < totalBlocks; i++)
+            {
+                int next = i;
+                if (i < lastBlocks)
+                {
+                    if (deck != null) next = deck[i];
+                }
+                var block = blockList[next];
+                if (block.MarkedForClose) continue;
+
+                physics.CastRay(weaponPos, block.CubeGrid.GridIntegerToWorld(block.Position), out var hitInfo, 15, true);
+
+                if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == MyGrid || hitInfo.HitEntity is MyCubeGrid hitGrid && !GridEnemy(w.Comp.MyCube, hitGrid, hitGrid.BigOwners)) continue;
+
+                w.NewTarget.Entity = block;
+                return;
+            }
         }
 
         internal static bool ReacquireTarget(Projectile p)
