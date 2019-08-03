@@ -37,6 +37,7 @@ namespace WeaponCore.Support
         public readonly bool EnergyAmmo;
         public readonly bool BarrelEffect1;
         public readonly bool BarrelEffect2;
+        public readonly bool CombineBarrels;
         public readonly bool HasBarrelShootAv;
         public readonly bool HasBackKickForce;
         public readonly bool SpeedVariance;
@@ -97,7 +98,7 @@ namespace WeaponCore.Support
             Barrel1AvTicks = values.Graphics.Particles.Barrel1.Extras.MaxDuration;
             Barrel2AvTicks = values.Graphics.Particles.Barrel2.Extras.MaxDuration;
             BarrelAxisRotation = values.HardPoint.RotateBarrelAxis != 0;
-
+            CombineBarrels = values.HardPoint.Loading.FakeBarrels;
             LineColorVariance = values.Graphics.Line.ColorVariance.Start > 0 && values.Graphics.Line.ColorVariance.End > 0;
             LineWidthVariance = values.Graphics.Line.WidthVariance.Start > 0 || values.Graphics.Line.WidthVariance.End > 0;
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;

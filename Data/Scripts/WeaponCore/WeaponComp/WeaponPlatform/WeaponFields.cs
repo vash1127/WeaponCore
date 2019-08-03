@@ -47,6 +47,7 @@ namespace WeaponCore.Platform
         internal uint[] BeamSlot;
         internal WeaponComponent Comp;
 
+        internal WeaponDamageFrame DamageFrame = new WeaponDamageFrame();
         internal Target Target = new Target();
         internal Target NewTarget = new Target();
         internal Vector3D TargetPos;

@@ -106,7 +106,14 @@ namespace WeaponCore
             var primeDamage = !radiantCascade || !hasAreaDmg;
             var radiantBomb = radiant && detonateOnEnd;
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
+
             var damagePool = projectile.BaseDamagePool;
+            if (system.CombineBarrels)
+            {
+                var hits = projectile.DamageFrame.Hits;
+                damagePool *= hits;
+                areaEffectDmg *= hits;
+            }
             var objectsHit = projectile.ObjectsHit;
             var countBlocksAsObjects = system.Values.Ammo.ObjectsHit.CountBlocks;
             List<Vector3I> radiatedBlocks = null;
@@ -222,7 +229,7 @@ namespace WeaponCore
                     {
                         var aInfo = system.Values.Ammo.AreaEffect;
                         var dInfo = aInfo.Detonation;
-                        var damage = detonateOnEnd && theEnd ? dInfo.DetonationDamage : aInfo.AreaEffectDamage;
+                        var damage = detonateOnEnd && theEnd ? dInfo.DetonationDamage : areaEffectDmg;
                         var radius = detonateOnEnd && theEnd ? dInfo.DetonationRadius : aInfo.AreaEffectRadius;
                         if (ExplosionReady) UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system);
                         else UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system, true);
@@ -248,7 +255,7 @@ namespace WeaponCore
                             sphere.Radius = dInfo.DetonationRadius;
 
                             if (dInfo.DetonationDamage > 0) damagePool = dInfo.DetonationDamage;
-                            else if (aInfo.AreaEffectDamage > 0) damagePool = aInfo.AreaEffectDamage;
+                            else if (aInfo.AreaEffectDamage > 0) damagePool = areaEffectDmg;
                             else damagePool = scaledDamage;
                             //Log.Line($"[raidant end] scaled:{scaledDamage} - area:{system.Values.Ammo.AreaEffect.AreaEffectDamage} - pool:{damagePool}({projectile.BaseDamagePool}) - objHit:{projectile.ObjectsHit} - gridBlocks:{grid.CubeBlocks.Count}({((MyCubeGrid)rootBlock.CubeGrid).BlocksCount}) - i:{i} j:{j}");
                             break;

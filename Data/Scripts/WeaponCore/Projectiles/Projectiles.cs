@@ -292,7 +292,17 @@ namespace WeaponCore.Projectiles
             }
 
             p.Colliding = true;
-            Hits.Enqueue(p);
+            if (!p.CombineBeams) Hits.Enqueue(p);
+            else 
+            {
+                if (p.DamageFrame.Hits++ == 0) Hits.Enqueue(p);
+                else
+                {
+                    p.State = ProjectileState.Depleted;
+                    HitEntityPool[p.PoolId].Return(hitEntity);
+                    p.HitList.Clear();
+                }
+            }
             if (p.EnableAv) p.HitEffects();
             return true;
         }

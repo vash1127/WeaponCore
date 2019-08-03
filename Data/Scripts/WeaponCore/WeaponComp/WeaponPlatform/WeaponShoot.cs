@@ -64,35 +64,36 @@ namespace WeaponCore.Platform
 
             if (!Comp.Gunner  && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
 
-            var isStatic = Comp.Physics.IsStatic;
-            for (int i = 0; i < bps; i++)
+            lock (session.Projectiles.Wait[session.ProCounter])
             {
-                var current = NextMuzzle;
-                var muzzle = Muzzles[current];
-                var lastTick = muzzle.LastUpdateTick;
-                var recentMovement = lastTick >= _posChangedTick && lastTick - _posChangedTick < 10;
-                if (recentMovement || _posChangedTick > lastTick)
+                DamageFrame.Hits = 0;
+                var isStatic = Comp.Physics.IsStatic;
+                for (int i = 0; i < bps; i++)
                 {
-                    var dummy = Dummies[current];
-                    var newInfo = dummy.Info;
-                    muzzle.Direction = newInfo.Direction;
-                    muzzle.Position = newInfo.Position;
-                    muzzle.LastUpdateTick = tick;
-                }
+                    var current = NextMuzzle;
+                    var muzzle = Muzzles[current];
+                    var lastTick = muzzle.LastUpdateTick;
+                    var recentMovement = lastTick >= _posChangedTick && lastTick - _posChangedTick < 10;
+                    if (recentMovement || _posChangedTick > lastTick)
+                    {
+                        var dummy = Dummies[current];
+                        var newInfo = dummy.Info;
+                        muzzle.Direction = newInfo.Direction;
+                        muzzle.Position = newInfo.Position;
+                        muzzle.LastUpdateTick = tick;
+                    }
 
-                if (!System.EnergyAmmo)
-                {
-                    if (CurrentAmmo == 0) continue;
-                    CurrentAmmo--;
-                }
+                    if (!System.EnergyAmmo)
+                    {
+                        if (CurrentAmmo == 0) continue;
+                        CurrentAmmo--;
+                    }
 
-                if (System.HasBackKickForce && !isStatic)
-                    Comp.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
+                    if (System.HasBackKickForce && !isStatic)
+                        Comp.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
 
-                muzzle.LastShot = tick;
-                if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
-                lock (session.Projectiles.Wait[session.ProCounter])
-                {
+                    muzzle.LastShot = tick;
+                    if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
                     for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++)
                     {
                         if (System.Values.HardPoint.DeviateShotAngle > 0)
@@ -121,8 +122,7 @@ namespace WeaponCore.Platform
                         pro.Ai = Comp.MyAi;
                         pro.WeaponId = WeaponId;
                         pro.MuzzleId = muzzle.MuzzleId;
-                        pro.IsBeamWeapon = System.IsBeamWeapon;
-
+                        pro.DamageFrame = DamageFrame;
                         if (System.ModelId != -1)
                         {
                             MyEntity ent;
@@ -134,17 +134,17 @@ namespace WeaponCore.Platform
                             }
                             pro.Entity = ent;
                         }
-                        if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
                     }
+
+                    CurrentHeat += System.HeatPShot;
+
+                    if (CurrentHeat > System.MaxHeat) Overheated = true;
+
+                    if (i == bps) NextMuzzle++;
+
+                    NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
                 }
-
-                CurrentHeat += System.HeatPShot;
-
-                if(CurrentHeat > System.MaxHeat) Overheated = true;
-
-                if (i == bps) NextMuzzle++;
-
-                NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
+                if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
             }
         }
 

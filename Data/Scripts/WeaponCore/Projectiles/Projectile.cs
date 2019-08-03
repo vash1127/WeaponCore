@@ -89,6 +89,7 @@ namespace WeaponCore.Projectiles
         internal bool SeekTarget;
         internal bool DynamicGuidance;
         internal bool IsBeamWeapon;
+        internal bool CombineBeams;
         internal bool OnScreen;
         internal bool ParticleStopped;
         internal bool ParticleLateStart;
@@ -104,6 +105,7 @@ namespace WeaponCore.Projectiles
         internal MyEntity Target;
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
+        internal WeaponDamageFrame DamageFrame;
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
@@ -159,6 +161,9 @@ namespace WeaponCore.Projectiles
 
             Guidance = System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
+
+            IsBeamWeapon = System.IsBeamWeapon;
+            CombineBeams = IsBeamWeapon && System.CombineBarrels;
 
             if (Guidance == AmmoTrajectory.GuidanceType.Smart && !IsBeamWeapon)
                 MaxChaseAge = System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;

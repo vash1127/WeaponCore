@@ -119,4 +119,9 @@ namespace WeaponCore.Support
             TopEntityId = 0;
         }
     }
+
+    public class WeaponDamageFrame
+    {
+        public int Hits;
+    }
 }
