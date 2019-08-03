@@ -41,7 +41,8 @@ namespace WeaponCore.Support
                 {
                     if (Weapon.IsTargetInView(weapon, cubePos))
                     {
-                        MyAPIGateway.Physics.CastRay(testPos, cubePos, out var hitInfo, 15, true);
+                        IHitInfo hitInfo;
+                        MyAPIGateway.Physics.CastRay(testPos, cubePos, out hitInfo, 15, true);
                         if (hitInfo.HitEntity == cube.GetTopMostParent())
                         {
                             double rayDist;

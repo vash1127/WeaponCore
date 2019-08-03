@@ -108,7 +108,8 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out var pro);
+                        Projectile pro;
+                        session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
                         pro.System = System;
                         pro.FiringCube = Comp.MyCube;
                         pro.Origin = muzzle.Position;
@@ -124,7 +125,8 @@ namespace WeaponCore.Platform
 
                         if (System.ModelId != -1)
                         {
-                            session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out var ent);
+                            MyEntity ent;
+                            session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out ent);
                             if (!ent.InScene)
                             {
                                 ent.InScene = true;
@@ -248,25 +250,29 @@ namespace WeaponCore.Platform
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon != this) TargetExpired = true;
             }
-            else if (System.SortBlocks && hitInfo.HitEntity is MyCubeGrid grid && Target.Entity.GetTopMostParent() == grid)
+            else if (System.SortBlocks)
             {
-                var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
-                var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
-                var weaponPos = Comp.MyPivotPos;
-
-                double rayDist;
-                Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
-                var newHitShortDist = rayDist * (1 - hitInfo.Fraction);
-                var distanceToTarget = rayDist * hitInfo.Fraction;
-
-                var shortDistExceed = newHitShortDist - Target.HitShortDist > maxChange;
-                var escapeDistExceed = distanceToTarget - Target.OrigDistance > Target.OrigDistance;
-                if (shortDistExceed || escapeDistExceed)
+                var grid = hitInfo.HitEntity as MyCubeGrid;
+                if (grid != null && Target.Entity.GetTopMostParent() == grid)
                 {
-                    masterWeapon.TargetExpired = true;
-                    if (masterWeapon != this) TargetExpired = true;
-                    if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
-                    else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met");
+                    var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
+                    var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
+                    var weaponPos = Comp.MyPivotPos;
+
+                    double rayDist;
+                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                    var newHitShortDist = rayDist * (1 - hitInfo.Fraction);
+                    var distanceToTarget = rayDist * hitInfo.Fraction;
+
+                    var shortDistExceed = newHitShortDist - Target.HitShortDist > maxChange;
+                    var escapeDistExceed = distanceToTarget - Target.OrigDistance > Target.OrigDistance;
+                    if (shortDistExceed || escapeDistExceed)
+                    {
+                        masterWeapon.TargetExpired = true;
+                        if (masterWeapon != this) TargetExpired = true;
+                        if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
+                        else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met");
+                    }
                 }
             }
         }

@@ -25,7 +25,8 @@ namespace WeaponCore.Support
         internal void SelectTarget(Weapon w)
         {
             Log.Line($"{w.System.WeaponName} - running select target");
-            UpdateTarget(w, out var targetInfo);
+            TargetInfo? targetInfo;
+            UpdateTarget(w, out targetInfo);
             if (targetInfo.HasValue)
             {
                 w.LastTargetCheck = 0;
@@ -77,7 +78,8 @@ namespace WeaponCore.Support
 
                 var weaponPos = w.Comp.MyPivotPos;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
-                physics.CastRay(weaponPos, targetPos, out var hitInfo, 15, true);
+                IHitInfo hitInfo;
+                physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
                 if (hitInfo?.HitEntity == info.Target)
                 {
                     Log.Line($"{w.System.WeaponName} - found something");
@@ -133,9 +135,14 @@ namespace WeaponCore.Support
                 var block = blockList[next];
                 if (block.MarkedForClose) continue;
 
-                physics.CastRay(weaponPos, block.CubeGrid.GridIntegerToWorld(block.Position), out var hitInfo, 15, true);
+                IHitInfo hitInfo;
+                physics.CastRay(weaponPos, block.CubeGrid.GridIntegerToWorld(block.Position), out hitInfo, 15, true);
 
-                if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == MyGrid || hitInfo.HitEntity is MyCubeGrid hitGrid && !GridEnemy(w.Comp.MyCube, hitGrid, hitGrid.BigOwners)) continue;
+
+                if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == MyGrid) continue;
+
+                var hitGrid = hitInfo.HitEntity as MyCubeGrid;
+                if (hitGrid != null &&  !GridEnemy(w.Comp.MyCube, hitGrid, hitGrid.BigOwners)) continue;
 
                 w.NewTarget.Entity = block;
                 return;
@@ -155,7 +162,9 @@ namespace WeaponCore.Support
             var totalTargets = p.Ai.SortedTargets.Count;
             var topTargets = p.System.Values.Targeting.TopTargets;
             if (topTargets > 0 && totalTargets < topTargets) topTargets = totalTargets;
-            GetTarget(p.Ai, p.Position, p.DistanceToTravelSqr, p.TargetShuffle, p.TargetShuffleLen, topTargets, out var targetInfo);
+
+            TargetInfo? targetInfo;
+            GetTarget(p.Ai, p.Position, p.DistanceToTravelSqr, p.TargetShuffle, p.TargetShuffleLen, topTargets, out targetInfo);
             if (targetInfo.HasValue)
             {
                 p.Target = targetInfo.Value.Target;
@@ -243,7 +252,8 @@ namespace WeaponCore.Support
 
                 if (checkRay)
                 {
-                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out var hitInfo, 15);
+                    IHitInfo hitInfo;
+                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out hitInfo, 15);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
 

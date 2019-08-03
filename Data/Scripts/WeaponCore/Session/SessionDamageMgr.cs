@@ -18,7 +18,8 @@ namespace WeaponCore
     {
         internal void ProcessHits()
         {
-            while (Projectiles.Hits.TryDequeue(out var projectile))
+            Projectile projectile;
+            while (Projectiles.Hits.TryDequeue(out projectile))
             {
                 var maxObjects = projectile.System.MaxObjectsHit;
                 for (int i = 0; i < projectile.HitList.Count; i++)
@@ -147,7 +148,7 @@ namespace WeaponCore
 
                 for (int j = 0; j < dmgCount; j++)
                 {
-                    var block = radiate ? _slimsSortedList[j].Item2 : rootBlock;
+                    var block = radiate ? _slimsSortedList[j].Slim : rootBlock;
 
                     var blockHp = block.Integrity;
                     float damageScale = 1;
@@ -178,7 +179,8 @@ namespace WeaponCore
                         if (system.CustomDamageScales)
                         {
                             if (blockDef == null) blockDef = block.BlockDefinition;
-                            var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out var modifier);
+                            float modifier;
+                            var found = system.CustomBlockDefinitionBasesToScales.TryGetValue(blockDef, out modifier);
 
                             if (found) damageScale *= modifier;
                             else if (system.Values.DamageScales.Custom.IgnoreAllOthers) continue;

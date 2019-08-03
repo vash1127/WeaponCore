@@ -173,8 +173,10 @@ namespace WeaponCore.Support
                 var yTargetPos = y.Target.PositionComp.GetPosition();
                 var yMyPos = y.MyGrid.PositionComp.GetPosition();
 
-                Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out var xDist);
-                Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out var yDist);
+                double xDist;
+                double yDist;
+                Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out xDist);
+                Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out yDist);
 
                 var xApproching = xandYNull || !xNull && Vector3.Dot(xVel.Value, xTargetPos - xMyPos) < 0;
                 var yApproching = !xandYNull && !yNull && Vector3.Dot(yVel.Value, yTargetPos - yMyPos) < 0;

@@ -1,12 +1,17 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
-using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using static WeaponCore.Support.SubSystemDefinition;
+using IMyJumpDrive = Sandbox.ModAPI.IMyJumpDrive;
+using IMyPowerProducer = Sandbox.ModAPI.IMyPowerProducer;
+using IMyProductionBlock = Sandbox.ModAPI.IMyProductionBlock;
+using IMyThrust = Sandbox.ModAPI.IMyThrust;
+using IMyUpgradeModule = Sandbox.ModAPI.IMyUpgradeModule;
 
 namespace WeaponCore.Support
 {
@@ -19,8 +24,9 @@ namespace WeaponCore.Support
             Targeting.AllowScanning = true;
             foreach (var ent in Targeting.TargetRoots)
             {
+                MyDetectedEntityInfo entInfo;
                 if (ent == null || ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is IMyFloatingObject 
-                    || ent.MarkedForClose || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out var entInfo)) continue;
+                    || ent.MarkedForClose || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out entInfo)) continue;
 
                 switch (entInfo.Relationship)
                 {
@@ -36,7 +42,8 @@ namespace WeaponCore.Support
                         break;
                 }
 
-                if (ent is MyCubeGrid grid && !grid.MarkedForClose)
+                var grid = ent as MyCubeGrid;
+                if (grid != null && !grid.MarkedForClose)
                 {
                     var typeDict = BlockTypePool.Get();
                     typeDict.Add(BlockTypes.Any, CubePool.Get());
@@ -62,11 +69,13 @@ namespace WeaponCore.Support
             foreach (var targets in allTargets)
             {
                 var rootGrid = targets.Key;
-                if (ai.ValidGrids.TryGetValue(rootGrid, out var typeDict))
+                Dictionary<BlockTypes, List<MyCubeBlock>> typeDict;
+                if (ai.ValidGrids.TryGetValue(rootGrid, out typeDict))
                 {
                     for (int i = 0; i < targets.Value.Count; i++)
                     {
-                        if (targets.Value[i] is MyCubeBlock cube && !cube.MarkedForClose)
+                        var cube = targets.Value[i] as MyCubeBlock;
+                        if (cube != null && !cube.MarkedForClose)
                         {
                             typeDict[BlockTypes.Any].Add(cube);
                             if (cube is IMyProductionBlock) typeDict[BlockTypes.Production].Add(cube);

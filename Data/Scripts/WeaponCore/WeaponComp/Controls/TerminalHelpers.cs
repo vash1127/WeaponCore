@@ -14,7 +14,8 @@ namespace WepaonCore.Control
     {
         internal static bool HideControls<T>(T block) where T : IMyLargeTurretBase
         {
-            MyAPIGateway.TerminalControls.GetControls<T>(out var controls);
+            List<IMyTerminalControl> controls;
+            MyAPIGateway.TerminalControls.GetControls<T>(out controls);
             for (int i = 0; i < controls.Count; i++)
             {
                 var c = controls[i];
@@ -28,7 +29,8 @@ namespace WepaonCore.Control
 
         internal static bool UpdateControls<T>(T block) where T : IMyTerminalBlock
         {
-            MyAPIGateway.TerminalControls.GetControls<T>(out var controls);
+            List<IMyTerminalControl> controls;
+            MyAPIGateway.TerminalControls.GetControls<T>(out controls);
             var count = 0;
             for (int i = 0; i < controls.Count; i++)
             {

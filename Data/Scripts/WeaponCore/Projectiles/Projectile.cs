@@ -354,7 +354,8 @@ namespace WeaponCore.Projectiles
             var randAzimuth = MyUtils.GetRandomDouble(0, 1) * 2 * Math.PI;
             var randElevation = (MyUtils.GetRandomDouble(0, 1) * 2 - 1) * 0.5 * Math.PI;
 
-            Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out var randomDirection); // this is already normalized
+            Vector3D randomDirection;
+            Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out randomDirection); // this is already normalized
             targetOffset = (randomDirection * System.Values.Ammo.Trajectory.Smarts.Inaccuracy);
             VisualStep = 0;
             if (Age != 0) LastOffsetTime = Age;

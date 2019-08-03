@@ -1,5 +1,6 @@
 ﻿using VRage;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Projectiles.Projectiles;
@@ -82,6 +83,13 @@ namespace WeaponCore.Support
             Size = size;
             Type = type;
         }
+    }
+
+    public struct RadiatedBlock
+    {
+        public Vector3I Center;
+        public IMySlimBlock Slim;
+        public Vector3I Position;
     }
 
     public class Target

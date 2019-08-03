@@ -14,7 +14,7 @@ namespace WeaponCore
     public partial class Session
     {
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
-        private readonly List<(Vector3I, IMySlimBlock, Vector3I)> _slimsSortedList = new List<(Vector3I, IMySlimBlock, Vector3I)>();
+        private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
         private void AddToSlimSpace(MyEntity entity)
         {
             var grid = (MyCubeGrid)entity;
@@ -50,7 +50,7 @@ namespace WeaponCore
             SlimSpace[grid].Remove(slim.Position);
         }
 
-        static void GetIntVectorsInSphere(MyCubeGrid grid, Vector3I center, double radius, List<(Vector3I, IMySlimBlock, Vector3I)> points)
+        static void GetIntVectorsInSphere(MyCubeGrid grid, Vector3I center, double radius, List<RadiatedBlock> points)
         {
             points.Clear();
             radius *= grid.GridSizeR;
@@ -67,7 +67,14 @@ namespace WeaponCore
                         {
                             var vector3I = center + new Vector3I(i, j, k);
                             IMySlimBlock slim = grid.GetCubeBlock(vector3I);
-                            if (slim != null) points.Add((center, slim, vector3I));
+                            var radiatedBlock = new RadiatedBlock
+                            {
+                                Center = center,
+                                Slim = slim,
+                                Position = vector3I,
+                            };
+
+                            if (slim != null) points.Add(radiatedBlock);
                         }
                     }
                 }
@@ -107,14 +114,20 @@ namespace WeaponCore
         }
 
 
-        private void ShiftAndPruneBlockSphere(MyCubeGrid grid, Vector3I center, List<Vector3I> sphereOfCubes, List<(Vector3I, IMySlimBlock, Vector3I)> slims)
+        private void ShiftAndPruneBlockSphere(MyCubeGrid grid, Vector3I center, List<Vector3I> sphereOfCubes, List<RadiatedBlock> slims)
         {
             slims.Clear();
             for (int i = 0; i < sphereOfCubes.Count; i++)
             {
                 var vector3I = center + sphereOfCubes[i];
                 IMySlimBlock slim = grid.GetCubeBlock(vector3I);
-                if (slim != null && slim.Position == vector3I) slims.Add((center, slim, vector3I));
+                var radiatedBlock = new RadiatedBlock
+                {
+                    Center = center,
+                    Slim = slim,
+                    Position = vector3I,
+                };
+                if (slim != null && slim.Position == vector3I) slims.Add(radiatedBlock);
             }
         }
 
@@ -141,13 +154,19 @@ namespace WeaponCore
                         {
                             var vector3I = center + new Vector3I(i, j, k);
                             IMySlimBlock slim = grid.GetCubeBlock(vector3I);
-                            if (slim != null && slim.Position == vector3I) _slimsSortedList.Add((center, slim, vector3I));
+                            var radiatedBlock = new RadiatedBlock
+                            {
+                                Center = center,
+                                Slim = slim,
+                                Position = vector3I,
+                            };
+                            if (slim != null && slim.Position == vector3I) _slimsSortedList.Add(radiatedBlock);
                         }
                     }
                 }
             }
             //_slimsSortedList.Sort((a, b) => Vector3I.DistanceManhattan(a.Item1, a.Item3).CompareTo(Vector3I.DistanceManhattan(b.Item1, b.Item3)));
-            _slimsSortedList.Sort((a, b) => Vector3I.Dot(a.Item3, a.Item3).CompareTo(Vector3I.Dot(b.Item3, b.Item3)));
+            _slimsSortedList.Sort((a, b) => Vector3I.Dot(a.Position, a.Position).CompareTo(Vector3I.Dot(b.Position, b.Position)));
         }
         /*
         public void DistributeInteger(int total, int divider)
@@ -185,7 +204,8 @@ namespace WeaponCore
             else _slimsSet.Clear();
 
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
-            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out var result);
+            Vector3D result;
+            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
             var localSphere = new BoundingSphere(result, (float)sphere.Radius);
             var fromSphere2 = BoundingBox.CreateFromSphere(localSphere);
             var min = (Vector3D)fromSphere2.Min;
@@ -200,11 +220,18 @@ namespace WeaponCore
                 var next = vector3IRangeIterator.Current;
                 while (vector3IRangeIterator.IsValid())
                 {
-                    if (cubes.TryGetValue(next, out var cube))
+                    IMySlimBlock cube;
+                    if (cubes.TryGetValue(next, out cube))
                     {
                         if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                         {
-                            if (sorted) _slimsSortedList.Add((center, cube, cube.Position));
+                            var radiatedBlock = new RadiatedBlock
+                            {
+                                Center = center,
+                                Slim = cube,
+                                Position = cube.Position,
+                            };
+                            if (sorted) _slimsSortedList.Add(radiatedBlock);
                             else _slimsSet.Add(cube);
                         }
                     }
@@ -217,13 +244,19 @@ namespace WeaponCore
                 {
                     if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                     {
-                        if (sorted) _slimsSortedList.Add((center, cube, cube.Position));
+                        var radiatedBlock = new RadiatedBlock
+                        {
+                            Center = center,
+                            Slim = cube,
+                            Position = cube.Position,
+                        };
+                        if (sorted) _slimsSortedList.Add(radiatedBlock);
                         else _slimsSet.Add(cube);
                     }
                 }
             }
             if (sorted) 
-                _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Item1, x.Item2.Position).CompareTo(Vector3I.DistanceManhattan(y.Item1, y.Item2.Position)));
+                _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
         }
 
         public void GetBlocksInsideSphereBrute(MyCubeGrid grid, Vector3I center, ref BoundingSphereD sphere, bool sorted)
@@ -234,18 +267,25 @@ namespace WeaponCore
             else _slimsSet.Clear();
 
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
-            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out var result);
+            Vector3D result;
+            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
             var localSphere = new BoundingSphere(result, (float)sphere.Radius);
             foreach (IMySlimBlock cube in grid.CubeBlocks)
             {
                 if (new BoundingBox(cube.Min * grid.GridSize - grid.GridSizeHalf, cube.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                 {
-                    if (sorted) _slimsSortedList.Add((center, cube, cube.Position));
+                    var radiatedBlock = new RadiatedBlock
+                    {
+                        Center = center,
+                        Slim = cube,
+                        Position = cube.Position,
+                    };
+                    if (sorted) _slimsSortedList.Add(radiatedBlock);
                     else _slimsSet.Add(cube);
                 }
             }
             if (sorted)
-                _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Item1, x.Item2.Position).CompareTo(Vector3I.DistanceManhattan(y.Item1, y.Item2.Position)));
+                _slimsSortedList.Sort((x, y) => Vector3I.DistanceManhattan(x.Position, x.Slim.Position).CompareTo(Vector3I.DistanceManhattan(y.Position, y.Slim.Position)));
         }
     }
 }

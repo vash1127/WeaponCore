@@ -15,15 +15,17 @@ namespace WeaponCore.Platform
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
 
             Vector3D targetPos;
+            double timeToIntercept;
+            double rangeToTarget;
 
             if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out var timeToIntercept);
+                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
             else
                 targetPos = target.PositionComp.WorldMatrix.Translation;
 
             var targetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out var rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             var isAligned = inRange && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
@@ -44,13 +46,15 @@ namespace WeaponCore.Platform
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
 
             Vector3D targetPos;
+            double timeToIntercept;
+            double rangeToTarget;
 
             if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out var timeToIntercept);
+                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
             else
                 targetPos = target.PositionComp.WorldMatrix.Translation;
 
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out var rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             weapon.TargetPos = targetPos;
@@ -58,7 +62,9 @@ namespace WeaponCore.Platform
 
             var maxAzimuthStep = step ? weapon.System.Values.HardPoint.RotateSpeed : double.MinValue;
             var maxElevationStep = step ? weapon.System.Values.HardPoint.ElevationSpeed : double.MinValue;
-            Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out var currentVector);
+
+            Vector3D currentVector;
+            Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
 
             var up = cube.WorldMatrix.Up;
@@ -69,7 +75,9 @@ namespace WeaponCore.Platform
 
             var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
-            GetRotationAngles(ref weapon.TargetDir, ref matrix, out var desiredAzimuth, out var desiredElevation);
+            double desiredAzimuth;
+            double desiredElevation;
+            GetRotationAngles(ref weapon.TargetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
             var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
             var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
@@ -146,7 +154,9 @@ namespace WeaponCore.Platform
         private Vector3D LookAt(Vector3D target)
         {
             var muzzleWorldPosition = Comp.MyPivotPos;
-            Vector3D.GetAzimuthAndElevation(Vector3D.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out var azimuth, out var elevation);
+            double azimuth;
+            double elevation;
+            Vector3D.GetAzimuthAndElevation(Vector3D.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
             if (_gunIdleElevationAzimuthUnknown)
             {
                 Vector3D.GetAzimuthAndElevation(Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);

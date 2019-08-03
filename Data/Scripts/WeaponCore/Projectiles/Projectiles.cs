@@ -101,7 +101,8 @@ namespace WeaponCore.Projectiles
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
                             var newChase = p.Age - p.ChaseAge > p.MaxChaseAge || p.PickTarget && p.EndChase();
-                            if (newChase || p.Target is MyCubeBlock myCube && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
+                            var myCube = p.Target as MyCubeBlock;
+                            if (newChase || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                 var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
@@ -111,7 +112,8 @@ namespace WeaponCore.Projectiles
                                 {
                                     if (p.Age - p.LastOffsetTime > 300)
                                     {
-                                        Vector3D.DistanceSquared(ref p.Position, ref targetPos, out var dist);
+                                        double dist;
+                                        Vector3D.DistanceSquared(ref p.Position, ref targetPos, out dist);
                                         if (dist < p.OffsetSqr && Vector3.Dot(p.Direction, p.Position - targetPos) > 0)
                                             p.OffSetTarget(out p.TargetOffSet);
                                     }
@@ -142,7 +144,9 @@ namespace WeaponCore.Projectiles
                         {
                             p.VisualStep += 0.0025;
                             if (p.VisualStep > 1) p.VisualStep = 1;
-                            Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out var lerpDir);
+
+                            Vector3D lerpDir;
+                            Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
                             Vector3D.Normalize(ref lerpDir, out p.VisualDir);
                         }
                         else if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
@@ -221,7 +225,8 @@ namespace WeaponCore.Projectiles
                     {
                         if (!p.AmmoSound)
                         {
-                            Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out var dist);
+                            double dist;
+                            Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
                             if (dist <= p.AmmoTravelSoundRangeSqr) p.AmmoSoundStart();
                         }
                         else p.TravelEmitter.SetPosition(p.Position);
