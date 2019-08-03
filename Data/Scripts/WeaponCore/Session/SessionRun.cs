@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
+using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -27,6 +28,18 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
+                    foreach (var pair in RayCheckLines)
+                    {
+                        var startTick = pair.Value;
+                        var line = pair.Key;
+                        if (Tick - startTick > 600) RayCheckLines.Remove(line);
+                        else
+                        {
+                            DsDebugDraw.DrawLine(line.From, line.To, Color.Red, 0.1f);
+                        }
+                    }
+                    RayCheckLines.ApplyRemovals();
+
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         lock (Projectiles.Wait[i])
                             DrawLists(Projectiles.DrawProjectiles[i]);

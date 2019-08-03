@@ -42,6 +42,9 @@ namespace WeaponCore
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
+        internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
+
+
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",
@@ -53,7 +56,6 @@ namespace WeaponCore
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
-
 
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
         private readonly MyConcurrentPool<Dictionary<Vector3I, IMySlimBlock>> _slimSpacePool = new MyConcurrentPool<Dictionary<Vector3I, IMySlimBlock>>(50);

@@ -93,6 +93,8 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
+                    DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Blue, 0.1f);
+                    DsDebugDraw.DrawLine(comp.MyPivotPos, comp.MyPivotPos + (comp.MyPivotDir * 10), Color.Red, 0.1f);
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     InTurret = gunner;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
