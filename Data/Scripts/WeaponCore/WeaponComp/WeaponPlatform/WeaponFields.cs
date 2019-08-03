@@ -8,6 +8,7 @@ using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Platform
 {
@@ -50,6 +51,7 @@ namespace WeaponCore.Platform
         internal Target NewTarget = new Target();
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
+        internal BlockTypes LastBlockType;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;

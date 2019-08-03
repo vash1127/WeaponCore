@@ -217,7 +217,6 @@ namespace WeaponCore.Platform
                 {
                     var rootAsGrid = hitInfo.HitEntity as MyCubeGrid;
                     var parentAsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
-                    if (hitInfo.HitEntity.Parent != null) Log.Line("parent is not null!");
                     if (rootAsGrid == null && parentAsGrid == null)
                     {
                         Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
@@ -227,7 +226,9 @@ namespace WeaponCore.Platform
                     var grid = parentAsGrid ?? rootAsGrid;
                     if (grid == Comp.MyGrid)
                     {
-                        Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - own grid: {grid?.DebugName}");
+                        Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
+                        masterWeapon.TargetExpired = true;
+                        if (masterWeapon != this) TargetExpired = true;
                         return;
                     }
 
@@ -271,7 +272,7 @@ namespace WeaponCore.Platform
                         masterWeapon.TargetExpired = true;
                         if (masterWeapon != this) TargetExpired = true;
                         if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
-                        else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met");
+                        else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met - {distanceToTarget} - {Target.OrigDistance} -{distanceToTarget - Target.OrigDistance} > {Target.OrigDistance}");
                     }
                 }
             }

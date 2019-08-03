@@ -24,7 +24,7 @@ namespace WeaponCore.Support
 
         internal void SelectTarget(Weapon w)
         {
-            Log.Line($"{w.System.WeaponName} - running select target");
+            //Log.Line($"{w.System.WeaponName} - running select target");
             TargetInfo? targetInfo;
             UpdateTarget(w, out targetInfo);
             if (targetInfo.HasValue)
@@ -43,7 +43,7 @@ namespace WeaponCore.Support
                     w.NewTarget.Reset();
                     return;
                 }
-                Log.Line($"{w.System.WeaponName} - returning entity: {targetInfo.Value.Target.DebugName} - trueTarget:{w.NewTarget.Entity.DebugName}");
+                //Log.Line($"{w.System.WeaponName} - returning entity: {targetInfo.Value.Target.DebugName} - trueTarget:{w.NewTarget.Entity.DebugName}");
                 return;
             }
             w.LastTargetCheck = 1;
@@ -102,13 +102,21 @@ namespace WeaponCore.Support
             {
                 foreach (var bt in w.System.Values.Targeting.SubSystems.Systems)
                 {
+                   // Log.Line($"sort:{bt} - closestFirst:{w.System.Values.Targeting.SubSystems.ClosestFirst} - {info.TypeDict[bt].Count} - {(info.Target as MyCubeGrid).GetFatBlocks().Count}");
                     if (bt != Any && info.TypeDict[bt].Count > 0)
                     {
                         var subSystemList = info.TypeDict[bt];
                         if (w.System.Values.Targeting.SubSystems.ClosestFirst)
                         {
+                            //Log.Line($"trying: {bt}");
+                            if (bt != w.LastBlockType) w.Top5.Clear();
+                            w.LastBlockType = bt;
                             UtilsStatic.GetClosestHitableBlockOfType(subSystemList, w);
-                            if (w.NewTarget.Entity != null) return true;
+                            if (w.NewTarget.Entity != null)
+                            {
+                                //Log.Line($"cloest was: {w.NewTarget.Entity.DebugName} - type:{bt} - partCount:{info.PartCount}");
+                                return true;
+                            }
                         }
                         else if (FindRandomBlock(w, subSystemList)) return true;
                     }
@@ -122,6 +130,7 @@ namespace WeaponCore.Support
 
         private bool FindRandomBlock(Weapon w, List<MyCubeBlock> blockList)
         {
+            Log.Line($"Random: blockCount::{blockList.Count}");
             var weaponPos = w.Comp.MyPivotPos;
             var totalBlocks = blockList.Count;
             var lastBlocks = w.System.Values.Targeting.TopBlocks;

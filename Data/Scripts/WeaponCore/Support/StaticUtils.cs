@@ -89,7 +89,9 @@ namespace WeaponCore.Support
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
                 if (test < minValue3)
                 {
-                    if (test < minValue && Weapon.IsTargetInView(w, cubePos) && physics.CastRay(testPos, cubePos, out hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid)
+                    //if (test < minValue) Log.Line($"test123: {cube.DebugName} - {Weapon.IsTargetInView(w, cubePos)} - {physics.CastRay(testPos, cubePos, out hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid} - {((MyEntity)hitInfo.HitEntity)?.DebugName}");
+                    IHitInfo hit;
+                    if (test < minValue && Weapon.IsTargetInView(w, cubePos) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid)
                     {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
@@ -103,6 +105,7 @@ namespace WeaponCore.Support
 
                         newEntity = cube;
                         bestCubePos = cubePos;
+                        hitInfo = hit;
                     }
                     else if (test < minValue0)
                     {
@@ -143,7 +146,7 @@ namespace WeaponCore.Support
 
             }
             w.Top5.Clear();
-            if (newEntity != null)
+            if (newEntity != null && hitInfo != null)
             {
                 double rayDist;
                 Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
