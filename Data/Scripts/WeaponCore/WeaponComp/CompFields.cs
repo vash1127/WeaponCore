@@ -74,6 +74,7 @@ namespace WeaponCore.Support
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
         internal LineD MyPivotTestLine;
+        internal LineD MyBarrelTestLine;
         internal double MyPivotOffset;
         internal IMyGunObject<MyGunBase> Gun;
         internal bool MainInit;

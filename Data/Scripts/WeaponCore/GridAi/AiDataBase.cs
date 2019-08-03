@@ -5,13 +5,13 @@ using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRageMath;
-using static WeaponCore.Support.SubSystemDefinition;
 using IMyJumpDrive = Sandbox.ModAPI.IMyJumpDrive;
 using IMyPowerProducer = Sandbox.ModAPI.IMyPowerProducer;
 using IMyProductionBlock = Sandbox.ModAPI.IMyProductionBlock;
 using IMyThrust = Sandbox.ModAPI.IMyThrust;
 using IMyUpgradeModule = Sandbox.ModAPI.IMyUpgradeModule;
+using IMyWarhead = Sandbox.ModAPI.IMyWarhead;
+using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
 {
@@ -45,6 +45,9 @@ namespace WeaponCore.Support
                 var grid = ent as MyCubeGrid;
                 if (grid != null && !grid.MarkedForClose)
                 {
+                    if (grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 && !((grid.CubeBlocks.FirstElement() as IMySlimBlock)?.FatBlock is Sandbox.ModAPI.IMyWarhead))
+                        continue;
+
                     var typeDict = BlockTypePool.Get();
                     typeDict.Add(BlockTypes.Any, CubePool.Get());
                     typeDict.Add(BlockTypes.Offense, CubePool.Get());

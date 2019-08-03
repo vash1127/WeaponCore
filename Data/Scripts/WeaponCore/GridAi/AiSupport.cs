@@ -178,8 +178,6 @@ namespace WeaponCore.Support
                 Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out xDist);
                 Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out yDist);
 
-                var gridX = x.Target as MyCubeGrid;
-                var gridY = y.Target as MyCubeGrid;
                 var xVelLen = !xNull ? xVel.Value.LengthSquared(): 0;
                 var yVelLen = !yNull ? yVel.Value.LengthSquared() : 0;
 
@@ -197,8 +195,8 @@ namespace WeaponCore.Support
                     if (compareVelocity != 0 && (xVelLen > 3600 || yVelLen > 3600)) return -compareVelocity;
                 }
 
-                if (xDist > 10000 && x.PartCount < 5 || gridX != null && !gridX.IsPowered) xDist = double.MaxValue;
-                if (yDist > 10000 && y.PartCount < 5 || gridY != null && !gridY.IsPowered) yDist = double.MaxValue;
+                if (xDist > 10000 && x.PartCount < 5) xDist = double.MaxValue;
+                if (yDist > 10000 && y.PartCount < 5) yDist = double.MaxValue;
 
                 var compareDist = xDist.CompareTo(yDist);
                 if (compareDist != 0 && (xDist < 360000 || yDist < 360000)) return compareDist;
