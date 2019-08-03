@@ -152,17 +152,9 @@ namespace WeaponCore.Support
                 w.NewTarget.HitShortDist = rayDist * (1 - hitInfo.Fraction);
                 w.NewTarget.OrigDistance = rayDist * hitInfo.Fraction;
                 w.NewTarget.TopEntityId = newEntity.GetTopMostParent().EntityId;
-
                 w.Top5.Add(newEntity);
             }
-            else
-            {
-                w.NewTarget.Entity = null;
-                w.NewTarget.HitPos = Vector3D.Zero;
-                w.NewTarget.HitShortDist = 0;
-                w.NewTarget.OrigDistance = 0;
-                w.NewTarget.TopEntityId = 0;
-            }
+            else w.NewTarget.Reset();
 
             if (newEntity0 != null)
             {

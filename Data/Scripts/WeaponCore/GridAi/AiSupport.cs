@@ -178,18 +178,27 @@ namespace WeaponCore.Support
                 Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out xDist);
                 Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out yDist);
 
-                var xApproching = xandYNull || !xNull && Vector3.Dot(xVel.Value, xTargetPos - xMyPos) < 0;
-                var yApproching = !xandYNull && !yNull && Vector3.Dot(yVel.Value, yTargetPos - yMyPos) < 0;
+                var gridX = x.Target as MyCubeGrid;
+                var gridY = y.Target as MyCubeGrid;
+                var xVelLen = !xNull ? xVel.Value.LengthSquared(): 0;
+                var yVelLen = !yNull ? yVel.Value.LengthSquared() : 0;
+
+                if (!xNull) xVel.Value.LengthSquared();
+
+                var xApproching = xandYNull || !xNull && Vector3.Dot(xVel.Value, xTargetPos - xMyPos) < 0 && xVelLen > 25;
+                var yApproching = !xandYNull && !yNull && Vector3.Dot(yVel.Value, yTargetPos - yMyPos) < 0 && yVelLen > 25;
+
                 var compareApproch = xApproching.CompareTo(yApproching);
                 if (compareApproch != 0 && (xDist < 640000 || yDist < 640000)) return -compareApproch;
 
-                if (!xNull && !yNull && (xDist < 1000000 || yDist < 1000000))
+                if (xDist < 1000000 || yDist < 1000000)
                 {
-                    var xVelLen = xVel.Value.LengthSquared();
-                    var yVelLen = yVel.Value.LengthSquared();
                     var compareVelocity = xVelLen.CompareTo(yVelLen);
                     if (compareVelocity != 0 && (xVelLen > 3600 || yVelLen > 3600)) return -compareVelocity;
                 }
+
+                if (xDist > 10000 && x.PartCount < 5 || gridX != null && !gridX.IsPowered) xDist = double.MaxValue;
+                if (yDist > 10000 && y.PartCount < 5 || gridY != null && !gridY.IsPowered) yDist = double.MaxValue;
 
                 var compareDist = xDist.CompareTo(yDist);
                 if (compareDist != 0 && (xDist < 360000 || yDist < 360000)) return compareDist;

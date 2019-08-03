@@ -99,5 +99,24 @@ namespace WeaponCore.Support
         public double HitShortDist;
         public double OrigDistance;
         public long TopEntityId;
+
+        public void TransferTo(Target target)
+        {
+            target.Entity = Entity;
+            target.HitPos = HitPos;
+            target.HitShortDist = HitShortDist;
+            target.OrigDistance = OrigDistance;
+            target.TopEntityId = TopEntityId;
+            Reset();
+        }
+
+        public void Reset()
+        {
+            Entity = null;
+            HitPos = Vector3D.Zero;
+            HitShortDist = 0;
+            OrigDistance = 0;
+            TopEntityId = 0;
+        }
     }
 }
