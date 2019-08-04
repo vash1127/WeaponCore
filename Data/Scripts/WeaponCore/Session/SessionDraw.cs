@@ -33,7 +33,6 @@ namespace WeaponCore
 
                 var trajectile = d.Projectile.Trajectile;
                 var width = d.LineWidth;
-
                 if (d.Projectile.Shrink && d.HitEntity != null)
                 {
                     sFound = true;

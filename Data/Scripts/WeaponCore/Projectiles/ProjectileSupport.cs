@@ -9,7 +9,7 @@ using VRageMath;
 
 namespace WeaponCore.Projectiles
 {
-    internal partial class Projectiles
+    public partial class Projectiles
     {
         public static List<Vector3D> CreateRandomLineSegOffsets(double maxRange, double minForwardStep, double maxForwardStep, double maxOffset, ref List<Vector3D> offsetList)
         {

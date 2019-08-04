@@ -66,7 +66,8 @@ namespace WeaponCore.Platform
 
             lock (session.Projectiles.Wait[session.ProCounter])
             {
-                DamageFrame.Hits = 0;
+                if (System.CombineBarrels) CreateVirtualProjectile();
+
                 var isStatic = Comp.Physics.IsStatic;
                 for (int i = 0; i < bps; i++)
                 {
@@ -146,6 +147,27 @@ namespace WeaponCore.Platform
                 }
                 if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
             }
+        }
+
+        private void CreateVirtualProjectile()
+        {
+            DamageFrame.Hit = false;
+            DamageFrame.Hits = 0;
+            DamageFrame.HitEntity.Entity = null;
+            Projectile pro;
+            Comp.MyAi.MySession.Projectiles.ProjectilePool[Comp.MyAi.MySession.ProCounter].AllocateOrCreate(out pro);
+            pro.System = System;
+            pro.FiringCube = Comp.MyCube;
+            pro.Origin = Comp.MyPivotPos;
+            pro.OriginUp = Comp.MyPivotUp;
+            pro.PredictedTargetPos = TargetPos;
+            pro.Direction = Comp.MyPivotDir;
+            pro.State = Projectile.ProjectileState.Start;
+            pro.Target = Target.Entity;
+            pro.Ai = Comp.MyAi;
+            pro.WeaponId = WeaponId;
+            pro.MuzzleId = -1;
+            pro.DamageFrame = DamageFrame;
         }
 
         private void ShootRayCheck()

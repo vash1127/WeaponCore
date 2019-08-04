@@ -3,6 +3,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Projectiles;
 using static WeaponCore.Projectiles.Projectiles;
 namespace WeaponCore.Support
 {
@@ -122,6 +123,9 @@ namespace WeaponCore.Support
 
     public class WeaponDamageFrame
     {
+        public bool Hit;
         public int Hits;
+        public Vector3D HitPos;
+        public HitEntity HitEntity = new HitEntity();
     }
 }

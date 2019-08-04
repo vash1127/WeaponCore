@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
@@ -11,7 +12,7 @@ using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectiles.HitEntity.Type;
 namespace WeaponCore.Projectiles
 {
-    internal partial class Projectiles
+    public partial class Projectiles
     {
         private void GetEntitiesInBlastRadius(Projectile projectile, int poolId)
         {
@@ -47,7 +48,7 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < listCnt; i++)
             {
                 var ent = segmentList != null ? segmentList[i].Element : p.HitList[i].Entity;
-                if (ent == p.FiringCube.CubeGrid) continue;
+                if (ent == p.FiringCube.CubeGrid || ent.MarkedForClose) continue;
                 //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
@@ -183,7 +184,7 @@ namespace WeaponCore.Projectiles
                 }
                 else if (grid != null)
                 {
-                    var testBlocks = new List<Vector3I>();
+                    var testBlocks = new List<Vector3I>(); // WTF?!@?#!?@!?
                     grid.RayCastCells(beam.From, beam.To, testBlocks, null, true, true);
                     var closestBlockFound = false;
                     for (int j = 0; j < testBlocks.Count; j++)
@@ -244,12 +245,78 @@ namespace WeaponCore.Projectiles
                         hitEnt.EventType = Destroyable;
                     }
                 }
-                else Log.Line($"no hit");
+                else Log.Line($"no hit master");
 
                 if (isX) xDist = dist;
                 else yDist = dist;
             }
             return xDist.CompareTo(yDist);
+        }
+
+        internal bool FastHitPos(HitEntity hitEntity, LineD beam, int poolId)
+        {
+            var shield = hitEntity.Entity as IMyTerminalBlock;
+            var grid = hitEntity.Entity as MyCubeGrid;
+            var voxel = hitEntity.Entity as MyVoxelBase;
+            var ent = hitEntity.Entity;
+            var dist = double.MaxValue;
+            if (shield != null)
+            {
+                var hitPos = Session.Instance.SApi.LineIntersectShield(shield, beam);
+                if (hitPos.HasValue)
+                    hitEntity.HitPos = hitPos;
+                return true;
+            }
+
+            if (grid != null)
+            {
+                var blockPos = grid.RayCastBlocks(beam.From, beam.To);
+                if (blockPos.HasValue)
+                {
+                    //var center = grid.GridIntegerToWorld(blockPos.Value);
+                    var firstBlock = grid.GetCubeBlock(blockPos.Value) as IMySlimBlock;
+                    Vector3D center;
+                    firstBlock.ComputeWorldCenter(out center);
+                    Vector3 halfExt;
+                    firstBlock.ComputeScaledHalfExtents(out halfExt);
+
+                    var blockBox = new BoundingBoxD(-halfExt, halfExt);
+                    var rotMatrix = Quaternion.CreateFromRotationMatrix(firstBlock.CubeGrid.WorldMatrix);
+                    var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
+                    dist = obb.Intersects(ref beam) ?? -1;
+                    if (dist < 0) return false;
+                    hitEntity.HitPos = (beam.From + (beam.Direction * dist));
+                    return true;
+                }
+                return false;
+            }
+            if (voxel != null)
+            {
+                Vector3D? t;
+                voxel.GetIntersectionWithLine(ref beam, out t, true, IntersectionFlags.DIRECT_TRIANGLES);
+                if (t != null)
+                {
+                    Log.Line($"voxel hit: {t.Value}");
+                    hitEntity.HitPos = beam.From + (beam.Direction * dist);
+                    return true;
+                }
+                return false;
+            }
+            if (ent is IMyDestroyableObject)
+            {
+                var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
+                var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                dist = obb.Intersects(ref beam) ?? double.MaxValue;
+                if (dist < double.MaxValue)
+                {
+                    hitEntity.HitPos = beam.From + (beam.Direction * dist);
+                    return true;
+                }
+                return false;
+            }
+            Log.Line($"no hit slave - {hitEntity.Entity == null}");
+
+            return false;
         }
 
         internal struct DrawProjectile
@@ -303,9 +370,9 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal class HitEntity
+        public class HitEntity
         {
-            internal enum Type
+            public enum Type
             {
                 Shield,
                 Grid,

@@ -8,11 +8,12 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
+using VRageRender;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
 namespace WeaponCore.Projectiles
 {
-    internal partial class Projectiles
+    public partial class Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int PoolCount = 16;
@@ -197,15 +198,20 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    var beam = new LineD(p.LastPosition, p.Position);
-                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
-                    var segCount = p.SegmentList.Count;
-                    if (segCount > 1 || segCount == 1 && p.SegmentList[0].Element != p.FiringGrid)
+                    if (!p.CombineBeams || p.MuzzleId == -1)
                     {
-                        var nearestHitEnt = GetAllEntitiesInLine(p, beam, p.SegmentList, i);
-                        if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
-                        p.HitList.Clear();
+                        var beam = new LineD(p.LastPosition, p.Position);
+                        MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
+                        var segCount = p.SegmentList.Count;
+                        if (segCount > 1 || segCount == 1 && p.SegmentList[0].Element != p.FiringGrid)
+                        {
+                            var nearestHitEnt = GetAllEntitiesInLine(p, beam, p.SegmentList, i);
+                            if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
+                            p.HitList.Clear();
+                        }
+                        if (p.MuzzleId == -1) continue;
                     }
+                    else if (p.DamageFrame.Hit && SlaveBeamsHit(p, drawList, i)) continue;
 
                     if (!p.EnableAv) continue;
 
@@ -282,7 +288,7 @@ namespace WeaponCore.Projectiles
         private bool Intersected(Projectile p,  List<DrawProjectile> drawList, HitEntity hitEntity)
         {
             if (hitEntity?.HitPos == null) return false;
-            if (p.EnableAv && (p.DrawLine || p.ModelId != -1))
+            if (p.EnableAv && (p.DrawLine || p.ModelId != -1) && p.MuzzleId != -1)
             {
                 var length = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
                 p.Trajectile = new Trajectile(p.LastPosition, hitEntity.HitPos.Value, p.Direction, length);
@@ -293,18 +299,31 @@ namespace WeaponCore.Projectiles
 
             p.Colliding = true;
             if (!p.CombineBeams) Hits.Enqueue(p);
-            else 
+            else
             {
-                if (p.DamageFrame.Hits++ == 0) Hits.Enqueue(p);
-                else
+                if (p.MuzzleId == -1)
                 {
-                    p.State = ProjectileState.Depleted;
-                    HitEntityPool[p.PoolId].Return(hitEntity);
-                    p.HitList.Clear();
+                    p.DamageFrame.Hit = true;
+                    p.DamageFrame.HitEntity.Entity = hitEntity.Entity;
+                    Hits.Enqueue(p);
                 }
+                else p.DamageFrame.Hits++;
             }
-            if (p.EnableAv) p.HitEffects();
+            if (p.EnableAv && p.MuzzleId != -1) p.HitEffects();
             return true;
+        }
+
+        private bool SlaveBeamsHit(Projectile p, List<DrawProjectile> drawList, int poolId)
+        {
+            var beam = new LineD(p.LastPosition, p.Position);
+            FastHitPos(p.DamageFrame.HitEntity, beam, poolId);
+            if (p.DamageFrame.HitEntity != null)
+            {
+                Intersected(p, drawList, p.DamageFrame.HitEntity);
+                return true;
+            }
+            p.HitList.Clear();
+            return false;
         }
 
         private void Die(Projectile p, int poolId)
