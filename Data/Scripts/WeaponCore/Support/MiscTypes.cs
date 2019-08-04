@@ -123,9 +123,9 @@ namespace WeaponCore.Support
 
     public class WeaponDamageFrame
     {
-        public bool Hit;
+        public bool VirtualHit;
         public int Hits;
-        public Vector3D HitPos;
         public HitEntity HitEntity = new HitEntity();
+        public IMySlimBlock HitBlock;
     }
 }

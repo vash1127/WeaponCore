@@ -98,7 +98,7 @@ namespace WeaponCore.Support
             Barrel1AvTicks = values.Graphics.Particles.Barrel1.Extras.MaxDuration;
             Barrel2AvTicks = values.Graphics.Particles.Barrel2.Extras.MaxDuration;
             BarrelAxisRotation = values.HardPoint.RotateBarrelAxis != 0;
-            CombineBarrels = values.HardPoint.Loading.FakeBarrels;
+            CombineBarrels = values.HardPoint.Loading.FakeBarrels.Enable;
             LineColorVariance = values.Graphics.Line.ColorVariance.Start > 0 && values.Graphics.Line.ColorVariance.End > 0;
             LineWidthVariance = values.Graphics.Line.WidthVariance.Start > 0 || values.Graphics.Line.WidthVariance.End > 0;
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;

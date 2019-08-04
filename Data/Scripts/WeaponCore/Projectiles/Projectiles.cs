@@ -7,6 +7,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using VRageRender;
 using WeaponCore.Support;
@@ -211,7 +212,11 @@ namespace WeaponCore.Projectiles
                         }
                         if (p.MuzzleId == -1) continue;
                     }
-                    else if (p.DamageFrame.Hit && SlaveBeamsHit(p, drawList, i)) continue;
+                    else if (p.DamageFrame.VirtualHit && p.DamageFrame.HitEntity != null)
+                    {
+                        Intersected(p, drawList, p.DamageFrame.HitEntity);
+                        continue;
+                    }
 
                     if (!p.EnableAv) continue;
 
@@ -291,7 +296,10 @@ namespace WeaponCore.Projectiles
             if (p.EnableAv && (p.DrawLine || p.ModelId != -1) && p.MuzzleId != -1)
             {
                 var length = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
-                p.Trajectile = new Trajectile(p.LastPosition, hitEntity.HitPos.Value, p.Direction, length);
+                if (!p.CombineBeams) p.Trajectile = new Trajectile(p.LastPosition, hitEntity.HitPos.Value, p.Direction, length);
+                else
+                    CreateFakeBeam(p, hitEntity.HitPos.Value);
+
                 p.TestSphere.Center = hitEntity.HitPos.Value;
                 p.OnScreen = Session.Instance.Session.Camera.IsInFrustum(ref p.TestSphere);
                 drawList.Add(new DrawProjectile(p, hitEntity, true));
@@ -303,8 +311,10 @@ namespace WeaponCore.Projectiles
             {
                 if (p.MuzzleId == -1)
                 {
-                    p.DamageFrame.Hit = true;
+                    p.DamageFrame.VirtualHit = true;
                     p.DamageFrame.HitEntity.Entity = hitEntity.Entity;
+                    p.DamageFrame.HitEntity.HitPos = hitEntity.HitPos;
+                    if (hitEntity.Entity is MyCubeGrid) p.DamageFrame.HitBlock = hitEntity.Blocks[0];
                     Hits.Enqueue(p);
                 }
                 else p.DamageFrame.Hits++;
@@ -313,17 +323,30 @@ namespace WeaponCore.Projectiles
             return true;
         }
 
-        private bool SlaveBeamsHit(Projectile p, List<DrawProjectile> drawList, int poolId)
+        private void CreateFakeBeam(Projectile p, Vector3D hitPos)
         {
-            var beam = new LineD(p.LastPosition, p.Position);
-            FastHitPos(p.DamageFrame.HitEntity, beam, poolId);
-            if (p.DamageFrame.HitEntity != null)
+            if (p.System.Values.HardPoint.Loading.FakeBarrels.Converge || !(p.DamageFrame.HitEntity.Entity is MyCubeGrid))
             {
-                Intersected(p, drawList, p.DamageFrame.HitEntity);
-                return true;
+                var beam = new LineD(p.LastPosition, hitPos);
+                p.Trajectile = new Trajectile(beam.From, beam.To, beam.Direction, beam.Length);
             }
-            p.HitList.Clear();
-            return false;
+            else
+            {
+                var hitBlock = p.DamageFrame.HitBlock;
+                Vector3D center;
+                hitBlock.ComputeWorldCenter(out center);
+
+                Vector3 halfExt;
+                hitBlock.ComputeScaledHalfExtents(out halfExt);
+
+                var blockBox = new BoundingBoxD(-halfExt, halfExt);
+                var rotMatrix = Quaternion.CreateFromRotationMatrix(hitBlock.CubeGrid.WorldMatrix);
+                var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
+                var line = new LineD(p.LastPosition, p.Position);
+                var dist = obb.Intersects(ref line) ?? Vector3D.Distance(line.From, center);
+                var toVec = p.LastPosition + (line.Direction * dist);
+                p.Trajectile = new Trajectile(p.LastPosition, toVec, line.Direction, dist);
+            }
         }
 
         private void Die(Projectile p, int poolId)

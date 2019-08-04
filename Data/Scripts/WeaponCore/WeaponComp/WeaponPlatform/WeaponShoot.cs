@@ -151,7 +151,7 @@ namespace WeaponCore.Platform
 
         private void CreateVirtualProjectile()
         {
-            DamageFrame.Hit = false;
+            DamageFrame.VirtualHit = false;
             DamageFrame.Hits = 0;
             DamageFrame.HitEntity.Entity = null;
             Projectile pro;

@@ -77,7 +77,7 @@ namespace WeaponCore.Support
         [ProtoMember(11)] internal int ShotsInBurst;
         [ProtoMember(12)] internal int DelayAfterBurst;
         [ProtoMember(13)] internal bool DegradeROF;
-        [ProtoMember(14)] internal bool FakeBarrels;
+        [ProtoMember(14)] internal FakeBarrels FakeBarrels;
     }
 
     [ProtoContract]
@@ -85,6 +85,13 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal string SubtypeId;
         [ProtoMember(2)] internal string SubpartId;
+    }
+
+    [ProtoContract]
+    public struct FakeBarrels
+    {
+        [ProtoMember(1)] internal bool Enable;
+        [ProtoMember(2)] internal bool Converge;
     }
 
     [ProtoContract]
