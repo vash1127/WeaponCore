@@ -32,7 +32,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
 
                 if (w.TrackingAi)
                 {
@@ -62,7 +62,7 @@ namespace WeaponCore.Support
                     return;
                 }
             }
-            Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {w.Comp.Ai.SortedTargets.Count} - Total:{w.Comp.Ai.Targeting.TargetRoots.Count}");
+            //Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {w.Comp.Ai.SortedTargets.Count} - Total:{w.Comp.Ai.Targeting.TargetRoots.Count}");
             target.Reset();
             w.LastTargetCheck = 1;
             w.TargetExpired = true;
@@ -78,7 +78,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, p.Position) > p.DistanceToTravelSqr) continue;
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, p.Position) > p.DistanceToTravelSqr) continue;
 
                 if (info.IsGrid)
                 {
@@ -102,7 +102,7 @@ namespace WeaponCore.Support
                     return true;
                 }
             }
-            Log.Line($"{p.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
+            //Log.Line($"{p.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
             target.Reset();
             return false;
         }
@@ -135,7 +135,7 @@ namespace WeaponCore.Support
                 }
             }
             if (FindRandomBlock(system, ref target, currentPos, info.TypeDict[Any], w != null)) return true;
-            Log.Line("no valid target in line of sight");
+            //Log.Line("no valid target in line of sight");
             return false;
         }
 
@@ -147,54 +147,63 @@ namespace WeaponCore.Support
             int[] deck = null;
             if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
             var physics = MyAPIGateway.Physics;
-            for (int i = 0; i < totalBlocks; i++)
+            var loopIndex = 0;
+            try
             {
-                int next = i;
-                if (i < lastBlocks)
+                for (int i = 0; i < totalBlocks; i++)
                 {
-                    try {
-                        if (deck != null) next = deck[i];
-                    } catch (Exception ex) { Log.Line($"Exception in FindRandomBlockNextDeck: {ex}"); }
-                }
-
-                MyCubeBlock block = null;
-                try
-                {
-                    block = blockList[next];
-                } catch (Exception ex) { Log.Line($"Exception in FindRandomBlockNextDeck: {ex}"); }
-
-                if (block == null) return false;
-                if (block.MarkedForClose) continue;
-
-                var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
-                double rayDist;
-                if (cast)
-                {
-                    IHitInfo hitInfo;
-                    physics.CastRay(currentPos, blockPos, out hitInfo, 15, true);
-
-                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == target.MyCube.CubeGrid)
-                        continue;
-
-                    var hitGrid = hitInfo.HitEntity as MyCubeGrid;
-                    if (hitGrid != null)
+                    int next = i;
+                    loopIndex = i;
+                    if (i < lastBlocks)
                     {
-                        var relationship = target.MyCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
-                        var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
-                        if (!enemy)
+                        try
+                        {
+                            if (deck != null) next = deck[i];
+                        }
+                        catch (Exception ex) { Log.Line($"Exception in FindRandomBlockNextDeck: {ex} - {blockList.Count} - {totalBlocks}"); }
+                    }
+
+                    MyCubeBlock block = null;
+                    try
+                    {
+                        block = blockList[next];
+                    }
+                    catch (Exception ex) { Log.Line($"Exception in FindRandomBlockNextDeck: {ex} - {blockList.Count} - {totalBlocks}"); }
+
+                    if (block == null) return false;
+                    if (block.MarkedForClose) continue;
+
+                    var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
+                    double rayDist;
+                    if (cast)
+                    {
+                        IHitInfo hitInfo;
+                        physics.CastRay(currentPos, blockPos, out hitInfo, 15, true);
+
+                        if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == target.MyCube.CubeGrid)
                             continue;
+
+                        var hitGrid = hitInfo.HitEntity as MyCubeGrid;
+                        if (hitGrid != null)
+                        {
+                            var relationship = target.MyCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
+                            var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                            if (!enemy)
+                                continue;
+                        }
+                        Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
+                        var shortDist = rayDist * (1 - hitInfo.Fraction);
+                        var origDist = rayDist * hitInfo.Fraction;
+                        var topEntId = block.GetTopMostParent().EntityId;
+                        target.Set(block, hitInfo.Position, shortDist, origDist, topEntId);
+                        return true;
                     }
                     Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
-                    var shortDist = rayDist * (1 - hitInfo.Fraction);
-                    var origDist = rayDist * hitInfo.Fraction;
-                    var topEntId = block.GetTopMostParent().EntityId;
-                    target.Set(block, hitInfo.Position, shortDist, origDist, topEntId);
+                    target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
                     return true;
                 }
-                Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
-                target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
-                return true;
             }
+            catch (Exception ex) { Log.Line($"Exception in FindRandomBlockLoop: {ex} - {blockList.Count} - {totalBlocks} - {loopIndex}"); }
             return false;
         }
     }

@@ -26,7 +26,7 @@ namespace WeaponCore.Support
             {
                 MyDetectedEntityInfo entInfo;
                 if (ent == null || ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is IMyFloatingObject 
-                    || ent.MarkedForClose || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out entInfo)) continue;
+                    || ent.MarkedForClose || ent.IsPreview || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out entInfo)) continue;
 
                 switch (entInfo.Relationship)
                 {

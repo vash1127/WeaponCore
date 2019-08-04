@@ -175,7 +175,7 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId)
             {
-                Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null or marked - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId}");
+                Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null or marked - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
                 masterWeapon.TargetExpired = true;
                 if (masterWeapon != this) TargetExpired = true;
                 return;

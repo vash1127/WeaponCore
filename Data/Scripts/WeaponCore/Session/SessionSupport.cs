@@ -43,9 +43,10 @@ namespace WeaponCore
                 }
                 db.SortedTargets.Sort(db.TargetCompare1);
                 //Log.Line($"[DB] targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
-                db.DbReady = db.SortedTargets.Count > 0;
                 db.BlockTypeIsSorted.Clear();
+                db.DbReady = db.SortedTargets.Count > 0;
                 Interlocked.Exchange(ref db.DbUpdating, 0);
+
             }
             DbsToUpdate.Clear();
             DbUpdating = false;

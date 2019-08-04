@@ -25,23 +25,17 @@ namespace WeaponCore.Support
 
         private bool UpdateOwner()
         {
-            using (MyGrid.Pin())
-            {
-                if (MyGrid == null || MyGrid.MarkedForClose)
-                {
-                    MyOwner = 0;
-                    return false;
-                }
+            if (MyGrid == null || !MyGrid.InScene || MyGrid.MarkedForClose)
+                return false;
 
-                var bigOwners = MyGrid.BigOwners;
-                if (bigOwners == null || bigOwners.Count <= 0)
-                {
-                    MyOwner = 0;
-                    return false;
-                }
-                MyOwner = bigOwners[0];
-                return true;
+            var bigOwners = MyGrid.BigOwners;
+            if (bigOwners == null || bigOwners.Count <= 0)
+            {
+                MyOwner = 0;
+                return false;
             }
+            MyOwner = bigOwners[0];
+            return true;
         }
 
         public void SubGridInfo()
