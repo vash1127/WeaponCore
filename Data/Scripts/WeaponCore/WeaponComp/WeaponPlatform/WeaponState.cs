@@ -39,7 +39,7 @@ namespace WeaponCore.Platform
                     var muzzle = barrelPair.Key;
                     var id = muzzle.MuzzleId;
                     var dummy = Dummies[id];
-                    var tick = Comp.MyAi.MySession.Tick;
+                    var tick = Comp.Ai.MySession.Tick;
                     var ticksAgo = tick - lastUpdateTick;
 
                     var particles = System.Values.Graphics.Particles;

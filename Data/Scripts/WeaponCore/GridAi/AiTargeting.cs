@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using VRage.Game.Entity;
+using VRage.Game;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -12,9 +12,9 @@ using static WeaponCore.Support.SubSystemDefinition.BlockTypes;
 
 namespace WeaponCore.Support
 {
-    public partial class GridTargetingAi
+    public partial class GridAi
     {
-        internal GridTargetingAi(MyCubeGrid grid, Session mySession)
+        internal GridAi(MyCubeGrid grid, Session mySession)
         {
             MyGrid = grid;
             MySession = mySession;
@@ -22,42 +22,16 @@ namespace WeaponCore.Support
             Rnd = new Random((int)MyGrid.EntityId);
         }
 
-        internal void SelectTarget(Weapon w)
+        internal static void AcquireTarget(Weapon w)
         {
-            //Log.Line($"{w.System.WeaponName} - running select target");
-            TargetInfo? targetInfo;
-            UpdateTarget(w, out targetInfo);
-            if (targetInfo.HasValue)
-            {
-                w.LastTargetCheck = 0;
-                var grid = targetInfo.Value.Target as MyCubeGrid;
-                if (grid == null)
-                {
-                    Log.Line($"{w.System.WeaponName} - targetting nonGrid: {w.System.WeaponName}");
-                    return;
-                }
-
-                if (targetInfo.Value.TypeDict.Count <= 0)
-                {
-                    Log.Line($"{w.System.WeaponName} - sees no valid cubes");
-                    w.NewTarget.Reset();
-                    return;
-                }
-                //Log.Line($"{w.System.WeaponName} - returning entity: {targetInfo.Value.Target.DebugName} - trueTarget:{w.NewTarget.Entity.DebugName}");
-                return;
-            }
-            w.LastTargetCheck = 1;
-            Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{w.NewTarget.Entity == null} - oldTargetMarked:{w.NewTarget.Entity?.MarkedForClose} - checked: {w.Comp.MyAi.SortedTargets.Count} - Total:{w.Comp.MyAi.Targeting.TargetRoots.Count}");
-            w.NewTarget.Reset();
-            w.TargetExpired = true;
-        }
-
-        internal void UpdateTarget(Weapon w, out TargetInfo? targetInfo)
-        {
+            w.LastTargetCheck = 0;
+            var target = w.NewTarget;
             var physics = MyAPIGateway.Physics;
-            for (int i = 0; i < SortedTargets.Count; i++)
+            var weaponPos = w.Comp.MyPivotPos;
+            var ai = w.Comp.Ai;
+            for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
-                var info = SortedTargets[i];
+                var info = ai.SortedTargets[i];
                 if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
 
                 if (w.TrackingAi)
@@ -68,12 +42,10 @@ namespace WeaponCore.Support
 
                 if (info.IsGrid)
                 {
-                    if (!AcquireBlock(w, info)) continue;
-                    targetInfo = info;
+                    if (!AcquireBlock(w.System, ref target, info, weaponPos, w)) continue;
                     return;
                 }
 
-                var weaponPos = w.Comp.MyPivotPos;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
@@ -83,60 +55,97 @@ namespace WeaponCore.Support
 
                     double rayDist;
                     Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
-                    w.NewTarget.Entity = info.Target;
-                    w.NewTarget.HitPos = hitInfo.Position;
-                    w.NewTarget.HitShortDist = rayDist * (1 - hitInfo.Fraction);
-                    w.NewTarget.OrigDistance = rayDist * hitInfo.Fraction;
-                    w.NewTarget.TopEntityId = info.Target.GetTopMostParent().EntityId;
-                    targetInfo = info;
+                    var shortDist = rayDist * (1 - hitInfo.Fraction);
+                    var origDist = rayDist * hitInfo.Fraction;
+                    var topEntId = info.Target.GetTopMostParent().EntityId;
+                    target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
                     return;
                 }
             }
-            Log.Line($"{w.System.WeaponName} - failed to update targets");
-            targetInfo = null;
+            Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {w.Comp.Ai.SortedTargets.Count} - Total:{w.Comp.Ai.Targeting.TargetRoots.Count}");
+            target.Reset();
+            w.LastTargetCheck = 1;
+            w.TargetExpired = true;
         }
 
-        private bool AcquireBlock(Weapon w, TargetInfo info)
+        internal static bool ReacquireTarget(Projectile p)
         {
-            if (w.OrderedTargets)
+            p.ChaseAge = p.Age;
+            var physics = MyAPIGateway.Physics;
+            var ai = p.Ai;
+            var weaponPos = p.Position;
+            var target = p.Target;
+            for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
-                foreach (var bt in w.System.Values.Targeting.SubSystems.Systems)
+                var info = ai.SortedTargets[i];
+                if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, p.Position) > p.DistanceToTravelSqr) continue;
+
+                if (info.IsGrid)
                 {
-                   // Log.Line($"sort:{bt} - closestFirst:{w.System.Values.Targeting.SubSystems.ClosestFirst} - {info.TypeDict[bt].Count} - {(info.Target as MyCubeGrid).GetFatBlocks().Count}");
+                    if (!AcquireBlock(p.System, ref target, info, weaponPos)) continue;
+                    return true;
+                }
+
+                var targetPos = info.Target.PositionComp.WorldAABB.Center;
+                IHitInfo hitInfo;
+                physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
+                if (hitInfo?.HitEntity == info.Target)
+                {
+                    Log.Line($"{p.System.WeaponName} - found something");
+
+                    double rayDist;
+                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                    var shortDist = rayDist * (1 - hitInfo.Fraction);
+                    var origDist = rayDist * hitInfo.Fraction;
+                    var topEntId = info.Target.GetTopMostParent().EntityId;
+                    target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
+                    return true;
+                }
+            }
+            Log.Line($"{p.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
+            target.Reset();
+            return false;
+        }
+
+        private static bool AcquireBlock(WeaponSystem system, ref Target target, TargetInfo info, Vector3D currentPos, Weapon w = null)
+        {
+            if (system.OrderedTargets)
+            {
+                var subSystems = system.Values.Targeting.SubSystems;
+                foreach (var bt in subSystems.Systems)
+                {
+                    // Log.Line($"sort:{bt} - closestFirst:{w.System.Values.Targeting.SubSystems.ClosestFirst} - {info.TypeDict[bt].Count} - {(info.Target as MyCubeGrid).GetFatBlocks().Count}");
                     if (bt != Any && info.TypeDict[bt].Count > 0)
                     {
                         var subSystemList = info.TypeDict[bt];
-                        if (w.System.Values.Targeting.SubSystems.ClosestFirst)
+                        if (subSystems.ClosestFirst)
                         {
                             //Log.Line($"trying: {bt}");
-                            if (bt != w.LastBlockType) w.Top5.Clear();
-                            w.LastBlockType = bt;
-                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, w);
-                            if (w.NewTarget.Entity != null)
+                            if (bt != target.LastBlockType) target.Top5.Clear();
+                            target.LastBlockType = bt;
+                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, currentPos, w);
+                            if (target.Entity != null)
                             {
                                 //Log.Line($"cloest was: {w.NewTarget.Entity.DebugName} - type:{bt} - partCount:{info.PartCount}");
                                 return true;
                             }
                         }
-                        else if (FindRandomBlock(w, subSystemList)) return true;
+                        else if (FindRandomBlock(system, ref target, currentPos, subSystemList, w != null)) return true;
                     }
                 }
             }
-            var anyBlockList = info.TypeDict[Any];
-            if (FindRandomBlock(w, anyBlockList)) return true;
-            Log.Line("full failure");
+            if (FindRandomBlock(system, ref target, currentPos, info.TypeDict[Any], w != null)) return true;
+            Log.Line("no valid target in line of sight");
             return false;
         }
 
-        private bool FindRandomBlock(Weapon w, List<MyCubeBlock> blockList)
+        private static bool FindRandomBlock(WeaponSystem system, ref Target target, Vector3D currentPos, List<MyCubeBlock> blockList, bool cast)
         {
-            Log.Line($"Random: blockCount::{blockList.Count}");
-            var weaponPos = w.Comp.MyPivotPos;
             var totalBlocks = blockList.Count;
-            var lastBlocks = w.System.Values.Targeting.TopBlocks;
+            var lastBlocks = system.Values.Targeting.TopBlocks;
             if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
             int[] deck = null;
-            if (lastBlocks > 0) deck = GetDeck(ref w.Deck, ref w.PrevDeckLength, 0, lastBlocks);
+            if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
             var physics = MyAPIGateway.Physics;
             for (int i = 0; i < totalBlocks; i++)
             {
@@ -150,149 +159,37 @@ namespace WeaponCore.Support
 
                 IHitInfo hitInfo;
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
-                physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
-
-
-                if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == MyGrid)
-                    continue;
-
-                var hitGrid = hitInfo.HitEntity as MyCubeGrid;
-                if (hitGrid != null && !GridEnemy(w.Comp.MyCube, hitGrid, hitGrid.BigOwners))
-                {
-                    Log.Line($"failed because not enemy");
-                    continue;
-                }
-
                 double rayDist;
-                Vector3D.Distance(ref weaponPos, ref blockPos, out rayDist);
-                w.NewTarget.Entity = block;
-                w.NewTarget.HitPos = hitInfo.Position;
-                w.NewTarget.HitShortDist = rayDist * (1 - hitInfo.Fraction);
-                w.NewTarget.OrigDistance = rayDist * hitInfo.Fraction;
-                w.NewTarget.TopEntityId = block.GetTopMostParent().EntityId;
-                return true;
-            }
-            return false;
-        }
-
-        internal static bool ReacquireTarget(Projectile p)
-        {
-            p.ChaseAge = p.Age;
-            if (p.FiringCube == null || p.FiringCube.MarkedForClose || p.FiringCube.CubeGrid.MarkedForClose)
-            {
-                p.Target = null;
-                Log.Line("could not reacquire my weapon is closed");
-                return false;
-            }
-
-            var totalTargets = p.Ai.SortedTargets.Count;
-            var topTargets = p.System.Values.Targeting.TopTargets;
-            if (topTargets > 0 && totalTargets < topTargets) topTargets = totalTargets;
-
-            TargetInfo? targetInfo;
-            GetTarget(p.Ai, p.Position, p.DistanceToTravelSqr, p.TargetShuffle, p.TargetShuffleLen, topTargets, out targetInfo);
-            if (targetInfo.HasValue)
-            {
-                p.Target = targetInfo.Value.Target;
-                var targetGrid = p.Target as MyCubeGrid;
-                if (targetGrid == null)
+                if (cast)
                 {
-                    Log.Line($"reacquired a new non-grid target: {p.Target.DebugName}");
-                    return true;
-                }
+                    physics.CastRay(currentPos, blockPos, out hitInfo, 15, true);
 
-                var cubes = targetInfo.Value.TypeDict[Any];
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == target.MyCube.CubeGrid)
+                        continue;
 
-                if (p.System.OrderedTargets)
-                {
-                    foreach (var bt in p.System.Values.Targeting.SubSystems.Systems)
+                    var hitGrid = hitInfo.HitEntity as MyCubeGrid;
+                    if (hitGrid != null)
                     {
-                        if (targetInfo.Value.TypeDict[bt].Count > 0)
+                        var relationship = target.MyCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
+                        var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                        if (!enemy)
                         {
-                            cubes = targetInfo.Value.TypeDict[bt];
+                            Log.Line($"failed because not enemy");
+                            continue;
                         }
                     }
+                    Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
+                    var shortDist = rayDist * (1 - hitInfo.Fraction);
+                    var origDist = rayDist * hitInfo.Fraction;
+                    var topEntId = block.GetTopMostParent().EntityId;
+                    target.Set(block, hitInfo.Position, shortDist, origDist, topEntId);
+                    return true;
                 }
-
-                if (cubes == null)
-                {
-                    Log.Line($"cube list is null");
-                    return false;
-                }
-                if (!targetInfo.Value.IsGrid || cubes.Count <= 0)
-                {
-                    p.Target = null;
-                    Log.Line("reacquired new target was not null and is grid but could not get target blocks");
-                    return false;
-                }
-
-                var totalBlocks = cubes.Count;
-                var firstBlocks = p.System.Values.Targeting.TopBlocks;
-                if (firstBlocks > 0 && totalBlocks < firstBlocks) firstBlocks = totalBlocks;
-
-                var gotBlock = GetBlock(out p.Target, cubes, p.BlockSuffle, p.BlockShuffleLen, firstBlocks, p.Position, p.FiringCube, false);
-                return gotBlock;
+                    Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
+                    target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
+                    return true;
             }
-            Log.Line($"GetTarget returned null: sortedTargets:{p.Ai.SortedTargets.Count}");
             return false;
-        }
-
-        internal static void GetTarget(GridTargetingAi ai, Vector3D currentPos, double distanceLeftToTravelSqr, int[] targetSuffle, int targetSuffleLen, int randomizeTopTargets, out TargetInfo? targetInfo)
-        {
-            int[] deck = null;
-            if (randomizeTopTargets > 0) deck = GetDeck(ref targetSuffle, ref targetSuffleLen, 0, randomizeTopTargets);
-            for (int i = 0; i < ai.SortedTargets.Count; i++)
-            {
-                int next = i;
-                if (i < randomizeTopTargets)
-                {
-                    if (deck != null) next = deck[i];
-                }
-                var info = ai.SortedTargets[next];
-                if (info.Target == null || info.Target.MarkedForClose || Vector3D.DistanceSquared(info.EntInfo.Position, currentPos) >= distanceLeftToTravelSqr)
-                    continue;
-
-                targetInfo = info;
-                return;
-            }
-            targetInfo = null;
-        }
-
-        internal static bool GetBlock(out MyEntity target, List<MyCubeBlock> blocks, int[] blockSuffle, int blockSuffleLen, int randomizeFirstBlocks, Vector3D weaponPos, MyCubeBlock weaponBlock, bool checkRay = false)
-        {
-            var physics = MyAPIGateway.Physics;
-            var blockCount = blocks.Count;
-            int[] deck = null;
-            if (randomizeFirstBlocks > 0) deck = GetDeck(ref blockSuffle, ref blockSuffleLen, 0, randomizeFirstBlocks);
-
-            MyEntity newTarget = null;
-            for (int i = 0; i < blockCount; i++)
-            {
-                int next = i;
-                if (i < randomizeFirstBlocks)
-                {
-                    if (deck != null) next = deck[i];
-                }
-                var block = blocks[next];
-                if (block.MarkedForClose) continue;
-
-                if (checkRay)
-                {
-                    IHitInfo hitInfo;
-                    physics.CastRay(weaponPos, block.PositionComp.GetPosition(), out hitInfo, 15);
-
-                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase) continue;
-
-                    var isGrid = hitInfo.HitEntity as MyCubeGrid;
-                    //var parentIsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
-                    if (isGrid == weaponBlock.CubeGrid) continue;
-                    //if (isGrid != null && !GridEnemy(weaponBlock, isGrid) || parentIsGrid != null && !GridEnemy(weaponBlock, parentIsGrid)) continue;
-                }
-                newTarget = block;
-                break;
-            }
-            target = newTarget;
-            return newTarget != null;
         }
     }
 }

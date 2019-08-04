@@ -31,7 +31,7 @@ namespace WeaponCore.Support
         private bool _firstSync;
 
         private DSUtils Dsutil1 { get; set; } = new DSUtils();
-        internal GridTargetingAi MyAi { get; set; }
+        internal GridAi Ai { get; set; }
         internal MySoundPair RotationSound;
         internal MyEntity3DSoundEmitter RotationEmitter; 
 
@@ -90,9 +90,9 @@ namespace WeaponCore.Support
         internal LogicState State;
         internal MyResourceSinkComponent Sink => MyCube.ResourceSink;
 
-        public WeaponComponent(GridTargetingAi ai, MyCubeBlock myCube, IMyLargeMissileTurret turret)
+        public WeaponComponent(GridAi ai, MyCubeBlock myCube, IMyLargeMissileTurret turret)
         {
-            MyAi = ai;
+            Ai = ai;
             MyCube = myCube;
             MyGrid = MyCube.CubeGrid;
             Turret = turret;

@@ -11,7 +11,7 @@ using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
 {
-    public partial class GridTargetingAi
+    public partial class GridAi
     {
         internal volatile bool Ready;
         internal static volatile bool SubGridUpdate;

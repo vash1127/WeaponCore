@@ -15,7 +15,7 @@ using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
 {
-    public partial class GridTargetingAi
+    public partial class GridAi
     {
         internal void UpdateTargetDb()
         {
@@ -66,7 +66,7 @@ namespace WeaponCore.Support
             ValidGrids.Clear();
         }
 
-        private static void GetTargetBlocks(MyGridTargeting targeting, GridTargetingAi ai)
+        private static void GetTargetBlocks(MyGridTargeting targeting, GridAi ai)
         {
             IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
             foreach (var targets in allTargets)

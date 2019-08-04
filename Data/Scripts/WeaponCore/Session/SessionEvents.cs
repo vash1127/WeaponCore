@@ -26,10 +26,10 @@ namespace WeaponCore
                 {
                     if (!Inited) lock (_configLock) Init();
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
-                    GridTargetingAi gridAi;
+                    GridAi gridAi;
                     if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                     {
-                        gridAi = new GridTargetingAi(cube.CubeGrid, this);
+                        gridAi = new GridAi(cube.CubeGrid, this);
                         GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                     }
                     var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);

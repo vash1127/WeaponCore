@@ -32,12 +32,12 @@ namespace WeaponCore
                     var ent = detectInfo.Parent;
                     var dictTypes = detectInfo.DictTypes;
                     var grid = ent as MyCubeGrid;
-                    GridTargetingAi.TargetInfo targetInfo;
+                    GridAi.TargetInfo targetInfo;
 
                     if (grid == null)
-                        targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
+                        targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
                     else
-                        targetInfo = new GridTargetingAi.TargetInfo(detectInfo.EntInfo, grid, true, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db) { TypeDict = dictTypes };
+                        targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, grid, true, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db) { TypeDict = dictTypes };
 
                     db.SortedTargets.Add(targetInfo);
                 }

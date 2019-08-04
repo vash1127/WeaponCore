@@ -17,7 +17,7 @@ namespace WeaponCore.Platform
     {
         internal void Shoot()
         {
-            var session = Comp.MyAi.MySession;
+            var session = Comp.Ai.MySession;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
             //DsDebugDraw.DrawLine(Comp.MyPivotPos, Comp.MyPivotPos + (Comp.MyPivotDir * 5000), Color.Purple, 0.1f);
@@ -38,7 +38,7 @@ namespace WeaponCore.Platform
                 _lastShotTick = tick;
             }
 
-            if (AvCapable && (!PlayTurretAv || Comp.MyAi.MySession.Tick60))
+            if (AvCapable && (!PlayTurretAv || Comp.Ai.MySession.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointSoundMaxDistSqr;
 
             if (System.BarrelAxisRotation) MovePart(-1 * bps);
@@ -109,7 +109,6 @@ namespace WeaponCore.Platform
                                     MyMath.FastCos(randomFloat1)), dirMatrix);
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
-
                         Projectile pro;
                         session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
                         pro.System = System;
@@ -119,8 +118,8 @@ namespace WeaponCore.Platform
                         pro.PredictedTargetPos = TargetPos;
                         pro.Direction = muzzle.DeviatedDir;
                         pro.State = Projectile.ProjectileState.Start;
-                        pro.Target = Target.Entity;
-                        pro.Ai = Comp.MyAi;
+                        pro.Target = Target;
+                        pro.Ai = Comp.Ai;
                         pro.WeaponId = WeaponId;
                         pro.MuzzleId = muzzle.MuzzleId;
                         pro.DamageFrame = DamageFrame;
@@ -155,7 +154,7 @@ namespace WeaponCore.Platform
             DamageFrame.Hits = 0;
             DamageFrame.HitEntity.Entity = null;
             Projectile pro;
-            Comp.MyAi.MySession.Projectiles.ProjectilePool[Comp.MyAi.MySession.ProCounter].AllocateOrCreate(out pro);
+            Comp.Ai.MySession.Projectiles.ProjectilePool[Comp.Ai.MySession.ProCounter].AllocateOrCreate(out pro);
             pro.System = System;
             pro.FiringCube = Comp.MyCube;
             pro.Origin = Comp.MyPivotPos;
@@ -163,8 +162,8 @@ namespace WeaponCore.Platform
             pro.PredictedTargetPos = TargetPos;
             pro.Direction = Comp.MyPivotDir;
             pro.State = Projectile.ProjectileState.Start;
-            pro.Target = Target.Entity;
-            pro.Ai = Comp.MyAi;
+            pro.Target = Target;
+            pro.Ai = Comp.Ai;
             pro.WeaponId = WeaponId;
             pro.MuzzleId = -1;
             pro.DamageFrame = DamageFrame;
@@ -172,7 +171,7 @@ namespace WeaponCore.Platform
 
         private void ShootRayCheck()
         {
-            Comp.LastRayCastTick = Comp.MyAi.MySession.Tick;
+            Comp.LastRayCastTick = Comp.Ai.MySession.Tick;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId)
             {
@@ -248,14 +247,14 @@ namespace WeaponCore.Platform
                     var grid = parentAsGrid ?? rootAsGrid;
                     if (grid == Comp.MyGrid)
                     {
-                        Session.Instance.RayCheckLines.Add(new LineD(Comp.MyPivotPos, hitInfo.Position), Comp.MyAi.MySession.Tick, true);
+                        Session.Instance.RayCheckLines.Add(new LineD(Comp.MyPivotPos, hitInfo.Position), Comp.Ai.MySession.Tick, true);
                         Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
                         masterWeapon.TargetExpired = true;
                         if (masterWeapon != this) TargetExpired = true;
                         return;
                     }
 
-                    if (!GridTargetingAi.GridEnemy(Comp.MyCube, grid))
+                    if (!GridAi.GridEnemy(Comp.MyCube, grid))
                     {
                         if (!grid.IsInSameLogicalGroupAs(Comp.MyGrid))
                         {

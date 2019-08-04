@@ -21,7 +21,7 @@ namespace WeaponCore.Projectiles
         internal WeaponSystem System;
         internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
-        internal GridTargetingAi Ai;
+        internal GridAi Ai;
         internal ProjectileState State;
         internal EntityState ModelState;
         internal Trajectile Trajectile;
@@ -102,7 +102,7 @@ namespace WeaponCore.Projectiles
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal MyEntity Entity;
-        internal MyEntity Target;
+        internal Target Target;
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
         internal WeaponDamageFrame DamageFrame;
@@ -169,8 +169,8 @@ namespace WeaponCore.Projectiles
                 MaxChaseAge = System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
             else MaxChaseAge = int.MaxValue;
 
-            LockedTarget = Target != null && !Target.MarkedForClose;
-            if (Target != null && LockedTarget) OriginTargetPos = Target.PositionComp.WorldAABB.Center;
+            LockedTarget = Target != null && !Target.Entity.MarkedForClose;
+            if (Target != null && LockedTarget) OriginTargetPos = Target.Entity.PositionComp.WorldAABB.Center;
 
             if (System.TargetOffSet && LockedTarget)
             {
@@ -334,7 +334,7 @@ namespace WeaponCore.Projectiles
         {
             ChaseAge = Age;
             PickTarget = false;
-            var reaquire = GridTargetingAi.ReacquireTarget(this);
+            var reaquire = GridAi.ReacquireTarget(this);
             if (!reaquire) Target = null;
             return reaquire;
         }

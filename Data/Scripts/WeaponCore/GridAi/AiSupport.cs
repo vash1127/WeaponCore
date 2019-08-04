@@ -13,7 +13,7 @@ using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
 {
-    public partial class GridTargetingAi
+    public partial class GridAi
     {
         internal void RequestDbUpdate()
         {
@@ -25,20 +25,23 @@ namespace WeaponCore.Support
 
         private bool UpdateOwner()
         {
-            if (MyGrid == null || MyGrid.MarkedForClose)
+            using (MyGrid.Pin())
             {
-                MyOwner = 0;
-                return false;
-            }
+                if (MyGrid == null || MyGrid.MarkedForClose)
+                {
+                    MyOwner = 0;
+                    return false;
+                }
 
-            var bigOwners = MyGrid.BigOwners;
-            if (bigOwners == null || bigOwners.Count <= 0)
-            {
-                MyOwner = 0;
-                return false;
+                var bigOwners = MyGrid.BigOwners;
+                if (bigOwners == null || bigOwners.Count <= 0)
+                {
+                    MyOwner = 0;
+                    return false;
+                }
+                MyOwner = bigOwners[0];
+                return true;
             }
-            MyOwner = bigOwners[0];
-            return true;
         }
 
         public void SubGridInfo()
@@ -213,10 +216,10 @@ namespace WeaponCore.Support
             internal readonly bool IsGrid;
             internal readonly int PartCount;
             internal readonly MyCubeGrid MyGrid;
-            internal readonly GridTargetingAi Ai;
+            internal readonly GridAi Ai;
             internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
 
-            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridTargetingAi ai)
+            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
             {
                 EntInfo = entInfo;
                 Target = target;

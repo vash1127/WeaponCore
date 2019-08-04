@@ -4,7 +4,7 @@ using VRage.Game.ModAPI;
 
 namespace WeaponCore.Support
 {
-    public partial class GridTargetingAi
+    public partial class GridAi
     {
         public void TargetGridEvents(MyCubeGrid grid, bool register = true)
         {

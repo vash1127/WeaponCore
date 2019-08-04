@@ -1,4 +1,6 @@
-﻿using VRage;
+﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
+using VRage;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -95,11 +97,25 @@ namespace WeaponCore.Support
 
     public class Target
     {
+        public readonly WeaponSystem System;
+        public readonly MyCubeBlock MyCube;
+
+        public readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
+        public int[] Deck = new int[0];
+        public int PrevDeckLength;
+        public SubSystemDefinition.BlockTypes LastBlockType;
+
         public MyEntity Entity;
         public Vector3D HitPos;
         public double HitShortDist;
         public double OrigDistance;
         public long TopEntityId;
+
+        public Target(WeaponSystem system, MyCubeBlock myCube)
+        {
+            System = system;
+            MyCube = myCube;
+        }
 
         public void TransferTo(Target target)
         {
@@ -109,6 +125,15 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             Reset();
+        }
+
+        public void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId)
+        {
+            Entity = ent;
+            HitPos = pos;
+            HitShortDist = shortDist;
+            OrigDistance = origDist;
+            TopEntityId = topEntId;
         }
 
         public void Reset()

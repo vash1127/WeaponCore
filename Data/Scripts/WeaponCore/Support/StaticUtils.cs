@@ -1,67 +1,19 @@
-﻿using VRage.ModAPI;
-using WeaponCore.Platform;
-
+﻿using WeaponCore.Platform;
+using System;
+using System.Collections.Generic;
+using Sandbox.Game;
+using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
+using VRage.Game;
+using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRageMath;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 namespace WeaponCore.Support
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using Sandbox.Game;
-    using Sandbox.Game.Entities;
-    using Sandbox.ModAPI;
-    using VRage.Game;
-    using VRage.Game.Entity;
-    using VRage.Game.ModAPI;
-    using VRageMath;
-    using Color = VRageMath.Color;
-    using Quaternion = VRageMath.Quaternion;
-    using Vector3 = VRageMath.Vector3;
-    using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
     internal static class UtilsStatic
     {
-        public static Target GetClosestSortedBlockThatCanBeShot(List<MyCubeBlock> cubes, Weapon weapon, Target target)
-        {
-            var minValue = double.MaxValue;
-            target.Entity = null;
-            target.HitShortDist = 0;
-            target.OrigDistance = 0;
-            target.HitPos = Vector3D.Zero;
-            target.TopEntityId = 0;
-
-
-            for (int i = 0; i < cubes.Count; i++)
-            {
-                var cube = cubes[i];
-                if (cube.MarkedForClose) continue;
-                var cubePos = cube.PositionComp.WorldMatrix.Translation;
-                var testPos = weapon.Comp.MyPivotPos;
-                var range = cubePos - testPos;
-                var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
-                if (test < minValue && test <= weapon.System.MaxTrajectorySqr)
-                {
-                    if (Weapon.IsTargetInView(weapon, cubePos))
-                    {
-                        IHitInfo hitInfo;
-                        MyAPIGateway.Physics.CastRay(testPos, cubePos, out hitInfo, 15, true);
-                        if (hitInfo.HitEntity == cube.GetTopMostParent())
-                        {
-                            double rayDist;
-                            Vector3D.Distance(ref testPos, ref cubePos, out rayDist);
-                            minValue = test;
-                            target.Entity = cube;
-                            target.HitPos = hitInfo.Position;
-                            target.HitShortDist = rayDist * (1 - hitInfo.Fraction);
-                            target.OrigDistance = rayDist * hitInfo.Fraction;
-                            target.TopEntityId = cube.GetTopMostParent().EntityId;
-                        }
-                    }
-
-                }
-            }
-            return target;
-        }
-
-        public static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Weapon w)
+        public static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, ref Target target, Vector3D currentPos, Weapon w = null)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -75,14 +27,15 @@ namespace WeaponCore.Support
             MyCubeBlock newEntity2 = null;
             MyCubeBlock newEntity3 = null;
             var bestCubePos = Vector3D.Zero;
-            var top5Count = w.Top5.Count;
-            var testPos = w.Comp.MyPivotPos;
+            var top5Count = target.Top5.Count;
+            var testPos = currentPos;
+            var top5 = target.Top5;
             var physics = MyAPIGateway.Physics;
             IHitInfo hitInfo = null;
             for (int i = 0; i < cubes.Count + top5Count; i++)
             {
                 var index = i < top5Count ? i : i - top5Count;
-                var cube = i < top5Count ? w.Top5[index] : cubes[index];
+                var cube = i < top5Count ? top5[index] : cubes[index];
                 if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1  || cube == newEntity2 || cube == newEntity3) continue;
                 var cubePos = cube.CubeGrid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
@@ -90,8 +43,17 @@ namespace WeaponCore.Support
                 if (test < minValue3)
                 {
                     //if (test < minValue) Log.Line($"test123: {cube.DebugName} - {Weapon.IsTargetInView(w, cubePos)} - {physics.CastRay(testPos, cubePos, out hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid} - {((MyEntity)hitInfo.HitEntity)?.DebugName}");
-                    IHitInfo hit;
-                    if (test < minValue && Weapon.IsTargetInView(w, cubePos) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid)
+                    IHitInfo hit = null;
+                    var best = test < minValue;
+                    bool bestTest = false;
+                    if (best)
+                    {
+                        if (w != null)
+                            bestTest = Weapon.IsTargetInView(w, cubePos) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                        else
+                            bestTest = true;
+                    }
+                    if (best && bestTest)
                     {
                         minValue3 = minValue2;
                         newEntity3 = newEntity2;
@@ -145,183 +107,37 @@ namespace WeaponCore.Support
                 }
 
             }
-            w.Top5.Clear();
+            top5.Clear();
             if (newEntity != null && hitInfo != null)
             {
                 double rayDist;
                 Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
-                w.NewTarget.Entity = newEntity;
-                w.NewTarget.HitPos = hitInfo.Position;
-                w.NewTarget.HitShortDist = rayDist * (1 - hitInfo.Fraction);
-                w.NewTarget.OrigDistance = rayDist * hitInfo.Fraction;
-                w.NewTarget.TopEntityId = newEntity.GetTopMostParent().EntityId;
-                w.Top5.Add(newEntity);
+                var shortDist = rayDist * (1 - hitInfo.Fraction);
+                var origDist = rayDist * hitInfo.Fraction;
+                var topEntId = newEntity.GetTopMostParent().EntityId;
+                target.Set(newEntity, hitInfo.Position, shortDist, origDist, topEntId);
+                top5.Add(newEntity);
             }
-            else w.NewTarget.Reset();
+            else target.Reset();
 
             if (newEntity0 != null)
             {
-                w.Top5.Add(newEntity0);
+                top5.Add(newEntity0);
             }
 
             if (newEntity1 != null)
             {
-                w.Top5.Add(newEntity1);
+                top5.Add(newEntity1);
             }
 
             if (newEntity2 != null)
             {
-                w.Top5.Add(newEntity2);
+                top5.Add(newEntity2);
             }
 
             if (newEntity3 != null)
             {
-                w.Top5.Add(newEntity3);
-            }
-        }
-
-
-        public static void SortBlocksOnly(List<MyCubeBlock> cubes, Weapon weapon)
-        {
-            var minValue = double.MaxValue;
-            var minValue0 = double.MaxValue;
-            var minValue1 = double.MaxValue;
-            var minValue2 = double.MaxValue;
-            var minValue3 = double.MaxValue;
-            var testPos = weapon.Comp.MyPivotPos;
-            for (int i = 0; i < cubes.Count; i++)
-            {
-                var cube =  cubes[i];
-                if (cube.MarkedForClose) continue;
-                var cubePos = cube.PositionComp.WorldMatrix.Translation;
-                var range = cubePos - testPos;
-                var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
-                if (test < minValue3)
-                {
-                    if (test < minValue)
-                    {
-                        minValue3 = minValue2;
-                        minValue2 = minValue1;
-                        minValue1 = minValue0;
-                        minValue0 = minValue;
-                        minValue = test;
-                    }
-                    else if (test < minValue0)
-                    {
-                        minValue3 = minValue2;
-                        minValue2 = minValue1;
-                        minValue1 = minValue0;
-                        minValue0 = test;
-                    }
-                    else if (test < minValue1)
-                    {
-                        minValue3 = minValue2;
-                        minValue2 = minValue1;
-                        minValue1 = test;
-                    }
-                    else if (test < minValue2)
-                    {
-                        minValue3 = minValue2;
-                        minValue2 = test;
-                    }
-                    else
-                    {
-                        minValue3 = test;
-                    }
-                }
-            }
-        }
-
-        public static class QS
-        {
-
-            public static void swap<T>(List<T> list, int i, int j)
-            {
-                // Swap two element in an array with given indexes.
-                var temp = list[i];
-                list[i] = list[j];
-                list[j] = temp;
-            }
-
-            private static int partition<T>(List<T> list, int lo, int hi)
-              where T : IComparable<T>
-            {
-                /* 
-                ** Partition an array according to a selected pivot, return the index of the pivot.
-                ** Result: Values of elements before pivot are less than the pivot, 
-                ** Values of elements after pivot are greater than or equals to the pivot
-                */
-                int j = lo;
-                var pivot = list[lo];
-                for (int i = lo; i <= hi; i++)
-                {
-                    if (list[i].CompareTo(pivot) >= 0)
-                    {
-                        continue;
-                    }
-                    j++;
-                    swap(list, i, j);
-                }
-                swap(list, lo, j);
-                return j;
-            }
-
-            private static void InsertionSort<T>(List<T> list, int lo, int hi)
-              where T : IComparable<T>
-            {
-                /* To deal with small arrays
-                ** Loop through the array from the second element, insert the element to the correct position
-                ** 
-                */
-                for (int i = lo + 1; i <= hi; i++)
-                {
-
-                    int j = i - 1;
-                    var x = list[i];
-                    while (j >= lo && list[j].CompareTo(x) > 0)
-                    {
-                        list[j + 1] = list[j];
-                        j--;
-                    }
-                    list[j + 1] = x;
-                }
-            }
-
-            public static void QuickSort<T>(List<T> list, int lo, int hi)
-              where T : IComparable<T>
-            {
-                /*
-                ** QuickSort an array, if the array length is less than 40, use InsertionSort instead. 
-                ** 
-                */
-                if (hi - lo < 40)
-                {
-                    InsertionSort(list, lo, hi);
-                }
-                else
-                {
-                    int p = partition(list, lo, hi);
-                    QuickSort(list, lo, p - 1);
-                    QuickSort(list, p + 1, hi);
-                }
-            }
-
-
-            public static void QuickSortParallel<T>(List<T> list, int lo, int hi)
-              where T : IComparable<T>
-            {
-                if (hi - lo < 2000)
-                {
-                    QuickSort(list, lo, hi);
-                }
-                else
-                {
-                    int p = partition(list, lo, hi);
-                    MyAPIGateway.Parallel.Start(
-                      () => QuickSortParallel(list, lo, p - 1),
-                      () => QuickSortParallel(list, p + 1, hi)
-                    );
-                }
+                top5.Add(newEntity3);
             }
         }
 

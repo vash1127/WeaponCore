@@ -105,7 +105,7 @@ namespace WeaponCore.Platform
                 weapon.Comp.AiMoving = aim;
                 if (aim)
                 {
-                    weapon.Comp.LastTrackedTick = weapon.Comp.MyAi.MySession.Tick;
+                    weapon.Comp.LastTrackedTick = weapon.Comp.Ai.MySession.Tick;
                     turret.Azimuth = (float) weapon.Azimuth;
                     turret.Elevation = (float) weapon.Elevation;
                 }
@@ -229,7 +229,7 @@ namespace WeaponCore.Platform
 
         public Vector3D GetPredictedTargetPosition(MyEntity target, Prediction prediction, out double timeToIntercept)
         {
-            var tick = Comp.MyAi.MySession.Tick;
+            var tick = Comp.Ai.MySession.Tick;
 
             if (tick == _lastPredictionTick && _lastTarget == target)
             {

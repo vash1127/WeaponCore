@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage;
 using VRage.Collections;
@@ -8,7 +7,6 @@ using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Platform
 {
@@ -48,15 +46,13 @@ namespace WeaponCore.Platform
         internal WeaponComponent Comp;
 
         internal WeaponDamageFrame DamageFrame = new WeaponDamageFrame();
-        internal Target Target = new Target();
-        internal Target NewTarget = new Target();
+        internal Target Target;
+        internal Target NewTarget;
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
-        internal BlockTypes LastBlockType;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
-        internal List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
@@ -69,8 +65,6 @@ namespace WeaponCore.Platform
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal uint LastTargetCheck;
-        internal int[] Deck = new int[0];
-        internal int PrevDeckLength;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
@@ -138,7 +132,7 @@ namespace WeaponCore.Platform
             _localTranslation = entity.LocalMatrix.Translation;
             System = system;
             Comp = comp;
-            AvCapable = System.HasBarrelShootAv && !Comp.MyAi.MySession.DedicatedServer;
+            AvCapable = System.HasBarrelShootAv && !Comp.Ai.MySession.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {
@@ -181,6 +175,8 @@ namespace WeaponCore.Platform
             _numOfBarrels = System.Barrels.Length;
             DelayCeaseFire = System.TimeToCeaseFire > 0;
             BeamSlot = new uint[_numOfBarrels];
+            Target = new Target(System, Comp.MyCube);
+            NewTarget = new Target(System, Comp.MyCube);
         }
     }
 }

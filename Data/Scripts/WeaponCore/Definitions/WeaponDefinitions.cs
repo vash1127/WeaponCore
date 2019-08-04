@@ -1,6 +1,6 @@
 ﻿using ProtoBuf;
 using VRageMath;
-using static WeaponCore.Support.GridTargetingAi;
+using static WeaponCore.Support.GridAi;
 
 namespace WeaponCore.Support
 {

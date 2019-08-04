@@ -7,9 +7,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
-using VRage.Utils;
 using VRageMath;
-using VRageRender;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
 namespace WeaponCore.Projectiles
@@ -103,12 +101,12 @@ namespace WeaponCore.Projectiles
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
                             var newChase = p.Age - p.ChaseAge > p.MaxChaseAge || p.PickTarget && p.EndChase();
-                            var myCube = p.Target as MyCubeBlock;
-                            if (newChase || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridTargetingAi.ReacquireTarget(p))
+                            var myCube = p.Target.Entity as MyCubeBlock;
+                            if (newChase || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
-                                var physics = p.Target?.Physics ?? p.Target?.Parent?.Physics;
-                                var targetPos = p.Target.PositionComp.WorldAABB.Center;
+                                var physics = p.Target.Entity?.Physics ?? p.Target.Entity?.Parent?.Physics;
+                                var targetPos = p.Target.Entity.PositionComp.WorldAABB.Center;
 
                                 if (p.System.TargetOffSet)
                                 {
@@ -217,7 +215,6 @@ namespace WeaponCore.Projectiles
                         Intersected(p, drawList, p.DamageFrame.HitEntity);
                         continue;
                     }
-
                     if (!p.EnableAv) continue;
 
                     if (p.System.AmmoParticle)
