@@ -97,8 +97,8 @@ namespace WeaponCore.Support
 
     public class Target
     {
-        public readonly WeaponSystem System;
-        public readonly MyCubeBlock MyCube;
+        public WeaponSystem System;
+        public MyCubeBlock MyCube;
 
         public readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
         public int[] Deck = new int[0];
@@ -111,7 +111,7 @@ namespace WeaponCore.Support
         public double OrigDistance;
         public long TopEntityId;
 
-        public Target(WeaponSystem system, MyCubeBlock myCube)
+        public Target(WeaponSystem system = null, MyCubeBlock myCube = null)
         {
             System = system;
             MyCube = myCube;

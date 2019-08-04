@@ -102,7 +102,7 @@ namespace WeaponCore.Projectiles
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal MyEntity Entity;
-        internal Target Target;
+        internal Target Target = new Target();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
         internal WeaponDamageFrame DamageFrame;
@@ -111,10 +111,6 @@ namespace WeaponCore.Projectiles
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
-        internal readonly int[] TargetShuffle = new int[0];
-        internal readonly int[] BlockSuffle = new int[0];
-        internal int TargetShuffleLen;
-        internal int BlockShuffleLen;
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
@@ -169,6 +165,8 @@ namespace WeaponCore.Projectiles
                 MaxChaseAge = System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
             else MaxChaseAge = int.MaxValue;
 
+            Target.System = System;
+            Target.MyCube = FiringCube;
             LockedTarget = Target != null && !Target.Entity.MarkedForClose;
             if (Target != null && LockedTarget) OriginTargetPos = Target.Entity.PositionComp.WorldAABB.Center;
 

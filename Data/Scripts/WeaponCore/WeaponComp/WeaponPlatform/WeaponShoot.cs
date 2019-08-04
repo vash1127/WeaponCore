@@ -118,10 +118,10 @@ namespace WeaponCore.Platform
                         pro.PredictedTargetPos = TargetPos;
                         pro.Direction = muzzle.DeviatedDir;
                         pro.State = Projectile.ProjectileState.Start;
-                        pro.Target = Target;
                         pro.Ai = Comp.Ai;
                         pro.WeaponId = WeaponId;
                         pro.MuzzleId = muzzle.MuzzleId;
+                        pro.Target.Entity = Target.Entity;
                         pro.DamageFrame = DamageFrame;
                         if (System.ModelId != -1)
                         {
@@ -162,10 +162,10 @@ namespace WeaponCore.Platform
             pro.PredictedTargetPos = TargetPos;
             pro.Direction = Comp.MyPivotDir;
             pro.State = Projectile.ProjectileState.Start;
-            pro.Target = Target;
             pro.Ai = Comp.Ai;
             pro.WeaponId = WeaponId;
             pro.MuzzleId = -1;
+            pro.Target.Entity = Target.Entity;
             pro.DamageFrame = DamageFrame;
         }
 
