@@ -152,9 +152,18 @@ namespace WeaponCore.Support
                 int next = i;
                 if (i < lastBlocks)
                 {
-                    if (deck != null) next = deck[i];
+                    try {
+                        if (deck != null) next = deck[i];
+                    } catch (Exception ex) { Log.Line($"Exception in FindRandomBlockNextDeck: {ex}"); }
                 }
-                var block = blockList[next];
+
+                MyCubeBlock block = null;
+                try
+                {
+                    block = blockList[next];
+                } catch (Exception ex) { Log.Line($"Exception in FindRandomBlockNextDeck: {ex}"); }
+
+                if (block == null) return false;
                 if (block.MarkedForClose) continue;
 
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
@@ -173,10 +182,7 @@ namespace WeaponCore.Support
                         var relationship = target.MyCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
                         var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
                         if (!enemy)
-                        {
-                            Log.Line($"failed because not enemy");
                             continue;
-                        }
                     }
                     Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
                     var shortDist = rayDist * (1 - hitInfo.Fraction);

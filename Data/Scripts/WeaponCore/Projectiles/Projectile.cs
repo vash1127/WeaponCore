@@ -167,8 +167,8 @@ namespace WeaponCore.Projectiles
 
             Target.System = System;
             Target.MyCube = FiringCube;
-            LockedTarget = Target != null && !Target.Entity.MarkedForClose;
-            if (Target != null && LockedTarget) OriginTargetPos = Target.Entity.PositionComp.WorldAABB.Center;
+            LockedTarget = Target.Entity != null && !Target.Entity.MarkedForClose;
+            if (Target.Entity != null && LockedTarget) OriginTargetPos = Target.Entity.PositionComp.WorldAABB.Center;
 
             if (System.TargetOffSet && LockedTarget)
             {
@@ -333,7 +333,7 @@ namespace WeaponCore.Projectiles
             ChaseAge = Age;
             PickTarget = false;
             var reaquire = GridAi.ReacquireTarget(this);
-            if (!reaquire) Target = null;
+            if (!reaquire) Target.Entity = null;
             return reaquire;
         }
 
