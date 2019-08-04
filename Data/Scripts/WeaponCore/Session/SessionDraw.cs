@@ -76,7 +76,7 @@ namespace WeaponCore
                     MyTransparentGeometry.AddLocalLineBillboard(d.Projectile.System.ProjectileMaterial, color, trajectile.PrevPosition, 0, trajectile.Direction, (float)trajectile.Length, newWidth);
 
                 var combine = d.Projectile.System.CombineBarrels;
-                if (d.Projectile.System.IsBeamWeapon && d.Projectile.System.HitParticle && d.Projectile.System.CombineBarrels && (!combine || d.Projectile.MuzzleId == 0 && d.Projectile.System.Values.HardPoint.Loading.FakeBarrels.Converge))
+                if (d.Projectile.System.IsBeamWeapon && d.Projectile.System.HitParticle && (!combine || d.Projectile.MuzzleId == 0 && d.Projectile.System.Values.HardPoint.Loading.FakeBarrels.Converge))
                 {
                     var c = d.Projectile.FiringCube;
                     if (d.Projectile.FiringCube == null || d.Projectile.FiringCube.MarkedForClose) continue;
