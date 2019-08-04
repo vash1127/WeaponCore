@@ -157,11 +157,11 @@ namespace WeaponCore.Support
                 var block = blockList[next];
                 if (block.MarkedForClose) continue;
 
-                IHitInfo hitInfo;
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
                 double rayDist;
                 if (cast)
                 {
+                    IHitInfo hitInfo;
                     physics.CastRay(currentPos, blockPos, out hitInfo, 15, true);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == target.MyCube.CubeGrid)
@@ -185,9 +185,9 @@ namespace WeaponCore.Support
                     target.Set(block, hitInfo.Position, shortDist, origDist, topEntId);
                     return true;
                 }
-                    Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
-                    target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
-                    return true;
+                Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
+                target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
+                return true;
             }
             return false;
         }
