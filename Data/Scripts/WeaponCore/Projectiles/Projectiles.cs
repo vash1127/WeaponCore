@@ -211,7 +211,12 @@ namespace WeaponCore.Projectiles
                             if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
                             p.HitList.Clear();
                         }
-                        if (p.Trajectile.MuzzleId == -1) continue;
+
+                        if (p.Trajectile.MuzzleId == -1)
+                        {
+                            CreateFakeBeams(p, null, drawList, true);
+                            continue;
+                        }
                     }
                     else if (p.DamageFrame.VirtualHit && p.DamageFrame.HitEntity != null)
                     {
@@ -329,35 +334,46 @@ namespace WeaponCore.Projectiles
             return true;
         }
 
-        private void CreateFakeBeams(Projectile p, HitEntity hitEntity, List<Trajectile> drawList)
+        private void CreateFakeBeams(Projectile p, HitEntity hitEntity, List<Trajectile> drawList, bool miss = false)
         {
-            var hitPos = hitEntity.HitPos ?? Vector3D.Zero;
             for (int i = 0; i < p.VrTrajectiles.Count; i++)
             {
                 var vt = p.VrTrajectiles[i];
                 vt.OnScreen = p.Trajectile.OnScreen;
-                if (vt.System.Values.HardPoint.Loading.FakeBarrels.Converge || !(p.DamageFrame.HitEntity.Entity is MyCubeGrid))
+                if (vt.System.Values.HardPoint.Loading.FakeBarrels.Converge)
                 {
-                    var beam = new LineD(vt.PrevPosition, hitPos);
+                    LineD beam;
+                    if (!miss)
+                    {
+                        var hitPos = hitEntity?.HitPos ?? Vector3D.Zero;
+                        beam = new LineD(vt.PrevPosition, hitPos);
+                    }
+                    else beam = new LineD(vt.PrevPosition, p.Position);
+
                     vt.UpdateVrShape(beam.From, beam.To, beam.Direction, beam.Length);
                 }
                 else
                 {
-                    var hitBlock = p.DamageFrame.HitBlock;
-                    Vector3D center;
-                    hitBlock.ComputeWorldCenter(out center);
-
-                    Vector3 halfExt;
-                    hitBlock.ComputeScaledHalfExtents(out halfExt);
-
-                    var blockBox = new BoundingBoxD(-halfExt, halfExt);
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(hitBlock.CubeGrid.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
                     var beamEnd = vt.Position + (vt.Direction * p.MaxTrajectory);
                     var line = new LineD(vt.PrevPosition, beamEnd);
-                    var dist = obb.Intersects(ref line) ?? Vector3D.Distance(line.From, center);
-                    var hitVec = line.From + (line.Direction * dist);
-                    vt.UpdateVrShape(line.From, hitVec, line.Direction, dist);
+                    if (!miss)
+                    {
+                        var hitBlock = p.DamageFrame.HitBlock;
+                        Vector3D center;
+                        hitBlock.ComputeWorldCenter(out center);
+
+                        Vector3 halfExt;
+                        hitBlock.ComputeScaledHalfExtents(out halfExt);
+
+                        var blockBox = new BoundingBoxD(-halfExt, halfExt);
+                        var rotMatrix = Quaternion.CreateFromRotationMatrix(hitBlock.CubeGrid.WorldMatrix);
+                        var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
+
+                        var dist = obb.Intersects(ref line) ?? Vector3D.Distance(line.From, center);
+                        var hitVec = line.From + (line.Direction * dist);
+                        vt.UpdateVrShape(line.From, hitVec, line.Direction, dist);
+                    }
+                    else vt.UpdateVrShape(line.From, line.To, line.Direction, line.Length);
                 }
                 vt.Complete(hitEntity, true);
                 drawList.Add(vt);
