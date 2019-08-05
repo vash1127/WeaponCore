@@ -48,7 +48,7 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < listCnt; i++)
             {
                 var ent = segmentList != null ? segmentList[i].Element : p.HitList[i].Entity;
-                if (ent == p.FiringCube.CubeGrid || ent.MarkedForClose) continue;
+                if (ent == p.FiringCube.CubeGrid || ent.MarkedForClose || !ent.InScene) continue;
                 //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
@@ -78,7 +78,7 @@ namespace WeaponCore.Projectiles
                 var dist = obb.Intersects(ref extBeam);
                 if (dist == null && !quickCheck) continue;
 
-                if (ent.Physics != null && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
+                if (ent.Physics != null && !ent.IsPreview && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                 {
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
