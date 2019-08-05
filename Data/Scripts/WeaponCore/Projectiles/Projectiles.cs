@@ -22,7 +22,8 @@ namespace WeaponCore.Projectiles
         internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
         internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
         internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
-        internal readonly List<DrawProjectile>[] DrawProjectiles = new List<DrawProjectile>[PoolCount];
+        internal readonly ObjectsPool<Trajectile>[] TrajectilePool = new ObjectsPool<Trajectile>[PoolCount];
+        internal readonly List<Trajectile>[] DrawProjectiles = new List<Trajectile>[PoolCount];
         internal readonly object[] Wait = new object[PoolCount];
 
         internal Projectiles()
@@ -33,7 +34,8 @@ namespace WeaponCore.Projectiles
                 CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(50);
                 ProjectilePool[i] = new ObjectsPool<Projectile>(1250);
                 HitEntityPool[i] = new MyConcurrentPool<HitEntity>(250);
-                DrawProjectiles[i] = new List<DrawProjectile>(500);
+                DrawProjectiles[i] = new List<Trajectile>(500);
+                TrajectilePool[i] = new ObjectsPool<Trajectile>(500);
             }
         }
 
@@ -66,6 +68,7 @@ namespace WeaponCore.Projectiles
             {
                 var pool = ProjectilePool[i];
                 var entPool = EntityPool[i];
+                var trajectilePool = TrajectilePool[i];
                 var drawList = DrawProjectiles[i];
                 var modelClose = false;
                 foreach (var p in pool.Active)
@@ -108,7 +111,7 @@ namespace WeaponCore.Projectiles
                                 var physics = p.Target.Entity?.Physics ?? p.Target.Entity?.Parent?.Physics;
                                 var targetPos = p.Target.Entity.PositionComp.WorldAABB.Center;
 
-                                if (p.System.TargetOffSet)
+                                if (p.Trajectile.System.TargetOffSet)
                                 {
                                     if (p.Age - p.LastOffsetTime > 300)
                                     {
@@ -129,7 +132,7 @@ namespace WeaponCore.Projectiles
                             }
                             else p.UpdateZombie();
 
-                            var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, p.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
+                            var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.Trajectile.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, p.Trajectile.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
                             newVel = p.Velocity + (commandedAccel * StepConst);
                             p.AccelDir = commandedAccel / p.AccelPerSec;
                         }
@@ -177,15 +180,15 @@ namespace WeaponCore.Projectiles
 
                     if (p.ModelState == EntityState.Exists)
                     {
-                        p.EntityMatrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
-                        if (p.EnableAv && p.AmmoEffect != null && p.System.AmmoParticle)
+                        p.Trajectile.EntityMatrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
+                        if (p.EnableAv && p.AmmoEffect != null && p.Trajectile.System.AmmoParticle)
                         {
-                            var offVec = p.Position + Vector3D.Rotate(p.System.Values.Graphics.Particles.Ammo.Offset, p.EntityMatrix);
-                            p.AmmoEffect.WorldMatrix = p.EntityMatrix;
+                            var offVec = p.Position + Vector3D.Rotate(p.Trajectile.System.Values.Graphics.Particles.Ammo.Offset, p.Trajectile.EntityMatrix);
+                            p.AmmoEffect.WorldMatrix = p.Trajectile.EntityMatrix;
                             p.AmmoEffect.SetTranslation(offVec);
                         }
                     }
-                    else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.System.AmmoParticle)
+                    else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.Trajectile.System.AmmoParticle)
                         p.AmmoEffect.Velocity = p.Velocity;
 
                     if (p.State != ProjectileState.OneAndDone)
@@ -197,7 +200,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    if (!p.CombineBeams || p.MuzzleId == -1)
+                    if (!p.CombineBeams || p.Trajectile.MuzzleId == -1)
                     {
                         var beam = new LineD(p.LastPosition, p.Position);
                         MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
@@ -208,7 +211,7 @@ namespace WeaponCore.Projectiles
                             if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
                             p.HitList.Clear();
                         }
-                        if (p.MuzzleId == -1) continue;
+                        if (p.Trajectile.MuzzleId == -1) continue;
                     }
                     else if (p.DamageFrame.VirtualHit && p.DamageFrame.HitEntity != null)
                     {
@@ -218,7 +221,7 @@ namespace WeaponCore.Projectiles
 
                     if (!p.EnableAv) continue;
 
-                    if (p.System.AmmoParticle)
+                    if (p.Trajectile.System.AmmoParticle)
                     {
                         p.TestSphere.Center = p.Position;
                         if (camera.IsInFrustum(ref p.TestSphere))
@@ -245,39 +248,44 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.Grow)
                         {
-                            if (p.AccelLength <= 0 && p.GrowStep++ >= p.ReSizeSteps) p.Grow = false;
+                            if (p.AccelLength <= 0 && p.GrowStep++ >= p.Trajectile.ReSizeSteps) p.Grow = false;
                             else if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.LineLength * p.LineLength) p.Grow = false;
-                            p.Trajectile = new Trajectile(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
+                            p.Trajectile.UpdateShape(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
                         }
                         else if (p.State == ProjectileState.OneAndDone)
-                            p.Trajectile = new Trajectile(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
+                            p.Trajectile.UpdateShape(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
                         else
                         {
                             var pointDir = p.Guidance == AmmoTrajectory.GuidanceType.Smart ? p.VisualDir : p.Direction;
-                            p.Trajectile = new Trajectile(p.Position + -(pointDir * p.LineLength), p.Position, pointDir, p.LineLength);
+                            p.Trajectile.UpdateShape(p.Position + -(pointDir * p.LineLength), p.Position, pointDir, p.LineLength);
                         }
+
                     }
 
-                    p.OnScreen = false;
+                    p.Trajectile.OnScreen = false;
                     if (p.ModelState == EntityState.Exists)
                     {
                         p.ModelSphereLast.Center = p.LastEntityPos;
                         p.ModelSphereCurrent.Center = p.Position;
                         if (camera.IsInFrustum(ref p.ModelSphereLast) || camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
                         {
-                            p.OnScreen = true;
+                            p.Trajectile.OnScreen = true;
                             p.FirstOffScreen = false;
                             p.LastEntityPos = p.Position;
                         }
                     }
 
-                    if (!p.OnScreen && p.DrawLine)
+                    if (!p.Trajectile.OnScreen && p.DrawLine)
                     {
                         var bb = new BoundingBoxD(Vector3D.Min(p.Trajectile.PrevPosition, p.Trajectile.Position), Vector3D.Max(p.Trajectile.PrevPosition, p.Trajectile.Position));
-                        if (camera.IsInFrustum(ref bb)) p.OnScreen = true;
+                        if (camera.IsInFrustum(ref bb)) p.Trajectile.OnScreen = true;
                     }
 
-                    if (p.OnScreen) drawList.Add(new DrawProjectile(p, null, false));
+                    if (p.Trajectile.OnScreen)
+                    {
+                        p.Trajectile.Complete(null, false);
+                        drawList.Add(p.Trajectile);
+                    }
                 }
 
                 if (modelClose)
@@ -288,26 +296,30 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        private bool Intersected(Projectile p,  List<DrawProjectile> drawList, HitEntity hitEntity)
+        private bool Intersected(Projectile p,  List<Trajectile> drawList, HitEntity hitEntity)
         {
             if (hitEntity?.HitPos == null) return false;
-            if (p.EnableAv && (p.DrawLine || p.ModelId != -1) && p.MuzzleId != -1)
+            if (p.EnableAv && (p.DrawLine || p.ModelId != -1))
             {
-                var length = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
-                if (!p.CombineBeams) p.Trajectile = new Trajectile(p.LastPosition, hitEntity.HitPos.Value, p.Direction, length);
-                else
-                    CreateFakeBeam(p, hitEntity.HitPos.Value);
+                var hitPos = hitEntity.HitPos.Value;
+                p.TestSphere.Center = hitPos;
+                p.Trajectile.OnScreen = Session.Instance.Session.Camera.IsInFrustum(ref p.TestSphere);
 
-                p.TestSphere.Center = hitEntity.HitPos.Value;
-                p.OnScreen = Session.Instance.Session.Camera.IsInFrustum(ref p.TestSphere);
-                drawList.Add(new DrawProjectile(p, hitEntity, true));
+                if (p.Trajectile.MuzzleId == -1) CreateFakeBeams(p, hitEntity, drawList);
+                else
+                {
+                    var length = Vector3D.Distance(p.LastPosition, hitPos);
+                    p.Trajectile.UpdateShape(p.LastPosition, hitPos, p.Direction, length);
+                    p.Trajectile.Complete(hitEntity, true);
+                    drawList.Add(p.Trajectile);
+                }
             }
 
             p.Colliding = true;
             if (!p.CombineBeams) Hits.Enqueue(p);
             else
             {
-                if (p.MuzzleId == -1)
+                if (p.Trajectile.MuzzleId == -1)
                 {
                     p.DamageFrame.VirtualHit = true;
                     p.DamageFrame.HitEntity.Entity = hitEntity.Entity;
@@ -315,41 +327,48 @@ namespace WeaponCore.Projectiles
                     if (hitEntity.Entity is MyCubeGrid) p.DamageFrame.HitBlock = hitEntity.Blocks[0];
                     Hits.Enqueue(p);
                 }
-                else p.DamageFrame.Hits++;
             }
-            if (p.EnableAv && p.MuzzleId != -1) p.HitEffects();
+            if (p.EnableAv) p.HitEffects();
             return true;
         }
 
-        private void CreateFakeBeam(Projectile p, Vector3D hitPos)
+        private void CreateFakeBeams(Projectile p, HitEntity hitEntity, List<Trajectile> drawList)
         {
-            if (p.System.Values.HardPoint.Loading.FakeBarrels.Converge || !(p.DamageFrame.HitEntity.Entity is MyCubeGrid))
+            var hitPos = hitEntity.HitPos ?? Vector3D.Zero;
+            for (int i = 0; i < p.VrTrajectiles.Count; i++)
             {
-                var beam = new LineD(p.LastPosition, hitPos);
-                p.Trajectile = new Trajectile(beam.From, beam.To, beam.Direction, beam.Length);
-            }
-            else
-            {
-                var hitBlock = p.DamageFrame.HitBlock;
-                Vector3D center;
-                hitBlock.ComputeWorldCenter(out center);
+                var vt = p.VrTrajectiles[i];
+                if (vt.System.Values.HardPoint.Loading.FakeBarrels.Converge || !(p.DamageFrame.HitEntity.Entity is MyCubeGrid))
+                {
+                    var beam = new LineD(p.LastPosition, hitPos);
+                    vt.UpdateShape(beam.From, beam.To, beam.Direction, beam.Length);
+                }
+                else
+                {
+                    var hitBlock = p.DamageFrame.HitBlock;
+                    Vector3D center;
+                    hitBlock.ComputeWorldCenter(out center);
 
-                Vector3 halfExt;
-                hitBlock.ComputeScaledHalfExtents(out halfExt);
+                    Vector3 halfExt;
+                    hitBlock.ComputeScaledHalfExtents(out halfExt);
 
-                var blockBox = new BoundingBoxD(-halfExt, halfExt);
-                var rotMatrix = Quaternion.CreateFromRotationMatrix(hitBlock.CubeGrid.WorldMatrix);
-                var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
-                var line = new LineD(p.LastPosition, p.Position);
-                var dist = obb.Intersects(ref line) ?? Vector3D.Distance(line.From, center);
-                var toVec = p.LastPosition + (line.Direction * dist);
-                p.Trajectile = new Trajectile(p.LastPosition, toVec, line.Direction, dist);
+                    var blockBox = new BoundingBoxD(-halfExt, halfExt);
+                    var rotMatrix = Quaternion.CreateFromRotationMatrix(hitBlock.CubeGrid.WorldMatrix);
+                    var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
+                    var line = new LineD(p.LastPosition, p.Position);
+                    var dist = obb.Intersects(ref line) ?? Vector3D.Distance(line.From, center);
+                    var toVec = p.LastPosition + (line.Direction * dist);
+                    vt.UpdateShape(p.LastPosition, toVec, line.Direction, dist);
+                }
+                vt.Complete(hitEntity, true);
+                drawList.Add(vt);
+                p.DamageFrame.Hits++;
             }
         }
 
         private void Die(Projectile p, int poolId)
         {
-            var dInfo = p.System.Values.Ammo.AreaEffect.Detonation;
+            var dInfo = p.Trajectile.System.Values.Ammo.AreaEffect.Detonation;
             if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.ObjectsHit > 0))
             {
                 GetEntitiesInBlastRadius(p, poolId);

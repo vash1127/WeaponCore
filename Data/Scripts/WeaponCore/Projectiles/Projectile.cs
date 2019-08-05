@@ -13,18 +13,14 @@ namespace WeaponCore.Projectiles
     internal class Projectile
     {
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal MatrixD EntityMatrix = MatrixD.Identity;
         internal const int EndSteps = 2;
         internal volatile float BaseDamagePool;
         internal volatile float AreaDamagePool;
         internal volatile bool Colliding;
-        internal WeaponSystem System;
-        internal MyCubeBlock FiringCube;
         internal MyCubeGrid FiringGrid;
         internal GridAi Ai;
         internal ProjectileState State;
         internal EntityState ModelState;
-        internal Trajectile Trajectile;
         internal Vector3D Direction;
         internal Vector3D OriginUp;
         internal Vector3D AccelDir;
@@ -56,7 +52,6 @@ namespace WeaponCore.Projectiles
         internal double AccelPerSec;
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
-        internal double MaxSpeedLength;
         internal double VisualStep;
         internal float DesiredSpeed;
         internal float AmmoTravelSoundRangeSqr;
@@ -66,16 +61,12 @@ namespace WeaponCore.Projectiles
         internal int ChaseAge;
         internal int MaxChaseAge;
         internal int ObjectsHit;
-        internal int ReSizeSteps;
         internal int GrowStep = 1;
         internal int EndStep;
         internal int ModelId;
-        internal int WeaponId;
-        internal int MuzzleId;
         internal int ZombieLifeTime;
         internal int LastOffsetTime;
         internal bool Grow;
-        internal bool Shrink;
         internal bool EnableAv;
         internal bool DrawLine;
         internal bool AmmoSound;
@@ -90,7 +81,6 @@ namespace WeaponCore.Projectiles
         internal bool DynamicGuidance;
         internal bool IsBeamWeapon;
         internal bool CombineBeams;
-        internal bool OnScreen;
         internal bool ParticleStopped;
         internal bool ParticleLateStart;
         internal bool PickTarget;
@@ -101,8 +91,8 @@ namespace WeaponCore.Projectiles
         internal BoundingSphereD ModelSphereLast;
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
-        internal MyEntity Entity;
         internal Target Target = new Target();
+        internal Trajectile Trajectile = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
         internal WeaponDamageFrame DamageFrame;
@@ -110,6 +100,8 @@ namespace WeaponCore.Projectiles
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
+        internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
+
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
@@ -124,10 +116,10 @@ namespace WeaponCore.Projectiles
             VisualDir = Direction;
             var cameraStart = MyAPIGateway.Session.Camera.Position;
             Vector3D.DistanceSquared(ref cameraStart, ref Origin, out DistanceFromCameraSqr);
-            var probability = System.Values.Graphics.VisualProbability;
+            var probability = Trajectile.System.Values.Graphics.VisualProbability;
             EnableAv = !noAv && DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
 
-            EntityMatrix = MatrixD.Identity;
+            Trajectile.EntityMatrix = MatrixD.Identity;
             ModelState = EntityState.None;
             LastEntityPos = Position;
             PrevTargetPos = PredictedTargetPos;
@@ -143,7 +135,7 @@ namespace WeaponCore.Projectiles
             Colliding = false;
             ParticleStopped = false;
             ParticleLateStart = false;
-            OnScreen = true;
+            Trajectile.OnScreen = true;
             FirstOffScreen = true;
             AmmoSound = false;
             PositionChecked = false;
@@ -151,29 +143,29 @@ namespace WeaponCore.Projectiles
             GrowStep = 1;
             DistanceTraveled = 0;
 
-            FiringGrid = FiringCube.CubeGrid;
-            BaseDamagePool = System.Values.Ammo.BaseDamage;
-            AreaDamagePool = System.Values.Ammo.AreaEffect.AreaEffectDamage;
+            FiringGrid = Trajectile.FiringCube.CubeGrid;
+            BaseDamagePool = Trajectile.System.Values.Ammo.BaseDamage;
+            AreaDamagePool = Trajectile.System.Values.Ammo.AreaEffect.AreaEffectDamage;
 
-            Guidance = System.Values.Ammo.Trajectory.Guidance;
+            Guidance = Trajectile.System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
 
-            IsBeamWeapon = System.IsBeamWeapon;
-            CombineBeams = IsBeamWeapon && System.CombineBarrels;
+            IsBeamWeapon = Trajectile.System.IsBeamWeapon;
+            CombineBeams = IsBeamWeapon && Trajectile.System.CombineBarrels;
 
             if (Guidance == AmmoTrajectory.GuidanceType.Smart && !IsBeamWeapon)
-                MaxChaseAge = System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
+                MaxChaseAge = Trajectile.System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
             else MaxChaseAge = int.MaxValue;
 
-            Target.System = System;
-            Target.MyCube = FiringCube;
+            Target.System = Trajectile.System;
+            Target.MyCube = Trajectile.FiringCube;
             LockedTarget = Target.Entity != null && !Target.Entity.MarkedForClose;
             if (Target.Entity != null && LockedTarget) OriginTargetPos = Target.Entity.PositionComp.WorldAABB.Center;
 
-            if (System.TargetOffSet && LockedTarget)
+            if (Trajectile.System.TargetOffSet && LockedTarget)
             {
                 OffSetTarget(out TargetOffSet);
-                OffsetSqr = System.Values.Ammo.Trajectory.Smarts.Inaccuracy * System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
+                OffsetSqr = Trajectile.System.Values.Ammo.Trajectory.Smarts.Inaccuracy * Trajectile.System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
             }
             else
             {
@@ -181,30 +173,30 @@ namespace WeaponCore.Projectiles
                 OffsetSqr = 0;
             }
 
-            DrawLine = System.Values.Graphics.Line.Trail;
-            if (System.RangeVariance)
+            DrawLine = Trajectile.System.Values.Graphics.Line.Trail;
+            if (Trajectile.System.RangeVariance)
             {
-                var min = System.Values.Ammo.Trajectory.RangeVariance.Start;
-                var max = System.Values.Ammo.Trajectory.RangeVariance.End;
-                MaxTrajectory = System.Values.Ammo.Trajectory.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
+                var min = Trajectile.System.Values.Ammo.Trajectory.RangeVariance.Start;
+                var max = Trajectile.System.Values.Ammo.Trajectory.RangeVariance.End;
+                MaxTrajectory = Trajectile.System.Values.Ammo.Trajectory.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
             }
-            else MaxTrajectory = System.Values.Ammo.Trajectory.MaxTrajectory;
+            else MaxTrajectory = Trajectile.System.Values.Ammo.Trajectory.MaxTrajectory;
 
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
-            LineLength = System.Values.Graphics.Line.Length;
+            LineLength = Trajectile.System.Values.Graphics.Line.Length;
 
-            var smartsDelayDist = LineLength * System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
+            var smartsDelayDist = LineLength * Trajectile.System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
             SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
 
-            if (System.SpeedVariance && !IsBeamWeapon)
+            if (Trajectile.System.SpeedVariance && !IsBeamWeapon)
             {
-                var min = System.Values.Ammo.Trajectory.SpeedVariance.Start;
-                var max = System.Values.Ammo.Trajectory.SpeedVariance.End;
-                DesiredSpeed = System.Values.Ammo.Trajectory.DesiredSpeed - MyUtils.GetRandomFloat(min, max);
+                var min = Trajectile.System.Values.Ammo.Trajectory.SpeedVariance.Start;
+                var max = Trajectile.System.Values.Ammo.Trajectory.SpeedVariance.End;
+                DesiredSpeed = Trajectile.System.Values.Ammo.Trajectory.DesiredSpeed - MyUtils.GetRandomFloat(min, max);
             }
-            else DesiredSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
+            else DesiredSpeed = Trajectile.System.Values.Ammo.Trajectory.DesiredSpeed;
 
 
             if (LockedTarget) FoundTarget = true;
@@ -218,64 +210,64 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            PickTarget = LockedTarget && System.Values.Ammo.Trajectory.Smarts.OverideTarget;
-            FiringSoundState = System.FiringSound;
-            AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
+            PickTarget = LockedTarget && Trajectile.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
+            FiringSoundState = Trajectile.System.FiringSound;
+            AmmoTravelSoundRangeSqr = Trajectile.System.AmmoTravelSoundDistSqr;
 
             if (EnableAv)
             {
-                if (!IsBeamWeapon && System.AmmoTravelSound)
+                if (!IsBeamWeapon && Trajectile.System.AmmoTravelSound)
                 {
                     HasTravelSound = true;
-                    TravelSound.Init(System.Values.Audio.Ammo.TravelSound, false);
+                    TravelSound.Init(Trajectile.System.Values.Audio.Ammo.TravelSound, false);
                 }
                 else HasTravelSound = false;
 
-                if (System.HitSound)
-                    HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
+                if (Trajectile.System.HitSound)
+                    HitSound.Init(Trajectile.System.Values.Audio.Ammo.HitSound, false);
 
                 if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
                 {
-                    FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
+                    FireSound.Init(Trajectile.System.Values.Audio.HardPoint.FiringSound, false);
                     FireSoundStart();
                 }
             }
 
-            ModelId = System.ModelId;
+            ModelId = Trajectile.System.ModelId;
             if (ModelId == -1 || IsBeamWeapon) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)
                 {
                     ModelState = EntityState.Exists;
-                    ModelSphereCurrent.Radius = Entity.PositionComp.WorldVolume.Radius * 2;
-                    ModelSphereLast.Radius = Entity.PositionComp.WorldVolume.Radius * 2;
+                    ModelSphereCurrent.Radius = Trajectile.Entity.PositionComp.WorldVolume.Radius * 2;
+                    ModelSphereLast.Radius = Trajectile.Entity.PositionComp.WorldVolume.Radius * 2;
                 }
                 else ModelState = EntityState.NoDraw;
             }
 
-            var accelPerSec = System.Values.Ammo.Trajectory.AccelPerSec;
+            var accelPerSec = Trajectile.System.Values.Ammo.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
             AccelPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
-            MaxSpeedLength = MaxSpeed * StepConst;
-            AccelLength = System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
+            Trajectile.MaxSpeedLength = MaxSpeed * StepConst;
+            AccelLength = Trajectile.System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
             if (!IsBeamWeapon)
             {
-                var reSizeSteps = (int) (LineLength / MaxSpeedLength);
-                ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
-                Grow = ReSizeSteps > 1 || AccelLength > 0 && AccelLength < LineLength;
-                Shrink = Grow;
+                var reSizeSteps = (int) (LineLength / Trajectile.MaxSpeedLength);
+                Trajectile.ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
+                Grow = Trajectile.ReSizeSteps > 1 || AccelLength > 0 && AccelLength < LineLength;
+                Trajectile.Shrink = Grow;
                 State = ProjectileState.Alive;
             }
             else State = ProjectileState.OneAndDone;
 
-            if (System.AmmoParticle && EnableAv && !IsBeamWeapon) PlayAmmoParticle();
+            if (Trajectile.System.AmmoParticle && EnableAv && !IsBeamWeapon) PlayAmmoParticle();
         }
 
         internal void FireSoundStart()
@@ -296,6 +288,7 @@ namespace WeaponCore.Projectiles
             if (!EnableAv && ModelId == -1)
             {
                 HitList.Clear();
+                VrTrajectiles.Clear();
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
@@ -308,12 +301,13 @@ namespace WeaponCore.Projectiles
             {
                 if (EnableAv)
                 {
-                    if (System.AmmoParticle) DisposeAmmoEffect(false, false);
+                    if (Trajectile.System.AmmoParticle) DisposeAmmoEffect(false, false);
                     HitEffects();
                     if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
 
                 HitList.Clear();
+                VrTrajectiles.Clear();
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 State = ProjectileState.Dead;
             }
@@ -321,9 +315,10 @@ namespace WeaponCore.Projectiles
 
         internal bool CloseModel(Projectiles manager, int poolId)
         {
-            EntityMatrix = MatrixD.Identity;
-            manager.DrawProjectiles[poolId].Add(new DrawProjectile(this, null, true));
-            manager.EntityPool[poolId][ModelId].MarkForDeallocate(Entity);
+            Trajectile.EntityMatrix = MatrixD.Identity;
+            Trajectile.Complete(null, true);
+            manager.DrawProjectiles[poolId].Add(Trajectile);
+            manager.EntityPool[poolId][ModelId].MarkForDeallocate(Trajectile.Entity);
             ModelState = EntityState.None;
             return true;
         }
@@ -348,7 +343,7 @@ namespace WeaponCore.Projectiles
             else
             {
                 PrevTargetPos = PredictedTargetPos;
-                if (ZombieLifeTime++ > System.TargetLossTime) DistanceToTravelSqr = DistanceTraveled * DistanceTraveled;
+                if (ZombieLifeTime++ > Trajectile.System.TargetLossTime) DistanceToTravelSqr = DistanceTraveled * DistanceTraveled;
             }
         }
 
@@ -359,7 +354,7 @@ namespace WeaponCore.Projectiles
 
             Vector3D randomDirection;
             Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out randomDirection); // this is already normalized
-            targetOffset = (randomDirection * System.Values.Ammo.Trajectory.Smarts.Inaccuracy);
+            targetOffset = (randomDirection * Trajectile.System.Values.Ammo.Trajectory.Smarts.Inaccuracy);
             VisualStep = 0;
             if (Age != 0) LastOffsetTime = Age;
         }
@@ -368,8 +363,8 @@ namespace WeaponCore.Projectiles
         {
             if (Colliding)
             {
-                if (System.HitParticle && !IsBeamWeapon) PlayHitParticle();
-                if (System.HitSound)
+                if (Trajectile.System.HitParticle && !IsBeamWeapon) PlayHitParticle();
+                if (Trajectile.System.HitSound)
                 {
                     HitEmitter.SetPosition(Position);
                     HitEmitter.CanPlayLoopSounds = false;
@@ -393,27 +388,27 @@ namespace WeaponCore.Projectiles
             MatrixD matrix;
             if (ModelState == EntityState.Exists)
             {
-                matrix = MatrixD.CreateWorld(Position, AccelDir, Entity.PositionComp.WorldMatrix.Up);
-                var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.Ammo.Offset, matrix);
+                matrix = MatrixD.CreateWorld(Position, AccelDir, Trajectile.Entity.PositionComp.WorldMatrix.Up);
+                var offVec = Position + Vector3D.Rotate(Trajectile.System.Values.Graphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
-                EntityMatrix = matrix;
+                Trajectile.EntityMatrix = matrix;
             }
             else
             {
                 matrix = MatrixD.CreateWorld(Position, AccelDir, OriginUp);
-                var offVec = Position + Vector3D.Rotate(System.Values.Graphics.Particles.Ammo.Offset, matrix);
+                var offVec = Position + Vector3D.Rotate(Trajectile.System.Values.Graphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
             }
 
-            MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Ammo.Name, ref matrix, ref Position, uint.MaxValue, out AmmoEffect); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
+            MyParticlesManager.TryCreateParticleEffect(Trajectile.System.Values.Graphics.Particles.Ammo.Name, ref matrix, ref Position, uint.MaxValue, out AmmoEffect); // 15, 16, 24, 25, 28, (31, 32) 211 215 53
             if (AmmoEffect == null) return;
-            AmmoEffect.DistanceMax = System.Values.Graphics.Particles.Ammo.Extras.MaxDistance;
-            AmmoEffect.UserColorMultiplier = System.Values.Graphics.Particles.Ammo.Color;
+            AmmoEffect.DistanceMax = Trajectile.System.Values.Graphics.Particles.Ammo.Extras.MaxDistance;
+            AmmoEffect.UserColorMultiplier = Trajectile.System.Values.Graphics.Particles.Ammo.Color;
             //var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
             var reScale = 1;
             var scaler = reScale < 1 ? reScale : 1;
 
-            AmmoEffect.UserRadiusMultiplier = System.Values.Graphics.Particles.Ammo.Extras.Scale * scaler;
+            AmmoEffect.UserRadiusMultiplier = Trajectile.System.Values.Graphics.Particles.Ammo.Extras.Scale * scaler;
             AmmoEffect.UserEmitterScale = 1 * scaler;
             if (ConstantSpeed) AmmoEffect.Velocity = Velocity;
             ParticleStopped = false;
@@ -428,17 +423,17 @@ namespace WeaponCore.Projectiles
             {
                 var pos = LastHitPos.Value;
                 var matrix = MatrixD.CreateTranslation(pos);
-                MyParticlesManager.TryCreateParticleEffect(System.Values.Graphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect);
+                MyParticlesManager.TryCreateParticleEffect(Trajectile.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect);
                 if (HitEffect == null) return;
                 HitEffect.Loop = false;
-                HitEffect.DurationMax = System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
-                HitEffect.DistanceMax = System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
-                HitEffect.UserColorMultiplier = System.Values.Graphics.Particles.Hit.Color;
+                HitEffect.DurationMax = Trajectile.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
+                HitEffect.DistanceMax = Trajectile.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
+                HitEffect.UserColorMultiplier = Trajectile.System.Values.Graphics.Particles.Hit.Color;
                 //var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
                 var reScale = 1;
                 var scaler = reScale < 1 ? reScale : 1;
 
-                HitEffect.UserRadiusMultiplier = System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
+                HitEffect.UserRadiusMultiplier = Trajectile.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
                 HitEffect.UserEmitterScale = 1 * scaler;
                 var hitVel = LastHitEntVel ?? Vector3.Zero;
                 Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);

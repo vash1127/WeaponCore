@@ -21,7 +21,7 @@ namespace WeaponCore
             Projectile projectile;
             while (Projectiles.Hits.TryDequeue(out projectile))
             {
-                var maxObjects = projectile.System.MaxObjectsHit;
+                var maxObjects = projectile.Trajectile.System.MaxObjectsHit;
                 for (int i = 0; i < projectile.HitList.Count; i++)
                 {
                     var hitEnt = projectile.HitList[i];
@@ -64,10 +64,10 @@ namespace WeaponCore
         private void DamageShield(HitEntity hitEnt, Projectile projectile)
         {
             var shield = hitEnt.Entity as IMyTerminalBlock;
-            var system = projectile.System;
+            var system = projectile.Trajectile.System;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
             projectile.ObjectsHit++;
-            SApi.PointAttackShield(shield, hitEnt.HitPos.Value, projectile.FiringCube.EntityId, projectile.BaseDamagePool, false, true);
+            SApi.PointAttackShield(shield, hitEnt.HitPos.Value, projectile.Trajectile.FiringCube.EntityId, projectile.BaseDamagePool, false, true);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
@@ -80,7 +80,7 @@ namespace WeaponCore
         private void DamageGrid(HitEntity hitEnt, Projectile projectile)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
-            var system = projectile.System;
+            var system = projectile.Trajectile.System;
 
             if (grid == null || grid.MarkedForClose || !hitEnt.HitPos.HasValue || hitEnt.Blocks == null)
             {
@@ -94,7 +94,7 @@ namespace WeaponCore
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var areaRadius = largeGrid ? system.AreaRadiusLarge : system.AreaRadiusSmall;
             var sphere = new BoundingSphereD(hitEnt.HitPos.Value, areaRadius);
-            var maxObjects = projectile.System.MaxObjectsHit;
+            var maxObjects = projectile.Trajectile.System.MaxObjectsHit;
             var areaEffect = system.Values.Ammo.AreaEffect.AreaEffect;
             var explosive = areaEffect == AreaDamage.AreaEffectType.Explosive;
             var radiant = areaEffect == AreaDamage.AreaEffectType.Radiant;
@@ -222,7 +222,7 @@ namespace WeaponCore
                         if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
                     }
 
-                    block.DoDamage(scaledDamage, damageType, true, null, projectile.FiringCube.EntityId);
+                    block.DoDamage(scaledDamage, damageType, true, null, projectile.Trajectile.FiringCube.EntityId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
                     if (explosive && !nova && ((!detonateOnEnd && blockIsRoot) || detonateOnEnd && theEnd))
@@ -231,8 +231,8 @@ namespace WeaponCore
                         var dInfo = aInfo.Detonation;
                         var damage = detonateOnEnd && theEnd ? dInfo.DetonationDamage : areaEffectDmg;
                         var radius = detonateOnEnd && theEnd ? dInfo.DetonationRadius : aInfo.AreaEffectRadius;
-                        if (ExplosionReady) UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system);
-                        else UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, grid, system, true);
+                        if (ExplosionReady) UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, grid, system);
+                        else UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, grid, system, true);
                     }
                     else if (!nova)
                     {
@@ -277,7 +277,7 @@ namespace WeaponCore
         {
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as IMyDestroyableObject;
-            var system = projectile.System;
+            var system = projectile.Trajectile.System;
             if (destObj == null || entity == null) return;
             //projectile.ObjectsHit++;
 
@@ -295,7 +295,7 @@ namespace WeaponCore
             if (scaledDamage < objHp) projectile.BaseDamagePool = 0;
             else projectile.BaseDamagePool -= objHp;
 
-            destObj.DoDamage(scaledDamage, MyDamageType.Bullet, true, null, projectile.FiringCube.EntityId);
+            destObj.DoDamage(scaledDamage, MyDamageType.Bullet, true, null, projectile.Trajectile.FiringCube.EntityId);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
@@ -307,7 +307,7 @@ namespace WeaponCore
         {
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as MyVoxelBase;
-            var system = projectile.System;
+            var system = projectile.Trajectile.System;
             if (destObj == null || entity == null || !system.Values.DamageScales.DamageVoxels) return;
 
             var baseDamage = system.Values.Ammo.BaseDamage;
@@ -319,7 +319,7 @@ namespace WeaponCore
 
         private void ExplosionProximity(HitEntity hitEnt, Projectile projectile)
         {
-            var system = projectile.System;
+            var system = projectile.Trajectile.System;
             projectile.BaseDamagePool = 0;
             var radius = system.Values.Ammo.AreaEffect.AreaEffectRadius;
             var damage = system.Values.Ammo.AreaEffect.AreaEffectDamage;
@@ -327,9 +327,9 @@ namespace WeaponCore
             if (hitEnt.HitPos.HasValue)
             {
                 if (ExplosionReady)
-                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, hitEnt.Entity, system);
+                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, hitEnt.Entity, system);
                 else
-                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.FiringCube, hitEnt.Entity, system, true);
+                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, hitEnt.Entity, system, true);
             }
             else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue)
                 UtilsStatic.CreateFakeExplosion(radius, hitEnt.HitPos.Value, system);

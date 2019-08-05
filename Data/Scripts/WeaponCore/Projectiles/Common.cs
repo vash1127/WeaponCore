@@ -16,7 +16,7 @@ namespace WeaponCore.Projectiles
     {
         private void GetEntitiesInBlastRadius(Projectile projectile, int poolId)
         {
-            var sphere = new BoundingSphereD(projectile.Position, projectile.System.Values.Ammo.AreaEffect.AreaEffectRadius);
+            var sphere = new BoundingSphereD(projectile.Position, projectile.Trajectile.System.Values.Ammo.AreaEffect.AreaEffectRadius);
             var checkList = CheckPool[poolId].Get();
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, checkList);
             foreach (var ent in checkList)
@@ -48,12 +48,12 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < listCnt; i++)
             {
                 var ent = segmentList != null ? segmentList[i].Element : p.HitList[i].Entity;
-                if (ent == p.FiringCube.CubeGrid || ent.MarkedForClose || !ent.InScene) continue;
+                if (ent == p.Trajectile.FiringCube.CubeGrid || ent.MarkedForClose || !ent.InScene) continue;
                 //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
-                    if (ent.Physics == null && shieldBlock.CubeGrid != p.FiringCube.CubeGrid)
+                    if (ent.Physics == null && shieldBlock.CubeGrid != p.Trajectile.FiringCube.CubeGrid)
                     {
                         var hitEntity = HitEntityPool[poolId].Get();
                         hitEntity.Clean();
@@ -319,54 +319,69 @@ namespace WeaponCore.Projectiles
             return false;
         }
 
-        internal struct DrawProjectile
+        internal class Trajectile
         {
-            internal readonly Projectile Projectile;
-            internal readonly HitEntity HitEntity;
-            internal readonly float LineWidth;
-            internal readonly bool Last;
-            internal readonly Vector4 Color;
+            internal WeaponSystem System;
+            internal MyCubeBlock FiringCube;
+            internal MyEntity Entity;
+            internal MatrixD EntityMatrix = MatrixD.Identity;
+            internal int WeaponId;
+            internal int MuzzleId;
 
-            internal DrawProjectile(Projectile projectile, HitEntity hitEntity, bool last)
+            internal void InitVirtual(WeaponSystem system, MyCubeBlock firingCube, MyEntity entity, int weaponId, int muzzleId)
             {
-                Projectile = projectile;
+                System = system;
+                FiringCube = firingCube;
+                Entity = entity;
+                WeaponId = weaponId;
+                MuzzleId = muzzleId;
+            }
+
+            internal Vector3D Position;
+            internal Vector3D PrevPosition;
+            internal Vector3D Direction;
+            internal double Length;
+
+            internal void UpdateShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
+            {
+                PrevPosition = prevPosition;
+                Position = position;
+                Direction = direction;
+                Length = length;
+            }
+
+            internal HitEntity HitEntity;
+            internal double MaxSpeedLength;
+            internal float LineWidth;
+            internal int ReSizeSteps;
+            internal bool Shrink;
+            internal bool OnScreen;
+            internal bool Last;
+            internal Vector4 Color;
+            internal void Complete(HitEntity hitEntity, bool last)
+            {
                 HitEntity = hitEntity;
                 Last = last;
-                var color = Projectile.System.Values.Graphics.Line.Color;
-                if (Projectile.System.LineColorVariance)
+                var color = System.Values.Graphics.Line.Color;
+                if (System.LineColorVariance)
                 {
-                    var cv = Projectile.System.Values.Graphics.Line.ColorVariance;
+                    var cv = System.Values.Graphics.Line.ColorVariance;
                     var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
                     color.X *= randomValue;
                     color.Y *= randomValue;
                     color.Z *= randomValue;
                 }
 
-                var width = Projectile.System.Values.Graphics.Line.Width;
-                if (Projectile.System.LineWidthVariance)
+                var width = System.Values.Graphics.Line.Width;
+                if (System.LineWidthVariance)
                 {
-                    var wv = Projectile.System.Values.Graphics.Line.WidthVariance;
+                    var wv = System.Values.Graphics.Line.WidthVariance;
                     var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                     width += randomValue;
                 }
 
                 LineWidth = width;
                 Color = color;
-            }
-        }
-
-        internal struct Trajectile
-        {
-            internal readonly Vector3D PrevPosition;
-            internal readonly Vector3D Position;
-            internal readonly Vector3D Direction;
-            internal readonly double Length;
-            internal Trajectile(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
-            {
-                PrevPosition = prevPosition;
-                Position = position;
-                Direction = direction;
-                Length = length;
             }
         }
 

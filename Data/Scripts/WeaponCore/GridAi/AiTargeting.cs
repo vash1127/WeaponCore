@@ -80,7 +80,7 @@ namespace WeaponCore.Support
 
                 if (info.IsGrid)
                 {
-                    if (!AcquireBlock(p.System, ref target, info, weaponPos)) continue;
+                    if (!AcquireBlock(p.Trajectile.System, ref target, info, weaponPos)) continue;
                     return true;
                 }
 
@@ -89,7 +89,7 @@ namespace WeaponCore.Support
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
                 if (hitInfo?.HitEntity == info.Target)
                 {
-                    Log.Line($"{p.System.WeaponName} - found something");
+                    Log.Line($"{p.Trajectile.System.WeaponName} - found something");
 
                     double rayDist;
                     Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);

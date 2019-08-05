@@ -11,24 +11,43 @@ namespace WeaponCore.Support
 {
     public class Shrinking
     {
-        internal Trajectile Trajectile;
         internal WeaponSystem System;
+        internal Vector3D Position;
+        internal Vector3D PrevPosition;
+        internal Vector3D Direction;
         internal int ReSizeSteps;
         internal double LineReSizeLen;
 
-        internal void Init(Trajectile trajectile, ref DrawProjectile drawProjectile)
+        internal void Init(Trajectile trajectile)
         {
-            Trajectile = trajectile;
-            System = drawProjectile.Projectile.System;
-            ReSizeSteps = drawProjectile.Projectile.ReSizeSteps;
-            LineReSizeLen = drawProjectile.Projectile.MaxSpeedLength;
+            System = trajectile.System;
+            Position = trajectile.Position;
+            PrevPosition = trajectile.PrevPosition;
+            Direction = trajectile.Direction;
+            ReSizeSteps = trajectile.ReSizeSteps;
+            LineReSizeLen = trajectile.MaxSpeedLength;
         }
 
-        internal Trajectile? GetLine()
+        internal Shrunk? GetLine()
         {
             if (ReSizeSteps-- <= 0) return null;
             var length = ReSizeSteps * LineReSizeLen;
-            return new Trajectile(Trajectile.PrevPosition + -(Trajectile.Direction * length), Trajectile.Position, Trajectile.Direction, length);
+            return new Shrunk(PrevPosition + -(Direction * length), Position, Direction, length);
+        }
+    }
+
+    internal struct Shrunk
+    {
+        internal readonly Vector3D PrevPosition;
+        internal readonly Vector3D Position;
+        internal readonly Vector3D Direction;
+        internal readonly double Length;
+        internal Shrunk(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
+        {
+            PrevPosition = prevPosition;
+            Position = position;
+            Direction = direction;
+            Length = length;
         }
     }
 
