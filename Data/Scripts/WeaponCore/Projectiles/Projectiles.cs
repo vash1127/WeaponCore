@@ -305,8 +305,7 @@ namespace WeaponCore.Projectiles
                 p.TestSphere.Center = hitPos;
                 p.Trajectile.OnScreen = Session.Instance.Session.Camera.IsInFrustum(ref p.TestSphere);
 
-                if (p.Trajectile.MuzzleId == -1) CreateFakeBeams(p, hitEntity, drawList);
-                else
+                if (p.Trajectile.MuzzleId != -1)
                 {
                     var length = Vector3D.Distance(p.LastPosition, hitPos);
                     p.Trajectile.UpdateShape(p.LastPosition, hitPos, p.Direction, length);
@@ -319,14 +318,12 @@ namespace WeaponCore.Projectiles
             if (!p.CombineBeams) Hits.Enqueue(p);
             else
             {
-                if (p.Trajectile.MuzzleId == -1)
-                {
-                    p.DamageFrame.VirtualHit = true;
-                    p.DamageFrame.HitEntity.Entity = hitEntity.Entity;
-                    p.DamageFrame.HitEntity.HitPos = hitEntity.HitPos;
-                    if (hitEntity.Entity is MyCubeGrid) p.DamageFrame.HitBlock = hitEntity.Blocks[0];
-                    Hits.Enqueue(p);
-                }
+                p.DamageFrame.VirtualHit = true;
+                p.DamageFrame.HitEntity.Entity = hitEntity.Entity;
+                p.DamageFrame.HitEntity.HitPos = hitEntity.HitPos;
+                if (hitEntity.Entity is MyCubeGrid) p.DamageFrame.HitBlock = hitEntity.Blocks[0];
+                Hits.Enqueue(p);
+                CreateFakeBeams(p, hitEntity, drawList);
             }
             if (p.EnableAv) p.HitEffects();
             return true;
@@ -338,10 +335,11 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < p.VrTrajectiles.Count; i++)
             {
                 var vt = p.VrTrajectiles[i];
+                vt.OnScreen = p.Trajectile.OnScreen;
                 if (vt.System.Values.HardPoint.Loading.FakeBarrels.Converge || !(p.DamageFrame.HitEntity.Entity is MyCubeGrid))
                 {
-                    var beam = new LineD(p.LastPosition, hitPos);
-                    vt.UpdateShape(beam.From, beam.To, beam.Direction, beam.Length);
+                    var beam = new LineD(vt.PrevPosition, hitPos);
+                    vt.UpdateVrShape(beam.From, beam.To, beam.Direction, beam.Length);
                 }
                 else
                 {
@@ -355,10 +353,11 @@ namespace WeaponCore.Projectiles
                     var blockBox = new BoundingBoxD(-halfExt, halfExt);
                     var rotMatrix = Quaternion.CreateFromRotationMatrix(hitBlock.CubeGrid.WorldMatrix);
                     var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
-                    var line = new LineD(p.LastPosition, p.Position);
+                    var beamEnd = vt.Position + (vt.Direction * p.MaxTrajectory);
+                    var line = new LineD(vt.PrevPosition, beamEnd);
                     var dist = obb.Intersects(ref line) ?? Vector3D.Distance(line.From, center);
-                    var toVec = p.LastPosition + (line.Direction * dist);
-                    vt.UpdateShape(p.LastPosition, toVec, line.Direction, dist);
+                    var hitVec = line.From + (line.Direction * dist);
+                    vt.UpdateVrShape(line.From, hitVec, line.Direction, dist);
                 }
                 vt.Complete(hitEntity, true);
                 drawList.Add(vt);

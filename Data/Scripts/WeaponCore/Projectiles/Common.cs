@@ -328,19 +328,30 @@ namespace WeaponCore.Projectiles
             internal int WeaponId;
             internal int MuzzleId;
 
-            internal void InitVirtual(WeaponSystem system, MyCubeBlock firingCube, MyEntity entity, int weaponId, int muzzleId)
+            internal void InitVirtual(WeaponSystem system, MyCubeBlock firingCube, MyEntity entity, int weaponId, int muzzleId, Vector3D position, Vector3D direction)
             {
                 System = system;
                 FiringCube = firingCube;
                 Entity = entity;
                 WeaponId = weaponId;
                 MuzzleId = muzzleId;
+                Position = position;
+                PrevPosition = Position;
+                Direction = direction;
             }
 
             internal Vector3D Position;
             internal Vector3D PrevPosition;
             internal Vector3D Direction;
             internal double Length;
+
+            internal void UpdateVrShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
+            {
+                PrevPosition = prevPosition;
+                Position = position;
+                Direction = direction;
+                Length = length;
+            }
 
             internal void UpdateShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
             {

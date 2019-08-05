@@ -128,7 +128,7 @@ namespace WeaponCore.Platform
                                 }
                                 e = ent;
                             }
-                            t.InitVirtual(System, Comp.MyCube, e, WeaponId, muzzle.MuzzleId);
+                            t.InitVirtual(System, Comp.MyCube, e, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                             vProjectile.VrTrajectiles.Add(t);
                         }
                         else
