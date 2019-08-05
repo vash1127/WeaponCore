@@ -32,7 +32,6 @@ namespace WeaponCore.Support
         internal bool TargetNeutrals;
         internal bool TargetNoOwners;
         internal bool SubUpdate;
-        internal Random Rnd;
         internal Session MySession;
         internal DSUtils DsWatch = new DSUtils();
         internal uint SubTick;

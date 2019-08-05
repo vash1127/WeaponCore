@@ -19,7 +19,6 @@ namespace WeaponCore.Support
             MyGrid = grid;
             MySession = mySession;
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
-            Rnd = new Random((int)MyGrid.EntityId);
         }
 
         internal static void AcquireTarget(Weapon w)
