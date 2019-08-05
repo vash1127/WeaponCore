@@ -147,63 +147,53 @@ namespace WeaponCore.Support
             int[] deck = null;
             if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
             var physics = MyAPIGateway.Physics;
-            var loopIndex = 0;
-            try
+
+            for (int i = 0; i < totalBlocks; i++)
             {
-                for (int i = 0; i < totalBlocks; i++)
+                var next = i;
+                if (i < lastBlocks)
+                    if (deck != null) next = deck[i];
+
+                var block = blockList[next];
+                if (block.MarkedForClose) continue;
+
+                var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
+                double rayDist;
+                if (cast)
                 {
-                    int next = i;
-                    loopIndex = i;
-                    if (i < lastBlocks)
+                    IHitInfo hitInfo;
+                    physics.CastRay(currentPos, blockPos, out hitInfo, 15, true);
+
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == target.MyCube.CubeGrid)
+                        continue;
+
+                    var hitGrid = hitInfo.HitEntity as MyCubeGrid;
+                    if (hitGrid != null)
                     {
-                        try
-                        {
-                            if (deck != null) next = deck[i];
-                        }
-                        catch (Exception ex) { Log.Line($"Exception in FindRandomBlockNextDeck: {ex} - {blockList.Count} - {totalBlocks}"); }
-                    }
+                        if (hitGrid.MarkedForClose || !hitGrid.InScene) continue;
+                        bool enemy;
 
-                    MyCubeBlock block = null;
-                    try
-                    {
-                        block = blockList[next];
-                    }
-                    catch (Exception ex) { Log.Line($"Exception in FindRandomBlockNextDeck: {ex} - {blockList.Count} - {totalBlocks}"); }
-
-                    if (block == null) return false;
-                    if (block.MarkedForClose) continue;
-
-                    var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
-                    double rayDist;
-                    if (cast)
-                    {
-                        IHitInfo hitInfo;
-                        physics.CastRay(currentPos, blockPos, out hitInfo, 15, true);
-
-                        if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == target.MyCube.CubeGrid)
-                            continue;
-
-                        var hitGrid = hitInfo.HitEntity as MyCubeGrid;
-                        if (hitGrid != null)
+                        var bigOwners = hitGrid.BigOwners;
+                        if (bigOwners.Count == 0) enemy = true;
+                        else
                         {
                             var relationship = target.MyCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
-                            var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
-                            if (!enemy)
-                                continue;
+                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
                         }
-                        Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
-                        var shortDist = rayDist * (1 - hitInfo.Fraction);
-                        var origDist = rayDist * hitInfo.Fraction;
-                        var topEntId = block.GetTopMostParent().EntityId;
-                        target.Set(block, hitInfo.Position, shortDist, origDist, topEntId);
-                        return true;
+                        if (!enemy)
+                            continue;
                     }
                     Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
-                    target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
+                    var shortDist = rayDist * (1 - hitInfo.Fraction);
+                    var origDist = rayDist * hitInfo.Fraction;
+                    var topEntId = block.GetTopMostParent().EntityId;
+                    target.Set(block, hitInfo.Position, shortDist, origDist, topEntId);
                     return true;
                 }
+                Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
+                target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
+                return true;
             }
-            catch (Exception ex) { Log.Line($"Exception in FindRandomBlockLoop: {ex} - {blockList.Count} - {totalBlocks} - {loopIndex}"); }
             return false;
         }
     }

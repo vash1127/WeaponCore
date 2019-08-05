@@ -215,6 +215,7 @@ namespace WeaponCore.Projectiles
                         Intersected(p, drawList, p.DamageFrame.HitEntity);
                         continue;
                     }
+
                     if (!p.EnableAv) continue;
 
                     if (p.System.AmmoParticle)

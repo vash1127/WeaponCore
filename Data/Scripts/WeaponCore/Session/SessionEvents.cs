@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -20,8 +16,6 @@ namespace WeaponCore
                 var cube = myEntity as MyCubeBlock;
                 var weaponBase = cube as IMyLargeMissileTurret;
 
-                //if (myEntity is MyCubeGrid)
-                    //AddToSlimSpace(myEntity);
                 if (weaponBase != null)
                 {
                     if (!Inited) lock (_configLock) Init();
@@ -47,17 +41,17 @@ namespace WeaponCore
                 var cube = myEntity as MyCubeBlock;
                 var weaponBase = cube as IMyLargeMissileTurret;
 
-                //if (myEntity is MyCubeGrid)
-                    //RemoveFromSlimSpace(myEntity);
                 if (weaponBase != null)
                 {
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-                    GridTargetingAIs[cube.CubeGrid].WeaponBase.Remove(cube);
-                    if (GridTargetingAIs[cube.CubeGrid].WeaponBase.Count == 0)
-                        GridTargetingAIs.Remove(cube.CubeGrid);
-                }
+                    WeaponComponent removedComp;
+                    GridTargetingAIs[cube.CubeGrid].WeaponBase.TryRemove(cube, out removedComp);
 
+                    GridAi removedAi;
+                    if (GridTargetingAIs[cube.CubeGrid].WeaponBase.Count == 0)
+                        GridTargetingAIs.TryRemove(cube.CubeGrid, out removedAi);
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityDelete: {ex}"); }
         }

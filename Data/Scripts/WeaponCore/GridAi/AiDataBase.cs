@@ -1,16 +1,10 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
-using Sandbox.ModAPI.Ingame;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using IMyJumpDrive = Sandbox.ModAPI.IMyJumpDrive;
-using IMyPowerProducer = Sandbox.ModAPI.IMyPowerProducer;
-using IMyProductionBlock = Sandbox.ModAPI.IMyProductionBlock;
-using IMyThrust = Sandbox.ModAPI.IMyThrust;
-using IMyUpgradeModule = Sandbox.ModAPI.IMyUpgradeModule;
-using IMyWarhead = Sandbox.ModAPI.IMyWarhead;
 using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
@@ -24,7 +18,7 @@ namespace WeaponCore.Support
             Targeting.AllowScanning = true;
             foreach (var ent in Targeting.TargetRoots)
             {
-                MyDetectedEntityInfo entInfo;
+                Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
                 if (ent == null || ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is IMyFloatingObject 
                     || ent.MarkedForClose || ent.IsPreview || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out entInfo)) continue;
 
@@ -88,7 +82,6 @@ namespace WeaponCore.Support
                             else if (cube is IMyThrust || cube is IMyJumpDrive) typeDict[BlockTypes.Navigation].Add(cube);
                         }
                     }
-                    if (rootGrid.GetFatBlocks().Count > 0 && typeDict[BlockTypes.Any].Count <= 0) Log.Line($"{rootGrid.DebugName} has no cubes in GetTargetBlocks");
                 }
             }
         }

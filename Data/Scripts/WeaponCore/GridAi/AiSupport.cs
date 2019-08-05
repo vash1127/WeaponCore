@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using static WeaponCore.Support.SubSystemDefinition;
-
 namespace WeaponCore.Support
 {
     public partial class GridAi
@@ -81,24 +79,24 @@ namespace WeaponCore.Support
             return deck;
         }
 
-        internal bool CreateEntInfo(MyEntity entity, long gridOwner, out MyDetectedEntityInfo entInfo)
+        internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
         {
             if (entity == null)
             {
-                entInfo = new MyDetectedEntityInfo();
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
                 return false;
             }
 
             var topMostParent = entity.GetTopMostParent() as MyCubeGrid;
             if (topMostParent != null)
             {
-                var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? MyDetectedEntityType.LargeGrid : MyDetectedEntityType.SmallGrid;
+                var type = topMostParent.GridSizeEnum != MyCubeSize.Small ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.LargeGrid : Sandbox.ModAPI.Ingame.MyDetectedEntityType.SmallGrid;
                 #if VERSION_191
                 var relationship = topMostParent.BigOwners.Count != 0 ? MyIDModule.GetRelation(gridOwner, topMostParent.BigOwners[0], MyOwnershipShareModeEnum.Faction) : MyRelationsBetweenPlayerAndBlock.NoOwnership;
                 #else
                 var relationship = topMostParent.BigOwners.Count != 0 ? MyIDModule.GetRelationPlayerBlock(gridOwner, topMostParent.BigOwners[0], MyOwnershipShareModeEnum.Faction) : MyRelationsBetweenPlayerAndBlock.NoOwnership;
                 #endif
-                entInfo = new MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Instance.Tick);
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Instance.Tick);
                 return true;
             }
 
@@ -108,37 +106,37 @@ namespace WeaponCore.Support
                 var controllingId = myCharacter.ControllerInfo?.ControllingIdentityId;
                 var playerId = controllingId ?? 0;
 
-                var type = !myCharacter.IsPlayer ? MyDetectedEntityType.CharacterOther : MyDetectedEntityType.CharacterHuman;
+                var type = !myCharacter.IsPlayer ? Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterOther : Sandbox.ModAPI.Ingame.MyDetectedEntityType.CharacterHuman;
                 #if VERSION_191
                 var relationPlayerBlock = MyIDModule.GetRelation(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
                 #else
                 var relationPlayerBlock = MyIDModule.GetRelationPlayerBlock(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
                 #endif
 
-                entInfo = new MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Instance.Tick);
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Instance.Tick);
                 return true;
             }
             const MyRelationsBetweenPlayerAndBlock relationship1 = MyRelationsBetweenPlayerAndBlock.Neutral;
             var myPlanet = entity as MyPlanet;
             if (myPlanet != null)
             {
-                const MyDetectedEntityType type = MyDetectedEntityType.Planet;
-                entInfo = new MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
+                const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Planet;
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
                 return true;
             }
             if (entity is MyVoxelMap)
             {
-                const MyDetectedEntityType type = MyDetectedEntityType.Asteroid;
-                entInfo = new MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
+                const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Asteroid;
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
                 return true;
             }
             if (entity is MyMeteor)
             {
-                const MyDetectedEntityType type = MyDetectedEntityType.Meteor;
-                entInfo = new MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
+                const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Meteor;
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
                 return true;
             }
-            entInfo = new MyDetectedEntityInfo();
+            entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
             return false;
         }
 
@@ -146,9 +144,9 @@ namespace WeaponCore.Support
         {
             internal MyEntity Parent;
             internal Dictionary<BlockTypes, List<MyCubeBlock>> DictTypes;
-            internal MyDetectedEntityInfo EntInfo;
+            internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
 
-            public DetectInfo(MyEntity parent, Dictionary<BlockTypes, List<MyCubeBlock>> dictTypes, MyDetectedEntityInfo entInfo)
+            public DetectInfo(MyEntity parent, Dictionary<BlockTypes, List<MyCubeBlock>> dictTypes, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
             {
                 Parent = parent;
                 DictTypes = dictTypes;
@@ -205,7 +203,7 @@ namespace WeaponCore.Support
 
         internal struct TargetInfo
         {
-            internal readonly MyDetectedEntityInfo EntInfo;
+            internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
             internal readonly MyEntity Target;
             internal readonly bool IsGrid;
             internal readonly int PartCount;
@@ -213,7 +211,7 @@ namespace WeaponCore.Support
             internal readonly GridAi Ai;
             internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
 
-            internal TargetInfo(MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
+            internal TargetInfo(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
             {
                 EntInfo = entInfo;
                 Target = target;
