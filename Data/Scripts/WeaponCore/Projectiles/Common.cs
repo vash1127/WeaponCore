@@ -102,9 +102,8 @@ namespace WeaponCore.Projectiles
         internal HitEntity GenerateHitInfo(Projectile p,  int poolId)
         {
             var count = p.HitList.Count;
-
-            if (count > 1) p.HitList.Sort((x, y) => GetEntityCompareDist(x, y));
-            else GetEntityCompareDist(p.HitList[0], null);
+            if (count > 1) p.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
+            else GetEntityCompareDist(p.HitList[0], null, V3Pool.Get());
 
             //var afterSort = ents.Count;
             var endOfIndex = p.HitList.Count - 1;
@@ -143,7 +142,7 @@ namespace WeaponCore.Projectiles
             return hitEntity;
         }
 
-        internal static int GetEntityCompareDist(HitEntity x, HitEntity y)
+        internal int GetEntityCompareDist(HitEntity x, HitEntity y, List<Vector3I> slims)
         {
             var xDist = double.MaxValue;
             var yDist = double.MaxValue;
@@ -184,12 +183,11 @@ namespace WeaponCore.Projectiles
                 }
                 else if (grid != null)
                 {
-                    var testBlocks = new List<Vector3I>(); // WTF?!@?#!?@!?
-                    grid.RayCastCells(beam.From, beam.To, testBlocks, null, true, true);
+                    grid.RayCastCells(beam.From, beam.To, slims, null, true, true);
                     var closestBlockFound = false;
-                    for (int j = 0; j < testBlocks.Count; j++)
+                    for (int j = 0; j < slims.Count; j++)
                     {
-                        var firstBlock = grid.GetCubeBlock(testBlocks[j]) as IMySlimBlock;
+                        var firstBlock = grid.GetCubeBlock(slims[j]) as IMySlimBlock;
                         if (firstBlock != null && !firstBlock.IsDestroyed)
                         {
                             hitEnt.Blocks.Add(firstBlock);
@@ -250,6 +248,7 @@ namespace WeaponCore.Projectiles
                 if (isX) xDist = dist;
                 else yDist = dist;
             }
+            V3Pool.Return(slims);
             return xDist.CompareTo(yDist);
         }
 

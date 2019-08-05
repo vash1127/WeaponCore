@@ -24,6 +24,8 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
         internal readonly ObjectsPool<Trajectile>[] TrajectilePool = new ObjectsPool<Trajectile>[PoolCount];
         internal readonly List<Trajectile>[] DrawProjectiles = new List<Trajectile>[PoolCount];
+        internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
+
         internal readonly object[] Wait = new object[PoolCount];
 
         internal Projectiles()
