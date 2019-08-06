@@ -149,10 +149,10 @@ namespace WeaponCore
                     //ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
 
                     sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
-                    DsUtil.Start("");
+                    //DsUtil.Start("");
                     ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
                     //GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius);
-                    DsUtil.Complete();
+                    //DsUtil.Complete();
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
                 }

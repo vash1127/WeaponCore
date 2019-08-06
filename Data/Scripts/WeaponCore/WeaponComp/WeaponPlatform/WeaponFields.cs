@@ -28,6 +28,7 @@ namespace WeaponCore.Platform
         private int _numOfBarrels;
         private int _shotsInCycle;
         private int _shots = 1;
+        private int _nextVirtual;
         private uint _ticksUntilShoot;
         private uint _lastPredictionTick;
         private uint _posChangedTick = 1;

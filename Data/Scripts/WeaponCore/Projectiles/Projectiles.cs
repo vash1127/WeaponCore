@@ -57,8 +57,8 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
-            //for (int i = 0; i < Wait.Length; i++) Process(i);
+            //MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
+            for (int i = 0; i < Wait.Length; i++) Process(i);
         }
 
         private void Process(int i)

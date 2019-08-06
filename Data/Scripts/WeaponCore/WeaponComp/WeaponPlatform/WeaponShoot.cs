@@ -111,7 +111,7 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        if (System.VirtualBeams)
+                        if (System.VirtualBeams && j == 0)
                         {
                             Trajectile t;
                             MyEntity e = null;
@@ -129,7 +129,7 @@ namespace WeaponCore.Platform
                             }
                             t.InitVirtual(System, Comp.MyCube, e, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                             vProjectile.VrTrajectiles.Add(t);
-                            if (System.RotateRealBeam)
+                            if (System.RotateRealBeam && i == _nextVirtual)
                             {
                                 vProjectile.Origin = muzzle.Position;
                                 vProjectile.Direction = muzzle.DeviatedDir;
@@ -173,6 +173,7 @@ namespace WeaponCore.Platform
 
                     NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
                 }
+                _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
                 if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
             }
         }
