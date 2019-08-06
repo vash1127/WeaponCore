@@ -28,6 +28,7 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
+                    /*
                     foreach (var pair in RayCheckLines)
                     {
                         var startTick = pair.Value;
@@ -39,7 +40,7 @@ namespace WeaponCore
                         }
                     }
                     RayCheckLines.ApplyRemovals();
-
+                    */
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         lock (Projectiles.Wait[i])
                             DrawLists(Projectiles.DrawProjectiles[i]);

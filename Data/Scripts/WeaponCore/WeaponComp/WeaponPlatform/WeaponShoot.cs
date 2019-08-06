@@ -278,7 +278,7 @@ namespace WeaponCore.Platform
                     var grid = parentAsGrid ?? rootAsGrid;
                     if (grid == Comp.MyGrid)
                     {
-                        Session.Instance.RayCheckLines.Add(new LineD(Comp.MyPivotPos, hitInfo.Position), Comp.Ai.MySession.Tick, true);
+                        //Session.Instance.RayCheckLines.Add(new LineD(Comp.MyPivotPos, hitInfo.Position), Comp.Ai.MySession.Tick, true);
                         Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
                         masterWeapon.TargetExpired = true;
                         if (masterWeapon != this) TargetExpired = true;
