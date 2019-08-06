@@ -113,21 +113,32 @@ namespace WeaponCore
                 SmallBlockSphereDb.Add(radiusInMeters, blockSphereLst);
         }
 
-
+        private HashSet<Vector3I> TestCache = new HashSet<Vector3I>();
         private void ShiftAndPruneBlockSphere(MyCubeGrid grid, Vector3I center, List<Vector3I> sphereOfCubes, List<RadiatedBlock> slims)
         {
-            slims.Clear();
+            slims.Clear(); // Ugly but super inlined V3I check
+            var gMinX = grid.Min.X;
+            var gMinY = grid.Min.Y;
+            var gMinZ = grid.Min.Z;
+            var gMaxX = grid.Max.X;
+            var gMaxY = grid.Max.Y;
+            var gMaxZ = grid.Max.Z;
+
             for (int i = 0; i < sphereOfCubes.Count; i++)
             {
-                var vector3I = center + sphereOfCubes[i];
-                IMySlimBlock slim = grid.GetCubeBlock(vector3I);
-                var radiatedBlock = new RadiatedBlock
+                var v3ICheck = center + sphereOfCubes[i];
+                var contained = gMinX <= v3ICheck.X && v3ICheck.X <= gMaxX && (gMinY <= v3ICheck.Y && v3ICheck.Y <= gMaxY) && (gMinZ <= v3ICheck.Z && v3ICheck.Z <= gMaxZ);
+                if (!contained) continue;
+                IMySlimBlock slim = grid.GetCubeBlock(v3ICheck);
+
+                if (slim != null && slim.Position == v3ICheck)
                 {
-                    Center = center,
-                    Slim = slim,
-                    Position = vector3I,
-                };
-                if (slim != null && slim.Position == vector3I) slims.Add(radiatedBlock);
+                    var radiatedBlock = new RadiatedBlock();
+                    radiatedBlock.Center = center;
+                    radiatedBlock.Slim = slim;
+                    radiatedBlock.Position = v3ICheck;
+                    slims.Add(radiatedBlock);
+                }
             }
         }
 
@@ -143,7 +154,6 @@ namespace WeaponCore
             Vector3I max = Vector3I.Min(Vector3I.One * radiusCeil, gridMax - center);
             Vector3I min = Vector3I.Max(Vector3I.One * -radiusCeil, gridMin - center);
 
-
             for (i = min.X; i <= max.X; ++i)
             {
                 for (j = min.Y; j <= max.Y; ++j)
@@ -154,13 +164,17 @@ namespace WeaponCore
                         {
                             var vector3I = center + new Vector3I(i, j, k);
                             IMySlimBlock slim = grid.GetCubeBlock(vector3I);
-                            var radiatedBlock = new RadiatedBlock
+
+                            if (slim != null && slim.Position == vector3I)
                             {
-                                Center = center,
-                                Slim = slim,
-                                Position = vector3I,
-                            };
-                            if (slim != null && slim.Position == vector3I) _slimsSortedList.Add(radiatedBlock);
+                                var radiatedBlock = new RadiatedBlock
+                                {
+                                    Center = center,
+                                    Slim = slim,
+                                    Position = vector3I,
+                                };
+                                _slimsSortedList.Add(radiatedBlock);
+                            }
                         }
                     }
                 }

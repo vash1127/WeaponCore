@@ -70,7 +70,6 @@ namespace WeaponCore.Projectiles
             {
                 var pool = ProjectilePool[i];
                 var entPool = EntityPool[i];
-                var trajectilePool = TrajectilePool[i];
                 var drawList = DrawProjectiles[i];
                 var modelClose = false;
                 foreach (var p in pool.Active)
@@ -202,7 +201,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    if (!p.CombineBeams || p.Trajectile.MuzzleId == -1)
+                    if (!p.Trajectile.System.VirtualBeams || p.Trajectile.MuzzleId == -1)
                     {
                         var beam = new LineD(p.LastPosition, p.Position);
                         MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
@@ -322,7 +321,7 @@ namespace WeaponCore.Projectiles
             }
 
             p.Colliding = true;
-            if (!p.CombineBeams) Hits.Enqueue(p);
+            if (!p.Trajectile.System.VirtualBeams) Hits.Enqueue(p);
             else
             {
                 p.DamageFrame.VirtualHit = true;
@@ -342,7 +341,7 @@ namespace WeaponCore.Projectiles
             {
                 var vt = p.VrTrajectiles[i];
                 vt.OnScreen = p.Trajectile.OnScreen;
-                if (vt.System.Values.HardPoint.Loading.FakeBarrels.Converge)
+                if (vt.System.ConvergeBeams)
                 {
                     LineD beam;
                     if (!miss)

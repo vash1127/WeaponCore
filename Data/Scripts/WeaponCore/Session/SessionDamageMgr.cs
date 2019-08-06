@@ -108,7 +108,7 @@ namespace WeaponCore
             var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
 
             var damagePool = projectile.BaseDamagePool;
-            if (system.CombineBarrels)
+            if (system.VirtualBeams)
             {
                 var hits = projectile.DamageFrame.Hits;
                 damagePool *= hits;
@@ -147,8 +147,12 @@ namespace WeaponCore
                 {
                     //GetBlocksInsideSphereBrute(grid, rootBlock.Position, ref sphere, true);
                     //ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
+
                     sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
-                    GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius);
+                    DsUtil.Start("");
+                    ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
+                    //GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius);
+                    DsUtil.Complete();
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
                 }

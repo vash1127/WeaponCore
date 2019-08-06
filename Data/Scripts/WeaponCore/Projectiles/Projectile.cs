@@ -79,8 +79,6 @@ namespace WeaponCore.Projectiles
         internal bool FoundTarget;
         internal bool SeekTarget;
         internal bool DynamicGuidance;
-        internal bool IsBeamWeapon;
-        internal bool CombineBeams;
         internal bool ParticleStopped;
         internal bool ParticleLateStart;
         internal bool PickTarget;
@@ -150,10 +148,7 @@ namespace WeaponCore.Projectiles
             Guidance = Trajectile.System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
 
-            IsBeamWeapon = Trajectile.System.IsBeamWeapon;
-            CombineBeams = IsBeamWeapon && Trajectile.System.CombineBarrels;
-
-            if (Guidance == AmmoTrajectory.GuidanceType.Smart && !IsBeamWeapon)
+            if (Guidance == AmmoTrajectory.GuidanceType.Smart && !Trajectile.System.IsBeamWeapon)
                 MaxChaseAge = Trajectile.System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
             else MaxChaseAge = int.MaxValue;
 
@@ -190,7 +185,7 @@ namespace WeaponCore.Projectiles
 
             StartSpeed = FiringGrid.Physics.LinearVelocity;
 
-            if (Trajectile.System.SpeedVariance && !IsBeamWeapon)
+            if (Trajectile.System.SpeedVariance && !Trajectile.System.IsBeamWeapon)
             {
                 var min = Trajectile.System.Values.Ammo.Trajectory.SpeedVariance.Start;
                 var max = Trajectile.System.Values.Ammo.Trajectory.SpeedVariance.End;
@@ -201,7 +196,7 @@ namespace WeaponCore.Projectiles
 
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
-            MoveToAndActivate = FoundTarget && !IsBeamWeapon &&Guidance == AmmoTrajectory.GuidanceType.TravelTo;
+            MoveToAndActivate = FoundTarget && !Trajectile.System.IsBeamWeapon && Guidance == AmmoTrajectory.GuidanceType.TravelTo;
 
             if (MoveToAndActivate)
             {
@@ -216,7 +211,7 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                if (!IsBeamWeapon && Trajectile.System.AmmoTravelSound)
+                if (!Trajectile.System.IsBeamWeapon && Trajectile.System.AmmoTravelSound)
                 {
                     HasTravelSound = true;
                     TravelSound.Init(Trajectile.System.Values.Audio.Ammo.TravelSound, false);
@@ -234,7 +229,7 @@ namespace WeaponCore.Projectiles
             }
 
             ModelId = Trajectile.System.ModelId;
-            if (ModelId == -1 || IsBeamWeapon) ModelState = EntityState.None;
+            if (ModelId == -1 || Trajectile.System.IsBeamWeapon) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)
@@ -257,7 +252,7 @@ namespace WeaponCore.Projectiles
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
-            if (!IsBeamWeapon)
+            if (!Trajectile.System.IsBeamWeapon)
             {
                 var reSizeSteps = (int) (LineLength / Trajectile.MaxSpeedLength);
                 Trajectile.ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
@@ -267,7 +262,7 @@ namespace WeaponCore.Projectiles
             }
             else State = ProjectileState.OneAndDone;
 
-            if (Trajectile.System.AmmoParticle && EnableAv && !IsBeamWeapon) PlayAmmoParticle();
+            if (Trajectile.System.AmmoParticle && EnableAv && !Trajectile.System.IsBeamWeapon) PlayAmmoParticle();
         }
 
         internal void FireSoundStart()
@@ -363,7 +358,7 @@ namespace WeaponCore.Projectiles
         {
             if (Colliding)
             {
-                if (Trajectile.System.HitParticle && !IsBeamWeapon) PlayHitParticle();
+                if (Trajectile.System.HitParticle && !Trajectile.System.IsBeamWeapon) PlayHitParticle();
                 if (Trajectile.System.HitSound)
                 {
                     HitEmitter.SetPosition(Position);

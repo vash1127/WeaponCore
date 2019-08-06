@@ -37,12 +37,14 @@ namespace WeaponCore.Support
         public readonly bool EnergyAmmo;
         public readonly bool BarrelEffect1;
         public readonly bool BarrelEffect2;
-        public readonly bool CombineBarrels;
         public readonly bool HasBarrelShootAv;
         public readonly bool HasBackKickForce;
         public readonly bool SpeedVariance;
         public readonly bool RangeVariance;
+        public readonly bool VirtualBeams;
         public readonly bool IsBeamWeapon;
+        public readonly bool ConvergeBeams;
+        public readonly bool RotateRealBeam;
         public readonly bool DamageScaling;
         public readonly bool ArmorScaling;
         public readonly bool CustomDamageScales;
@@ -123,8 +125,12 @@ namespace WeaponCore.Support
             AreaRadiusLarge = values.Ammo.AreaEffect.AreaEffectRadius > 25 ? 25 : values.Ammo.AreaEffect.AreaEffectRadius;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
-            IsBeamWeapon = Values.Ammo.Trajectory.DesiredSpeed <= 0 && Values.Ammo.Trajectory.MaxTrajectory > 0;
-            CombineBarrels = values.HardPoint.Loading.FakeBarrels.Enable && IsBeamWeapon;
+
+            IsBeamWeapon = values.Ammo.Beams.Enable;
+            VirtualBeams = values.Ammo.Beams.VirtualBeams && IsBeamWeapon;
+            RotateRealBeam = values.Ammo.Beams.RotateRealBeam && VirtualBeams;
+            ConvergeBeams = !RotateRealBeam && values.Ammo.Beams.ConvergeBeams && VirtualBeams;
+
             ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.BaseDamage;
 
             MaxTrajectorySqr = values.Ammo.Trajectory.MaxTrajectory * values.Ammo.Trajectory.MaxTrajectory;

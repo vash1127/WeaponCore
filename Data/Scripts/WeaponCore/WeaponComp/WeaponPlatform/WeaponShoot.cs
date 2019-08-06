@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
@@ -68,7 +67,7 @@ namespace WeaponCore.Platform
             lock (session.Projectiles.Wait[session.ProCounter])
             {
                 Projectile vProjectile = null;
-                if (System.CombineBarrels) vProjectile = CreateVirtualProjectile();
+                if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
 
                 var isStatic = Comp.Physics.IsStatic;
                 for (int i = 0; i < bps; i++)
@@ -112,7 +111,7 @@ namespace WeaponCore.Platform
                         }
                         else muzzle.DeviatedDir = muzzle.Direction;
 
-                        if (System.CombineBarrels)
+                        if (System.VirtualBeams)
                         {
                             Trajectile t;
                             MyEntity e = null;
@@ -130,6 +129,11 @@ namespace WeaponCore.Platform
                             }
                             t.InitVirtual(System, Comp.MyCube, e, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                             vProjectile.VrTrajectiles.Add(t);
+                            if (System.RotateRealBeam)
+                            {
+                                vProjectile.Origin = muzzle.Position;
+                                vProjectile.Direction = muzzle.DeviatedDir;
+                            }
                         }
                         else
                         {
