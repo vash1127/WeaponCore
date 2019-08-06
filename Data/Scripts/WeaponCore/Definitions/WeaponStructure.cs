@@ -45,6 +45,7 @@ namespace WeaponCore.Support
         public readonly bool IsBeamWeapon;
         public readonly bool ConvergeBeams;
         public readonly bool RotateRealBeam;
+        public readonly bool OneHitParticle;
         public readonly bool DamageScaling;
         public readonly bool ArmorScaling;
         public readonly bool CustomDamageScales;
@@ -130,7 +131,7 @@ namespace WeaponCore.Support
             VirtualBeams = values.Ammo.Beams.VirtualBeams && IsBeamWeapon;
             RotateRealBeam = values.Ammo.Beams.RotateRealBeam && VirtualBeams;
             ConvergeBeams = !RotateRealBeam && values.Ammo.Beams.ConvergeBeams && VirtualBeams;
-
+            OneHitParticle = values.Ammo.Beams.OneParticle && IsBeamWeapon;
             ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.BaseDamage;
 
             MaxTrajectorySqr = values.Ammo.Trajectory.MaxTrajectory * values.Ammo.Trajectory.MaxTrajectory;

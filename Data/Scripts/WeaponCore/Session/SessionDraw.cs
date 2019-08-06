@@ -73,7 +73,7 @@ namespace WeaponCore
                 }
                 else
                     MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, 0, t.Direction, (float)t.Length, newWidth);
-                if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && t.System.ConvergeBeams))
+                if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
                     var c = t.FiringCube;
                     if (c == null || c.MarkedForClose) continue;
