@@ -131,13 +131,13 @@ namespace WeaponCore.Support
                                     }
                                     else if (FindRandomBlock(system, ref target, currentPos, subSystemList, w != null)) return true;
                                 }
-                                catch (Exception ex) { Log.Line($"Exception in AcquireBlockInside: {ex}"); }
+                                catch (Exception ex) { Log.Line($"Exception in AcquireBlockInside: {ex} - {bt}"); }
                             }
                         }
-                        catch (Exception ex) { Log.Line($"Exception in AcquireBlockIf: {ex}"); }
+                        catch (Exception ex) { Log.Line($"Exception in AcquireBlockIf: {ex} - {bt}"); }
                     }
                 }
-                catch (Exception ex) { Log.Line($"Exception in AcquireBlockForEach: {ex}"); }
+                catch (Exception ex) { Log.Line($"Exception in AcquireBlockForEach: {ex} - subSystemsCnt:{system.Values.Targeting.SubSystems.Systems.Length}"); }
             }
             if (FindRandomBlock(system, ref target, currentPos, info.TypeDict[Any], w != null)) return true;
             return false;
