@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
@@ -109,31 +110,36 @@ namespace WeaponCore.Support
         {
             if (system.OrderedTargets)
             {
-                var subSystems = system.Values.Targeting.SubSystems;
-                foreach (var bt in subSystems.Systems)
+                try
                 {
-                    // Log.Line($"sort:{bt} - closestFirst:{w.System.Values.Targeting.SubSystems.ClosestFirst} - {info.TypeDict[bt].Count} - {(info.Target as MyCubeGrid).GetFatBlocks().Count}");
-                    if (bt != Any && info.TypeDict[bt].Count > 0)
+                    var subSystems = system.Values.Targeting.SubSystems;
+                    foreach (var bt in subSystems.Systems)
                     {
-                        var subSystemList = info.TypeDict[bt];
-                        if (subSystems.ClosestFirst)
+                        try
                         {
-                            //Log.Line($"trying: {bt}");
-                            if (bt != target.LastBlockType) target.Top5.Clear();
-                            target.LastBlockType = bt;
-                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, currentPos, w);
-                            if (target.Entity != null)
+                            if (bt != Any && info.TypeDict[bt].Count > 0)
                             {
-                                //Log.Line($"cloest was: {w.NewTarget.Entity.DebugName} - type:{bt} - partCount:{info.PartCount}");
-                                return true;
+                                try
+                                {
+                                    var subSystemList = info.TypeDict[bt];
+                                    if (subSystems.ClosestFirst)
+                                    {
+                                        if (bt != target.LastBlockType) target.Top5.Clear();
+                                        target.LastBlockType = bt;
+                                        UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, currentPos, w);
+                                        if (target.Entity != null) return true;
+                                    }
+                                    else if (FindRandomBlock(system, ref target, currentPos, subSystemList, w != null)) return true;
+                                }
+                                catch (Exception ex) { Log.Line($"Exception in AcquireBlockInside: {ex}"); }
                             }
                         }
-                        else if (FindRandomBlock(system, ref target, currentPos, subSystemList, w != null)) return true;
+                        catch (Exception ex) { Log.Line($"Exception in AcquireBlockIf: {ex}"); }
                     }
                 }
+                catch (Exception ex) { Log.Line($"Exception in AcquireBlockForEach: {ex}"); }
             }
             if (FindRandomBlock(system, ref target, currentPos, info.TypeDict[Any], w != null)) return true;
-            //Log.Line("no valid target in line of sight");
             return false;
         }
 
