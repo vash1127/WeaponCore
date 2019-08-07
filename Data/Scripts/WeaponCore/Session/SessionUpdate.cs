@@ -16,7 +16,7 @@ namespace WeaponCore
             {
                 var gridAi = aiPair.Value;
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
-                if (!gridAi.Ready || !gridAi.DbReady) continue;
+                if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
 
                     foreach (var basePair in gridAi.WeaponBase)
                 {
@@ -44,6 +44,8 @@ namespace WeaponCore
                             continue;
                         }
                         else comp.Charging = false;
+
+                        //if(Tick60) Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {GridAvailablePower}");
 
                         var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)
