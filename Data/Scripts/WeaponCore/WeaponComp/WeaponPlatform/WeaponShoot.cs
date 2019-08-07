@@ -166,6 +166,7 @@ namespace WeaponCore.Platform
                     }
 
                     CurrentHeat += System.HeatPShot;
+                    ChargeAmtLeft = RequiredPower;
 
                     if (CurrentHeat > System.MaxHeat) Overheated = true;
 

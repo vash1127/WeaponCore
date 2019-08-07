@@ -88,6 +88,7 @@ namespace WeaponCore.Support
         {
             if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
             if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
+            if (Charging) return "[Systems Charging]";
             return "[Systems Online]";
         }
 
@@ -96,7 +97,7 @@ namespace WeaponCore.Support
             try
             {
                 var status = GetSystemStatus();
-                if (status == "[Systems Online]" || status == "[Systems Fault]" || status == "[Systems Offline]" || status == "[Insufficient Power]")
+                if (status == "[Systems Online]" || status == "[Systems Fault]" || status == "[Systems Offline]" || status == "[Insufficient Power]" || status == "[Systems Charging]")
                 {
                     stringBuilder.Append(status +
                                          "\n" +

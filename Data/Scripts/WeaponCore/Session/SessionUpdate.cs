@@ -10,12 +10,15 @@ namespace WeaponCore
         {
             if (!GameLoaded) return;
             if (!DbUpdating && DbsToUpdate.Count > 0) UpdateDbsInQueue();
+            if (Tick60 && !BlockSets.IsEmpty) UpdateGridPower();
+
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
                 if (!gridAi.Ready || !gridAi.DbReady) continue;
-                foreach (var basePair in gridAi.WeaponBase)
+
+                    foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
@@ -26,6 +29,22 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
                         if (!w.Enabled) continue;
+
+                        if (w.ChargeAmtLeft > GridAvailablePower || (w.ChargeAmtLeft > 0 && comp.Charging))
+                        {
+                            if (Tick60)
+                            {
+                                w.ChargeAmtLeft = w.ChargeAmtLeft - GridAvailablePower < 0 ? 0 : w.ChargeAmtLeft - GridAvailablePower;
+                                comp.Charging = true;
+                                comp.SinkPower = w.ChargeAmtLeft;
+                                comp.TerminalRefresh();
+                                Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {GridAvailablePower}");
+                            }
+
+                            continue;
+                        }
+                        else comp.Charging = false;
+
                         var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)
                         {
