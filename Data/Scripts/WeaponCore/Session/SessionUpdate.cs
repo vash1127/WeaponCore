@@ -38,7 +38,7 @@ namespace WeaponCore
                                 comp.Charging = true;
                                 comp.SinkPower = w.ChargeAmtLeft;
                                 comp.TerminalRefresh();
-                                Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {GridAvailablePower}");
+                                //Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {GridAvailablePower}");
                             }
 
                             continue;
