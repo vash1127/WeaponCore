@@ -9,7 +9,6 @@ using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
-using static WeaponCore.Projectiles.Projectiles;
 
 namespace WeaponCore.Platform
 {
@@ -20,9 +19,6 @@ namespace WeaponCore.Platform
             var session = Comp.Ai.MySession;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            //DsDebugDraw.DrawLine(Comp.MyPivotPos, Comp.MyPivotPos + (Comp.MyPivotDir * 5000), Color.Purple, 0.1f);
-            //if (this == Comp.TrackingWeapon) DsDebugDraw.DrawLine(Comp.MyPivotPos, TargetPos, Color.White, 0.1f);
-            //else DsDebugDraw.DrawLine(Comp.MyPivotPos, TargetPos, Color.Black, 0.1f);
 
             if (System.BurstMode)
             {
@@ -231,29 +227,6 @@ namespace WeaponCore.Platform
             MyAPIGateway.Physics.CastRayParallel(ref Comp.MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
         }
 
-        public void MovePart(int time)
-        {
-            BarrelMove = true;
-            double radiansPerShot;
-            if(System.DegROF && CurrentHeat > (System.MaxHeat *.8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (CurrentHeat/System.MaxHeat);
-            if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
-            else  radiansPerShot = 2 * Math.PI / _numOfBarrels;
-            var radians = radiansPerShot / _timePerShot;
-            var axis = System.Values.HardPoint.RotateBarrelAxis;
-            MatrixD rotationMatrix;
-            if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
-            else if (axis == 2 ) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
-            else if (axis == 3) rotationMatrix = MatrixD.CreateRotationZ(radians * _rotationTime);
-            else return;
-
-            _rotationTime += time;
-            rotationMatrix.Translation = _localTranslation;
-            EntityPart.PositionComp.LocalMatrix = rotationMatrix;
-            BarrelMove = false;
-            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-                StartRotateSound();
-        }
-
         public void ShootRayCheckCallBack(IHitInfo hitInfo)
         {
             Casting = false;
@@ -329,6 +302,29 @@ namespace WeaponCore.Platform
                     }
                 }
             }
+        }
+
+        public void MovePart(int time)
+        {
+            BarrelMove = true;
+            double radiansPerShot;
+            if (System.DegROF && CurrentHeat > (System.MaxHeat * .8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (CurrentHeat / System.MaxHeat);
+            if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
+            else radiansPerShot = 2 * Math.PI / _numOfBarrels;
+            var radians = radiansPerShot / _timePerShot;
+            var axis = System.Values.HardPoint.RotateBarrelAxis;
+            MatrixD rotationMatrix;
+            if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
+            else if (axis == 2) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
+            else if (axis == 3) rotationMatrix = MatrixD.CreateRotationZ(radians * _rotationTime);
+            else return;
+
+            _rotationTime += time;
+            rotationMatrix.Translation = _localTranslation;
+            EntityPart.PositionComp.LocalMatrix = rotationMatrix;
+            BarrelMove = false;
+            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
+                StartRotateSound();
         }
     }
 }
