@@ -79,12 +79,8 @@ namespace WeaponCore.Support
 
             GridAvailablePower = GridMaxPower - GridCurrentPower;
 
-            var useBatteries = false;
-            if (!useBatteries)
-            {
-                GridCurrentPower += BatteryCurrentInput;
-                GridAvailablePower -= BatteryCurrentInput;
-            }
+            GridCurrentPower += BatteryCurrentInput;
+            GridAvailablePower -= BatteryCurrentInput;
 
             return GridMaxPower > 0;
         }
