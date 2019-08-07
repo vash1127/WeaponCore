@@ -19,8 +19,7 @@ namespace WeaponCore.Platform
             var session = Comp.Ai.MySession;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-
-            if (ChargeAmtLeft > session.GridAvailablePower) return;
+            if (ChargeAmtLeft > Comp.Ai.GridAvailablePower) return;
 
             if (System.BurstMode)
             {

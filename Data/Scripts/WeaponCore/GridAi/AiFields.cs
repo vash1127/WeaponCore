@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
@@ -18,6 +19,7 @@ namespace WeaponCore.Support
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(50);
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(50);
+        internal readonly HashSet<MyResourceSourceComponent> Sources = new HashSet<MyResourceSourceComponent>();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>> ValidGrids = new Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>>();
@@ -25,9 +27,11 @@ namespace WeaponCore.Support
 
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
+        internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
         internal List<TargetInfo> SortedTargets = new List<TargetInfo>();
 
+        internal MyResourceDistributorComponent MyResourceDist;
         internal MyGridTargeting Targeting { get; set; }
         internal bool TargetNeutrals;
         internal bool TargetNoOwners;
@@ -40,6 +44,16 @@ namespace WeaponCore.Support
         internal int DbUpdating;
         internal bool DbReady;
         internal bool GridInit = false;
+        internal bool UpdatePowerSources;
+        internal bool PowerInited;
+
+        internal float GridMaxPower;
+        internal float GridCurrentPower;
+        internal float GridAvailablePower;
+        internal float BatteryMaxPower;
+        internal float BatteryCurrentOutput;
+        internal float BatteryCurrentInput;
+
 
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();

@@ -59,33 +59,16 @@ namespace WeaponCore.Support
         {
             try
             {
-                var controller = myCubeBlock as MyShipController;
-                if (controller != null)
+                if (myCubeBlock is IMyPowerProducer)
                 {
-                    if (!MySession.BlockSets.ContainsKey(myCubeBlock.CubeGrid)) MySession.BlockSets.TryAdd(myCubeBlock.CubeGrid, new BlockSets());
-
-                    MySession.BlockSets[myCubeBlock.CubeGrid].ShipControllers.Add(controller);
-                    MySession._checkForDistributor = true;
-                    return;
-                }
-
-                var source = myCubeBlock.Components.Get<MyResourceSourceComponent>();
-                if (source != null)
-                {
-                    if (source.ResourceTypes[0] != MySession.GId) return;
-
-                    if (!MySession.BlockSets.ContainsKey(myCubeBlock.CubeGrid)) MySession.BlockSets.TryAdd(myCubeBlock.CubeGrid, new BlockSets());
-
-                    var battery = myCubeBlock as IMyBatteryBlock;
-                    if (battery != null)
+                    var source = myCubeBlock.Components.Get<MyResourceSourceComponent>();
+                    if (source != null)
                     {
-                        
-                        MySession.BlockSets[myCubeBlock.CubeGrid].Batteries.Add(new BatteryInfo(source));
+                        var type = source.ResourceTypes[0];
+                        if (type != MyResourceDistributorComponent.ElectricityId) return;
+                        Sources.Add(source);
+                        UpdatePowerSources = true;
                     }
-
-                    MySession.BlockSets[myCubeBlock.CubeGrid].Sources.Add(source);
-                    MySession._updatePowerSources = true;
-
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
@@ -95,27 +78,17 @@ namespace WeaponCore.Support
         {
             try
             {
-                var controller = myCubeBlock as MyShipController;
-
-                if (controller != null)
+                if (myCubeBlock is IMyPowerProducer)
                 {
-                    MySession.BlockSets[myCubeBlock.CubeGrid].ShipControllers.Remove(controller);
-                    MySession._checkForDistributor = true;
-                    return;
-                }
-                var source = myCubeBlock.Components.Get<MyResourceSourceComponent>();
-                if (source != null)
-                {
-                    if (source.ResourceTypes[0] != MySession.GId) return;
-
-                    var battery = myCubeBlock as IMyBatteryBlock;
-                    if (battery != null)
+                    var source = myCubeBlock.Components.Get<MyResourceSourceComponent>();
+                    if (source != null)
                     {
-                        MySession.BlockSets[myCubeBlock.CubeGrid].Batteries.Remove(new BatteryInfo(source));
+                        var type = source.ResourceTypes[0];
+                        if (type != MyResourceDistributorComponent.ElectricityId) return;
+                        Sources.Remove(source);
+                        UpdatePowerSources = true;
                     }
-
-                    MySession.BlockSets[myCubeBlock.CubeGrid].Sources.Remove(source);
-                    MySession._updatePowerSources = true;
+                    UpdatePowerSources = true;
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }

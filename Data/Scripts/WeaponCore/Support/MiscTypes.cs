@@ -289,24 +289,4 @@ namespace WeaponCore.Support
         public HitEntity HitEntity = new HitEntity();
         public IMySlimBlock HitBlock;
     }
-
-    public struct BatteryInfo
-    {
-        public readonly MyResourceSourceComponent Source;
-        public readonly MyResourceSinkComponent Sink;
-        public readonly MyCubeBlock CubeBlock;
-        public BatteryInfo(MyResourceSourceComponent source)
-        {
-            Source = source;
-            Sink = Source.Entity.Components.Get<MyResourceSinkComponent>();
-            CubeBlock = source.Entity as MyCubeBlock;
-        }
-    }
-
-    public class BlockSets
-    {
-        public readonly HashSet<MyResourceSourceComponent> Sources = new HashSet<MyResourceSourceComponent>();
-        public readonly HashSet<MyShipController> ShipControllers = new HashSet<MyShipController>();
-        public readonly HashSet<BatteryInfo> Batteries = new HashSet<BatteryInfo>();
-    }
 }

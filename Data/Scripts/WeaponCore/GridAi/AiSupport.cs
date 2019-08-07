@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Support;
 using static WeaponCore.Support.SubSystemDefinition;
 namespace WeaponCore.Support
 {
@@ -20,6 +23,77 @@ namespace WeaponCore.Support
             Session.Instance.DbsToUpdate.Add(this);
             TargetsUpdatedTick = MySession.Tick;
         }
+
+        #region Power
+        internal void InitPower()
+        {
+            PowerInited = true;
+            foreach (var fat in MyGrid.GetFatBlocks())
+            {
+                var source = fat.Components.Get<MyResourceSourceComponent>();
+                if (source != null)
+                {
+                    var type = source.ResourceTypes[0];
+                    if (type != MyResourceDistributorComponent.ElectricityId) return;
+                    Sources.Add(source);
+                    UpdatePowerSources = true;
+                }
+            }
+        }
+
+        internal bool UpdateGridPower()
+        {
+            GridAvailablePower = 0;
+            GridMaxPower = 0;
+            GridCurrentPower = 0;
+            BatteryMaxPower = 0;
+            BatteryCurrentOutput = 0;
+            BatteryCurrentInput = 0;
+
+            FallBackPowerCalc();
+
+            GridAvailablePower = GridMaxPower - GridCurrentPower;
+
+            var useBatteries = false;
+            if (!useBatteries)
+            {
+                GridCurrentPower += BatteryCurrentInput;
+                GridAvailablePower -= BatteryCurrentInput;
+            }
+
+            return GridMaxPower > 0;
+        }
+
+        private void FallBackPowerCalc()
+        {
+            foreach (var source in Sources)
+            {
+                var battery = source.Entity as IMyBatteryBlock;
+                if (battery != null)
+                {
+                    if (!battery.IsWorking) continue;
+                    var currentInput = battery.CurrentInput;
+                    var currentOutput = battery.CurrentOutput;
+                    var maxOutput = battery.MaxOutput;
+                    if (currentInput > 0)
+                    {
+                        BatteryCurrentInput += currentInput;
+                        if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
+                        else BatteryCurrentOutput -= currentInput;
+                    }
+                    BatteryMaxPower += maxOutput;
+                    BatteryCurrentOutput += currentOutput;
+                }
+                else
+                {
+                    GridMaxPower += source.MaxOutputByType(GId);
+                    GridCurrentPower += source.CurrentOutputByType(GId);
+                }
+            }
+            GridMaxPower += BatteryMaxPower;
+            GridCurrentPower += BatteryCurrentOutput;
+        }
+        #endregion
 
         private bool UpdateOwner()
         {
