@@ -19,7 +19,7 @@ namespace WeaponCore.Platform
             var session = Comp.Ai.MySession;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            if (ChargeAmtLeft > Comp.Ai.GridAvailablePower) return;
+            if (Comp.Charging) return;
 
             if (System.BurstMode)
             {
@@ -163,12 +163,12 @@ namespace WeaponCore.Platform
                     }
 
                     CurrentHeat += System.HeatPShot;
-                    ChargeAmtLeft = RequiredPower;
+                    Comp.ChargeAmtLeft = RequiredPower;
 
                     if (CurrentHeat > System.MaxHeat)
                     {
-                        if (!Overheated) ; //comp.ChangeStateEmissive(w, Overheat, 1);
-                        Overheated = true;
+                        if (!Comp.Overheated) ; //comp.ChangeStateEmissive(w, Overheat, 1);
+                        Comp.Overheated = true;
                     }
 
                     if (i == bps) NextMuzzle++;

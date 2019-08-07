@@ -32,22 +32,32 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (!w.Enabled) continue;
+                        if (!w.Enabled || (!Tick60 && (comp.Charging || comp.Overheated))) continue;
 
-                        if (w.ChargeAmtLeft > gridAi.GridAvailablePower || (w.ChargeAmtLeft > 0 && comp.Charging))
+                        if (comp.ChargeAmtLeft > gridAi.GridAvailablePower || (comp.ChargeAmtLeft > 0 && comp.Charging))
                         {
+                            comp.Charging = true;
                             if (Tick60)
                             {
-                                w.ChargeAmtLeft = w.ChargeAmtLeft - gridAi.GridAvailablePower < 0 ? 0 : w.ChargeAmtLeft - gridAi.GridAvailablePower;
-                                comp.Charging = true;
-                                comp.SinkPower = w.ChargeAmtLeft;
+                                comp.ChargeAmtLeft = comp.ChargeAmtLeft - gridAi.GridAvailablePower < 0 ? 0 : comp.ChargeAmtLeft - gridAi.GridAvailablePower;
+                                comp.SinkPower = comp.ChargeAmtLeft;
                                 comp.TerminalRefresh();
                                 //Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {gridAi.GridAvailablePower}");
                             }
-
-                            continue;
                         }
                         else comp.Charging = false;
+
+                        if (Tick60)
+                        {
+                            w.CurrentHeat = w.CurrentHeat >= w.HSRate ? w.CurrentHeat -= w.HSRate : 0;
+                            if (comp.Overheated && w.CurrentHeat <= (w.System.MaxHeat * w.System.WepCooldown))
+                            {
+                                //comp.ChangeStateEmissive(w, Overheat, 0);
+                                comp.Overheated = false;
+                            }
+                        }
+
+                        if (comp.Charging || comp.Overheated) continue;
 
                         var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)
@@ -92,16 +102,8 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if(Tick60)
-                        {
-                            w.CurrentHeat = w.CurrentHeat >= w.HSRate ? w.CurrentHeat -= w.HSRate : 0;
-                            if (w.Overheated && w.CurrentHeat <= (w.System.MaxHeat * w.System.WepCooldown))
-                            {
-                                //comp.ChangeStateEmissive(w, Overheat, 0);
-                                w.Overheated = false;
-                            }
-                        }
-                        if (!w.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
+                        
+                        if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
                         else if (w.IsShooting) w.StopShooting();
                         if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
                     }
@@ -175,6 +177,9 @@ namespace WeaponCore
                         else w.AiReady = (!w.TargetExpired && !gunner) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.TargetExpired;
 
                         w.SeekTarget = !gunner && w.TargetExpired && w.TrackTarget;
+
+
+
                         if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
                         /*
                         if (wasExpired != w.TargetExpired)

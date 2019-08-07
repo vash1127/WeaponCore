@@ -106,9 +106,9 @@ namespace WeaponCore.Platform
         public void StartShooting()
         {
             if (FiringEmitter != null) StartFiringSound();
-            if (ChargeAmtLeft >= Comp.Ai.GridAvailablePower && System.ShotEnergyCost > 0 && !IsShooting)
+            if (!Comp.Charging && System.ShotEnergyCost > 0 && !IsShooting)
             {
-                Comp.SinkPower += ChargeAmtLeft;
+                Comp.SinkPower += Comp.ChargeAmtLeft;
                 Comp.Sink.Update();
                 Comp.TerminalRefresh();
             }

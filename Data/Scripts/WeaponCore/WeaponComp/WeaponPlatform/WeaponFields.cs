@@ -85,7 +85,6 @@ namespace WeaponCore.Platform
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
         internal float RequiredPower => ((System.ShotEnergyCost * (System.Values.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
-        internal float ChargeAmtLeft = 0;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -104,7 +103,6 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool Enabled;
         internal bool OrderedTargets;
-        internal bool Overheated = false;
         internal bool LoadAmmoMag
         {
             set
@@ -134,7 +132,7 @@ namespace WeaponCore.Platform
             _localTranslation = entity.LocalMatrix.Translation;
             System = system;
             Comp = comp;
-            ChargeAmtLeft = RequiredPower;
+            Comp.ChargeAmtLeft = RequiredPower;
             AvCapable = System.HasBarrelShootAv && !Comp.Ai.MySession.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)

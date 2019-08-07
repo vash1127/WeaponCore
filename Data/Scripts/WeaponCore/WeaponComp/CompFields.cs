@@ -48,6 +48,8 @@ namespace WeaponCore.Support
         internal float MaxAmmoMass;
         internal float SinkPower;
         internal float IdlePower;
+        internal float ChargeAmtLeft = 0;
+        internal bool Overheated = false;
         internal bool TurretTargetLock;
         internal bool Gunner;
         internal bool NotFailed;
