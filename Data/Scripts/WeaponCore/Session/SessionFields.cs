@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -99,7 +100,12 @@ namespace WeaponCore
         internal double SyncDist;
         internal double MaxEntitySpeed;
         internal float Zoom;
-
+        internal float GridMaxPower;
+        internal float GridCurrentPower;
+        internal float GridAvailablePower;
+        private float _batteryMaxPower;
+        private float _batteryCurrentOutput;
+        private float _batteryCurrentInput;
         internal bool ControlInit;
         internal bool MpActive;
         internal bool IsServer;
@@ -122,6 +128,11 @@ namespace WeaponCore
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
         internal bool InTurret;
+        internal bool _updatePowerSources;
+        internal bool _checkForDistributor;
+        internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+        internal MyResourceDistributorComponent MyResourceDist;
+        internal readonly ConcurrentDictionary<MyCubeGrid, BlockSets> BlockSets = new ConcurrentDictionary<MyCubeGrid, BlockSets>();
         internal Vector3D CameraPos;
         internal MyEntity ControlledEntity;
 

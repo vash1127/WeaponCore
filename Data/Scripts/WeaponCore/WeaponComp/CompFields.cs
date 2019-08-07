@@ -54,6 +54,7 @@ namespace WeaponCore.Support
         internal bool WarmedUp;
         internal bool Starting;
         internal bool Sync = true;
+        internal bool Charging = false;
         internal enum Status
         {
             Online,

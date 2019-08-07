@@ -121,6 +121,16 @@ namespace WeaponCore.Support
             CreateUi();
 
             MainInit = true;
+
+            if (!Ai.GridInit)
+            {
+                foreach (var cubeBlock in MyGrid.GetFatBlocks())
+                {
+                    Ai.FatBlockAdded(cubeBlock);
+                }
+                Ai.GridInit = true;
+            }
+
         }
 
         public override void OnRemovedFromScene()

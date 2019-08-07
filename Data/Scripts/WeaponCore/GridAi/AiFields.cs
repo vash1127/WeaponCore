@@ -39,6 +39,7 @@ namespace WeaponCore.Support
         internal long MyOwner;
         internal int DbUpdating;
         internal bool DbReady;
+        internal bool GridInit = false;
 
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
