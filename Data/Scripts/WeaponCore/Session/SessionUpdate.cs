@@ -2,6 +2,8 @@
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
+using static WeaponCore.Support.WeaponComponent.EmissiveStates;
+
 namespace WeaponCore
 {
     public partial class Session
@@ -14,7 +16,7 @@ namespace WeaponCore
             {
                 var gridAi = aiPair.Value;
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
-                if (!gridAi.Ready || !gridAi.DbReady) continue;
+                if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -38,6 +40,7 @@ namespace WeaponCore
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
+                                //comp.ChangeStateEmissive(w, Reload, 0);
                                 if (w.CurrentMags != 0)
                                 {
                                     w.LoadAmmoMag = true;
@@ -46,6 +49,7 @@ namespace WeaponCore
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
+                            //comp.ChangeStateEmissive(w, Reload, 1);
                         }
                         if (w.SeekTarget)
                         {
@@ -69,9 +73,12 @@ namespace WeaponCore
 
                         if(Tick60)
                         {
-                            w.CurrentHeat -= w.HSRate;
-                            if(w.CurrentHeat < 0) w.CurrentHeat = 0;
-                            if(w.CurrentHeat <= (w.System.MaxHeat* w.System.WepCooldown)) w.Overheated = false;
+                            w.CurrentHeat = w.CurrentHeat >= w.HSRate ? w.CurrentHeat -= w.HSRate : 0;
+                            if (w.Overheated && w.CurrentHeat <= (w.System.MaxHeat * w.System.WepCooldown))
+                            {
+                                //comp.ChangeStateEmissive(w, Overheat, 0);
+                                w.Overheated = false;
+                            }
                         }
                         if (!w.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
                         else if (w.IsShooting) w.StopShooting();
@@ -89,7 +96,7 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-                if (!gridAi.DbReady) continue;
+                if (!gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -137,6 +144,7 @@ namespace WeaponCore
                             }
                         }
 
+                        //var wasExpired = w.TargetExpired;
                         if (w.DelayCeaseFire)
                         {
                             if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
@@ -149,6 +157,12 @@ namespace WeaponCore
 
                         w.SeekTarget = !gunner && w.TargetExpired && w.TrackTarget;
                         if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
+                        /*
+                        if (wasExpired != w.TargetExpired)
+                        {
+                            comp.ChangeStateEmissive(w, Lock, wasExpired ? 1 : 0);
+                        }
+                        */
                     }
                 }
             }

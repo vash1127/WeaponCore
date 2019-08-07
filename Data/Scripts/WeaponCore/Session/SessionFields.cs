@@ -57,7 +57,6 @@ namespace WeaponCore
         internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
 
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
-        private readonly MyConcurrentPool<Dictionary<Vector3I, IMySlimBlock>> _slimSpacePool = new MyConcurrentPool<Dictionary<Vector3I, IMySlimBlock>>(50);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private readonly Dictionary<string, Dictionary<string, string>> _turretDefinitions = new Dictionary<string, Dictionary<string, string>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();

@@ -62,6 +62,16 @@ namespace WeaponCore.Support
             WarmingUp,
         }
 
+        internal enum EmissiveStates
+        {
+            Idle,
+            Reload,
+            Firing,
+            Charging,
+            Tracking,
+            Lock,
+        }
+
         internal MyCubeBlock MyCube;
         internal MyCubeGrid MyGrid;
         internal MyPhysicsComponentBase Physics;

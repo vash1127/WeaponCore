@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using VRageMath;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -45,6 +47,14 @@ namespace WeaponCore.Support
             var keepCharge = on && !cool;
             var clear = !on && !initing;
             OfflineWeapon(clear, state, keepCharge);
+        }
+
+        internal void ChangeStateEmissive(Weapon weapon, EmissiveStates state, int value)
+        {
+            if (state == EmissiveStates.Idle)
+            {
+                //Platform.Parts.SetEmissivePartsForSubparts(emissive, color, intensity);
+            }
         }
 
         internal void Online()

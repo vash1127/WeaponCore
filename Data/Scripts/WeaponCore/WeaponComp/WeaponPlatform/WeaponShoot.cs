@@ -163,7 +163,11 @@ namespace WeaponCore.Platform
 
                     CurrentHeat += System.HeatPShot;
 
-                    if (CurrentHeat > System.MaxHeat) Overheated = true;
+                    if (CurrentHeat > System.MaxHeat)
+                    {
+                        if (!Overheated) ; //comp.ChangeStateEmissive(w, Overheat, 1);
+                        Overheated = true;
+                    }
 
                     if (i == bps) NextMuzzle++;
 
