@@ -111,34 +111,22 @@ namespace WeaponCore.Support
         {
             if (system.OrderedTargets)
             {
-                try
+                var subSystems = system.Values.Targeting.SubSystems;
+                foreach (var bt in subSystems.Systems)
                 {
-                    var subSystems = system.Values.Targeting.SubSystems;
-                    foreach (var bt in subSystems.Systems)
+                    if (bt != Any && info.TypeDict[bt].Count > 0)
                     {
-                        try
+                        var subSystemList = info.TypeDict[bt];
+                        if (subSystems.ClosestFirst)
                         {
-                            if (bt != Any && info.TypeDict[bt].Count > 0)
-                            {
-                                try
-                                {
-                                    var subSystemList = info.TypeDict[bt];
-                                    if (subSystems.ClosestFirst)
-                                    {
-                                        if (bt != target.LastBlockType) target.Top5.Clear();
-                                        target.LastBlockType = bt;
-                                        UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, currentPos, w);
-                                        if (target.Entity != null) return true;
-                                    }
-                                    else if (FindRandomBlock(system, ref target, currentPos, subSystemList, w != null)) return true;
-                                }
-                                catch (Exception ex) { Log.Line($"Exception in AcquireBlockInside: {ex} - {bt}"); }
-                            }
+                            if (bt != target.LastBlockType) target.Top5.Clear();
+                            target.LastBlockType = bt;
+                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, currentPos, w);
+                            if (target.Entity != null) return true;
                         }
-                        catch (Exception ex) { Log.Line($"Exception in AcquireBlockIf: {ex} - {bt}"); }
+                        else if (FindRandomBlock(system, ref target, currentPos, subSystemList, w != null)) return true;
                     }
                 }
-                catch (Exception ex) { Log.Line($"Exception in AcquireBlockForEach: {ex} - subSystemsCnt:{system.Values.Targeting.SubSystems.Systems.Length}"); }
             }
             if (FindRandomBlock(system, ref target, currentPos, info.TypeDict[Any], w != null)) return true;
             return false;

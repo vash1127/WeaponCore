@@ -18,42 +18,46 @@ namespace WeaponCore.Support
             Targeting.AllowScanning = true;
             foreach (var ent in Targeting.TargetRoots)
             {
-                Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                if (ent == null || ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is IMyFloatingObject 
-                    || ent.MarkedForClose || ent.IsPreview || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out entInfo)) continue;
-
-                switch (entInfo.Relationship)
+                if (ent == null)  continue;
+                using (ent.Pin())
                 {
-                    case MyRelationsBetweenPlayerAndBlock.Owner:
-                        continue;
-                    case MyRelationsBetweenPlayerAndBlock.FactionShare:
-                        continue;
-                    case MyRelationsBetweenPlayerAndBlock.NoOwnership:
-                        if (!TargetNoOwners) continue;
-                        break;
-                    case MyRelationsBetweenPlayerAndBlock.Neutral:
-                        if (!TargetNeutrals) continue;
-                        break;
+                    Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
+                    if (ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is IMyFloatingObject
+                        || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out entInfo)) continue;
+
+                    switch (entInfo.Relationship)
+                    {
+                        case MyRelationsBetweenPlayerAndBlock.Owner:
+                            continue;
+                        case MyRelationsBetweenPlayerAndBlock.FactionShare:
+                            continue;
+                        case MyRelationsBetweenPlayerAndBlock.NoOwnership:
+                            if (!TargetNoOwners) continue;
+                            break;
+                        case MyRelationsBetweenPlayerAndBlock.Neutral:
+                            if (!TargetNeutrals) continue;
+                            break;
+                    }
+
+                    var grid = ent as MyCubeGrid;
+                    if (grid != null)
+                    {
+                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 && !((grid.CubeBlocks.FirstElement() as IMySlimBlock)?.FatBlock is Sandbox.ModAPI.IMyWarhead))
+                            continue;
+
+                        var typeDict = BlockTypePool.Get();
+                        typeDict.Add(BlockTypes.Any, CubePool.Get());
+                        typeDict.Add(BlockTypes.Offense, CubePool.Get());
+                        typeDict.Add(BlockTypes.Defense, CubePool.Get());
+                        typeDict.Add(BlockTypes.Navigation, CubePool.Get());
+                        typeDict.Add(BlockTypes.Power, CubePool.Get());
+                        typeDict.Add(BlockTypes.Production, CubePool.Get());
+
+                        NewEntities.Add(new DetectInfo(ent, typeDict, entInfo));
+                        ValidGrids.Add(ent, typeDict);
+                    }
+                    else NewEntities.Add(new DetectInfo(ent, null, entInfo));
                 }
-
-                var grid = ent as MyCubeGrid;
-                if (grid != null && !grid.MarkedForClose)
-                {
-                    if (grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 && !((grid.CubeBlocks.FirstElement() as IMySlimBlock)?.FatBlock is Sandbox.ModAPI.IMyWarhead))
-                        continue;
-
-                    var typeDict = BlockTypePool.Get();
-                    typeDict.Add(BlockTypes.Any, CubePool.Get());
-                    typeDict.Add(BlockTypes.Offense, CubePool.Get());
-                    typeDict.Add(BlockTypes.Defense, CubePool.Get());
-                    typeDict.Add(BlockTypes.Navigation, CubePool.Get());
-                    typeDict.Add(BlockTypes.Power, CubePool.Get());
-                    typeDict.Add(BlockTypes.Production, CubePool.Get());
-
-                    NewEntities.Add(new DetectInfo(ent, typeDict, entInfo));
-                    ValidGrids.Add(ent, typeDict);
-                }
-                else if (!ent.MarkedForClose) NewEntities.Add(new DetectInfo(ent, null, entInfo));
             }
             GetTargetBlocks(Targeting, this);
             Targeting.AllowScanning = false;

@@ -61,11 +61,19 @@ namespace WeaponCore
 
             foreach (var x in _weaponDefinitions)
             {
-                var radius = x.Ammo.AreaEffect.AreaEffectRadius;
-                if (radius > 0)
+                var areaRadius = x.Ammo.AreaEffect.AreaEffectRadius;
+                if (areaRadius > 0)
                 {
                     var smallRadius = x.Ammo.AreaEffect.AreaEffectRadius > 5 ? 5 : x.Ammo.AreaEffect.AreaEffectRadius;
                     var largeRadius = x.Ammo.AreaEffect.AreaEffectRadius > 25 ? 25 : x.Ammo.AreaEffect.AreaEffectRadius;
+                    if (!LargeBlockSphereDb.ContainsKey(largeRadius)) GenerateBlockSphere(MyCubeSize.Large, largeRadius);
+                    if (!SmallBlockSphereDb.ContainsKey(smallRadius)) GenerateBlockSphere(MyCubeSize.Small, smallRadius);
+                }
+                var detonateRadius = x.Ammo.AreaEffect.Detonation.DetonationRadius;
+                if (detonateRadius > 0)
+                {
+                    var smallRadius = x.Ammo.AreaEffect.Detonation.DetonationRadius > 5 ? 5 : x.Ammo.AreaEffect.Detonation.DetonationRadius;
+                    var largeRadius = x.Ammo.AreaEffect.Detonation.DetonationRadius > 25 ? 25 : x.Ammo.AreaEffect.Detonation.DetonationRadius;
                     if (!LargeBlockSphereDb.ContainsKey(largeRadius)) GenerateBlockSphere(MyCubeSize.Large, largeRadius);
                     if (!SmallBlockSphereDb.ContainsKey(smallRadius)) GenerateBlockSphere(MyCubeSize.Small, smallRadius);
                 }
