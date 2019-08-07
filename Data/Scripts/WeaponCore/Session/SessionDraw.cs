@@ -8,7 +8,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private void DrawLists(List<Projectiles.Projectiles.Trajectile> drawList)
+        private void DrawLists(List<Trajectile> drawList)
         {
             var sFound = false;
             for (int i = 0; i < drawList.Count; i++)
@@ -73,6 +73,7 @@ namespace WeaponCore
                 }
                 else
                     MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, 0, t.Direction, (float)t.Length, newWidth);
+
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
                     var c = t.FiringCube;

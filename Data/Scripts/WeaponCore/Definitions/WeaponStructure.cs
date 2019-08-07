@@ -56,6 +56,8 @@ namespace WeaponCore.Support
         public readonly double MaxTrajectorySqr;
         public readonly double AreaRadiusSmall;
         public readonly double AreaRadiusLarge;
+        public readonly double DetonateRadiusSmall;
+        public readonly double DetonateRadiusLarge;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float ShotEnergyCost;
@@ -124,6 +126,8 @@ namespace WeaponCore.Support
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
             AreaRadiusSmall = values.Ammo.AreaEffect.AreaEffectRadius > 5 ? 5 : values.Ammo.AreaEffect.AreaEffectRadius;
             AreaRadiusLarge = values.Ammo.AreaEffect.AreaEffectRadius > 25 ? 25 : values.Ammo.AreaEffect.AreaEffectRadius;
+            DetonateRadiusSmall = values.Ammo.AreaEffect.Detonation.DetonationRadius > 5 ? 5 : values.Ammo.AreaEffect.Detonation.DetonationRadius;
+            DetonateRadiusLarge = values.Ammo.AreaEffect.Detonation.DetonationRadius > 25 ? 25 : values.Ammo.AreaEffect.Detonation.DetonationRadius;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
 

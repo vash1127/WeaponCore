@@ -58,7 +58,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponDefinitions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponStructure.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\SessionSlimSpace.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompFields.cs" />
@@ -70,7 +69,6 @@
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Controls\WepUi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponShoot.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\WeaponTracking.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\Common.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MiscTypes.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionControls.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionFields.cs" />

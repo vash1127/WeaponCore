@@ -44,7 +44,6 @@ namespace WeaponCore
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
 
-
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",
@@ -65,6 +64,10 @@ namespace WeaponCore
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
         private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
+
+        private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
+        private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
+        private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
 
         internal DSUtils DsUtil { get; set; } = new DSUtils();
 
