@@ -42,7 +42,7 @@ namespace WeaponCore
                                 comp.Charging = true;
                                 comp.SinkPower = w.ChargeAmtLeft;
                                 comp.TerminalRefresh();
-                                Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {gridAi.GridAvailablePower}");
+                                //Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {gridAi.GridAvailablePower}");
                             }
 
                             continue;
