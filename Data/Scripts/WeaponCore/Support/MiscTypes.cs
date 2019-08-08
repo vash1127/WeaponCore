@@ -2,16 +2,19 @@
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using VRage;
+using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Library.Collections;
 using VRage.Utils;
 using VRageMath;
+using VRageRender;
 using WeaponCore.Platform;
+using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 
 namespace WeaponCore.Support
 {
-
     internal class Trajectile
     {
         internal WeaponSystem System;
@@ -288,5 +291,81 @@ namespace WeaponCore.Support
         public int Hits;
         public HitEntity HitEntity = new HitEntity();
         public IMySlimBlock HitBlock;
+    }
+
+    internal class Fragments
+    {
+        internal List<Fragment> Sharpnel = new List<Fragment>();
+
+        internal void Init(Projectile pro, MyConcurrentPool<Fragment> fragPool)
+        {
+            for (int i = 0; i < pro.Trajectile.System.Values.Ammo.Shrapnel.Fragments; i++)
+            {
+                var frag = fragPool.Get();
+                frag.Init(pro);
+                Sharpnel.Add(frag);
+            }
+        }
+
+        internal void Spawn(int poolId)
+        {
+            for (int i = 0; i < Sharpnel.Count; i++)
+            {
+                var frag = Sharpnel[i];
+                Projectile pro;
+                Session.Instance.Projectiles.ProjectilePool[poolId].AllocateOrCreate(out pro);
+                pro.Trajectile.System = frag.System;
+                pro.Trajectile.FiringCube = frag.FiringCube;
+                pro.Origin = frag.Origin;
+                pro.OriginUp = frag.OriginUp;
+                pro.PredictedTargetPos = frag.PredictedTargetPos;
+                pro.Direction = frag.Direction;
+                pro.State = Projectile.ProjectileState.Start;
+                pro.Ai = frag.Ai;
+                pro.Trajectile.WeaponId = frag.WeaponId;
+                pro.Trajectile.MuzzleId = frag.MuzzleId;
+                pro.Target.Entity = frag.Target;
+                pro.IsShrapnel = true;
+                Session.Instance.Projectiles.FragmentPool[poolId].Return(frag);
+            }
+        }
+    }
+
+    internal class Fragment
+    {
+        public WeaponSystem System;
+        public MyCubeBlock FiringCube;
+        public GridAi Ai;
+        public MyEntity Target;
+        public Vector3D Origin;
+        public Vector3D OriginUp;
+        public Vector3D Direction;
+        public Vector3D PredictedTargetPos;
+        public int WeaponId;
+        public int MuzzleId;
+
+        internal void Init(Projectile pro)
+        {
+            System = pro.Trajectile.System;
+            FiringCube = pro.Trajectile.FiringCube;
+            Ai = pro.Ai;
+            Origin = pro.Position;
+            OriginUp = pro.OriginUp;
+            PredictedTargetPos = pro.PredictedTargetPos;
+            WeaponId = pro.Trajectile.WeaponId;
+            MuzzleId = pro.Trajectile.MuzzleId;
+            Target = pro.Target.Entity;
+
+            var dirMatrix = Matrix.CreateFromDir(Direction);
+            var randomFloat1 = MyUtils.GetRandomFloat(-90, 90);
+            var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
+
+            var shrapnelDir = Vector3.TransformNormal(-new Vector3(
+                MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
+                MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
+                MyMath.FastCos(randomFloat1)), dirMatrix);
+
+            Direction = shrapnelDir;
+        }
     }
 }

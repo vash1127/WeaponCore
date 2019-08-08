@@ -176,13 +176,11 @@ namespace WeaponCore
 
                         w.SeekTarget = !gunner && w.TargetExpired && w.TrackTarget;
 
-
-
                         if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
                         /*
                         if (wasExpired != w.TargetExpired)
                         {
-                            w.ChangeEmissiveState(Emissives.Tracking, wasExpired ? 1 : 0);
+                            w.ChangeEmissiveState(Emissives.Tracking, !w.TargetExpired);
                         }
                         */
                     }

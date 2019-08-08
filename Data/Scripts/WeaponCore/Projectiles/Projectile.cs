@@ -15,7 +15,6 @@ namespace WeaponCore.Projectiles
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int EndSteps = 2;
         internal volatile float BaseDamagePool;
-        internal volatile float AreaDamagePool;
         internal volatile bool Colliding;
         internal MyCubeGrid FiringGrid;
         internal GridAi Ai;
@@ -82,6 +81,7 @@ namespace WeaponCore.Projectiles
         internal bool ParticleStopped;
         internal bool ParticleLateStart;
         internal bool PickTarget;
+        internal bool IsShrapnel;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
@@ -142,8 +142,6 @@ namespace WeaponCore.Projectiles
             DistanceTraveled = 0;
 
             FiringGrid = Trajectile.FiringCube.CubeGrid;
-            BaseDamagePool = Trajectile.System.Values.Ammo.BaseDamage;
-            AreaDamagePool = Trajectile.System.Values.Ammo.AreaEffect.AreaEffectDamage;
 
             Guidance = Trajectile.System.Values.Ammo.Trajectory.Guidance;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
@@ -177,8 +175,18 @@ namespace WeaponCore.Projectiles
             }
             else MaxTrajectory = Trajectile.System.Values.Ammo.Trajectory.MaxTrajectory;
 
-            MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
+            BaseDamagePool = Trajectile.System.Values.Ammo.BaseDamage;
             LineLength = Trajectile.System.Values.Graphics.Line.Length;
+
+            if (IsShrapnel)
+            {
+                var shrapnel = Trajectile.System.Values.Ammo.Shrapnel;
+                BaseDamagePool = shrapnel.BaseDamage;
+                MaxTrajectory = shrapnel.MaxTrajectory;
+                LineLength = LineLength / shrapnel.Fragments >= 1 ? LineLength / shrapnel.Fragments : 1;
+            }
+
+            MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
 
             var smartsDelayDist = LineLength * Trajectile.System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
             SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
@@ -278,8 +286,17 @@ namespace WeaponCore.Projectiles
             AmmoSound = true;
         }
 
+        private void SpawnShrapnel()
+        {
+            var shrapnel = Session.Instance.Projectiles.ShrapnelPool[PoolId].Get();
+            shrapnel.Init(this, Session.Instance.Projectiles.FragmentPool[PoolId]);
+            Session.Instance.Projectiles.ShrapnelToSpawn[PoolId].Add(shrapnel);
+        }
+
         internal void ProjectileClose(Projectiles manager, int poolId)
         {
+            if (!IsShrapnel && Trajectile.System.Values.Ammo.Shrapnel.Fragments > 0) SpawnShrapnel();
+
             if (!EnableAv && ModelId == -1)
             {
                 HitList.Clear();
@@ -384,6 +401,7 @@ namespace WeaponCore.Projectiles
             if (ModelState == EntityState.Exists)
             {
                 matrix = MatrixD.CreateWorld(Position, AccelDir, Trajectile.Entity.PositionComp.WorldMatrix.Up);
+                if (IsShrapnel) MatrixD.Rescale(ref matrix, 0.5f);
                 var offVec = Position + Vector3D.Rotate(Trajectile.System.Values.Graphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
                 Trajectile.EntityMatrix = matrix;
@@ -400,8 +418,7 @@ namespace WeaponCore.Projectiles
             AmmoEffect.DistanceMax = Trajectile.System.Values.Graphics.Particles.Ammo.Extras.MaxDistance;
             AmmoEffect.UserColorMultiplier = Trajectile.System.Values.Graphics.Particles.Ammo.Color;
             //var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
-            var reScale = 1;
-            var scaler = reScale < 1 ? reScale : 1;
+            var scaler = !IsShrapnel ? 1 : 0.5f;
 
             AmmoEffect.UserRadiusMultiplier = Trajectile.System.Values.Graphics.Particles.Ammo.Extras.Scale * scaler;
             AmmoEffect.UserEmitterScale = 1 * scaler;

@@ -18,6 +18,10 @@ namespace WeaponCore.Projectiles
         internal const int PoolCount = 16;
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
 
+        internal readonly MyConcurrentPool<Fragments>[] ShrapnelPool = new MyConcurrentPool<Fragments>[PoolCount];
+        internal readonly MyConcurrentPool<Fragment>[] FragmentPool = new MyConcurrentPool<Fragment>[PoolCount];
+        internal readonly List<Fragments>[] ShrapnelToSpawn = new List<Fragments>[PoolCount];
+
         internal readonly MyConcurrentPool<List<MyEntity>>[] CheckPool = new MyConcurrentPool<List<MyEntity>>[PoolCount];
         internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
         internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
@@ -33,6 +37,9 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Wait.Length; i++)
             {
                 Wait[i] = new object();
+                ShrapnelToSpawn[i] = new List<Fragments>(25);
+                ShrapnelPool[i] = new MyConcurrentPool<Fragments>(25);
+                FragmentPool[i] = new MyConcurrentPool<Fragment>(100);
                 CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(50);
                 ProjectilePool[i] = new ObjectsPool<Projectile>(1250);
                 HitEntityPool[i] = new MyConcurrentPool<HitEntity>(250);
@@ -68,10 +75,19 @@ namespace WeaponCore.Projectiles
             var cameraPos = camera.Position;
             lock (Wait[i])
             {
+                var modelClose = false;
                 var pool = ProjectilePool[i];
                 var entPool = EntityPool[i];
                 var drawList = DrawProjectiles[i];
-                var modelClose = false;
+                var spawnShrapnel = ShrapnelToSpawn[i];
+                for (int j = 0; j < spawnShrapnel.Count; j++)
+                {
+                    var shrapnel = spawnShrapnel[j];
+                    shrapnel.Spawn(i);
+                    ShrapnelPool[i].Return(shrapnel);
+                }
+                spawnShrapnel.Clear();
+
                 foreach (var p in pool.Active)
                 {
                     p.Age++;
