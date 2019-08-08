@@ -33,6 +33,22 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
                         if (!w.Enabled) continue;
+
+                        if (w.ChargeAmtLeft > gridAi.GridAvailablePower || (w.ChargeAmtLeft > 0 && comp.Charging))
+                        {
+                            if (Tick60)
+                            {
+                                w.ChargeAmtLeft = w.ChargeAmtLeft - gridAi.GridAvailablePower < 0 ? 0 : w.ChargeAmtLeft - gridAi.GridAvailablePower;
+                                comp.Charging = true;
+                                comp.SinkPower = w.ChargeAmtLeft;
+                                comp.TerminalRefresh();
+                                Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {gridAi.GridAvailablePower}");
+                            }
+
+                            continue;
+                        }
+                        else comp.Charging = false;
+
                         var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)
                         {

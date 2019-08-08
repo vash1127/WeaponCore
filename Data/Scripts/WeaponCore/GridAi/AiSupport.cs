@@ -50,22 +50,6 @@ namespace WeaponCore.Support
             BatteryCurrentOutput = 0;
             BatteryCurrentInput = 0;
 
-            FallBackPowerCalc();
-
-            GridAvailablePower = GridMaxPower - GridCurrentPower;
-
-            var useBatteries = false;
-            if (!useBatteries)
-            {
-                GridCurrentPower += BatteryCurrentInput;
-                GridAvailablePower -= BatteryCurrentInput;
-            }
-
-            return GridMaxPower > 0;
-        }
-
-        private void FallBackPowerCalc()
-        {
             foreach (var source in Sources)
             {
                 var battery = source.Entity as IMyBatteryBlock;
@@ -92,6 +76,17 @@ namespace WeaponCore.Support
             }
             GridMaxPower += BatteryMaxPower;
             GridCurrentPower += BatteryCurrentOutput;
+
+            GridAvailablePower = GridMaxPower - GridCurrentPower;
+
+            var useBatteries = false;
+            if (!useBatteries)
+            {
+                GridCurrentPower += BatteryCurrentInput;
+                GridAvailablePower -= BatteryCurrentInput;
+            }
+
+            return GridMaxPower > 0;
         }
         #endregion
 
