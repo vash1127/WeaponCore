@@ -29,6 +29,11 @@ namespace WeaponCore.Support
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
+        public readonly bool HeatingEmissive;
+        public readonly bool FiringEmissive;
+        public readonly bool TrackingEmissive;
+        public readonly bool ReloadingEmissive;
+
         public readonly bool BarrelAxisRotation;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
@@ -131,19 +136,17 @@ namespace WeaponCore.Support
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
 
-            IsBeamWeapon = values.Ammo.Beams.Enable;
-            VirtualBeams = values.Ammo.Beams.VirtualBeams && IsBeamWeapon;
-            RotateRealBeam = values.Ammo.Beams.RotateRealBeam && VirtualBeams;
-            ConvergeBeams = !RotateRealBeam && values.Ammo.Beams.ConvergeBeams && VirtualBeams;
-            OneHitParticle = values.Ammo.Beams.OneParticle && IsBeamWeapon;
             ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.BaseDamage;
 
             MaxTrajectorySqr = values.Ammo.Trajectory.MaxTrajectory * values.Ammo.Trajectory.MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
 
-            DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales);
             Sound();
+
+            DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales);
             Models(out ModelId);
+            Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
+            Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle);
 
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
         }
@@ -167,6 +170,34 @@ namespace WeaponCore.Support
             }
             damageScaling = d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
             if (damageScaling) armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
+        }
+
+        private void Models(out int modelId)
+        {
+
+            if (Values.Graphics.ModelName != string.Empty)
+            {
+                modelId = Session.Instance.ModelCount++;
+                Session.Instance.ModelIdToName.Add(ModelId, Values.ModPath + Values.Graphics.ModelName);
+            }
+            else modelId = -1;
+        }
+
+        private void Emissives(out bool tracking, out bool firing, out bool heating, out bool reloading)
+        {
+            tracking = Values.Graphics.Emissive.Tracking.Enable;
+            firing = Values.Graphics.Emissive.Firing.Enable;
+            heating = Values.Graphics.Emissive.Heating.Enable;
+            reloading = Values.Graphics.Emissive.Reloading.Enable;
+        }
+
+        private void Beams(out bool isBeamWeapon, out bool virtualBeams, out bool rotateRealBeam, out bool convergeBeams, out bool oneHitParticle)
+        {
+            isBeamWeapon = Values.Ammo.Beams.Enable;
+            virtualBeams = Values.Ammo.Beams.VirtualBeams && IsBeamWeapon;
+            rotateRealBeam = Values.Ammo.Beams.RotateRealBeam && VirtualBeams;
+            convergeBeams = !RotateRealBeam && Values.Ammo.Beams.ConvergeBeams && VirtualBeams;
+            oneHitParticle = Values.Ammo.Beams.OneParticle && IsBeamWeapon;
         }
 
         private void Sound()
@@ -240,17 +271,6 @@ namespace WeaponCore.Support
                     if (NoAmmoSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = NoAmmoSoundDistSqr;
                 }
             }
-        }
-
-        private void Models(out int modelId)
-        {
-
-            if (Values.Graphics.ModelName != string.Empty)
-            {
-                modelId = Session.Instance.ModelCount++;
-                Session.Instance.ModelIdToName.Add(ModelId, Values.ModPath + Values.Graphics.ModelName);
-            }
-            else modelId = -1;
         }
     }
 

@@ -100,6 +100,18 @@ namespace WeaponCore
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
 
             var areaEffectDmg = system.Values.Ammo.AreaEffect.AreaEffectDamage;
+            var detonateDmg = system.Values.Ammo.AreaEffect.Detonation.DetonationDamage;
+            var hitMass = system.Values.Ammo.Mass;
+            if (projectile.IsShrapnel)
+            {
+                var shrapnel = system.Values.Ammo.Shrapnel;
+                areaEffectDmg = areaEffectDmg > 0 ? areaEffectDmg / shrapnel.Fragments : 0;
+                detonateDmg = detonateDmg > 0 ? detonateDmg / shrapnel.Fragments : 0;
+                hitMass = hitMass > 0 ? hitMass / shrapnel.Fragments : 0;
+
+                //areaRadius = areaRadius > 0 ? areaRadius / shrapnel.Fragments : 0;
+                //detonateRadius = detonateRadius > 0 ? detonateRadius / shrapnel.Fragments : 0;
+            }
 
             var hasAreaDmg = areaEffectDmg > 0;
             var radiantCascade = radiant && !detonateOnEnd;
@@ -225,10 +237,8 @@ namespace WeaponCore
 
                     if (explosive && !nova && ((!detonateOnEnd && blockIsRoot) || detonateOnEnd && theEnd))
                     {
-                        var aInfo = system.Values.Ammo.AreaEffect;
-                        var dInfo = aInfo.Detonation;
-                        var damage = detonateOnEnd && theEnd ? dInfo.DetonationDamage : areaEffectDmg;
-                        var radius = detonateOnEnd && theEnd ? dInfo.DetonationRadius : aInfo.AreaEffectRadius;
+                        var damage = detonateOnEnd && theEnd ? detonateDmg : areaEffectDmg;
+                        var radius = detonateOnEnd && theEnd ? detonateRadius : areaRadius;
                         if (ExplosionReady) UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, grid, system);
                         else UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, grid, system, true);
                     }
@@ -237,7 +247,7 @@ namespace WeaponCore
                         if (system.Values.Ammo.Mass > 0 && blockIsRoot)
                         {
                             var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                            ApplyProjectileForce(grid, hitEnt.HitPos.Value, projectile.Direction, (system.Values.Ammo.Mass * speed));
+                            ApplyProjectileForce(grid, hitEnt.HitPos.Value, projectile.Direction, (hitMass * speed));
                         }
 
                         if (radiantBomb && theEnd)
@@ -252,7 +262,7 @@ namespace WeaponCore
 
                             //sphere.Radius = dInfo.DetonationRadius;
 
-                            if (dInfo.DetonationDamage > 0) damagePool = dInfo.DetonationDamage;
+                            if (dInfo.DetonationDamage > 0) damagePool = detonateDmg;
                             else if (aInfo.AreaEffectDamage > 0) damagePool = areaEffectDmg;
                             else damagePool = scaledDamage;
                             //Log.Line($"[raidant end] scaled:{scaledDamage} - area:{system.Values.Ammo.AreaEffect.AreaEffectDamage} - pool:{damagePool}({projectile.BaseDamagePool}) - objHit:{projectile.ObjectsHit} - gridBlocks:{grid.CubeBlocks.Count}({((MyCubeGrid)rootBlock.CubeGrid).BlocksCount}) - i:{i} j:{j}");

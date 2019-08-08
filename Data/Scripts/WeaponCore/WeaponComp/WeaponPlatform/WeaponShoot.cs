@@ -52,7 +52,6 @@ namespace WeaponCore.Platform
             if (!IsShooting) StartShooting();
 
             if (_ticksUntilShoot < System.DelayToFire) return;
-
             if (_shotsInCycle++ == _numOfBarrels - 1)
             {
                 _shotsInCycle = 0;
@@ -99,7 +98,7 @@ namespace WeaponCore.Platform
                         {
                             var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
                             var randomFloat1 = MyUtils.GetRandomFloat(-System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
-                            var randomFloat2 = MyUtils.GetRandomFloat(0.0f, 6.283185f);
+                            var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
 
                             muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3(
                                     MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
@@ -147,7 +146,7 @@ namespace WeaponCore.Platform
                             pro.Trajectile.WeaponId = WeaponId;
                             pro.Trajectile.MuzzleId = muzzle.MuzzleId;
                             pro.Target.Entity = Target.Entity;
-                            pro.DamageFrame = DamageFrame;
+                            //pro.DamageFrame = DamageFrame;
                             if (System.ModelId != -1)
                             {
                                 MyEntity ent;
@@ -171,7 +170,7 @@ namespace WeaponCore.Platform
 
                     if (CurrentHeat > System.MaxHeat)
                     {
-                        if (!Comp.Overheated) ; //comp.ChangeStateEmissive(w, Overheat, 1);
+                        if (!Comp.Overheated) ; //w.ChangeEmissiveState(Emissives.Heating, true);
                         Comp.Overheated = true;
                     }
 

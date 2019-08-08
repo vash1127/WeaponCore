@@ -28,6 +28,42 @@ namespace WeaponCore.Platform
             public int MuzzleId;
         }
 
+        internal void ChangeEmissiveState(Emissives state, bool active)
+        {
+            switch (state)
+            {
+                case Emissives.Firing:
+                    var stages = System.Values.Graphics.Emissive.Firing.Stages;
+                    var stageSize = _ticksPerShot / stages;
+                    var timeToShoot = _ticksPerShot - ShotCounter;
+                    var stage = timeToShoot / stageSize - 1;
+                    var fIntensity = 1 / stages;
+                    var firingColor = System.Values.Graphics.Emissive.Firing.Color;
+
+                    for (int i = 0; i < stages; i++)
+                    {
+                        if (stage < 0 || !active)
+                            EntityPart.SetEmissiveParts(FiringStrings[i], Color.Transparent, 0);
+                        else if (stage >= i)
+                            EntityPart.SetEmissiveParts(FiringStrings[i], firingColor, fIntensity * i);
+                    }
+                    break;
+                case Emissives.Reload:
+                    var rIntensity = active ? 1 : 0; 
+                    EntityPart.SetEmissiveParts("Reloading", System.Values.Graphics.Emissive.Reloading.Color, rIntensity);
+                    break;
+                case Emissives.Tracking:
+                    var tIntensity = active ? 1 : 0;
+                    EntityPart.SetEmissiveParts("Tracking", System.Values.Graphics.Emissive.Tracking.Color, tIntensity);
+                    break;
+                case Emissives.Heating:
+                    var hIntensity = active ? 1 : 0;
+                    EntityPart.SetEmissiveParts("Heating", Color.Red, hIntensity);
+                    break;
+            }
+        }
+
+
         public void ShootGraphics()
         {
             if (System.BarrelEffect1 || System.BarrelEffect2)
