@@ -1,4 +1,5 @@
-﻿using Sandbox.Common.ObjectBuilders;
+﻿using System;
+using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -9,6 +10,7 @@ using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -124,9 +126,10 @@ namespace WeaponCore.Support
                 RequiredInputFunc = () => SinkPower
             };
             Sink.RemoveType(ref GId);
+            Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
             Sink.AddType(ref resourceInfo);
+            Sink.RequiredInputChanged += PowerChanged;
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
         }
-
     }
 }

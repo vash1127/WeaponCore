@@ -32,20 +32,7 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (!w.Enabled || (!Tick60 && (comp.Charging || comp.Overheated))) continue;
-
-                        if (comp.ChargeAmtLeft > gridAi.GridAvailablePower || (comp.ChargeAmtLeft > 0 && comp.Charging))
-                        {
-                            comp.Charging = true;
-                            if (Tick60)
-                            {
-                                comp.ChargeAmtLeft = comp.ChargeAmtLeft - gridAi.GridAvailablePower < 0 ? 0 : comp.ChargeAmtLeft - gridAi.GridAvailablePower;
-                                comp.SinkPower = comp.ChargeAmtLeft;
-                                comp.TerminalRefresh();
-                                //Log.Line($"Charging: {comp.Charging} Charge Left: {w.ChargeAmtLeft} Power Available: {gridAi.GridAvailablePower}");
-                            }
-                        }
-                        else comp.Charging = false;
+                        if (!w.Enabled || (!Tick60 && comp.Overheated)) continue;
 
                         if (Tick60)
                         {
@@ -57,7 +44,17 @@ namespace WeaponCore
                             }
                         }
 
-                        if (comp.Charging || comp.Overheated) continue;
+                        if (Tick60 && comp.Charging) {
+                            comp.ChargeAmtLeft -= gridAi.GridAvailablePower;
+                            
+                            if (comp.ChargeAmtLeft <= 0) {
+                                comp.ChargeAmtLeft = 0;
+                                comp.Charging = false;
+                            }
+                            comp.TerminalRefresh();
+                        }
+
+                        if (comp.Overheated || comp.Charging) continue;
 
                         var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
@@ -101,10 +102,15 @@ namespace WeaponCore.Support
                 {
                     stringBuilder.Append(status +
                                          "\n" +
-                                         "\n[Required Power]: " + SinkPower.ToString("0.0") + " Mw");
+                                         "\n[Required Power]: " + ChargeAmtLeft.ToString("0.0") + " Mw");
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
+        }
+
+        private void PowerChanged(MyDefinitionId changedResourceTypeId, MyResourceSinkComponent sink, float oldRequirement, float newRequirement)
+        {
+            Charging = newRequirement > Ai.GridAvailablePower;
         }
     }
 }

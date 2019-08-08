@@ -163,7 +163,11 @@ namespace WeaponCore.Platform
                     }
 
                     CurrentHeat += System.HeatPShot;
-                    Comp.ChargeAmtLeft = RequiredPower;
+                    if (Comp.ChargeAmtLeft < RequiredPower)
+                    {
+                        Comp.SinkPower = Comp.ChargeAmtLeft = RequiredPower;
+                        StopShooting();
+                    }
 
                     if (CurrentHeat > System.MaxHeat)
                     {
