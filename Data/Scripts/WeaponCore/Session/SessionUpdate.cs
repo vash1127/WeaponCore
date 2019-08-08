@@ -1,8 +1,6 @@
-﻿using Sandbox.ModAPI;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponComponent.EmissiveStates;
 
 namespace WeaponCore
 {
@@ -52,7 +50,7 @@ namespace WeaponCore
                             w.CurrentHeat = w.CurrentHeat >= w.HSRate ? w.CurrentHeat -= w.HSRate : 0;
                             if (comp.Overheated && w.CurrentHeat <= (w.System.MaxHeat * w.System.WepCooldown))
                             {
-                                //comp.ChangeStateEmissive(w, Overheat, 0);
+                                //w.ChangeEmissiveState(Emissives.Heating, false);
                                 comp.Overheated = false;
                             }
                         }
@@ -71,7 +69,7 @@ namespace WeaponCore
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
-                                //comp.ChangeStateEmissive(w, Reload, 0);
+                                //w.ChangeEmissiveState(Emissives.Reloading, true);
                                 if (w.CurrentMags != 0)
                                 {
                                     w.LoadAmmoMag = true;
@@ -80,7 +78,7 @@ namespace WeaponCore
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
-                            //comp.ChangeStateEmissive(w, Reload, 1);
+                            //w.ChangeEmissiveState(Emissives.Reloading, false);
                         }
                         if (w.SeekTarget)
                         {
@@ -184,7 +182,7 @@ namespace WeaponCore
                         /*
                         if (wasExpired != w.TargetExpired)
                         {
-                            comp.ChangeStateEmissive(w, Lock, wasExpired ? 1 : 0);
+                            w.ChangeEmissiveState(Emissives.Tracking, wasExpired ? 1 : 0);
                         }
                         */
                     }

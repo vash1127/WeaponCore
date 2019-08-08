@@ -52,7 +52,6 @@ namespace WeaponCore.Platform
             if (!IsShooting) StartShooting();
 
             if (_ticksUntilShoot < System.DelayToFire) return;
-
             if (_shotsInCycle++ == _numOfBarrels - 1)
             {
                 _shotsInCycle = 0;

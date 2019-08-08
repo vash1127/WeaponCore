@@ -49,14 +49,6 @@ namespace WeaponCore.Support
             OfflineWeapon(clear, state, keepCharge);
         }
 
-        internal void ChangeStateEmissive(Weapon weapon, EmissiveStates state, int value)
-        {
-            if (state == EmissiveStates.Idle)
-            {
-                //Platform.Parts.SetEmissivePartsForSubparts(emissive, color, intensity);
-            }
-        }
-
         internal void Online()
         {
         }

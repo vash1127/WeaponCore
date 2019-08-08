@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage;
 using VRage.Collections;
@@ -103,6 +104,16 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool Enabled;
         internal bool OrderedTargets;
+        internal readonly List<string> FiringStrings = new List<string>()
+        {
+            "Firing0",
+            "Firing1",
+            "Firing2",
+            "Firing3",
+            "Firing4",
+            "Firing5",
+        };
+
         internal bool LoadAmmoMag
         {
             set
@@ -124,6 +135,14 @@ namespace WeaponCore.Platform
                 AmmoMagTimer = int.MaxValue;
                 return true;
             }
+        }
+
+        internal enum Emissives
+        {
+            Reload,
+            Firing,
+            Tracking,
+            Heating,
         }
 
         public Weapon(IMyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp)
