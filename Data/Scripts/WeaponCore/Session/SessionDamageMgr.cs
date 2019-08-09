@@ -108,9 +108,8 @@ namespace WeaponCore
                 areaEffectDmg = areaEffectDmg > 0 ? areaEffectDmg / shrapnel.Fragments : 0;
                 detonateDmg = detonateDmg > 0 ? detonateDmg / shrapnel.Fragments : 0;
                 hitMass = hitMass > 0 ? hitMass / shrapnel.Fragments : 0;
-
-                //areaRadius = areaRadius > 0 ? areaRadius / shrapnel.Fragments : 0;
-                //detonateRadius = detonateRadius > 0 ? detonateRadius / shrapnel.Fragments : 0;
+                areaRadius = ModRadius(areaRadius, largeGrid);
+                detonateRadius = ModRadius(detonateRadius, largeGrid);
             }
 
             var hasAreaDmg = areaEffectDmg > 0;
@@ -159,9 +158,6 @@ namespace WeaponCore
 
                     done = nova;
                     dmgCount = _slimsSortedList.Count;
-
-                    //sphere.Center = grid.GridIntegerToWorld(rootBlock.Position);
-                    //GetIntVectorsInSphere2(grid, rootBlock.Position, sphere.Radius);
                 }
 
                 for (int j = 0; j < dmgCount; j++)
@@ -244,7 +240,7 @@ namespace WeaponCore
                     }
                     else if (!nova)
                     {
-                        if (system.Values.Ammo.Mass > 0 && blockIsRoot)
+                        if (hitMass > 0 && blockIsRoot)
                         {
                             var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
                             ApplyProjectileForce(grid, hitEnt.HitPos.Value, projectile.Direction, (hitMass * speed));
@@ -279,12 +275,6 @@ namespace WeaponCore
                 //Log.Line($"not end game: pool:{damagePool} - objHit:{objectsHit}" );
             }
             hitEnt.Blocks.Clear();
-        }
-
-        public void GetBlockSphereDb(MyCubeGrid grid, double areaRadius, out List<Vector3I> radiatedBlocks)
-        {
-            if (grid.GridSizeEnum == MyCubeSize.Large) LargeBlockSphereDb.TryGetValue(areaRadius, out radiatedBlocks);
-            else SmallBlockSphereDb.TryGetValue(areaRadius, out radiatedBlocks);
         }
 
         private void DamageDestObj(HitEntity hitEnt, Projectile projectile)
@@ -341,7 +331,7 @@ namespace WeaponCore
             if (hitEnt.HitPos.HasValue)
             {
                 if (ExplosionReady)
-                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, hitEnt.Entity, system);
+                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, hitEnt.Entity, system, true);
                 else
                     UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, projectile.Direction, projectile.Trajectile.FiringCube, hitEnt.Entity, system, true);
             }
@@ -356,6 +346,17 @@ namespace WeaponCore
             entity.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, normalizedDirection * impulse, intersectionPosition, Vector3.Zero);
         }
 
+        public void GetBlockSphereDb(MyCubeGrid grid, double areaRadius, out List<Vector3I> radiatedBlocks)
+        {
+            areaRadius = Math.Ceiling(areaRadius);
+
+            if (grid.GridSizeEnum == MyCubeSize.Large)
+            {
+                if (areaRadius < 3) areaRadius = 3;
+                LargeBlockSphereDb.TryGetValue(areaRadius, out radiatedBlocks);
+            }
+            else SmallBlockSphereDb.TryGetValue(areaRadius, out radiatedBlocks);
+        }
 
         private void GenerateBlockSphere(MyCubeSize gridSizeEnum, double radiusInMeters)
         {

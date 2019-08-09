@@ -216,9 +216,17 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct Shrapnel
     {
+        internal enum ShrapnelShape
+        {
+            Cone,
+            HalfMoon,
+            FullMoon,
+        }
+
         [ProtoMember(1)] internal float BaseDamage;
         [ProtoMember(2)] internal int Fragments;
         [ProtoMember(3)] internal float MaxTrajectory;
+        [ProtoMember(4)] internal ShrapnelShape Shape;
     }
 
     [ProtoContract]

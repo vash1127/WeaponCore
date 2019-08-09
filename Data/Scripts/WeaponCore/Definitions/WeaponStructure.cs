@@ -129,10 +129,12 @@ namespace WeaponCore.Support
             if(WepCooldown < .2f) WepCooldown = .2f;
             if(WepCooldown > .95f) WepCooldown = .95f;
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
-            AreaRadiusSmall = values.Ammo.AreaEffect.AreaEffectRadius > 5 ? 5 : values.Ammo.AreaEffect.AreaEffectRadius;
-            AreaRadiusLarge = values.Ammo.AreaEffect.AreaEffectRadius > 25 ? 25 : values.Ammo.AreaEffect.AreaEffectRadius;
-            DetonateRadiusSmall = values.Ammo.AreaEffect.Detonation.DetonationRadius > 5 ? 5 : values.Ammo.AreaEffect.Detonation.DetonationRadius;
-            DetonateRadiusLarge = values.Ammo.AreaEffect.Detonation.DetonationRadius > 25 ? 25 : values.Ammo.AreaEffect.Detonation.DetonationRadius;
+            
+            AreaRadiusSmall = Session.ModRadius(values.Ammo.AreaEffect.AreaEffectRadius, false);
+            AreaRadiusLarge = Session.ModRadius(values.Ammo.AreaEffect.AreaEffectRadius, true);
+            DetonateRadiusSmall = Session.ModRadius(values.Ammo.AreaEffect.Detonation.DetonationRadius, false);
+            DetonateRadiusLarge = Session.ModRadius(values.Ammo.AreaEffect.Detonation.DetonationRadius, true);
+
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
 

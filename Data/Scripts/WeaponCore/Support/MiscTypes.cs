@@ -302,7 +302,48 @@ namespace WeaponCore.Support
             for (int i = 0; i < pro.Trajectile.System.Values.Ammo.Shrapnel.Fragments; i++)
             {
                 var frag = fragPool.Get();
-                frag.Init(pro);
+
+                frag.System = pro.Trajectile.System;
+                frag.FiringCube = pro.Trajectile.FiringCube;
+                frag.Ai = pro.Ai;
+                frag.Origin = pro.Position;
+                frag.OriginUp = pro.OriginUp;
+                frag.PredictedTargetPos = pro.PredictedTargetPos;
+                frag.WeaponId = pro.Trajectile.WeaponId;
+                frag.MuzzleId = pro.Trajectile.MuzzleId;
+                frag.Target = pro.Target.Entity;
+
+                var dirMatrix = Matrix.CreateFromDir(pro.Direction);
+                var shape = pro.Trajectile.System.Values.Ammo.Shrapnel.Shape;
+                float neg;
+                float pos;
+                switch (shape)
+                {
+                    case Shrapnel.ShrapnelShape.Cone:
+                        neg = 0;
+                        pos = 15;
+                        break;
+                    case Shrapnel.ShrapnelShape.HalfMoon:
+                        neg = 90;
+                        pos = 90;
+                        break;
+                    default:
+                        neg = 180;
+                        pos = 180;
+                        break;
+                }
+                var negValue = MathHelper.ToRadians(neg);
+                var posValue = MathHelper.ToRadians(pos);
+                var randomFloat1 = MyUtils.GetRandomFloat(-negValue, posValue);
+                var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
+
+                var shrapnelDir = Vector3.TransformNormal(-new Vector3(
+                    MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
+                    MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
+                    MyMath.FastCos(randomFloat1)), dirMatrix);
+
+                frag.Direction = shrapnelDir;
+
                 Sharpnel.Add(frag);
             }
         }
@@ -343,29 +384,5 @@ namespace WeaponCore.Support
         public Vector3D PredictedTargetPos;
         public int WeaponId;
         public int MuzzleId;
-
-        internal void Init(Projectile pro)
-        {
-            System = pro.Trajectile.System;
-            FiringCube = pro.Trajectile.FiringCube;
-            Ai = pro.Ai;
-            Origin = pro.Position;
-            OriginUp = pro.OriginUp;
-            PredictedTargetPos = pro.PredictedTargetPos;
-            WeaponId = pro.Trajectile.WeaponId;
-            MuzzleId = pro.Trajectile.MuzzleId;
-            Target = pro.Target.Entity;
-
-            var dirMatrix = Matrix.CreateFromDir(Direction);
-            var randomFloat1 = MyUtils.GetRandomFloat(-90, 90);
-            var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
-
-            var shrapnelDir = Vector3.TransformNormal(-new Vector3(
-                MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
-                MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
-                MyMath.FastCos(randomFloat1)), dirMatrix);
-
-            Direction = shrapnelDir;
-        }
     }
 }
