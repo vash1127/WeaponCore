@@ -34,12 +34,14 @@ namespace WeaponCore.Platform
             {
                 case Emissives.Firing:
                     var stages = System.Values.Graphics.Emissive.Firing.Stages;
-                    var stageSize = _ticksPerShot / stages;
+                    var stageSize = _ticksPerShot / 6;
+                    if (stageSize < 2) stageSize = 2;
                     var timeToShoot = _ticksPerShot - ShotCounter;
                     var stage = timeToShoot / stageSize - 1;
-                    var fIntensity = 1 / stages;
+                    if (stage == 0) stage = 1;
+                    var fIntensity = 1 / 6;
                     var firingColor = System.Values.Graphics.Emissive.Firing.Color;
-
+                    Log.Line("firing");
                     for (int i = 0; i < stages; i++)
                     {
                         if (stage < 0 || !active)
@@ -48,16 +50,19 @@ namespace WeaponCore.Platform
                             EntityPart.SetEmissiveParts(FiringStrings[i], firingColor, fIntensity * i);
                     }
                     break;
-                case Emissives.Reload:
-                    var rIntensity = active ? 1 : 0; 
-                    EntityPart.SetEmissiveParts("Reloading", System.Values.Graphics.Emissive.Reloading.Color, rIntensity);
+                case Emissives.Reloading:
+                    var reloadColor = System.Values.Graphics.Emissive.Reloading.Color;
+                    var rIntensity = active ? 1 : reloadColor.W;
+                    EntityPart.SetEmissiveParts("Reloading", reloadColor, rIntensity);
                     break;
                 case Emissives.Tracking:
-                    var tIntensity = active ? 1 : 0;
-                    EntityPart.SetEmissiveParts("Tracking", System.Values.Graphics.Emissive.Tracking.Color, tIntensity);
+                    var trackingColor = System.Values.Graphics.Emissive.Tracking.Color;
+                    var tIntensity = active ? 1 : trackingColor.W;
+                    EntityPart.SetEmissiveParts("Tracking", trackingColor, tIntensity);
+                    TargetWasExpired = TargetExpired;
                     break;
                 case Emissives.Heating:
-                    var hIntensity = active ? 1 : 0;
+                    var hIntensity = active ? 1 : 0.1f;
                     EntityPart.SetEmissiveParts("Heating", Color.Red, hIntensity);
                     break;
             }

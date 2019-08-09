@@ -35,6 +35,7 @@ namespace WeaponCore.Platform
                 _lastShotTick = tick;
             }
 
+            //ChangeEmissiveState(Emissives.Firing, true);
             if (AvCapable && (!PlayTurretAv || Comp.Ai.MySession.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointSoundMaxDistSqr;
 
@@ -166,7 +167,7 @@ namespace WeaponCore.Platform
 
                     if (CurrentHeat > System.MaxHeat)
                     {
-                        if (!Comp.Overheated) ; //w.ChangeEmissiveState(Emissives.Heating, true);
+                        if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
                         Comp.Overheated = true;
                     }
 

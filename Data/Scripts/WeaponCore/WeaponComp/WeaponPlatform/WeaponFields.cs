@@ -104,6 +104,7 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool Enabled;
         internal bool OrderedTargets;
+        internal bool TargetWasExpired;
         internal readonly List<string> FiringStrings = new List<string>()
         {
             "Firing0",
@@ -139,7 +140,7 @@ namespace WeaponCore.Platform
 
         internal enum Emissives
         {
-            Reload,
+            Reloading,
             Firing,
             Tracking,
             Heating,

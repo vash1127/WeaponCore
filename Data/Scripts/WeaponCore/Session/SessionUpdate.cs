@@ -50,7 +50,7 @@ namespace WeaponCore
                             w.CurrentHeat = w.CurrentHeat >= w.HSRate ? w.CurrentHeat -= w.HSRate : 0;
                             if (comp.Overheated && w.CurrentHeat <= (w.System.MaxHeat * w.System.WepCooldown))
                             {
-                                //w.ChangeEmissiveState(Emissives.Heating, false);
+                                w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
                                 comp.Overheated = false;
                             }
                         }
@@ -69,7 +69,7 @@ namespace WeaponCore
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
-                                //w.ChangeEmissiveState(Emissives.Reloading, true);
+                                w.ChangeEmissiveState(Weapon.Emissives.Reloading, true);
                                 if (w.CurrentMags != 0)
                                 {
                                     w.LoadAmmoMag = true;
@@ -78,7 +78,7 @@ namespace WeaponCore
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
-                            //w.ChangeEmissiveState(Emissives.Reloading, false);
+                            w.ChangeEmissiveState(Weapon.Emissives.Reloading, false);
                         }
                         if (w.SeekTarget)
                         {
@@ -102,7 +102,11 @@ namespace WeaponCore
 
                         
                         if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
-                        else if (w.IsShooting) w.StopShooting();
+                        else if (w.IsShooting)
+                        {
+                            w.ChangeEmissiveState(Weapon.Emissives.Firing, false);
+                            w.StopShooting();
+                        }
                         if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
                     }
                 }
@@ -163,7 +167,6 @@ namespace WeaponCore
                                 if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
                             }
                         }
-                        //var wasExpired = w.TargetExpired;
                         if (w.DelayCeaseFire)
                         {
                             if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
@@ -177,12 +180,10 @@ namespace WeaponCore
                         w.SeekTarget = !gunner && w.TargetExpired && w.TrackTarget;
 
                         if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
-                        /*
-                        if (wasExpired != w.TargetExpired)
+                        if (w.TargetWasExpired != w.TargetExpired)
                         {
-                            w.ChangeEmissiveState(Emissives.Tracking, !w.TargetExpired);
+                            w.ChangeEmissiveState(Weapon.Emissives.Tracking, !w.TargetExpired);
                         }
-                        */
                     }
                 }
             }
