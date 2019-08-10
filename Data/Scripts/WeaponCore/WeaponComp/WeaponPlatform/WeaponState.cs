@@ -41,7 +41,6 @@ namespace WeaponCore.Platform
                     if (stage == 0) stage = 1;
                     var fIntensity = 1 / 6;
                     var firingColor = System.Values.Graphics.Emissive.Firing.Color;
-                    Log.Line("firing");
                     for (int i = 0; i < stages; i++)
                     {
                         if (stage < 0 || !active)

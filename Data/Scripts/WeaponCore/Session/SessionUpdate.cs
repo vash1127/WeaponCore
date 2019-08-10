@@ -18,7 +18,7 @@ namespace WeaponCore
                 if (gridAi.GridMaxPower <= 0 || Tick60)
                 {
                     gridAi.UpdateGridPower();
-                    Log.Line($"MaxPower:{gridAi.GridMaxPower} - AvailPower:{gridAi.GridAvailablePower} - CurrentPower:{gridAi.GridCurrentPower}");
+                    if (Tick600) Log.Line($"MaxPower:{gridAi.GridMaxPower} - AvailPower:{gridAi.GridAvailablePower} - CurrentPower:{gridAi.GridCurrentPower}");
                 }
                 foreach (var basePair in gridAi.WeaponBase)
                 {

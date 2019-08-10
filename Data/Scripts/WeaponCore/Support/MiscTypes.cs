@@ -297,24 +297,24 @@ namespace WeaponCore.Support
     {
         internal List<Fragment> Sharpnel = new List<Fragment>();
 
-        internal void Init(Projectile pro, MyConcurrentPool<Fragment> fragPool)
+        internal void Init(Projectile p, MyConcurrentPool<Fragment> fragPool)
         {
-            for (int i = 0; i < pro.Trajectile.System.Values.Ammo.Shrapnel.Fragments; i++)
+            for (int i = 0; i < p.T.System.Values.Ammo.Shrapnel.Fragments; i++)
             {
                 var frag = fragPool.Get();
 
-                frag.System = pro.Trajectile.System;
-                frag.FiringCube = pro.Trajectile.FiringCube;
-                frag.Ai = pro.Ai;
-                frag.Origin = pro.Position;
-                frag.OriginUp = pro.OriginUp;
-                frag.PredictedTargetPos = pro.PredictedTargetPos;
-                frag.WeaponId = pro.Trajectile.WeaponId;
-                frag.MuzzleId = pro.Trajectile.MuzzleId;
-                frag.Target = pro.Target.Entity;
-
-                var dirMatrix = Matrix.CreateFromDir(pro.Direction);
-                var shape = pro.Trajectile.System.Values.Ammo.Shrapnel.Shape;
+                frag.System = p.T.System;
+                frag.FiringCube = p.T.FiringCube;
+                frag.Ai = p.Ai;
+                frag.Origin = p.Position;
+                frag.OriginUp = p.OriginUp;
+                frag.PredictedTargetPos = p.PredictedTargetPos;
+                frag.WeaponId = p.T.WeaponId;
+                frag.MuzzleId = p.T.MuzzleId;
+                frag.Target = p.Target.Entity;
+                frag.Velocity = p.Velocity;
+                var dirMatrix = Matrix.CreateFromDir(p.Direction);
+                var shape = p.T.System.Values.Ammo.Shrapnel.Shape;
                 float neg;
                 float pos;
                 switch (shape)
@@ -353,20 +353,21 @@ namespace WeaponCore.Support
             for (int i = 0; i < Sharpnel.Count; i++)
             {
                 var frag = Sharpnel[i];
-                Projectile pro;
-                Session.Instance.Projectiles.ProjectilePool[poolId].AllocateOrCreate(out pro);
-                pro.Trajectile.System = frag.System;
-                pro.Trajectile.FiringCube = frag.FiringCube;
-                pro.Origin = frag.Origin;
-                pro.OriginUp = frag.OriginUp;
-                pro.PredictedTargetPos = frag.PredictedTargetPos;
-                pro.Direction = frag.Direction;
-                pro.State = Projectile.ProjectileState.Start;
-                pro.Ai = frag.Ai;
-                pro.Trajectile.WeaponId = frag.WeaponId;
-                pro.Trajectile.MuzzleId = frag.MuzzleId;
-                pro.Target.Entity = frag.Target;
-                pro.IsShrapnel = true;
+                Projectile p;
+                Session.Instance.Projectiles.ProjectilePool[poolId].AllocateOrCreate(out p);
+                p.T.System = frag.System;
+                p.T.FiringCube = frag.FiringCube;
+                p.Origin = frag.Origin;
+                p.OriginUp = frag.OriginUp;
+                p.PredictedTargetPos = frag.PredictedTargetPos;
+                p.Direction = frag.Direction;
+                p.State = Projectile.ProjectileState.Start;
+                p.Ai = frag.Ai;
+                p.T.WeaponId = frag.WeaponId;
+                p.T.MuzzleId = frag.MuzzleId;
+                p.Target.Entity = frag.Target;
+                p.IsShrapnel = true;
+                p.StartSpeed = frag.Velocity;
                 Session.Instance.Projectiles.FragmentPool[poolId].Return(frag);
             }
         }
@@ -381,6 +382,7 @@ namespace WeaponCore.Support
         public Vector3D Origin;
         public Vector3D OriginUp;
         public Vector3D Direction;
+        public Vector3D Velocity;
         public Vector3D PredictedTargetPos;
         public int WeaponId;
         public int MuzzleId;

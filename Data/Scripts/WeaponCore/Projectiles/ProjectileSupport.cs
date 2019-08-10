@@ -16,31 +16,31 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-        private void GetEntitiesInBlastRadius(Projectile projectile, int poolId)
+        private void GetEntitiesInBlastRadius(Projectile p, int poolId)
         {
-            var sphere = new BoundingSphereD(projectile.Position, projectile.Trajectile.System.Values.Ammo.AreaEffect.AreaEffectRadius);
+            var sphere = new BoundingSphereD(p.Position, p.T.System.Values.Ammo.AreaEffect.AreaEffectRadius);
             var checkList = CheckPool[poolId].Get();
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, checkList);
             foreach (var ent in checkList)
             {
-                var blastLine = new LineD(projectile.Position, ent.PositionComp.WorldAABB.Center);
-                GetAllEntitiesInLine(projectile, blastLine, null, poolId, true);
+                var blastLine = new LineD(p.Position, ent.PositionComp.WorldAABB.Center);
+                GetAllEntitiesInLine(p, blastLine, null, poolId, true);
             }
             checkList.Clear();
             CheckPool[poolId].Return(checkList);
-            var count = projectile.HitList.Count;
+            var count = p.HitList.Count;
             if (!Session.Instance.DedicatedServer && count <= 0)
             {
                 var hitEntity = HitEntityPool[poolId].Get();
                 hitEntity.Clean();
                 hitEntity.EventType = Proximity;
                 hitEntity.Hit = false;
-                hitEntity.HitPos = projectile.Position;
-                projectile.HitList.Add(hitEntity);
-                Hits.Enqueue(projectile);
+                hitEntity.HitPos = p.Position;
+                p.HitList.Add(hitEntity);
+                Hits.Enqueue(p);
             }
             else if (Session.Instance.IsServer && count > 0)
-                Hits.Enqueue(projectile);
+                Hits.Enqueue(p);
         }
 
         internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList, int poolId, bool quickCheck = false)
@@ -50,12 +50,12 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < listCnt; i++)
             {
                 var ent = segmentList != null ? segmentList[i].Element : p.HitList[i].Entity;
-                if (ent == p.Trajectile.FiringCube.CubeGrid || ent.MarkedForClose || !ent.InScene) continue;
+                if (ent == p.T.FiringCube.CubeGrid || ent.MarkedForClose || !ent.InScene) continue;
                 //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
-                    if (ent.Physics == null && shieldBlock.CubeGrid != p.Trajectile.FiringCube.CubeGrid)
+                    if (ent.Physics == null && shieldBlock.CubeGrid != p.T.FiringCube.CubeGrid)
                     {
                         var hitEntity = HitEntityPool[poolId].Get();
                         hitEntity.Clean();

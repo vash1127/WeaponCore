@@ -226,7 +226,9 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal float BaseDamage;
         [ProtoMember(2)] internal int Fragments;
         [ProtoMember(3)] internal float MaxTrajectory;
-        [ProtoMember(4)] internal ShrapnelShape Shape;
+        [ProtoMember(4)] internal bool NoAudioVisual;
+        [ProtoMember(5)] internal bool NoGuidance;
+        [ProtoMember(6)] internal ShrapnelShape Shape;
     }
 
     [ProtoContract]

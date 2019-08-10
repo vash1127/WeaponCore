@@ -9,6 +9,7 @@ using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -104,17 +105,21 @@ namespace WeaponCore.Support
             BlockInventory.Constraint.m_useDefaultIcon = false;
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
-            if (!Ai.PowerInited) Ai.InitPower();
-            IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
-            SinkPower = IdlePower;
+
+
             var resourceInfo = new MyResourceSinkInfo()
             {
                 ResourceTypeId = GId,
                 MaxRequiredInput = 0f,
-                RequiredInputFunc = () => SinkPower
+                RequiredInputFunc = () => SinkPower,
             };
             Sink.RemoveType(ref GId);
+            Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
             Sink.AddType(ref resourceInfo);
+            IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
+
+            SinkPower = IdlePower;
+
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
         }
 

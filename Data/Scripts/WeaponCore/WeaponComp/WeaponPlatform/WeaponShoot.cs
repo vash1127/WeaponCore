@@ -41,18 +41,23 @@ namespace WeaponCore.Platform
 
             if (System.BarrelAxisRotation) MovePart(-1 * bps);
 
-            if (ShotCounter == 0 && _newCycle) _rotationTime = 0;
-            if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
+            if (ShotCounter == 0 && _newCycle)
+            {
+                _newCycle = false;
+                _rotationTime = 0;
+            }
 
-            _newCycle = false;
+            if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
 
             _ticksUntilShoot++;
             if (ShotCounter != 0) return;
-            _shots++;
 
             if (!IsShooting) StartShooting();
 
             if (_ticksUntilShoot < System.DelayToFire) return;
+
+            _shots++;
+
             if (_shotsInCycle++ == _numOfBarrels - 1)
             {
                 _shotsInCycle = 0;
@@ -134,20 +139,19 @@ namespace WeaponCore.Platform
                         }
                         else
                         {
-                            Projectile pro;
-                            session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out pro);
-                            pro.Trajectile.System = System;
-                            pro.Trajectile.FiringCube = Comp.MyCube;
-                            pro.Origin = muzzle.Position;
-                            pro.OriginUp = Comp.MyPivotUp;
-                            pro.PredictedTargetPos = TargetPos;
-                            pro.Direction = muzzle.DeviatedDir;
-                            pro.State = Projectile.ProjectileState.Start;
-                            pro.Ai = Comp.Ai;
-                            pro.Trajectile.WeaponId = WeaponId;
-                            pro.Trajectile.MuzzleId = muzzle.MuzzleId;
-                            pro.Target.Entity = Target.Entity;
-                            //pro.DamageFrame = DamageFrame;
+                            Projectile p;
+                            session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out p);
+                            p.T.System = System;
+                            p.T.FiringCube = Comp.MyCube;
+                            p.Origin = muzzle.Position;
+                            p.OriginUp = Comp.MyPivotUp;
+                            p.PredictedTargetPos = TargetPos;
+                            p.Direction = muzzle.DeviatedDir;
+                            p.State = Projectile.ProjectileState.Start;
+                            p.Ai = Comp.Ai;
+                            p.T.WeaponId = WeaponId;
+                            p.T.MuzzleId = muzzle.MuzzleId;
+                            p.Target.Entity = Target.Entity;
                             if (System.ModelId != -1)
                             {
                                 MyEntity ent;
@@ -157,7 +161,7 @@ namespace WeaponCore.Platform
                                     ent.InScene = true;
                                     ent.Render.AddRenderObjects();
                                 }
-                                pro.Trajectile.Entity = ent;
+                                p.T.Entity = ent;
                             }
                         }
                     }
@@ -185,21 +189,21 @@ namespace WeaponCore.Platform
             DamageFrame.VirtualHit = false;
             DamageFrame.Hits = 0;
             DamageFrame.HitEntity.Entity = null;
-            Projectile pro;
-            Comp.Ai.MySession.Projectiles.ProjectilePool[Comp.Ai.MySession.ProCounter].AllocateOrCreate(out pro);
-            pro.Trajectile.System = System;
-            pro.Trajectile.FiringCube = Comp.MyCube;
-            pro.Origin = Comp.MyPivotPos;
-            pro.OriginUp = Comp.MyPivotUp;
-            pro.PredictedTargetPos = TargetPos;
-            pro.Direction = Comp.MyPivotDir;
-            pro.State = Projectile.ProjectileState.Start;
-            pro.Ai = Comp.Ai;
-            pro.Trajectile.WeaponId = WeaponId;
-            pro.Trajectile.MuzzleId = -1;
-            pro.Target.Entity = Target.Entity;
-            pro.DamageFrame = DamageFrame;
-            return pro;
+            Projectile p;
+            Comp.Ai.MySession.Projectiles.ProjectilePool[Comp.Ai.MySession.ProCounter].AllocateOrCreate(out p);
+            p.T.System = System;
+            p.T.FiringCube = Comp.MyCube;
+            p.Origin = Comp.MyPivotPos;
+            p.OriginUp = Comp.MyPivotUp;
+            p.PredictedTargetPos = TargetPos;
+            p.Direction = Comp.MyPivotDir;
+            p.State = Projectile.ProjectileState.Start;
+            p.Ai = Comp.Ai;
+            p.T.WeaponId = WeaponId;
+            p.T.MuzzleId = -1;
+            p.Target.Entity = Target.Entity;
+            p.DamageFrame = DamageFrame;
+            return p;
         }
 
         private void ShootRayCheck()
