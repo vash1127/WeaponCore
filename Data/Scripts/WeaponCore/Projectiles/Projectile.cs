@@ -146,7 +146,7 @@ namespace WeaponCore.Projectiles
 
             FiringGrid = T.FiringCube.CubeGrid;
 
-            Guidance = !T.System.Values.Ammo.Shrapnel.NoGuidance && IsShrapnel ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
+            Guidance = !(T.System.Values.Ammo.Shrapnel.NoGuidance && IsShrapnel) ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
 
             if (Guidance == AmmoTrajectory.GuidanceType.Smart && !T.System.IsBeamWeapon)
