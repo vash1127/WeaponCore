@@ -1,4 +1,5 @@
-﻿using Sandbox.Common.ObjectBuilders;
+﻿using System;
+using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -44,12 +45,15 @@ namespace WeaponCore.Support
         internal uint LastAmmoUnSuspendTick;
         internal uint LastTrackedTick;
         internal uint LastRayCastTick;
+        internal uint ShootTick = 0;
+        internal uint DelayTicks = 0;
         internal int PullingAmmoCnt;
         internal float MaxAmmoVolume;
         internal float MaxAmmoMass;
         internal float SinkPower;
         internal float IdlePower;
-        internal float ChargeAmtLeft = 0;
+        internal float RequiredPower;
+        private float _lastRequirment = 0;
         internal bool Overheated = false;
         internal bool TurretTargetLock;
         internal bool Gunner;
@@ -105,7 +109,8 @@ namespace WeaponCore.Support
             BlockInventory.Constraint.m_useDefaultIcon = false;
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
-
+            IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
+            SinkPower = IdlePower;
 
             var resourceInfo = new MyResourceSinkInfo()
             {
@@ -114,14 +119,11 @@ namespace WeaponCore.Support
                 RequiredInputFunc = () => SinkPower,
             };
             Sink.RemoveType(ref GId);
-            Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
+            //Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo); Commented so as to not effect everyone testing
             Sink.AddType(ref resourceInfo);
-            IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
-
-            SinkPower = IdlePower;
-
+            Sink.RequiredInputChanged += RequiredChanged;
+            if (Turret.Enabled) Turret.Enabled = false; Turret.Enabled = true;
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
         }
-
     }
 }

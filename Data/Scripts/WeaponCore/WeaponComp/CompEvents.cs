@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
@@ -88,6 +89,7 @@ namespace WeaponCore.Support
         {
             if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
             if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
+            if (Charging && SinkPower == 0) return "[Insufficient Power]";
             if (Charging) return "[Systems Charging]";
             return "[Systems Online]";
         }
@@ -97,14 +99,58 @@ namespace WeaponCore.Support
             try
             {
                 var status = GetSystemStatus();
-                if (status == "[Systems Online]" || status == "[Systems Fault]" || status == "[Systems Offline]" || status == "[Insufficient Power]" || status == "[Systems Charging]")
-                {
+                //if (status == "[Systems Online]" || status == "[Systems Fault]" || status == "[Systems Offline]" || status == "[Insufficient Power]" || status == "[Systems Charging]")
+                //{
                     stringBuilder.Append(status +
                                          "\n" +
                                          "\n[Required Power]: " + SinkPower.ToString("0.0") + " Mw");
-                }
+               // }
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
+        }
+
+        internal void RequiredChanged(MyDefinitionId changedResourceTypeId, MyResourceSinkComponent sink, float oldRequirement, float newRequirement)
+        {
+            Log.Line($"Old Requirement: {oldRequirement} New Requirement: {newRequirement}");
+        }
+
+        internal void SetSinkPower(bool shoot = true, bool powerRemoved = false) {
+
+            if (powerRemoved)
+            {
+                SinkPower = 0;
+                Sink.Update();
+                Ai.UpdateGridPower();
+            }
+
+            if (!shoot)
+            {
+                SinkPower = IdlePower;
+                Charging = false;
+                ShootTick = 0;
+                DelayTicks = 0;
+            }
+            else
+            {                
+                if (RequiredPower > Ai.GridAvailablePower + SinkPower)
+                {
+                    Charging = true;
+                    DelayTicks = (uint)(60 * (RequiredPower / (Ai.GridAvailablePower+SinkPower)));
+                    if (ShootTick == 0) ShootTick = DelayTicks + Ai.MySession.Tick;
+                    SinkPower += Ai.GridAvailablePower;
+                }
+                else
+                {
+                    Charging = false;
+                    ShootTick = 0;
+                    DelayTicks = 0;
+                    SinkPower = RequiredPower;
+                }
+            }
+            Log.Line($"Available Power: {Ai.GridAvailablePower}");
+            Sink.Update();
+            TerminalRefresh();
+            Ai.UpdateGridPower();
         }
     }
 }
