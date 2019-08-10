@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
@@ -61,21 +62,34 @@ namespace WeaponCore
 
             foreach (var x in _weaponDefinitions)
             {
-                var areaRadius = x.Ammo.AreaEffect.AreaEffectRadius;
+                var ae = x.Ammo.AreaEffect;
+                var areaRadius = ae.AreaEffectRadius;
+                var detonateRadius = ae.Detonation.DetonationRadius;
+                var fragments = x.Ammo.Shrapnel.Fragments > 0 ? x.Ammo.Shrapnel.Fragments : 1;
                 if (areaRadius > 0)
                 {
-                    var smallRadius = x.Ammo.AreaEffect.AreaEffectRadius > 5 ? 5 : x.Ammo.AreaEffect.AreaEffectRadius;
-                    var largeRadius = x.Ammo.AreaEffect.AreaEffectRadius > 25 ? 25 : x.Ammo.AreaEffect.AreaEffectRadius;
-                    if (!LargeBlockSphereDb.ContainsKey(largeRadius)) GenerateBlockSphere(MyCubeSize.Large, largeRadius);
-                    if (!SmallBlockSphereDb.ContainsKey(smallRadius)) GenerateBlockSphere(MyCubeSize.Small, smallRadius);
+                    if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius, true)))
+                        GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius, true));
+                    if (!LargeBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, true)))
+                        GenerateBlockSphere(MyCubeSize.Large, ModRadius(areaRadius / fragments, true));
+
+                    if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius, false)))
+                        GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius, false));
+                    if (!SmallBlockSphereDb.ContainsKey(ModRadius(areaRadius / fragments, false)))
+                        GenerateBlockSphere(MyCubeSize.Small, ModRadius(areaRadius / fragments, false));
+
                 }
-                var detonateRadius = x.Ammo.AreaEffect.Detonation.DetonationRadius;
                 if (detonateRadius > 0)
                 {
-                    var smallRadius = x.Ammo.AreaEffect.Detonation.DetonationRadius > 5 ? 5 : x.Ammo.AreaEffect.Detonation.DetonationRadius;
-                    var largeRadius = x.Ammo.AreaEffect.Detonation.DetonationRadius > 25 ? 25 : x.Ammo.AreaEffect.Detonation.DetonationRadius;
-                    if (!LargeBlockSphereDb.ContainsKey(largeRadius)) GenerateBlockSphere(MyCubeSize.Large, largeRadius);
-                    if (!SmallBlockSphereDb.ContainsKey(smallRadius)) GenerateBlockSphere(MyCubeSize.Small, smallRadius);
+                    if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius, true)))
+                        GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius, true));
+                    if (!LargeBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, true)))
+                        GenerateBlockSphere(MyCubeSize.Large, ModRadius(detonateRadius / fragments, true));
+
+                    if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius, false)))
+                        GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius, false));
+                    if (!SmallBlockSphereDb.ContainsKey(ModRadius(detonateRadius / fragments, false)))
+                        GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius / fragments, false));
                 }
             }
             DsUtil.Complete();

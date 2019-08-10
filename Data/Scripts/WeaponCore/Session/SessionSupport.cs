@@ -13,7 +13,9 @@ namespace WeaponCore
         public void UpdateDbsInQueue()
         {
             DbUpdating = true;
-            MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            //MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            ProcessDbs();
+            ProcessDbsCallBack();
         }
 
         private void ProcessDbs()
@@ -64,6 +66,16 @@ namespace WeaponCore
                     _weaponDefinitions.Add(wepDef);
             }
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
+        }
+
+        internal static double ModRadius(double radius, bool largeBlock)
+        {
+            if (largeBlock && radius < 3) radius = 3;
+            else if (largeBlock && radius > 25) radius = 25;
+            else if (!largeBlock && radius > 5) radius = 5;
+
+            radius = Math.Ceiling(radius);
+            return radius;
         }
 
         internal void Timings()

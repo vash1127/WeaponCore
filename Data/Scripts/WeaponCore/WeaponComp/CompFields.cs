@@ -116,7 +116,7 @@ namespace WeaponCore.Support
             {
                 ResourceTypeId = GId,
                 MaxRequiredInput = 0f,
-                RequiredInputFunc = ()=> SinkPower,
+                RequiredInputFunc = () => SinkPower,
             };
             Sink.RemoveType(ref GId);
             //Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo); Commented so as to not effect everyone testing
