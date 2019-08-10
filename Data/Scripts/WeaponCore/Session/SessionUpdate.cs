@@ -20,7 +20,7 @@ namespace WeaponCore
                 if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
                 {
                     gridAi.UpdateGridPower();
-                    if (gridAi.LastAvailablePower != gridAi.GridAvailablePower)
+                    if (gridAi.LastAvailablePower.Equals(gridAi.GridAvailablePower))
                     {
                         gridAi.updateSinks = true;
                         gridAi.LastAvailablePower = gridAi.GridAvailablePower;
@@ -37,23 +37,22 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (!w.Enabled || (!Tick60 && comp.Overheated)) continue;
+                        if (!w.Enabled || (!Tick60 && comp.Overheated))
+                        {
+                            Log.Line("test");
+                            continue;
+                        }
 
                         if (Tick60)
                         {
                             w.CurrentHeat = w.CurrentHeat >= w.HSRate ? w.CurrentHeat -= w.HSRate : 0;
                             if (comp.Overheated && w.CurrentHeat <= (w.System.MaxHeat * w.System.WepCooldown))
                             {
-                                w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
+                                if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
                                 comp.Overheated = false;
                             }
                         }
 
-                        if (Tick60)
-                        {
-                            comp.Sink.Update();
-                            Log.Line($"CompCurrent:{comp.Sink.SuppliedRatioByType(comp.GId)} - GridCurrent:{gridAi.GridCurrentPower}");
-                        }
                         if (w.IsShooting && gridAi.updateSinks)
                         {
                             //comp.SetSinkPower(true, gridAi.updateSinks);
@@ -70,7 +69,11 @@ namespace WeaponCore
                             else comp.Charging = true;
                         }
 
-                        if (comp.Overheated || comp.Charging) continue;
+                        if (comp.Overheated || comp.Charging)
+                        {
+                            Log.Line("overheaded/charging");
+                            continue;
+                        }
 
 
                         var energyAmmo = w.System.EnergyAmmo;
@@ -85,7 +88,7 @@ namespace WeaponCore
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
-                                w.ChangeEmissiveState(Weapon.Emissives.Reloading, true);
+                                if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, true);
                                 if (w.CurrentMags != 0)
                                 {
                                     w.LoadAmmoMag = true;
@@ -94,7 +97,7 @@ namespace WeaponCore
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
-                            w.ChangeEmissiveState(Weapon.Emissives.Reloading, false);
+                            if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, false);
                         }
                         if (w.SeekTarget)
                         {
@@ -120,7 +123,7 @@ namespace WeaponCore
                         if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
                         else if (w.IsShooting)
                         {
-                            w.ChangeEmissiveState(Weapon.Emissives.Firing, false);
+                            if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);
                             w.StopShooting();
                         }
                         if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
