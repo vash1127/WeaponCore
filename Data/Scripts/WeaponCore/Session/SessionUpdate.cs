@@ -13,13 +13,20 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
+
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
-                if (gridAi.GridMaxPower <= 0 || Tick60)
+
+                if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
                 {
                     gridAi.UpdateGridPower();
-                    Log.Line($"MaxPower:{gridAi.GridMaxPower} - AvailPower:{gridAi.GridAvailablePower} - CurrentPower:{gridAi.GridCurrentPower}");
+                    if (gridAi.LastAvailablePower != gridAi.GridAvailablePower)
+                    {
+                        gridAi.updateSinks = true;
+                        gridAi.LastAvailablePower = gridAi.GridAvailablePower;
+                    }
                 }
+
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -42,17 +49,24 @@ namespace WeaponCore
                             }
                         }
 
-                        if (Tick60 && comp.Charging) {
-                            comp.ChargeAmtLeft -= gridAi.GridAvailablePower;
-                            
-                            if (comp.ChargeAmtLeft <= 0) {
-                                comp.ChargeAmtLeft = 0;
+                        /*if (w.IsShooting && gridAi.updateSinks)
+                        {
+                            comp.SetSinkPower(true, gridAi.updateSinks);
+                            Log.Line("Update");
+                        }*/
+
+                        if (comp.DelayTicks != 0)
+                        {
+                            if (comp.ShootTick <= Tick)
+                            {
                                 comp.Charging = false;
+                                comp.ShootTick = Tick + comp.DelayTicks;
                             }
-                            comp.TerminalRefresh();
+                            else comp.Charging = true;
                         }
 
                         if (comp.Overheated || comp.Charging) continue;
+
 
                         var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)
@@ -104,6 +118,7 @@ namespace WeaponCore
                     }
                 }
                 gridAi.Ready = false;
+                gridAi.updateSinks = false;
             }
         }
 

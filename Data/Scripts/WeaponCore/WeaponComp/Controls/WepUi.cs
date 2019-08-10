@@ -108,7 +108,7 @@ namespace WeaponCore
         {
             var logic = block?.Components?.Get<WeaponComponent>();
             var enable = logic != null && logic.Platform.Weapons.Length -1 >= id;
-            Log.Line($"{count} - {id} - {enable}");
+            //Log.Line($"{count} - {id} - {enable}");
 
             return enable;
         }

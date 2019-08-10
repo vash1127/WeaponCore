@@ -68,6 +68,7 @@ namespace WeaponCore.Support
                         if (type != MyResourceDistributorComponent.ElectricityId) return;
                         Sources.Add(source);
                         UpdatePowerSources = true;
+                        updateSinks = true;
                     }
                 }
             }
@@ -87,8 +88,10 @@ namespace WeaponCore.Support
                         if (type != MyResourceDistributorComponent.ElectricityId) return;
                         Sources.Remove(source);
                         UpdatePowerSources = true;
+                        updateSinks = true;
                     }
                     UpdatePowerSources = true;
+                    updateSinks = true;
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }

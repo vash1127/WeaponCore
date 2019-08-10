@@ -25,22 +25,6 @@ namespace WeaponCore.Support
         }
 
         #region Power
-        internal void InitPower()
-        {
-            PowerInited = true;
-            foreach (var fat in MyGrid.GetFatBlocks())
-            {
-                var source = fat.Components.Get<MyResourceSourceComponent>();
-                if (source != null)
-                {
-                    var type = source.ResourceTypes[0];
-                    if (type != MyResourceDistributorComponent.ElectricityId) return;
-                    Sources.Add(source);
-                    UpdatePowerSources = true;
-                }
-            }
-        }
-
         internal bool UpdateGridPower()
         {
             GridAvailablePower = 0;
@@ -81,7 +65,7 @@ namespace WeaponCore.Support
 
             GridCurrentPower += BatteryCurrentInput;
             GridAvailablePower -= BatteryCurrentInput;
-
+            UpdatePowerSources = false;
             return GridMaxPower > 0;
         }
         #endregion

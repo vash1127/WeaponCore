@@ -151,7 +151,8 @@ namespace WeaponCore.Platform
             _localTranslation = entity.LocalMatrix.Translation;
             System = system;
             Comp = comp;
-            Comp.ChargeAmtLeft = RequiredPower;
+            Comp.Sink.SetMaxRequiredInputByType(Comp.GId, RequiredPower);
+            Comp.RequiredPower = RequiredPower;
             AvCapable = System.HasBarrelShootAv && !Comp.Ai.MySession.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)

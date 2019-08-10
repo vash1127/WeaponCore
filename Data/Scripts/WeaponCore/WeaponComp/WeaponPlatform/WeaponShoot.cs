@@ -19,7 +19,7 @@ namespace WeaponCore.Platform
             var session = Comp.Ai.MySession;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            if (Comp.Charging) return;
+            //if (Comp.Charging) return;
 
             if (System.BurstMode)
             {
@@ -162,11 +162,6 @@ namespace WeaponCore.Platform
                     }
 
                     CurrentHeat += System.HeatPShot;
-                    if (Comp.ChargeAmtLeft < RequiredPower)
-                    {
-                        Comp.SinkPower = Comp.ChargeAmtLeft = RequiredPower;
-                        StopShooting();
-                    }
 
                     if (CurrentHeat > System.MaxHeat)
                     {

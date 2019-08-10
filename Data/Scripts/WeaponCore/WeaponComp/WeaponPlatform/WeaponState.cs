@@ -142,9 +142,10 @@ namespace WeaponCore.Platform
         public void StartShooting()
         {
             if (FiringEmitter != null) StartFiringSound();
-            if (!Comp.Charging && System.ShotEnergyCost > 0 && !IsShooting)
+            if (System.ShotEnergyCost > 0 && !IsShooting)
             {
-                Comp.SinkPower += Comp.ChargeAmtLeft;
+                //Comp.SetSinkPower();
+                Comp.SinkPower = RequiredPower;
                 Comp.Sink.Update();
                 Comp.TerminalRefresh();
             }
@@ -162,8 +163,8 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
-                    Comp.SinkPower -= RequiredPower;
-                    if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
+                    //Comp.SetSinkPower(false);
+                    Comp.SinkPower = Comp.IdlePower;
                     Comp.Sink.Update();
                     Comp.TerminalRefresh();
                 }
