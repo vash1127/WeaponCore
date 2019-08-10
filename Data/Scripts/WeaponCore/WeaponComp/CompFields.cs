@@ -96,8 +96,8 @@ namespace WeaponCore.Support
         internal bool AiLock;
         internal LogicSettings Set;
         internal LogicState State;
-        internal MyResourceSinkComponent Sink => MyCube.ResourceSink;
-
+        //internal MyResourceSinkComponent Sink => MyCube.ResourceSink;
+        internal MyResourceSinkComponent Sink;
         public WeaponComponent(GridAi ai, MyCubeBlock myCube, IMyLargeMissileTurret turret)
         {
             Ai = ai;
@@ -110,7 +110,7 @@ namespace WeaponCore.Support
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
             IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
-            SinkPower = IdlePower;
+            SinkPower = 2;
 
             var resourceInfo = new MyResourceSinkInfo()
             {
@@ -118,11 +118,16 @@ namespace WeaponCore.Support
                 MaxRequiredInput = 0f,
                 RequiredInputFunc = () => SinkPower,
             };
+            MyCube.Components.TryGet(out Sink);
             Sink.RemoveType(ref GId);
-            //Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo); Commented so as to not effect everyone testing
+            Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
             Sink.AddType(ref resourceInfo);
+            MyCube.Components.Remove<MyResourceSinkComponent>();
+            MyCube.Components.Add(Sink);
+            Sink.Update();
             Sink.RequiredInputChanged += RequiredChanged;
-            if (Turret.Enabled) Turret.Enabled = false; Turret.Enabled = true;
+            Sink.CurrentInputChanged += CurrentInputChanged;
+
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
         }
     }

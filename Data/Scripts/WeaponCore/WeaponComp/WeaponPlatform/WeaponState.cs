@@ -149,9 +149,9 @@ namespace WeaponCore.Platform
             if (System.ShotEnergyCost > 0 && !IsShooting)
             {
                 //Comp.SetSinkPower();
-                Comp.SinkPower = RequiredPower;
-                Comp.Sink.Update();
-                Comp.TerminalRefresh();
+                //Comp.SinkPower = RequiredPower;
+                //Comp.Sink.Update();
+                //Comp.TerminalRefresh();
             }
             IsShooting = true;
         }
@@ -168,9 +168,9 @@ namespace WeaponCore.Platform
                 if (IsShooting)
                 {
                     //Comp.SetSinkPower(false);
-                    Comp.SinkPower = Comp.IdlePower;
-                    Comp.Sink.Update();
-                    Comp.TerminalRefresh();
+                    //Comp.SinkPower = Comp.IdlePower;
+                    //Comp.Sink.Update();
+                    //Comp.TerminalRefresh();
                 }
                 IsShooting = false;
 

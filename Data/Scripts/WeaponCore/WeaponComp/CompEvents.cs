@@ -114,6 +114,11 @@ namespace WeaponCore.Support
             Log.Line($"Old Requirement: {oldRequirement} New Requirement: {newRequirement}");
         }
 
+        internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
+        {
+            Log.Line($"Old input: {oldInput} New input: {sink.CurrentInputByType(GId)}");
+        }
+
         internal void SetSinkPower(bool shoot = true, bool powerRemoved = false) {
 
             if (powerRemoved)
