@@ -48,7 +48,12 @@ namespace WeaponCore
                                 comp.Overheated = false;
                             }
                         }
-                        if (Tick300) Log.Line($"CompCurrent:{comp.Sink.CurrentInputByType(comp.GId)} - GridCurrent:{gridAi.GridCurrentPower}");
+
+                        if (Tick60)
+                        {
+                            comp.Sink.Update();
+                            Log.Line($"CompCurrent:{comp.Sink.SuppliedRatioByType(comp.GId)} - GridCurrent:{gridAi.GridCurrentPower}");
+                        }
                         if (w.IsShooting && gridAi.updateSinks)
                         {
                             //comp.SetSinkPower(true, gridAi.updateSinks);

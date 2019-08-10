@@ -110,7 +110,7 @@ namespace WeaponCore.Support
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
             IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
-            SinkPower = 2;
+            SinkPower = IdlePower;
 
             var resourceInfo = new MyResourceSinkInfo()
             {
@@ -120,10 +120,8 @@ namespace WeaponCore.Support
             };
             MyCube.Components.TryGet(out Sink);
             Sink.RemoveType(ref GId);
-            Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
+            Sink.Init(MyStringHash.GetOrCompute("Thrust"), resourceInfo);
             Sink.AddType(ref resourceInfo);
-            MyCube.Components.Remove<MyResourceSinkComponent>();
-            MyCube.Components.Add(Sink);
             Sink.Update();
             Sink.RequiredInputChanged += RequiredChanged;
             Sink.CurrentInputChanged += CurrentInputChanged;
