@@ -130,6 +130,7 @@ namespace WeaponCore.Support
                 }
                 Ai.GridInit = true;
             }
+            
             if (Turret.Enabled) Turret.Enabled = false; Turret.Enabled = true;
         }
 
