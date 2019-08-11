@@ -17,7 +17,6 @@ namespace WeaponCore.Support
         internal GridAi(MyCubeGrid grid, Session mySession)
         {
             MyGrid = grid;
-            RegisterMyGridEvents(true, MyGrid);
             MySession = mySession;
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
         }
