@@ -50,6 +50,7 @@ namespace WeaponCore
                 Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.EnableModes, WepUi.EnableModes);
                 WeaponMode = TerminalHelpers.AddCombobox(comp, -1, "WC-L_WeaponMode", "Weapon Mode", "Weapon Mode", WepUi.GetModes, WepUi.SetModes, WepUi.ListAll, WepUi.EnableModes, WepUi.EnableModes);
                 TerminalHelpers.Separator(comp, -1, "WC-L_sep2",WepUi.EnableModes, WepUi.EnableModes);
+
                 PowerSlider = TerminalHelpers.AddSlider(comp, -1, "WC-L_PowerLevel", "Change Power Level", "Change Power Level", WepUi.GetPowerLevel, WepUi.SetPowerLevel, WepUi.EnableModes, WepUi.EnableModes);
                 PowerSlider.SetLimits(0, 100);
 

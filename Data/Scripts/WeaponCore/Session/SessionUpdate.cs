@@ -49,7 +49,7 @@ namespace WeaponCore
 
                         if (comp.DelayTicks != 0 && w.IsShooting)
                         {
-                            Log.Line($"Delay Ticks: {comp.DelayTicks}");
+                            //Log.Line($"Delay Ticks: {comp.DelayTicks}");
                             if (comp.ShootTick <= Tick)
                             {
                                 comp.Charging = false;
@@ -60,7 +60,7 @@ namespace WeaponCore
                         
                         if (comp.Overheated || comp.Charging)
                         {
-                            Log.Line("overheaded/charging");
+                            //Log.Line("overheaded/charging");
                             continue;
                         }
 

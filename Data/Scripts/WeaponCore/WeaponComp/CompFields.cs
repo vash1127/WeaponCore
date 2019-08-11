@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -33,6 +34,7 @@ namespace WeaponCore.Support
         private bool _firstSync;
 
         private DSUtils Dsutil1 { get; set; } = new DSUtils();
+        private HashSet<string> UIControls = new HashSet<string>(); 
         internal GridAi Ai { get; set; }
         internal MySoundPair RotationSound;
         internal MyEntity3DSoundEmitter RotationEmitter; 

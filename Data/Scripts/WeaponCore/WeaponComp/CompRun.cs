@@ -96,6 +96,7 @@ namespace WeaponCore.Support
             {
                 weapon.InitTracking();
                 Session.ComputeStorage(weapon);
+                //foreach (var field in typeof(weapon.System.Values.Ui).GetFields(BindingFlags.Instance | BindingFlags.NonPublic |BindingFlags.Public))
             }
 
             var gun = Gun.GunBase;
