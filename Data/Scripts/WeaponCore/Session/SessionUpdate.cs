@@ -18,9 +18,16 @@ namespace WeaponCore
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
 
+                if (!gridAi.DeadProjectiles.IsEmpty)
+                {
+                    Projectile p;
+                    while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
+                }
+
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
+                    InTurret = comp.Gunner = ControlledEntity == comp.MyCube;
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
 
@@ -121,23 +128,16 @@ namespace WeaponCore
             {
                 var gridAi = aiPair.Value;
                 if (!gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
-                if (!gridAi.DeadProjectiles.IsEmpty)
-                {
-                    Projectile p;
-                    while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
-                }
 
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-                    var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
-                    InTurret = gunner;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
                         if (!w.Enabled && comp.TrackingWeapon != w) continue;
-                        if (!gunner)
+                        if (!InTurret)
                         {
                             if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
                             else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
@@ -172,17 +172,17 @@ namespace WeaponCore
                         }
                         if (w.DelayCeaseFire)
                         {
-                            if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
+                            if (InTurret || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
                             {
                                 w.DelayFireCount = 0;
-                                w.AiReady = (!w.Target.Expired && !gunner) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                                w.AiReady = (!w.Target.Expired && !InTurret) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
                             }
                         }
-                        else w.AiReady = (!w.Target.Expired && !gunner) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                        else w.AiReady = (!w.Target.Expired && !InTurret) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
-                        w.SeekTarget = !gunner && w.Target.Expired && w.TrackTarget;
+                        w.SeekTarget = !InTurret && w.Target.Expired && w.TrackTarget;
 
-                        if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
+                        if (w.AiReady || w.SeekTarget || InTurret) gridAi.Ready = true;
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
                             w.ChangeEmissiveState(Weapon.Emissives.Tracking, !w.Target.Expired);
