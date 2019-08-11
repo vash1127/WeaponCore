@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
@@ -14,13 +12,6 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        /*internal GridAi(MyCubeGrid grid, Session mySession)
-        {
-            MyGrid = grid;
-            MySession = mySession;
-            Targeting = MyGrid.Components.Get<MyGridTargeting>();
-        }*/
-
         internal static void AcquireTarget(Weapon w)
         {
             w.LastTargetCheck = 0;
@@ -42,8 +33,21 @@ namespace WeaponCore.Support
                     }
                 }
                 else continue;
+                IHitInfo hitInfo;
+                physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
+                if (hitInfo?.HitEntity == null)
+                {
+                    double hitDist;
+                    Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
+                    var shortDist = hitDist;
+                    var origDist = hitDist;
+                    var topEntId = long.MaxValue;
+                    target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
+                    return;
+                }
             }
 
+            if (w.Comp.MyGrid.BlocksCount > 100) return;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];
@@ -51,9 +55,9 @@ namespace WeaponCore.Support
 
                 if (w.TrackingAi)
                 {
-                    if (!Weapon.TrackingTarget(w, info.Target)) continue;
+                    if (!Weapon.ValidTrajectory(w, info.Target, null)) continue;
                 }
-                else if (!Weapon.ValidTarget(w, info.Target, true)) continue;
+                else if (!Weapon.ValidTrajectory(w, info.Target, null)) continue;
 
                 if (info.IsGrid)
                 {
@@ -80,7 +84,7 @@ namespace WeaponCore.Support
             //Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {w.Comp.Ai.SortedTargets.Count} - Total:{w.Comp.Ai.Targeting.TargetRoots.Count}");
             target.Reset();
             w.LastTargetCheck = 1;
-            w.TargetExpired = true;
+            w.Target.Expired = true;
         }
 
         internal static bool ReacquireTarget(Projectile p)

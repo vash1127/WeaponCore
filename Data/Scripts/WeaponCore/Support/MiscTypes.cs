@@ -231,54 +231,62 @@ namespace WeaponCore.Support
         public Vector3I Position;
     }
 
-    public class Target
+    internal class Target
     {
-        public WeaponSystem System;
-        public MyCubeBlock MyCube;
+        internal volatile bool Expired;
 
-        public readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
-        public int[] Deck = new int[0];
-        public int PrevDeckLength;
-        public SubSystemDefinition.BlockTypes LastBlockType;
+        internal WeaponSystem System;
+        internal MyCubeBlock MyCube;
+        internal Projectile Projectile;
+        internal readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
+        internal int[] Deck = new int[0];
+        internal int PrevDeckLength;
+        internal SubSystemDefinition.BlockTypes LastBlockType;
 
-        public MyEntity Entity;
-        public Vector3D HitPos;
-        public double HitShortDist;
-        public double OrigDistance;
-        public long TopEntityId;
+        internal MyEntity Entity;
+        internal Vector3D HitPos;
+        internal double HitShortDist;
+        internal double OrigDistance;
+        internal long TopEntityId;
 
-        public Target(WeaponSystem system = null, MyCubeBlock myCube = null)
+        internal Target(WeaponSystem system = null, MyCubeBlock myCube = null)
         {
             System = system;
             MyCube = myCube;
         }
 
-        public void TransferTo(Target target)
+        internal void TransferTo(Target target)
         {
             target.Entity = Entity;
             target.HitPos = HitPos;
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
+            target.Projectile = Projectile;
+            target.Expired = Expired;
             Reset();
         }
 
-        public void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId)
+        internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null)
         {
             Entity = ent;
             HitPos = pos;
             HitShortDist = shortDist;
             OrigDistance = origDist;
             TopEntityId = topEntId;
+            Projectile = projectile;
+            Expired = false;
         }
 
-        public void Reset()
+        internal void Reset()
         {
             Entity = null;
+            Projectile = null;
             HitPos = Vector3D.Zero;
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
+            Expired = true;
         }
     }
 

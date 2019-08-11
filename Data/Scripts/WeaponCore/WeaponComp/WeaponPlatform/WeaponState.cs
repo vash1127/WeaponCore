@@ -58,7 +58,7 @@ namespace WeaponCore.Platform
                     var trackingColor = System.Values.Graphics.Emissive.Tracking.Color;
                     var tIntensity = active ? 1 : trackingColor.W;
                     EntityPart.SetEmissiveParts("Tracking", trackingColor, tIntensity);
-                    TargetWasExpired = TargetExpired;
+                    TargetWasExpired = Target.Expired;
                     break;
                 case Emissives.Heating:
                     var hIntensity = active ? 1 : 0.1f;

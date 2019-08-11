@@ -112,12 +112,12 @@ namespace WeaponCore.Support
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
             float ratio = Sink.SuppliedRatioByType(GId);
-            if (ratio != 1)
+            if (ratio < 1)
             {
                 Charging = true;
                 float currInput = sink.CurrentInputByType(GId);
-                //Log.Line($"ratio: {ratio} Current Input: {currInput}");
-                DelayTicks += (uint)(60 * ((currInput / ratio) / currInput)) - DelayTicks;
+                Log.Line($"ratio: {ratio} Current Input: {currInput}");
+                DelayTicks = (uint)(60 * ((currInput / ratio) / currInput));
                 ShootTick = DelayTicks + Ai.MySession.Tick;
             }
             else
