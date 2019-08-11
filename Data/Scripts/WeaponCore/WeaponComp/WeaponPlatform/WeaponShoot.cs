@@ -239,27 +239,37 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.Ai.MySession.Tick;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
-            if (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId)
+            if (Target.Projectile != null)
+            {
+                if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
+                {
+                    Log.Line($"{System.WeaponName} - ShootRayCheckFail - projectile not alive");
+                    masterWeapon.Target.Expired = true;
+                    if (masterWeapon != this) Target.Expired = true;
+                    return;
+                }
+            }
+            if (Target.Projectile == null && (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId))
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null or marked - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
-                masterWeapon.TargetExpired = true;
-                if (masterWeapon != this) TargetExpired = true;
+                masterWeapon.Target.Expired = true;
+                if (masterWeapon != this) Target.Expired = true;
                 return;
             }
 
-            var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
+            var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
             if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
-                masterWeapon.TargetExpired = true;
-                if (masterWeapon !=  this) TargetExpired = true;
+                masterWeapon.Target.Expired = true;
+                if (masterWeapon !=  this) Target.Expired = true;
                 return;
             }
-            if (!TrackingAi && !ValidTarget(this, Target.Entity))
+            if (!TrackingAi && !ValidTarget(this, Target))
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheck Fail - not trackingAi and notValid target");
-                masterWeapon.TargetExpired = true;
-                if (masterWeapon != this) TargetExpired = true;
+                masterWeapon.Target.Expired = true;
+                if (masterWeapon != this) Target.Expired = true;
                 return;
             }
             Casting = true;
@@ -272,6 +282,12 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target.Entity && hitInfo.HitEntity != Target.Entity.Parent))
             {
+                if (Target.Projectile != null)
+                {
+
+                    Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - due to null projectile - valid:{Comp.Ai.LiveProjectile.Contains(Target.Projectile)}");
+                    return;
+                }
                 if (hitInfo?.HitEntity == null && DelayCeaseFire)
                 {
                     Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - due to null DelayCeaseFire");
@@ -292,8 +308,8 @@ namespace WeaponCore.Platform
                     {
                         //Session.Instance.RayCheckLines.Add(new LineD(Comp.MyPivotPos, hitInfo.Position), Comp.Ai.MySession.Tick, true);
                         Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
-                        masterWeapon.TargetExpired = true;
-                        if (masterWeapon != this) TargetExpired = true;
+                        masterWeapon.Target.Expired = true;
+                        if (masterWeapon != this) Target.Expired = true;
                         return;
                     }
 
@@ -302,8 +318,8 @@ namespace WeaponCore.Platform
                         if (!grid.IsInSameLogicalGroupAs(Comp.MyGrid))
                         {
                             Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
-                            masterWeapon.TargetExpired = true;
-                            if (masterWeapon != this) TargetExpired = true;
+                            masterWeapon.Target.Expired = true;
+                            if (masterWeapon != this) Target.Expired = true;
                         }
                         return;
                     }
@@ -313,8 +329,8 @@ namespace WeaponCore.Platform
                 if (hitInfo?.HitEntity == null) Log.Line($"{System.WeaponName} - ShootRayCheck Fail - null");
                 else if (hitInfo.HitEntity != null) Log.Line($"{System.WeaponName} - ShootRayCheck Fail - General: {((MyEntity)hitInfo.HitEntity).DebugName}");
                 else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Unknown");
-                masterWeapon.TargetExpired = true;
-                if (masterWeapon != this) TargetExpired = true;
+                masterWeapon.Target.Expired = true;
+                if (masterWeapon != this) Target.Expired = true;
             }
             else if (System.SortBlocks)
             {
@@ -334,8 +350,8 @@ namespace WeaponCore.Platform
                     var escapeDistExceed = distanceToTarget - Target.OrigDistance > Target.OrigDistance;
                     if (shortDistExceed || escapeDistExceed)
                     {
-                        masterWeapon.TargetExpired = true;
-                        if (masterWeapon != this) TargetExpired = true;
+                        masterWeapon.Target.Expired = true;
+                        if (masterWeapon != this) Target.Expired = true;
                         if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
                         else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met - {distanceToTarget} - {Target.OrigDistance} -{distanceToTarget - Target.OrigDistance} > {Target.OrigDistance}");
                     }

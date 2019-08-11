@@ -109,19 +109,10 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }
 
-        internal void RequiredChanged(MyDefinitionId changedResourceTypeId, MyResourceSinkComponent sink, float oldRequirement, float newRequirement)
-        {
-            Log.Line($"Old Requirement: {oldRequirement} New Requirement: {newRequirement}");
-        }
-
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
-            Log.Line($"Old input: {oldInput} New input: {sink.CurrentInputByType(GId)}");
-        }
-
-        internal void SetSinkPower(bool shoot = true, bool powerRemoved = false) {
-
-            if (powerRemoved)
+            float ratio = Sink.SuppliedRatioByType(GId);
+            if (ratio < 1)
             {
                 Charging = true;
                 float currInput = sink.CurrentInputByType(GId);
@@ -129,7 +120,8 @@ namespace WeaponCore.Support
                 DelayTicks = (uint)(60 * ((currInput / ratio) / currInput));
                 ShootTick = DelayTicks + Ai.MySession.Tick;
             }
-            else {
+            else
+            {
                 ShootTick = 0;
                 DelayTicks = 0;
                 Charging = false;

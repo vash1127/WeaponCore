@@ -2,6 +2,7 @@
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.HardPointDefinition;
 
@@ -9,19 +10,49 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal static bool ValidTarget(Weapon weapon, MyEntity target, bool checkOnly = false)
+        internal static bool ValidTrajectory(Weapon weapon, MyEntity entity, Projectile projectile)
+        {
+            var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
+            Vector3D targetPos;
+            Vector3 targetLinVel = Vector3.Zero;
+            var targetCenter = projectile?.Position ?? entity.PositionComp.WorldMatrix.Translation;
+            double timeToIntercept;
+            double rangeToTarget;
+
+            if (projectile != null)
+                targetLinVel = projectile.Velocity;
+            else if (entity.Physics != null) targetLinVel = entity.Physics.LinearVelocity;
+            else if (entity.GetTopMostParent()?.Physics != null) targetLinVel = entity.GetTopMostParent().Physics.LinearVelocity;
+
+            if (prediction != Prediction.Off)
+                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
+            else
+                targetPos = targetCenter;
+
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
+            return rangeToTarget <= weapon.System.MaxTrajectorySqr && weapon.IsTargetInViewInLined(weapon, targetPos); ;
+        }
+
+        internal static bool ValidTarget(Weapon weapon, Target target)
         {
             var trackingWeapon = weapon.Comp.TrackingWeapon;
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
 
             Vector3D targetPos;
+            Vector3 targetLinVel = Vector3.Zero;
+            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldMatrix.Translation;
             double timeToIntercept;
             double rangeToTarget;
 
+            if (target.Projectile != null)
+                targetLinVel = target.Projectile.Velocity;
+            else if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
+            else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
+
             if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
+                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
             else
-                targetPos = target.PositionComp.WorldMatrix.Translation;
+                targetPos = targetCenter;
 
             var targetDir = targetPos - weapon.Comp.MyPivotPos;
 
@@ -29,8 +60,6 @@ namespace WeaponCore.Platform
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             var isAligned = inRange && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
-            if (checkOnly)
-                return isAligned;
 
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetDir;
@@ -39,20 +68,27 @@ namespace WeaponCore.Platform
             return isAligned;
         }
 
-        internal static bool TrackingTarget(Weapon weapon, MyEntity target, bool step = false)
+        internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
         {
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
-
             Vector3D targetPos;
+            Vector3 targetLinVel = Vector3.Zero;
+            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldMatrix.Translation;
             double timeToIntercept;
             double rangeToTarget;
 
+            if (target.Projectile != null)
+                targetLinVel = target.Projectile.Velocity;
+            else if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
+            else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
+
+
             if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(target, prediction, out timeToIntercept);
+                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
             else
-                targetPos = target.PositionComp.WorldMatrix.Translation;
+                targetPos = targetCenter;
 
             Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
@@ -122,7 +158,6 @@ namespace WeaponCore.Platform
             }
             else
             {
-                Log.Line($"{weapon.System.WeaponName} - is not tracking - marked:{target.MarkedForClose} - Pos:{target.PositionComp.GetPosition()} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon:{weapon == weapon.Comp.TrackingWeapon}");
                 weapon.SeekTarget = true;
             }
 
@@ -134,7 +169,7 @@ namespace WeaponCore.Platform
             if (alignedChange && isAligned) weapon.StartShooting();
             else if (alignedChange && !weapon.DelayCeaseFire)
             {
-                Log.Line($"{weapon.System.WeaponName} - align change NoDelayCeaseFire - inRange:{inRange} - isAligned:{isAligned} - wasAligned:{wasAligned} - marked:{target.MarkedForClose} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon:{weapon == weapon.Comp.TrackingWeapon}");
+                //Log.Line($"{weapon.System.WeaponName} - align change NoDelayCeaseFire - inRange:{inRange} - isAligned:{isAligned} - wasAligned:{wasAligned} - marked:{target.Entity.MarkedForClose} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon:{weapon == weapon.Comp.TrackingWeapon}");
                 weapon.StopShooting();
             }
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
@@ -258,32 +293,25 @@ namespace WeaponCore.Platform
                 pitch = AngleBetween(localTargetVector, flattenedTargetVector) * Math.Sign(localTargetVector.Y); //up is positive
         }
 
-        public Vector3D GetPredictedTargetPosition(MyEntity target, Prediction prediction, out double timeToIntercept)
+        public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Prediction prediction, out double timeToIntercept)
         {
             var tick = Comp.Ai.MySession.Tick;
-
+            /*
             if (tick == _lastPredictionTick && _lastTarget == target)
             {
                 timeToIntercept = _lastTimeToIntercept;
                 return _lastPredictedPos;
             }
             _lastTarget = target;
+            */
             _lastPredictionTick = tick;
 
-            var targetCenter = target.PositionComp.WorldAABB.Center;
+            var targetCenter = targetPos;
             var shooterPos = Comp.MyPivotPos;
             var shooterVel = Comp.Physics.LinearVelocity;
             var ammoSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
             var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
-            var targetVel = Vector3.Zero;
-
-            if (target.Physics != null) targetVel = target.Physics.LinearVelocity;
-            else
-            {
-                var topMostParent = target.GetTopMostParent();
-                if (topMostParent?.Physics != null)
-                    targetVel = topMostParent.Physics.LinearVelocity;
-            }
+            var targetVel = targetLinVel;
 
             if (prediction == Prediction.Basic) 
             {
