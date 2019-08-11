@@ -43,16 +43,6 @@ namespace WeaponCore.Support
         internal long MyOwner;
         internal int DbUpdating;
         internal bool DbReady;
-        internal bool GridInit;
-        internal bool UpdatePowerSources;
-        internal bool updateSinks;
-        internal float LastAvailablePower;
-        internal float GridMaxPower;
-        internal float GridCurrentPower;
-        internal float GridAvailablePower;
-        internal float BatteryMaxPower;
-        internal float BatteryCurrentOutput;
-        internal float BatteryCurrentInput;
 
 
         internal BoundingBoxD GroupAABB;

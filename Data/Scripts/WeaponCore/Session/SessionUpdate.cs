@@ -17,16 +17,6 @@ namespace WeaponCore
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
 
-                if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
-                {
-                    gridAi.UpdateGridPower();
-                    if (gridAi.LastAvailablePower != gridAi.GridAvailablePower)
-                    {
-                        gridAi.updateSinks = true;
-                        gridAi.LastAvailablePower = gridAi.GridAvailablePower;
-                    }
-                }
-
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -49,19 +39,9 @@ namespace WeaponCore
                             }
                         }
 
-                        if (Tick60)
-                        {
-                            comp.Sink.Update();
-                            Log.Line($"CompCurrent:{comp.Sink.SuppliedRatioByType(comp.GId)} - GridCurrent:{gridAi.GridCurrentPower}");
-                        }
-                        if (w.IsShooting && gridAi.updateSinks)
-                        {
-                            //comp.SetSinkPower(true, gridAi.updateSinks);
-                            Log.Line("Update");
-                        }
-
                         if (comp.DelayTicks != 0)
                         {
+                            Log.Line($"Delay Ticks: {comp.DelayTicks}");
                             if (comp.ShootTick <= Tick)
                             {
                                 comp.Charging = false;
@@ -69,7 +49,7 @@ namespace WeaponCore
                             }
                             else comp.Charging = true;
                         }
-
+                        
                         if (comp.Overheated || comp.Charging) continue;
 
 
@@ -127,7 +107,6 @@ namespace WeaponCore
                     }
                 }
                 gridAi.Ready = false;
-                gridAi.updateSinks = false;
             }
         }
 

@@ -121,15 +121,6 @@ namespace WeaponCore.Support
             CreateUi();
 
             MainInit = true;
-
-            if (!Ai.GridInit)
-            {
-                foreach (var cubeBlock in MyGrid.GetFatBlocks())
-                {
-                    Ai.FatBlockAdded(cubeBlock);
-                }
-                Ai.GridInit = true;
-            }
             
             if (Turret.Enabled) Turret.Enabled = false; Turret.Enabled = true;
         }
