@@ -19,7 +19,7 @@ namespace WeaponCore.Platform
             var session = Comp.Ai.MySession;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            if (Comp.Charging) return;
+            //if (Comp.Charging) return;
 
             if (System.BurstMode)
             {
@@ -170,7 +170,7 @@ namespace WeaponCore.Platform
 
                     if (CurrentHeat > System.MaxHeat)
                     {
-                        if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
+                        if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
                         Comp.Overheated = true;
                     }
 

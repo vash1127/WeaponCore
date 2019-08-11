@@ -16,10 +16,11 @@ namespace WeaponCore.Support
             NewEntities.Clear();
 
             Targeting.AllowScanning = true;
+            Targeting.RescanIfNeeded();
             foreach (var ent in Targeting.TargetRoots)
             {
                 if (ent == null)  continue;
-                using (ent.Pin())
+                //using (ent.Pin())
                 {
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
                     if (ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is IMyFloatingObject
@@ -69,6 +70,7 @@ namespace WeaponCore.Support
             IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
             foreach (var targets in allTargets)
             {
+                //Log.Line($"{targets.Key.DebugName} - {targets.Value.Count}");
                 var rootGrid = targets.Key;
                 Dictionary<BlockTypes, List<MyCubeBlock>> typeDict;
                 if (ai.ValidGrids.TryGetValue(rootGrid, out typeDict))
