@@ -228,7 +228,7 @@ namespace WeaponCore
                         if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
                     }
 
-                    //block.DoDamage(scaledDamage, damageType, true, null, p.T.FiringCube.EntityId);
+                    block.DoDamage(scaledDamage, damageType, true, null, p.T.FiringCube.EntityId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
                     if (explosive && !nova && ((!detonateOnEnd && blockIsRoot) || detonateOnEnd && theEnd))
