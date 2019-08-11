@@ -22,21 +22,6 @@ namespace WeaponCore.Support
             }
         }
 
-        private void RegisterMyGridEvents(bool register = true, MyCubeGrid grid = null)
-        {
-            if (grid == null) grid = MyGrid;
-            if (register)
-            {
-                grid.OnFatBlockAdded += FatBlockAdded;
-                grid.OnFatBlockRemoved += FatBlockRemoved;
-            }
-            else
-            {
-                grid.OnFatBlockAdded -= FatBlockAdded;
-                grid.OnFatBlockRemoved -= FatBlockRemoved;
-            }
-        }
-
         private void BlockAddedEvent(IMySlimBlock block)
         {
             try
@@ -54,48 +39,5 @@ namespace WeaponCore.Support
             }
             catch (Exception ex) { Log.Line($"Exception in Controller BlockRemoved: {ex}"); }
         }
-
-        internal void FatBlockAdded(MyCubeBlock myCubeBlock)
-        {
-            try
-            {
-                if (myCubeBlock is IMyPowerProducer)
-                {
-                    var source = myCubeBlock.Components.Get<MyResourceSourceComponent>();
-                    if (source != null)
-                    {
-                        var type = source.ResourceTypes[0];
-                        if (type != MyResourceDistributorComponent.ElectricityId) return;
-                        Sources.Add(source);
-                        UpdatePowerSources = true;
-                        updateSinks = true;
-                    }
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
-        }
-
-        private void FatBlockRemoved(MyCubeBlock myCubeBlock)
-        {
-            try
-            {
-                if (myCubeBlock is IMyPowerProducer)
-                {
-                    var source = myCubeBlock.Components.Get<MyResourceSourceComponent>();
-                    if (source != null)
-                    {
-                        var type = source.ResourceTypes[0];
-                        if (type != MyResourceDistributorComponent.ElectricityId) return;
-                        Sources.Remove(source);
-                        UpdatePowerSources = true;
-                        updateSinks = true;
-                    }
-                    UpdatePowerSources = true;
-                    updateSinks = true;
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }
-        }
-
     }
 }

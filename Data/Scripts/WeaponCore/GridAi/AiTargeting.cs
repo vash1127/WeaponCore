@@ -14,6 +14,14 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
+        internal GridAi(MyCubeGrid grid, Session mySession)
+        {
+            MyGrid = grid;
+            RegisterMyGridEvents(true, MyGrid);
+            MySession = mySession;
+            Targeting = MyGrid.Components.Get<MyGridTargeting>();
+        }
+
         internal static void AcquireTarget(Weapon w)
         {
             w.LastTargetCheck = 0;

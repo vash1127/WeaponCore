@@ -52,8 +52,6 @@ namespace WeaponCore.Support
         internal float MaxAmmoMass;
         internal float SinkPower;
         internal float IdlePower;
-        internal float RequiredPower;
-        private float _lastRequirment = 0;
         internal bool Overheated = false;
         internal bool TurretTargetLock;
         internal bool Gunner;
@@ -120,10 +118,9 @@ namespace WeaponCore.Support
             };
             MyCube.Components.TryGet(out Sink);
             Sink.RemoveType(ref GId);
-            Sink.Init(MyStringHash.GetOrCompute("Thrust"), resourceInfo);
+            Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
             Sink.AddType(ref resourceInfo);
             Sink.Update();
-            Sink.RequiredInputChanged += RequiredChanged;
             Sink.CurrentInputChanged += CurrentInputChanged;
 
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();

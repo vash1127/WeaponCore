@@ -111,51 +111,29 @@ namespace WeaponCore.Support
 
         internal void RequiredChanged(MyDefinitionId changedResourceTypeId, MyResourceSinkComponent sink, float oldRequirement, float newRequirement)
         {
-            //Log.Line($"Old Requirement: {oldRequirement} New Requirement: {newRequirement}");
+            Log.Line($"Old Requirement: {oldRequirement} New Requirement: {newRequirement}");
         }
 
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
-            //Log.Line($"Old input: {oldInput} New input: {sink.CurrentInputByType(GId)}");
+            Log.Line($"Old input: {oldInput} New input: {sink.CurrentInputByType(GId)}");
         }
 
         internal void SetSinkPower(bool shoot = true, bool powerRemoved = false) {
 
             if (powerRemoved)
             {
-                SinkPower = 0;
-                Sink.Update();
-                Ai.UpdateGridPower();
+                Charging = true;
+                float currInput = sink.CurrentInputByType(GId);
+                Log.Line($"ratio: {ratio} Current Input: {currInput}");
+                DelayTicks = (uint)(60 * ((currInput / ratio) / currInput));
+                ShootTick = DelayTicks + Ai.MySession.Tick;
             }
-
-            if (!shoot)
-            {
-                SinkPower = IdlePower;
-                Charging = false;
+            else {
                 ShootTick = 0;
                 DelayTicks = 0;
+                Charging = false;
             }
-            else
-            {                
-                if (RequiredPower > Ai.GridAvailablePower + SinkPower)
-                {
-                    Charging = true;
-                    DelayTicks = (uint)(60 * (RequiredPower / (Ai.GridAvailablePower+SinkPower)));
-                    if (ShootTick == 0) ShootTick = DelayTicks + Ai.MySession.Tick;
-                    SinkPower += Ai.GridAvailablePower;
-                }
-                else
-                {
-                    Charging = false;
-                    ShootTick = 0;
-                    DelayTicks = 0;
-                    SinkPower = RequiredPower;
-                }
-            }
-            Log.Line($"Available Power: {Ai.GridAvailablePower}");
-            Sink.Update();
-            TerminalRefresh();
-            Ai.UpdateGridPower();
         }
     }
 }

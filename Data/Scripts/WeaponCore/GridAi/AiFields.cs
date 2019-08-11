@@ -61,8 +61,7 @@ namespace WeaponCore.Support
         internal float BatteryMaxPower;
         internal float BatteryCurrentOutput;
         internal float BatteryCurrentInput;
-        internal double MaxTargetingRange;
-        internal double MaxTargetingRangeSqr;
+
 
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
