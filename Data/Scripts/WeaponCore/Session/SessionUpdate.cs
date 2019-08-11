@@ -39,7 +39,7 @@ namespace WeaponCore
                             }
                         }
 
-                        if (comp.DelayTicks != 0)
+                        if (comp.DelayTicks != 0 && w.IsShooting)
                         {
                             Log.Line($"Delay Ticks: {comp.DelayTicks}");
                             if (comp.ShootTick <= Tick)

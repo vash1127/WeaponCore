@@ -118,7 +118,7 @@ namespace WeaponCore.Support
                 float currInput = sink.CurrentInputByType(GId);
                 Log.Line($"ratio: {ratio} Current Input: {currInput}");
                 DelayTicks = (uint)(60 * ((currInput / ratio) / currInput));
-                if (ShootTick == 0) ShootTick = DelayTicks + Ai.MySession.Tick;
+                ShootTick = DelayTicks + Ai.MySession.Tick;
             }
             else {
                 ShootTick = 0;
