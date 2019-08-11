@@ -42,14 +42,13 @@ namespace WeaponCore.Support
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
                 if (test < minValue3)
                 {
-                    //if (test < minValue) Log.Line($"test123: {cube.DebugName} - {Weapon.IsTargetInView(w, cubePos)} - {physics.CastRay(testPos, cubePos, out hitInfo, 0, true) && hitInfo.HitEntity == cube.CubeGrid} - {((MyEntity)hitInfo.HitEntity)?.DebugName}");
                     IHitInfo hit = null;
                     var best = test < minValue;
                     bool bestTest = false;
                     if (best)
                     {
                         if (w != null)
-                            bestTest = Weapon.IsTargetInView(w, cubePos) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                            bestTest = w.IsTargetInViewInLined(w, cubePos) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
                         else
                             bestTest = true;
                     }

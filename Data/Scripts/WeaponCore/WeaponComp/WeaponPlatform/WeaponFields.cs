@@ -198,6 +198,11 @@ namespace WeaponCore.Platform
             BeamSlot = new uint[_numOfBarrels];
             Target = new Target(System, Comp.MyCube);
             NewTarget = new Target(System, Comp.MyCube);
+            if (System.MaxTrajectorySqr > Comp.Ai.MaxTargetingRangeSqr)
+            {
+                Comp.Ai.MaxTargetingRange = System.MaxTrajectory;
+                Comp.Ai.MaxTargetingRangeSqr = System.MaxTrajectorySqr;
+            }
         }
     }
 }

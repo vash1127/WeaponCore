@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRageMath;
 using static WeaponCore.Support.SubSystemDefinition;
 
 namespace WeaponCore.Support
@@ -14,16 +15,14 @@ namespace WeaponCore.Support
         internal void UpdateTargetDb()
         {
             NewEntities.Clear();
-
             Targeting.AllowScanning = true;
-            Targeting.RescanIfNeeded();
             foreach (var ent in Targeting.TargetRoots)
             {
                 if (ent == null)  continue;
-                //using (ent.Pin())
+                using (ent.Pin())
                 {
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                    if (ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is IMyFloatingObject
+                    if (ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject
                         || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out entInfo)) continue;
 
                     switch (entInfo.Relationship)
@@ -56,12 +55,27 @@ namespace WeaponCore.Support
 
                         NewEntities.Add(new DetectInfo(ent, typeDict, entInfo));
                         ValidGrids.Add(ent, typeDict);
+                        GridAi threatAi;
+                        if (Session.Instance.GridTargetingAIs.TryGetValue(grid, out threatAi)) ThreatsTmp.Add(threatAi);
                     }
                     else NewEntities.Add(new DetectInfo(ent, null, entInfo));
                 }
             }
             GetTargetBlocks(Targeting, this);
             Targeting.AllowScanning = false;
+            if (ThreatsTmp.Count > 0)
+            {
+                var gridScanRadius = MaxTargetingRange + MyGrid.PositionComp.LocalVolume.Radius;
+                var sphere = new BoundingSphereD(MyGrid.PositionComp.WorldAABB.Center, gridScanRadius);
+                EntitiesInRange.Clear();
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, EntitiesInRange);
+                for (int i = 0; i < EntitiesInRange.Count; i++)
+                {
+                    var ent = EntitiesInRange[i];
+                    if (!(ent is MyVoxelBase || ent is MyCubeGrid && ent.Physics != null) || ent == MyGrid || ValidGrids.ContainsKey(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
+                    ObstructionsTmp.Add(ent);
+                }
+            }
             ValidGrids.Clear();
         }
 
@@ -70,7 +84,6 @@ namespace WeaponCore.Support
             IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
             foreach (var targets in allTargets)
             {
-                //Log.Line($"{targets.Key.DebugName} - {targets.Value.Count}");
                 var rootGrid = targets.Key;
                 Dictionary<BlockTypes, List<MyCubeBlock>> typeDict;
                 if (ai.ValidGrids.TryGetValue(rootGrid, out typeDict))

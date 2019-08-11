@@ -20,7 +20,11 @@ namespace WeaponCore
 
         private void ProcessDbs()
         {
-            MyAPIGateway.Parallel.For(0, DbsToUpdate.Count, x => DbsToUpdate[x].UpdateTargetDb(), 6);
+            //MyAPIGateway.Parallel.For(0, DbsToUpdate.Count, x => DbsToUpdate[x].UpdateTargetDb(), 6);
+            foreach (var db in DbsToUpdate)
+            {
+                db.UpdateTargetDb();
+            }
         }
 
         private void ProcessDbsCallBack()
@@ -45,9 +49,19 @@ namespace WeaponCore
                     db.SortedTargets.Add(targetInfo);
                 }
                 db.SortedTargets.Sort(db.TargetCompare1);
-                //Log.Line($"[DB] targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.BlockTypeIsSorted.Clear();
+                db.Threats.Clear();
+                db.Threats.Capacity = db.ThreatsTmp.Count;
+                for (var i = 0; i < db.ThreatsTmp.Count; i++) db.Threats.Add(db.ThreatsTmp[i]);
+                db.ThreatsTmp.Clear();
+
+                db.Obstructions.Clear();
+                for (int i = 0; i < db.ObstructionsTmp.Count; i++) db.Obstructions.Add(db.ObstructionsTmp[i]);
+                db.ObstructionsTmp.Clear();
+
                 db.DbReady = db.SortedTargets.Count > 0;
+                //Log.Line($"[DB] liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
+
                 Interlocked.Exchange(ref db.DbUpdating, 0);
 
             }

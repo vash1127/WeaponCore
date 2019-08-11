@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -79,14 +78,14 @@ namespace WeaponCore.Projectiles
                 var pool = ProjectilePool[i];
                 var entPool = EntityPool[i];
                 var drawList = DrawProjectiles[i];
+
                 var spawnShrapnel = ShrapnelToSpawn[i];
-                for (int j = 0; j < spawnShrapnel.Count; j++)
-                {
-                    var shrapnel = spawnShrapnel[j];
-                    shrapnel.Spawn(i);
-                    ShrapnelPool[i].Return(shrapnel);
+
+                if (spawnShrapnel.Count > 0) {
+                    for (int j = 0; j < spawnShrapnel.Count; j++)
+                        spawnShrapnel[j].Spawn(i);
+                    spawnShrapnel.Clear();
                 }
-                spawnShrapnel.Clear();
 
                 foreach (var p in pool.Active)
                 {

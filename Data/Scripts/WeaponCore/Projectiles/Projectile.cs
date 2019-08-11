@@ -100,7 +100,7 @@ namespace WeaponCore.Projectiles
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
         internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
-
+        internal readonly List<GridAi> Watchers = new List<GridAi>();
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
@@ -300,6 +300,12 @@ namespace WeaponCore.Projectiles
         {
             if (!IsShrapnel && GenerateShrapnel) SpawnShrapnel();
             else IsShrapnel = false;
+
+            if (Watchers.Count > 0 && !(State == ProjectileState.Ending || State == ProjectileState.Ending))
+            {
+                for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Enqueue(this);
+                Watchers.Clear();
+            }
 
             if (!EnableAv && ModelId == -1)
             {

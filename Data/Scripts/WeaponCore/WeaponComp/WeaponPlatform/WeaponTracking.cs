@@ -116,7 +116,7 @@ namespace WeaponCore.Platform
 
             if (weapon.IsTracking)
             {
-                isInView = IsTargetInView(weapon, targetPos);
+                isInView = weapon.IsTargetInViewInLined(weapon, targetPos);
                 if (isInView)
                     isAligned = IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref weapon.TargetDir, weapon.AimingTolerance);
             }
@@ -145,6 +145,37 @@ namespace WeaponCore.Platform
         {
             var lookAtPositionEuler = weapon.LookAt(predPos);
             var inRange = weapon.IsInRange(ref lookAtPositionEuler);
+            return inRange;
+        }
+
+        internal bool IsTargetInViewInLined(Weapon weapon, Vector3D predPos)
+        {
+            var muzzleWorldPosition = Comp.MyPivotPos;
+            double azimuth;
+            double elevation;
+            Vector3D.GetAzimuthAndElevation(Vector3D.Normalize(Vector3D.TransformNormal(predPos - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
+
+            if (_gunIdleElevationAzimuthUnknown)
+            {
+                Vector3D.GetAzimuthAndElevation(Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
+                _gunIdleElevationAzimuthUnknown = false;
+            }
+
+            var angle = azimuth - _gunIdleAzimuth;
+            angle = Math.IEEERemainder(angle, MathHelperD.TwoPi);
+            if (angle <= -Math.PI)
+                angle += MathHelperD.TwoPi;
+            else if (angle > Math.PI)
+                angle -= MathHelperD.TwoPi;
+
+            var lookAtPositionEuler = new Vector3D(elevation - _gunIdleElevation, angle, 0.0d);
+
+            var y = lookAtPositionEuler.Y;
+            var x = lookAtPositionEuler.X;
+            bool inRange;
+            if (y > MinAzimuthRadians && y < MaxAzimuthRadians && x > MinElevationRadians) inRange = x < MaxElevationRadians;
+            else inRange = false;
+
             return inRange;
         }
 

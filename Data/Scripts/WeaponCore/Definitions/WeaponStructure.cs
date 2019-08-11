@@ -58,6 +58,7 @@ namespace WeaponCore.Support
         public readonly bool OrderedTargets;
         public readonly bool SortBlocks;
         public readonly bool DegROF;
+        public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
         public readonly double AreaRadiusSmall;
         public readonly double AreaRadiusLarge;
@@ -140,7 +141,8 @@ namespace WeaponCore.Support
 
             ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.BaseDamage;
 
-            MaxTrajectorySqr = values.Ammo.Trajectory.MaxTrajectory * values.Ammo.Trajectory.MaxTrajectory;
+            MaxTrajectory = values.Ammo.Trajectory.MaxTrajectory;
+            MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
 
             Sound();

@@ -228,7 +228,7 @@ namespace WeaponCore
                         if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
                     }
 
-                    block.DoDamage(scaledDamage, damageType, true, null, p.T.FiringCube.EntityId);
+                    //block.DoDamage(scaledDamage, damageType, true, null, p.T.FiringCube.EntityId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
                     if (explosive && !nova && ((!detonateOnEnd && blockIsRoot) || detonateOnEnd && theEnd))
@@ -412,7 +412,6 @@ namespace WeaponCore
                 }
             }
         }
-
 
         static void GetIntVectorsInSphere(MyCubeGrid grid, Vector3I center, double radius, List<RadiatedBlock> points)
         {

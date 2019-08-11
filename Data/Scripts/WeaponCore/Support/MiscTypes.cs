@@ -1,14 +1,11 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Library.Collections;
 using VRage.Utils;
 using VRageMath;
-using VRageRender;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
@@ -370,6 +367,8 @@ namespace WeaponCore.Support
                 p.StartSpeed = frag.Velocity;
                 Session.Instance.Projectiles.FragmentPool[poolId].Return(frag);
             }
+            Session.Instance.Projectiles.ShrapnelPool[poolId].Return(this);
+            Sharpnel.Clear();
         }
     }
 

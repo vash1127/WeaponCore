@@ -14,14 +14,6 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal GridAi(MyCubeGrid grid, Session mySession)
-        {
-            MyGrid = grid;
-            RegisterMyGridEvents(true, MyGrid);
-            MySession = mySession;
-            Targeting = MyGrid.Components.Get<MyGridTargeting>();
-        }
-
         internal static void AcquireTarget(Weapon w)
         {
             w.LastTargetCheck = 0;
@@ -29,6 +21,22 @@ namespace WeaponCore.Support
             var physics = MyAPIGateway.Physics;
             var weaponPos = w.Comp.MyPivotPos;
             var ai = w.Comp.Ai;
+
+            foreach (var lp in ai.LiveProjectile)
+            {
+                if (w.IsTargetInViewInLined(w, lp.Position))
+                {
+                    for (int i = 0; i < ai.Obstructions.Count; i++)
+                    {
+                        var obsSphere = ai.Obstructions[i].PositionComp.WorldVolume;
+                        var dir = lp.Position - weaponPos;
+                        var beam = new RayD(ref weaponPos, ref dir);
+                        if (beam.Intersects(obsSphere) != null) continue;
+                    }
+                }
+                else continue;
+            }
+
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];

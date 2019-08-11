@@ -1,5 +1,6 @@
 ﻿using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -16,6 +17,16 @@ namespace WeaponCore
 
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
+
+                if (!gridAi.DeadProjectiles.IsEmpty)
+                {
+                    Projectile p;
+                    while (gridAi.DeadProjectiles.TryDequeue(out p))
+                    {
+                        Log.Line($"dead projectile");
+                        gridAi.LiveProjectile.Remove(p);
+                    }
+                }
 
                 if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
                 {
@@ -37,11 +48,7 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (!w.Enabled || (!Tick60 && comp.Overheated))
-                        {
-                            Log.Line("test");
-                            continue;
-                        }
+                        if (!w.Enabled || (!Tick60 && comp.Overheated)) continue;
 
                         if (Tick60)
                         {

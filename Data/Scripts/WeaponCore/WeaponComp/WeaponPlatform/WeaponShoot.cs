@@ -64,12 +64,15 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
 
-            if (!Comp.Gunner  && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
+            if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
 
             lock (session.Projectiles.Wait[session.ProCounter])
             {
                 Projectile vProjectile = null;
-                if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
+                var threats = Comp.Ai.Threats;
+                var threatCnt = threats.Count;
+                var targetable = System.Values.Ammo.Health > 0;
+                if (System.VirtualBeams) vProjectile = CreateVirtualProjectile(threatCnt, targetable);
 
                 var isStatic = Comp.Physics.IsStatic;
                 for (int i = 0; i < bps; i++)
@@ -163,6 +166,33 @@ namespace WeaponCore.Platform
                                 }
                                 p.T.Entity = ent;
                             }
+
+                            if (targetable)
+                            {
+                                for (int t = 0; t < threatCnt; t++)
+                                {
+                                    var threat = Comp.Ai.Threats[t];
+                                    if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None)
+                                    {
+                                        var threatLin = threat.MyGrid.Physics?.LinearVelocity ?? Vector3.Zero;
+                                        bool intercept;
+                                        if (Vector3D.IsZero(threatLin, 0.025))
+                                        {
+                                            intercept = Vector3.Dot(p.Direction, p.Position - threat.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
+                                        }
+                                        else
+                                        {
+                                            intercept = Vector3.Dot(threatLin, threat.MyGrid.PositionComp.WorldMatrix.Translation - TargetPos) < 0;
+                                        }
+                                        if (!intercept)
+                                        {
+                                            continue;
+                                        }
+                                    }
+                                    threat.LiveProjectile.Add(p);
+                                    p.Watchers.Add(threat);
+                                }
+                            }
                         }
                     }
 
@@ -183,7 +213,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        private Projectile CreateVirtualProjectile()
+        private Projectile CreateVirtualProjectile(int threatCnt, bool targetable)
         {
             DamageFrame.VirtualHit = false;
             DamageFrame.Hits = 0;
