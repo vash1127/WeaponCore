@@ -18,16 +18,6 @@ namespace WeaponCore
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
 
-                if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
-                {
-                    gridAi.UpdateGridPower();
-                    if (gridAi.LastAvailablePower.Equals(gridAi.GridAvailablePower))
-                    {
-                        gridAi.updateSinks = true;
-                        gridAi.LastAvailablePower = gridAi.GridAvailablePower;
-                    }
-                }
-
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -110,7 +100,6 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - comp.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
-
                         
                         if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
                         else if (w.IsShooting)
