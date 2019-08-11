@@ -40,9 +40,9 @@ namespace WeaponCore
                             }
                         }
 
-                        if (comp.DelayTicks != 0 && w.IsShooting)
+                        if (w.IsShooting && comp.DelayTicks != 0)
                         {
-                            Log.Line($"Delay Ticks: {comp.DelayTicks}");
+                            //Log.Line($"Delay Ticks: {comp.DelayTicks}");
                             if (comp.ShootTick <= Tick)
                             {
                                 comp.Charging = false;
