@@ -117,7 +117,7 @@ namespace WeaponCore.Support
                 Charging = true;
                 float currInput = sink.CurrentInputByType(GId);
                 Log.Line($"ratio: {ratio} Current Input: {currInput}");
-                DelayTicks = (uint)(60 * ((currInput / ratio) / currInput));
+                DelayTicks += (uint)(60 * ((currInput / ratio) / currInput))-DelayTicks;
                 ShootTick = DelayTicks + Ai.MySession.Tick;
             }
             else
