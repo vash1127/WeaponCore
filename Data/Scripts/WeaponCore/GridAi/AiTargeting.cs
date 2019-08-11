@@ -19,6 +19,7 @@ namespace WeaponCore.Support
             var physics = MyAPIGateway.Physics;
             var weaponPos = w.Comp.MyPivotPos;
             var ai = w.Comp.Ai;
+            var newTarget = false;
 
             foreach (var lp in ai.LiveProjectile)
             {
@@ -43,48 +44,65 @@ namespace WeaponCore.Support
                     var origDist = hitDist;
                     var topEntId = long.MaxValue;
                     target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
-                    return;
+                    newTarget = true;
+                    break;
                 }
             }
-
-            if (w.Comp.MyGrid.BlocksCount > 100) return;
-            for (int i = 0; i < ai.SortedTargets.Count; i++)
+            if (!newTarget)
             {
-                var info = ai.SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
-
-                if (w.TrackingAi)
+                for (int i = 0; i < ai.SortedTargets.Count; i++)
                 {
-                    if (!Weapon.ValidTrajectory(w, info.Target, null)) continue;
-                }
-                else if (!Weapon.ValidTrajectory(w, info.Target, null)) continue;
+                    var info = ai.SortedTargets[i];
+                    if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
 
-                if (info.IsGrid)
-                {
-                    if (!AcquireBlock(w.System, ref target, info, weaponPos, w)) continue;
-                    return;
-                }
+                    if (w.TrackingAi)
+                    {
+                        if (!Weapon.ValidTrajectory(w, info.Target, null)) continue;
+                    }
+                    else if (!Weapon.ValidTrajectory(w, info.Target, null)) continue;
 
-                var targetPos = info.Target.PositionComp.WorldAABB.Center;
-                IHitInfo hitInfo;
-                physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
-                if (hitInfo?.HitEntity == info.Target)
-                {
-                    Log.Line($"{w.System.WeaponName} - found something");
+                    if (info.IsGrid)
+                    {
+                        if (!AcquireBlock(w.System, ref target, info, weaponPos, w)) continue;
+                        newTarget = true;
+                        break;
+                    }
 
-                    double rayDist;
-                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
-                    var shortDist = rayDist * (1 - hitInfo.Fraction);
-                    var origDist = rayDist * hitInfo.Fraction;
-                    var topEntId = info.Target.GetTopMostParent().EntityId;
-                    target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
-                    return;
+                    var targetPos = info.Target.PositionComp.WorldAABB.Center;
+                    IHitInfo hitInfo;
+                    physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
+                    if (hitInfo?.HitEntity == info.Target)
+                    {
+                        Log.Line($"{w.System.WeaponName} - found something");
+
+                        double rayDist;
+                        Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                        var shortDist = rayDist * (1 - hitInfo.Fraction);
+                        var origDist = rayDist * hitInfo.Fraction;
+                        var topEntId = info.Target.GetTopMostParent().EntityId;
+                        target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
+                        newTarget = true;
+                        break;
+                    }
                 }
             }
-            //Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {w.Comp.Ai.SortedTargets.Count} - Total:{w.Comp.Ai.Targeting.TargetRoots.Count}");
-            target.Reset();
-            w.LastTargetCheck = 1;
-            w.Target.Expired = true;
+
+            if (newTarget)
+            {
+                var projectile = w.NewTarget.Projectile != null;
+                var expiredProjectile = projectile && !ai.LiveProjectile.Contains(w.NewTarget.Projectile);
+                var validProjectile = projectile && !expiredProjectile;
+                if (expiredProjectile) w.NewTarget.Reset();
+                w.Target.Expired = !validProjectile && (w.NewTarget.Entity == null || w.NewTarget.Entity.MarkedForClose);
+                w.NewTarget.TransferTo(w.Target);
+            }
+            else
+            {
+                //Log.Line($"{w.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {w.Comp.Ai.SortedTargets.Count} - Total:{w.Comp.Ai.Targeting.TargetRoots.Count}");
+                target.Reset();
+                w.LastTargetCheck = 1;
+                w.Target.Expired = true;
+            }
         }
 
         internal static bool ReacquireTarget(Projectile p)

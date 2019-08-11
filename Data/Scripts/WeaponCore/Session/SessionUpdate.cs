@@ -86,16 +86,9 @@ namespace WeaponCore
                             if (!w.AmmoMagLoaded) continue;
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, false);
                         }
+
                         if (w.SeekTarget)
-                        {
                             if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 60) GridAi.AcquireTarget(w);
-                            var projectile = w.NewTarget.Projectile != null;
-                            var expiredProjectile = projectile && !gridAi.LiveProjectile.Contains(w.NewTarget.Projectile);
-                            var validProjectile = projectile && !expiredProjectile;
-                            if (expiredProjectile) w.NewTarget.Reset();
-                            w.Target.Expired = !validProjectile && (w.NewTarget.Entity == null || w.NewTarget.Entity.MarkedForClose);
-                            w.NewTarget.TransferTo(w.Target);
-                        }
                         else if (!w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;
 
