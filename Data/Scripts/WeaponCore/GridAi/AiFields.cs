@@ -61,6 +61,8 @@ namespace WeaponCore.Support
         internal float BatteryMaxPower;
         internal float BatteryCurrentOutput;
         internal float BatteryCurrentInput;
+        internal double MaxTargetingRange;
+        internal double MaxTargetingRangeSqr;
 
 
         internal BoundingBoxD GroupAABB;
@@ -69,7 +71,6 @@ namespace WeaponCore.Support
         internal GridAi(MyCubeGrid grid, Session mySession)
         {
             MyGrid = grid;
-            RegisterMyGridEvents(true, MyGrid);
             MySession = mySession;
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
         }

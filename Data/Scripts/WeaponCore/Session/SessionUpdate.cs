@@ -51,11 +51,7 @@ namespace WeaponCore
                             else comp.Charging = true;
                         }
                         
-                        if (comp.Overheated || comp.Charging)
-                        {
-                            Log.Line("overheaded/charging");
-                            continue;
-                        };
+                        if (comp.Overheated || comp.Charging) continue;
 
 
                         var energyAmmo = w.System.EnergyAmmo;
