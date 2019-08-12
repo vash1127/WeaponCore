@@ -2,7 +2,6 @@
 using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage;
 using VRage.Game.ModAPI;
 using VRage.Input;
 using WeaponCore.Support;
@@ -12,10 +11,10 @@ namespace WeaponCore
     {
         public void UpdateDbsInQueue()
         {
-            DbUpdating = true;
-            //MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
-            ProcessDbs();
-            ProcessDbsCallBack();
+            DbsUpdating = true;
+            MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            //ProcessDbs();
+            //ProcessDbsCallBack();
         }
 
         private void ProcessDbs()
@@ -24,6 +23,10 @@ namespace WeaponCore
             foreach (var db in DbsToUpdate)
             {
                 db.UpdateTargetDb();
+            }
+            foreach (var db in DbsToUpdate)
+            {
+                db.FinalizeTargetDb();
             }
         }
 
@@ -50,23 +53,27 @@ namespace WeaponCore
                 }
                 db.SortedTargets.Sort(db.TargetCompare1);
                 db.BlockTypeIsSorted.Clear();
+
                 db.Threats.Clear();
                 db.Threats.Capacity = db.ThreatsTmp.Count;
                 for (var i = 0; i < db.ThreatsTmp.Count; i++) db.Threats.Add(db.ThreatsTmp[i]);
                 db.ThreatsTmp.Clear();
 
+                db.TargetAis.Clear();
+                db.TargetAis.Capacity = db.TargetAisTmp.Count;
+                for (var i = 0; i < db.TargetAisTmp.Count; i++) db.TargetAis.Add(db.TargetAisTmp[i]);
+                db.TargetAisTmp.Clear();
+
                 db.Obstructions.Clear();
                 for (int i = 0; i < db.ObstructionsTmp.Count; i++) db.Obstructions.Add(db.ObstructionsTmp[i]);
                 db.ObstructionsTmp.Clear();
 
-                db.DbReady = db.SortedTargets.Count > 0;
-                //Log.Line($"[DB] liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
-
+                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0;
+                Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 Interlocked.Exchange(ref db.DbUpdating, 0);
-
             }
             DbsToUpdate.Clear();
-            DbUpdating = false;
+            DbsUpdating = false;
         }
 
         public void Handler(object o)

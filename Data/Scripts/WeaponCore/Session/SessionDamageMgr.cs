@@ -47,6 +47,9 @@ namespace WeaponCore
                         case HitEntity.Type.Proximity:
                             ExplosionProximity(hitEnt, p);
                             continue;
+                        case HitEntity.Type.Projectile:
+                            DamageProjectile(hitEnt, p);
+                            continue;
                     }
                     Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
                 }
@@ -305,6 +308,32 @@ namespace WeaponCore
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
                 ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, projectile.Direction, (system.Values.Ammo.Mass * speed));
             }
+        }
+
+        private void DamageProjectile(HitEntity hitEnt, Projectile projectile)
+        {
+            var pEntity = hitEnt.Projectile;
+            var system = projectile.T.System;
+            if (pEntity == null) return;
+            projectile.ObjectsHit++;
+
+            var objHp = pEntity.BaseHealthPool;
+            var integrityCheck = system.Values.DamageScales.MaxIntegrity > 0;
+            if (integrityCheck && objHp > system.Values.DamageScales.MaxIntegrity) return;
+
+            float damageScale = 1;
+
+            var scaledDamage = projectile.BaseDamagePool * damageScale;
+
+            if (scaledDamage < objHp) projectile.BaseDamagePool = 0;
+            else projectile.BaseDamagePool -= objHp;
+            pEntity.BaseHealthPool -= scaledDamage;
+            if (pEntity.BaseHealthPool <= 0)
+            {
+                pEntity.State = Projectile.ProjectileState.Depleted;
+                Log.Line("killed projectile");
+            }
+            else Log.Line($"hit projectile: {pEntity.BaseHealthPool}");
         }
 
         private void DamageVoxel(HitEntity hitEnt, Projectile p)

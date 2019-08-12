@@ -23,32 +23,45 @@ namespace WeaponCore.Support
 
             foreach (var lp in ai.LiveProjectile)
             {
-                if (w.IsTargetInViewInLined(w, lp.Position))
+                if (Vector3D.Distance(lp.Position, weaponPos) > 750) continue;
+
+                if (Weapon.ValidTrajectory(w, null, lp))
                 {
+                    var needsCast = false;
                     for (int i = 0; i < ai.Obstructions.Count; i++)
                     {
                         var obsSphere = ai.Obstructions[i].PositionComp.WorldVolume;
                         var dir = lp.Position - weaponPos;
                         var beam = new RayD(ref weaponPos, ref dir);
-                        if (beam.Intersects(obsSphere) != null) continue;
+                        if (beam.Intersects(obsSphere) != null)
+                        {
+                            Log.Line("possible obscure");
+                            needsCast = true;
+                        }
+                    }
+
+                    if (needsCast)
+                    {
+                        IHitInfo hitInfo;
+                        physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
+                        if (hitInfo?.HitEntity == null)
+                        {
+                            double hitDist;
+                            Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
+                            var shortDist = hitDist;
+                            var origDist = hitDist;
+                            var topEntId = long.MaxValue;
+                            target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
+                            newTarget = true;
+                            break;
+                        }
+                        Log.Line($"is obscured");
                     }
                 }
-                else continue;
-                IHitInfo hitInfo;
-                physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
-                if (hitInfo?.HitEntity == null)
-                {
-                    double hitDist;
-                    Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
-                    var shortDist = hitDist;
-                    var origDist = hitDist;
-                    var topEntId = long.MaxValue;
-                    target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
-                    newTarget = true;
-                    break;
-                }
+                else Log.Line("not in view");
             }
-            if (!newTarget)
+
+            if (!newTarget && ai.MyGrid.CubeBlocks.Count < 5000)
             {
                 for (int i = 0; i < ai.SortedTargets.Count; i++)
                 {

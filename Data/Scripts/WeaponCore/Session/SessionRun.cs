@@ -78,13 +78,13 @@ namespace WeaponCore
                     //Log.Line($"projectiles:{p} - particles:{g} - eCount:{ExplosionCounter} - arkCount:{a} - Smoke_Missile:{c} - missileExp:{m} - what:{w}");
                 }
                 Timings();
+                Projectiles.Update();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
-                UpdateWeaponPlatforms();
                 AiLoop();
+                UpdateWeaponPlatforms();
                 //MyAPIGateway.Parallel.Start(AiLoop);
                 //MyAPIGateway.Parallel.Start(Projectiles.Update);
-                Projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

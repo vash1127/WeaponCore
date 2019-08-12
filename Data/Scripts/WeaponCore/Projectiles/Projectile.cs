@@ -15,6 +15,7 @@ namespace WeaponCore.Projectiles
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int EndSteps = 2;
         internal volatile float BaseDamagePool;
+        internal volatile float BaseHealthPool;
         internal volatile bool Colliding;
         internal MyCubeGrid FiringGrid;
         internal GridAi Ai;
@@ -155,8 +156,11 @@ namespace WeaponCore.Projectiles
 
             Target.System = T.System;
             Target.MyCube = T.FiringCube;
-            LockedTarget = Target.Entity != null && !Target.Entity.MarkedForClose;
-            if (Target.Entity != null && LockedTarget) OriginTargetPos = Target.Entity.PositionComp.WorldAABB.Center;
+
+            if (Target.Projectile != null) OriginTargetPos = Target.Projectile.Position;
+            else if (Target.Entity != null) OriginTargetPos = Target.Entity.PositionComp.WorldAABB.Center;
+            else OriginTargetPos = Vector3D.Zero;
+            LockedTarget = OriginTargetPos != Vector3D.Zero;
 
             if (T.System.TargetOffSet && LockedTarget)
             {
@@ -179,6 +183,7 @@ namespace WeaponCore.Projectiles
             else MaxTrajectory = T.System.Values.Ammo.Trajectory.MaxTrajectory;
 
             BaseDamagePool = T.System.Values.Ammo.BaseDamage;
+            BaseHealthPool = T.System.Values.Ammo.Health;
             LineLength = T.System.Values.Graphics.Line.Length;
 
             if (IsShrapnel)
