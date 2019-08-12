@@ -112,6 +112,8 @@ namespace WeaponCore.Support
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
 
+            Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)}");
+
             if (PowerReset && sink.SuppliedRatioByType(changedResourceTypeId) < 1)
             {
                 Ai.CurrentWeaponsDraw += sink.CurrentInputByType(changedResourceTypeId);

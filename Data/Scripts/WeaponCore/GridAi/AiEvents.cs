@@ -97,6 +97,8 @@ namespace WeaponCore.Support
                     PowerPercentAllowed.Remove(myCubeBlock.EntityId);
                     Log.Line($"entID: {myCubeBlock.EntityId}");
                     RecalcPowerPercent = true;
+                    UpdatePowerSources = true;
+                    RecalcPowerDist = true;
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }

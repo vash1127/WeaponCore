@@ -68,6 +68,7 @@ namespace WeaponCore.Support
         internal float BatteryCurrentInput;
         internal float TotalSinkPower;
         internal float CurrentWeaponsDraw;
+        internal Vector3 GridVel;
 
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();

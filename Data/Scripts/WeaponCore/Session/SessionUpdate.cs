@@ -206,7 +206,7 @@ namespace WeaponCore
                         w.SeekTarget = !gunner && w.Target.Expired && w.TrackTarget;
 
                         if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
-                        if (gridAi.MyGrid.CubeBlocks.Count < 1000) Log.Line($"{w.System.WeaponName} - shooting:{w.IsShooting} - wAi:{w.AiReady} - Expired:{w.Target.Expired} - gAi:{gridAi.Ready} - Seek:{w.SeekTarget}");
+                        //if (gridAi.MyGrid.CubeBlocks.Count < 1000) Log.Line($"{w.System.WeaponName} - shooting:{w.IsShooting} - wAi:{w.AiReady} - Expired:{w.Target.Expired} - gAi:{gridAi.Ready} - Seek:{w.SeekTarget}");
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {

@@ -18,6 +18,7 @@ namespace WeaponCore.Platform
         {
             var session = Comp.Ai.MySession;
             var tick = session.Tick;
+            uint velUpdateTick = 0;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
             //if (Comp.Charging) return;
 
@@ -66,11 +67,19 @@ namespace WeaponCore.Platform
 
             if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
 
+            if (velUpdateTick != tick)
+            {
+                Comp.Ai.GridVel = Comp.MyCube.CubeGrid.Physics.LinearVelocity;
+                velUpdateTick = tick;
+            }
+
+
             lock (session.Projectiles.Wait[session.ProCounter])
             {
                 Projectile vProjectile = null;
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
                 var targetable = System.Values.Ammo.Health > 0;
+
                 if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
 
                 var isStatic = Comp.Physics.IsStatic;
@@ -145,6 +154,7 @@ namespace WeaponCore.Platform
                             session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out p);
                             p.T.System = System;
                             p.T.FiringCube = Comp.MyCube;
+                            p.GridVel = Comp.Ai.GridVel;
                             p.Origin = muzzle.Position;
                             p.OriginUp = Comp.MyPivotUp;
                             p.PredictedTargetPos = TargetPos;
@@ -222,6 +232,7 @@ namespace WeaponCore.Platform
             Comp.Ai.MySession.Projectiles.ProjectilePool[Comp.Ai.MySession.ProCounter].AllocateOrCreate(out p);
             p.T.System = System;
             p.T.FiringCube = Comp.MyCube;
+            p.GridVel = Comp.Ai.GridVel;
             p.Origin = Comp.MyPivotPos;
             p.OriginUp = Comp.MyPivotUp;
             p.PredictedTargetPos = TargetPos;

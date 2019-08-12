@@ -39,6 +39,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D PrevTargetPos;
         internal Vector3D TargetOffSet;
         internal Vector3 PrevTargetVel;
+        internal Vector3 GridVel;
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
         internal double AccelLength;
@@ -199,7 +200,7 @@ namespace WeaponCore.Projectiles
             var smartsDelayDist = LineLength * T.System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
             SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
 
-            if (!IsShrapnel) StartSpeed = FiringGrid.Physics.LinearVelocity;
+            if (!IsShrapnel) StartSpeed = GridVel;
 
             if (T.System.SpeedVariance && !T.System.IsBeamWeapon)
             {
