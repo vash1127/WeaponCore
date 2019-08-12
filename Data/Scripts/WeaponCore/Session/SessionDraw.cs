@@ -98,7 +98,7 @@ namespace WeaponCore
                             MatrixD.CreateTranslation(ref hitPos, out matrix);
                             if (effect == null)
                             {
-                                MyParticlesManager.TryCreateParticleEffect(t.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, UInt32.MaxValue, out effect);
+                                MyParticlesManager.TryCreateParticleEffect(t.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, uint.MaxValue, out effect);
                                 if (effect == null)
                                 {
                                     weapon.HitEffects[t.MuzzleId] = null;
@@ -118,8 +118,8 @@ namespace WeaponCore
                                 effect.Play();
 
                             effect.WorldMatrix = matrix;
-                            if (t.HitEntity.Entity.Physics != null)
-                                effect.Velocity = t.HitEntity.Entity.Physics.LinearVelocity;
+                            if (t.HitEntity.Projectile != null) effect.Velocity = t.HitEntity.Projectile.Velocity;
+                            else if (t.HitEntity.Entity?.Physics != null) effect.Velocity = t.HitEntity.Entity.Physics.LinearVelocity;
                             weapon.HitEffects[t.MuzzleId] = effect;
                         }
                         else if (effect != null)

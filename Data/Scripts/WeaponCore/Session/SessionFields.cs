@@ -23,7 +23,7 @@ namespace WeaponCore
 
         internal volatile bool Inited;
         internal volatile bool Dispatched;
-        internal bool DbUpdating;
+        internal bool DbsUpdating;
         private int _count = -1;
         private int _lCount;
         private int _eCount;

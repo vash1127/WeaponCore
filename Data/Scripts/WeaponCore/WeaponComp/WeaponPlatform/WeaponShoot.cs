@@ -69,10 +69,9 @@ namespace WeaponCore.Platform
             lock (session.Projectiles.Wait[session.ProCounter])
             {
                 Projectile vProjectile = null;
-                var threats = Comp.Ai.Threats;
-                var threatCnt = threats.Count;
+                var targetAiCnt = Comp.Ai.TargetAis.Count;
                 var targetable = System.Values.Ammo.Health > 0;
-                if (System.VirtualBeams) vProjectile = CreateVirtualProjectile(threatCnt, targetable);
+                if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
 
                 var isStatic = Comp.Physics.IsStatic;
                 for (int i = 0; i < bps; i++)
@@ -155,6 +154,7 @@ namespace WeaponCore.Platform
                             p.T.WeaponId = WeaponId;
                             p.T.MuzzleId = muzzle.MuzzleId;
                             p.Target.Entity = Target.Entity;
+                            p.Target.Projectile = Target.Projectile;
                             if (System.ModelId != -1)
                             {
                                 MyEntity ent;
@@ -169,28 +169,28 @@ namespace WeaponCore.Platform
 
                             if (targetable)
                             {
-                                for (int t = 0; t < threatCnt; t++)
+                                for (int t = 0; t < targetAiCnt; t++)
                                 {
-                                    var threat = Comp.Ai.Threats[t];
+                                    var targetAi = Comp.Ai.TargetAis[t];
                                     if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None)
                                     {
-                                        var threatLin = threat.MyGrid.Physics?.LinearVelocity ?? Vector3.Zero;
+                                        var threatLin = targetAi.MyGrid.Physics?.LinearVelocity ?? Vector3.Zero;
                                         bool intercept;
                                         if (Vector3D.IsZero(threatLin, 0.025))
                                         {
-                                            intercept = Vector3.Dot(p.Direction, p.Position - threat.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
+                                            intercept = Vector3.Dot(p.Direction, p.Position - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
                                         }
                                         else
                                         {
-                                            intercept = Vector3.Dot(threatLin, threat.MyGrid.PositionComp.WorldMatrix.Translation - TargetPos) < 0;
+                                            intercept = Vector3.Dot(threatLin, targetAi.MyGrid.PositionComp.WorldMatrix.Translation - TargetPos) < 0;
                                         }
                                         if (!intercept)
                                         {
                                             continue;
                                         }
                                     }
-                                    threat.LiveProjectile.Add(p);
-                                    p.Watchers.Add(threat);
+                                    targetAi.LiveProjectile.Add(p);
+                                    p.Watchers.Add(targetAi);
                                 }
                             }
                         }
@@ -213,7 +213,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        private Projectile CreateVirtualProjectile(int threatCnt, bool targetable)
+        private Projectile CreateVirtualProjectile()
         {
             DamageFrame.VirtualHit = false;
             DamageFrame.Hits = 0;
@@ -231,6 +231,7 @@ namespace WeaponCore.Platform
             p.T.WeaponId = WeaponId;
             p.T.MuzzleId = -1;
             p.Target.Entity = Target.Entity;
+            p.Target.Projectile = Target.Projectile;
             p.DamageFrame = DamageFrame;
             return p;
         }
@@ -265,13 +266,6 @@ namespace WeaponCore.Platform
                 if (masterWeapon !=  this) Target.Expired = true;
                 return;
             }
-            if (!TrackingAi && !ValidTarget(this, Target))
-            {
-                Log.Line($"{System.WeaponName} - ShootRayCheck Fail - not trackingAi and notValid target");
-                masterWeapon.Target.Expired = true;
-                if (masterWeapon != this) Target.Expired = true;
-                return;
-            }
             Casting = true;
             MyAPIGateway.Physics.CastRayParallel(ref Comp.MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
         }
@@ -280,60 +274,69 @@ namespace WeaponCore.Platform
         {
             Casting = false;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
-            if (hitInfo?.HitEntity == null || (hitInfo.HitEntity != Target.Entity && hitInfo.HitEntity != Target.Entity.Parent))
+            if (hitInfo?.HitEntity == null)
             {
-                if (Target.Projectile != null)
-                {
-
-                    Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - due to null projectile - valid:{Comp.Ai.LiveProjectile.Contains(Target.Projectile)}");
-                    return;
-                }
-                if (hitInfo?.HitEntity == null && DelayCeaseFire)
+                if (DelayCeaseFire)
                 {
                     Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - due to null DelayCeaseFire");
                     return;
                 }
-                if ((hitInfo?.HitEntity != null))
+
+                if (Target.Projectile != null)
                 {
-                    var rootAsGrid = hitInfo.HitEntity as MyCubeGrid;
-                    var parentAsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
-                    if (rootAsGrid == null && parentAsGrid == null)
-                    {
-                        Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
-                        return;
-                    }
-
-                    var grid = parentAsGrid ?? rootAsGrid;
-                    if (grid == Comp.MyGrid)
-                    {
-                        //Session.Instance.RayCheckLines.Add(new LineD(Comp.MyPivotPos, hitInfo.Position), Comp.Ai.MySession.Tick, true);
-                        Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
-                        masterWeapon.Target.Expired = true;
-                        if (masterWeapon != this) Target.Expired = true;
-                        return;
-                    }
-
-                    if (!GridAi.GridEnemy(Comp.MyCube, grid))
-                    {
-                        if (!grid.IsInSameLogicalGroupAs(Comp.MyGrid))
-                        {
-                            Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
-                            masterWeapon.Target.Expired = true;
-                            if (masterWeapon != this) Target.Expired = true;
-                        }
-                        return;
-                    }
-                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - projectile exists and hit is null");
                     return;
                 }
-                if (hitInfo?.HitEntity == null) Log.Line($"{System.WeaponName} - ShootRayCheck Fail - null");
-                else if (hitInfo.HitEntity != null) Log.Line($"{System.WeaponName} - ShootRayCheck Fail - General: {((MyEntity)hitInfo.HitEntity).DebugName}");
-                else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Unknown");
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon != this) Target.Expired = true;
+                Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit");
+                return;
             }
-            else if (System.SortBlocks)
+
+            var projectile = Target.Projectile != null;
+            var unexpectedHit = projectile || (hitInfo.HitEntity != Target.Entity && hitInfo.HitEntity != Target.Entity.Parent);
+
+            if (unexpectedHit)
             {
+                var rootAsGrid = hitInfo.HitEntity as MyCubeGrid;
+                var parentAsGrid = hitInfo.HitEntity?.Parent as MyCubeGrid;
+
+                if (rootAsGrid == null && parentAsGrid == null)
+                {
+                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    return;
+                }
+
+                var grid = parentAsGrid ?? rootAsGrid;
+                if (grid == Comp.MyGrid)
+                {
+                    //Session.Instance.RayCheckLines.Add(new LineD(Comp.MyPivotPos, hitInfo.Position), Comp.Ai.MySession.Tick, true);
+                    masterWeapon.Target.Expired = true;
+                    if (masterWeapon != this) Target.Expired = true;
+                    Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
+                    return;
+                }
+
+                if (!GridAi.GridEnemy(Comp.MyCube, grid))
+                {
+                    if (!grid.IsInSameLogicalGroupAs(Comp.MyGrid))
+                    {
+                        Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
+                        masterWeapon.Target.Expired = true;
+                        if (masterWeapon != this) Target.Expired = true;
+                    }
+                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - sameLogicGroup: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    return;
+                }
+                Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                return;
+            }
+            if (System.SortBlocks)
+            {
+                if (Target.Projectile != null)
+                {
+                    Log.Line($"projectile not null other branch2: {((MyEntity)hitInfo.HitEntity).DebugName} - {Comp.MyGrid.IsInSameLogicalGroupAs(hitInfo.HitEntity as MyCubeGrid)}");
+                }
                 var grid = hitInfo.HitEntity as MyCubeGrid;
                 if (grid != null && Target.Entity.GetTopMostParent() == grid)
                 {

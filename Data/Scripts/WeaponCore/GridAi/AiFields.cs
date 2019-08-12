@@ -29,6 +29,8 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
+        internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
+        internal readonly List<GridAi> TargetAis = new List<GridAi>();
         internal readonly List<GridAi> ThreatsTmp = new List<GridAi>();
         internal readonly List<GridAi> Threats = new List<GridAi>();
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();

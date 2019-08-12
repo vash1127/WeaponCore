@@ -38,11 +38,10 @@ namespace WeaponCore.Support
                             if (!TargetNeutrals) continue;
                             break;
                     }
-
                     var grid = ent as MyCubeGrid;
                     if (grid != null)
                     {
-                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 && !((grid.CubeBlocks.FirstElement() as IMySlimBlock)?.FatBlock is Sandbox.ModAPI.IMyWarhead))
+                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 && !((grid.CubeBlocks.FirstElement() as IMySlimBlock)?.FatBlock is IMyWarhead) || MyGrid.IsInSameLogicalGroupAs(grid))
                             continue;
 
                         var typeDict = BlockTypePool.Get();
@@ -55,28 +54,18 @@ namespace WeaponCore.Support
 
                         NewEntities.Add(new DetectInfo(ent, typeDict, entInfo));
                         ValidGrids.Add(ent, typeDict);
-                        GridAi threatAi;
-                        if (Session.Instance.GridTargetingAIs.TryGetValue(grid, out threatAi)) ThreatsTmp.Add(threatAi);
+                        GridAi targetAi;
+                        if (Session.Instance.GridTargetingAIs.TryGetValue(grid, out targetAi))
+                        {
+                            targetAi.ThreatsTmp.Add(this);
+                            TargetAisTmp.Add(targetAi);
+                        }
                     }
                     else NewEntities.Add(new DetectInfo(ent, null, entInfo));
                 }
             }
             GetTargetBlocks(Targeting, this);
             Targeting.AllowScanning = false;
-            if (ThreatsTmp.Count > 0)
-            {
-                var gridScanRadius = MaxTargetingRange + MyGrid.PositionComp.LocalVolume.Radius;
-                var sphere = new BoundingSphereD(MyGrid.PositionComp.WorldAABB.Center, gridScanRadius);
-                EntitiesInRange.Clear();
-                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, EntitiesInRange);
-                for (int i = 0; i < EntitiesInRange.Count; i++)
-                {
-                    var ent = EntitiesInRange[i];
-                    if (!(ent is MyVoxelBase || ent is MyCubeGrid && ent.Physics != null) || ent == MyGrid || ValidGrids.ContainsKey(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
-                    ObstructionsTmp.Add(ent);
-                }
-            }
-            ValidGrids.Clear();
         }
 
         private static void GetTargetBlocks(MyGridTargeting targeting, GridAi ai)
@@ -103,6 +92,25 @@ namespace WeaponCore.Support
                     }
                 }
             }
+        }
+
+        internal void FinalizeTargetDb()
+        {
+            if (NewEntities.Count > 0)
+            {
+                var gridScanRadius = MaxTargetingRange + MyGrid.PositionComp.LocalVolume.Radius;
+                var sphere = new BoundingSphereD(MyGrid.PositionComp.WorldAABB.Center, gridScanRadius);
+                EntitiesInRange.Clear();
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, EntitiesInRange);
+                for (int i = 0; i < EntitiesInRange.Count; i++)
+                {
+                    var ent = EntitiesInRange[i];
+                    var blockingThings = (ent is MyVoxelBase || ent is MyCubeGrid && ent.Physics != null);
+                    if (!blockingThings || ent == MyGrid || ValidGrids.ContainsKey(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
+                    ObstructionsTmp.Add(ent);
+                }
+            }
+            ValidGrids.Clear();
         }
     }
 }

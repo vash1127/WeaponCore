@@ -9,6 +9,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
+using Projectile = WeaponCore.Projectiles.Projectile;
 
 namespace WeaponCore.Support
 {
@@ -89,9 +90,9 @@ namespace WeaponCore.Support
         }
     }
 
-    public class HitEntity
+    internal class HitEntity
     {
-        public enum Type
+        internal enum Type
         {
             Shield,
             Grid,
@@ -99,10 +100,12 @@ namespace WeaponCore.Support
             Proximity,
             Destroyable,
             Stale,
+            Projectile,
         }
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();
         public MyEntity Entity;
+        internal Projectile Projectile;
         public LineD Beam;
         public bool Hit;
         public Vector3D? HitPos;
@@ -115,6 +118,7 @@ namespace WeaponCore.Support
         public void Clean()
         {
             Entity = null;
+            Projectile = null;
             Beam.Length = 0;
             Beam.Direction = Vector3D.Zero;
             Beam.From = Vector3D.Zero;
@@ -290,12 +294,12 @@ namespace WeaponCore.Support
         }
     }
 
-    public class WeaponDamageFrame
+    internal class WeaponDamageFrame
     {
-        public bool VirtualHit;
-        public int Hits;
-        public HitEntity HitEntity = new HitEntity();
-        public IMySlimBlock HitBlock;
+        internal bool VirtualHit;
+        internal int Hits;
+        internal HitEntity HitEntity = new HitEntity();
+        internal IMySlimBlock HitBlock;
     }
 
     internal class Fragments
