@@ -96,11 +96,10 @@ namespace WeaponCore.Support
             {
                 weapon.InitTracking();
                 Session.ComputeStorage(weapon);
-                //foreach (var field in typeof(weapon.System.Values.Ui).GetFields(BindingFlags.Instance | BindingFlags.NonPublic |BindingFlags.Public))
             }
 
             var gun = Gun.GunBase;
-            var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id 
+            var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id
                 : Platform.Structure.AmmoToWeaponIds.First().Key;
             BlockInventory.Constraint.Clear();
             BlockInventory.Constraint.Add(id);
@@ -122,7 +121,20 @@ namespace WeaponCore.Support
             CreateUi();
 
             MainInit = true;
-            
+
+            Ai.PowerPercentAllowed[MyCube.EntityId] =  new float[] {MaxRequiredPower,0 };
+            Ai.TotalSinkPower += MaxRequiredPower;
+            Ai.RecalcPowerPercent = true;
+
+            if (!Ai.GridInit)
+            {
+                foreach (var cubeBlock in MyGrid.GetFatBlocks())
+                {
+                    Ai.FatBlockAdded(cubeBlock);
+                }
+                Ai.GridInit = true;
+            }
+
             if (Turret.Enabled) Turret.Enabled = false; Turret.Enabled = true;
         }
 

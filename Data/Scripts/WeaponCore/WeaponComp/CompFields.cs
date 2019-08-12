@@ -53,6 +53,8 @@ namespace WeaponCore.Support
         internal float MaxAmmoVolume;
         internal float MaxAmmoMass;
         internal float SinkPower;
+        internal float MaxRequiredPower;
+        internal float CurrentSinkPower;
         internal float IdlePower;
         internal bool Overheated = false;
         internal bool TurretTargetLock;
@@ -60,6 +62,7 @@ namespace WeaponCore.Support
         internal bool NotFailed;
         internal bool WarmedUp;
         internal bool Starting;
+        internal bool PowerReset = true;
         internal bool Sync = true;
         internal bool Charging = false;
         internal enum Status

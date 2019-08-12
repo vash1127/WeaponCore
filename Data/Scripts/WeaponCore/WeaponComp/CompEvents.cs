@@ -111,21 +111,39 @@ namespace WeaponCore.Support
 
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
-            float ratio = Sink.SuppliedRatioByType(GId);
+
+            if (PowerReset && sink.SuppliedRatioByType(changedResourceTypeId) < 1)
+            {
+                Ai.CurrentWeaponsDraw += sink.CurrentInputByType(changedResourceTypeId);
+                PowerReset = false;
+                Ai.UpdatePowerSources = true;
+                Ai.RecalcPowerDist = true;
+             
+            }
+
+            //Log.Line($"ratio: {ratio} CurrentInput: {sink.CurrentInputByType(changedResourceTypeId)} Required: {sink.RequiredInputByType(changedResourceTypeId)} TotalGridDraw: {Ai.CurrentWeaponsDraw}");
+
+
+            /*
             if (ratio < 1)
             {
-                Charging = true;
+                
+            /*    Charging = true;
                 float currInput = sink.CurrentInputByType(GId);
-                Log.Line($"ratio: {ratio} Current Input: {currInput}");
-                DelayTicks += (uint)(60 * ((currInput / ratio) / currInput))-DelayTicks;
+
+                Log.Line($"ratio: {ratio} Current Input: {currInput} availablePower: {Ai.GridAvailablePower}");
+                DelayTicks += (uint)(5*(currInput / ratio) / currInput)-DelayTicks;
                 ShootTick = DelayTicks + Ai.MySession.Tick;
+            
             }
             else
             {
+                /*
                 ShootTick = 0;
                 DelayTicks = 0;
                 Charging = false;
-            }
+                
+            }*/
         }
     }
 }

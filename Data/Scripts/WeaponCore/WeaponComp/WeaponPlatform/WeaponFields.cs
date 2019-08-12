@@ -152,6 +152,7 @@ namespace WeaponCore.Platform
             System = system;
             Comp = comp;
             Comp.Sink.SetMaxRequiredInputByType(comp.GId, RequiredPower);
+            Comp.MaxRequiredPower += RequiredPower;
             AvCapable = System.HasBarrelShootAv && !Comp.Ai.MySession.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)

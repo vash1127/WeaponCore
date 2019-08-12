@@ -38,6 +38,7 @@ namespace WeaponCore.Support
 
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal List<TargetInfo> SortedTargets = new List<TargetInfo>();
+        internal Dictionary<long, float[]> PowerPercentAllowed = new Dictionary<long, float[]>();
 
         internal MyResourceDistributorComponent MyResourceDist;
         internal MyGridTargeting Targeting { get; set; }
@@ -51,8 +52,20 @@ namespace WeaponCore.Support
         internal long MyOwner;
         internal int DbUpdating;
         internal bool DbReady;
+        internal bool RecalcPowerPercent;
+        internal bool RecalcPowerDist;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
+        internal bool GridInit;
+        internal bool UpdatePowerSources;
+        internal float GridMaxPower;
+        internal float GridCurrentPower;
+        internal float GridAvailablePower;
+        internal float BatteryMaxPower;
+        internal float BatteryCurrentOutput;
+        internal float BatteryCurrentInput;
+        internal float TotalSinkPower;
+        internal float CurrentWeaponsDraw;
 
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
@@ -61,6 +74,7 @@ namespace WeaponCore.Support
         {
             MyGrid = grid;
             MySession = mySession;
+            RegisterMyGridEvents(true, grid);
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
         }
     }

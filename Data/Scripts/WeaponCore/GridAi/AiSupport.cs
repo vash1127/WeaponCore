@@ -241,5 +241,51 @@ namespace WeaponCore.Support
                 return true;
             }
         }
+
+        #region Power
+        internal bool UpdateGridPower()
+        {
+            GridAvailablePower = 0;
+            GridMaxPower = 0;
+            GridCurrentPower = 0;
+            BatteryMaxPower = 0;
+            BatteryCurrentOutput = 0;
+            BatteryCurrentInput = 0;
+
+            foreach (var source in Sources)
+            {
+                var battery = source.Entity as IMyBatteryBlock;
+                if (battery != null)
+                {
+                    if (!battery.IsWorking) continue;
+                    var currentInput = battery.CurrentInput;
+                    var currentOutput = battery.CurrentOutput;
+                    var maxOutput = battery.MaxOutput;
+                    if (currentInput > 0)
+                    {
+                        BatteryCurrentInput += currentInput;
+                        if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
+                        else BatteryCurrentOutput -= currentInput;
+                    }
+                    BatteryMaxPower += maxOutput;
+                    BatteryCurrentOutput += currentOutput;
+                }
+                else
+                {
+                    GridMaxPower += source.MaxOutputByType(GId);
+                    GridCurrentPower += source.CurrentOutputByType(GId);
+                }
+            }
+            GridMaxPower += BatteryMaxPower;
+            GridCurrentPower += BatteryCurrentOutput;
+
+            GridAvailablePower = GridMaxPower - GridCurrentPower;
+
+            GridCurrentPower += BatteryCurrentInput;
+            GridAvailablePower -= BatteryCurrentInput;
+            UpdatePowerSources = false;
+            return GridMaxPower > 0;
+        }
+        #endregion
     }
 }

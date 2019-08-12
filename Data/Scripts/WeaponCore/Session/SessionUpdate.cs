@@ -18,13 +18,40 @@ namespace WeaponCore
                 if (Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
 
+                if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources))) gridAi.UpdateGridPower();
+
+                if (gridAi.RecalcPowerPercent) {
+                    foreach (var compPowerPerc in gridAi.PowerPercentAllowed) {
+                        compPowerPerc.Value[1] = compPowerPerc.Value[0] / gridAi.TotalSinkPower;
+                        gridAi.RecalcPowerPercent = false;
+                    }
+                }
+
+                var cnt = 0;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
+                    var cube = basePair.Key;
                     var comp = basePair.Value;
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
 
+                    if (!comp.State.Value.Online) foreach (var weapon in comp.Platform.Weapons) weapon.StopShooting();
+
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
+
+                    
+                    if (gridAi.RecalcPowerDist && !comp.PowerReset)
+                    {
+                        var cleanpower = gridAi.GridMaxPower - (gridAi.GridCurrentPower - gridAi.CurrentWeaponsDraw);
+
+                        comp.SinkPower = gridAi.PowerPercentAllowed[cube.EntityId][1] * cleanpower;
+                        Log.Line($"percentAllowed: {gridAi.PowerPercentAllowed[cube.EntityId][1]} clean Power: {cleanpower} SinkPower: {comp.SinkPower}");
+                        comp.Sink.Update();
+                        comp.TerminalRefresh();
+
+                        comp.PowerReset = true;
+                    }
+
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
@@ -111,6 +138,8 @@ namespace WeaponCore
                     }
                 }
                 gridAi.Ready = false;
+                gridAi.CurrentWeaponsDraw = 0;
+                gridAi.RecalcPowerDist = false;
             }
         }
 
