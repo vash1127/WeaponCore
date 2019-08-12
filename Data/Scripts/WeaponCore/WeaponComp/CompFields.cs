@@ -125,7 +125,7 @@ namespace WeaponCore.Support
             Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
             Sink.AddType(ref resourceInfo);
             Sink.Update();
-            Sink.CurrentInputChanged += CurrentInputChanged;
+            //Sink.CurrentInputChanged += CurrentInputChanged;
 
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
         }
