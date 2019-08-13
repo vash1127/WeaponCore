@@ -67,7 +67,6 @@ namespace WeaponCore.Support
                     if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
                     var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
-                    if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
 
                     if (info.IsGrid)
                     {
@@ -75,7 +74,7 @@ namespace WeaponCore.Support
                         newTarget = true;
                         break;
                     }
-
+                    if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
