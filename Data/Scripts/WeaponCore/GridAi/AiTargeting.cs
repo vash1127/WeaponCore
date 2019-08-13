@@ -23,9 +23,7 @@ namespace WeaponCore.Support
 
             foreach (var lp in ai.LiveProjectile)
             {
-                if (Vector3D.Distance(lp.Position, weaponPos) > 750) continue;
-
-                if (Weapon.ValidTrajectory(w, null, lp))
+                if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))
                 {
                     var needsCast = false;
                     for (int i = 0; i < ai.Obstructions.Count; i++)
@@ -67,12 +65,9 @@ namespace WeaponCore.Support
                 {
                     var info = ai.SortedTargets[i];
                     if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
-
-                    if (w.TrackingAi)
-                    {
-                        if (!Weapon.ValidTrajectory(w, info.Target, null)) continue;
-                    }
-                    else if (!Weapon.ValidTrajectory(w, info.Target, null)) continue;
+                    var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
+                    Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
+                    if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
 
                     if (info.IsGrid)
                     {
@@ -118,6 +113,96 @@ namespace WeaponCore.Support
             }
         }
 
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, ref Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)
+        {
+            if (system.OrderedTargets)
+            {
+                var subSystems = system.Values.Targeting.SubSystems;
+                foreach (var bt in subSystems.Systems)
+                {
+                    if (bt != Any && info.TypeDict[bt].Count > 0)
+                    {
+                        var subSystemList = info.TypeDict[bt];
+                        if (subSystems.ClosestFirst)
+                        {
+                            if (bt != target.LastBlockType) target.Top5.Clear();
+                            target.LastBlockType = bt;
+                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, weaponPos, w);
+                            if (target.Entity != null) return true;
+                        }
+                        else if (FindRandomBlock(system, ai, ref target, weaponPos, subSystemList, w != null)) return true;
+                    }
+                }
+            }
+            if (FindRandomBlock(system, ai, ref target, weaponPos, info.TypeDict[Any], w != null)) return true;
+            return false;
+        }
+
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, ref Target target, Vector3D weaponPos, List<MyCubeBlock> blockList, bool cast)
+        {
+            var totalBlocks = blockList.Count;
+            var lastBlocks = system.Values.Targeting.TopBlocks;
+            if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
+            int[] deck = null;
+            if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
+            var physics = MyAPIGateway.Physics;
+
+            Vector3D targetLinVel;
+            if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
+            else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
+            else targetLinVel = Vector3D.Zero;
+            var targetCenter = target.Entity.PositionComp.WorldMatrix.Translation;
+
+            for (int i = 0; i < totalBlocks; i++)
+            {
+                var next = i;
+                if (i < lastBlocks)
+                    if (deck != null) next = deck[i];
+
+                var block = blockList[next];
+                if (block.MarkedForClose) continue;
+
+                var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
+                //if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
+                double rayDist;
+                if (cast)
+                {
+                    IHitInfo hitInfo;
+                    physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
+
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == ai.MyGrid)
+                        continue;
+
+                    var hitGrid = hitInfo.HitEntity as MyCubeGrid;
+                    if (hitGrid != null)
+                    {
+                        if (hitGrid.MarkedForClose || !hitGrid.InScene) continue;
+                        bool enemy;
+
+                        var bigOwners = hitGrid.BigOwners;
+                        if (bigOwners.Count == 0) enemy = true;
+                        else
+                        {
+                            var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
+                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                        }
+                        if (!enemy)
+                            continue;
+                    }
+                    Vector3D.Distance(ref weaponPos, ref blockPos, out rayDist);
+                    var shortDist = rayDist * (1 - hitInfo.Fraction);
+                    var origDist = rayDist * hitInfo.Fraction;
+                    var topEntId = block.GetTopMostParent().EntityId;
+                    target.Set(block, hitInfo.Position, shortDist, origDist, topEntId);
+                    return true;
+                }
+                Vector3D.Distance(ref weaponPos, ref blockPos, out rayDist);
+                target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
+                return true;
+            }
+            return false;
+        }
+
         internal static bool ReacquireTarget(Projectile p)
         {
             p.ChaseAge = p.Age;
@@ -154,89 +239,6 @@ namespace WeaponCore.Support
             }
             //Log.Line($"{p.T.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
             target.Reset();
-            return false;
-        }
-
-        private static bool AcquireBlock(WeaponSystem system, GridAi ai, ref Target target, TargetInfo info, Vector3D currentPos, Weapon w = null)
-        {
-            if (system.OrderedTargets)
-            {
-                var subSystems = system.Values.Targeting.SubSystems;
-                foreach (var bt in subSystems.Systems)
-                {
-                    if (bt != Any && info.TypeDict[bt].Count > 0)
-                    {
-                        var subSystemList = info.TypeDict[bt];
-                        if (subSystems.ClosestFirst)
-                        {
-                            if (bt != target.LastBlockType) target.Top5.Clear();
-                            target.LastBlockType = bt;
-                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, currentPos, w);
-                            if (target.Entity != null) return true;
-                        }
-                        else if (FindRandomBlock(system, ai, ref target, currentPos, subSystemList, w != null)) return true;
-                    }
-                }
-            }
-            if (FindRandomBlock(system, ai, ref target, currentPos, info.TypeDict[Any], w != null)) return true;
-            return false;
-        }
-
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, ref Target target, Vector3D currentPos, List<MyCubeBlock> blockList, bool cast)
-        {
-            var totalBlocks = blockList.Count;
-            var lastBlocks = system.Values.Targeting.TopBlocks;
-            if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            int[] deck = null;
-            if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
-            var physics = MyAPIGateway.Physics;
-
-            for (int i = 0; i < totalBlocks; i++)
-            {
-                var next = i;
-                if (i < lastBlocks)
-                    if (deck != null) next = deck[i];
-
-                var block = blockList[next];
-                if (block.MarkedForClose) continue;
-
-                var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
-                double rayDist;
-                if (cast)
-                {
-                    IHitInfo hitInfo;
-                    physics.CastRay(currentPos, blockPos, out hitInfo, 15, true);
-
-                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == ai.MyGrid)
-                        continue;
-
-                    var hitGrid = hitInfo.HitEntity as MyCubeGrid;
-                    if (hitGrid != null)
-                    {
-                        if (hitGrid.MarkedForClose || !hitGrid.InScene) continue;
-                        bool enemy;
-
-                        var bigOwners = hitGrid.BigOwners;
-                        if (bigOwners.Count == 0) enemy = true;
-                        else
-                        {
-                            var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
-                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
-                        }
-                        if (!enemy)
-                            continue;
-                    }
-                    Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
-                    var shortDist = rayDist * (1 - hitInfo.Fraction);
-                    var origDist = rayDist * hitInfo.Fraction;
-                    var topEntId = block.GetTopMostParent().EntityId;
-                    target.Set(block, hitInfo.Position, shortDist, origDist, topEntId);
-                    return true;
-                }
-                Vector3D.Distance(ref currentPos, ref blockPos, out rayDist);
-                target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
-                return true;
-            }
             return false;
         }
     }

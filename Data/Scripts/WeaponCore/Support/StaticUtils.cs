@@ -37,7 +37,8 @@ namespace WeaponCore.Support
                 var index = i < top5Count ? i : i - top5Count;
                 var cube = i < top5Count ? top5[index] : cubes[index];
                 if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1  || cube == newEntity2 || cube == newEntity3) continue;
-                var cubePos = cube.CubeGrid.GridIntegerToWorld(cube.Position);
+                var grid = cube.CubeGrid;
+                var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
                 if (test < minValue3)
@@ -48,7 +49,10 @@ namespace WeaponCore.Support
                     if (best)
                     {
                         if (w != null)
-                            bestTest = w.IsTargetInViewInLined(w, cubePos) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                        {
+                            Vector3D targetLinVel = grid.Physics?.LinearVelocity ?? Vector3D.Zero;
+                            bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                        }
                         else
                             bestTest = true;
                     }
