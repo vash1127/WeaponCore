@@ -16,6 +16,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
 
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
+
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
                 if (!gridAi.DeadProjectiles.IsEmpty)
                 {
@@ -42,8 +43,6 @@ namespace WeaponCore
                     var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
-
-                    if (!comp.State.Value.Online) foreach (var weapon in comp.Platform.Weapons) weapon.StopShooting();
 
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
@@ -179,10 +178,12 @@ namespace WeaponCore
                     var comp = basePair.Value;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     InTurret = gunner;
-                    if (!comp.MainInit || !comp.State.Value.Online) continue;
+                    if (!comp.MainInit) continue;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
+                        if ((!comp.State.Value.Online || !comp.IsFunctional) && w.IsShooting) w.StopShooting();
+                        if (!comp.State.Value.Online) continue;
                         if (!w.Enabled) continue;
                         if (!gunner)
                         {
