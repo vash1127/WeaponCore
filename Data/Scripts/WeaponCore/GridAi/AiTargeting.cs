@@ -186,12 +186,6 @@ namespace WeaponCore.Support
             var physics = MyAPIGateway.Physics;
             var turretCheck = w != null;
 
-            Vector3D targetLinVel;
-            if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
-            else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
-            else targetLinVel = Vector3D.Zero;
-            var targetCenter = target.Entity.PositionComp.WorldMatrix.Translation;
-
             for (int i = 0; i < totalBlocks; i++)
             {
                 var next = i;
@@ -205,7 +199,9 @@ namespace WeaponCore.Support
                 double rayDist;
                 if (turretCheck)
                 {
-                    if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
+                    var gridPhysics = ((IMyCubeGrid)block.CubeGrid).Physics;
+                    Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
+                    if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel)) continue;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 
@@ -222,8 +218,15 @@ namespace WeaponCore.Support
                         if (bigOwners.Count == 0) enemy = true;
                         else
                         {
-                            var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
-                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                           // try
+                            //{
+                                var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
+                                enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                            /*}
+                            catch
+                            {
+                                enemy = false;
+                            }*/
                         }
                         if (!enemy)
                             continue;

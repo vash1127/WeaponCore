@@ -121,6 +121,16 @@ namespace WeaponCore.Support
                 target.Set(newEntity, hitInfo.Position, shortDist, origDist, topEntId);
                 top5.Add(newEntity);
             }
+            else if (newEntity != null)
+            {
+                double rayDist;
+                Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
+                var shortDist = rayDist;
+                var origDist = rayDist;
+                var topEntId = newEntity.GetTopMostParent().EntityId;
+                target.Set(newEntity, bestCubePos, shortDist, origDist, topEntId);
+                top5.Add(newEntity);
+            }
             else target.Reset();
 
             if (newEntity0 != null)

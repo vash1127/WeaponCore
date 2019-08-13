@@ -144,8 +144,16 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - comp.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
-                        
-                        if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
+
+                        if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)))
+                        {
+                            w.Shoot();
+                            if (Tick20)
+                            {
+                                DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Red, 0.1f);
+                                DsDebugDraw.DrawLine(comp.MyBarrelTestLine.From, comp.MyBarrelTestLine.To, Color.Blue, 0.1f);
+                            }
+                        }
                         else if (w.IsShooting)
                         {
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);
@@ -183,8 +191,7 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
                         if ((!comp.State.Value.Online || !comp.IsFunctional) && w.IsShooting) w.StopShooting();
-                        if (!comp.State.Value.Online) continue;
-                        if (!w.Enabled) continue;
+                        if (!w.Enabled || !comp.State.Value.Online) continue;
                         if (!gunner)
                         {
                             if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
