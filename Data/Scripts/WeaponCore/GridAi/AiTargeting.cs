@@ -59,7 +59,7 @@ namespace WeaponCore.Support
                 else Log.Line("not in view");
             }
 
-            if (!newTarget && ai.MyGrid.CubeBlocks.Count < 5000)
+            if (!newTarget)
             {
                 for (int i = 0; i < ai.SortedTargets.Count; i++)
                 {
@@ -130,15 +130,15 @@ namespace WeaponCore.Support
                             UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, weaponPos, w);
                             if (target.Entity != null) return true;
                         }
-                        else if (FindRandomBlock(system, ai, ref target, weaponPos, subSystemList, w != null)) return true;
+                        else if (FindRandomBlock(system, ai, ref target, weaponPos, subSystemList, w)) return true;
                     }
                 }
             }
-            if (FindRandomBlock(system, ai, ref target, weaponPos, info.TypeDict[Any], w != null)) return true;
+            if (FindRandomBlock(system, ai, ref target, weaponPos, info.TypeDict[Any], w)) return true;
             return false;
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, ref Target target, Vector3D weaponPos, List<MyCubeBlock> blockList, bool cast)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, ref Target target, Vector3D weaponPos, List<MyCubeBlock> blockList, Weapon w)
         {
             var totalBlocks = blockList.Count;
             var lastBlocks = system.Values.Targeting.TopBlocks;
@@ -146,6 +146,7 @@ namespace WeaponCore.Support
             int[] deck = null;
             if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
             var physics = MyAPIGateway.Physics;
+            var turretCheck = w != null;
 
             Vector3D targetLinVel;
             if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
@@ -163,10 +164,10 @@ namespace WeaponCore.Support
                 if (block.MarkedForClose) continue;
 
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
-                //if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 double rayDist;
-                if (cast)
+                if (turretCheck)
                 {
+                    if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 

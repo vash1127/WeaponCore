@@ -20,7 +20,6 @@ namespace WeaponCore.Platform
             double timeToIntercept;
             double rangeToTarget;
 
-
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
             else
@@ -58,7 +57,6 @@ namespace WeaponCore.Platform
             else
                 canTrack = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
-            DsDebugDraw.DrawSingleVec(targetPos, 15f, Color.Red);
 
             var tracking = inRange && canTrack;
             return tracking;
