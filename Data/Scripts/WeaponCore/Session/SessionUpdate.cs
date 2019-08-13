@@ -150,8 +150,8 @@ namespace WeaponCore
                             w.Shoot();
                             if (Tick20)
                             {
-                                DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Red, 0.1f);
-                                DsDebugDraw.DrawLine(comp.MyBarrelTestLine.From, comp.MyBarrelTestLine.To, Color.Blue, 0.1f);
+                               // DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Red, 0.1f);
+                               // DsDebugDraw.DrawLine(comp.MyBarrelTestLine.From, comp.MyBarrelTestLine.To, Color.Blue, 0.1f);
                             }
                         }
                         else if (w.IsShooting)
