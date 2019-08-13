@@ -28,7 +28,6 @@ namespace WeaponCore
                     gridAi.UpdateGridPower();
                     if (gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw > gridAi.LastAvailablePower && gridAi.LastAvailablePower != 0) {
                         gridAi.AvailablePowerIncrease = true;
-                        gridAi.LastAvailablePower = gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw;
                         //Log.Line($"Increase");
                     }
                     gridAi.LastAvailablePower = gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw;
@@ -69,8 +68,6 @@ namespace WeaponCore
                                 gridAi.ResetPower = false;
                             }
                             
-                            ///Log.Line($"percentAllowed: {gridAi.PowerPercentAllowed[cube.EntityId][1]} clean Power: {gridAi.WeaponCleanPower} Max: {gridAi.GridMaxPower} Current: {gridAi.GridCurrentPower} current Draw:{gridAi.CurrentWeaponsDraw} Reset: {gridAi.ResetPower} Current Tick: {Tick}");
-                            
                             if (!gridAi.AvailablePowerIncrease)
                             {
                                 comp.SinkPower = gridAi.PowerPercentAllowed[cube.EntityId][1] * gridAi.WeaponCleanPower;
@@ -84,7 +81,6 @@ namespace WeaponCore
                                 comp.ShootTick = 0;
                             }
                             
-                          
                             comp.Sink.Update();
                             comp.TerminalRefresh();
                         }
@@ -114,12 +110,9 @@ namespace WeaponCore
                             }
                             else comp.Charging = true;
                         }
+                        else comp.Charging = false;
                         
-                        if (comp.Overheated || comp.Charging)
-                        {
-                            //Log.Line("overheaded/charging");
-                            continue;
-                        }
+                        if (comp.Overheated || comp.Charging) continue;
 
                         var energyAmmo = w.System.EnergyAmmo;
                         if (ammoCheck)

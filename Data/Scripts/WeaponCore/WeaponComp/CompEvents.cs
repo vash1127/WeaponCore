@@ -132,30 +132,6 @@ namespace WeaponCore.Support
                 //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
 
             }
-
-            //Log.Line($"ratio: {ratio} CurrentInput: {sink.CurrentInputByType(changedResourceTypeId)} Required: {sink.RequiredInputByType(changedResourceTypeId)} TotalGridDraw: {Ai.CurrentWeaponsDraw}");
-
-
-            /*
-            if (ratio < 1)
-            {
-                
-            /*    Charging = true;
-                float currInput = sink.CurrentInputByType(GId);
-
-                Log.Line($"ratio: {ratio} Current Input: {currInput} availablePower: {Ai.GridAvailablePower}");
-                DelayTicks += (uint)(5*(currInput / ratio) / currInput)-DelayTicks;
-                ShootTick = DelayTicks + Ai.MySession.Tick;
-            
-            }
-            else
-            {
-                /*
-                ShootTick = 0;
-                DelayTicks = 0;
-                Charging = false;
-                
-            }*/
         }
     }
 }
