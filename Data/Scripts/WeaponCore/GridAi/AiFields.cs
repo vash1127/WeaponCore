@@ -44,23 +44,28 @@ namespace WeaponCore.Support
 
         internal MyResourceDistributorComponent MyResourceDist;
         internal MyGridTargeting Targeting { get; set; }
-        internal bool TargetNeutrals;
-        internal bool TargetNoOwners;
-        internal bool SubUpdate;
         internal Session MySession;
         internal DSUtils DsWatch = new DSUtils();
         internal uint SubTick;
         internal uint TargetsUpdatedTick;
-        internal long MyOwner;
+        internal uint RecalcLowPowerTick;
+        internal uint ResetPowerTick;
+        internal uint VelocityUpdateTick;
         internal int DbUpdating;
+        internal long MyOwner;
+        internal bool TargetNeutrals;
+        internal bool TargetNoOwners;
+        internal bool SubUpdate;
         internal bool DbReady;
+        internal bool ResetPower;
         internal bool RecalcPowerPercent;
-        internal bool RecalcPowerDist;
-        internal double MaxTargetingRange;
-        internal double MaxTargetingRangeSqr;
         internal bool GridInit;
         internal bool UpdatePowerSources;
+        internal bool AvailablePowerIncrease;
+        internal double MaxTargetingRange;
+        internal double MaxTargetingRangeSqr;
         internal float GridMaxPower;
+        internal float WeaponCleanPower;
         internal float GridCurrentPower;
         internal float GridAvailablePower;
         internal float BatteryMaxPower;
@@ -68,6 +73,7 @@ namespace WeaponCore.Support
         internal float BatteryCurrentInput;
         internal float TotalSinkPower;
         internal float CurrentWeaponsDraw;
+        internal float LastAvailablePower;
         internal Vector3 GridVel;
 
         internal BoundingBoxD GroupAABB;

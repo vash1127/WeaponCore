@@ -18,7 +18,6 @@ namespace WeaponCore.Platform
         {
             var session = Comp.Ai.MySession;
             var tick = session.Tick;
-            uint velUpdateTick = 0;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
             //if (Comp.Charging) return;
 
@@ -67,10 +66,10 @@ namespace WeaponCore.Platform
 
             if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
 
-            if (velUpdateTick != tick)
+            if (Comp.Ai.VelocityUpdateTick != tick)
             {
                 Comp.Ai.GridVel = Comp.MyCube.CubeGrid.Physics.LinearVelocity;
-                velUpdateTick = tick;
+                Comp.Ai.VelocityUpdateTick = tick;
             }
 
 

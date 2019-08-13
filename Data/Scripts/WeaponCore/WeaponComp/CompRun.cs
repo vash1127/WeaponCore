@@ -122,7 +122,6 @@ namespace WeaponCore.Support
             Ai.TotalSinkPower += MaxRequiredPower;
             Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
-            Ai.RecalcPowerDist = true;
 
             if (!Ai.GridInit)
             {

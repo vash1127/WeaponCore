@@ -23,8 +23,19 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources))) gridAi.UpdateGridPower();
+                if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
+                {
+                    gridAi.UpdateGridPower();
+                    if (gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw > gridAi.LastAvailablePower && gridAi.LastAvailablePower != 0) {
+                        gridAi.AvailablePowerIncrease = true;
+                        gridAi.LastAvailablePower = gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw;
+                        //Log.Line($"Increase");
+                    }
+                    gridAi.LastAvailablePower = gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw;
+                    //Log.Line($"avail power: {gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw}  Last Power: {gridAi.LastAvailablePower} Max: {gridAi.GridMaxPower}  Weapon Draw: {gridAi.CurrentWeaponsDraw} Current Power: {gridAi.GridCurrentPower}");
+                }
 
+                //only called when adding or removing new comp. Pre-caches power precent in the even of low power
                 if (gridAi.RecalcPowerPercent) {
                     foreach (var compPowerPerc in gridAi.PowerPercentAllowed) {
                         compPowerPerc.Value[1] = compPowerPerc.Value[0] / gridAi.TotalSinkPower;
@@ -32,7 +43,6 @@ namespace WeaponCore
                     }
                 }
 
-                var cnt = 0;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var cube = basePair.Key;
@@ -44,17 +54,40 @@ namespace WeaponCore
 
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
-                    
-                    if (gridAi.RecalcPowerDist && !comp.PowerReset)
+                    if ((gridAi.RecalcLowPowerTick <= Tick && gridAi.RecalcLowPowerTick != 0) || gridAi.AvailablePowerIncrease)
                     {
-                        var cleanpower = gridAi.GridMaxPower - (gridAi.GridCurrentPower - gridAi.CurrentWeaponsDraw);
+                        shooting = false;
+                        for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
+                            if (comp.Platform.Weapons[i].IsShooting) shooting = true;
+                        }
+                        if (shooting)
+                        {
+                            if (gridAi.ResetPower)
+                            {
+                                ///Log.Line($"grid available: {gridAi.GridAvailablePower + gridAi.CurrentWeaponsDraw}");
+                                gridAi.WeaponCleanPower = gridAi.GridMaxPower - (gridAi.GridCurrentPower - gridAi.CurrentWeaponsDraw);
+                                gridAi.ResetPower = false;
+                            }
+                            
+                            ///Log.Line($"percentAllowed: {gridAi.PowerPercentAllowed[cube.EntityId][1]} clean Power: {gridAi.WeaponCleanPower} Max: {gridAi.GridMaxPower} Current: {gridAi.GridCurrentPower} current Draw:{gridAi.CurrentWeaponsDraw} Reset: {gridAi.ResetPower} Current Tick: {Tick}");
+                            
+                            if (!gridAi.AvailablePowerIncrease)
+                            {
+                                comp.SinkPower = gridAi.PowerPercentAllowed[cube.EntityId][1] * gridAi.WeaponCleanPower;
 
-                        comp.SinkPower = gridAi.PowerPercentAllowed[cube.EntityId][1] * cleanpower;
-                        Log.Line($"percentAllowed: {gridAi.PowerPercentAllowed[cube.EntityId][1]} clean Power: {cleanpower} SinkPower: {comp.SinkPower}");
-                        comp.Sink.Update();
-                        comp.TerminalRefresh();
-
-                        comp.PowerReset = true;
+                                comp.DelayTicks += (uint)(5 * comp.MaxRequiredPower / comp.SinkPower) - comp.DelayTicks;
+                                comp.ShootTick = comp.DelayTicks + Tick;
+                            }
+                            else {
+                                comp.SinkPower = comp.CurrentSinkPowerRequested;
+                                comp.DelayTicks = 0;
+                                comp.ShootTick = 0;
+                            }
+                            
+                          
+                            comp.Sink.Update();
+                            comp.TerminalRefresh();
+                        }
                     }
 
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -74,7 +107,6 @@ namespace WeaponCore
 
                         if (comp.DelayTicks != 0 && w.IsShooting)
                         {
-                            //Log.Line($"Delay Ticks: {comp.DelayTicks}");
                             if (comp.ShootTick <= Tick)
                             {
                                 comp.Charging = false;
@@ -137,8 +169,12 @@ namespace WeaponCore
                     }
                 }
                 gridAi.Ready = false;
-                gridAi.CurrentWeaponsDraw = 0;
-                gridAi.RecalcPowerDist = false;
+                gridAi.AvailablePowerIncrease = false;
+                if (gridAi.RecalcLowPowerTick <= Tick && gridAi.RecalcLowPowerTick != 0)
+                {
+                    gridAi.RecalcLowPowerTick = 0;
+                    gridAi.ResetPower = true;
+                }
             }
         }
 

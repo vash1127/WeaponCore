@@ -95,10 +95,8 @@ namespace WeaponCore.Support
 
                     TotalSinkPower -= PowerPercentAllowed[myCubeBlock.EntityId][0];
                     PowerPercentAllowed.Remove(myCubeBlock.EntityId);
-                    Log.Line($"entID: {myCubeBlock.EntityId}");
                     RecalcPowerPercent = true;
                     UpdatePowerSources = true;
-                    RecalcPowerDist = true;
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }

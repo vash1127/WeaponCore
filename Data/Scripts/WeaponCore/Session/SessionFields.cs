@@ -24,6 +24,7 @@ namespace WeaponCore
         internal volatile bool Inited;
         internal volatile bool Dispatched;
         internal bool DbsUpdating;
+        internal bool shooting; //used to check if comp is shooting in low power update, alocated once instead of in loop
         private int _count = -1;
         private int _lCount;
         private int _eCount;
