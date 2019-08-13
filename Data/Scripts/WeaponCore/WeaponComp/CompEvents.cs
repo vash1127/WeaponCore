@@ -109,43 +109,29 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }
 
+        private void RequiredChanged(MyDefinitionId changedResourceTypeId, MyResourceSinkComponent sink, float oldRequirement, float newRequirement)
+        {
+            if(newRequirement > oldRequirement) Ai.ResetPower = true;
+        }
+
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
+            var currentInput = sink.CurrentInputByType(changedResourceTypeId);
 
-            Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)}");
-
-            if (PowerReset && sink.SuppliedRatioByType(changedResourceTypeId) < 1)
+            if (Ai.ResetPower && Ai.MySession.Tick != LastUpdateTick && currentInput < CurrentSinkPowerRequested)
             {
-                Ai.CurrentWeaponsDraw += sink.CurrentInputByType(changedResourceTypeId);
-                PowerReset = false;
-                Ai.UpdatePowerSources = true;
-                Ai.RecalcPowerDist = true;
-             
+                if (Ai.ResetPowerTick != Ai.MySession.Tick) {
+                    Ai.CurrentWeaponsDraw = 0;
+                    Ai.ResetPowerTick = Ai.MySession.Tick;
+                    Ai.RecalcLowPowerTick = Ai.MySession.Tick + 20;
+                    Ai.UpdatePowerSources = true;
+                    
+                }
+                LastUpdateTick = Ai.MySession.Tick;
+                Ai.CurrentWeaponsDraw += currentInput;
+                //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
+
             }
-
-            //Log.Line($"ratio: {ratio} CurrentInput: {sink.CurrentInputByType(changedResourceTypeId)} Required: {sink.RequiredInputByType(changedResourceTypeId)} TotalGridDraw: {Ai.CurrentWeaponsDraw}");
-
-
-            /*
-            if (ratio < 1)
-            {
-                
-            /*    Charging = true;
-                float currInput = sink.CurrentInputByType(GId);
-
-                Log.Line($"ratio: {ratio} Current Input: {currInput} availablePower: {Ai.GridAvailablePower}");
-                DelayTicks += (uint)(5*(currInput / ratio) / currInput)-DelayTicks;
-                ShootTick = DelayTicks + Ai.MySession.Tick;
-            
-            }
-            else
-            {
-                /*
-                ShootTick = 0;
-                DelayTicks = 0;
-                Charging = false;
-                
-            }*/
         }
     }
 }

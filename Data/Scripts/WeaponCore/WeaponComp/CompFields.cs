@@ -47,6 +47,7 @@ namespace WeaponCore.Support
         internal uint LastAmmoUnSuspendTick;
         internal uint LastTrackedTick;
         internal uint LastRayCastTick;
+        internal uint LastUpdateTick;
         internal uint ShootTick = 0;
         internal uint DelayTicks = 0;
         internal int PullingAmmoCnt;
@@ -54,7 +55,8 @@ namespace WeaponCore.Support
         internal float MaxAmmoMass;
         internal float SinkPower;
         internal float MaxRequiredPower;
-        internal float CurrentSinkPower;
+        internal float CurrentSinkPowerRequested;
+        internal float CompPowerPerc;
         internal float IdlePower;
         internal bool Overheated = false;
         internal bool TurretTargetLock;
@@ -62,7 +64,6 @@ namespace WeaponCore.Support
         internal bool NotFailed;
         internal bool WarmedUp;
         internal bool Starting;
-        internal bool PowerReset = true;
         internal bool Sync = true;
         internal bool Charging = false;
         internal enum Status
@@ -125,9 +126,10 @@ namespace WeaponCore.Support
             Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
             Sink.AddType(ref resourceInfo);
             Sink.Update();
-            //Sink.CurrentInputChanged += CurrentInputChanged;
+            Sink.RequiredInputChanged += RequiredChanged;
+            Sink.CurrentInputChanged += CurrentInputChanged;
 
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
-        }
+        }        
     }
 }

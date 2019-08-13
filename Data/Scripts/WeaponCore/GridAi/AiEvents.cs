@@ -90,16 +90,6 @@ namespace WeaponCore.Support
                     }
                     UpdatePowerSources = true;
                 }
-                else if (MySession.WeaponPlatforms.ContainsKey(myCubeBlock.BlockDefinition.Id.SubtypeId))
-                {
-
-                    TotalSinkPower -= PowerPercentAllowed[myCubeBlock.EntityId][0];
-                    PowerPercentAllowed.Remove(myCubeBlock.EntityId);
-                    Log.Line($"entID: {myCubeBlock.EntityId}");
-                    RecalcPowerPercent = true;
-                    UpdatePowerSources = true;
-                    RecalcPowerDist = true;
-                }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }
         }

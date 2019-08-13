@@ -149,6 +149,7 @@ namespace WeaponCore.Platform
             if (System.ShotEnergyCost > 0 && !IsShooting)
             {
                 Comp.SinkPower += RequiredPower;
+                Comp.CurrentSinkPowerRequested += RequiredPower;
                 Comp.Sink.Update();
                 Comp.TerminalRefresh();
             }
@@ -167,6 +168,7 @@ namespace WeaponCore.Platform
                 if (IsShooting)
                 {
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
+                    Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
                     Comp.Sink.Update();
                     Comp.TerminalRefresh();
                 }
