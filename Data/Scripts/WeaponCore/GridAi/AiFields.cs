@@ -51,6 +51,7 @@ namespace WeaponCore.Support
         internal DSUtils DsWatch = new DSUtils();
         internal uint SubTick;
         internal uint TargetsUpdatedTick;
+        internal uint VelocityUpdateTick;
         internal long MyOwner;
         internal int DbUpdating;
         internal bool DbReady;

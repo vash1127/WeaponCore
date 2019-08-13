@@ -18,7 +18,6 @@ namespace WeaponCore.Platform
         {
             var session = Comp.Ai.MySession;
             var tick = session.Tick;
-            uint velUpdateTick = 0;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
             //if (Comp.Charging) return;
 
@@ -67,12 +66,11 @@ namespace WeaponCore.Platform
 
             if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
 
-            if (velUpdateTick != tick)
+            if (Comp.Ai.VelocityUpdateTick != tick)
             {
-                Comp.Ai.GridVel = Comp.MyCube.CubeGrid.Physics.LinearVelocity;
-                velUpdateTick = tick;
+                Comp.Ai.GridVel = Comp.Physics.LinearVelocity;
+                Comp.Ai.VelocityUpdateTick = tick;
             }
-
 
             lock (session.Projectiles.Wait[session.ProCounter])
             {
@@ -140,7 +138,7 @@ namespace WeaponCore.Platform
                                 }
                                 e = ent;
                             }
-                            t.InitVirtual(System, Comp.MyCube, e, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
+                            t.InitVirtual(System, Comp.Ai, e, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                             vProjectile.VrTrajectiles.Add(t);
                             if (System.RotateRealBeam && i == _nextVirtual)
                             {
@@ -153,18 +151,20 @@ namespace WeaponCore.Platform
                             Projectile p;
                             session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out p);
                             p.T.System = System;
-                            p.T.FiringCube = Comp.MyCube;
+                            p.T.Ai = Comp.Ai;
+                            p.T.Target.Entity = Target.Entity;
+                            p.T.Target.Projectile = Target.Projectile;
+                            p.T.Target.FiringCube = Comp.MyCube;
+                            p.T.WeaponId = WeaponId;
+                            p.T.MuzzleId = muzzle.MuzzleId;
+
                             p.GridVel = Comp.Ai.GridVel;
                             p.Origin = muzzle.Position;
                             p.OriginUp = Comp.MyPivotUp;
                             p.PredictedTargetPos = TargetPos;
                             p.Direction = muzzle.DeviatedDir;
                             p.State = Projectile.ProjectileState.Start;
-                            p.Ai = Comp.Ai;
-                            p.T.WeaponId = WeaponId;
-                            p.T.MuzzleId = muzzle.MuzzleId;
-                            p.Target.Entity = Target.Entity;
-                            p.Target.Projectile = Target.Projectile;
+
                             if (System.ModelId != -1)
                             {
                                 MyEntity ent;
@@ -225,25 +225,30 @@ namespace WeaponCore.Platform
 
         private Projectile CreateVirtualProjectile()
         {
-            DamageFrame.VirtualHit = false;
-            DamageFrame.Hits = 0;
-            DamageFrame.HitEntity.Entity = null;
+
             Projectile p;
             Comp.Ai.MySession.Projectiles.ProjectilePool[Comp.Ai.MySession.ProCounter].AllocateOrCreate(out p);
             p.T.System = System;
-            p.T.FiringCube = Comp.MyCube;
+            p.T.Ai = Comp.Ai;
+            p.T.Target.Entity = Target.Entity;
+            p.T.Target.Projectile = Target.Projectile;
+            p.T.Target.FiringCube = Comp.MyCube;
+
+            p.T.DamageFrame = DamageFrame;
+
+            DamageFrame.VirtualHit = false;
+            DamageFrame.Hits = 0;
+            DamageFrame.HitEntity.Entity = null;
+            p.T.WeaponId = WeaponId;
+            p.T.MuzzleId = -1;
+
             p.GridVel = Comp.Ai.GridVel;
             p.Origin = Comp.MyPivotPos;
             p.OriginUp = Comp.MyPivotUp;
             p.PredictedTargetPos = TargetPos;
             p.Direction = Comp.MyPivotDir;
             p.State = Projectile.ProjectileState.Start;
-            p.Ai = Comp.Ai;
-            p.T.WeaponId = WeaponId;
-            p.T.MuzzleId = -1;
-            p.Target.Entity = Target.Entity;
-            p.Target.Projectile = Target.Projectile;
-            p.DamageFrame = DamageFrame;
+
             return p;
         }
 

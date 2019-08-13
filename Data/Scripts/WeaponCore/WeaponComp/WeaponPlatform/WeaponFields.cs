@@ -196,8 +196,8 @@ namespace WeaponCore.Platform
             _numOfBarrels = System.Barrels.Length;
             DelayCeaseFire = System.TimeToCeaseFire > 0;
             BeamSlot = new uint[_numOfBarrels];
-            Target = new Target(System, Comp.MyCube);
-            NewTarget = new Target(System, Comp.MyCube);
+            Target = new Target();
+            NewTarget = new Target();
             if (System.MaxTrajectorySqr > Comp.Ai.MaxTargetingRangeSqr)
             {
                 Comp.Ai.MaxTargetingRange = System.MaxTrajectory;
