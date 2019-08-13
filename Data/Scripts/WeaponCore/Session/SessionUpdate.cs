@@ -47,7 +47,7 @@ namespace WeaponCore
 
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
-                    if ((gridAi.RecalcLowPowerTick <= Tick && gridAi.RecalcLowPowerTick != 0) || gridAi.AvailablePowerIncrease)
+                    if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                     {
                         shooting = false;
                         for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
