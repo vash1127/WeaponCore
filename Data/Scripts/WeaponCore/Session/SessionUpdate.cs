@@ -157,6 +157,7 @@ namespace WeaponCore
                 }
                 gridAi.Ready = false;
                 gridAi.AvailablePowerIncrease = false;
+                gridAi.RecalcPowerPercent = false;
                 if (gridAi.RecalcLowPowerTick <= Tick && gridAi.RecalcLowPowerTick != 0)
                 {
                     gridAi.RecalcLowPowerTick = 0;
