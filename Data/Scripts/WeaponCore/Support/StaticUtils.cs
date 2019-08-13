@@ -13,7 +13,7 @@ namespace WeaponCore.Support
 {
     internal static class UtilsStatic
     {
-        public static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, ref Target target, Vector3D currentPos, Weapon w = null)
+        public static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Target target, Vector3D currentPos, Weapon w = null)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
