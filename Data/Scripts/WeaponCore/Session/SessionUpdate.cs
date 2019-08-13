@@ -34,20 +34,14 @@ namespace WeaponCore
                     //Log.Line($"avail power: {gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw}  Last Power: {gridAi.LastAvailablePower} Max: {gridAi.GridMaxPower}  Weapon Draw: {gridAi.CurrentWeaponsDraw} Current Power: {gridAi.GridCurrentPower}");
                 }
 
-                //only called when adding or removing new comp. Pre-caches power precent in the even of low power
-                if (gridAi.RecalcPowerPercent) {
-                    foreach (var compPowerPerc in gridAi.PowerPercentAllowed) {
-                        compPowerPerc.Value[1] = compPowerPerc.Value[0] / gridAi.TotalSinkPower;
-                        gridAi.RecalcPowerPercent = false;
-                    }
-                }
-
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var cube = basePair.Key;
                     var comp = basePair.Value;
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
+
+                    if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
                     if (!comp.State.Value.Online) foreach (var weapon in comp.Platform.Weapons) weapon.StopShooting();
 
@@ -70,7 +64,7 @@ namespace WeaponCore
                             
                             if (!gridAi.AvailablePowerIncrease)
                             {
-                                comp.SinkPower = gridAi.PowerPercentAllowed[cube.EntityId][1] * gridAi.WeaponCleanPower;
+                                comp.SinkPower = comp.CompPowerPerc * gridAi.WeaponCleanPower;
 
                                 comp.DelayTicks += (uint)(5 * comp.MaxRequiredPower / comp.SinkPower) - comp.DelayTicks;
                                 comp.ShootTick = comp.DelayTicks + Tick;

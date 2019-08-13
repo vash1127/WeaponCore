@@ -118,7 +118,6 @@ namespace WeaponCore.Support
 
             MainInit = true;
 
-            Ai.PowerPercentAllowed[MyCube.EntityId] =  new float[] {MaxRequiredPower,0 };
             Ai.TotalSinkPower += MaxRequiredPower;
             Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
@@ -145,6 +144,9 @@ namespace WeaponCore.Support
                 IsWorking = false;
                 IsFunctional = false;
                 StopAllSounds();
+                Ai.TotalSinkPower -= MaxRequiredPower;
+                Ai.RecalcPowerPercent = true;
+                Ai.UpdatePowerSources = true;
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }

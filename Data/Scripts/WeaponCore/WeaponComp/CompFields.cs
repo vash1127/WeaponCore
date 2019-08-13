@@ -56,6 +56,7 @@ namespace WeaponCore.Support
         internal float SinkPower;
         internal float MaxRequiredPower;
         internal float CurrentSinkPowerRequested;
+        internal float CompPowerPerc;
         internal float IdlePower;
         internal bool Overheated = false;
         internal bool TurretTargetLock;
