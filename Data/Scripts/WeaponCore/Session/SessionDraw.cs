@@ -76,7 +76,7 @@ namespace WeaponCore
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
-                    var c = t.FiringCube;
+                    var c = t.Target.FiringCube;
                     if (c == null || c.MarkedForClose) continue;
                     var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[t.WeaponId];
                     if (weapon != null)

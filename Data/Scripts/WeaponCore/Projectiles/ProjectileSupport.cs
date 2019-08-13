@@ -28,7 +28,7 @@ namespace WeaponCore.Projectiles
             }
             checkList.Clear();
             CheckPool[poolId].Return(checkList);
-            var count = p.HitList.Count;
+            var count = p.T.HitList.Count;
             if (!Session.Instance.DedicatedServer && count <= 0)
             {
                 var hitEntity = HitEntityPool[poolId].Get();
@@ -36,7 +36,7 @@ namespace WeaponCore.Projectiles
                 hitEntity.EventType = Proximity;
                 hitEntity.Hit = false;
                 hitEntity.HitPos = p.Position;
-                p.HitList.Add(hitEntity);
+                p.T.HitList.Add(hitEntity);
                 Hits.Enqueue(p);
             }
             else if (Session.Instance.IsServer && count > 0)
@@ -45,17 +45,17 @@ namespace WeaponCore.Projectiles
 
         internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList, int poolId, bool quickCheck = false)
         {
-            var listCnt = segmentList?.Count ?? p.HitList.Count;
+            var listCnt = segmentList?.Count ?? p.T.HitList.Count;
             var found = false;
             for (int i = 0; i < listCnt; i++)
             {
-                var ent = segmentList != null ? segmentList[i].Element : p.HitList[i].Entity;
-                if (ent == p.T.FiringCube.CubeGrid || ent.MarkedForClose || !ent.InScene) continue;
+                var ent = segmentList != null ? segmentList[i].Element : p.T.HitList[i].Entity;
+                if (ent == p.T.Ai.MyGrid || ent.MarkedForClose || !ent.InScene) continue;
                 //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
-                    if (ent.Physics == null && shieldBlock.CubeGrid != p.T.FiringCube.CubeGrid)
+                    if (ent.Physics == null && shieldBlock.CubeGrid != p.T.Ai.MyGrid)
                     {
                         var hitEntity = HitEntityPool[poolId].Get();
                         hitEntity.Clean();
@@ -68,7 +68,7 @@ namespace WeaponCore.Projectiles
                             hitEntity.EventType = Proximity;
                         }
                         found = true;
-                        p.HitList.Add(hitEntity);
+                        p.T.HitList.Add(hitEntity);
                     }
                     else continue;
                 }
@@ -94,7 +94,7 @@ namespace WeaponCore.Projectiles
                         hitEntity.EventType = Proximity;
                     }
                     found = true;
-                    p.HitList.Add(hitEntity);
+                    p.T.HitList.Add(hitEntity);
                 }
             }
             segmentList?.Clear();
@@ -103,17 +103,17 @@ namespace WeaponCore.Projectiles
 
         internal HitEntity GenerateHitInfo(Projectile p, int poolId)
         {
-            var count = p.HitList.Count;
-            if (count > 1) p.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
-            else GetEntityCompareDist(p.HitList[0], null, V3Pool.Get());
+            var count = p.T.HitList.Count;
+            if (count > 1) p.T.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
+            else GetEntityCompareDist(p.T.HitList[0], null, V3Pool.Get());
 
             //var afterSort = ents.Count;
-            var endOfIndex = p.HitList.Count - 1;
+            var endOfIndex = p.T.HitList.Count - 1;
             var lastValidEntry = int.MaxValue;
 
             for (int i = endOfIndex; i >= 0; i--)
             {
-                if (p.HitList[i].Hit)
+                if (p.T.HitList[i].Hit)
                 {
                     lastValidEntry = i + 1;
                     //Log.Line($"lastValidEntry:{lastValidEntry} - endOfIndex:{endOfIndex}");
@@ -127,16 +127,16 @@ namespace WeaponCore.Projectiles
             while (howManyToRemove-- > 0)
             {
                 //Log.Line($"removing: {endOfIndex} - hit:{ents[endOfIndex].Hit}");
-                var ent = p.HitList[endOfIndex];
-                p.HitList.RemoveAt(endOfIndex);
+                var ent = p.T.HitList[endOfIndex];
+                p.T.HitList.RemoveAt(endOfIndex);
                 HitEntityPool[poolId].Return(ent);
                 endOfIndex--;
             }
-            var finalCount = p.HitList.Count;
+            var finalCount = p.T.HitList.Count;
             HitEntity hitEntity = null;
             if (finalCount > 0)
             {
-                hitEntity = p.HitList[0];
+                hitEntity = p.T.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
                 //Log.Line($"start:{count} - ASort:{afterSort} - Final:{ents.Count} - howMany:{howMany} - hit:{ents[0].Hit} - hitPos:{ents[0].HitPos.HasValue} - {ents[0].Entity.DebugName} ");

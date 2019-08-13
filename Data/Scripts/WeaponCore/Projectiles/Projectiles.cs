@@ -113,12 +113,11 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     p.LastPosition = p.Position;
-                    var projectile = p.Target.Projectile != null;
-                    var validProjectile = projectile && p.Ai.LiveProjectile.Contains(p.Target.Projectile);
+                    var projectile = p.T.Target.Projectile != null;
+                    var validProjectile = projectile && p.T.Ai.LiveProjectile.Contains(p.T.Target.Projectile);
                     if (projectile && !validProjectile)
                     {
-                        p.Target.Projectile = null;
-                        projectile = false;
+                        p.T.Target.Projectile = null;
                         validProjectile = false;
                     }
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
@@ -127,14 +126,14 @@ namespace WeaponCore.Projectiles
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
                             var newChase = p.Age - p.ChaseAge > p.MaxChaseAge || p.PickTarget && p.EndChase();
-                            var myCube = p.Target.Entity as MyCubeBlock;
+                            var myCube = p.T.Target.Entity as MyCubeBlock;
 
                             if (newChase || validProjectile || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                 Vector3D targetPos;
-                                if (validProjectile) targetPos = p.Target.Projectile.Position;
-                                else if (p.Target.Entity != null) targetPos = p.Target.Entity.PositionComp.WorldAABB.Center;
+                                if (validProjectile) targetPos = p.T.Target.Projectile.Position;
+                                else if (p.T.Target.Entity != null) targetPos = p.T.Target.Entity.PositionComp.WorldAABB.Center;
                                 else targetPos = Vector3D.Zero;
                                 if (p.T.System.TargetOffSet)
                                 {
@@ -148,14 +147,14 @@ namespace WeaponCore.Projectiles
                                     targetPos += p.TargetOffSet;
                                 }
 
-                                var physics = p.Target.Entity?.Physics ?? p.Target.Entity?.Parent?.Physics;
+                                var physics = p.T.Target.Entity?.Physics ?? p.T.Target.Entity?.Parent?.Physics;
 
                                 if (!validProjectile && (physics == null || targetPos == Vector3D.Zero))
                                     p.PrevTargetPos = p.PredictedTargetPos;
                                 else p.PrevTargetPos = targetPos;
 
                                 Vector3 tVel;
-                                if (validProjectile) tVel = p.Target.Projectile.Velocity;
+                                if (validProjectile) tVel = p.T.Target.Projectile.Velocity;
                                 else if (physics != null) tVel = physics.LinearVelocity;
                                 else tVel = Vector3.Zero;
 
@@ -238,11 +237,11 @@ namespace WeaponCore.Projectiles
                             var beam = new LineD(p.LastPosition, p.Position);
                             MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
                             var segCount = p.SegmentList.Count;
-                            if (segCount > 1 || segCount == 1 && p.SegmentList[0].Element != p.FiringGrid)
+                            if (segCount > 1 || segCount == 1 && p.SegmentList[0].Element != p.T.Ai.MyGrid)
                             {
                                 var nearestHitEnt = GetAllEntitiesInLine(p, beam, p.SegmentList, i);
                                 if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
-                                p.HitList.Clear();
+                                p.T.HitList.Clear();
                             }
 
                             if (p.T.MuzzleId == -1)
@@ -251,9 +250,9 @@ namespace WeaponCore.Projectiles
                                 continue;
                             }
                         }
-                        else if (p.DamageFrame.VirtualHit && p.DamageFrame.HitEntity != null)
+                        else if (p.T.DamageFrame.VirtualHit && p.T.DamageFrame.HitEntity != null)
                         {
-                            Intersected(p, drawList, p.DamageFrame.HitEntity);
+                            Intersected(p, drawList, p.T.DamageFrame.HitEntity);
                             continue;
                         }
                     }
@@ -262,7 +261,7 @@ namespace WeaponCore.Projectiles
                         try
                         {
                             var beam = new RayD(p.LastPosition, p.Direction);
-                            var targetPos = p.Target.Projectile.Position;
+                            var targetPos = p.T.Target.Projectile.Position;
                             var sphere = new BoundingSphereD(targetPos, 2.5f);
                             if (sphere.Intersects(beam) != null)
                             {
@@ -270,10 +269,10 @@ namespace WeaponCore.Projectiles
                                 hitEntity.Clean();
                                 hitEntity.EventType = HitEntity.Type.Projectile;
                                 hitEntity.Hit = true;
-                                hitEntity.Projectile = p.Target.Projectile;
+                                hitEntity.Projectile = p.T.Target.Projectile;
                                 hitEntity.HitPos = targetPos;
                                 hitEntity.Beam = new LineD(beam.Position, targetPos);
-                                p.HitList.Add(hitEntity);
+                                p.T.HitList.Add(hitEntity);
 
                                 Intersected(p, drawList, hitEntity);
                                 continue;
@@ -381,10 +380,10 @@ namespace WeaponCore.Projectiles
             if (!p.T.System.VirtualBeams) Hits.Enqueue(p);
             else
             {
-                p.DamageFrame.VirtualHit = true;
-                p.DamageFrame.HitEntity.Entity = hitEntity.Entity;
-                p.DamageFrame.HitEntity.HitPos = hitEntity.HitPos;
-                if (hitEntity.Entity is MyCubeGrid) p.DamageFrame.HitBlock = hitEntity.Blocks[0];
+                p.T.DamageFrame.VirtualHit = true;
+                p.T.DamageFrame.HitEntity.Entity = hitEntity.Entity;
+                p.T.DamageFrame.HitEntity.HitPos = hitEntity.HitPos;
+                if (hitEntity.Entity is MyCubeGrid) p.T.DamageFrame.HitBlock = hitEntity.Blocks[0];
                 Hits.Enqueue(p);
                 CreateFakeBeams(p, hitEntity, drawList);
             }
@@ -416,7 +415,7 @@ namespace WeaponCore.Projectiles
                     var line = new LineD(vt.PrevPosition, beamEnd);
                     if (!miss)
                     {
-                        var hitBlock = p.DamageFrame.HitBlock;
+                        var hitBlock = p.T.DamageFrame.HitBlock;
                         Vector3D center;
                         hitBlock.ComputeWorldCenter(out center);
 
@@ -435,17 +434,17 @@ namespace WeaponCore.Projectiles
                 }
                 vt.Complete(hitEntity, true);
                 drawList.Add(vt);
-                p.DamageFrame.Hits++;
+                p.T.DamageFrame.Hits++;
             }
         }
 
         private void Die(Projectile p, int poolId)
         {
             var dInfo = p.T.System.Values.Ammo.AreaEffect.Detonation;
-            if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.ObjectsHit > 0))
+            if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
             {
                 GetEntitiesInBlastRadius(p, poolId);
-                var hitEntity = p.HitList[0];
+                var hitEntity = p.T.HitList[0];
                 if (hitEntity != null)
                 {
                     p.LastHitPos = hitEntity.HitPos;

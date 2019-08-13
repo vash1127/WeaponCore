@@ -76,7 +76,7 @@ namespace WeaponCore.Support
 
                     if (info.IsGrid)
                     {
-                        if (!AcquireBlock(w.System, ref target, info, weaponPos, w)) continue;
+                        if (!AcquireBlock(w.System, w.Comp.Ai, ref target, info, weaponPos, w)) continue;
                         newTarget = true;
                         break;
                     }
@@ -122,9 +122,9 @@ namespace WeaponCore.Support
         {
             p.ChaseAge = p.Age;
             var physics = MyAPIGateway.Physics;
-            var ai = p.Ai;
+            var ai = p.T.Ai;
             var weaponPos = p.Position;
-            var target = p.Target;
+            var target = p.T.Target;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];
@@ -132,7 +132,7 @@ namespace WeaponCore.Support
 
                 if (info.IsGrid)
                 {
-                    if (!AcquireBlock(p.T.System, ref target, info, weaponPos)) continue;
+                    if (!AcquireBlock(p.T.System, p.T.Ai, ref target, info, weaponPos)) continue;
                     return true;
                 }
 
@@ -157,7 +157,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static bool AcquireBlock(WeaponSystem system, ref Target target, TargetInfo info, Vector3D currentPos, Weapon w = null)
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, ref Target target, TargetInfo info, Vector3D currentPos, Weapon w = null)
         {
             if (system.OrderedTargets)
             {
@@ -174,15 +174,15 @@ namespace WeaponCore.Support
                             UtilsStatic.GetClosestHitableBlockOfType(subSystemList, ref target, currentPos, w);
                             if (target.Entity != null) return true;
                         }
-                        else if (FindRandomBlock(system, ref target, currentPos, subSystemList, w != null)) return true;
+                        else if (FindRandomBlock(system, ai, ref target, currentPos, subSystemList, w != null)) return true;
                     }
                 }
             }
-            if (FindRandomBlock(system, ref target, currentPos, info.TypeDict[Any], w != null)) return true;
+            if (FindRandomBlock(system, ai, ref target, currentPos, info.TypeDict[Any], w != null)) return true;
             return false;
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, ref Target target, Vector3D currentPos, List<MyCubeBlock> blockList, bool cast)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, ref Target target, Vector3D currentPos, List<MyCubeBlock> blockList, bool cast)
         {
             var totalBlocks = blockList.Count;
             var lastBlocks = system.Values.Targeting.TopBlocks;
@@ -207,7 +207,7 @@ namespace WeaponCore.Support
                     IHitInfo hitInfo;
                     physics.CastRay(currentPos, blockPos, out hitInfo, 15, true);
 
-                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == target.MyCube.CubeGrid)
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == ai.MyGrid)
                         continue;
 
                     var hitGrid = hitInfo.HitEntity as MyCubeGrid;
@@ -220,7 +220,7 @@ namespace WeaponCore.Support
                         if (bigOwners.Count == 0) enemy = true;
                         else
                         {
-                            var relationship = target.MyCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
+                            var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
                             enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
                         }
                         if (!enemy)
