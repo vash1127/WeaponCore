@@ -25,15 +25,7 @@ namespace WeaponCore
                 }
 
                 if ((gridAi.SourceCount > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
-                {
-                    gridAi.UpdateGridPower();
-                    if (gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw > gridAi.LastAvailablePower && gridAi.LastAvailablePower != 0) {
-                        gridAi.AvailablePowerIncrease = true;
-                        //Log.Line($"Increase");
-                    }
-                    gridAi.LastAvailablePower = gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw;
-                    //Log.Line($"avail power: {gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw}  Last Power: {gridAi.LastAvailablePower} Max: {gridAi.GridMaxPower}  Weapon Draw: {gridAi.CurrentWeaponsDraw} Current Power: {gridAi.GridCurrentPower}");
-                }
+                    gridAi.UpdateGridPower(true);
 
                 foreach (var basePair in gridAi.WeaponBase)
                 {

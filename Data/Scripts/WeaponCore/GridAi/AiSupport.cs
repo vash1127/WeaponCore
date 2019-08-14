@@ -241,7 +241,7 @@ namespace WeaponCore.Support
         }
 
         #region Power
-        internal bool UpdateGridPower()
+        internal bool UpdateGridPower(bool updateLast)
         {
             GridAvailablePower = 0;
             GridMaxPower = 0;
@@ -282,6 +282,16 @@ namespace WeaponCore.Support
             GridCurrentPower += BatteryCurrentInput;
             GridAvailablePower -= BatteryCurrentInput;
             UpdatePowerSources = false;
+            if (updateLast)
+            {
+                if (GridMaxPower - CurrentWeaponsDraw > LastAvailablePower && LastAvailablePower != 0)
+                {
+                    AvailablePowerIncrease = true;
+                    //Log.Line($"Increase");
+                }
+                LastAvailablePower = GridMaxPower - CurrentWeaponsDraw;
+                //Log.Line($"avail power: {gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw}  Last Power: {gridAi.LastAvailablePower} Max: {gridAi.GridMaxPower}  Weapon Draw: {gridAi.CurrentWeaponsDraw} Current Power: {gridAi.GridCurrentPower}");
+            }
             return GridMaxPower > 0;
         }
         #endregion
