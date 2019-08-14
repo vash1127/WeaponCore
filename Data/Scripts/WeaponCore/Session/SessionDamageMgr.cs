@@ -328,9 +328,9 @@ namespace WeaponCore
             if (pEntity.T.BaseHealthPool <= 0)
             {
                 pEntity.State = Projectile.ProjectileState.Depleted;
-                Log.Line("killed projectile");
+                //Log.Line("killed projectile");
             }
-            else Log.Line($"hit projectile: {pEntity.T.BaseHealthPool}");
+            //else Log.Line($"hit projectile: {pEntity.T.BaseHealthPool}");
         }
 
         private void DamageVoxel(HitEntity hitEnt, Trajectile t)

@@ -112,7 +112,7 @@ namespace WeaponCore.Support
                         var beam = new RayD(ref weaponPos, ref dir);
                         if (beam.Intersects(obsSphere) != null)
                         {
-                            Log.Line("possible obscure");
+                            //Log.Line("possible obscure");
                             needsCast = true;
                             break;
                         }
@@ -134,10 +134,10 @@ namespace WeaponCore.Support
                             target.TransferTo(w.Target);
                             return;
                         }
-                        Log.Line($"is obscured");
+                        //Log.Line($"is obscured");
                     }
                 }
-                else Log.Line("not in view");
+                //else Log.Line("not in view");
             }
             targetType = TargetType.None;
         }

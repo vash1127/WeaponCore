@@ -18,7 +18,7 @@ namespace WeaponCore
 
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
+                if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
                 if (!gridAi.DeadProjectiles.IsEmpty)
                 {
                     Projectile p;
