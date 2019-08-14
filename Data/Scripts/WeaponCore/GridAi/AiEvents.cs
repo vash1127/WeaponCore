@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                     {
                         var type = source.ResourceTypes[0];
                         if (type != MyResourceDistributorComponent.ElectricityId) return;
-                        Sources.Add(source);
+                        if (Sources.Add(source)) SourceCount++;
                         UpdatePowerSources = true;
                     }
                 }
@@ -85,7 +85,7 @@ namespace WeaponCore.Support
                     {
                         var type = source.ResourceTypes[0];
                         if (type != MyResourceDistributorComponent.ElectricityId) return;
-                        Sources.Remove(source);
+                        if (Sources.Remove(source)) SourceCount--;
                         UpdatePowerSources = true;
                     }
                     UpdatePowerSources = true;

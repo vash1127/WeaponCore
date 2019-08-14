@@ -51,6 +51,7 @@ namespace WeaponCore.Support
         internal uint ResetPowerTick;
         internal uint VelocityUpdateTick;
         internal int DbUpdating;
+        internal int SourceCount;
         internal long MyOwner;
         internal bool TargetNeutrals;
         internal bool TargetNoOwners;

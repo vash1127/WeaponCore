@@ -24,7 +24,7 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                if ((gridAi.Sources.Count > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
+                if ((gridAi.SourceCount > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
                 {
                     gridAi.UpdateGridPower();
                     if (gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw > gridAi.LastAvailablePower && gridAi.LastAvailablePower != 0) {
