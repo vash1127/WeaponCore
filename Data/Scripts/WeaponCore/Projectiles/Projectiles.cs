@@ -78,7 +78,7 @@ namespace WeaponCore.Projectiles
                 var pool = ProjectilePool[i];
                 var entPool = EntityPool[i];
                 var drawList = DrawProjectiles[i];
-
+                var vtPool = TrajectilePool[i];
                 var spawnShrapnel = ShrapnelToSpawn[i];
 
                 if (spawnShrapnel.Count > 0) {
@@ -354,6 +354,7 @@ namespace WeaponCore.Projectiles
                     foreach (var e in entPool)
                         e.DeallocateAllMarked();
 
+                vtPool.DeallocateAllMarked();
                 pool.DeallocateAllMarked();
             }
         }

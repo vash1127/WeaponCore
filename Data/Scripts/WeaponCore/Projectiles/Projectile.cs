@@ -300,6 +300,8 @@ namespace WeaponCore.Projectiles
 
             if (!EnableAv && ModelId == -1)
             {
+                for (int i = 0; i < VrTrajectiles.Count; i++)
+                    manager.TrajectilePool[poolId].MarkForDeallocate(VrTrajectiles[i]);
                 VrTrajectiles.Clear();
                 T.HitList.Clear();
                 T.Target.Reset();
@@ -319,6 +321,8 @@ namespace WeaponCore.Projectiles
                     HitEffects();
                     if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
+                for (int i = 0; i < VrTrajectiles.Count; i++)
+                    manager.TrajectilePool[poolId].MarkForDeallocate(VrTrajectiles[i]);
 
                 VrTrajectiles.Clear();
                 T.HitList.Clear();

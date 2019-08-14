@@ -22,6 +22,8 @@ namespace WeaponCore.Support
                 IsWorkingChanged(MyCube);
                 BlockInventory.ContentsAdded += OnContentsAdded;
                 BlockInventory.ContentsRemoved += OnContentsRemoved;
+                Sink.RequiredInputChanged += RequiredChanged;
+                Sink.CurrentInputChanged += CurrentInputChanged;
             }
             else
             {
@@ -29,6 +31,8 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsAdded -= OnContentsAdded;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
+                Sink.RequiredInputChanged -= RequiredChanged;
+                Sink.CurrentInputChanged -= CurrentInputChanged;
                 foreach (var w in Platform.Weapons)
                     w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
             }
@@ -130,7 +134,6 @@ namespace WeaponCore.Support
                 LastUpdateTick = Ai.MySession.Tick;
                 Ai.CurrentWeaponsDraw += currentInput;
                 //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
-
             }
         }
     }

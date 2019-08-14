@@ -357,7 +357,7 @@ namespace WeaponCore
             if (hitEnt.HitPos.HasValue)
             {
                 if (ExplosionReady)
-                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system, true);
+                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system);
                 else
                     UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system, true);
             }

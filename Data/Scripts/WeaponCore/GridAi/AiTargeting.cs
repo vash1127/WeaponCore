@@ -111,32 +111,6 @@ namespace WeaponCore.Support
                 w.Target.Expired = true;
             }
         }
-
-        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)
-        {
-            if (system.OrderedTargets)
-            {
-                var subSystems = system.Values.Targeting.SubSystems;
-                foreach (var bt in subSystems.Systems)
-                {
-                    if (bt != Any && info.TypeDict[bt].Count > 0)
-                    {
-                        var subSystemList = info.TypeDict[bt];
-                        if (subSystems.ClosestFirst)
-                        {
-                            if (bt != target.LastBlockType) target.Top5.Clear();
-                            target.LastBlockType = bt;
-                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, target, weaponPos, w);
-                            if (target.Entity != null) return true;
-                        }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, subSystemList, w)) return true;
-                    }
-                }
-            }
-            if (FindRandomBlock(system, ai, target, weaponPos, info.TypeDict[Any], w)) return true;
-            return false;
-        }
-
         
         internal static bool ReacquireTarget(Projectile p)
         {
@@ -176,6 +150,31 @@ namespace WeaponCore.Support
             return false;
         }
 
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)
+        {
+            if (system.OrderedTargets)
+            {
+                var subSystems = system.Values.Targeting.SubSystems;
+                foreach (var bt in subSystems.Systems)
+                {
+                    if (bt != Any && info.TypeDict[bt].Count > 0)
+                    {
+                        var subSystemList = info.TypeDict[bt];
+                        if (subSystems.ClosestFirst)
+                        {
+                            if (bt != target.LastBlockType) target.Top5.Clear();
+                            target.LastBlockType = bt;
+                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, target, weaponPos, w);
+                            if (target.Entity != null) return true;
+                        }
+                        else if (FindRandomBlock(system, ai, target, weaponPos, subSystemList, w)) return true;
+                    }
+                }
+            }
+            if (FindRandomBlock(system, ai, target, weaponPos, info.TypeDict[Any], w)) return true;
+            return false;
+        }
+
         private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, List<MyCubeBlock> blockList, Weapon w)
         {
             var totalBlocks = blockList.Count;
@@ -186,12 +185,6 @@ namespace WeaponCore.Support
             var physics = MyAPIGateway.Physics;
             var turretCheck = w != null;
 
-            Vector3D targetLinVel;
-            if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
-            else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
-            else targetLinVel = Vector3D.Zero;
-            var targetCenter = target.Entity.PositionComp.WorldMatrix.Translation;
-
             for (int i = 0; i < totalBlocks; i++)
             {
                 var next = i;
@@ -200,12 +193,14 @@ namespace WeaponCore.Support
 
                 var block = blockList[next];
                 if (block.MarkedForClose) continue;
-
+                var test = new BoundingFrustumD();
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
                 double rayDist;
                 if (turretCheck)
                 {
-                    if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
+                    var gridPhysics = ((IMyCubeGrid)block.CubeGrid).Physics;
+                    Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
+                    if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel)) continue;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 

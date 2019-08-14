@@ -130,7 +130,7 @@ namespace WeaponCore.Support
         public void MarkAllActiveForDeallocate()
         {
             using (_activeLock.Acquire())
-                _marked.UnionWith((IEnumerable<T>)_active);
+                _marked.UnionWith(_active);
         }
 
         public void DeallocateAllMarked()

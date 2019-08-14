@@ -155,6 +155,11 @@ namespace WeaponCore.Support
         internal double OrigDistance;
         internal long TopEntityId;
 
+        internal Target(MyCubeBlock firingCube = null)
+        {
+            FiringCube = firingCube;
+        }
+
         internal void TransferTo(Target target)
         {
             target.Entity = Entity;

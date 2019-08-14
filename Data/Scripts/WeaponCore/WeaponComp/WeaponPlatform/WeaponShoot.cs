@@ -124,9 +124,9 @@ namespace WeaponCore.Platform
 
                         if (System.VirtualBeams && j == 0)
                         {
-                            Trajectile t;
                             MyEntity e = null;
-                            Comp.Ai.MySession.Projectiles.TrajectilePool[Comp.Ai.MySession.ProCounter].AllocateOrCreate(out t);
+                            Trajectile t;
+                            Comp.Ai.MySession.Projectiles.TrajectilePool[session.ProCounter].AllocateOrCreate(out t);
                             if (System.ModelId != -1)
                             {
                                 MyEntity ent;
