@@ -68,7 +68,7 @@ namespace WeaponCore.Support
                         var type = source.ResourceTypes[0];
                         if (type != MyResourceDistributorComponent.ElectricityId) return;
                         if (Sources.Add(source)) SourceCount++;
-                        source.OutputChanged += SourceOutputChanged;
+                        //source.OutputChanged += SourceOutputChanged;
                         UpdatePowerSources = true;
                     }
                 }
