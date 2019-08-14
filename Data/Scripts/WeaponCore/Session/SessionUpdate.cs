@@ -59,7 +59,8 @@ namespace WeaponCore
 
                         var energyAmmo = w.System.EnergyAmmo;
 
-                        if (energyAmmo && comp.DelayTicks != 0 && w.IsShooting)
+
+                        if (w.IsShooting && (energyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
                         {
                             if (comp.ShootTick <= Tick)
                             {
@@ -77,7 +78,6 @@ namespace WeaponCore
                         
                         if (comp.Overheated || comp.Charging) continue;
 
-                        
                         if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)

@@ -76,6 +76,12 @@ namespace WeaponCore.Support
         internal float CurrentWeaponsDraw;
         internal float LastAvailablePower;
         internal Vector3 GridVel;
+        internal enum TargetType
+        {
+            Projectile,
+            Other,
+            None,
+        }
 
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
