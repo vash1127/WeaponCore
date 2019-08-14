@@ -16,6 +16,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
 
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
+
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
                 if (!gridAi.DeadProjectiles.IsEmpty)
                 {
@@ -42,8 +43,6 @@ namespace WeaponCore
                     var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
-
-                    if (!comp.State.Value.Online) foreach (var weapon in comp.Platform.Weapons) weapon.StopShooting();
 
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
@@ -145,8 +144,16 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - comp.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
-                        
-                        if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
+
+                        if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)))
+                        {
+                            w.Shoot();
+                            if (Tick20)
+                            {
+                               // DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Red, 0.1f);
+                               // DsDebugDraw.DrawLine(comp.MyBarrelTestLine.From, comp.MyBarrelTestLine.To, Color.Blue, 0.1f);
+                            }
+                        }
                         else if (w.IsShooting)
                         {
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);
@@ -179,11 +186,12 @@ namespace WeaponCore
                     var comp = basePair.Value;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     InTurret = gunner;
-                    if (!comp.MainInit || !comp.State.Value.Online) continue;
+                    if (!comp.MainInit) continue;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (!w.Enabled) continue;
+                        if ((!comp.State.Value.Online || !comp.IsFunctional) && w.IsShooting) w.StopShooting();
+                        if (!w.Enabled || !comp.State.Value.Online) continue;
                         if (!gunner)
                         {
                             if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;

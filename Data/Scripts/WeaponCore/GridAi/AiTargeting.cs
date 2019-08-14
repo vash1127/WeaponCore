@@ -217,8 +217,15 @@ namespace WeaponCore.Support
                         if (bigOwners.Count == 0) enemy = true;
                         else
                         {
-                            var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
-                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                           // try
+                            //{
+                                var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
+                                enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                            /*}
+                            catch
+                            {
+                                enemy = false;
+                            }*/
                         }
                         if (!enemy)
                             continue;
