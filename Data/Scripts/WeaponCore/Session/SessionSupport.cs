@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRage.Input;
@@ -69,7 +71,7 @@ namespace WeaponCore
                 db.ObstructionsTmp.Clear();
 
                 db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0;
-                Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
+                //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
             DbsToUpdate.Clear();
@@ -163,6 +165,10 @@ namespace WeaponCore
                 MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
                 MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
                 MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
+                var test1 = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
+                var test2 = MyAPIGateway.Input.MouseScrollWheelValue();
+                var test3 = MyAPIGateway.Input.DeltaMouseScrollWheelValue();
+                //Log.Line($"{test1} - {test2} - {test3}");
             }
             else
             {

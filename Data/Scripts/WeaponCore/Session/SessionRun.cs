@@ -55,6 +55,7 @@ namespace WeaponCore
         {
             try
             {
+                /*
                 if (Tick180)
                 {
                     var a = 0;
@@ -77,6 +78,7 @@ namespace WeaponCore
                     }
                     //Log.Line($"projectiles:{p} - particles:{g} - eCount:{ExplosionCounter} - arkCount:{a} - Smoke_Missile:{c} - missileExp:{m} - what:{w}");
                 }
+                */
                 Timings();
                 Projectiles.Update();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
