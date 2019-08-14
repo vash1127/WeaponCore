@@ -30,7 +30,7 @@ namespace WeaponCore.Support
             var shooting = false;
             for (int i = 0; i < Platform.Weapons.Length; i++)
             {
-                if (Platform.Weapons[i].IsShooting) shooting = true;
+                if (Platform.Weapons[i].IsShooting && Platform.Weapons[i].System.EnergyAmmo) shooting = true;
             }
             if (shooting)
             {

@@ -56,20 +56,27 @@ namespace WeaponCore
                             }
                         }
 
-                        if (comp.DelayTicks != 0 && w.IsShooting)
+                        var energyAmmo = w.System.EnergyAmmo;
+
+                        if (energyAmmo && comp.DelayTicks != 0 && w.IsShooting)
                         {
                             if (comp.ShootTick <= Tick)
                             {
                                 comp.Charging = false;
                                 comp.ShootTick = Tick + comp.DelayTicks;
+                                comp.TerminalRefresh();
                             }
-                            else comp.Charging = true;
+                            else
+                            {
+                                comp.Charging = true;
+                                comp.TerminalRefresh();
+                            }
                         }
                         else comp.Charging = false;
                         
                         if (comp.Overheated || comp.Charging) continue;
 
-                        var energyAmmo = w.System.EnergyAmmo;
+                        
                         if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
