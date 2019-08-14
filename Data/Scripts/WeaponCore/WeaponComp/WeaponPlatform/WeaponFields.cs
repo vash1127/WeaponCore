@@ -72,6 +72,7 @@ namespace WeaponCore.Platform
         internal int WeaponId;
         internal int CurrentHeat = 0;
         internal int HSRate;
+        internal int EnergyPriority;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
@@ -104,6 +105,7 @@ namespace WeaponCore.Platform
         internal bool Enabled;
         internal bool OrderedTargets;
         internal bool TargetWasExpired;
+        internal bool IsHybrid;
         internal readonly List<string> FiringStrings = new List<string>()
         {
             "Firing0",
@@ -193,6 +195,8 @@ namespace WeaponCore.Platform
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;
             HSRate = System.Values.HardPoint.Loading.HeatSinkRate;
+            IsHybrid = System.Values.HardPoint.Hybrid;
+            EnergyPriority = System.Values.HardPoint.EnergyPriority;
             AimingTolerance = Math.Cos(MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance));
             _ticksPerShot = (uint)(3600 / System.Values.HardPoint.Loading.RateOfFire);
             _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire);
