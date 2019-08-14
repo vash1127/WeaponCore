@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
@@ -56,7 +57,7 @@ namespace WeaponCore.Platform
             }
             else
                 canTrack = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
-            Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
+            //Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
 
             var tracking = inRange && canTrack;
             return tracking;
@@ -112,7 +113,9 @@ namespace WeaponCore.Platform
                 targetLinVel = target.Projectile.Velocity;
             else if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
             else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
+
             if (Vector3D.IsZero(targetLinVel, 5e-02)) targetLinVel = Vector3D.Zero;
+
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
             else
