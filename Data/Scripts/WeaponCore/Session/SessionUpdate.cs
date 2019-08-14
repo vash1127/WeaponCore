@@ -77,6 +77,7 @@ namespace WeaponCore
                             comp.Sink.Update();
                             comp.TerminalRefresh();
                         }
+                        gridAi.RecalcDone = true;
                     }
 
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -145,15 +146,7 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)))
-                        {
-                            w.Shoot();
-                            if (Tick20)
-                            {
-                               // DsDebugDraw.DrawLine(comp.MyPivotTestLine.From, comp.MyPivotTestLine.To, Color.Red, 0.1f);
-                               // DsDebugDraw.DrawLine(comp.MyBarrelTestLine.From, comp.MyBarrelTestLine.To, Color.Blue, 0.1f);
-                            }
-                        }
+                        if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
                         else if (w.IsShooting)
                         {
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);
@@ -165,10 +158,12 @@ namespace WeaponCore
                 gridAi.Ready = false;
                 gridAi.AvailablePowerIncrease = false;
                 gridAi.RecalcPowerPercent = false;
-                if (gridAi.RecalcLowPowerTick <= Tick && gridAi.RecalcLowPowerTick > 0)
+
+                if (gridAi.RecalcDone)
                 {
                     gridAi.RecalcLowPowerTick = 0;
                     gridAi.ResetPower = true;
+                    gridAi.RecalcDone = false;
                 }
             }
         }
