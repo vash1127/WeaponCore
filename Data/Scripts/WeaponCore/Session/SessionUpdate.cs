@@ -24,7 +24,7 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                if ((gridAi.SourceCount > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources || Tick60)))
+                if ((gridAi.SourceCount > 0 && (gridAi.GridMaxPower <= 0 || gridAi.UpdatePowerSources)))
                     gridAi.UpdateGridPower(true);
 
                 foreach (var basePair in gridAi.WeaponBase)
@@ -142,12 +142,11 @@ namespace WeaponCore
                     var comp = basePair.Value;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     InTurret = gunner;
-                    if (!comp.MainInit) continue;
+                    if (!comp.MainInit || !comp.State.Value.Online) continue;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if ((!comp.State.Value.Online || !comp.IsFunctional) && w.IsShooting) w.StopShooting();
-                        if (!w.Enabled || !comp.State.Value.Online) continue;
+                        if (!w.Enabled) continue;
                         if (!gunner)
                         {
                             if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
