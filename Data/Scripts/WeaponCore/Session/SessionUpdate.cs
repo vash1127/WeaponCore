@@ -47,38 +47,7 @@ namespace WeaponCore
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
                     if ((gridAi.RecalcLowPowerTick > 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
-                    {
-                        shooting = false;
-                        for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
-                            if (comp.Platform.Weapons[i].IsShooting) shooting = true;
-                        }
-                        if (shooting)
-                        {
-                            if (gridAi.ResetPower)
-                            {
-                                ///Log.Line($"grid available: {gridAi.GridAvailablePower + gridAi.CurrentWeaponsDraw}");
-                                gridAi.WeaponCleanPower = gridAi.GridMaxPower - (gridAi.GridCurrentPower - gridAi.CurrentWeaponsDraw);
-                                gridAi.ResetPower = false;
-                            }
-                            
-                            if (!gridAi.AvailablePowerIncrease)
-                            {
-                                comp.SinkPower = comp.CompPowerPerc * gridAi.WeaponCleanPower;
-
-                                comp.DelayTicks += (uint)(5 * comp.MaxRequiredPower / comp.SinkPower) - comp.DelayTicks;
-                                comp.ShootTick = comp.DelayTicks + Tick;
-                            }
-                            else {
-                                comp.SinkPower = comp.CurrentSinkPowerRequested;
-                                comp.DelayTicks = 0;
-                                comp.ShootTick = 0;
-                            }
-                            
-                            comp.Sink.Update();
-                            comp.TerminalRefresh();
-                        }
-                        gridAi.RecalcDone = true;
-                    }
+                        comp.UpdateCompPower();
 
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {

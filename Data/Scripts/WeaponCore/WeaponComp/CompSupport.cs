@@ -25,6 +25,42 @@ namespace WeaponCore.Support
             State.NetworkUpdate();
         }
 
+        internal void UpdateCompPower()
+        {
+            var shooting = false;
+            for (int i = 0; i < Platform.Weapons.Length; i++)
+            {
+                if (Platform.Weapons[i].IsShooting) shooting = true;
+            }
+            if (shooting)
+            {
+                if (Ai.ResetPower)
+                {
+                    ///Log.Line($"grid available: {gridAi.GridAvailablePower + gridAi.CurrentWeaponsDraw}");
+                    Ai.WeaponCleanPower = Ai.GridMaxPower - (Ai.GridCurrentPower - Ai.CurrentWeaponsDraw);
+                    Ai.ResetPower = false;
+                }
+
+                if (!Ai.AvailablePowerIncrease)
+                {
+                    SinkPower = CompPowerPerc * Ai.WeaponCleanPower;
+
+                    DelayTicks += (uint)(5 * MaxRequiredPower / SinkPower) - DelayTicks;
+                    ShootTick = DelayTicks + Ai.MySession.Tick;
+                }
+                else
+                {
+                    SinkPower = CurrentSinkPowerRequested;
+                    DelayTicks = 0;
+                    ShootTick = 0;
+                }
+
+                Sink.Update();
+                TerminalRefresh();
+            }
+            Ai.RecalcDone = true;
+        }
+
         internal void UpdatePivotPos(Weapon weapon)
         {
             var weaponPComp = weapon.EntityPart.PositionComp;
