@@ -98,7 +98,7 @@ namespace WeaponCore.Platform
         }
 
         internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
-        {
+        {    
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
@@ -112,8 +112,7 @@ namespace WeaponCore.Platform
                 targetLinVel = target.Projectile.Velocity;
             else if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
             else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
-
-
+            if (Vector3D.IsZero(targetLinVel, 5e-02)) targetLinVel = Vector3D.Zero;
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
             else
