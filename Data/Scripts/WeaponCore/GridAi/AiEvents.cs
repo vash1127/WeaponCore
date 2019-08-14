@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.ModAPI;
 
 namespace WeaponCore.Support
@@ -67,6 +68,7 @@ namespace WeaponCore.Support
                         var type = source.ResourceTypes[0];
                         if (type != MyResourceDistributorComponent.ElectricityId) return;
                         if (Sources.Add(source)) SourceCount++;
+                        //source.OutputChanged += SourceOutputChanged;
                         UpdatePowerSources = true;
                     }
                 }
@@ -92,6 +94,14 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }
+        }
+
+        private void SourceOutputChanged(MyDefinitionId changedResourceId, float oldOutput, MyResourceSourceComponent source)
+        {
+            if (ResetPowerTick != MySession.Tick && oldOutput > source.CurrentOutput) {
+                UpdatePowerSources = true;
+                ResetPowerTick = MySession.Tick;
+            }
         }
     }
 }

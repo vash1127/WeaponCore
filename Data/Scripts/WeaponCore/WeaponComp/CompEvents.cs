@@ -84,8 +84,12 @@ namespace WeaponCore.Support
             TerminalRefresh();
             if (!IsWorking)
             {
-                //foreach (var w in Platform.Weapons)
+                foreach (var w in Platform.Weapons)
+                {
                     //WepUi.SetEnable((IMyTerminalBlock)MyCube, w.WeaponId, false);
+                    w.StopShooting();
+                }
+
             }
         }
 

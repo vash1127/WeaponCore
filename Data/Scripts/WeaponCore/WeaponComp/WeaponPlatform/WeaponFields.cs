@@ -84,7 +84,7 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
-        internal float RequiredPower => ((System.ShotEnergyCost * (System.Values.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+        internal float RequiredPower => System.EnergyAmmo ? ((System.ShotEnergyCost * (System.Values.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel : 0;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -151,8 +151,11 @@ namespace WeaponCore.Platform
             _localTranslation = entity.LocalMatrix.Translation;
             System = system;
             Comp = comp;
-            Comp.Sink.SetMaxRequiredInputByType(comp.GId, RequiredPower);
-            Comp.MaxRequiredPower += RequiredPower;
+            if (System.EnergyAmmo)
+                Comp.MaxRequiredPower += RequiredPower;
+            else
+                Comp.MaxRequiredPower += comp.IdlePower;
+
             AvCapable = System.HasBarrelShootAv && !Comp.Ai.MySession.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
