@@ -284,7 +284,7 @@ namespace WeaponCore.Support
             UpdatePowerSources = false;
             if (updateLast)
             {
-                if (GridMaxPower - CurrentWeaponsDraw > LastAvailablePower && LastAvailablePower != 0)
+                if (GridMaxPower - CurrentWeaponsDraw > LastAvailablePower && LastAvailablePower > 0)
                 {
                     AvailablePowerIncrease = true;
                     //Log.Line($"Increase");
