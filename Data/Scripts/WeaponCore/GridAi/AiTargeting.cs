@@ -173,7 +173,7 @@ namespace WeaponCore.Support
                     if (!AcquireBlock(w.System, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
-                    break;
+                    return;
                 }
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
@@ -191,7 +191,7 @@ namespace WeaponCore.Support
                     target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
-                    break;
+                    return;
                 }
             }
             targetType = TargetType.None;
