@@ -76,6 +76,8 @@ namespace WeaponCore.Support
             MyPivotPos = UtilsStatic.GetClosestPointOnLine1(blockCenter, blockUp, weaponCenter, weaponForward);
             //MyPivotTestLine = new LineD(blockCenter, MyPivotPos);
             //MyBarrelTestLine = new LineD(weaponCenter + (weaponBackward * 5), weaponCenter + (weaponForward * 5));
+
+            LastPivotUpdateTick = Session.Instance.Tick;
         }
 
         public void StopRotSound(bool force)

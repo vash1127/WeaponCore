@@ -48,6 +48,7 @@ namespace WeaponCore.Support
         internal uint LastTrackedTick;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
+        internal uint LastPivotUpdateTick;
         internal uint ShootTick = 0;
         internal uint DelayTicks = 0;
         internal int PullingAmmoCnt;

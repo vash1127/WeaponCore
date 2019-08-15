@@ -80,7 +80,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\Draw\DebugDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Draw\DrawExts.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\DsAutoResetEvent.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\ModelSupport\Dummies.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\ModelSupport\Dummies.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Extensions\EntityExtentions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\FutureEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\GridIntersect.cs" />
@@ -90,7 +90,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectile.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectiles.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Extensions\ParallelExt.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\ModelSupport\RecursiveSubparts.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\WeaponPlatform\ModelSupport\RecursiveSubparts.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Api\ShieldApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\Controls\TerminalHelpers.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Dtree.cs" />

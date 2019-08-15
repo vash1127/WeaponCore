@@ -28,8 +28,9 @@ namespace WeaponCore.Platform
             var targetDir = Vector3D.Normalize(targetPos - weapon.Comp.MyPivotPos);
 
             Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
-            var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
+            var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
+            
             bool canTrack;
             if (weapon == trackingWeapon)
             {
@@ -56,16 +57,16 @@ namespace WeaponCore.Platform
                 canTrack = !azConstrained && !elConstrained;
             }
             else
-                canTrack = IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
-            //Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
+                canTrack = IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
+            //Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
             var tracking = inRange && canTrack;
             return tracking;
+            
         }
 
         internal static bool TargetAligned(Weapon weapon, Target target)
         {
-            var trackingWeapon = weapon.Comp.TrackingWeapon;
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
 
             Vector3D targetPos;
@@ -89,7 +90,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
-            var isAligned = inRange && IsDotProductWithinTolerance(ref trackingWeapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            var isAligned = inRange && IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             weapon.TargetPos = targetPos;
             weapon.TargetDir = targetDir;

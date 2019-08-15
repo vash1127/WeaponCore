@@ -19,11 +19,14 @@ namespace WeaponCore.Support
             var newTarget = w.NewTarget;
             var targetType = TargetType.None;
 
-            if (pCount > 0) AcquireProjectile(w, newTarget, out targetType);
+            w.Comp.UpdatePivotPos(w);
 
+            if (pCount > 0) AcquireProjectile(w, newTarget, out targetType);
+            
             if (targetType == TargetType.None && !w.OnlyTargetProj) AcquireOther(w, newTarget, out targetType);
             if (targetType == TargetType.None)
             {
+                Log.Line($"{w.System.WeaponName} - No Target");
                 newTarget.Reset();
                 w.LastTargetCheck = 1;
                 w.Target.Expired = true;
@@ -119,11 +122,14 @@ namespace WeaponCore.Support
                     var gridPhysics = ((IMyCubeGrid)block.CubeGrid).Physics;
                     Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
                     if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel)) continue;
+
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == ai.MyGrid)
                         continue;
+
+                    Log.Line("can shoot2");
 
                     var hitGrid = hitInfo.HitEntity as MyCubeGrid;
                     if (hitGrid != null)
@@ -161,20 +167,36 @@ namespace WeaponCore.Support
             var physics = MyAPIGateway.Physics;
             var weaponPos = w.Comp.MyPivotPos;
 
+            Log.Line($"PivotPOS: {w.Comp.MyPivotPos}");
+
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
+
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene) continue;
+
                 var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
+
+                if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
+
+                Log.Line($"Target Center: {targetCenter}");
+                    
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
+
+                
 
                 if (info.IsGrid)
                 {
+
+                    
                     if (!AcquireBlock(w.System, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
                     return;
                 }
+
+                Log.Line($"bad Place");
+
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
                 IHitInfo hitInfo;
@@ -215,6 +237,7 @@ namespace WeaponCore.Support
 
                         var dir = lp.Position - weaponPos;
                         var beam = new RayD(ref weaponPos, ref dir);
+                        
                         if (beam.Intersects(obsSphere) != null)
                         {
                             var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
@@ -245,6 +268,17 @@ namespace WeaponCore.Support
                             return;
                         }
                         Log.Line($"is obscured");
+                    }
+                    else {
+                        double hitDist;
+                        Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
+                        var shortDist = hitDist;
+                        var origDist = hitDist;
+                        const long topEntId = long.MaxValue;
+                        target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
+                        targetType = TargetType.Projectile;
+                        target.TransferTo(w.Target);
+                        return;
                     }
                 }
                 else Log.Line("not in view");
