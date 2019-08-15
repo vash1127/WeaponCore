@@ -185,19 +185,12 @@ namespace WeaponCore.Platform
                                     if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None)
                                     {
                                         var threatLin = targetAi.MyGrid.Physics?.LinearVelocity ?? Vector3.Zero;
+
                                         bool intercept;
-                                        if (Vector3D.IsZero(threatLin, 0.025))
-                                        {
-                                            intercept = Vector3.Dot(p.Direction, p.Position - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
-                                        }
-                                        else
-                                        {
-                                            intercept = Vector3.Dot(threatLin, targetAi.MyGrid.PositionComp.WorldMatrix.Translation - TargetPos) < 0;
-                                        }
-                                        if (!intercept)
-                                        {
-                                            continue;
-                                        }
+                                        if (Vector3D.IsZero(threatLin, 0.025)) intercept = Vector3.Dot(p.Direction, p.Position - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
+                                        else intercept = Vector3.Dot(threatLin, targetAi.MyGrid.PositionComp.WorldMatrix.Translation - TargetPos) < 0;
+
+                                        if (!intercept) continue;
                                     }
                                     targetAi.LiveProjectile.Add(p);
                                     p.Watchers.Add(targetAi);
