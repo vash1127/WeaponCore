@@ -4,9 +4,14 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
+using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
+using VRage.Utils;
+using VRageMath;
 using WeaponCore.Support;
+using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 namespace WeaponCore
 {
     public partial class Session
@@ -101,6 +106,25 @@ namespace WeaponCore
             return radius;
         }
 
+        private void DrawWheel(int id)
+        {
+            var position = new Vector3D(_wheelPosition.X, _wheelPosition.Y, 0);
+            var fov = MyAPIGateway.Session.Camera.FovWithZoom;
+            double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
+            var scale = 0.075 * Math.Tan(fov * 0.5);
+            position.X *= scale * aspectratio;
+            position.Y *= scale;
+            var cameraWorldMatrix = MyAPIGateway.Session.Camera.WorldMatrix;
+            position = Vector3D.Transform(new Vector3D(position.X, position.Y, -.1), cameraWorldMatrix);
+
+            var origin = position;
+            var left = cameraWorldMatrix.Left;
+            var up = cameraWorldMatrix.Up;
+            scale = 1 * scale;
+
+            MyTransparentGeometry.AddBillboardOriented(WheelMainIds[id], Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+        }
+
         internal void Timings()
         {
             Tick = (uint)(Session.ElapsedPlayTime.TotalMilliseconds * TickTimeDiv);
@@ -160,21 +184,62 @@ namespace WeaponCore
             else Zoom = 1;
 
             MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
-            if (MouseButtonPressed)
+            if (MouseButtonPressed && WheelActive || MouseButtonPressed && Session.ControlledObject is MyCockpit)
             {
                 MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
                 MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
                 MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
-                var test1 = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
-                var test2 = MyAPIGateway.Input.MouseScrollWheelValue();
-                var test3 = MyAPIGateway.Input.DeltaMouseScrollWheelValue();
-                //Log.Line($"{test1} - {test2} - {test3}");
+
+                if (MouseButtonMiddle && MyAPIGateway.Input.WasMiddleMouseReleased() && !WheelActive)
+                {
+                    Log.Line("Lock mouse buttons and activate wheel");
+                    WheelActive = true;
+                    var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
+                    var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, false);
+                    var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, false);
+                }
+                else if (MouseButtonMiddle && MyAPIGateway.Input.WasMiddleMouseReleased() && WheelActive)
+                {
+                    Log.Line("Unlock mouse buttons and deactive wheel");
+                    WheelActive = false;
+                    var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
+                    var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, true);
+                    var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
+                }
+
             }
             else
             {
                 MouseButtonLeft = false;
                 MouseButtonMiddle = false;
                 MouseButtonRight = false;
+            }
+
+            if (WheelActive)
+            {
+                PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
+                CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
+
+                if (CurrentWheel  != PreviousWheel && CurrentWheel > PreviousWheel)
+                {
+                    WheelOptCount = WheelMainIds.Length;
+                    if (WheelOptSlot < WheelOptCount - 1) WheelOptSlot++;
+                    else WheelOptSlot = 0;
+                    Log.Line($"PrevWheelValue:{PreviousWheel} - CurrentWheelValue:{CurrentWheel} - WheelSlot:{WheelOptSlot}");
+                }
+                else if (CurrentWheel != PreviousWheel)
+                {
+                    WheelOptCount = WheelMainIds.Length;
+                    if (WheelOptSlot - 1 >= 0) WheelOptSlot--;
+                    else WheelOptSlot = WheelOptCount - 1;
+                    Log.Line($"PrevWheelValue:{PreviousWheel} - CurrentWheelValue:{CurrentWheel} - WheelSlot:{WheelOptSlot}");
+                }
             }
 
             if (!_compsToStart.IsEmpty)
