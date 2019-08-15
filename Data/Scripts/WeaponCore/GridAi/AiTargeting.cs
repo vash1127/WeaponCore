@@ -112,7 +112,6 @@ namespace WeaponCore.Support
 
                 var block = blockList[next];
                 if (block.MarkedForClose) continue;
-                var test = new BoundingFrustumD();
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
                 double rayDist;
                 if (turretCheck)
@@ -136,15 +135,8 @@ namespace WeaponCore.Support
                         if (bigOwners.Count == 0) enemy = true;
                         else
                         {
-                           // try
-                            //{
-                                var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
-                                enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
-                            /*}
-                            catch
-                            {
-                                enemy = false;
-                            }*/
+                            var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
+                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
                         }
                         if (!enemy)
                             continue;
@@ -181,7 +173,7 @@ namespace WeaponCore.Support
                     if (!AcquireBlock(w.System, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
-                    break;
+                    return;
                 }
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
@@ -199,7 +191,7 @@ namespace WeaponCore.Support
                     target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
-                    break;
+                    return;
                 }
             }
             targetType = TargetType.None;

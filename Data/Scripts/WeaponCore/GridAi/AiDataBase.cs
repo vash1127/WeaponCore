@@ -73,7 +73,7 @@ namespace WeaponCore.Support
             IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
             foreach (var targets in allTargets)
             {
-                var rootGrid = targets.Key.GetTopMostParent();
+                var rootGrid = targets.Key;
                 Dictionary<BlockTypes, List<MyCubeBlock>> typeDict;
                 if (ai.ValidGrids.TryGetValue(rootGrid, out typeDict))
                 {
