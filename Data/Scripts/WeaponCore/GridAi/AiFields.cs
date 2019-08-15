@@ -94,12 +94,5 @@ namespace WeaponCore.Support
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
 
         }
-
-        internal enum TargetType
-        {
-            Projectile,
-            Other,
-            None,
-        }
     }
 }
