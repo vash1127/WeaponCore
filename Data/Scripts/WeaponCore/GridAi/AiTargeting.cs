@@ -112,7 +112,6 @@ namespace WeaponCore.Support
 
                 var block = blockList[next];
                 if (block.MarkedForClose) continue;
-                var test = new BoundingFrustumD();
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
                 double rayDist;
                 if (turretCheck)
