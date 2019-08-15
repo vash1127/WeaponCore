@@ -92,6 +92,7 @@ namespace WeaponCore.Support
             MySession = mySession;
             RegisterMyGridEvents(true, grid);
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
+
         }
     }
 }

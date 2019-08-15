@@ -94,96 +94,6 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static void AcquireProjectile(Weapon w, Target target, out TargetType targetType)
-        {
-            var ai = w.Comp.Ai;
-            var physics = MyAPIGateway.Physics;
-            var weaponPos = w.Comp.MyPivotPos;
-
-            foreach (var lp in ai.LiveProjectile)
-            {
-                if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))
-                {
-                    var needsCast = false;
-                    for (int i = 0; i < ai.Obstructions.Count; i++)
-                    {
-                        var obsSphere = ai.Obstructions[i].PositionComp.WorldVolume;
-                        var dir = lp.Position - weaponPos;
-                        var beam = new RayD(ref weaponPos, ref dir);
-                        if (beam.Intersects(obsSphere) != null)
-                        {
-                            //Log.Line("possible obscure");
-                            needsCast = true;
-                            break;
-                        }
-                    }
-
-                    if (needsCast)
-                    {
-                        IHitInfo hitInfo;
-                        physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
-                        if (hitInfo?.HitEntity == null)
-                        {
-                            double hitDist;
-                            Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
-                            var shortDist = hitDist;
-                            var origDist = hitDist;
-                            const long topEntId = long.MaxValue;
-                            target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
-                            targetType = TargetType.Projectile;
-                            target.TransferTo(w.Target);
-                            return;
-                        }
-                        //Log.Line($"is obscured");
-                    }
-                }
-                //else Log.Line("not in view");
-            }
-            targetType = TargetType.None;
-        }
-
-        private static void AcquireOther(Weapon w, Target target, out TargetType targetType)
-        {
-            var ai = w.Comp.Ai;
-            var physics = MyAPIGateway.Physics;
-            var weaponPos = w.Comp.MyPivotPos;
-
-            for (int i = 0; i < ai.SortedTargets.Count; i++)
-            {
-                var info = ai.SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
-                var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
-                Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
-
-                if (info.IsGrid)
-                {
-                    if (!AcquireBlock(w.System, w.Comp.Ai, target, info, weaponPos, w)) continue;
-                    targetType = TargetType.Other;
-                    target.TransferTo(w.Target);
-                    return;
-                }
-                if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
-                var targetPos = info.Target.PositionComp.WorldAABB.Center;
-                IHitInfo hitInfo;
-                physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
-                if (hitInfo?.HitEntity == info.Target)
-                {
-                    Log.Line($"{w.System.WeaponName} - found something");
-
-                    double rayDist;
-                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
-                    var shortDist = rayDist * (1 - hitInfo.Fraction);
-                    var origDist = rayDist * hitInfo.Fraction;
-                    var topEntId = info.Target.GetTopMostParent().EntityId;
-                    target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
-                    targetType = TargetType.Other;
-                    target.TransferTo(w.Target);
-                    return;
-                }
-            }
-            targetType = TargetType.None;
-        }
-
         private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, List<MyCubeBlock> blockList, Weapon w)
         {
             var totalBlocks = blockList.Count;
@@ -251,6 +161,103 @@ namespace WeaponCore.Support
                 return true;
             }
             return false;
+        }
+
+        private static void AcquireOther(Weapon w, Target target, out TargetType targetType)
+        {
+            var ai = w.Comp.Ai;
+            var physics = MyAPIGateway.Physics;
+            var weaponPos = w.Comp.MyPivotPos;
+
+            for (int i = 0; i < ai.SortedTargets.Count; i++)
+            {
+                var info = ai.SortedTargets[i];
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
+                var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
+                Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
+
+                if (info.IsGrid)
+                {
+                    if (!AcquireBlock(w.System, w.Comp.Ai, target, info, weaponPos, w)) continue;
+                    targetType = TargetType.Other;
+                    target.TransferTo(w.Target);
+                    break;
+                }
+                if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
+                var targetPos = info.Target.PositionComp.WorldAABB.Center;
+                IHitInfo hitInfo;
+                physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
+                if (hitInfo?.HitEntity == info.Target)
+                {
+                    Log.Line($"{w.System.WeaponName} - found something");
+
+                    double rayDist;
+                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                    var shortDist = rayDist * (1 - hitInfo.Fraction);
+                    var origDist = rayDist * hitInfo.Fraction;
+                    var topEntId = info.Target.GetTopMostParent().EntityId;
+                    target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
+                    targetType = TargetType.Other;
+                    target.TransferTo(w.Target);
+                    break;
+                }
+            }
+            targetType = TargetType.None;
+        }
+
+        private static void AcquireProjectile(Weapon w, Target target, out TargetType targetType)
+        {
+            var ai = w.Comp.Ai;
+            var physics = MyAPIGateway.Physics;
+            var weaponPos = w.Comp.MyPivotPos;
+
+            foreach (var lp in ai.LiveProjectile)
+            {
+                if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))
+                {
+                    var needsCast = false;
+                    for (int i = 0; i < ai.Obstructions.Count; i++)
+                    {
+                        var ent = ai.Obstructions[i];
+                        var obsSphere = ent.PositionComp.WorldVolume;
+
+                        var dir = lp.Position - weaponPos;
+                        var beam = new RayD(ref weaponPos, ref dir);
+                        if (beam.Intersects(obsSphere) != null)
+                        {
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                            var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                            if (obb.Intersects(ref beam) != null)
+                            {
+                                Log.Line("possible obscure");
+                                needsCast = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (needsCast)
+                    {
+                        IHitInfo hitInfo;
+                        physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
+                        if (hitInfo?.HitEntity == null)
+                        {
+                            double hitDist;
+                            Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
+                            var shortDist = hitDist;
+                            var origDist = hitDist;
+                            const long topEntId = long.MaxValue;
+                            target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
+                            targetType = TargetType.Projectile;
+                            target.TransferTo(w.Target);
+                            return;
+                        }
+                        Log.Line($"is obscured");
+                    }
+                }
+                else Log.Line("not in view");
+            }
+            targetType = TargetType.None;
         }
     }
 }
