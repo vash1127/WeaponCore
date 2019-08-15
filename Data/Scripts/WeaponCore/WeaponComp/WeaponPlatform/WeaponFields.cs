@@ -72,6 +72,7 @@ namespace WeaponCore.Platform
         internal int WeaponId;
         internal int CurrentHeat = 0;
         internal int HSRate;
+        internal int EnergyPriority;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
@@ -84,7 +85,7 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
-        internal float RequiredPower => System.EnergyAmmo ? ((System.ShotEnergyCost * (System.Values.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel : 0;
+        internal float RequiredPower => (System.EnergyAmmo || System.IsHybrid) ? ((System.ShotEnergyCost * (System.Values.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel : 0;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -104,6 +105,7 @@ namespace WeaponCore.Platform
         internal bool Enabled;
         internal bool OrderedTargets;
         internal bool TargetWasExpired;
+        internal bool OnlyTargetProj;
         internal readonly List<string> FiringStrings = new List<string>()
         {
             "Firing0",
@@ -151,7 +153,7 @@ namespace WeaponCore.Platform
             _localTranslation = entity.LocalMatrix.Translation;
             System = system;
             Comp = comp;
-            if (System.EnergyAmmo)
+            if (System.EnergyAmmo || System.IsHybrid)
                 Comp.MaxRequiredPower += RequiredPower;
             else
                 Comp.MaxRequiredPower += comp.IdlePower;
@@ -192,7 +194,9 @@ namespace WeaponCore.Platform
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;
+            OnlyTargetProj = System.Values.Targeting.onlyTargetProjectiles;
             HSRate = System.Values.HardPoint.Loading.HeatSinkRate;
+            EnergyPriority = System.Values.HardPoint.EnergyPriority;
             AimingTolerance = Math.Cos(MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance));
             _ticksPerShot = (uint)(3600 / System.Values.HardPoint.Loading.RateOfFire);
             _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire);

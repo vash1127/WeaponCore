@@ -18,7 +18,7 @@ namespace WeaponCore
 
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
+                if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
                 if (!gridAi.DeadProjectiles.IsEmpty)
                 {
                     Projectile p;
@@ -59,7 +59,8 @@ namespace WeaponCore
 
                         var energyAmmo = w.System.EnergyAmmo;
 
-                        if (energyAmmo && comp.DelayTicks != 0 && w.IsShooting)
+
+                        if (w.IsShooting && (energyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
                         {
                             if (comp.ShootTick <= Tick)
                             {
@@ -77,7 +78,6 @@ namespace WeaponCore
                         
                         if (comp.Overheated || comp.Charging) continue;
 
-                        
                         if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
@@ -115,7 +115,7 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (!comp.Overheated && (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight))) w.Shoot();
+                        if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
                         else if (w.IsShooting)
                         {
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);

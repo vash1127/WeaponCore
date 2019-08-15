@@ -40,6 +40,7 @@ namespace WeaponCore.Support
         public readonly bool LineWidthVariance;
         public readonly bool LineColorVariance;
         public readonly bool EnergyAmmo;
+        public readonly bool IsHybrid;
         public readonly bool BarrelEffect1;
         public readonly bool BarrelEffect2;
         public readonly bool HasBarrelShootAv;
@@ -138,6 +139,7 @@ namespace WeaponCore.Support
 
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
+            IsHybrid = values.HardPoint.Hybrid;
 
             ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.BaseDamage;
 

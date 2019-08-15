@@ -50,15 +50,17 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal bool IsTurret;
         [ProtoMember(4)] internal bool TurretController;
         [ProtoMember(5)] internal bool TrackTargets;
-        [ProtoMember(6)] internal int DelayCeaseFire;
-        [ProtoMember(7)] internal int RotateBarrelAxis;
-        [ProtoMember(8)] internal double RotateSpeed;
-        [ProtoMember(9)] internal double ElevationSpeed;
-        [ProtoMember(10)] internal float DeviateShotAngle;
-        [ProtoMember(11)] internal float EnergyCost;
-        [ProtoMember(12)] internal double AimingTolerance;
-        [ProtoMember(13)] internal Prediction AimLeadingPrediction;
-        [ProtoMember(14)] internal AmmoLoading Loading;
+        [ProtoMember(6)] internal bool Hybrid;
+        [ProtoMember(7)] internal int DelayCeaseFire;
+        [ProtoMember(8)] internal int RotateBarrelAxis;
+        [ProtoMember(9)] internal int EnergyPriority;
+        [ProtoMember(10)] internal double RotateSpeed;
+        [ProtoMember(11)] internal double ElevationSpeed;
+        [ProtoMember(12)] internal float DeviateShotAngle;
+        [ProtoMember(13)] internal float EnergyCost;
+        [ProtoMember(14)] internal double AimingTolerance;
+        [ProtoMember(15)] internal Prediction AimLeadingPrediction;
+        [ProtoMember(16)] internal AmmoLoading Loading;
     }
 
     [ProtoContract]
@@ -92,6 +94,7 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal int TopTargets;
         [ProtoMember(2)] internal int TopBlocks;
         [ProtoMember(3)] internal SubSystemDefinition SubSystems;
+        [ProtoMember(4)] internal bool onlyTargetProjectiles;
     }
 
     [ProtoContract]
@@ -110,6 +113,7 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal BlockTypes[] Systems;
         [ProtoMember(2)] internal bool SubSystemPriority;
         [ProtoMember(3)] internal bool ClosestFirst;
+        [ProtoMember(4)] internal bool onlyTargetSubSystems;
     }
 
     [ProtoContract]
