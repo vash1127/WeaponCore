@@ -39,34 +39,9 @@ namespace WeaponCore
             try
             {
                 var cube = myEntity as MyCubeBlock;
-                var weaponBase = cube as IMyLargeMissileTurret;
-
-                if (weaponBase != null)
-                {
-                    if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
-
-                    WeaponComponent removedComp;
-                    GridTargetingAIs[cube.CubeGrid].WeaponBase.TryRemove(cube, out removedComp);
-
-                    GridAi removedAi;
-                    if (GridTargetingAIs[cube.CubeGrid].WeaponBase.Count == 0)
-                        GridTargetingAIs.TryRemove(cube.CubeGrid, out removedAi);
-                }
+                if (WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) _compsToRemove.Enqueue(GridTargetingAIs[cube.CubeGrid].WeaponBase[cube]);
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityDelete: {ex}"); }
         }
-        /*private void OnEntityDelete(MyEntity myEntity)
-        {
-            var cube = myEntity as MyCubeBlock;
-            GridAi gridAi;
-            if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
-            {
-                WeaponComponent removedComp;
-                if (GridTargetingAIs[cube.CubeGrid].WeaponBase.TryRemove(cube, out removedComp))
-                {
-                    _compsToRemove.Enqueue(removedComp);
-                }
-            }
-        }*/
     }
 }
