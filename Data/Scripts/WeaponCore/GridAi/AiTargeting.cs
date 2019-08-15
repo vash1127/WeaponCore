@@ -187,8 +187,6 @@ namespace WeaponCore.Support
 
                 if (info.IsGrid)
                 {
-
-                    
                     if (!AcquireBlock(w.System, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
