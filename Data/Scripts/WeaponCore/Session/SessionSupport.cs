@@ -189,6 +189,13 @@ namespace WeaponCore
                 }
                 else RemoveGridAi(weaponComp);
             }
+
+            if (!_compsToRemove.IsEmpty) {
+                WeaponComponent weaponComp;
+                _compsToRemove.TryDequeue(out weaponComp);
+                RemoveGridAi(weaponComp);
+            }
+
             if (!DedicatedServer) CameraPos = Session.Camera.Position;
         }
 

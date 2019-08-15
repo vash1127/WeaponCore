@@ -88,6 +88,13 @@ namespace WeaponCore.Support
                             else if (cube is IMyGunBaseUser) typeDict[BlockTypes.Offense].Add(cube);
                             else if (cube is IMyUpgradeModule) typeDict[BlockTypes.Defense].Add(cube);
                             else if (cube is IMyThrust || cube is IMyJumpDrive) typeDict[BlockTypes.Navigation].Add(cube);
+                            else if (cube is IMyDecoy) {
+                                typeDict[BlockTypes.Production].Add(cube);
+                                typeDict[BlockTypes.Power].Add(cube);
+                                typeDict[BlockTypes.Offense].Add(cube);
+                                typeDict[BlockTypes.Defense].Add(cube);
+                                typeDict[BlockTypes.Navigation].Add(cube);
+                            }
                         }
                     }
                 }
