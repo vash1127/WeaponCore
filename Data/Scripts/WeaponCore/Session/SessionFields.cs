@@ -76,6 +76,10 @@ namespace WeaponCore
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
 
+        internal int PreviousWheel;
+        internal int CurrentWheel;
+        internal int WheelOptCount;
+        internal int WheelOptSlot;
         internal uint Tick;
         internal int PlayerEventId;
         internal int ProCounter;
@@ -125,10 +129,11 @@ namespace WeaponCore
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
         internal bool InTurret;
+        internal bool WheelActive;
 
+        private readonly Vector2D _wheelPosition = new Vector2D(0, 0);
         internal Vector3D CameraPos;
         internal MyEntity ControlledEntity;
-
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
         internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
 
@@ -138,5 +143,26 @@ namespace WeaponCore
         internal ShieldApi SApi = new ShieldApi();
         internal FutureEvents FutureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
+
+        internal readonly MyStringId[] WheelTargetIds =
+        {
+            MyStringId.NullOrEmpty,
+            MyStringId.GetOrCompute("DS_TargetWheel_NoSelect"),
+            MyStringId.GetOrCompute("DS_TargetWheel_Comms"),
+            MyStringId.GetOrCompute("DS_TargetWheel_Engines"),
+            MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"),
+            MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"),
+            MyStringId.GetOrCompute("DS_TargetWheel_Power"),
+            MyStringId.GetOrCompute("DS_TargetWheel_Weapons"),
+        };
+
+        internal readonly MyStringId[] WheelMainIds =
+        {
+            MyStringId.GetOrCompute("DS_MainWheel_NoSelect"),
+            MyStringId.GetOrCompute("DS_MainWheel_Grids"),
+            MyStringId.GetOrCompute("DS_MainWheel_Players"),
+            MyStringId.GetOrCompute("DS_MainWheel_WeaponGroups"),
+            MyStringId.GetOrCompute("DS_MainWheel_Ordinance"),
+        };
     }
 }

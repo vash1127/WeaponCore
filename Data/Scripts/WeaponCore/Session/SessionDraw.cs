@@ -10,6 +10,9 @@ namespace WeaponCore
     {
         private void DrawLists(List<Trajectile> drawList)
         {
+
+            if (WheelActive) DrawWheel(WheelOptSlot);
+
             var sFound = false;
             for (int i = 0; i < drawList.Count; i++)
             {

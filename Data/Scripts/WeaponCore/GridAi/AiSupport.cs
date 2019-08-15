@@ -174,7 +174,7 @@ namespace WeaponCore.Support
                 Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out xDist);
                 Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out yDist);
 
-                var xVelLen = !xNull ? xVel.Value.LengthSquared(): 0;
+                var xVelLen = !xNull ? xVel.Value.LengthSquared() : 0;
                 var yVelLen = !yNull ? yVel.Value.LengthSquared() : 0;
 
                 if (!xNull) xVel.Value.LengthSquared();
