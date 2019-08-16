@@ -38,18 +38,28 @@ namespace WeaponCore.Support
             var physics = MyAPIGateway.Physics;
             var ai = p.T.Ai;
             var weaponPos = p.Position;
+
+            Log.Line($"Targets: {ai.SortedTargets.Count}");
+
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || Vector3D.DistanceSquared(info.EntInfo.Position, p.Position) > p.DistanceToTravelSqr) continue;
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene) continue;
+
+                var targetPos = info.Target.PositionComp.WorldAABB.Center;
+
+                if (Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr) continue;
+
+                Log.Line($"isGrid: {info.IsGrid}");
 
                 if (info.IsGrid)
                 {
+                    
                     if (!AcquireBlock(p.T.System, p.T.Ai, p.T.Target, info, weaponPos)) continue;
                     return true;
                 }
 
-                var targetPos = info.Target.PositionComp.WorldAABB.Center;
+                
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
                 if (hitInfo?.HitEntity == info.Target)

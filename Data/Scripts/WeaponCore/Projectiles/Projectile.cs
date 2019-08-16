@@ -346,6 +346,7 @@ namespace WeaponCore.Projectiles
         {
             ChaseAge = Age;
             PickTarget = false;
+            Log.Line($"EndChase");
             var reaquire = GridAi.ReacquireTarget(this);
             if (!reaquire)
             {
