@@ -1,74 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
-using VRage.Utils;
 using VRageMath;
-using VRageRender;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
 namespace WeaponCore
 {
-    class Wheel
+    internal partial class Wheel
     {
-        private readonly Vector2D _wheelPosition = new Vector2D(0, 0);
-
-        internal bool WheelActive;
-        internal int PreviousWheel;
-        internal int CurrentWheel;
-        internal int WheelOptCount;
-        internal int WheelOptSlot;
-        internal bool MouseButtonPressed;
-        internal bool MouseButtonLeft;
-        internal bool MouseButtonMiddle;
-        internal bool MouseButtonRight;
-
-        internal enum State
-        {
-            Close,
-            Open,
-            NoChange,
-        }
-
-        internal State ChangeState
-        {
-            get
-            {
-                if (MyAPIGateway.Input.WasMiddleMouseReleased() && !WheelActive) return State.Open;
-                if (MyAPIGateway.Input.WasMiddleMouseReleased() && WheelActive) return State.Close;
-                return State.NoChange;
-            }
-            set { }
-        }
-
-        internal readonly MyStringId[] WheelTargetIds =
-        {
-            MyStringId.NullOrEmpty,
-            MyStringId.GetOrCompute("DS_TargetWheel_NoSelect"),
-            MyStringId.GetOrCompute("DS_TargetWheel_Comms"),
-            MyStringId.GetOrCompute("DS_TargetWheel_Engines"),
-            MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"),
-            MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"),
-            MyStringId.GetOrCompute("DS_TargetWheel_Power"),
-            MyStringId.GetOrCompute("DS_TargetWheel_Weapons"),
-        };
-
-        internal readonly MyStringId[] WheelMainIds =
-        {
-            MyStringId.GetOrCompute("DS_MainWheel_NoSelect"),
-            MyStringId.GetOrCompute("DS_MainWheel_Grids"),
-            MyStringId.GetOrCompute("DS_MainWheel_Players"),
-            MyStringId.GetOrCompute("DS_MainWheel_WeaponGroups"),
-            MyStringId.GetOrCompute("DS_MainWheel_Ordinance"),
-        };
-
         internal void UpdateInput()
         {
             MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
@@ -96,20 +39,22 @@ namespace WeaponCore
         {
             if (WheelActive)
             {
-                PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
-                CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
+                _previousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
+                _currentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
+                if (MouseButtonLeft) _currentMenu = "Targets";
+                if (MouseButtonRight) _currentMenu = "Main";
 
-                if (CurrentWheel != PreviousWheel && CurrentWheel > PreviousWheel)
+                if (_currentWheel != _previousWheel && _currentWheel > _previousWheel)
                 {
-                    WheelOptCount = WheelMainIds.Length;
-                    if (WheelOptSlot < WheelOptCount - 1) WheelOptSlot++;
-                    else WheelOptSlot = 0;
+                    var menu = Menus[_currentMenu];
+                    if (menu.CurrentSlot < menu.ItemCount - 1) menu.CurrentSlot++;
+                    else menu.CurrentSlot = 0;
                 }
-                else if (CurrentWheel != PreviousWheel)
+                else if (_currentWheel != _previousWheel)
                 {
-                    WheelOptCount = WheelMainIds.Length;
-                    if (WheelOptSlot - 1 >= 0) WheelOptSlot--;
-                    else WheelOptSlot = WheelOptCount - 1;
+                    var menu = Menus[_currentMenu];
+                    if (menu.CurrentSlot - 1 >= 0) menu.CurrentSlot--;
+                    else menu.CurrentSlot = menu.ItemCount - 1;
                 }
             }
         }
@@ -129,14 +74,14 @@ namespace WeaponCore
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
-
-            MyTransparentGeometry.AddBillboardOriented(WheelMainIds[WheelOptSlot], Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            var menu = Menus[_currentMenu];
+            MyTransparentGeometry.AddBillboardOriented(menu.Items[menu.CurrentSlot], Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()
         {
-            Log.Line("Lock mouse buttons and activate wheel");
             WheelActive = true;
+            if (_currentMenu == string.Empty) _currentMenu = "Main";
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
@@ -147,7 +92,7 @@ namespace WeaponCore
 
         internal void CloseWheel()
         {
-            Log.Line("Unlock mouse buttons and deactive wheel");
+            _currentMenu = string.Empty;
             WheelActive = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);

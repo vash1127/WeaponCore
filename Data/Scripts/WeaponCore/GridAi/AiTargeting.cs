@@ -26,7 +26,6 @@ namespace WeaponCore.Support
             if (targetType == TargetType.None && !w.OnlyTargetProj) AcquireOther(w, newTarget, out targetType);
             if (targetType == TargetType.None)
             {
-                Log.Line($"{w.System.WeaponName} - No Target");
                 newTarget.Reset();
                 w.LastTargetCheck = 1;
                 w.Target.Expired = true;
