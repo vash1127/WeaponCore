@@ -32,11 +32,14 @@ namespace WeaponCore.Platform
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
             
             bool canTrack;
+
             if (weapon == trackingWeapon)
             {
                 Vector3D currentVector;
                 Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
                 currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
+
+                Log.Line($"{weapon.System.WeaponName} - turret.Azimuth:{turret.Azimuth} turret.Elevation:{turret.Elevation}");
 
                 var up = cube.WorldMatrix.Up;
                 var left = Vector3D.Cross(up, currentVector);
@@ -52,14 +55,15 @@ namespace WeaponCore.Platform
 
                 var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
                 var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
-                var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
-                var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
+                var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+                var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 canTrack = !azConstrained && !elConstrained;
+                
             }
             else
                 canTrack = IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            //Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
+            Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
             var tracking = inRange && canTrack;
             return tracking;
             
@@ -116,7 +120,6 @@ namespace WeaponCore.Platform
             else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
             if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3D.Zero;
 
-            if (Vector3D.IsZero(targetLinVel, 5e-02)) targetLinVel = Vector3D.Zero;
 
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);

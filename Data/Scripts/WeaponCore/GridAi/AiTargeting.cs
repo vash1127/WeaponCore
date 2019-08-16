@@ -129,8 +129,6 @@ namespace WeaponCore.Support
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == ai.MyGrid)
                         continue;
 
-                    Log.Line("can shoot2");
-
                     var hitGrid = hitInfo.HitEntity as MyCubeGrid;
                     if (hitGrid != null)
                     {
