@@ -21,7 +21,7 @@ namespace WeaponCore.Support
 
             w.Comp.UpdatePivotPos(w);
 
-            if (pCount > 0 && !w.IgnoreProj) AcquireProjectile(w, newTarget, out targetType);
+            if (pCount > 0) AcquireProjectile(w, newTarget, out targetType);
             
             if (targetType == TargetType.None && !w.OnlyTargetProj) AcquireOther(w, newTarget, out targetType);
             if (targetType == TargetType.None)
@@ -221,6 +221,8 @@ namespace WeaponCore.Support
 
             foreach (var lp in ai.LiveProjectile)
             {
+                if (lp.MaxSpeed > w.MaxProjSpeed || lp.MaxSpeed <= 0) continue;
+
                 if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))
                 {
                     var needsCast = false;

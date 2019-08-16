@@ -93,9 +93,9 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal int TopTargets;
         [ProtoMember(2)] internal int TopBlocks;
-        [ProtoMember(3)] internal SubSystemDefinition SubSystems;
-        [ProtoMember(4)] internal bool onlyTargetProjectiles;
-        [ProtoMember(5)] internal bool IgnoreProjectiles;
+        [ProtoMember(3)] internal double MaxProjectileTargetSpeed;
+        [ProtoMember(4)] internal SubSystemDefinition SubSystems;
+        [ProtoMember(5)] internal bool onlyTargetProjectiles;
     }
 
     [ProtoContract]
