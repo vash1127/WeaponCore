@@ -115,7 +115,7 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (w.AiReady || comp.Gunner && (j == 0 && MouseButtonLeft || j == 1 && MouseButtonRight)) w.Shoot();
+                        if (w.AiReady || comp.Gunner && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)) w.Shoot();
                         else if (w.IsShooting)
                         {
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);
@@ -155,6 +155,7 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
                         if (!w.Enabled) continue;
+
                         if (!gunner)
                         {
                             if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
@@ -182,7 +183,7 @@ namespace WeaponCore
                         }
                         else
                         {
-                            if (MouseButtonPressed)
+                            if (Ui.MouseButtonPressed)
                             {
                                 var currentAmmo = comp.Gun.GunBase.CurrentAmmo;
                                 if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
@@ -201,7 +202,6 @@ namespace WeaponCore
                         w.SeekTarget = !gunner && w.Target.Expired && w.TrackTarget;
 
                         if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
-                        //if (gridAi.MyGrid.CubeBlocks.Count < 1000) Log.Line($"{w.System.WeaponName} - shooting:{w.IsShooting} - wAi:{w.AiReady} - Expired:{w.Target.Expired} - gAi:{gridAi.Ready} - Seek:{w.SeekTarget}");
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {

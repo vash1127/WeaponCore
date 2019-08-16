@@ -61,7 +61,7 @@ namespace WeaponCore.Platform
             else
                 canTrack = IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
+            //Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
             var tracking = inRange && canTrack;
             return tracking;
             

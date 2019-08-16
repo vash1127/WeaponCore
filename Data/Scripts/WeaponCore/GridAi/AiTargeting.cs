@@ -165,7 +165,6 @@ namespace WeaponCore.Support
             var physics = MyAPIGateway.Physics;
             var weaponPos = w.Comp.MyPivotPos;
 
-            Log.Line($"PivotPOS: {w.Comp.MyPivotPos}");
 
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
@@ -177,11 +176,7 @@ namespace WeaponCore.Support
 
                 if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
 
-                Log.Line($"Target Center: {targetCenter}");
-                    
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
-
-                
 
                 if (info.IsGrid)
                 {
@@ -190,8 +185,6 @@ namespace WeaponCore.Support
                     target.TransferTo(w.Target);
                     return;
                 }
-
-                Log.Line($"bad Place");
 
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;

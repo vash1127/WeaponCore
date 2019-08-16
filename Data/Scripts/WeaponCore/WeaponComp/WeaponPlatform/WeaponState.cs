@@ -9,7 +9,7 @@ namespace WeaponCore.Platform
     {
         public void PositionChanged(MyPositionComponentBase pComp)
         {
-            if(Comp.LastPivotUpdateTick != Session.Instance.Tick && !Target.Expired)
+            if (Comp.LastPivotUpdateTick != Session.Instance.Tick && !Target.Expired)
                 Comp.UpdatePivotPos(this);
 
             _posChangedTick = Session.Instance.Tick;

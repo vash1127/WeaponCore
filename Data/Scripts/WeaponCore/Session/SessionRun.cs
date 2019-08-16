@@ -26,6 +26,8 @@ namespace WeaponCore
         {
             try
             {
+                if (Ui.WheelActive) Ui.DrawWheel();
+
                 if (!DedicatedServer)
                 {
                     /*
@@ -80,6 +82,9 @@ namespace WeaponCore
                 }
                 */
                 Timings();
+
+                Ui.UpdateInput();
+
                 Projectiles.Update();
                 if (!Projectiles.Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
