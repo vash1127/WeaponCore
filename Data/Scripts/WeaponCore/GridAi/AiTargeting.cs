@@ -21,7 +21,7 @@ namespace WeaponCore.Support
 
             w.Comp.UpdatePivotPos(w);
 
-            if (pCount > 0) AcquireProjectile(w, newTarget, out targetType);
+            if (pCount > 0 && !w.IgnoreProj) AcquireProjectile(w, newTarget, out targetType);
             
             if (targetType == TargetType.None && !w.OnlyTargetProj) AcquireOther(w, newTarget, out targetType);
             if (targetType == TargetType.None)
@@ -39,8 +39,6 @@ namespace WeaponCore.Support
             var ai = p.T.Ai;
             var weaponPos = p.Position;
 
-            Log.Line($"Targets: {ai.SortedTargets.Count}");
-
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];
@@ -49,8 +47,6 @@ namespace WeaponCore.Support
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr) continue;
-
-                Log.Line($"isGrid: {info.IsGrid}");
 
                 if (info.IsGrid)
                 {

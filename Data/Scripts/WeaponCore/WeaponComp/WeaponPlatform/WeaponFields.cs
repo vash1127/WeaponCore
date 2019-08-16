@@ -106,6 +106,7 @@ namespace WeaponCore.Platform
         internal bool OrderedTargets;
         internal bool TargetWasExpired;
         internal bool OnlyTargetProj;
+        internal bool IgnoreProj;
         internal readonly List<string> FiringStrings = new List<string>()
         {
             "Firing0",
@@ -195,6 +196,7 @@ namespace WeaponCore.Platform
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;
             OnlyTargetProj = System.Values.Targeting.onlyTargetProjectiles;
+            IgnoreProj = System.Values.Targeting.IgnoreProjectiles;
             HSRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
             AimingTolerance = Math.Cos(MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance));
