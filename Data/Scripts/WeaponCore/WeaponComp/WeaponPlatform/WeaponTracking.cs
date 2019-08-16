@@ -39,8 +39,6 @@ namespace WeaponCore.Platform
                 Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
                 currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
 
-                Log.Line($"{weapon.System.WeaponName} - turret.Azimuth:{turret.Azimuth} turret.Elevation:{turret.Elevation}");
-
                 var up = cube.WorldMatrix.Up;
                 var left = Vector3D.Cross(up, currentVector);
                 if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
