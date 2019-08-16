@@ -2,13 +2,10 @@
 using System.Threading;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Input;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -26,11 +23,14 @@ namespace WeaponCore
 
         private void ProcessDbs()
         {
-            //MyAPIGateway.Parallel.For(0, DbsToUpdate.Count, x => DbsToUpdate[x].UpdateTargetDb(), 6);
+            MyAPIGateway.Parallel.For(0, DbsToUpdate.Count, x => DbsToUpdate[x].UpdateTargetDb(), 6);
+
+            /*
             foreach (var db in DbsToUpdate)
             {
                 db.UpdateTargetDb();
             }
+            */
             foreach (var db in DbsToUpdate)
             {
                 db.FinalizeTargetDb();

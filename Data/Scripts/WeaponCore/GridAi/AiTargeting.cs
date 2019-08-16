@@ -85,7 +85,7 @@ namespace WeaponCore.Support
                         {
                             if (bt != target.LastBlockType) target.Top5.Clear();
                             target.LastBlockType = bt;
-                            UtilsStatic.GetClosestHitableBlockOfType(subSystemList, target, weaponPos, w);
+                            GetClosestHitableBlockOfType(subSystemList, target, weaponPos, w);
                             if (target.Entity != null) return true;
                         }
                         else if (FindRandomBlock(system, ai, target, weaponPos, subSystemList, w)) return true;
@@ -280,6 +280,131 @@ namespace WeaponCore.Support
                 else Log.Line("not in view");
             }
             targetType = TargetType.None;
+        }
+
+        internal static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Target target, Vector3D currentPos, Weapon w = null)
+        {
+            var minValue = double.MaxValue;
+            var minValue0 = double.MaxValue;
+            var minValue1 = double.MaxValue;
+            var minValue2 = double.MaxValue;
+            var minValue3 = double.MaxValue;
+
+            MyCubeBlock newEntity = null;
+            MyCubeBlock newEntity0 = null;
+            MyCubeBlock newEntity1 = null;
+            MyCubeBlock newEntity2 = null;
+            MyCubeBlock newEntity3 = null;
+            var bestCubePos = Vector3D.Zero;
+            var top5Count = target.Top5.Count;
+            var testPos = currentPos;
+            var top5 = target.Top5;
+            var physics = MyAPIGateway.Physics;
+            IHitInfo hitInfo = null;
+            for (int i = 0; i < cubes.Count + top5Count; i++)
+            {
+                var index = i < top5Count ? i : i - top5Count;
+                var cube = i < top5Count ? top5[index] : cubes[index];
+                if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
+                var grid = cube.CubeGrid;
+                var cubePos = grid.GridIntegerToWorld(cube.Position);
+                var range = cubePos - testPos;
+                var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
+                if (test < minValue3)
+                {
+                    IHitInfo hit = null;
+                    var best = test < minValue;
+                    bool bestTest = false;
+                    if (best)
+                    {
+                        if (w != null)
+                        {
+                            Vector3D targetLinVel = grid.Physics?.LinearVelocity ?? Vector3D.Zero;
+                            bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                        }
+                        else bestTest = true;
+                    }
+                    if (best && bestTest)
+                    {
+                        minValue3 = minValue2;
+                        newEntity3 = newEntity2;
+                        minValue2 = minValue1;
+                        newEntity2 = newEntity1;
+                        minValue1 = minValue0;
+                        newEntity1 = newEntity0;
+                        minValue0 = minValue;
+                        newEntity0 = newEntity;
+                        minValue = test;
+
+                        newEntity = cube;
+                        bestCubePos = cubePos;
+                        hitInfo = hit;
+                    }
+                    else if (test < minValue0)
+                    {
+                        minValue3 = minValue2;
+                        newEntity3 = newEntity2;
+                        minValue2 = minValue1;
+                        newEntity2 = newEntity1;
+                        minValue1 = minValue0;
+                        newEntity1 = newEntity0;
+                        minValue0 = test;
+
+                        newEntity0 = cube;
+                    }
+                    else if (test < minValue1)
+                    {
+                        minValue3 = minValue2;
+                        newEntity3 = newEntity2;
+                        minValue2 = minValue1;
+                        newEntity2 = newEntity1;
+                        minValue1 = test;
+
+                        newEntity1 = cube;
+                    }
+                    else if (test < minValue2)
+                    {
+                        minValue3 = minValue2;
+                        newEntity3 = newEntity2;
+                        minValue2 = test;
+
+                        newEntity2 = cube;
+                    }
+                    else
+                    {
+                        minValue3 = test;
+                        newEntity3 = cube;
+                    }
+                }
+
+            }
+            top5.Clear();
+            if (newEntity != null && hitInfo != null)
+            {
+                double rayDist;
+                Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
+                var shortDist = rayDist * (1 - hitInfo.Fraction);
+                var origDist = rayDist * hitInfo.Fraction;
+                var topEntId = newEntity.GetTopMostParent().EntityId;
+                target.Set(newEntity, hitInfo.Position, shortDist, origDist, topEntId);
+                top5.Add(newEntity);
+            }
+            else if (newEntity != null)
+            {
+                double rayDist;
+                Vector3D.Distance(ref testPos, ref bestCubePos, out rayDist);
+                var shortDist = rayDist;
+                var origDist = rayDist;
+                var topEntId = newEntity.GetTopMostParent().EntityId;
+                target.Set(newEntity, bestCubePos, shortDist, origDist, topEntId);
+                top5.Add(newEntity);
+            }
+            else target.Reset();
+
+            if (newEntity0 != null) top5.Add(newEntity0);
+            if (newEntity1 != null) top5.Add(newEntity1);
+            if (newEntity2 != null) top5.Add(newEntity2);
+            if (newEntity3 != null) top5.Add(newEntity3);
         }
     }
 }
