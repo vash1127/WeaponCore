@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 
@@ -13,11 +15,11 @@ namespace WeaponCore
         private int _previousWheel;
         private int _currentWheel;
         internal bool WheelActive;
-
         internal bool MouseButtonPressed;
         internal bool MouseButtonLeft;
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
+        internal IMyHudNotification HudNotify;
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
 
         internal readonly MyStringId[] TargetItems =

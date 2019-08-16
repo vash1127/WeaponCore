@@ -1,8 +1,10 @@
 ﻿using System;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Screens.Helpers;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
@@ -41,6 +43,9 @@ namespace WeaponCore
             {
                 _previousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                 _currentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
+            
+                if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Selection Here]", 100, "White");
+                HudNotify.Show();
                 if (MouseButtonLeft) _currentMenu = "Targets";
                 if (MouseButtonRight) _currentMenu = "Main";
 
