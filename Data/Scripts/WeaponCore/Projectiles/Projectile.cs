@@ -352,6 +352,7 @@ namespace WeaponCore.Projectiles
             {
                 T.Target.Entity = null;
                 T.Target.Projectile = null;
+                T.Target.IsProjectile = false;
             }
 
             return reaquire;

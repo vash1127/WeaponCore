@@ -91,11 +91,21 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct TargetingDefinition
     {
+        public enum Threat
+        {
+            Projectiles,
+            Characters,
+            Grids,
+            Neutrals,
+            Meteors,
+            Other
+        }
+
         [ProtoMember(1)] internal int TopTargets;
         [ProtoMember(2)] internal int TopBlocks;
-        [ProtoMember(3)] internal double MaxProjectileTargetSpeed;
+        [ProtoMember(3)] internal double StopTrackingSpeed;
         [ProtoMember(4)] internal SubSystemDefinition SubSystems;
-        [ProtoMember(5)] internal bool onlyTargetProjectiles;
+        [ProtoMember(5)] internal Threat[] Threats;
     }
 
     [ProtoContract]
@@ -114,7 +124,7 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal BlockTypes[] Systems;
         [ProtoMember(2)] internal bool SubSystemPriority;
         [ProtoMember(3)] internal bool ClosestFirst;
-        [ProtoMember(4)] internal bool onlyTargetSubSystems;
+        [ProtoMember(4)] internal bool OnlyTargetSubSystems;
     }
 
     [ProtoContract]

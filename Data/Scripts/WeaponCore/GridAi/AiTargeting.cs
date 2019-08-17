@@ -21,9 +21,9 @@ namespace WeaponCore.Support
 
             w.Comp.UpdatePivotPos(w);
 
-            if (pCount > 0) AcquireProjectile(w, newTarget, out targetType);
+            if (pCount > 0 && w.System.TrackProjectile) AcquireProjectile(w, newTarget, out targetType);
             
-            if (targetType == TargetType.None && !w.OnlyTargetProj) AcquireOther(w, newTarget, out targetType);
+            if (targetType == TargetType.None && w.System.TrackOther) AcquireOther(w, newTarget, out targetType);
             if (targetType == TargetType.None)
             {
                 newTarget.Reset();
@@ -54,7 +54,6 @@ namespace WeaponCore.Support
                     if (!AcquireBlock(p.T.System, p.T.Ai, p.T.Target, info, weaponPos)) continue;
                     return true;
                 }
-
                 
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
@@ -96,7 +95,7 @@ namespace WeaponCore.Support
                         else if (FindRandomBlock(system, ai, target, weaponPos, subSystemList, w)) return true;
                     }
                 }
-                if (subSystems.onlyTargetSubSystems) return false;
+                if (subSystems.OnlyTargetSubSystems) return false;
             }
             if (FindRandomBlock(system, ai, target, weaponPos, info.TypeDict[Any], w)) return true;
             return false;
@@ -169,27 +168,32 @@ namespace WeaponCore.Support
             var ai = w.Comp.Ai;
             var physics = MyAPIGateway.Physics;
             var weaponPos = w.Comp.MyPivotPos;
-
-
+            var s = w.System;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 var info = ai.SortedTargets[i];
 
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene) continue;
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
 
                 var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
 
-                if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > w.System.MaxTrajectorySqr) continue;
+                if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > s.MaxTrajectorySqr) continue;
 
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
 
-                if (info.IsGrid)
+                if (info.IsGrid && s.TrackGrids)
                 {
-                    if (!AcquireBlock(w.System, w.Comp.Ai, target, info, weaponPos, w)) continue;
+                    if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
                     return;
                 }
+
+                var character = info.Target as IMyCharacter;
+                if (character != null && !s.TrackCharacters) continue;
+
+                var meteor = info.Target as IMyMeteor;
+                if (meteor != null && !s.TrackMeteors) continue;
 
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
@@ -218,10 +222,10 @@ namespace WeaponCore.Support
             var ai = w.Comp.Ai;
             var physics = MyAPIGateway.Physics;
             var weaponPos = w.Comp.MyPivotPos;
-
+            var s = w.System;
             foreach (var lp in ai.LiveProjectile)
             {
-                if (lp.MaxSpeed > w.MaxProjSpeed || lp.MaxSpeed <= 0) continue;
+                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
 
                 if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))
                 {

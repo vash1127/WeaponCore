@@ -33,7 +33,6 @@ namespace WeaponCore.Support
         public readonly bool FiringEmissive;
         public readonly bool TrackingEmissive;
         public readonly bool ReloadingEmissive;
-
         public readonly bool BarrelAxisRotation;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
@@ -59,12 +58,19 @@ namespace WeaponCore.Support
         public readonly bool OrderedTargets;
         public readonly bool SortBlocks;
         public readonly bool DegROF;
+        public readonly bool TrackProjectile;
+        public readonly bool TrackOther;
+        public readonly bool TrackGrids;
+        public readonly bool TrackCharacters;
+        public readonly bool TrackMeteors;
+        public readonly bool TrackNeutrals;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
         public readonly double AreaRadiusSmall;
         public readonly double AreaRadiusLarge;
         public readonly double DetonateRadiusSmall;
         public readonly double DetonateRadiusLarge;
+        public readonly double MaxTargetSpeed;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float ShotEnergyCost;
@@ -146,14 +152,14 @@ namespace WeaponCore.Support
             MaxTrajectory = values.Ammo.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
-
+            MaxTargetSpeed = values.Targeting.StopTrackingSpeed;
             Sound();
 
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales);
             Models(out ModelId);
             Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
             Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle);
-
+            Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
         }
 
@@ -176,6 +182,43 @@ namespace WeaponCore.Support
             }
             damageScaling = d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
             if (damageScaling) armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
+        }
+
+        private void Track(out bool trackProjectile, out bool trackGrids, out bool trackCharacters, out bool trackMeteors, out bool trackNeutrals, out bool trackOther)
+        {
+            trackProjectile = false;
+            trackGrids = false;
+            trackCharacters = false;
+            trackMeteors = false;
+            trackNeutrals = false;
+            trackOther = false;
+
+            var threats = Values.Targeting.Threats;
+            foreach (var threat in threats)
+            {
+                if (threat == TargetingDefinition.Threat.Projectiles)
+                    trackProjectile = true;
+                else if (threat == TargetingDefinition.Threat.Grids)
+                {
+                    trackGrids = true;
+                    trackOther = true;
+                }
+                else if (threat == TargetingDefinition.Threat.Characters)
+                {
+                    trackCharacters = true;
+                    trackOther = true;
+                }
+                else if (threat == TargetingDefinition.Threat.Meteors)
+                {
+                    trackMeteors = true;
+                    trackOther = true;
+                }
+                else if (threat == TargetingDefinition.Threat.Neutrals)
+                {
+                    trackNeutrals = true;
+                    trackOther = true;
+                }
+            }
         }
 
         private void Models(out int modelId)

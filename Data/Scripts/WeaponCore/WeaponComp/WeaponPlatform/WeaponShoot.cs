@@ -154,6 +154,7 @@ namespace WeaponCore.Platform
                             p.T.Ai = Comp.Ai;
                             p.T.Target.Entity = Target.Entity;
                             p.T.Target.Projectile = Target.Projectile;
+                            p.T.Target.IsProjectile = Target.Projectile != null;
                             p.T.Target.FiringCube = Comp.MyCube;
                             p.T.WeaponId = WeaponId;
                             p.T.MuzzleId = muzzle.MuzzleId;
@@ -225,6 +226,7 @@ namespace WeaponCore.Platform
             p.T.Ai = Comp.Ai;
             p.T.Target.Entity = Target.Entity;
             p.T.Target.Projectile = Target.Projectile;
+            p.T.Target.IsProjectile = Target.Projectile != null;
             p.T.Target.FiringCube = Comp.MyCube;
 
             p.T.DamageFrame = DamageFrame;

@@ -86,7 +86,6 @@ namespace WeaponCore.Platform
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
         internal float RequiredPower => (System.EnergyAmmo || System.IsHybrid) ? ((System.ShotEnergyCost * (System.Values.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel : 0;
-        internal double MaxProjSpeed;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -106,7 +105,6 @@ namespace WeaponCore.Platform
         internal bool Enabled;
         internal bool OrderedTargets;
         internal bool TargetWasExpired;
-        internal bool OnlyTargetProj;
         internal readonly List<string> FiringStrings = new List<string>()
         {
             "Firing0",
@@ -195,8 +193,6 @@ namespace WeaponCore.Platform
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;
-            OnlyTargetProj = System.Values.Targeting.onlyTargetProjectiles;
-            MaxProjSpeed = System.Values.Targeting.MaxProjectileTargetSpeed;
             HSRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
             AimingTolerance = Math.Cos(MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance));

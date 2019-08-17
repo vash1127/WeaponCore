@@ -113,28 +113,25 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     p.LastPosition = p.Position;
-                    var projectile = p.T.Target.Projectile != null;
-                    var validProjectile = projectile && p.T.Ai.LiveProjectile.Contains(p.T.Target.Projectile);
-                    if (projectile && !validProjectile)
-                    {
-                        p.T.Target.Projectile = null;
-                        validProjectile = false;
-                    }
+                    var isProjectile = p.T.Target.IsProjectile;
+                    if (isProjectile && !p.T.Ai.LiveProjectile.Contains(p.T.Target.Projectile))
+                        p.T.Target.Reset();
+
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
                     {
                         Vector3D newVel;
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
-                            var newChase = p.Age - p.ChaseAge > p.MaxChaseAge || p.PickTarget && p.EndChase();
-                            var myCube = p.T.Target.Entity as MyCubeBlock;
+                            var newChase = p.Age - p.ChaseAge > p.MaxChaseAge || p.PickTarget;
+                            var validTarget = isProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
 
-                            if (newChase || validProjectile || myCube != null && !myCube.MarkedForClose || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
+                            if (newChase && p.EndChase() || validTarget || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
-                                Vector3D targetPos;
-                                if (validProjectile) targetPos = p.T.Target.Projectile.Position;
+                                var targetPos = Vector3D.Zero;
+                                if (isProjectile) targetPos = p.T.Target.Projectile.Position;
                                 else if (p.T.Target.Entity != null) targetPos = p.T.Target.Entity.PositionComp.WorldAABB.Center;
-                                else targetPos = Vector3D.Zero;
+
                                 if (p.T.System.TargetOffSet)
                                 {
                                     if (p.Age - p.LastOffsetTime > 300)
@@ -149,14 +146,13 @@ namespace WeaponCore.Projectiles
 
                                 var physics = p.T.Target.Entity?.Physics ?? p.T.Target.Entity?.Parent?.Physics;
 
-                                if (!validProjectile && (physics == null || targetPos == Vector3D.Zero))
+                                if (!isProjectile && (physics == null || targetPos == Vector3D.Zero))
                                     p.PrevTargetPos = p.PredictedTargetPos;
                                 else p.PrevTargetPos = targetPos;
 
-                                Vector3 tVel;
-                                if (validProjectile) tVel = p.T.Target.Projectile.Velocity;
+                                var tVel = Vector3.Zero;
+                                if (isProjectile) tVel = p.T.Target.Projectile.Velocity;
                                 else if (physics != null) tVel = physics.LinearVelocity;
-                                else tVel = Vector3.Zero;
 
                                 p.PrevTargetVel = tVel;
                             }
@@ -230,7 +226,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    if (!validProjectile)
+                    if (!isProjectile)
                     {
                         if (!p.T.System.VirtualBeams || p.T.MuzzleId == -1)
                         {

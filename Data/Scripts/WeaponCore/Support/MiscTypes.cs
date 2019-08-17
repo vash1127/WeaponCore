@@ -142,11 +142,10 @@ namespace WeaponCore.Support
     internal class Target
     {
         internal volatile bool Expired;
-
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
         internal Projectile Projectile;
-        internal readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
+        internal bool IsProjectile;
         internal int[] Deck = new int[0];
         internal int PrevDeckLength;
         internal SubSystemDefinition.BlockTypes LastBlockType;
@@ -154,6 +153,7 @@ namespace WeaponCore.Support
         internal double HitShortDist;
         internal double OrigDistance;
         internal long TopEntityId;
+        internal readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
 
         internal Target(MyCubeBlock firingCube = null)
         {
@@ -164,6 +164,7 @@ namespace WeaponCore.Support
         {
             target.Entity = Entity;
             target.Projectile = Projectile;
+            target.IsProjectile = IsProjectile;
             target.HitPos = HitPos;
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
@@ -176,6 +177,7 @@ namespace WeaponCore.Support
         {
             Entity = ent;
             Projectile = projectile;
+            IsProjectile = projectile != null;
             HitPos = pos;
             HitShortDist = shortDist;
             OrigDistance = origDist;
@@ -187,6 +189,7 @@ namespace WeaponCore.Support
         {
             Entity = null;
             Projectile = null;
+            IsProjectile = false;
             HitPos = Vector3D.Zero;
             HitShortDist = 0;
             OrigDistance = 0;
