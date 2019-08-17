@@ -20,7 +20,7 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
 
             w.Comp.UpdatePivotPos(w);
-            if (pCount > 0 && w.System.TrackProjectile) AcquireProjectile(w, newTarget, out targetType);
+            if (pCount > 0 && w.System.TrackProjectile) AcquireProjectile(w, newTarget, w.Comp.Ai.SortProjetiles, out targetType);
             
             if (targetType == TargetType.None && w.System.TrackOther) AcquireOther(w, newTarget, out targetType);
             if (targetType == TargetType.None)
@@ -215,13 +215,19 @@ namespace WeaponCore.Support
             targetType = TargetType.None;
         }
 
-        private static void AcquireProjectile(Weapon w, Target target, out TargetType targetType)
+        private static void AcquireProjectile(Weapon w, Target target, List<Projectile> sortProjectiles, out TargetType targetType)
         {
             var ai = w.Comp.Ai;
             var physics = MyAPIGateway.Physics;
-            var weaponPos = w.Comp.MyPivotPos;
             var s = w.System;
+
+            sortProjectiles.Clear();
             foreach (var lp in ai.LiveProjectile)
+                if (lp.MaxSpeed < s.MaxTargetSpeed) sortProjectiles.Add(lp);
+
+            var weaponPos = w.Comp.MyPivotPos;
+            sortProjectiles.Sort((a, b) => Vector3D.DistanceSquared(a.Position, weaponPos).CompareTo(Vector3D.DistanceSquared(b.Position, weaponPos)));
+            foreach (var lp in sortProjectiles)
             {
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
                 if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))

@@ -103,27 +103,24 @@ namespace WeaponCore.Support
                 return false;
             _dictionary.Add(item, _index);
             _list.Add(item);
-            _index++;
             return true;
         }
 
         /// <summary>O(1)</summary>
         public bool Remove(T item)
         {
-            if (!_dictionary.ContainsKey(item)) return false;
-
-            var oldIndex = _dictionary[item];
-            _dictionary.Remove(item);
-            if (_index != oldIndex)
+            int oldPos;
+            if (_dictionary.TryGetValue(item, out oldPos))
             {
-                _list[oldIndex - 1] = _list[_index - 1];
-                _list.RemoveAt(_index - 1);
+                _dictionary.Remove(item);
+
+                int lastPos = _list.Count - 1;
+                _list[oldPos] = _list[lastPos];
+                _list.RemoveAt(lastPos);
+                _dictionary[_list[oldPos]] = oldPos;
+                return true;
             }
-            else _list.RemoveAt(_index - 1);
-
-            _index--;
-
-            return true;
+            return false;
         }
 
         public void Clear()
