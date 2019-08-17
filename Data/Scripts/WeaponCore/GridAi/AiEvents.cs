@@ -42,7 +42,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                //if (SubTick < MySession.Tick + 10) SubGridInfo();
             }
             catch (Exception ex) { Log.Line($"Exception in Controller BlockAdded: {ex}"); }
         }
@@ -51,7 +50,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                //if (SubTick < MySession.Tick + 10) SubGridInfo();
             }
             catch (Exception ex) { Log.Line($"Exception in Controller BlockRemoved: {ex}"); }
         }
@@ -98,9 +96,9 @@ namespace WeaponCore.Support
 
         private void SourceOutputChanged(MyDefinitionId changedResourceId, float oldOutput, MyResourceSourceComponent source)
         {
-            if (ResetPowerTick != MySession.Tick && oldOutput > source.CurrentOutput) {
+            if (ResetPowerTick != Session.Instance.Tick && oldOutput > source.CurrentOutput) {
                 UpdatePowerSources = true;
-                ResetPowerTick = MySession.Tick;
+                ResetPowerTick = Session.Instance.Tick;
             }
         }
     }

@@ -18,7 +18,7 @@ namespace WeaponCore
         internal void ProcessHits()
         {
             Projectile p;
-            while (Projectiles.Hits.TryDequeue(out p))
+            while (Hits.TryDequeue(out p))
             {
                 var t = p.T;
                 var maxObjects = t.System.MaxObjectsHit;

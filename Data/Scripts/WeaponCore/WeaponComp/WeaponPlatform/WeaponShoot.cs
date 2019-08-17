@@ -16,7 +16,7 @@ namespace WeaponCore.Platform
     {
         internal void Shoot()
         {
-            var session = Comp.Ai.MySession;
+            var session = Session.Instance;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
             //if (Comp.Charging) return;
@@ -35,8 +35,7 @@ namespace WeaponCore.Platform
                 _lastShotTick = tick;
             }
 
-            //ChangeEmissiveState(Emissives.Firing, true);
-            if (AvCapable && (!PlayTurretAv || Comp.Ai.MySession.Tick60))
+            if (AvCapable && (!PlayTurretAv || session.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointSoundMaxDistSqr;
 
             if (System.BarrelAxisRotation) MovePart(-1 * bps);
@@ -126,7 +125,7 @@ namespace WeaponCore.Platform
                         {
                             MyEntity e = null;
                             Trajectile t;
-                            Comp.Ai.MySession.Projectiles.TrajectilePool[session.ProCounter].AllocateOrCreate(out t);
+                            session.Projectiles.TrajectilePool[session.ProCounter].AllocateOrCreate(out t);
                             if (System.ModelId != -1)
                             {
                                 MyEntity ent;
@@ -219,9 +218,9 @@ namespace WeaponCore.Platform
 
         private Projectile CreateVirtualProjectile()
         {
-
+            var session = Session.Instance;
             Projectile p;
-            Comp.Ai.MySession.Projectiles.ProjectilePool[Comp.Ai.MySession.ProCounter].AllocateOrCreate(out p);
+            session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out p);
             p.T.System = System;
             p.T.Ai = Comp.Ai;
             p.T.Target.Entity = Target.Entity;
@@ -249,7 +248,7 @@ namespace WeaponCore.Platform
 
         private void ShootRayCheck()
         {
-            Comp.LastRayCastTick = Comp.Ai.MySession.Tick;
+            Comp.LastRayCastTick = Session.Instance.Tick;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (Target.Projectile != null)
             {
@@ -321,7 +320,6 @@ namespace WeaponCore.Platform
                 var grid = parentAsGrid ?? rootAsGrid;
                 if (grid == Comp.MyGrid)
                 {
-                    //Session.Instance.RayCheckLines.Add(new LineD(Comp.MyPivotPos, hitInfo.Position), Comp.Ai.MySession.Tick, true);
                     masterWeapon.Target.Expired = true;
                     if (masterWeapon != this) Target.Expired = true;
                     Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");

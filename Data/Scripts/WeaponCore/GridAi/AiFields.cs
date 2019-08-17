@@ -43,7 +43,6 @@ namespace WeaponCore.Support
 
         internal MyResourceDistributorComponent MyResourceDist;
         internal MyGridTargeting Targeting { get; set; }
-        internal Session MySession;
         internal DSUtils DsWatch = new DSUtils();
         internal uint SubTick;
         internal uint TargetsUpdatedTick;
@@ -86,10 +85,9 @@ namespace WeaponCore.Support
         internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
 
-        internal GridAi(MyCubeGrid grid, Session mySession)
+        internal GridAi(MyCubeGrid grid)
         {
             MyGrid = grid;
-            MySession = mySession;
             RegisterMyGridEvents(true, grid);
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
 

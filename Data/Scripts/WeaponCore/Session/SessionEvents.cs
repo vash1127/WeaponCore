@@ -23,7 +23,7 @@ namespace WeaponCore
                     GridAi gridAi;
                     if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                     {
-                        gridAi = new GridAi(cube.CubeGrid, this);
+                        gridAi = new GridAi(cube.CubeGrid);
                         GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                     }
                     var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);

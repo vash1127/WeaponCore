@@ -9,6 +9,7 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -45,6 +46,7 @@ namespace WeaponCore
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
+        internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
 
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {

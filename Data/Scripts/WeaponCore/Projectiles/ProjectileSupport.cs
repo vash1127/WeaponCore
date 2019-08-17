@@ -37,10 +37,10 @@ namespace WeaponCore.Projectiles
                 hitEntity.Hit = false;
                 hitEntity.HitPos = p.Position;
                 p.T.HitList.Add(hitEntity);
-                Hits.Enqueue(p);
+                Session.Instance.Hits.Enqueue(p);
             }
             else if (Session.Instance.IsServer && count > 0)
-                Hits.Enqueue(p);
+                Session.Instance.Hits.Enqueue(p);
         }
 
         internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList, int poolId, bool quickCheck = false)

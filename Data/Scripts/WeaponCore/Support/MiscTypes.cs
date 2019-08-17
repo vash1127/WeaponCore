@@ -7,7 +7,6 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
-using WeaponCore.Projectiles;
 using static WeaponCore.Support.HitEntity.Type;
 using Projectile = WeaponCore.Projectiles.Projectile;
 
@@ -212,7 +211,7 @@ namespace WeaponCore.Support
         {
             var ai = w.Comp.Ai;
             var weaponPos = w.Comp.MyPivotPos;
-            if (w.Comp.Ai.MySession.Tick != Tick)
+            if (Session.Instance.Tick != Tick)
             {
                 SortProjetiles.Clear();
                 foreach (var lp in ai.LiveProjectile) if (lp.MaxSpeed < w.System.MaxTargetSpeed) SortProjetiles.Add(lp);

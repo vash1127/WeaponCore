@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -19,7 +18,7 @@ namespace WeaponCore.Support
         {
             if (!UpdateOwner() || Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
             Session.Instance.DbsToUpdate.Add(this);
-            TargetsUpdatedTick = MySession.Tick;
+            TargetsUpdatedTick = Session.Instance.Tick;
         }
 
         private bool UpdateOwner()

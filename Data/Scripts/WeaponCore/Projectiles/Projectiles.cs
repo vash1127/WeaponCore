@@ -15,7 +15,6 @@ namespace WeaponCore.Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int PoolCount = 16;
-        internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
 
         internal readonly MyConcurrentPool<Fragments>[] ShrapnelPool = new MyConcurrentPool<Fragments>[PoolCount];
         internal readonly MyConcurrentPool<Fragment>[] FragmentPool = new MyConcurrentPool<Fragment>[PoolCount];
@@ -40,10 +39,10 @@ namespace WeaponCore.Projectiles
                 ShrapnelPool[i] = new MyConcurrentPool<Fragments>(25);
                 FragmentPool[i] = new MyConcurrentPool<Fragment>(100);
                 CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(50);
-                ProjectilePool[i] = new ObjectsPool<Projectile>(1250);
-                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(250);
-                DrawProjectiles[i] = new List<Trajectile>(500);
-                TrajectilePool[i] = new ObjectsPool<Trajectile>(500);
+                ProjectilePool[i] = new ObjectsPool<Projectile>(100);
+                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(50);
+                DrawProjectiles[i] = new List<Trajectile>(100);
+                TrajectilePool[i] = new ObjectsPool<Trajectile>(100);
             }
         }
 
@@ -378,14 +377,14 @@ namespace WeaponCore.Projectiles
             }
 
             p.Colliding = true;
-            if (!p.T.System.VirtualBeams) Hits.Enqueue(p);
+            if (!p.T.System.VirtualBeams) Session.Instance.Hits.Enqueue(p);
             else
             {
                 p.T.WeaponCache.VirtualHit = true;
                 p.T.WeaponCache.HitEntity.Entity = hitEntity.Entity;
                 p.T.WeaponCache.HitEntity.HitPos = hitEntity.HitPos;
                 if (hitEntity.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = hitEntity.Blocks[0];
-                Hits.Enqueue(p);
+                Session.Instance.Hits.Enqueue(p);
                 CreateFakeBeams(p, hitEntity, drawList);
             }
             if (p.EnableAv) p.HitEffects();

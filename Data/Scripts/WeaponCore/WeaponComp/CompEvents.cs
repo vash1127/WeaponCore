@@ -125,17 +125,17 @@ namespace WeaponCore.Support
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
             var currentInput = sink.CurrentInputByType(changedResourceTypeId);
-
-            if (Ai.ResetPower && Ai.MySession.Tick != LastUpdateTick && currentInput < CurrentSinkPowerRequested)
+            var tick = Session.Instance.Tick;
+            if (Ai.ResetPower && tick != LastUpdateTick && currentInput < CurrentSinkPowerRequested)
             {
-                if (Ai.ResetPowerTick != Ai.MySession.Tick) {
+                if (Ai.ResetPowerTick != tick) {
                     Ai.CurrentWeaponsDraw = 0;
-                    Ai.ResetPowerTick = Ai.MySession.Tick;
-                    Ai.RecalcLowPowerTick = Ai.MySession.Tick + 20;
+                    Ai.ResetPowerTick = tick;
+                    Ai.RecalcLowPowerTick = tick + 20;
                     Ai.UpdatePowerSources = true;
                     
                 }
-                LastUpdateTick = Ai.MySession.Tick;
+                LastUpdateTick = tick;
                 Ai.CurrentWeaponsDraw += currentInput;
                 //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
             }

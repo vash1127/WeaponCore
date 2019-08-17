@@ -158,7 +158,7 @@ namespace WeaponCore.Platform
             else
                 Comp.MaxRequiredPower += comp.IdlePower;
 
-            AvCapable = System.HasBarrelShootAv && !Comp.Ai.MySession.DedicatedServer;
+            AvCapable = System.HasBarrelShootAv && !Session.Instance.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {

@@ -86,7 +86,7 @@ namespace WeaponCore
                 Ui.UpdateInput();
 
                 Projectiles.Update();
-                if (!Projectiles.Hits.IsEmpty) ProcessHits();
+                if (!Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
                 AiLoop();
                 UpdateWeaponPlatforms();
