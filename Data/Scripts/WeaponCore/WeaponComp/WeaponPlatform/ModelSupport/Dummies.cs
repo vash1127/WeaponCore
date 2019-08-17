@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.ModAPI;
 using VRageMath;
 
 namespace WeaponCore.Support
 {
-    // Courtesy Equinox
+    // Courtesy of Equinox
     public class Dummy
     {
         private readonly MyEntity _entity;
@@ -20,8 +19,6 @@ namespace WeaponCore.Support
         private readonly Dictionary<string, IMyModelDummy> _tmp2 = new Dictionary<string, IMyModelDummy>();
         private readonly bool _isSubPart;
 
-        internal MatrixD CachedMatrix;
-
         public Dummy(MyEntity e, params string[] path)
         {
             _entity = e;
@@ -32,7 +29,6 @@ namespace WeaponCore.Support
         private bool _failed = true;
         private void Update()
         {
-            //if (!_isSubPart) return;
             _cachedModel = _entity.Model;
             _cachedSubpart = _entity;
             _cachedSubpartModel = _cachedSubpart?.Model;
@@ -64,51 +60,12 @@ namespace WeaponCore.Support
             _failed = true;
         }
 
-
-        public Vector3D WorldPosition
-        {
-            get
-            {
-                if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update(); 
-                return Vector3D.Transform(_cachedDummyMatrix?.Translation ?? Vector3.Zero,
-                    _cachedSubpart?.WorldMatrix ?? _entity.WorldMatrix);
-            }
-        }
-
-        public MatrixD WorldMatrix
-        {
-            get
-            {
-                if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
-                CachedMatrix = (_cachedDummyMatrix ?? MatrixD.Identity) * (_cachedSubpart?.WorldMatrix ?? _entity.WorldMatrix);
-                return CachedMatrix;
-            }
-        }
-
-        public void GetInfo(out Vector3D pos, out Vector3D dir)
-        {
-            if (!_isSubPart)
-            {
-                pos = _entity.PositionComp.WorldMatrix.Translation;
-                dir = _entity.PositionComp.WorldMatrix.Forward;
-                return;
-            }
-            if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart.Model)) Update();
-            var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
-            pos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
-            dir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
-        }
-
         public DummyInfo Info
         {
             get
             {
-                if (!_isSubPart)
-                {
-                    var blockPos = _entity.PositionComp.WorldMatrix.Translation;
-                    var blockDir = _entity.PositionComp.WorldMatrix.Forward;
-                    return new DummyInfo { Position = blockPos, Direction = blockDir };
-                }
+                //if (!_isSubPart)
+                    //return new DummyInfo { Position = _entity.PositionComp.WorldMatrix.Translation, Direction = _entity.PositionComp.WorldMatrix.Forward };
 
                 if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart.Model)) Update();
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
