@@ -31,12 +31,6 @@ namespace WeaponCore.Support
                             continue;
                         case MyRelationsBetweenPlayerAndBlock.FactionShare:
                             continue;
-                        case MyRelationsBetweenPlayerAndBlock.NoOwnership:
-                            if (!TargetNoOwners) continue;
-                            break;
-                        case MyRelationsBetweenPlayerAndBlock.Neutral:
-                            if (!TargetNeutrals) continue;
-                            break;
                     }
                     var grid = ent as MyCubeGrid;
                     if (grid != null)

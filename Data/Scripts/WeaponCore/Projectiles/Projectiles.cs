@@ -125,7 +125,8 @@ namespace WeaponCore.Projectiles
                         Vector3D newVel;
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                         {
-                            var newChase = p.Age - p.ChaseAge > p.MaxChaseAge || p.PickTarget;
+                            var giveUpChase = p.Age - p.ChaseAge > p.MaxChaseAge;
+                            var newChase = giveUpChase || p.PickTarget;
                             var validTarget = isProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
 
                             if (newChase && p.EndChase() || validTarget || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
@@ -224,6 +225,7 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
+                            Log.Line($"projectile ran out of juice, traveled:{(p.DistanceTraveled)}");
                             Die(p, i);
                             continue;
                         }

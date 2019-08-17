@@ -29,49 +29,6 @@ namespace WeaponCore.Support
             }
         }
 
-        internal static bool ReacquireTarget(Projectile p)
-        {
-            p.ChaseAge = p.Age;
-            var physics = MyAPIGateway.Physics;
-            var ai = p.T.Ai;
-            var weaponPos = p.Position;
-
-            for (int i = 0; i < ai.SortedTargets.Count; i++)
-            {
-                var info = ai.SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene) continue;
-
-                var targetPos = info.Target.PositionComp.WorldAABB.Center;
-
-                if (Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr) continue;
-
-                if (info.IsGrid)
-                {
-                    
-                    if (!AcquireBlock(p.T.System, p.T.Ai, p.T.Target, info, weaponPos)) continue;
-                    return true;
-                }
-                
-                IHitInfo hitInfo;
-                physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
-                if (hitInfo?.HitEntity == info.Target)
-                {
-                    Log.Line($"{p.T.System.WeaponName} - found something");
-
-                    double rayDist;
-                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
-                    var shortDist = rayDist * (1 - hitInfo.Fraction);
-                    var origDist = rayDist * hitInfo.Fraction;
-                    var topEntId = info.Target.GetTopMostParent().EntityId;
-                    p.T.Target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
-                    return true;
-                }
-            }
-            //Log.Line($"{p.T.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
-            p.T.Target.Reset();
-            return false;
-        }
-
         private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)
         {
             if (system.TargetSubSystems)
@@ -160,6 +117,58 @@ namespace WeaponCore.Support
             return false;
         }
 
+        internal static bool ReacquireTarget(Projectile p)
+        {
+            p.ChaseAge = p.Age;
+            var physics = MyAPIGateway.Physics;
+            var s = p.T.System;
+            var ai = p.T.Ai;
+            var weaponPos = p.Position;
+
+            for (int i = 0; i < ai.SortedTargets.Count; i++)
+            {
+                var info = ai.SortedTargets[i];
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
+
+                var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
+
+                var targetPos = info.Target.PositionComp.WorldAABB.Center;
+
+                if (Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr) continue;
+
+                if (info.IsGrid && s.TrackGrids)
+                {
+                    if (!AcquireBlock(p.T.System, p.T.Ai, p.T.Target, info, weaponPos)) continue;
+                    return true;
+                }
+
+                var character = info.Target as IMyCharacter;
+                if (character != null && !s.TrackCharacters) continue;
+
+                var meteor = info.Target as IMyMeteor;
+                if (meteor != null && !s.TrackMeteors) continue;
+
+                IHitInfo hitInfo;
+                physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
+                if (hitInfo?.HitEntity == info.Target)
+                {
+                    Log.Line($"{p.T.System.WeaponName} - found something");
+
+                    double rayDist;
+                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                    var shortDist = rayDist * (1 - hitInfo.Fraction);
+                    var origDist = rayDist * hitInfo.Fraction;
+                    var topEntId = info.Target.GetTopMostParent().EntityId;
+                    p.T.Target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
+                    return true;
+                }
+            }
+            //Log.Line($"{p.T.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
+            p.T.Target.Reset();
+            return false;
+        }
+
         private static void AcquireOther(Weapon w, out TargetType targetType)
         {
             var ai = w.Comp.Ai;
@@ -176,7 +185,7 @@ namespace WeaponCore.Support
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
 
-                var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
+                var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > s.MaxTrajectorySqr) continue;
 
@@ -189,11 +198,12 @@ namespace WeaponCore.Support
                     target.TransferTo(w.Target);
                     return;
                 }
+
+                var meteor = info.Target as MyMeteor;
+                if (meteor != null && !s.TrackMeteors) continue;
+
                 var character = info.Target as IMyCharacter;
                 if (character != null && !s.TrackCharacters) continue;
-
-                var meteor = info.Target as IMyMeteor;
-                if (meteor != null && !s.TrackMeteors) continue;
 
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
