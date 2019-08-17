@@ -21,7 +21,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal MyEntity Entity;
         internal HitEntity HitEntity;
-        internal WeaponDamageFrame DamageFrame;
+        internal WeaponFrameCache WeaponCache;
         internal MatrixD EntityMatrix = MatrixD.Identity;
         internal Vector3D Position;
         internal Vector3D PrevPosition;
@@ -198,12 +198,27 @@ namespace WeaponCore.Support
         }
     }
 
-    internal class WeaponDamageFrame
+    internal class WeaponFrameCache
     {
         internal bool VirtualHit;
         internal int Hits;
+        internal uint Tick;
         internal HitEntity HitEntity = new HitEntity();
         internal IMySlimBlock HitBlock;
+
+        internal readonly List<Projectile> SortProjetiles = new List<Projectile>();
+
+        internal void SortProjectiles(Weapon w)
+        {
+            var ai = w.Comp.Ai;
+            var weaponPos = w.Comp.MyPivotPos;
+            if (w.Comp.Ai.MySession.Tick != Tick)
+            {
+                SortProjetiles.Clear();
+                foreach (var lp in ai.LiveProjectile) if (lp.MaxSpeed < w.System.MaxTargetSpeed) SortProjetiles.Add(lp);
+                SortProjetiles.Sort((a, b) => Vector3D.DistanceSquared(a.Position, weaponPos).CompareTo(Vector3D.DistanceSquared(b.Position, weaponPos)));
+            }
+        }
     }
 
     internal class Fragments

@@ -37,7 +37,6 @@ namespace WeaponCore.Support
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
-        internal readonly List<Projectile> SortProjetiles = new List<Projectile>();
 
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal List<TargetInfo> SortedTargets = new List<TargetInfo>();

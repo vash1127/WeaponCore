@@ -229,11 +229,11 @@ namespace WeaponCore.Platform
             p.T.Target.IsProjectile = Target.Projectile != null;
             p.T.Target.FiringCube = Comp.MyCube;
 
-            p.T.DamageFrame = DamageFrame;
+            p.T.WeaponCache = WeaponCache;
 
-            DamageFrame.VirtualHit = false;
-            DamageFrame.Hits = 0;
-            DamageFrame.HitEntity.Entity = null;
+            WeaponCache.VirtualHit = false;
+            WeaponCache.Hits = 0;
+            WeaponCache.HitEntity.Entity = null;
             p.T.WeaponId = WeaponId;
             p.T.MuzzleId = -1;
 

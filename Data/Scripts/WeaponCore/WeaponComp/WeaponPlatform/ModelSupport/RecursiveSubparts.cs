@@ -16,10 +16,10 @@ namespace WeaponCore.Support
         private readonly List<IMyEntity> _subparts = new List<IMyEntity>();
         private readonly Dictionary<string, IMyModelDummy> _tmp = new Dictionary<string, IMyModelDummy>();
         //public readonly Dictionary<IMyEntity, string> EntityToName = new Dictionary<IMyEntity, string>();
-        public readonly Dictionary<string, IMyEntity> NameToEntity = new Dictionary<string, IMyEntity>();
+        public readonly Dictionary<string, MyEntity> NameToEntity = new Dictionary<string, MyEntity>();
 
         private IMyModel _trackedModel;
-        public IMyEntity Entity { get; set; }
+        public MyEntity Entity { get; set; }
 
         // not thread safe.
         public void CheckSubparts()

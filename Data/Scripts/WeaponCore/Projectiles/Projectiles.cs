@@ -118,6 +118,7 @@ namespace WeaponCore.Projectiles
                     {
                         p.T.Target.Reset();
                         isProjectile = false;
+                        Log.Line("Test");
                     }
 
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
@@ -249,9 +250,9 @@ namespace WeaponCore.Projectiles
                                 continue;
                             }
                         }
-                        else if (p.T.DamageFrame.VirtualHit && p.T.DamageFrame.HitEntity != null)
+                        else if (p.T.WeaponCache.VirtualHit && p.T.WeaponCache.HitEntity != null)
                         {
-                            Intersected(p, drawList, p.T.DamageFrame.HitEntity);
+                            Intersected(p, drawList, p.T.WeaponCache.HitEntity);
                             continue;
                         }
                     }
@@ -380,10 +381,10 @@ namespace WeaponCore.Projectiles
             if (!p.T.System.VirtualBeams) Hits.Enqueue(p);
             else
             {
-                p.T.DamageFrame.VirtualHit = true;
-                p.T.DamageFrame.HitEntity.Entity = hitEntity.Entity;
-                p.T.DamageFrame.HitEntity.HitPos = hitEntity.HitPos;
-                if (hitEntity.Entity is MyCubeGrid) p.T.DamageFrame.HitBlock = hitEntity.Blocks[0];
+                p.T.WeaponCache.VirtualHit = true;
+                p.T.WeaponCache.HitEntity.Entity = hitEntity.Entity;
+                p.T.WeaponCache.HitEntity.HitPos = hitEntity.HitPos;
+                if (hitEntity.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = hitEntity.Blocks[0];
                 Hits.Enqueue(p);
                 CreateFakeBeams(p, hitEntity, drawList);
             }
@@ -415,7 +416,7 @@ namespace WeaponCore.Projectiles
                     var line = new LineD(vt.PrevPosition, beamEnd);
                     if (!miss)
                     {
-                        var hitBlock = p.T.DamageFrame.HitBlock;
+                        var hitBlock = p.T.WeaponCache.HitBlock;
                         Vector3D center;
                         hitBlock.ComputeWorldCenter(out center);
 
@@ -434,7 +435,7 @@ namespace WeaponCore.Projectiles
                 }
                 vt.Complete(hitEntity, true);
                 drawList.Add(vt);
-                p.T.DamageFrame.Hits++;
+                p.T.WeaponCache.Hits++;
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Game.Entities;
+using VRage.Game.Entity;
 using VRage.ModAPI;
 using WeaponCore.Support;
 
@@ -17,12 +18,12 @@ namespace WeaponCore.Platform
             Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
             var partCount = Structure.PartNames.Length;
             Weapons = new Weapon[partCount];
-            Parts.Entity = comp.Entity;
+            Parts.Entity = comp.Entity as MyEntity;
             Parts.CheckSubparts();
             for (int i = 0; i < partCount; i++)
             {
                 var barrelCount = Structure.WeaponSystems[Structure.PartNames[i]].Barrels.Length;
-                IMyEntity partEntity;
+                MyEntity partEntity;
                 Parts.NameToEntity.TryGetValue(Structure.PartNames[i].String, out partEntity);
                 Weapons[i] = new Weapon(partEntity, Structure.WeaponSystems[Structure.PartNames[i]], i, comp)
                 {

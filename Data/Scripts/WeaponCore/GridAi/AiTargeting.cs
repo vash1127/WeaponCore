@@ -16,16 +16,14 @@ namespace WeaponCore.Support
         {
             w.LastTargetCheck = 0;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
-            var newTarget = w.NewTarget;
             var targetType = TargetType.None;
 
             w.Comp.UpdatePivotPos(w);
-            if (pCount > 0 && w.System.TrackProjectile) AcquireProjectile(w, newTarget, w.Comp.Ai.SortProjetiles, out targetType);
-            
-            if (targetType == TargetType.None && w.System.TrackOther) AcquireOther(w, newTarget, out targetType);
+            if (pCount > 0 && w.System.TrackProjectile) AcquireProjectile(w, out targetType);
+            if (targetType == TargetType.None && w.System.TrackOther) AcquireOther(w, out targetType);
             if (targetType == TargetType.None)
             {
-                newTarget.Reset();
+                w.NewTarget.Reset();
                 w.LastTargetCheck = 1;
                 w.Target.Expired = true;
             }
@@ -162,11 +160,12 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static void AcquireOther(Weapon w, Target target, out TargetType targetType)
+        private static void AcquireOther(Weapon w, out TargetType targetType)
         {
             var ai = w.Comp.Ai;
             var physics = MyAPIGateway.Physics;
             var weaponPos = w.Comp.MyPivotPos;
+            var target = w.NewTarget;
             var s = w.System;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
@@ -215,18 +214,17 @@ namespace WeaponCore.Support
             targetType = TargetType.None;
         }
 
-        private static void AcquireProjectile(Weapon w, Target target, List<Projectile> sortProjectiles, out TargetType targetType)
+        private static void AcquireProjectile(Weapon w, out TargetType targetType)
         {
+            var wCache = w.WeaponCache;
+            var sortProjectiles = wCache.SortProjetiles;
+            wCache.SortProjectiles(w);
             var ai = w.Comp.Ai;
             var physics = MyAPIGateway.Physics;
+            var target = w.NewTarget;
             var s = w.System;
 
-            sortProjectiles.Clear();
-            foreach (var lp in ai.LiveProjectile)
-                if (lp.MaxSpeed < s.MaxTargetSpeed) sortProjectiles.Add(lp);
-
             var weaponPos = w.Comp.MyPivotPos;
-            sortProjectiles.Sort((a, b) => Vector3D.DistanceSquared(a.Position, weaponPos).CompareTo(Vector3D.DistanceSquared(b.Position, weaponPos)));
             foreach (var lp in sortProjectiles)
             {
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;

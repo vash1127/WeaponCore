@@ -122,7 +122,7 @@ namespace WeaponCore
             var damagePool = t.BaseDamagePool;
             if (system.VirtualBeams)
             {
-                var hits = t.DamageFrame.Hits;
+                var hits = t.WeaponCache.Hits;
                 damagePool *= hits;
                 areaEffectDmg *= hits;
             }

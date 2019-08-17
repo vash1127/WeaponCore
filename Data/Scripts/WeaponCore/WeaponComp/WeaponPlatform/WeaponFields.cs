@@ -7,6 +7,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform
@@ -39,14 +40,15 @@ namespace WeaponCore.Platform
         private bool _newCycle = false;
         //private bool _firstRun = true;
 
-        internal IMyEntity EntityPart;
+        internal MyEntity EntityPart;
         internal WeaponSystem System;
         internal Dummy[] Dummies;
         internal Muzzle[] Muzzles;
         internal uint[] BeamSlot;
         internal WeaponComponent Comp;
 
-        internal WeaponDamageFrame DamageFrame = new WeaponDamageFrame();
+        internal WeaponFrameCache WeaponCache = new WeaponFrameCache();
+
         internal Target Target;
         internal Target NewTarget;
         internal Vector3D TargetPos;
@@ -146,10 +148,10 @@ namespace WeaponCore.Platform
             Heating,
         }
 
-        public Weapon(IMyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp)
+        public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp)
         {
             EntityPart = entity;
-            _localTranslation = entity.LocalMatrix.Translation;
+            _localTranslation = entity.PositionComp.LocalMatrix.Translation;
             System = system;
             Comp = comp;
             if (System.EnergyAmmo || System.IsHybrid)

@@ -9,27 +9,30 @@ namespace WeaponCore.Support
     // Courtesy Equinox
     public class Dummy
     {
-        private readonly IMyEntity _entity;
+        private readonly MyEntity _entity;
 
         private IMyModel _cachedModel;
         private IMyModel _cachedSubpartModel;
-        private IMyEntity _cachedSubpart;
+        private MyEntity _cachedSubpart;
         private MatrixD? _cachedDummyMatrix;
-        internal MatrixD CachedMatrix;
-        internal DummyInfo CachedInfo;
         private readonly string[] _path;
         private readonly Dictionary<string, IMyModelDummy> _tmp1 = new Dictionary<string, IMyModelDummy>();
         private readonly Dictionary<string, IMyModelDummy> _tmp2 = new Dictionary<string, IMyModelDummy>();
+        private readonly bool _isSubPart;
 
-        public Dummy(IMyEntity e, params string[] path)
+        internal MatrixD CachedMatrix;
+
+        public Dummy(MyEntity e, params string[] path)
         {
             _entity = e;
             _path = path;
+            _isSubPart = (e is MyEntitySubpart);
         }
 
         private bool _failed = true;
         private void Update()
         {
+            //if (!_isSubPart) return;
             _cachedModel = _entity.Model;
             _cachedSubpart = _entity;
             _cachedSubpartModel = _cachedSubpart?.Model;
@@ -41,7 +44,7 @@ namespace WeaponCore.Support
                 else
                 {
                     _tmp2.Clear();
-                    _cachedSubpart.Model?.GetDummies(_tmp2);
+                    ((IMyModel)_cachedSubpart.Model)?.GetDummies(_tmp2);
                     _failed = true;
                     return;
                 }
@@ -82,21 +85,38 @@ namespace WeaponCore.Support
             }
         }
 
+        public void GetInfo(out Vector3D pos, out Vector3D dir)
+        {
+            if (!_isSubPart)
+            {
+                pos = _entity.PositionComp.WorldMatrix.Translation;
+                dir = _entity.PositionComp.WorldMatrix.Forward;
+                return;
+            }
+            if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart.Model)) Update();
+            var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
+            pos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
+            dir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
+        }
+
         public DummyInfo Info
         {
             get
             {
-                //CachedMatrix = (_cachedDummyMatrix ?? MatrixD.Identity) * (_cachedSubpart?.WorldMatrix ?? _entity.WorldMatrix);
+                if (!_isSubPart)
+                {
+                    var blockPos = _entity.PositionComp.WorldMatrix.Translation;
+                    var blockDir = _entity.PositionComp.WorldMatrix.Forward;
+                    return new DummyInfo { Position = blockPos, Direction = blockDir };
+                }
+
                 if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart.Model)) Update();
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
-                var pos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix); 
-                var dir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
-                CachedInfo = new DummyInfo(pos, dir);
-                //Log.Line($"{CachedInfo.Position} - {_cachedSubpartModel == _cachedSubpart.Model} - {_cachedModel == _entity.Model} - {_cachedDummyMatrix.HasValue}");
-                return CachedInfo;
+                var subPartPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
+                var subPartDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
+                return new DummyInfo { Position = subPartPos, Direction = subPartDir };
             }
         }
-
 
         public bool Valid
         {
@@ -111,17 +131,11 @@ namespace WeaponCore.Support
         {
             return $"{_entity.ToStringSmart()}: {string.Join("/", _path)}";
         }
-    }
 
-    public struct DummyInfo
-    {
-        public readonly Vector3D Position;
-        public readonly Vector3D Direction;
-
-        public DummyInfo(Vector3D position, Vector3D direction)
+        public struct DummyInfo
         {
-            Position = position;
-            Direction = direction;
+            public Vector3D Position;
+            public Vector3D Direction;
         }
     }
 }
