@@ -64,13 +64,11 @@ namespace WeaponCore.Support
         {
             get
             {
-                //if (!_isSubPart)
-                    //return new DummyInfo { Position = _entity.PositionComp.WorldMatrix.Translation, Direction = _entity.PositionComp.WorldMatrix.Forward };
-
                 if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart.Model)) Update();
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
                 var subPartPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
                 var subPartDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
+                Log.Line($"entity is Subpart:{_isSubPart} - dummyOnSubpart:{_cachedSubpart is MyEntitySubpart}");
                 return new DummyInfo { Position = subPartPos, Direction = subPartDir };
             }
         }
