@@ -104,8 +104,9 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal int TopTargets;
         [ProtoMember(2)] internal int TopBlocks;
         [ProtoMember(3)] internal double StopTrackingSpeed;
-        [ProtoMember(4)] internal SubSystemDefinition SubSystems;
-        [ProtoMember(5)] internal Threat[] Threats;
+        [ProtoMember(4)] internal float MinimumRadius;
+        [ProtoMember(5)] internal SubSystemDefinition SubSystems;
+        [ProtoMember(6)] internal Threat[] Threats;
     }
 
     [ProtoContract]

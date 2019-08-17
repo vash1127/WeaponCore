@@ -187,7 +187,6 @@ namespace WeaponCore.Support
                     target.TransferTo(w.Target);
                     return;
                 }
-
                 var character = info.Target as IMyCharacter;
                 if (character != null && !s.TrackCharacters) continue;
 
