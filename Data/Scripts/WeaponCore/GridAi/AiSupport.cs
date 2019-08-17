@@ -10,7 +10,7 @@ using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.SubSystemDefinition;
+using static WeaponCore.Support.TargetingDefinition;
 namespace WeaponCore.Support
 {
     public partial class GridAi

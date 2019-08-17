@@ -55,8 +55,9 @@ namespace WeaponCore.Support
         public readonly bool ArmorScaling;
         public readonly bool CustomDamageScales;
         public readonly bool TargetOffSet;
-        public readonly bool OrderedTargets;
-        public readonly bool SortBlocks;
+        public readonly bool TargetSubSystems;
+        public readonly bool OnlySubSystems;
+        public readonly bool ClosestFirst;
         public readonly bool DegROF;
         public readonly bool TrackProjectile;
         public readonly bool TrackOther;
@@ -84,6 +85,8 @@ namespace WeaponCore.Support
         public float AmmoTravelSoundDistSqr;
         public float HardPointSoundMaxDistSqr;
         public float AmmoSoundMaxDistSqr;
+        public float MinTargetRadius;
+        public float MaxTargetRadius;
         public FiringSoundState FiringSound;
         public bool HitSound;
         public bool WeaponReloadSound;
@@ -121,8 +124,6 @@ namespace WeaponCore.Support
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
 
-            SortBlocks = values.Targeting.SubSystems.ClosestFirst;
-            OrderedTargets = values.Targeting.SubSystems.SubSystemPriority;
             TargetOffSet = values.Ammo.Trajectory.Smarts.Inaccuracy > 0;
             TimeToCeaseFire = values.HardPoint.DelayCeaseFire;
             ReloadTime = values.HardPoint.Loading.ReloadTime;
@@ -152,7 +153,10 @@ namespace WeaponCore.Support
             MaxTrajectory = values.Ammo.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
-            MaxTargetSpeed = values.Targeting.StopTrackingSpeed > 0 ? values.Targeting.StopTrackingSpeed : double.MaxValue; 
+            MaxTargetSpeed = values.Targeting.StopTrackingSpeed > 0 ? values.Targeting.StopTrackingSpeed : double.MaxValue;
+
+            ClosestFirst = values.Targeting.ClosestFirst;
+
             Sound();
 
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales);
@@ -160,6 +164,8 @@ namespace WeaponCore.Support
             Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
             Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
+            SubSystems(out TargetSubSystems, out OnlySubSystems);
+            ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
         }
 
@@ -219,6 +225,31 @@ namespace WeaponCore.Support
                     trackOther = true;
                 }
             }
+        }
+
+        private void SubSystems(out bool targetSubSystems, out bool onlySubSystems)
+        {
+            targetSubSystems = false;
+            var anySystemDetected = false;
+            if (Values.Targeting.SubSystems.Length > 0)
+            {
+                foreach (var system in Values.Targeting.SubSystems)
+                {
+                    if (system != TargetingDefinition.BlockTypes.Any) targetSubSystems = true;
+                    else anySystemDetected = true;
+                }
+            }
+            if (TargetSubSystems && anySystemDetected) onlySubSystems = false;
+            else onlySubSystems = true;
+        }
+
+        private void ValidTargetSize(out float minTargetRadius, out float maxTargetRadius)
+        {
+            var minDiameter = Values.Targeting.MinimumDiameter;
+            var maxDiameter = Values.Targeting.MaximumDiameter;
+
+            minTargetRadius = (float)(minDiameter > 0 ? minDiameter * 0.5d : 0);
+            maxTargetRadius = (float)(maxDiameter > 0 ? maxDiameter * 0.5d : float.MaxValue);
         }
 
         private void Models(out int modelId)

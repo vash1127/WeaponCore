@@ -6,7 +6,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using static WeaponCore.Support.SubSystemDefinition.BlockTypes;
+using static WeaponCore.Support.TargetingDefinition.BlockTypes;
 
 namespace WeaponCore.Support
 {
@@ -74,15 +74,15 @@ namespace WeaponCore.Support
 
         private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)
         {
-            if (system.OrderedTargets)
+            if (system.TargetSubSystems)
             {
                 var subSystems = system.Values.Targeting.SubSystems;
-                foreach (var bt in subSystems.Systems)
+                foreach (var bt in subSystems)
                 {
                     if (bt != Any && info.TypeDict[bt].Count > 0)
                     {
                         var subSystemList = info.TypeDict[bt];
-                        if (subSystems.ClosestFirst)
+                        if (system.ClosestFirst)
                         {
                             if (bt != target.LastBlockType) target.Top5.Clear();
                             target.LastBlockType = bt;
@@ -92,7 +92,7 @@ namespace WeaponCore.Support
                         else if (FindRandomBlock(system, ai, target, weaponPos, subSystemList, w)) return true;
                     }
                 }
-                if (subSystems.OnlyTargetSubSystems) return false;
+                if (system.OnlySubSystems) return false;
             }
             if (FindRandomBlock(system, ai, target, weaponPos, info.TypeDict[Any], w)) return true;
             return false;
@@ -171,7 +171,10 @@ namespace WeaponCore.Support
             {
                 var info = ai.SortedTargets[i];
 
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals) || info.Target.PositionComp.LocalVolume.Radius < s.Values.Targeting.MinimumRadius) continue;
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
+
+                var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
 
                 var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
 
@@ -217,15 +220,14 @@ namespace WeaponCore.Support
         private static void AcquireProjectile(Weapon w, out TargetType targetType)
         {
             var wCache = w.WeaponCache;
-            var sortProjectiles = wCache.SortProjetiles;
-            wCache.SortProjectiles(w);
             var ai = w.Comp.Ai;
+            var s = w.System;
+            var collection = s.ClosestFirst ? wCache.SortProjetiles : ai.LiveProjectile as IEnumerable<Projectile>;
+            wCache.SortProjectiles(w);
             var physics = MyAPIGateway.Physics;
             var target = w.NewTarget;
-            var s = w.System;
-
             var weaponPos = w.Comp.MyPivotPos;
-            foreach (var lp in sortProjectiles)
+            foreach (var lp in collection)
             {
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
                 if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))

@@ -148,7 +148,7 @@ namespace WeaponCore.Support
         internal bool IsProjectile;
         internal int[] Deck = new int[0];
         internal int PrevDeckLength;
-        internal SubSystemDefinition.BlockTypes LastBlockType;
+        internal TargetingDefinition.BlockTypes LastBlockType;
         internal Vector3D HitPos;
         internal double HitShortDist;
         internal double OrigDistance;

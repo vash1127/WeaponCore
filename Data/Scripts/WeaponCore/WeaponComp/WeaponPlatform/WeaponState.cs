@@ -69,7 +69,6 @@ namespace WeaponCore.Platform
             }
         }
 
-
         public void ShootGraphics()
         {
             if (System.BarrelEffect1 || System.BarrelEffect2)

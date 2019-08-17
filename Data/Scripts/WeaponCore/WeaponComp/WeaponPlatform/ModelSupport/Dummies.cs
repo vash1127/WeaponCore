@@ -68,7 +68,6 @@ namespace WeaponCore.Support
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
                 var subPartPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
                 var subPartDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
-                Log.Line($"entity is Subpart:{_isSubPart} - dummyOnSubpart:{_cachedSubpart is MyEntitySubpart}");
                 return new DummyInfo { Position = subPartPos, Direction = subPartDir };
             }
         }
@@ -80,11 +79,6 @@ namespace WeaponCore.Support
                 if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
                 return _cachedSubpart != null && _cachedDummyMatrix.HasValue && !_failed;
             }
-        }
-
-        public override string ToString()
-        {
-            return $"{_entity.ToStringSmart()}: {string.Join("/", _path)}";
         }
 
         public struct DummyInfo

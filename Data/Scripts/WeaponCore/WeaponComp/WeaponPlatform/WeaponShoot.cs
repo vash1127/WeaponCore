@@ -342,7 +342,7 @@ namespace WeaponCore.Platform
                 Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
                 return;
             }
-            if (System.SortBlocks)
+            if (System.ClosestFirst)
             {
                 if (Target.Projectile != null)
                 {

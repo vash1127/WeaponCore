@@ -1,7 +1,6 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using VRage.Game.Entity;
-using VRage.ModAPI;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform

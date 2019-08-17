@@ -101,17 +101,6 @@ namespace WeaponCore.Support
             Other
         }
 
-        [ProtoMember(1)] internal int TopTargets;
-        [ProtoMember(2)] internal int TopBlocks;
-        [ProtoMember(3)] internal double StopTrackingSpeed;
-        [ProtoMember(4)] internal float MinimumRadius;
-        [ProtoMember(5)] internal SubSystemDefinition SubSystems;
-        [ProtoMember(6)] internal Threat[] Threats;
-    }
-
-    [ProtoContract]
-    public struct SubSystemDefinition
-    {
         public enum BlockTypes
         {
             Any,
@@ -122,10 +111,14 @@ namespace WeaponCore.Support
             Navigation
         }
 
-        [ProtoMember(1)] internal BlockTypes[] Systems;
-        [ProtoMember(2)] internal bool SubSystemPriority;
-        [ProtoMember(3)] internal bool ClosestFirst;
-        [ProtoMember(4)] internal bool OnlyTargetSubSystems;
+        [ProtoMember(1)] internal int TopTargets;
+        [ProtoMember(2)] internal int TopBlocks;
+        [ProtoMember(3)] internal double StopTrackingSpeed;
+        [ProtoMember(4)] internal float MinimumDiameter;
+        [ProtoMember(5)] internal float MaximumDiameter;
+        [ProtoMember(6)] internal bool ClosestFirst;
+        [ProtoMember(7)] internal BlockTypes[] SubSystems;
+        [ProtoMember(8)] internal Threat[] Threats;
     }
 
     [ProtoContract]
