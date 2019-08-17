@@ -172,7 +172,7 @@ namespace WeaponCore.Support
             {
                 var info = ai.SortedTargets[i];
 
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals) || info.Target.PositionComp.LocalVolume.Radius < s.Values.Targeting.MinimumRadius) continue;
 
                 var targetCenter = info.Target.PositionComp.WorldMatrix.Translation;
 
