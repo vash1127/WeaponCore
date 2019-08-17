@@ -88,9 +88,9 @@ namespace WeaponCore.Projectiles
         internal Trajectile T = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
-        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
-        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
-        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, false, 1f);
+        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
@@ -270,13 +270,16 @@ namespace WeaponCore.Projectiles
         internal void FireSoundStart()
         {
             FireEmitter.SetPosition(Origin);
-            FireEmitter.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
+            //FireEmitter.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
+            FireEmitter.PlaySound(FireSound, true);
         }
 
         internal void AmmoSoundStart()
         {
             TravelEmitter.SetPosition(Position);
-            TravelEmitter.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
+            //TravelEmitter.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
+            TravelEmitter.PlaySound(TravelSound, true);
+
             AmmoSound = true;
         }
 
@@ -393,7 +396,9 @@ namespace WeaponCore.Projectiles
                 {
                     HitEmitter.SetPosition(Position);
                     HitEmitter.CanPlayLoopSounds = false;
-                    HitEmitter.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
+                    //HitEmitter.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
+                    HitEmitter.PlaySound(HitSound, true);
+
                 }
             }
             Colliding = false;
