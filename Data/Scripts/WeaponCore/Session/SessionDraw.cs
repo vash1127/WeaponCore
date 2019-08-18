@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Game.World;
 using VRage.Game;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -11,6 +13,7 @@ namespace WeaponCore
         private void DrawLists(List<Trajectile> drawList)
         {
             var sFound = false;
+            var cameraPos = Session.Camera.Position;
             for (int i = 0; i < drawList.Count; i++)
             {
                 var t = drawList[i];
@@ -72,7 +75,20 @@ namespace WeaponCore
                     TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)t.Length, 12, color, color, t.System.ProjectileMaterial, t.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
                 }
                 else
-                    MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, 0, t.Direction, (float)t.Length, newWidth);
+                {
+                    var hitPos = t.PrevPosition + (t.Direction * t.Length);
+                    var distanceFromPoint = (float)Vector3D.Distance(cameraPos, (MyUtils.GetClosestPointOnLine(ref t.PrevPosition, ref hitPos, ref cameraPos)));
+                    var thickness = newWidth;
+                    if (distanceFromPoint < 10) thickness *= 0.25f;
+                    else if (distanceFromPoint < 20) thickness *= 0.5f;
+                    else if (distanceFromPoint > 400) thickness *= 8f;
+                    else if (distanceFromPoint > 200) thickness *= 4f;
+                    else if (distanceFromPoint > 100) thickness *= 2f;
+
+                    if (!t.System.IsBeamWeapon) MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
+                    else MyTransparentGeometry.AddLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
+                    //MySimpleObjectDraw.DrawLine(t.PrevPosition, hitPos, t.System.ProjectileMaterial, ref color, thickness);
+                }
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {

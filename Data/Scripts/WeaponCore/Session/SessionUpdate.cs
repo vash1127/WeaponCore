@@ -29,7 +29,6 @@ namespace WeaponCore
 
                 foreach (var basePair in gridAi.WeaponBase)
                 {
-                    var cube = basePair.Key;
                     var comp = basePair.Value;
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
@@ -57,7 +56,6 @@ namespace WeaponCore
                         }
 
                         var energyAmmo = w.System.EnergyAmmo;
-
 
                         if (w.IsShooting && (energyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
                         {

@@ -26,23 +26,10 @@ namespace WeaponCore
         {
             try
             {
-                if (Ui.WheelActive) Ui.DrawWheel();
-
                 if (!DedicatedServer)
                 {
-                    /*
-                    foreach (var pair in RayCheckLines)
-                    {
-                        var startTick = pair.Value;
-                        var line = pair.Key;
-                        if (Tick - startTick > 600) RayCheckLines.Remove(line);
-                        else
-                        {
-                            DsDebugDraw.DrawLine(line.From, line.To, Color.Red, 0.1f);
-                        }
-                    }
-                    RayCheckLines.ApplyRemovals();
-                    */
+                    if (Ui.WheelActive) Ui.DrawWheel();
+
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         lock (Projectiles.Wait[i])
                             DrawLists(Projectiles.DrawProjectiles[i]);
