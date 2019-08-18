@@ -19,8 +19,6 @@ namespace WeaponCore.Platform
             var session = Session.Instance;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            //if (Comp.Charging) return;
-
             if (System.BurstMode)
             {
                 if (_shots > System.Values.HardPoint.Loading.ShotsInBurst)

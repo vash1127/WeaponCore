@@ -9,147 +9,7 @@ namespace WeaponCore.Support
     public static class DsDebugDraw
     {
         #region Debug and Utils
-        private static MyStringId LineId = MyStringId.GetOrCompute("Square");
-
-        public static int GetVertNum(Vector3D[] physicsVerts, Vector3D vec)
-        {
-            var pmatch = false;
-            var pNum = -1;
-            foreach (var pvert in physicsVerts)
-            {
-                pNum++;
-                if (vec == pvert) pmatch = true;
-                if (pmatch) return pNum;
-            }
-            return pNum;
-        }
-
-        public static void FindRoots(Vector3D[] physicsVerts, Vector3D[] rootVerts)
-        {
-            for (int i = 0, j = 0; i < physicsVerts.Length; i++, j++)
-            {
-                var vec = physicsVerts[i];
-                foreach (var magic in rootVerts)
-                {
-                    for (int num = 0; num < 12; num++)
-                    {
-                        if (vec == magic && rootVerts[num] == vec) Log.Line($"Found root {num} at index: {i}");
-                    }
-
-                }
-            }
-        }
-
-        public static void SmallIntersectDebugDraw(Vector3D[] physicsOutside, int face, int[][] vertLines, int[] rangedVert, Vector3D bWorldCenter, List<Vector3D> intersections)
-        {
-            //DrawNums(_physicsOutside,zone, Color.AntiqueWhite);
-            DsDebugDraw.DrawLineToNum(physicsOutside, rangedVert[0], bWorldCenter, Color.Red);
-            DsDebugDraw.DrawLineToNum(physicsOutside, rangedVert[1], bWorldCenter, Color.Green);
-            DsDebugDraw.DrawLineToNum(physicsOutside, rangedVert[2], bWorldCenter, Color.Gold);
-
-            int[] closestLineFace;
-            switch (face)
-            {
-                case 0:
-                    closestLineFace = vertLines[rangedVert[0]];
-                    break;
-                case 1:
-                    closestLineFace = vertLines[rangedVert[1]];
-                    break;
-                default:
-                    closestLineFace = vertLines[rangedVert[2]];
-                    break;
-            }
-
-            var c1 = Color.Black;
-            var c2 = Color.Black;
-            //if (checkBackupFace1) c1 = Color.Green;
-            //if (checkBackupFace2) c2 = Color.Gold;
-            c1 = Color.Green;
-            c2 = Color.Gold;
-
-            DsDebugDraw.DrawLineNums(physicsOutside, closestLineFace, Color.Red);
-            //DrawLineNums(_physicsOutside, closestLineFace1, c1);
-            //DrawLineNums(_physicsOutside, closestLineFace2, c2);
-
-            DsDebugDraw.DrawTriVertList(intersections);
-
-            //DrawLineToNum(_physicsOutside, rootVerts, bWorldCenter, Color.HotPink);
-            //DrawLineToNum(_physicsOutside, rootVerts[1], bWorldCenter, Color.Green);
-            //DrawLineToNum(_physicsOutside, rootVerts[2], bWorldCenter, Color.Gold);
-        }
-
-        public static void DrawTriNumArray(Vector3D[] physicsVerts, int[] array)
-        {
-            var lineId = MyStringId.GetOrCompute("Square");
-            var c = Color.Red.ToVector4();
-
-            for (int i = 0; i < array.Length; i += 3)
-            {
-                var vn0 = array[i];
-                var vn1 = array[i + 1];
-                var vn2 = array[i + 2];
-
-                var v0 = physicsVerts[vn0];
-                var v1 = physicsVerts[vn1];
-                var v2 = physicsVerts[vn2];
-
-                MySimpleObjectDraw.DrawLine(v0, v1, lineId, ref c, 0.25f);
-                MySimpleObjectDraw.DrawLine(v0, v2, lineId, ref c, 0.25f);
-                MySimpleObjectDraw.DrawLine(v1, v2, lineId, ref c, 0.25f);
-
-            }
-        }
-
-        public static void DrawTriVertList(List<Vector3D> list)
-        {
-            var lineId = MyStringId.GetOrCompute("Square");
-            var c = Color.DarkViolet.ToVector4();
-            for (int i = 0; i < list.Count; i += 3)
-            {
-                var v0 = list[i];
-                var v1 = list[i + 1];
-                var v2 = list[i + 2];
-
-                MySimpleObjectDraw.DrawLine(v0, v1, lineId, ref c, 0.25f);
-                MySimpleObjectDraw.DrawLine(v0, v2, lineId, ref c, 0.25f);
-                MySimpleObjectDraw.DrawLine(v1, v2, lineId, ref c, 0.25f);
-
-            }
-        }
-
-        public static void DrawLineNums(Vector3D[] physicsVerts, int[] lineArray, Color color)
-        {
-            var c = color.ToVector4();
-            var lineId = MyStringId.GetOrCompute("Square");
-
-            for (int i = 0; i < lineArray.Length; i += 2)
-            {
-                var v0 = physicsVerts[lineArray[i]];
-                var v1 = physicsVerts[lineArray[i + 1]];
-                MySimpleObjectDraw.DrawLine(v0, v1, lineId, ref c, 0.25f);
-            }
-        }
-
-        public static void DrawLineToNum(Vector3D[] physicsVerts, int num, Vector3D fromVec, Color color)
-        {
-            var c = color.ToVector4();
-            var lineId = MyStringId.GetOrCompute("Square");
-
-            var v0 = physicsVerts[num];
-            var v1 = fromVec;
-            MySimpleObjectDraw.DrawLine(v0, v1, lineId, ref c, 0.35f);
-        }
-
-        public static void DrawLineToVec(Vector3D fromVec, Vector3D toVec, Vector4 color, float lineWidth)
-        {
-            var c = color;
-            var lineId = MyStringId.GetOrCompute("Square");
-
-            var v0 = toVec;
-            var v1 = fromVec;
-            MySimpleObjectDraw.DrawLine(v0, v1, lineId, ref c, lineWidth);
-        }
+        private static MyStringId _square = MyStringId.GetOrCompute("Square");
 
         public static void DrawX(Vector3D center, MatrixD referenceMatrix, double lineLength)
         {
@@ -164,8 +24,8 @@ namespace WeaponCore.Support
 
             var line1Vec0 = center + (testDir1 * -halfLineLength);
             var line1Vec1 = center + (testDir1 * halfLineLength);
-            MySimpleObjectDraw.DrawLine(line0Vec0, line0Vec1, LineId, ref color1, lineWdith);
-            MySimpleObjectDraw.DrawLine(line1Vec0, line1Vec1, LineId, ref color2, lineWdith);
+            MySimpleObjectDraw.DrawLine(line0Vec0, line0Vec1, _square, ref color1, lineWdith);
+            MySimpleObjectDraw.DrawLine(line1Vec0, line1Vec1, _square, ref color2, lineWdith);
         }
 
         public static void DrawLosBlocked(Vector3D center, MatrixD referenceMatrix, double length)
@@ -177,7 +37,7 @@ namespace WeaponCore.Support
             var line0Vec0 = center + (testDir0 * -halfLength);
             var line0Vec1 = center + (testDir0 * halfLength);
 
-            MySimpleObjectDraw.DrawLine(line0Vec0, line0Vec1, LineId, ref color1, width);
+            MySimpleObjectDraw.DrawLine(line0Vec0, line0Vec1, _square, ref color1, width);
         }
 
         public static void DrawLosClear(Vector3D center, MatrixD referenceMatrix, double length)
@@ -189,7 +49,7 @@ namespace WeaponCore.Support
             var line0Vec0 = center + (testDir0 * -halfLength);
             var line0Vec1 = center + (testDir0 * halfLength);
 
-            MySimpleObjectDraw.DrawLine(line0Vec0, line0Vec1, LineId, ref color1, width);
+            MySimpleObjectDraw.DrawLine(line0Vec0, line0Vec1, _square, ref color1, width);
         }
 
         public static void DrawMark(Vector3D center, MatrixD referenceMatrix, int length)
@@ -202,20 +62,19 @@ namespace WeaponCore.Support
             var line0Vec0 = center + (testDir0 * -halfLength);
             var line0Vec1 = center + (testDir0 * halfLength);
 
-            MySimpleObjectDraw.DrawLine(line0Vec0, line0Vec1, LineId, ref color1, width);
+            MySimpleObjectDraw.DrawLine(line0Vec0, line0Vec1, _square, ref color1, width);
         }
 
         public static void DrawLine(Vector3D start, Vector3D end, Vector4 color, float width)
         {
             var c = color;
-            MySimpleObjectDraw.DrawLine(start, end, LineId, ref c, width);
+            MySimpleObjectDraw.DrawLine(start, end, _square, ref c, width);
         }
 
-        public static void DrawSingleNum(Vector3D[] physicsVerts, int num)
+        public static void DrawLine(LineD line, Vector4 color, float width)
         {
-            //Log.Line($"magic: {magic}");
-            var c = Color.Black;
-            DrawScaledPoint(physicsVerts[num], 7, c, 20);
+            var c = color;
+            MySimpleObjectDraw.DrawLine(line.From, line.To, _square, ref c, width);
         }
 
         public static void DrawBox(MyOrientedBoundingBoxD obb, Color color)
@@ -254,16 +113,6 @@ namespace WeaponCore.Support
         public static void DrawSingleVec(Vector3D vec, float size, Color color)
         {
             DrawScaledPoint(vec, size, color, 20);
-        }
-
-        public static void DrawVertArray(Vector3D[] array)
-        {
-            for (int i = 0; i < array.Length; i++)
-            {
-                var c = Color.Red;
-                DrawScaledPoint(array[i], 1, c, 20);
-                i++;
-            }
         }
 
         public static void DrawScaledPoint(Vector3D pos, double radius, Color color, int lineWidth = 1)

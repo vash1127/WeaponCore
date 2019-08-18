@@ -10,7 +10,7 @@ using static Sandbox.Definitions.MyDefinitionManager;
 
 namespace WeaponCore
 {
-    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation | MyUpdateOrder.AfterSimulation | MyUpdateOrder.Simulation, Int32.MinValue)]
+    [MySessionComponentDescriptor(MyUpdateOrder.BeforeSimulation | MyUpdateOrder.AfterSimulation | MyUpdateOrder.Simulation, int.MaxValue - 1)]
     public partial class Session : MySessionComponentBase
     {
         public override void BeforeStart()
@@ -82,16 +82,9 @@ namespace WeaponCore
                 }
                 */
                 Timings();
-
                 Ui.UpdateInput();
-
-                Projectiles.Update();
                 if (!Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
-                AiLoop();
-                UpdateWeaponPlatforms();
-                //MyAPIGateway.Parallel.Start(AiLoop);
-                //MyAPIGateway.Parallel.Start(Projectiles.Update);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -100,6 +93,9 @@ namespace WeaponCore
         {
             try
             {
+                AiLoop();
+                UpdateWeaponPlatforms();
+                Projectiles.Update();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
