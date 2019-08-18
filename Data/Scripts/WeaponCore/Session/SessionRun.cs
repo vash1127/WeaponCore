@@ -22,52 +22,11 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
         }
 
-        public override void Draw()
-        {
-            try
-            {
-                if (!DedicatedServer)
-                {
-                    if (Ui.WheelActive) Ui.DrawWheel();
-
-                    for (int i = 0; i < Projectiles.Wait.Length; i++)
-                        lock (Projectiles.Wait[i])
-                            DrawLists(Projectiles.DrawProjectiles[i]);
-                    if (_shrinking.Count > 0)
-                        Shrink();
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
-        }
 
         public override void UpdateBeforeSimulation()
         {
             try
             {
-                /*
-                if (Tick180)
-                {
-                    var a = 0;
-                    var c = 0;
-                    var m = 0;
-                    var w = 0;
-                    var p = 0;
-                    var g = MyParticlesManager.ParticleEffectsForUpdate.Count;
-
-                    for (int i = 0; i < Projectiles.Wait.Length; i++)
-                        p += Projectiles.ProjectilePool[i].Active.Count;
-
-                    foreach (var y in MyParticlesManager.ParticleEffectsForUpdate)
-                    {
-                        if (y.Name == "ShipWelderArc") a++;
-                        else if (y.Name == "Smoke_Missile") c++;
-                        else if (y.Name == "Explosion_Missile") m++;
-                        else if (y.Name == "Explosion_Warhead_02") w++;
-                        //else Log.Line($"{y.Name}");
-                    }
-                    //Log.Line($"projectiles:{p} - particles:{g} - eCount:{ExplosionCounter} - arkCount:{a} - Smoke_Missile:{c} - missileExp:{m} - what:{w}");
-                }
-                */
                 Timings();
                 Ui.UpdateInput();
                 if (!Hits.IsEmpty) ProcessHits();
@@ -102,6 +61,24 @@ namespace WeaponCore
             {
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
+        }
+
+        public override void Draw()
+        {
+            try
+            {
+                if (!DedicatedServer)
+                {
+                    if (Ui.WheelActive) Ui.DrawWheel();
+
+                    for (int i = 0; i < Projectiles.Wait.Length; i++)
+                        lock (Projectiles.Wait[i])
+                            DrawLists(Projectiles.DrawProjectiles[i]);
+                    if (_shrinking.Count > 0)
+                        Shrink();
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
 
         public override void LoadData()

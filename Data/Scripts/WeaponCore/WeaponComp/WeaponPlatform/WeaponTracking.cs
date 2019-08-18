@@ -1,9 +1,6 @@
 ﻿using System;
-using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Entity;
 using VRageMath;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.HardPointDefinition;
 

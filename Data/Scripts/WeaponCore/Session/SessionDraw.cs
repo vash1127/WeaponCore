@@ -92,67 +92,57 @@ namespace WeaponCore
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
-                    
-                        var c = t.Target.FiringCube;
-                        if (c == null || c.MarkedForClose) continue;
-                        //Log.Line($"Cube Grid ID: {c.CubeGrid.EntityId}");
-                    try
+                    var c = t.Target.FiringCube;
+                    if (c == null || c.MarkedForClose) continue;
+                    var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[t.WeaponId];
+                    if (weapon != null)
                     {
-                        
-                        var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[t.WeaponId];
-                        if (weapon != null)
+                        var effect = weapon.HitEffects[t.MuzzleId];
+                        if (t.HitEntity?.HitPos != null && t.OnScreen)
                         {
-                            var effect = weapon.HitEffects[t.MuzzleId];
-                            if (t.HitEntity?.HitPos != null && t.OnScreen)
+                            if (effect != null)
                             {
-                                if (effect != null)
+                                var elapsedTime = effect.GetElapsedTime();
+                                if (elapsedTime <= 0 || elapsedTime >= 1)
                                 {
-                                    var elapsedTime = effect.GetElapsedTime();
-                                    if (elapsedTime <= 0 || elapsedTime >= 1)
-                                    {
-                                        effect.Stop(true);
-                                        effect = null;
-                                    }
+                                    effect.Stop(true);
+                                    effect = null;
                                 }
-                                var hitPos = t.HitEntity.HitPos.Value;
-                                MatrixD matrix;
-                                MatrixD.CreateTranslation(ref hitPos, out matrix);
+                            }
+                            var hitPos = t.HitEntity.HitPos.Value;
+                            MatrixD matrix;
+                            MatrixD.CreateTranslation(ref hitPos, out matrix);
+                            if (effect == null)
+                            {
+                                MyParticlesManager.TryCreateParticleEffect(t.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, uint.MaxValue, out effect);
                                 if (effect == null)
                                 {
-                                    MyParticlesManager.TryCreateParticleEffect(t.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, uint.MaxValue, out effect);
-                                    if (effect == null)
-                                    {
-                                        weapon.HitEffects[t.MuzzleId] = null;
-                                        continue;
-                                    }
-
-                                    effect.DistanceMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
-                                    effect.DurationMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
-                                    effect.UserColorMultiplier = t.System.Values.Graphics.Particles.Hit.Color;
-                                    var scaler = 1;
-                                    effect.Loop = t.System.Values.Graphics.Particles.Hit.Extras.Loop;
-
-                                    effect.UserRadiusMultiplier = t.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
-                                    effect.UserEmitterScale = 1 * scaler;
+                                    weapon.HitEffects[t.MuzzleId] = null;
+                                    continue;
                                 }
-                                else if (effect.IsEmittingStopped)
-                                    effect.Play();
 
-                                effect.WorldMatrix = matrix;
-                                if (t.HitEntity.Projectile != null) effect.Velocity = t.HitEntity.Projectile.Velocity;
-                                else if (t.HitEntity.Entity?.Physics != null) effect.Velocity = t.HitEntity.Entity.Physics.LinearVelocity;
-                                weapon.HitEffects[t.MuzzleId] = effect;
+                                effect.DistanceMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
+                                effect.DurationMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
+                                effect.UserColorMultiplier = t.System.Values.Graphics.Particles.Hit.Color;
+                                var scaler = 1;
+                                effect.Loop = t.System.Values.Graphics.Particles.Hit.Extras.Loop;
+
+                                effect.UserRadiusMultiplier = t.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
+                                effect.UserEmitterScale = 1 * scaler;
                             }
-                            else if (effect != null)
-                            {
-                                effect.Stop(false);
-                                weapon.HitEffects[t.MuzzleId] = null;
-                            }
+                            else if (effect.IsEmittingStopped)
+                                effect.Play();
+
+                            effect.WorldMatrix = matrix;
+                            if (t.HitEntity.Projectile != null) effect.Velocity = t.HitEntity.Projectile.Velocity;
+                            else if (t.HitEntity.Entity?.GetTopMostParent()?.Physics != null) effect.Velocity = t.HitEntity.Entity.GetTopMostParent().Physics.LinearVelocity;
+                            weapon.HitEffects[t.MuzzleId] = effect;
                         }
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.Line($"caught exception in Draw: {ex.Message}");
+                        else if (effect != null)
+                        {
+                            effect.Stop(false);
+                            weapon.HitEffects[t.MuzzleId] = null;
+                        }
                     }
                 }
             }

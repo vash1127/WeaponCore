@@ -18,11 +18,6 @@ namespace WeaponCore
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
-                if (!gridAi.DeadProjectiles.IsEmpty)
-                {
-                    Projectile p;
-                    while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
-                }
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
@@ -141,7 +136,11 @@ namespace WeaponCore
             {
                 var gridAi = aiPair.Value;
                 if (!gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
-
+                if (!gridAi.DeadProjectiles.IsEmpty)
+                {
+                    Projectile p;
+                    while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
+                }
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
