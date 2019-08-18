@@ -201,6 +201,7 @@ namespace WeaponCore.Support
     {
         internal bool VirtualHit;
         internal int Hits;
+        internal double HitDistance;
         internal uint Tick;
         internal HitEntity HitEntity = new HitEntity();
         internal IMySlimBlock HitBlock;

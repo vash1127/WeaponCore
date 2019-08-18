@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Havok;
 using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game;
@@ -225,12 +226,10 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
-                            Log.Line($"projectile ran out of juice, traveled:{(p.DistanceTraveled)}");
                             Die(p, i);
                             continue;
                         }
                     }
-
                     if (!isProjectile)
                     {
                         if (!p.T.System.VirtualBeams || p.T.MuzzleId == -1)
@@ -244,17 +243,6 @@ namespace WeaponCore.Projectiles
                                 if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
                                 p.T.HitList.Clear();
                             }
-
-                            if (p.T.MuzzleId == -1)
-                            {
-                                CreateFakeBeams(p, null, drawList, true);
-                                continue;
-                            }
-                        }
-                        else if (p.T.WeaponCache.VirtualHit && p.T.WeaponCache.HitEntity != null)
-                        {
-                            Intersected(p, drawList, p.T.WeaponCache.HitEntity);
-                            continue;
                         }
                     }
                     else
@@ -344,6 +332,12 @@ namespace WeaponCore.Projectiles
                         if (camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
                     }
 
+                    if (p.T.MuzzleId == -1)
+                    {
+                        CreateFakeBeams(p, null, drawList, true);
+                        continue;
+                    }
+
                     if (p.T.OnScreen)
                     {
                         p.T.Complete(null, false);
@@ -367,12 +361,13 @@ namespace WeaponCore.Projectiles
             {
                 var hitPos = hitEntity.HitPos.Value;
                 p.TestSphere.Center = hitPos;
-                p.T.OnScreen = Session.Instance.Session.Camera.IsInFrustum(ref p.TestSphere);
+                var bb = new BoundingBoxD(Vector3D.Min(p.T.PrevPosition, p.T.Position), Vector3D.Max(p.T.PrevPosition, p.T.Position));
+                if (Session.Instance.Session.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
 
                 if (p.T.MuzzleId != -1)
                 {
-                    var length = Vector3D.Distance(p.LastPosition, hitPos);
-                    p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, length);
+                    p.T.WeaponCache.Hits = p.VrTrajectiles.Count;
+                    p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, p.T.WeaponCache.HitDistance);
                     p.T.Complete(hitEntity, true);
                     drawList.Add(p.T);
                 }
@@ -385,11 +380,13 @@ namespace WeaponCore.Projectiles
                 p.T.WeaponCache.VirtualHit = true;
                 p.T.WeaponCache.HitEntity.Entity = hitEntity.Entity;
                 p.T.WeaponCache.HitEntity.HitPos = hitEntity.HitPos;
+                p.T.WeaponCache.HitDistance = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
+
                 if (hitEntity.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = hitEntity.Blocks[0];
                 Session.Instance.Hits.Enqueue(p);
-                CreateFakeBeams(p, hitEntity, drawList);
+                if (p.EnableAv && p.T.OnScreen) CreateFakeBeams(p, hitEntity, drawList);
             }
-            if (p.EnableAv) p.HitEffects();
+            if (p.EnableAv && p.T.OnScreen) p.HitEffects();
             return true;
         }
 
@@ -401,42 +398,26 @@ namespace WeaponCore.Projectiles
                 vt.OnScreen = p.T.OnScreen;
                 if (vt.System.ConvergeBeams)
                 {
-                    LineD beam;
-                    if (!miss)
-                    {
-                        var hitPos = hitEntity?.HitPos ?? Vector3D.Zero;
-                        beam = new LineD(vt.PrevPosition, hitPos);
-                    }
-                    else beam = new LineD(vt.PrevPosition, p.Position);
-
+                    var beam = !miss ? new LineD(vt.PrevPosition, hitEntity.HitPos ?? p.Position) : new LineD(vt.PrevPosition, p.Position);
                     vt.UpdateVrShape(beam.From, beam.To, beam.Direction, beam.Length);
                 }
                 else
                 {
-                    var beamEnd = vt.Position + (vt.Direction * p.MaxTrajectory);
+                    Vector3D beamEnd;
+                    var hit = !miss && hitEntity.HitPos.HasValue;
+                    if (!hit)
+                        beamEnd = vt.PrevPosition + (vt.Direction * p.MaxTrajectory);
+                    else
+                        beamEnd = vt.PrevPosition + (vt.Direction * p.T.WeaponCache.HitDistance);
+
                     var line = new LineD(vt.PrevPosition, beamEnd);
-                    if (!miss)
-                    {
-                        var hitBlock = p.T.WeaponCache.HitBlock;
-                        Vector3D center;
-                        hitBlock.ComputeWorldCenter(out center);
-
-                        Vector3 halfExt;
-                        hitBlock.ComputeScaledHalfExtents(out halfExt);
-
-                        var blockBox = new BoundingBoxD(-halfExt, halfExt);
-                        var rotMatrix = Quaternion.CreateFromRotationMatrix(hitBlock.CubeGrid.WorldMatrix);
-                        var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
-
-                        var dist = obb.Intersects(ref line) ?? Vector3D.Distance(line.From, center);
-                        var hitVec = line.From + (line.Direction * dist);
-                        vt.UpdateVrShape(line.From, hitVec, line.Direction, dist);
-                    }
+                    //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
+                    if (!miss && hitEntity.HitPos.HasValue)
+                        vt.UpdateVrShape(line.From, hitEntity.HitPos.Value, line.Direction, line.Length);
                     else vt.UpdateVrShape(line.From, line.To, line.Direction, line.Length);
                 }
                 vt.Complete(hitEntity, true);
                 drawList.Add(vt);
-                p.T.WeaponCache.Hits++;
             }
         }
 

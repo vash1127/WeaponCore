@@ -12,7 +12,7 @@ namespace WeaponCore.Projectiles
     internal class Projectile
     {
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal const int EndSteps = 2;
+        internal const int EndSteps = 1;
         internal ProjectileState State;
         internal EntityState ModelState;
         internal Vector3D Direction;

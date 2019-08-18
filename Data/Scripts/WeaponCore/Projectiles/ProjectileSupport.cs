@@ -41,6 +41,7 @@ namespace WeaponCore.Projectiles
             }
             else if (Session.Instance.IsServer && count > 0)
                 Session.Instance.Hits.Enqueue(p);
+            else p.ProjectileClose(this, poolId);
         }
 
         internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, List<MyLineSegmentOverlapResult<MyEntity>> segmentList, int poolId, bool quickCheck = false)
@@ -51,7 +52,6 @@ namespace WeaponCore.Projectiles
             {
                 var ent = segmentList != null ? segmentList[i].Element : p.T.HitList[i].Entity;
                 if (ent == p.T.Ai.MyGrid || ent.MarkedForClose || !ent.InScene) continue;
-                //if (fired.Age < 30 && ent.PositionComp.WorldAABB.Intersects(fired.ReverseOriginRay).HasValue) continue;
                 var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                 if (shieldBlock != null)
                 {
@@ -82,6 +82,15 @@ namespace WeaponCore.Projectiles
 
                 if (ent.Physics != null && !ent.IsPreview && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                 {
+                    var voxel = ent as MyVoxelBase;
+                    Vector3D? voxelHit = null;
+                    if (voxel != null)
+                    {
+                        if (voxel.RootVoxel != voxel) continue;
+                        voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                        if (!voxelHit.HasValue) continue;
+                    }
+
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
                     hitEntity.Entity = ent;
@@ -93,6 +102,8 @@ namespace WeaponCore.Projectiles
                         hitEntity.Hit = true;
                         hitEntity.EventType = Proximity;
                     }
+                    if (voxelHit != null) hitEntity.HitPos = voxelHit;
+
                     found = true;
                     p.T.HitList.Add(hitEntity);
                 }
@@ -107,7 +118,6 @@ namespace WeaponCore.Projectiles
             if (count > 1) p.T.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
             else GetEntityCompareDist(p.T.HitList[0], null, V3Pool.Get());
 
-            //var afterSort = ents.Count;
             var endOfIndex = p.T.HitList.Count - 1;
             var lastValidEntry = int.MaxValue;
 
@@ -116,7 +126,6 @@ namespace WeaponCore.Projectiles
                 if (p.T.HitList[i].Hit)
                 {
                     lastValidEntry = i + 1;
-                    //Log.Line($"lastValidEntry:{lastValidEntry} - endOfIndex:{endOfIndex}");
                     break;
                 }
             }
@@ -126,7 +135,6 @@ namespace WeaponCore.Projectiles
             var howMany = howManyToRemove;
             while (howManyToRemove-- > 0)
             {
-                //Log.Line($"removing: {endOfIndex} - hit:{ents[endOfIndex].Hit}");
                 var ent = p.T.HitList[endOfIndex];
                 p.T.HitList.RemoveAt(endOfIndex);
                 HitEntityPool[poolId].Return(ent);
@@ -139,7 +147,6 @@ namespace WeaponCore.Projectiles
                 hitEntity = p.T.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
-                //Log.Line($"start:{count} - ASort:{afterSort} - Final:{ents.Count} - howMany:{howMany} - hit:{ents[0].Hit} - hitPos:{ents[0].HitPos.HasValue} - {ents[0].Entity.DebugName} ");
             }
             return hitEntity;
         }
@@ -215,23 +222,11 @@ namespace WeaponCore.Projectiles
                 }
                 else if (voxel != null)
                 {
-                    Vector3D? t;
-                    voxel.GetIntersectionWithLine(ref beam, out t, true, IntersectionFlags.DIRECT_TRIANGLES);
-                    if (t != null)
-                    {
-                        Log.Line($"voxel hit: {t.Value}");
-                        hitEnt.Hit = true;
-                        hitEnt.HitPos = beam.From + (beam.Direction * dist);
-                        hitEnt.EventType = Voxel;
-                    }
-                    /*
-                    {
-                        var hitInfoRet = new MyHitInfo
-                        {
-                            Position = t.Value,
-                        };
-                    }
-                    */
+                    var hitPos = hitEnt.HitPos.Value;
+                    hitEnt.Hit = true;
+                    Vector3D.Distance(ref beam.From, ref hitPos, out dist);
+                    hitEnt.HitPos = beam.From + (beam.Direction * dist);
+                    hitEnt.EventType = Voxel;
                 }
                 else if (ent is IMyDestroyableObject)
                 {
@@ -245,79 +240,12 @@ namespace WeaponCore.Projectiles
                         hitEnt.EventType = Destroyable;
                     }
                 }
-                else Log.Line($"no hit master");
 
                 if (isX) xDist = dist;
                 else yDist = dist;
             }
             V3Pool.Return(slims);
             return xDist.CompareTo(yDist);
-        }
-
-        internal bool FastHitPos(HitEntity hitEntity, LineD beam, int poolId)
-        {
-            var shield = hitEntity.Entity as IMyTerminalBlock;
-            var grid = hitEntity.Entity as MyCubeGrid;
-            var voxel = hitEntity.Entity as MyVoxelBase;
-            var ent = hitEntity.Entity;
-            var dist = double.MaxValue;
-            if (shield != null)
-            {
-                var hitPos = Session.Instance.SApi.LineIntersectShield(shield, beam);
-                if (hitPos.HasValue)
-                    hitEntity.HitPos = hitPos;
-                return true;
-            }
-
-            if (grid != null)
-            {
-                var blockPos = grid.RayCastBlocks(beam.From, beam.To);
-                if (blockPos.HasValue)
-                {
-                    //var center = grid.GridIntegerToWorld(blockPos.Value);
-                    var firstBlock = grid.GetCubeBlock(blockPos.Value) as IMySlimBlock;
-                    Vector3D center;
-                    firstBlock.ComputeWorldCenter(out center);
-                    Vector3 halfExt;
-                    firstBlock.ComputeScaledHalfExtents(out halfExt);
-
-                    var blockBox = new BoundingBoxD(-halfExt, halfExt);
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(firstBlock.CubeGrid.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
-                    dist = obb.Intersects(ref beam) ?? -1;
-                    if (dist < 0) return false;
-                    hitEntity.HitPos = (beam.From + (beam.Direction * dist));
-                    return true;
-                }
-                return false;
-            }
-            if (voxel != null)
-            {
-                Vector3D? t;
-                voxel.GetIntersectionWithLine(ref beam, out t, true, IntersectionFlags.DIRECT_TRIANGLES);
-                if (t != null)
-                {
-                    Log.Line($"voxel hit: {t.Value}");
-                    hitEntity.HitPos = beam.From + (beam.Direction * dist);
-                    return true;
-                }
-                return false;
-            }
-            if (ent is IMyDestroyableObject)
-            {
-                var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
-                var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                dist = obb.Intersects(ref beam) ?? double.MaxValue;
-                if (dist < double.MaxValue)
-                {
-                    hitEntity.HitPos = beam.From + (beam.Direction * dist);
-                    return true;
-                }
-                return false;
-            }
-            Log.Line($"no hit slave - {hitEntity.Entity == null}");
-
-            return false;
         }
 
         public static List<Vector3D> CreateRandomLineSegOffsets(double maxRange, double minForwardStep, double maxForwardStep, double maxOffset, ref List<Vector3D> offsetList)

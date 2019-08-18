@@ -1,10 +1,8 @@
 ﻿using System;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Screens.Helpers;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
