@@ -72,6 +72,7 @@ namespace WeaponCore.Support
         public readonly double DetonateRadiusSmall;
         public readonly double DetonateRadiusLarge;
         public readonly double MaxTargetSpeed;
+        public readonly double ShieldModifier;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float ShotEnergyCost;
@@ -143,7 +144,7 @@ namespace WeaponCore.Support
             AreaRadiusLarge = Session.ModRadius(values.Ammo.AreaEffect.AreaEffectRadius, true);
             DetonateRadiusSmall = Session.ModRadius(values.Ammo.AreaEffect.Detonation.DetonationRadius, false);
             DetonateRadiusLarge = Session.ModRadius(values.Ammo.AreaEffect.Detonation.DetonationRadius, true);
-
+            ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
             IsHybrid = values.HardPoint.Hybrid;

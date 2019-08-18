@@ -13,7 +13,6 @@ namespace WeaponCore.Support
 {
     internal static class UtilsStatic
     {
-
         public static void UpdateTerminal(this MyCubeBlock block)
         {
             MyOwnershipShareModeEnum shareMode;

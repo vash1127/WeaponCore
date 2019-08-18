@@ -48,29 +48,33 @@ namespace WeaponCore.Projectiles
         {
             var listCnt = segmentList?.Count ?? p.T.HitList.Count;
             var found = false;
+            var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             for (int i = 0; i < listCnt; i++)
             {
                 var ent = segmentList != null ? segmentList[i].Element : p.T.HitList[i].Entity;
                 if (ent == p.T.Ai.MyGrid || ent.MarkedForClose || !ent.InScene) continue;
-                var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
-                if (shieldBlock != null)
+                if (!shieldByPass)
                 {
-                    if (ent.Physics == null && shieldBlock.CubeGrid != p.T.Ai.MyGrid)
+                    var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
+                    if (shieldBlock != null)
                     {
-                        var hitEntity = HitEntityPool[poolId].Get();
-                        hitEntity.Clean();
-                        hitEntity.Entity = (MyEntity)shieldBlock;
-                        hitEntity.Beam = beam;
-                        if (quickCheck)
+                        if (ent.Physics == null && shieldBlock.CubeGrid != p.T.Ai.MyGrid)
                         {
-                            hitEntity.HitPos = Session.Instance.SApi.LineIntersectShield(shieldBlock, beam);
-                            hitEntity.Hit = true;
-                            hitEntity.EventType = Proximity;
+                            var hitEntity = HitEntityPool[poolId].Get();
+                            hitEntity.Clean();
+                            hitEntity.Entity = (MyEntity)shieldBlock;
+                            hitEntity.Beam = beam;
+                            if (quickCheck)
+                            {
+                                hitEntity.HitPos = Session.Instance.SApi.LineIntersectShield(shieldBlock, beam);
+                                hitEntity.Hit = true;
+                                hitEntity.EventType = Proximity;
+                            }
+                            found = true;
+                            p.T.HitList.Add(hitEntity);
                         }
-                        found = true;
-                        p.T.HitList.Add(hitEntity);
+                        else continue;
                     }
-                    else continue;
                 }
 
                 var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
