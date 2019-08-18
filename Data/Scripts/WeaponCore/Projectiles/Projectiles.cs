@@ -114,13 +114,6 @@ namespace WeaponCore.Projectiles
                     }
                     p.LastPosition = p.Position;
                     var isProjectile = p.T.Target.IsProjectile;
-                    if (isProjectile && !p.T.Ai.LiveProjectile.Contains(p.T.Target.Projectile))
-                    {
-                        p.T.Target.Reset();
-                        isProjectile = false;
-                        Log.Line("Test");
-                    }
-
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
                     {
                         Vector3D newVel;
