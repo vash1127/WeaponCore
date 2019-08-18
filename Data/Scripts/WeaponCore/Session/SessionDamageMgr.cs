@@ -70,7 +70,14 @@ namespace WeaponCore
             var system = t.System;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
             t.ObjectsHit++;
-            SApi.PointAttackShield(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, t.BaseDamagePool, false, true);
+            var damageScale = 1;
+            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
+
+            var scaledDamage = t.BaseDamagePool * damageScale;
+            var objHp = SApi.GetCharge(shield) * 100;
+            if (scaledDamage < objHp) t.BaseDamagePool = 0;
+            else t.BaseDamagePool -= objHp;
+            SApi.PointAttackShield(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, scaledDamage, false, true);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
@@ -291,6 +298,7 @@ namespace WeaponCore
 
             var character = hitEnt.Entity is IMyCharacter;
             float damageScale = 1;
+            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
             if (character && system.Values.DamageScales.Characters >= 0)
                 damageScale *= system.Values.DamageScales.Characters;
 
@@ -319,6 +327,7 @@ namespace WeaponCore
             if (integrityCheck && objHp > system.Values.DamageScales.MaxIntegrity) return;
 
             float damageScale = 1;
+            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
 
             var scaledDamage = t.BaseDamagePool * damageScale;
 
@@ -326,11 +335,7 @@ namespace WeaponCore
             else t.BaseDamagePool -= objHp;
             pEntity.T.BaseHealthPool -= scaledDamage;
             if (pEntity.T.BaseHealthPool <= 0)
-            {
                 pEntity.State = Projectile.ProjectileState.Depleted;
-                //Log.Line("killed projectile");
-            }
-            //else Log.Line($"hit projectile: {pEntity.T.BaseHealthPool}");
         }
 
         private void DamageVoxel(HitEntity hitEnt, Trajectile t)
@@ -339,10 +344,15 @@ namespace WeaponCore
             var destObj = hitEnt.Entity as MyVoxelBase;
             var system = t.System;
             if (destObj == null || entity == null || !system.Values.DamageScales.DamageVoxels) return;
+            t.ObjectsHit++;
 
-            var baseDamage = system.Values.Ammo.BaseDamage;
-            var damage = baseDamage;
-            t.ObjectsHit++; // add up voxel units
+            float damageScale = 1;
+            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
+
+            var scaledDamage = t.BaseDamagePool * damageScale;
+            var objHp = 1;
+            if (scaledDamage < objHp) t.BaseDamagePool = 0;
+            else t.BaseDamagePool -= objHp;
 
             //destObj.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
         }
@@ -353,6 +363,8 @@ namespace WeaponCore
             t.BaseDamagePool = 0;
             var radius = system.Values.Ammo.AreaEffect.AreaEffectRadius;
             var damage = system.Values.Ammo.AreaEffect.AreaEffectDamage;
+            if (system.VirtualBeams)
+                damage *= t.WeaponCache.Hits;
 
             if (hitEnt.HitPos.HasValue)
             {

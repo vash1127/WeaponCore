@@ -366,8 +366,8 @@ namespace WeaponCore.Projectiles
 
                 if (p.T.MuzzleId != -1)
                 {
-                    p.T.WeaponCache.Hits = p.VrTrajectiles.Count;
-                    p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, p.T.WeaponCache.HitDistance);
+                    var length = Vector3D.Distance(p.LastPosition, hitPos);
+                    p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, length);
                     p.T.Complete(hitEntity, true);
                     drawList.Add(p.T);
                 }
@@ -380,6 +380,7 @@ namespace WeaponCore.Projectiles
                 p.T.WeaponCache.VirtualHit = true;
                 p.T.WeaponCache.HitEntity.Entity = hitEntity.Entity;
                 p.T.WeaponCache.HitEntity.HitPos = hitEntity.HitPos;
+                p.T.WeaponCache.Hits = p.VrTrajectiles.Count;
                 p.T.WeaponCache.HitDistance = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
 
                 if (hitEntity.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = hitEntity.Blocks[0];
