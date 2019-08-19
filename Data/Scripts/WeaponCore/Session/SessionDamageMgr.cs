@@ -358,11 +358,7 @@ namespace WeaponCore
             var hitPos = VoxelIntersect.ProcessVoxel(hitEnt.Beam, destObj, system, _voxelTestPoints);
             var radius = system.AmmoAreaEffect ? system.Values.Ammo.AreaEffect.AreaEffectRadius : 1;
             if (hitPos.HasValue)
-            {
-                Log.Line("test");
                 destObj.PerformCutOutSphereFast(hitPos.Value, (float) radius, true);
-            }
-            //destObj.DoDamage(damage, MyDamageType.Bullet, true, null, dEvent.Attacker.EntityId);
         }
 
         private void ExplosionProximity(HitEntity hitEnt, Trajectile t)

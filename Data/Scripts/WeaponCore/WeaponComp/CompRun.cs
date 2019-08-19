@@ -37,7 +37,6 @@ namespace WeaponCore.Support
                 Log.Line("added to scene");
                 if (MainInit)
                 {
-
                     MyGrid = MyCube.CubeGrid;
                     GridAi gridAi;
                     if (!Session.Instance.GridTargetingAIs.TryGetValue(MyGrid, out gridAi))
@@ -53,7 +52,6 @@ namespace WeaponCore.Support
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                         OnAddedToSceneTasks();
 
-                    IsWorkingChanged(MyCube);
                     return;
                 }
                 _isServer = Session.Instance.IsServer;
@@ -71,7 +69,7 @@ namespace WeaponCore.Support
                 if (!EntityAlive()) return;
 
                 var state = WeaponState();
-                if (state != Status.Online)
+                if (state != CompStatus.Online)
                 {
                     if (NotFailed) FailWeapon(state);
                     else if (State.Value.Message) UpdateNetworkState();
@@ -127,7 +125,6 @@ namespace WeaponCore.Support
             }
 
             StorageSetup();
-            State.Value.Online = true;
 
             RegisterEvents(true);
 
@@ -140,7 +137,9 @@ namespace WeaponCore.Support
         private void OnAddedToSceneTasks()
         {
             Log.Line($"on added tasks");
-            Platform.ResetParts(this);
+            if (MainInit)
+                Platform.ResetParts(this);
+
             Entity.NeedsWorldMatrix = true;
             Turret.EnableIdleRotation = false;
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
@@ -157,8 +156,7 @@ namespace WeaponCore.Support
                 }
                 Ai.GridInit = true;
             }
-
-            if (Turret.Enabled) Turret.Enabled = false; Turret.Enabled = true;
+            Status = CompStatus.Startup;
         }
 
         public override void OnRemovedFromScene()

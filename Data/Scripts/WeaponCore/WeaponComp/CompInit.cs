@@ -1,10 +1,6 @@
-﻿using System.Text;
-using Sandbox.ModAPI;
-using Sandbox.ModAPI.Interfaces.Terminal;
+﻿using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Utils;
-using WeaponCore.Platform;
-using WepaonCore.Control;
 
 namespace WeaponCore.Support
 {

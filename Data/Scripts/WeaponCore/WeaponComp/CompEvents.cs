@@ -78,12 +78,10 @@ namespace WeaponCore.Support
         {
             var wasFunctional = IsFunctional;
             IsFunctional = myCubeBlock.IsFunctional;
+            if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
+                Status = CompStatus.ReInit;
 
-            if (!wasFunctional && IsFunctional)
-            {
-                FunctionalReset = true;
-            }
-
+            Log.Line($"isWorking:{IsWorking} - isFunctional:{IsFunctional} - RemoveParts:{!wasFunctional && IsFunctional}");
             IsWorking = myCubeBlock.IsWorking;
             State.Value.Online = IsWorking && IsFunctional;
             TerminalRefresh();
@@ -95,6 +93,7 @@ namespace WeaponCore.Support
                     w.StopShooting();
                 }
             }
+            IsWorkingChangedTick = Session.Instance.Tick;
         }
 
         internal string GetSystemStatus()
