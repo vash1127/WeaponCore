@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -64,7 +65,10 @@ namespace WeaponCore
                                 var item = Items[0];
                                 if (item.SubSlot < item.SubSlotCount - 1) item.SubSlot++;
                                 else item.SubSlot = 0;
-                                message = item.Targets[item.SubSlot].Target.DisplayName;
+                                var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
+                                if (target == null) break;
+                                message = $"[Target: {target.DisplayName}\n" 
+                                          + $"Armed: {Session.Instance.GridTargetingAIs.ContainsKey(target)}]";
                             }
 
                             break;
