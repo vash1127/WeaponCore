@@ -1,12 +1,8 @@
 ﻿using System;
 using System.Threading;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Game;
 using VRage.Game.ModAPI;
-using VRage.Input;
-using VRageMath;
 using WeaponCore.Support;
 namespace WeaponCore
 {
