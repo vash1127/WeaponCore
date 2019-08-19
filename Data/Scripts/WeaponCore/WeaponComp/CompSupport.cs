@@ -51,10 +51,7 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-
                     SinkPower = CurrentSinkPowerRequested;
-                    DelayTicks = 0;
-                    ShootTick = 0;
                     Ai.ResetPower = true;
                 }
 
