@@ -44,6 +44,8 @@ namespace WeaponCore.Support
         internal MyResourceDistributorComponent MyResourceDist;
         internal MyGridTargeting Targeting { get; set; }
         internal DSUtils DsWatch = new DSUtils();
+        internal MyEntity MyShieldTmp;
+        internal MyEntity MyShield;
         internal uint SubTick;
         internal uint TargetsUpdatedTick;
         internal uint RecalcLowPowerTick;

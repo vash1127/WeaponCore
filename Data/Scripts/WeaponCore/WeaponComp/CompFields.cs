@@ -116,17 +116,7 @@ namespace WeaponCore.Support
             IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
             SinkPower = IdlePower;
 
-            var resourceInfo = new MyResourceSinkInfo()
-            {
-                ResourceTypeId = GId,
-                MaxRequiredInput = 0f,
-                RequiredInputFunc = () => SinkPower,
-            };
-            MyCube.Components.TryGet(out Sink);
-            Sink.RemoveType(ref GId);
-            Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
-            Sink.AddType(ref resourceInfo);
-            Sink.Update();
+            PowerInit();
 
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
         }        

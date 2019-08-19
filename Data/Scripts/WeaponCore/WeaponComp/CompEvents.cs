@@ -124,21 +124,26 @@ namespace WeaponCore.Support
 
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
-            var currentInput = sink.CurrentInputByType(changedResourceTypeId);
-            var tick = Session.Instance.Tick;
-            if (Ai.ResetPower && tick != LastUpdateTick && currentInput < CurrentSinkPowerRequested)
+            try
             {
-                if (Ai.ResetPowerTick != tick) {
-                    Ai.CurrentWeaponsDraw = 0;
-                    Ai.ResetPowerTick = tick;
-                    Ai.RecalcLowPowerTick = tick + 20;
-                    Ai.UpdatePowerSources = true;
-                    
+                var currentInput = sink.CurrentInputByType(changedResourceTypeId);
+                var tick = Session.Instance.Tick;
+                if (Ai.ResetPower && tick != LastUpdateTick && currentInput < CurrentSinkPowerRequested)
+                {
+                    if (Ai.ResetPowerTick != tick)
+                    {
+                        Ai.CurrentWeaponsDraw = 0;
+                        Ai.ResetPowerTick = tick;
+                        Ai.RecalcLowPowerTick = tick + 20;
+                        Ai.UpdatePowerSources = true;
+
+                    }
+                    LastUpdateTick = tick;
+                    Ai.CurrentWeaponsDraw += currentInput;
+                    //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
                 }
-                LastUpdateTick = tick;
-                Ai.CurrentWeaponsDraw += currentInput;
-                //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
             }
+            catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
         }
     }
 }

@@ -67,8 +67,8 @@ namespace WeaponCore
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
         private readonly List<Vector3I> _voxelTestPoints = new List<Vector3I>();
-        private readonly ConcurrentQueue<WeaponComponent> _compsToStart = new ConcurrentQueue<WeaponComponent>();
-        private readonly ConcurrentQueue<WeaponComponent> _compsToRemove = new ConcurrentQueue<WeaponComponent>();
+        internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
+        internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
 
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();

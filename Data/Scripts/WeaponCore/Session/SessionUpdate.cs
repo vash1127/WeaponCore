@@ -144,6 +144,7 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
+                    if (comp.MyGrid != comp.Ai.MyGrid || comp.MyCube.CubeGrid != comp.MyGrid || comp.MyCube.CubeGrid != comp.Ai.MyGrid) Log.Line($"cube desync: compMyGridId:{comp.MyGrid.EntityId} - aiMyGridId:{comp.Ai.MyGrid.EntityId} - myCubeGridId:{comp.MyCube.CubeGrid.EntityId}");
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     InTurret = gunner;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;

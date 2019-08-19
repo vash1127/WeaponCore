@@ -75,6 +75,7 @@ namespace WeaponCore
 
                 db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0;
                 //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
+                db.MyShield = db.MyShieldTmp;
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
             DbsToUpdate.Clear();
@@ -162,10 +163,10 @@ namespace WeaponCore
             }
             else Zoom = 1;
 
-            if (!_compsToStart.IsEmpty)
+            if (!CompsToStart.IsEmpty)
             {
                 WeaponComponent weaponComp;
-                _compsToStart.TryDequeue(out weaponComp);
+                CompsToStart.TryDequeue(out weaponComp);
                 if (weaponComp.MyCube.CubeGrid.Physics != null)
                 {
                     weaponComp.MyCube.Components.Add(weaponComp);
@@ -175,9 +176,9 @@ namespace WeaponCore
                 else RemoveGridAi(weaponComp);
             }
 
-            if (!_compsToRemove.IsEmpty) {
+            if (!CompsToRemove.IsEmpty) {
                 WeaponComponent weaponComp;
-                _compsToRemove.TryDequeue(out weaponComp);
+                CompsToRemove.TryDequeue(out weaponComp);
                 RemoveGridAi(weaponComp);
             }
 

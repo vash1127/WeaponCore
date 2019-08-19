@@ -52,7 +52,9 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < listCnt; i++)
             {
                 var ent = segmentList != null ? segmentList[i].Element : p.T.HitList[i].Entity;
-                if (ent == p.T.Ai.MyGrid || ent.MarkedForClose || !ent.InScene) continue;
+                var grid = ent as MyCubeGrid;
+
+                if (grid != null && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass)
                 {
                     var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
@@ -108,6 +110,25 @@ namespace WeaponCore.Projectiles
                     }
                     if (voxelHit != null) hitEntity.HitPos = voxelHit;
 
+                    found = true;
+                    p.T.HitList.Add(hitEntity);
+                }
+            }
+
+            if (p.T.Target.IsProjectile)
+            {
+                var ray = new RayD(p.LastPosition, p.Direction);
+                var targetPos = p.T.Target.Projectile.Position;
+                var sphere = new BoundingSphereD(targetPos, 2.5f);
+                if (sphere.Intersects(ray) != null)
+                {
+                    var hitEntity = HitEntityPool[poolId].Get();
+                    hitEntity.Clean();
+                    hitEntity.EventType = HitEntity.Type.Projectile;
+                    hitEntity.Hit = true;
+                    hitEntity.Projectile = p.T.Target.Projectile;
+                    hitEntity.HitPos = targetPos;
+                    hitEntity.Beam = new LineD(ray.Position, targetPos);
                     found = true;
                     p.T.HitList.Add(hitEntity);
                 }
@@ -183,7 +204,11 @@ namespace WeaponCore.Projectiles
                 var voxel = ent as MyVoxelBase;
 
                 var dist = double.MaxValue;
-                if (shield != null)
+                if (hitEnt.Projectile != null)
+                {
+                    dist = Vector3D.Distance(hitEnt.HitPos.Value, beam.From);
+                }
+                else if (shield != null)
                 {
                     var hitPos = Session.Instance.SApi.LineIntersectShield(shield, beam);
                     if (hitPos != null)

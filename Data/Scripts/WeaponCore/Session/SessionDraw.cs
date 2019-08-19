@@ -87,16 +87,20 @@ namespace WeaponCore
 
                     if (!t.System.IsBeamWeapon) MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
                     else MyTransparentGeometry.AddLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
-                    //MySimpleObjectDraw.DrawLine(t.PrevPosition, hitPos, t.System.ProjectileMaterial, ref color, thickness);
                 }
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
                     var c = t.Target.FiringCube;
-                    if (c == null || c.MarkedForClose) continue;
-                    var weapon = GridTargetingAIs[c.CubeGrid].WeaponBase[c].Platform.Weapons[t.WeaponId];
-                    if (weapon != null)
+                    if (c == null || c.MarkedForClose)
                     {
+                        Log.Line($"FiringCube marked for close");
+                        continue;
+                    }
+                    WeaponComponent weaponComp;
+                    if (t.Ai.WeaponBase.TryGetValue(c, out weaponComp))
+                    {
+                        var weapon = weaponComp.Platform.Weapons[t.WeaponId];
                         var effect = weapon.HitEffects[t.MuzzleId];
                         if (t.HitEntity?.HitPos != null && t.OnScreen)
                         {

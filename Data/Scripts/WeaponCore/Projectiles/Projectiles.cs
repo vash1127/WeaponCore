@@ -113,7 +113,6 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     p.LastPosition = p.Position;
-                    var isProjectile = p.T.Target.IsProjectile;
                     if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
                     {
                         Vector3D newVel;
@@ -121,13 +120,13 @@ namespace WeaponCore.Projectiles
                         {
                             var giveUpChase = p.Age - p.ChaseAge > p.MaxChaseAge;
                             var newChase = giveUpChase || p.PickTarget;
-                            var validTarget = isProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
+                            var validTarget = p.T.Target.IsProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
 
                             if (newChase && p.EndChase() || validTarget || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
                             {
                                 if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                 var targetPos = Vector3D.Zero;
-                                if (isProjectile) targetPos = p.T.Target.Projectile.Position;
+                                if (p.T.Target.IsProjectile) targetPos = p.T.Target.Projectile.Position;
                                 else if (p.T.Target.Entity != null) targetPos = p.T.Target.Entity.PositionComp.WorldAABB.Center;
 
                                 if (p.T.System.TargetOffSet)
@@ -144,12 +143,12 @@ namespace WeaponCore.Projectiles
 
                                 var physics = p.T.Target.Entity?.Physics ?? p.T.Target.Entity?.Parent?.Physics;
 
-                                if (!isProjectile && (physics == null || targetPos == Vector3D.Zero))
+                                if (!p.T.Target.IsProjectile && (physics == null || targetPos == Vector3D.Zero))
                                     p.PrevTargetPos = p.PredictedTargetPos;
                                 else p.PrevTargetPos = targetPos;
 
                                 var tVel = Vector3.Zero;
-                                if (isProjectile) tVel = p.T.Target.Projectile.Velocity;
+                                if (p.T.Target.IsProjectile) tVel = p.T.Target.Projectile.Velocity;
                                 else if (physics != null) tVel = physics.LinearVelocity;
 
                                 p.PrevTargetVel = tVel;
@@ -223,44 +222,16 @@ namespace WeaponCore.Projectiles
                             continue;
                         }
                     }
-                    if (!isProjectile)
-                    {
-                        if (!p.T.System.VirtualBeams || p.T.MuzzleId == -1)
-                        {
-                            var beam = new LineD(p.LastPosition, p.Position);
-                            MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
-                            var segCount = p.SegmentList.Count;
-                            if (segCount > 1 || segCount == 1 && p.SegmentList[0].Element != p.T.Ai.MyGrid)
-                            {
-                                var nearestHitEnt = GetAllEntitiesInLine(p, beam, p.SegmentList, i);
-                                if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
-                                p.T.HitList.Clear();
-                            }
-                        }
-                    }
-                    else
-                    {
-                        try
-                        {
-                            var beam = new RayD(p.LastPosition, p.Direction);
-                            var targetPos = p.T.Target.Projectile.Position;
-                            var sphere = new BoundingSphereD(targetPos, 2.5f);
-                            if (sphere.Intersects(beam) != null)
-                            {
-                                var hitEntity = HitEntityPool[i].Get();
-                                hitEntity.Clean();
-                                hitEntity.EventType = HitEntity.Type.Projectile;
-                                hitEntity.Hit = true;
-                                hitEntity.Projectile = p.T.Target.Projectile;
-                                hitEntity.HitPos = targetPos;
-                                hitEntity.Beam = new LineD(beam.Position, targetPos);
-                                p.T.HitList.Add(hitEntity);
 
-                                Intersected(p, drawList, hitEntity);
-                                continue;
-                            }
-                        }
-                        catch (Exception ex) { Log.Line($"Exception in ProjectileHit: {ex}"); }
+                    var beam = new LineD(p.LastPosition, p.Position);
+                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
+                    var segCount = p.SegmentList.Count;
+
+                    if (segCount > 0)
+                    {
+                        var nearestHitEnt = GetAllEntitiesInLine(p, beam, p.SegmentList, i);
+                        if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
+                        p.T.HitList.Clear();
                     }
 
                     if (!p.EnableAv) continue;

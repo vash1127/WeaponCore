@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
+using VRage.Game.Components;
 using VRage.Utils;
 using WeaponCore.Platform;
 using WepaonCore.Control;
@@ -9,6 +10,21 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
+        private void PowerInit()
+        {
+            var resourceInfo = new MyResourceSinkInfo()
+            {
+                ResourceTypeId = GId,
+                MaxRequiredInput = 0f,
+                RequiredInputFunc = () => SinkPower,
+            };
+            MyCube.Components.TryGet(out Sink);
+            var gId = GId;
+            Sink.RemoveType(ref gId);
+            Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
+            Sink.AddType(ref resourceInfo);
+            Sink.Update();
+        }
         private bool EntityAlive()
         {
             if (MyGrid?.Physics == null) return false;

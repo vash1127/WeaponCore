@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
@@ -35,7 +36,7 @@ namespace WeaponCore.Support
                     var grid = ent as MyCubeGrid;
                     if (grid != null)
                     {
-                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 && !((grid.CubeBlocks.FirstElement() as IMySlimBlock)?.FatBlock is IMyWarhead) || MyGrid.IsInSameLogicalGroupAs(grid))
+                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 && !((grid.CubeBlocks.FirstElement() as IMySlimBlock)?.FatBlock is IMyWarhead) || MyGrid.IsSameConstructAs(grid))
                             continue;
 
                         var typeDict = BlockTypePool.Get();
@@ -99,6 +100,12 @@ namespace WeaponCore.Support
                 for (int i = 0; i < EntitiesInRange.Count; i++)
                 {
                     var ent = EntitiesInRange[i];
+                    var hasPhysics = ent.Physics != null;
+                    if (!hasPhysics && !ent.IsPreview)
+                    {
+                        var testId = Convert.ToInt64(ent.Name);
+                        if (testId != 0 && testId == MyGrid.EntityId) MyShieldTmp = ent; 
+                    } 
                     var blockingThings = (ent is MyVoxelBase || ent is MyCubeGrid && ent.Physics != null);
                     if (!blockingThings || ent == MyGrid || ValidGrids.ContainsKey(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
                     ObstructionsTmp.Add(ent);

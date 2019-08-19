@@ -141,7 +141,7 @@ namespace WeaponCore.Projectiles
                 MaxChaseAge = T.System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
             else MaxChaseAge = int.MaxValue;
 
-            if (T.Target.Projectile != null) OriginTargetPos = T.Target.Projectile.Position;
+            if (T.Target.IsProjectile) OriginTargetPos = T.Target.Projectile.Position;
             else if (T.Target.Entity != null) OriginTargetPos = T.Target.Entity.PositionComp.WorldAABB.Center;
             else OriginTargetPos = Vector3D.Zero;
             LockedTarget = OriginTargetPos != Vector3D.Zero;

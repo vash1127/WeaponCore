@@ -87,7 +87,9 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
-                MyEntities.OnEntityDelete += OnEntityDelete;
+                //MyEntities.OnEntityAdd += OnEntityAdd;
+                //MyEntities.OnEntityRemove += OnEntityRemove;
+                //MyEntities.OnEntityDelete += OnEntityDelete;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -104,7 +106,9 @@ namespace WeaponCore
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
-            MyEntities.OnEntityDelete -= OnEntityDelete;
+            //MyEntities.OnEntityAdd -= OnEntityAdd;
+            //MyEntities.OnEntityRemove -= OnEntityRemove;
+            //MyEntities.OnEntityDelete -= OnEntityDelete;
 
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;

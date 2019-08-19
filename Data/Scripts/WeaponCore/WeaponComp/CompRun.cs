@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -13,7 +14,6 @@ namespace WeaponCore.Support
         public override void OnAddedToContainer()
         {
             base.OnAddedToContainer();
-
             if (Container.Entity.InScene)
             {
             }
@@ -33,13 +33,33 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (MainInit) return;
                 base.OnAddedToScene();
+                Log.Line("added to scene");
+                if (MainInit)
+                {
+
+                    MyGrid = MyCube.CubeGrid;
+                    GridAi gridAi;
+                    if (!Session.Instance.GridTargetingAIs.TryGetValue(MyGrid, out gridAi))
+                    {
+                        gridAi = new GridAi(MyGrid);
+                        Session.Instance.GridTargetingAIs.TryAdd(MyGrid, gridAi);
+                    }
+                    Ai = gridAi;
+                    if (Ai.MyGrid != MyCube.CubeGrid) Log.Line("grid mismatch");
+                    MyGrid = MyCube.CubeGrid;
+                    PowerInit();
+                    RegisterEvents();
+                    if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this)) 
+                        InitPlatform();
+
+                    IsWorkingChanged(MyCube);
+                    return;
+                }
                 _isServer = Session.Instance.IsServer;
                 _isDedicated = Session.Instance.DedicatedServer;
                 _mpActive = Session.Instance.MpActive;
                 InitPlatform();
-                Log.Line("added to scene");
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -136,17 +156,22 @@ namespace WeaponCore.Support
 
         public override void OnRemovedFromScene()
         {
+            Log.Line($"remove from  inscene");
             try
             {
                 base.OnRemovedFromScene();
-                Platform.Parts.Entity = null;
                 RegisterEvents(false);
-                IsWorking = false;
-                IsFunctional = false;
                 StopAllSounds();
-                Ai.TotalSinkPower -= MaxRequiredPower;
-                Ai.RecalcPowerPercent = true;
-                Ai.UpdatePowerSources = true;
+                WeaponComponent comp;
+                Ai.WeaponBase.TryRemove(MyCube, out comp);
+                if (Ai.WeaponBase.Count == 0)
+                {
+                    GridAi gridAi;
+                    Session.Instance.GridTargetingAIs.TryRemove(MyGrid, out gridAi);
+                }
+
+                Ai = null;
+                MyGrid = null;
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }

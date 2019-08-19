@@ -326,7 +326,7 @@ namespace WeaponCore.Platform
 
                 if (!GridAi.GridEnemy(Comp.MyCube, grid))
                 {
-                    if (!grid.IsInSameLogicalGroupAs(Comp.MyGrid))
+                    if (!grid.IsSameConstructAs(Comp.MyGrid))
                     {
                         Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
                         masterWeapon.Target.Expired = true;
@@ -342,7 +342,7 @@ namespace WeaponCore.Platform
             {
                 if (Target.Projectile != null)
                 {
-                    Log.Line($"projectile not null other branch2: {((MyEntity)hitInfo.HitEntity).DebugName} - {Comp.MyGrid.IsInSameLogicalGroupAs(hitInfo.HitEntity as MyCubeGrid)}");
+                    Log.Line($"projectile not null other branch2: {((MyEntity)hitInfo.HitEntity).DebugName} - {Comp.MyGrid.IsSameConstructAs(hitInfo.HitEntity as MyCubeGrid)}");
                 }
                 var grid = hitInfo.HitEntity as MyCubeGrid;
                 if (grid != null && Target.Entity.GetTopMostParent() == grid)
