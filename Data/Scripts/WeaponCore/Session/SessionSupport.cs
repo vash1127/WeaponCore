@@ -173,18 +173,12 @@ namespace WeaponCore
                     weaponComp.OnAddedToScene();
                     Log.Line($"added to comp");
                 }
-                else RemoveGridAi(weaponComp);
+                //else RemoveGridAi(weaponComp);
             }
-
-            if (!CompsToRemove.IsEmpty) {
-                WeaponComponent weaponComp;
-                CompsToRemove.TryDequeue(out weaponComp);
-                RemoveGridAi(weaponComp);
-            }
-
             if (!DedicatedServer) CameraPos = Session.Camera.Position;
         }
 
+        /*
         private void RemoveGridAi(WeaponComponent weaponComp)
         {
             WeaponComponent removedComp;
@@ -194,6 +188,7 @@ namespace WeaponCore
             if (GridTargetingAIs[weaponComp.MyCube.CubeGrid].WeaponBase.Count == 0)
                 GridTargetingAIs.TryRemove(weaponComp.MyCube.CubeGrid, out removedAi);
         }
+        */
 
         private void Paused()
         {
