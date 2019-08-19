@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
-using VRage.Game;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -24,40 +21,35 @@ namespace WeaponCore
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
         internal bool ResetMenu;
-        internal readonly List<MyCubeGrid> Grids = new List<MyCubeGrid>();
-        internal readonly List<IMyCharacter> Characters = new List<IMyCharacter>();
+        internal readonly List<GridAi.TargetInfo> Grids = new List<GridAi.TargetInfo>();
+        internal readonly List<GridAi.TargetInfo> Characters = new List<GridAi.TargetInfo>();
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
-
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
 
+        internal readonly Item[] GridItems =
+        {
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), Message = "[Grids]", ParentName = "Main", SubName = "SubSystems"},
+        };
+
         internal readonly Item[] SubSystemItems =
         {
-           //new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_NoSelect"), Message = "SubSystems" },
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Comms"), Message = "[Production]", ParentName = "Main"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"), Message = "[Navigation]", ParentName = "Main"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Engines"), Message = "[Engines]", ParentName = "Main"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Weapons"), Message = "[Weapons]", ParentName = "Main"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Power"), Message = "[Power]", ParentName = "Main"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"), Message = "[Ordinance]", ParentName = "Main"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Comms"), Message = "[Production]", ParentName = "Grids"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"), Message = "[Navigation]", ParentName = "Grids"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Engines"), Message = "[Engines]", ParentName = "Grids"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Weapons"), Message = "[Weapons]", ParentName = "Grids"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Power"), Message = "[Power]", ParentName = "Grids"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"), Message = "[Ordinance]", ParentName = "Grids"},
         };
 
         internal readonly Item[] MainItems =
         {
             //new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_NoSelect"), Message = "Main" },
-            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Grids"), Message = "[Grids]", SubName = "SubSystems"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Grids"), Message = "[Grids]", SubName = "Grids"},
             new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Players"), Message = "[Characters]" },
             new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_WeaponGroups"), Message = "[Weapon Groups]" },
             new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Ordinance"), Message = "[Ordinance]" },
         };
-
-        internal struct Item
-        {
-            internal MyStringId Texture;
-            internal string Message;
-            internal string SubName;
-            internal string ParentName;
-        }
 
         internal enum State
         {
@@ -80,38 +72,17 @@ namespace WeaponCore
 
         internal Wheel()
         {
-            var main = new Menu("Main", MainItems, MainItems.Length);
-            var subSystems = new Menu("SubSystems", SubSystemItems, SubSystemItems.Length);
+            var main = new Menu(this, "Main", MainItems, MainItems.Length);
+            var subSystems = new Menu(this, "SubSystems", SubSystemItems, SubSystemItems.Length);
+            var grids = new Menu(this, "Grids", GridItems, GridItems.Length);
+            var characters = new Menu(this, "Characters", null, 0);
+            var ordinance = new Menu(this, "Ordinance", null, 0);
 
             Menus.Add(main.Name, main);
             Menus.Add(subSystems.Name, subSystems);
-        }
-
-        internal class Menu
-        {
-            internal readonly string Name;
-            internal readonly Item[] Items;
-            internal readonly int ItemCount;
-            internal int CurrentSlot;
-
-            internal Menu(string name, Item[] items, int itemCount)
-            {
-                Name = name;
-                Items = items;
-                ItemCount = itemCount;
-            }
-
-            internal void StatusUpdate(Wheel wheel)
-            {
-                if (wheel.ResetMenu)
-                {
-                    var ai = wheel.Ai;
-                    MyEntity target = null;
-                    if (ai.SortedTargets.Count > 0) target = ai.SortedTargets[0].Target;
-                    if (target != null) MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.SpectatorDelta, target);
-                    wheel.ResetMenu = false;
-                }
-            }
+            Menus.Add(grids.Name, grids);
+            Menus.Add(characters.Name, characters);
+            Menus.Add(ordinance.Name, ordinance);
         }
     }
 }

@@ -3,12 +3,11 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Entity;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
-
+using static WeaponCore.Wheel.Menu;
 namespace WeaponCore
 {
     internal partial class Wheel
@@ -50,7 +49,10 @@ namespace WeaponCore
                     var menuItem = menu.Items[menu.CurrentSlot];
 
                     if (menuItem.SubName != null)
+                    {
                         _currentMenu = menuItem.SubName;
+                        UpdateTargets();
+                    }
                 }
                 else if (MyAPIGateway.Input.IsNewRightMouseReleased())
                 {
@@ -58,22 +60,16 @@ namespace WeaponCore
                     var menuItem = menu.Items[menu.CurrentSlot];
 
                     if (menuItem.ParentName != null)
+                    {
                         _currentMenu = menuItem.ParentName;
+                        UpdateTargets();
+                    }
                 }
+
                 if (_currentWheel != _previousWheel && _currentWheel > _previousWheel)
-                {
-                    var menu = Menus[_currentMenu];
-                    if (menu.CurrentSlot < menu.ItemCount - 1) menu.CurrentSlot++;
-                    else menu.CurrentSlot = 0;
-                    HudNotify.Text = menu.Items[menu.CurrentSlot].Message;
-                }
+                    HudNotify.Text = Menus[_currentMenu].Move(Movement.Forward);
                 else if (_currentWheel != _previousWheel)
-                {
-                    var menu = Menus[_currentMenu];
-                    if (menu.CurrentSlot - 1 >= 0) menu.CurrentSlot--;
-                    else menu.CurrentSlot = menu.ItemCount - 1;
-                    HudNotify.Text = menu.Items[menu.CurrentSlot].Message;
-                }
+                    HudNotify.Text = Menus[_currentMenu].Move(Movement.Backward);
 
                 if (previousMenu != _currentMenu)
                 {
@@ -130,6 +126,19 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, true);
             var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
+        }
+
+        internal void UpdateTargets()
+        {
+            Grids.Clear();
+            Characters.Clear();
+            foreach (var target in Ai.SortedTargets)
+            {
+                if (target.IsGrid) Grids.Add(target);
+                else Characters.Add(target);
+            }
+            var menu = Menus[_currentMenu];
+            if (menu.ItemCount <= 1) menu.Refresh();
         }
     }
 }

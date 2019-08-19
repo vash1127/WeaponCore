@@ -99,6 +99,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\Utils.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompState.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompSupport.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WheelUi\Menu.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WheelUi\Ui.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WheelUi\UiFields.cs" />
   </ItemGroup>

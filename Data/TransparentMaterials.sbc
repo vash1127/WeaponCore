@@ -4,14 +4,14 @@
      <TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetWheel_NoSelect</SubtypeId>
+        <SubtypeId>DS_Empty_Wheel</SubtypeId>
       </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\noselect.dds</Texture>
+      <Texture>Textures\GUI\empty_wheel.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <NeedSort>true</NeedSort>
       <UVOffset>
