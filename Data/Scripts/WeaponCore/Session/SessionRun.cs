@@ -69,7 +69,7 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
-                    if (Ui.WheelActive) Ui.DrawWheel();
+                    if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible) Ui.DrawWheel();
 
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         lock (Projectiles.Wait[i])
