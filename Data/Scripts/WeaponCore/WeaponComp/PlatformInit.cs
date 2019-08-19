@@ -2,7 +2,7 @@
 using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponComponent.CompStatus;
+using static WeaponCore.Support.WeaponComponent.Start;
 namespace WeaponCore.Platform
 {
     public class MyWeaponPlatform
@@ -78,7 +78,7 @@ namespace WeaponCore.Platform
             }
 
             CompileTurret(true);
-            comp.Status = Online;
+            comp.Status = Started;
             return true;
         }
 
@@ -92,7 +92,7 @@ namespace WeaponCore.Platform
                 w.EntityPart = null;
             }
             Parts.Reset(comp.Entity as MyEntity);
-            comp.Status = Offline;
+            comp.Status = Stopped;
         }
     }
 }

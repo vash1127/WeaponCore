@@ -3,7 +3,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
-using static WeaponCore.Support.WeaponComponent.CompStatus;
+using static WeaponCore.Support.WeaponComponent.Start;
 
 namespace WeaponCore
 {
@@ -27,9 +27,9 @@ namespace WeaponCore
 
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     InTurret = gunner;
-                    if (!comp.MainInit || !comp.State.Value.Online || comp.Status != Online)
+                    if (!comp.MainInit || !comp.State.Value.Online || comp.Status != Started)
                     {
-                        if (comp.Status != Online) comp.HealthCheck();
+                        if (comp.Status != Started) comp.HealthCheck();
                         continue;
                     }
 

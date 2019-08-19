@@ -68,14 +68,13 @@ namespace WeaponCore.Support
         internal bool Starting;
         internal bool Sync = true;
         internal bool Charging = false;
-        internal CompStatus Status;
-        internal enum CompStatus
+        internal Start Status;
+        internal enum Start
         {
-            Online,
-            Startup,
+            Started,
+            Starting,
+            Stopped,
             ReInit,
-            Offline,
-            OverHeating,
             WarmingUp,
         }
 
