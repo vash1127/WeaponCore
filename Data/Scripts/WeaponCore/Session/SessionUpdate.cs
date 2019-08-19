@@ -96,7 +96,7 @@ namespace WeaponCore
                         {
                             if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 60) GridAi.AcquireTarget(w);
                         }
-                        else if (!w.TrackTarget && w.Target.Expired && w.IsTurret)
+                        else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;
 
                         if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(Session.Camera.Position, comp.MyPivotPos) < 10000)
