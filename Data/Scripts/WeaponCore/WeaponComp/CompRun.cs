@@ -50,8 +50,8 @@ namespace WeaponCore.Support
                     MyGrid = MyCube.CubeGrid;
                     PowerInit();
                     RegisterEvents();
-                    if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this)) 
-                        InitPlatform();
+                    if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
+                        OnAddedTasks();
 
                     IsWorkingChanged(MyCube);
                     return;
@@ -96,7 +96,6 @@ namespace WeaponCore.Support
 
         public void InitPlatform()
         {
-            Entity.NeedsWorldMatrix = true;
             Platform = new MyWeaponPlatform(this);
 
             PullingAmmoCnt = Platform.Structure.AmmoToWeaponIds.Count;
@@ -129,19 +128,25 @@ namespace WeaponCore.Support
 
             StorageSetup();
             State.Value.Online = true;
-            Turret.EnableIdleRotation = false;
-            Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
 
             RegisterEvents();
 
             CreateUi();
+            OnAddedTasks();
 
             MainInit = true;
+        }
+
+        private void OnAddedTasks()
+        {
+            Entity.NeedsWorldMatrix = true;
+
+            Turret.EnableIdleRotation = false;
+            Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
 
             Ai.TotalSinkPower += MaxRequiredPower;
             Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
-
             if (!Ai.GridInit)
             {
                 foreach (var cubeBlock in MyGrid.GetFatBlocks())

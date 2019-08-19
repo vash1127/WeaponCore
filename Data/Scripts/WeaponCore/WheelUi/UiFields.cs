@@ -2,9 +2,12 @@
 using Sandbox.Game.Entities;
 using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
+using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -13,7 +16,6 @@ namespace WeaponCore
         private readonly Vector2D _wheelPosition = new Vector2D(0, 0);
 
         private string _currentMenu = "Main";
-        private string _selectionMessage;
         private int _previousWheel;
         private int _currentWheel;
         internal bool WheelActive;
@@ -21,8 +23,13 @@ namespace WeaponCore
         internal bool MouseButtonLeft;
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
-        internal IMyHudNotification HudNotify;
+        internal bool ResetMenu;
+        internal readonly List<MyCubeGrid> Grids = new List<MyCubeGrid>();
+        internal readonly List<IMyCharacter> Characters = new List<IMyCharacter>();
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
+
+        internal GridAi Ai;
+        internal IMyHudNotification HudNotify;
 
         internal readonly Item[] SubSystemItems =
         {
@@ -64,7 +71,7 @@ namespace WeaponCore
             get
             {
                 var cockPit = Session.Instance.Session.ControlledObject as MyCockpit;
-                var isGridAi = cockPit != null && Session.Instance.GridTargetingAIs.ContainsKey(cockPit.CubeGrid);
+                var isGridAi = cockPit != null && Session.Instance.GridTargetingAIs.TryGetValue(cockPit.CubeGrid, out Ai);
                 if (MyAPIGateway.Input.WasMiddleMouseReleased() && !WheelActive && isGridAi) return State.Open;
                 if (MyAPIGateway.Input.WasMiddleMouseReleased() && WheelActive) return State.Close;
                 return State.NoChange;
@@ -92,6 +99,18 @@ namespace WeaponCore
                 Name = name;
                 Items = items;
                 ItemCount = itemCount;
+            }
+
+            internal void StatusUpdate(Wheel wheel)
+            {
+                if (wheel.ResetMenu)
+                {
+                    var ai = wheel.Ai;
+                    MyEntity target = null;
+                    if (ai.SortedTargets.Count > 0) target = ai.SortedTargets[0].Target;
+                    if (target != null) MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.SpectatorDelta, target);
+                    wheel.ResetMenu = false;
+                }
             }
         }
     }

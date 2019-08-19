@@ -3,6 +3,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
@@ -59,7 +60,6 @@ namespace WeaponCore
                     if (menuItem.ParentName != null)
                         _currentMenu = menuItem.ParentName;
                 }
-
                 if (_currentWheel != _previousWheel && _currentWheel > _previousWheel)
                 {
                     var menu = Menus[_currentMenu];
@@ -102,6 +102,7 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             var menu = Menus[_currentMenu];
+            menu.StatusUpdate(this);
             MyTransparentGeometry.AddBillboardOriented(menu.Items[menu.CurrentSlot].Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
