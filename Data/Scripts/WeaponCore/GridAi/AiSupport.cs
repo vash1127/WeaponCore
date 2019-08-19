@@ -283,11 +283,8 @@ namespace WeaponCore.Support
             UpdatePowerSources = false;
             if (updateLast)
             {
-                if (GridMaxPower - CurrentWeaponsDraw > LastAvailablePower && LastAvailablePower > 0)
-                {
-                    AvailablePowerIncrease = true;
-                    //Log.Line($"Increase");
-                }
+                if (GridMaxPower - CurrentWeaponsDraw > LastAvailablePower && CurrentWeaponsDraw > MinSinkPower) AvailablePowerIncrease = true;
+
                 LastAvailablePower = GridMaxPower - CurrentWeaponsDraw;
                 //Log.Line($"avail power: {gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw}  Last Power: {gridAi.LastAvailablePower} Max: {gridAi.GridMaxPower}  Weapon Draw: {gridAi.CurrentWeaponsDraw} Current Power: {gridAi.GridCurrentPower}");
             }

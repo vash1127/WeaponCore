@@ -22,7 +22,6 @@ namespace WeaponCore.Support
                 IsWorkingChanged(MyCube);
                 BlockInventory.ContentsAdded += OnContentsAdded;
                 BlockInventory.ContentsRemoved += OnContentsRemoved;
-                Sink.RequiredInputChanged += RequiredChanged;
                 Sink.CurrentInputChanged += CurrentInputChanged;
             }
             else
@@ -31,7 +30,6 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsAdded -= OnContentsAdded;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
-                Sink.RequiredInputChanged -= RequiredChanged;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
                 foreach (var w in Platform.Weapons)
                     w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
@@ -117,33 +115,24 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }
 
-        private void RequiredChanged(MyDefinitionId changedResourceTypeId, MyResourceSinkComponent sink, float oldRequirement, float newRequirement)
-        {
-            if(newRequirement > oldRequirement) Ai.ResetPower = true;
-        }
-
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
-            try
+            var currentInput = sink.CurrentInputByType(changedResourceTypeId);
+            var tick = Session.Instance.Tick;
+            if (Ai.ResetPower && tick != LastUpdateTick && currentInput < CurrentSinkPowerRequested)
             {
-                var currentInput = sink.CurrentInputByType(changedResourceTypeId);
-                var tick = Session.Instance.Tick;
-                if (Ai.ResetPower && tick != LastUpdateTick && currentInput < CurrentSinkPowerRequested)
+                if (Ai.ResetPowerTick != tick)
                 {
-                    if (Ai.ResetPowerTick != tick)
-                    {
-                        Ai.CurrentWeaponsDraw = 0;
-                        Ai.ResetPowerTick = tick;
-                        Ai.RecalcLowPowerTick = tick + 20;
-                        Ai.UpdatePowerSources = true;
-
-                    }
-                    LastUpdateTick = tick;
-                    Ai.CurrentWeaponsDraw += currentInput;
-                    //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
+                    Ai.CurrentWeaponsDraw = 0;
+                    Ai.ResetPowerTick = tick;
+                    Ai.RecalcLowPowerTick = tick + 20;
+                    Ai.UpdatePowerSources = true;
                 }
+
+                LastUpdateTick = tick;
+                Ai.CurrentWeaponsDraw += currentInput;
+                //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
             }
-            catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
         }
     }
 }

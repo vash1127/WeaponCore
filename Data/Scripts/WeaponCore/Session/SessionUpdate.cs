@@ -32,7 +32,7 @@ namespace WeaponCore
 
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
-                    if ((gridAi.RecalcLowPowerTick > 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
+                    if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
 
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
@@ -52,16 +52,27 @@ namespace WeaponCore
 
                         var energyAmmo = w.System.EnergyAmmo;
 
-                        if (w.IsShooting && (energyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
+                        if ((energyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
                         {
                             if (comp.ShootTick <= Tick)
                             {
                                 comp.Charging = false;
                                 comp.ShootTick = Tick + comp.DelayTicks;
                                 comp.TerminalRefresh();
+                                if (w.IsShooting)
+                                {
+                                    if (w.FiringEmitter != null) w.StartFiringSound();
+                                    if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying)
+                                        w.StartRotateSound();
+                                }
                             }
                             else
                             {
+                                if (w.IsShooting)
+                                {
+                                    w.StopFiringSound(false);
+                                    w.StopRotateSound();
+                                }
                                 comp.Charging = true;
                                 comp.TerminalRefresh();
                             }

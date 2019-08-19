@@ -129,7 +129,7 @@ namespace WeaponCore.Support
             StorageSetup();
             State.Value.Online = true;
 
-            RegisterEvents();
+            RegisterEvents(true);
 
             CreateUi();
             OnAddedTasks();
@@ -145,6 +145,7 @@ namespace WeaponCore.Support
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
 
             Ai.TotalSinkPower += MaxRequiredPower;
+            Ai.MinSinkPower += IdlePower;
             Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
             if (!Ai.GridInit)
