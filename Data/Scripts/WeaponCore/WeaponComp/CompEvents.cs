@@ -79,7 +79,7 @@ namespace WeaponCore.Support
             var wasFunctional = IsFunctional;
             IsFunctional = myCubeBlock.IsFunctional;
             if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
-                Status = CompStatus.ReInit;
+                Status = Start.ReInit;
 
             Log.Line($"isWorking:{IsWorking} - isFunctional:{IsFunctional} - RemoveParts:{!wasFunctional && IsFunctional}");
             IsWorking = myCubeBlock.IsWorking;

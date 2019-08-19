@@ -11,28 +11,15 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
-        private CompStatus WeaponState()
-        {
-            if (_isServer)
-            {
-                if (OverHeating()) return CompStatus.OverHeating;
-                if (WarmingUp()) return CompStatus.WarmingUp;
-                if (Offline()) return CompStatus.Offline;
-            }
-            else if (!State.Value.Online) return CompStatus.Offline;
-
-            State.Value.Online = true;
-            return CompStatus.Online;
-        }
 
         internal void HealthCheck()
         {
             switch (Status)
             {
-                case CompStatus.Startup:
+                case Start.Starting:
                     Startup();
                     break;
-                case CompStatus.ReInit:
+                case Start.ReInit:
                     ReInit();
                     break;
             }
@@ -44,112 +31,15 @@ namespace WeaponCore.Support
             IsFunctional = MyCube.IsFunctional;
             State.Value.Online = IsWorking && IsFunctional;
             if (Turret.Enabled) Turret.Enabled = false; Turret.Enabled = true;
-            Log.Line("test");
-            Status = CompStatus.Online;
+            Status = Start.Started;
             return true;
         }
 
         private bool ReInit()
         {
             Platform.ResetParts(this);
-            Status = CompStatus.Online;
+            Status = Start.Started;
             return true;
-        }
-
-        private bool OverHeating()
-        {
-            return false;
-        }
-
-        private bool WarmingUp()
-        {
-            return false;
-        }
-
-        internal bool Offline()
-        {
-            return false;
-        }
-
-        internal void FailWeapon(CompStatus state)
-        {
-            var on = state != CompStatus.Offline;
-            var cool = state != CompStatus.OverHeating;
-            var initing = state != CompStatus.WarmingUp;
-            var keepCharge = on && !cool;
-            var clear = !on && !initing;
-            OfflineWeapon(clear, state, keepCharge);
-        }
-
-        internal void Online()
-        {
-        }
-
-        internal void OfflineWeapon(bool clear, CompStatus reason, bool keepCharge = false)
-        {
-            DefaultWeaponState(clear, keepCharge);
-
-            if (_isServer) UpdateNetworkState();
-            else TerminalRefresh();
-        }
-
-        private void DefaultWeaponState(bool clear, bool keepHeat)
-        {
-            var state = State;
-            NotFailed = false;
-            if (clear)
-            {
-                Sink.Update();
-
-                if (_isServer && !keepHeat)
-                {
-                    state.Value.Online = false;
-                    state.Value.Heat = 0;
-                }
-            }
-            else if (_isServer)
-                state.Value.Online = false;
-
-            TerminalRefresh(false);
-        }
-
-        private void ComingOnline()
-        {
-            _firstLoop = false;
-            NotFailed = true;
-            WarmedUp = true;
-
-            if (_isServer)
-            {
-                UpdateNetworkState();
-            }
-            else
-            {
-                TerminalRefresh();
-            }
-        }
-
-        private bool ClientOfflineStates()
-        {
-            var shieldUp = State.Value.Online && !State.Value.Overload;
-
-            if (!shieldUp)
-            {
-                if (_clientOn)
-                {
-                    //ClientDown();
-                    _clientOn = false;
-                    TerminalRefresh();
-                }
-                return true;
-            }
-
-            if (!_clientOn)
-            {
-                ComingOnline();
-                _clientOn = true;
-            }
-            return false;
         }
 
         internal void UpdateSettings(LogicSettingsValues newSettings)
