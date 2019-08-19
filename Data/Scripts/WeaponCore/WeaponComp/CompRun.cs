@@ -132,13 +132,14 @@ namespace WeaponCore.Support
             Turret.EnableIdleRotation = false;
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
 
-            RegisterEvents();
+            RegisterEvents(true);
 
             CreateUi();
 
             MainInit = true;
 
             Ai.TotalSinkPower += MaxRequiredPower;
+            Ai.MinSinkPower += IdlePower;
             Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
 

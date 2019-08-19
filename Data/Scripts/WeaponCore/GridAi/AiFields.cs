@@ -58,7 +58,7 @@ namespace WeaponCore.Support
         internal bool TargetNoOwners;
         internal bool SubUpdate;
         internal bool DbReady;
-        internal bool ResetPower;
+        internal bool ResetPower = true;
         internal bool RecalcPowerPercent;
         internal bool GridInit;
         internal bool UpdatePowerSources;
@@ -74,6 +74,7 @@ namespace WeaponCore.Support
         internal float BatteryCurrentOutput;
         internal float BatteryCurrentInput;
         internal float TotalSinkPower;
+        internal float MinSinkPower;
         internal float CurrentWeaponsDraw;
         internal float LastAvailablePower;
         internal Vector3 GridVel;

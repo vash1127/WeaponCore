@@ -203,6 +203,7 @@ namespace WeaponCore.Platform
                     {
                         if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
                         Comp.Overheated = true;
+                        StopShooting();
                     }
 
                     if (i == bps) NextMuzzle++;

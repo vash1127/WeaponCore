@@ -34,31 +34,33 @@ namespace WeaponCore.Support
             }
             if (shooting)
             {
-                if (Ai.ResetPower)
-                {
-                    ///Log.Line($"grid available: {gridAi.GridAvailablePower + gridAi.CurrentWeaponsDraw}");
-                    Ai.WeaponCleanPower = Ai.GridMaxPower - (Ai.GridCurrentPower - Ai.CurrentWeaponsDraw);
-                    Ai.ResetPower = false;
-                }
-
                 if (!Ai.AvailablePowerIncrease)
                 {
+                    if (Ai.ResetPower)
+                    {
+                        //Log.Line($"grid available: {Ai.GridAvailablePower + Ai.CurrentWeaponsDraw}");
+                        Ai.WeaponCleanPower = Ai.GridMaxPower - (Ai.GridCurrentPower - Ai.CurrentWeaponsDraw);
+                        Ai.ResetPower = false;
+                    }
+
                     SinkPower = CompPowerPerc * Ai.WeaponCleanPower;
 
                     DelayTicks += (uint)(5 * MaxRequiredPower / SinkPower) - DelayTicks;
                     ShootTick = DelayTicks + Session.Instance.Tick;
+                    Ai.RecalcDone = true;
                 }
                 else
                 {
+
                     SinkPower = CurrentSinkPowerRequested;
                     DelayTicks = 0;
                     ShootTick = 0;
+                    Ai.ResetPower = true;
                 }
 
                 Sink.Update();
                 TerminalRefresh();
-            }
-            Ai.RecalcDone = true;
+            }            
         }
 
         internal void UpdatePivotPos(Weapon weapon)
