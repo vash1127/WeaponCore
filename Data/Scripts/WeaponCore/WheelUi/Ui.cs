@@ -41,24 +41,48 @@ namespace WeaponCore
             {
                 _previousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                 _currentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
-            
-                if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Selection Here]", 100, "White");
-                HudNotify.Show();
-                if (MouseButtonLeft) _currentMenu = "Targets";
-                if (MouseButtonRight) _currentMenu = "Main";
+
+                var previousMenu = _currentMenu;
+                if (MyAPIGateway.Input.IsNewLeftMouseReleased())
+                {
+                    var menu = Menus[_currentMenu];
+                    var menuItem = menu.Items[menu.CurrentSlot];
+
+                    if (menuItem.SubName != null)
+                        _currentMenu = menuItem.SubName;
+                }
+                else if (MyAPIGateway.Input.IsNewRightMouseReleased())
+                {
+                    var menu = Menus[_currentMenu];
+                    var menuItem = menu.Items[menu.CurrentSlot];
+
+                    if (menuItem.ParentName != null)
+                        _currentMenu = menuItem.ParentName;
+                }
 
                 if (_currentWheel != _previousWheel && _currentWheel > _previousWheel)
                 {
                     var menu = Menus[_currentMenu];
                     if (menu.CurrentSlot < menu.ItemCount - 1) menu.CurrentSlot++;
                     else menu.CurrentSlot = 0;
+                    HudNotify.Text = menu.Items[menu.CurrentSlot].Message;
                 }
                 else if (_currentWheel != _previousWheel)
                 {
                     var menu = Menus[_currentMenu];
                     if (menu.CurrentSlot - 1 >= 0) menu.CurrentSlot--;
                     else menu.CurrentSlot = menu.ItemCount - 1;
+                    HudNotify.Text = menu.Items[menu.CurrentSlot].Message;
                 }
+
+                if (previousMenu != _currentMenu)
+                {
+                    var menu = Menus[_currentMenu];
+                    var menuItem = menu.Items[menu.CurrentSlot];
+                    HudNotify.Text = menuItem.Message;
+                }
+
+                HudNotify.Show();
             }
         }
 
@@ -78,12 +102,14 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             var menu = Menus[_currentMenu];
-            MyTransparentGeometry.AddBillboardOriented(menu.Items[menu.CurrentSlot], Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddBillboardOriented(menu.Items[menu.CurrentSlot].Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()
         {
             WheelActive = true;
+            if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 100, "White");
+            HudNotify.Show();
             if (_currentMenu == string.Empty) _currentMenu = "Main";
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
