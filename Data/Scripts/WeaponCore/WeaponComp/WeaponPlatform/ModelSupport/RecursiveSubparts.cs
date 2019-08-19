@@ -20,14 +20,14 @@ namespace WeaponCore.Support
         private IMyModel _trackedModel;
         internal MyEntity Entity;
 
-        internal void Reset()
+        internal void Reset(MyEntity myEntity)
         {
             GetEnumerator().Dispose();
             _subparts.Clear();
             _tmp.Clear();
             NameToEntity.Clear();
             _trackedModel = null;
-            Entity = null;
+            Entity = myEntity;
         }
 
         // not thread safe.

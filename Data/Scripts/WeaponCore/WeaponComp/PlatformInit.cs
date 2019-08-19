@@ -2,7 +2,7 @@
 using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using WeaponCore.Support;
-
+using static WeaponCore.Support.WeaponComponent.CompStatus;
 namespace WeaponCore.Platform
 {
     public class MyWeaponPlatform
@@ -46,7 +46,7 @@ namespace WeaponCore.Platform
             CompileTurret();
         }
 
-        private void CompileTurret()
+        private void CompileTurret(bool reset = false)
         {
             var c = 0;
             foreach (var m in Structure.WeaponSystems)
@@ -54,6 +54,7 @@ namespace WeaponCore.Platform
                 Log.Line($"PartToNameCount:{Parts.NameToEntity.Count}");
                 var part = Parts.NameToEntity[m.Key.String];
                 var barrelCount = m.Value.Barrels.Length;
+                if (reset) Weapons[c].EntityPart = part;
                 Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
                 for (int i = 0; i < barrelCount; i++)
                 {
@@ -69,7 +70,6 @@ namespace WeaponCore.Platform
         {
             Log.Line("Resetting parts!!!!!!!!!!");
             RemoveParts(comp);
-            Parts.Entity = comp.Entity as MyEntity;
             Parts.CheckSubparts();
             foreach (var w in Weapons)
             {
@@ -77,17 +77,22 @@ namespace WeaponCore.Platform
                 w.Dummies = new Dummy[w.System.Barrels.Length];
             }
 
-            CompileTurret();
-            comp.FunctionalReset = false;
+            CompileTurret(true);
+            comp.Status = Online;
             return true;
         }
 
         internal void RemoveParts(WeaponComponent comp)
         {
+            Log.Line("Remove parts");
             foreach (var w in comp.Platform.Weapons)
+            {
+                if (w.EntityPart == null) continue;
                 w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
-
-            Parts.Reset();
+                w.EntityPart = null;
+            }
+            Parts.Reset(comp.Entity as MyEntity);
+            comp.Status = Offline;
         }
     }
 }
