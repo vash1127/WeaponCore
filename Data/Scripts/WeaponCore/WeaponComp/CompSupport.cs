@@ -59,7 +59,7 @@ namespace WeaponCore.Support
                 TerminalRefresh();
             }            
         }
-
+        
         internal void UpdatePivotPos(Weapon weapon)
         {
             var weaponPComp = weapon.EntityPart.PositionComp;
