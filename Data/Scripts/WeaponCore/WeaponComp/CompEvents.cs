@@ -76,8 +76,15 @@ namespace WeaponCore.Support
 
         private void IsWorkingChanged(MyCubeBlock myCubeBlock)
         {
-            IsWorking = myCubeBlock.IsWorking;
+            var wasFunctional = IsFunctional;
             IsFunctional = myCubeBlock.IsFunctional;
+
+            if (!wasFunctional && IsFunctional)
+            {
+                FunctionalReset = true;
+            }
+
+            IsWorking = myCubeBlock.IsWorking;
             State.Value.Online = IsWorking && IsFunctional;
             TerminalRefresh();
             if (!IsWorking)
@@ -87,7 +94,6 @@ namespace WeaponCore.Support
                     //WepUi.SetEnable((IMyTerminalBlock)MyCube, w.WeaponId, false);
                     w.StopShooting();
                 }
-
             }
         }
 

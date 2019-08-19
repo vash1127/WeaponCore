@@ -155,13 +155,17 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-                    if (comp.MyGrid != comp.Ai.MyGrid || comp.MyCube.CubeGrid != comp.MyGrid || comp.MyCube.CubeGrid != comp.Ai.MyGrid) Log.Line($"cube desync: compMyGridId:{comp.MyGrid.EntityId} - aiMyGridId:{comp.Ai.MyGrid.EntityId} - myCubeGridId:{comp.MyCube.CubeGrid.EntityId}");
+
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     InTurret = gunner;
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
+                    if (comp.FunctionalReset && !comp.Platform.ResetParts(comp)) continue;
+
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
+                        if (Tick60 && (comp.MyGrid != comp.Ai.MyGrid || comp.MyCube.CubeGrid != comp.MyGrid || comp.MyCube.CubeGrid != comp.Ai.MyGrid || w.Dummies[0].Entity == null || w.Dummies[0].Entity.MarkedForClose)) {Log.Line($"cube desync: compMyGridId:{comp.MyGrid.EntityId} - aiMyGridId:{comp.Ai.MyGrid.EntityId} - myCubeGridId:{comp.MyCube.CubeGrid.EntityId} - dummyNull:{w.Dummies[0].Entity == null} - dummyMarked:{w.Dummies[0]?.Entity?.MarkedForClose}");}
+
                         if (!w.Enabled) continue;
 
                         if (!gunner)

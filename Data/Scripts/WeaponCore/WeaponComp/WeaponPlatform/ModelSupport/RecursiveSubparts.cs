@@ -11,18 +11,27 @@ namespace WeaponCore.Support
     /// <summary>
     /// Maintains a list of all recursive subparts of the given entity.  Respects changes to the model.
     /// </summary>
-    public class RecursiveSubparts : IEnumerable<IMyEntity>
+    internal class RecursiveSubparts : IEnumerable<IMyEntity>
     {
         private readonly List<IMyEntity> _subparts = new List<IMyEntity>();
         private readonly Dictionary<string, IMyModelDummy> _tmp = new Dictionary<string, IMyModelDummy>();
-        //public readonly Dictionary<IMyEntity, string> EntityToName = new Dictionary<IMyEntity, string>();
-        public readonly Dictionary<string, MyEntity> NameToEntity = new Dictionary<string, MyEntity>();
+        internal readonly Dictionary<string, MyEntity> NameToEntity = new Dictionary<string, MyEntity>();
 
         private IMyModel _trackedModel;
-        public MyEntity Entity { get; set; }
+        internal MyEntity Entity;
+
+        internal void Reset()
+        {
+            GetEnumerator().Dispose();
+            _subparts.Clear();
+            _tmp.Clear();
+            NameToEntity.Clear();
+            _trackedModel = null;
+            Entity = null;
+        }
 
         // not thread safe.
-        public void CheckSubparts()
+        internal void CheckSubparts()
         {
             if (_trackedModel == Entity?.Model)
                 return;
@@ -64,7 +73,7 @@ namespace WeaponCore.Support
             return GetEnumerator();
         }
 
-        public List<IMyEntity>.Enumerator GetEnumerator()
+        internal List<IMyEntity>.Enumerator GetEnumerator()
         {
             CheckSubparts();
             return _subparts.GetEnumerator();
@@ -81,7 +90,7 @@ namespace WeaponCore.Support
         /// <param name="emissiveName">The name of the emissive material (ie. "Emissive0")</param>
         /// <param name="emissivity">Level of emissivity (0 is off, 1 is full brightness)</param>
         /// <param name="emissivePartColor">Color to emit</param>
-        public void SetEmissiveParts(string emissiveName, Color emissivePartColor, float emissivity)
+        internal void SetEmissiveParts(string emissiveName, Color emissivePartColor, float emissivity)
         {
             Entity.SetEmissiveParts(emissiveName, emissivePartColor, emissivity);
             SetEmissivePartsForSubparts(emissiveName, emissivePartColor, emissivity);
@@ -93,7 +102,7 @@ namespace WeaponCore.Support
         /// <param name="emissiveName">The name of the emissive material (ie. "Emissive0")</param>
         /// <param name="emissivity">Level of emissivity (0 is off, 1 is full brightness).</param>
         /// <param name="emissivePartColor">Color to emit</param>
-        public void SetEmissivePartsForSubparts(string emissiveName, Color emissivePartColor, float emissivity)
+        internal void SetEmissivePartsForSubparts(string emissiveName, Color emissivePartColor, float emissivity)
         {
             foreach (var k in this)
                 k.SetEmissiveParts(emissiveName, emissivePartColor, emissivity);

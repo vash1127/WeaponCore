@@ -51,7 +51,7 @@ namespace WeaponCore.Support
                     PowerInit();
                     RegisterEvents();
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
-                        OnAddedTasks();
+                        OnAddedToSceneTasks();
 
                     IsWorkingChanged(MyCube);
                     return;
@@ -132,15 +132,16 @@ namespace WeaponCore.Support
             RegisterEvents(true);
 
             CreateUi();
-            OnAddedTasks();
+            OnAddedToSceneTasks();
 
             MainInit = true;
         }
 
-        private void OnAddedTasks()
+        private void OnAddedToSceneTasks()
         {
+            Log.Line($"on added tasks");
+            Platform.ResetParts(this);
             Entity.NeedsWorldMatrix = true;
-
             Turret.EnableIdleRotation = false;
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
 
@@ -168,6 +169,7 @@ namespace WeaponCore.Support
                 base.OnRemovedFromScene();
                 RegisterEvents(false);
                 StopAllSounds();
+                Platform.RemoveParts(this);
                 WeaponComponent comp;
                 Ai.WeaponBase.TryRemove(MyCube, out comp);
                 if (Ai.WeaponBase.Count == 0)
@@ -175,7 +177,6 @@ namespace WeaponCore.Support
                     GridAi gridAi;
                     Session.Instance.GridTargetingAIs.TryRemove(MyGrid, out gridAi);
                 }
-
                 Ai = null;
                 MyGrid = null;
             }

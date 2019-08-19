@@ -51,6 +51,7 @@ namespace WeaponCore.Support
         internal uint LastPivotUpdateTick;
         internal uint ShootTick = 0;
         internal uint DelayTicks = 0;
+        internal uint ResetTick;
         internal int PullingAmmoCnt;
         internal float MaxAmmoVolume;
         internal float MaxAmmoMass;
@@ -67,6 +68,7 @@ namespace WeaponCore.Support
         internal bool Starting;
         internal bool Sync = true;
         internal bool Charging = false;
+        internal bool FunctionalReset;
         internal enum Status
         {
             Online,

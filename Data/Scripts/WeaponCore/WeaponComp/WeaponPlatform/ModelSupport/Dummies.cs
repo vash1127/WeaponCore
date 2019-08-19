@@ -8,7 +8,7 @@ namespace WeaponCore.Support
     // Courtesy of Equinox
     public class Dummy
     {
-        private readonly MyEntity _entity;
+        internal readonly MyEntity Entity;
 
         private IMyModel _cachedModel;
         private IMyModel _cachedSubpartModel;
@@ -21,16 +21,16 @@ namespace WeaponCore.Support
 
         public Dummy(MyEntity e, params string[] path)
         {
-            _entity = e;
+            Entity = e;
             _path = path;
             _isSubPart = (e is MyEntitySubpart);
         }
 
         private bool _failed = true;
-        private void Update()
+        internal void Update()
         {
-            _cachedModel = _entity.Model;
-            _cachedSubpart = _entity;
+            _cachedModel = Entity.Model;
+            _cachedSubpart = Entity;
             _cachedSubpartModel = _cachedSubpart?.Model;
             for (var i = 0; i < _path.Length - 1; i++)
             {
@@ -64,7 +64,12 @@ namespace WeaponCore.Support
         {
             get
             {
-                if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart.Model)) Update();
+                if (!(_cachedModel == Entity?.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
+                if (Entity == null || _cachedSubpart == null)
+                {
+                    Log.Line($"nullEntity:{Entity == null} - nullSubPart:{_cachedSubpart == null}");
+                    return new DummyInfo();
+                }
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
                 var subPartPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
                 var subPartDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
@@ -76,7 +81,7 @@ namespace WeaponCore.Support
         {
             get
             {
-                if (!(_cachedModel == _entity.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
+                if (!(_cachedModel == Entity.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
                 return _cachedSubpart != null && _cachedDummyMatrix.HasValue && !_failed;
             }
         }

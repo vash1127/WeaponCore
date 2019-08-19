@@ -7,11 +7,11 @@ namespace WeaponCore.Platform
 {
     public class MyWeaponPlatform
     {
-        public readonly Weapon[] Weapons;
-        public readonly RecursiveSubparts Parts = new RecursiveSubparts();
-        public readonly WeaponStructure Structure;
-        public readonly MyLargeTurretBaseDefinition BaseDefinition;
-        public MyWeaponPlatform(WeaponComponent comp)
+        internal readonly Weapon[] Weapons;
+        internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
+        internal readonly WeaponStructure Structure;
+        internal readonly MyLargeTurretBaseDefinition BaseDefinition;
+        internal MyWeaponPlatform(WeaponComponent comp)
         {
             BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
             Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
@@ -51,6 +51,7 @@ namespace WeaponCore.Platform
             var c = 0;
             foreach (var m in Structure.WeaponSystems)
             {
+                Log.Line($"PartToNameCount:{Parts.NameToEntity.Count}");
                 var part = Parts.NameToEntity[m.Key.String];
                 var barrelCount = m.Value.Barrels.Length;
                 Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
@@ -62,6 +63,31 @@ namespace WeaponCore.Platform
                 }
                 c++;
             }
+        }
+
+        internal bool ResetParts(WeaponComponent comp)
+        {
+            Log.Line("Resetting parts!!!!!!!!!!");
+            RemoveParts(comp);
+            Parts.Entity = comp.Entity as MyEntity;
+            Parts.CheckSubparts();
+            foreach (var w in Weapons)
+            {
+                w.Muzzles = new Weapon.Muzzle[w.System.Barrels.Length];
+                w.Dummies = new Dummy[w.System.Barrels.Length];
+            }
+
+            CompileTurret();
+            comp.FunctionalReset = false;
+            return true;
+        }
+
+        internal void RemoveParts(WeaponComponent comp)
+        {
+            foreach (var w in comp.Platform.Weapons)
+                w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
+
+            Parts.Reset();
         }
     }
 }
