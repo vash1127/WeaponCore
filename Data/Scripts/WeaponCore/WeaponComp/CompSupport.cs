@@ -51,10 +51,7 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-
                     SinkPower = CurrentSinkPowerRequested;
-                    DelayTicks = 0;
-                    ShootTick = 0;
                     Ai.ResetPower = true;
                 }
 
@@ -62,7 +59,7 @@ namespace WeaponCore.Support
                 TerminalRefresh();
             }            
         }
-
+        
         internal void UpdatePivotPos(Weapon weapon)
         {
             var weaponPComp = weapon.EntityPart.PositionComp;

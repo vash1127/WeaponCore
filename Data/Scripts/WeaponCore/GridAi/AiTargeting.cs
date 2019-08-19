@@ -317,7 +317,9 @@ namespace WeaponCore.Support
             var testPos = currentPos;
             var top5 = target.Top5;
             var physics = MyAPIGateway.Physics;
+            var IgnoreLineOfSight = w.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
             IHitInfo hitInfo = null;
+            
             for (int i = 0; i < cubes.Count + top5Count; i++)
             {
                 var index = i < top5Count ? i : i - top5Count;
@@ -337,7 +339,8 @@ namespace WeaponCore.Support
                         if (w != null)
                         {
                             Vector3D targetLinVel = grid.Physics?.LinearVelocity ?? Vector3D.Zero;
-                            bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                            bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel);
+                                if(!IgnoreLineOfSight) bestTest = bestTest && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
                         }
                         else bestTest = true;
                     }
