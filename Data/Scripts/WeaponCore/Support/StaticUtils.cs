@@ -253,7 +253,7 @@ namespace WeaponCore.Support
             var cullSphere = sphere;
             cullSphere.Radius = radius * 5;
             MyExplosionFlags eFlags;
-            var drawParticles = !forceNoDraw && !eInfo.NoVisuals && MyAPIGateway.Session.Camera.IsInFrustum(ref cullSphere);
+            var drawParticles = !forceNoDraw && !eInfo.NoVisuals && Session.Instance.Session.Camera.IsInFrustum(ref cullSphere);
             if (drawParticles)
                 eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
             else
@@ -292,7 +292,7 @@ namespace WeaponCore.Support
             var cullSphere = sphere;
             cullSphere.Radius = af.AreaEffectRadius * 5;
             const MyExplosionFlags eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT; ;
-            var drawParticles = !eInfo.NoVisuals && MyAPIGateway.Session.Camera.IsInFrustum(ref cullSphere);
+            var drawParticles = !eInfo.NoVisuals && Session.Instance.Session.Camera.IsInFrustum(ref cullSphere);
 
             var customParticle = eInfo.CustomParticle != string.Empty;
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;

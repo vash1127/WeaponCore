@@ -89,12 +89,12 @@ namespace WeaponCore
         internal void DrawWheel()
         {
             var position = new Vector3D(_wheelPosition.X, _wheelPosition.Y, 0);
-            var fov = MyAPIGateway.Session.Camera.FovWithZoom;
-            double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
+            var fov = Session.Instance.Session.Camera.FovWithZoom;
+            double aspectratio = Session.Instance.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
             var scale = 0.075 * Math.Tan(fov * 0.5);
             position.X *= scale * aspectratio;
             position.Y *= scale;
-            var cameraWorldMatrix = MyAPIGateway.Session.Camera.WorldMatrix;
+            var cameraWorldMatrix = Session.Instance.Session.Camera.WorldMatrix;
             position = Vector3D.Transform(new Vector3D(position.X, position.Y, -.1), cameraWorldMatrix);
 
             var origin = position;

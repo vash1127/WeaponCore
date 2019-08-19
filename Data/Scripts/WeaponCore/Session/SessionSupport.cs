@@ -151,13 +151,6 @@ namespace WeaponCore
 
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
                 ShieldApiLoaded = true;
-            ControlledEntity = Session.CameraController.Entity;
-            if (ControlledEntity is IMyGunBaseUser)
-            {
-                var rawZoom = MyAPIGateway.Session.Camera.FovWithZoom;
-                Zoom = rawZoom <= 1 ? rawZoom : 1;
-            }
-            else Zoom = 1;
 
             if (!CompsToStart.IsEmpty)
             {
@@ -171,7 +164,6 @@ namespace WeaponCore
                 }
                 //else RemoveGridAi(weaponComp);
             }
-            if (!DedicatedServer) CameraPos = Session.Camera.Position;
         }
 
         /*
@@ -185,6 +177,18 @@ namespace WeaponCore
                 GridTargetingAIs.TryRemove(weaponComp.MyCube.CubeGrid, out removedAi);
         }
         */
+
+        private void CameraState()
+        {
+            CameraPos = Session.Camera.Position;
+            ControlledEntity = Session.CameraController.Entity;
+            if (ControlledEntity is IMyGunBaseUser)
+            {
+                var rawZoom = Session.Camera.FovWithZoom;
+                Zoom = rawZoom <= 1 ? rawZoom : 1;
+            }
+            else Zoom = 1;
+        }
 
         private void Paused()
         {

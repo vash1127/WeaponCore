@@ -72,7 +72,6 @@ namespace WeaponCore.Platform
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
         internal int WeaponId;
-        internal int CurrentHeat = 0;
         internal int HSRate;
         internal int EnergyPriority;
         internal MyFixedPoint CurrentMags;
@@ -104,7 +103,6 @@ namespace WeaponCore.Platform
         internal bool PlayTurretAv;
         internal bool AvCapable;
         internal bool DelayCeaseFire;
-        internal bool Enabled;
         internal bool TargetWasExpired;
         internal readonly List<string> FiringStrings = new List<string>()
         {
@@ -189,7 +187,6 @@ namespace WeaponCore.Platform
             }
 
             WeaponId = weaponId;
-            Enabled = true;
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;

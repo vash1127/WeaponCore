@@ -105,7 +105,7 @@ namespace WeaponCore.Projectiles
             Position = Origin;
             AccelDir = Direction;
             VisualDir = Direction;
-            var cameraStart = MyAPIGateway.Session.Camera.Position;
+            var cameraStart = Session.Instance.CameraPos;
             Vector3D.DistanceSquared(ref cameraStart, ref Origin, out DistanceFromCameraSqr);
             GenerateShrapnel = T.System.Values.Ammo.Shrapnel.Fragments > 0;
             var noSAv = T.IsShrapnel && T.System.Values.Ammo.Shrapnel.NoAudioVisual;
@@ -409,7 +409,7 @@ namespace WeaponCore.Projectiles
             if (Age == 0 && !ParticleLateStart)
             {
                 TestSphere.Center = Position;
-                if (!MyAPIGateway.Session.Camera.IsInFrustum(ref TestSphere))
+                if (!Session.Instance.Session.Camera.IsInFrustum(ref TestSphere))
                 {
                     ParticleLateStart = true;
                     return;

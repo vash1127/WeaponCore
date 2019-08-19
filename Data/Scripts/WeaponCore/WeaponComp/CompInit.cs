@@ -54,18 +54,36 @@ namespace WeaponCore.Support
         private void StorageSetup()
         {
             var isServer = MyAPIGateway.Multiplayer.IsServer;
-            if (Set == null) Set = new LogicSettings(Turret);
-            if (State == null) State = new LogicState(Turret);
 
-            if (Turret.Storage == null) State.StorageInit();
+            if (State == null)
+            {
+                Log.Line($"State null");
+                State = new LogicState(this);
+            }
+
+            if (Turret.Storage == null)
+            {
+                Log.Line("Storage null");
+                State.StorageInit();
+            }
+
+            if (Set == null)
+            {
+                Log.Line($"Settings null");
+                Set = new LogicSettings(this);
+            }
+
+            State.LoadState();
 
             Set.LoadSettings();
             if (!State.LoadState() && !isServer) _clientNotReady = true;
             UpdateSettings(Set.Value);
+            Log.Line($"StateWeapon:{State.Value.Weapons != null} - SetWeapon:{Set.Value.Weapons != null}");
             if (isServer)
             {
-                State.Value.Overload = false;
-                State.Value.Heat = 0;
+
+                foreach (var w in State.Value.Weapons)
+                    w.Heat = 0;
             }
         }
 
@@ -75,6 +93,5 @@ namespace WeaponCore.Support
             Session.Instance.ControlInit = true;
             Session.Instance.CreateLogicElements(Turret);
         }
-
     }
 }

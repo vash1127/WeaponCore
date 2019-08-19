@@ -23,6 +23,8 @@ namespace WeaponCore.Support
                     ReInit();
                     break;
             }
+
+            UpdateNetworkState();
         }
 
         private bool Startup()

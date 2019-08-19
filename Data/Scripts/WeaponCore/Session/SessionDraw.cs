@@ -13,7 +13,6 @@ namespace WeaponCore
         private void DrawLists(List<Trajectile> drawList)
         {
             var sFound = false;
-            var cameraPos = Session.Camera.Position;
             for (int i = 0; i < drawList.Count; i++)
             {
                 var t = drawList[i];
@@ -77,7 +76,7 @@ namespace WeaponCore
                 else
                 {
                     var hitPos = t.PrevPosition + (t.Direction * t.Length);
-                    var distanceFromPoint = (float)Vector3D.Distance(cameraPos, (MyUtils.GetClosestPointOnLine(ref t.PrevPosition, ref hitPos, ref cameraPos)));
+                    var distanceFromPoint = (float)Vector3D.Distance(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.PrevPosition, ref hitPos, ref CameraPos)));
                     var thickness = newWidth;
                     if (distanceFromPoint < 10) thickness *= 0.25f;
                     else if (distanceFromPoint < 20) thickness *= 0.5f;

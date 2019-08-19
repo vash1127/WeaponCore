@@ -71,7 +71,7 @@ namespace WeaponCore.Projectiles
         {
             var noAv = Session.Instance.DedicatedServer;
             var camera = Session.Instance.Session.Camera;
-            var cameraPos = camera.Position;
+            var cameraPos = Session.Instance.CameraPos;
             lock (Wait[i])
             {
                 var modelClose = false;

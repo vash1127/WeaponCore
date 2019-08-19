@@ -20,7 +20,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return false;
-            return comp.Platform.Weapons[0].Enabled;
+            return comp.Set.Value.Weapons[0].Enable;
         }
 
         internal static void SetEnable0(IMyTerminalBlock block, bool newValue)
@@ -28,7 +28,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return;
             var weapon = comp.Platform.Weapons[0];
-            weapon.Enabled = newValue;
+            comp.Set.Value.Weapons[0].Enable = newValue;
             weapon.StopShooting();
         }
 
@@ -36,7 +36,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return false;
-            return comp.Platform.Weapons[1].Enabled;
+            return comp.Set.Value.Weapons[1].Enable;
         }
 
         internal static void SetEnable1(IMyTerminalBlock block, bool newValue)
@@ -44,7 +44,7 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return;
             var weapon = comp.Platform.Weapons[1];
-            weapon.Enabled = newValue;
+            comp.Set.Value.Weapons[1].Enable = newValue;
             weapon.StopShooting();
         }
 

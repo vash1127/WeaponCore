@@ -38,7 +38,7 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
                         if (Tick60 && (comp.MyGrid != comp.Ai.MyGrid || comp.MyCube.CubeGrid != comp.MyGrid || comp.MyCube.CubeGrid != comp.Ai.MyGrid || w.Dummies[0].Entity == null || w.Dummies[0].Entity.MarkedForClose)) { Log.Line($"cube desync: compMyGridId:{comp.MyGrid.EntityId} - aiMyGridId:{comp.Ai.MyGrid.EntityId} - myCubeGridId:{comp.MyCube.CubeGrid.EntityId} - dummyNull:{w.Dummies[0].Entity == null} - dummyMarked:{w.Dummies[0]?.Entity?.MarkedForClose}"); }
 
-                        if (!w.Enabled) continue;
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable) continue;
 
                         if (!gunner)
                         {
@@ -125,13 +125,15 @@ namespace WeaponCore
 
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
+
                         var w = comp.Platform.Weapons[j];
-                        if (!w.Enabled || (!Tick60 && comp.Overheated)) continue;
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated)) continue;
 
                         if (Tick60)
                         {
-                            w.CurrentHeat = w.CurrentHeat >= w.HSRate ? w.CurrentHeat -= w.HSRate : 0;
-                            if (comp.Overheated && w.CurrentHeat <= (w.System.MaxHeat * w.System.WepCooldown))
+                            var weaponValue = comp.State.Value.Weapons[w.WeaponId];
+                            weaponValue.Heat = weaponValue.Heat >= w.HSRate ? weaponValue.Heat - w.HSRate : 0;
+                            if (comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
                             {
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
                                 comp.Overheated = false;
@@ -198,7 +200,7 @@ namespace WeaponCore
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;
 
-                        if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(Session.Camera.Position, comp.MyPivotPos) < 10000)
+                        if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(CameraPos, comp.MyPivotPos) < 10000)
                         {
                             if (w.IsTracking && comp.AiMoving && !comp.RotationEmitter.IsPlaying)
                                 comp.RotationEmitter.PlaySound(comp.RotationSound, true, false, false, false, false, false);

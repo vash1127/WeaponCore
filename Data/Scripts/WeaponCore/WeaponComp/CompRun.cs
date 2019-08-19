@@ -153,6 +153,7 @@ namespace WeaponCore.Support
 
         public override bool IsSerialized()
         {
+            Log.Line("IsSerialized");
             if (MyAPIGateway.Multiplayer.IsServer)
             {
                 if (Turret.Storage != null)

@@ -197,9 +197,8 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    CurrentHeat += System.HeatPShot;
-
-                    if (CurrentHeat > System.MaxHeat)
+                    var heat = Comp.State.Value.Weapons[WeaponId].Heat += System.HeatPShot;
+                    if (heat > System.MaxHeat)
                     {
                         if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
                         Comp.Overheated = true;
@@ -374,7 +373,8 @@ namespace WeaponCore.Platform
         {
             BarrelMove = true;
             double radiansPerShot;
-            if (System.DegROF && CurrentHeat > (System.MaxHeat * .8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (CurrentHeat / System.MaxHeat);
+            var heat = Comp.State.Value.Weapons[WeaponId].Heat;
+            if (System.DegROF && heat > (System.MaxHeat * .8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (heat / System.MaxHeat);
             if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
             else radiansPerShot = 2 * Math.PI / _numOfBarrels;
             var radians = radiansPerShot / _timePerShot;

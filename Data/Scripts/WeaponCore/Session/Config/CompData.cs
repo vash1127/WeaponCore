@@ -1,4 +1,5 @@
-﻿using WeaponCore.Support;
+﻿using SpaceEngineers.Game.ModAPI;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -9,37 +10,41 @@ namespace WeaponCore
     public class LogicState
     {
         internal LogicStateValues Value = new LogicStateValues();
-        internal readonly IMyFunctionalBlock Logic;
-        internal LogicState(IMyFunctionalBlock logic)
+        internal readonly WeaponComponent Comp;
+        internal readonly IMyLargeMissileTurret Turret;
+        internal LogicState(WeaponComponent comp)
         {
-            Logic = logic;
+            Comp = comp;
+            Turret = comp.Turret;
+            Value.Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length];
+            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
+                if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponStateValues();
         }
 
         internal void StorageInit()
         {
-            if (Logic.Storage == null)
+            if (Turret.Storage == null)
             {
-                Logic.Storage = new MyModStorageComponent {[Session.Instance.LogicSettingsGuid] = ""};
+                Turret.Storage = new MyModStorageComponent {[Session.Instance.LogicSettingsGuid] = ""};
             }
         }
 
         internal void SaveState(bool createStorage = false)
         {
-            if (createStorage && Logic.Storage == null) Logic.Storage = new MyModStorageComponent();
-            else if (Logic.Storage == null) return;
+            if (Turret.Storage == null) return;
 
             var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
-            Logic.Storage[Session.Instance.LogicStateGuid] = Convert.ToBase64String(binary);
+            Turret.Storage[Session.Instance.LogicStateGuid] = Convert.ToBase64String(binary);
         }
 
         internal bool LoadState()
         {
-            if (Logic.Storage == null) return false;
+            if (Turret.Storage == null) return false;
 
             string rawData;
             bool loadedSomething = false;
 
-            if (Logic.Storage.TryGetValue(Session.Instance.LogicStateGuid, out rawData))
+            if (Turret.Storage.TryGetValue(Session.Instance.LogicStateGuid, out rawData))
             {
                 LogicStateValues loadedState = null;
                 var base64 = Convert.FromBase64String(rawData);
@@ -61,7 +66,7 @@ namespace WeaponCore
             if (Session.Instance.IsServer)
             {
                 Value.MId++;
-                Session.Instance.PacketizeToClientsInRange(Logic, new DataLogicState(Logic.EntityId, Value)); // update clients with server's state
+                Session.Instance.PacketizeToClientsInRange(Turret, new DataLogicState(Turret.EntityId, Value)); // update clients with server's state
             }
         }
         #endregion
@@ -70,34 +75,38 @@ namespace WeaponCore
     internal class LogicSettings
     {
         internal LogicSettingsValues Value = new LogicSettingsValues();
-        internal readonly IMyFunctionalBlock Logic;
-        internal LogicSettings(IMyFunctionalBlock logic)
+        internal readonly WeaponComponent Comp;
+        internal readonly IMyLargeMissileTurret Turret;
+        internal LogicSettings(WeaponComponent comp)
         {
-            Logic = logic;
+            Comp = comp;
+            Turret = comp.Turret;
+            Value.Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length];
+            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
+                if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();
         }
 
         internal void SaveSettings(bool createStorage = false)
         {
-            if (createStorage && Logic.Storage == null) Logic.Storage = new MyModStorageComponent();
-            else if (Logic.Storage == null) return;
+            if (Turret.Storage == null) return;
 
             var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
-            Logic.Storage[Session.Instance.LogicSettingsGuid] = Convert.ToBase64String(binary);
+            Turret.Storage[Session.Instance.LogicSettingsGuid] = Convert.ToBase64String(binary);
         }
 
         internal bool LoadSettings()
         {
-            if (Logic.Storage == null) return false;
+            if (Turret.Storage == null) return false;
             string rawData;
             bool loadedSomething = false;
 
-            if (Logic.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
+            if (Turret.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
             {
                 LogicSettingsValues loadedSettings = null;
                 var base64 = Convert.FromBase64String(rawData);
                 loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<LogicSettingsValues>(base64);
 
-                if (loadedSettings != null)
+                if (loadedSettings != null && loadedSettings.Weapons != null)
                 {
                     Value = loadedSettings;
                     loadedSomething = true;
@@ -113,11 +122,11 @@ namespace WeaponCore
             Value.MId++;
             if (Session.Instance.IsServer)
             {
-                Session.Instance.PacketizeToClientsInRange(Logic, new DataLogicSettings(Logic.EntityId, Value)); // update clients with server's settings
+                Session.Instance.PacketizeToClientsInRange(Turret, new DataLogicSettings(Turret.EntityId, Value)); // update clients with server's settings
             }
             else // client, send settings to server
             {
-                var bytes = MyAPIGateway.Utilities.SerializeToBinary(new DataLogicSettings(Logic.EntityId, Value));
+                var bytes = MyAPIGateway.Utilities.SerializeToBinary(new DataLogicSettings(Turret.EntityId, Value));
                 MyAPIGateway.Multiplayer.SendMessageToServer(Session.PACKET_ID, bytes);
             }
         }

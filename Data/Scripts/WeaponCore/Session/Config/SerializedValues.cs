@@ -13,6 +13,13 @@ namespace WeaponCore
         [ProtoMember(4)] public bool Overload;
         [ProtoMember(5)] public bool Message;
         [ProtoMember(6)] public int Heat;
+        [ProtoMember(7)] public WeaponStateValues[] Weapons;
+    }
+
+    [ProtoContract]
+    public class WeaponStateValues
+    {
+        [ProtoMember(1)] public int Heat;
     }
 
     [ProtoContract]
@@ -24,7 +31,15 @@ namespace WeaponCore
         [ProtoMember(4)] public long Modes;
         [ProtoMember(5)] public float PowerScale;
         [ProtoMember(6), DefaultValue(-1)] public int PowerWatts = 999;
+        [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
     }
+
+    [ProtoContract]
+    public class WeaponSettingsValues
+    {
+        [ProtoMember(1)] public bool Enable;
+    }
+
 
     [ProtoContract]
     public class WeaponHitValues
