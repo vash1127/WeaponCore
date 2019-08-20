@@ -3,6 +3,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
@@ -136,11 +137,15 @@ namespace WeaponCore
         {
             Grids.Clear();
             Characters.Clear();
+            Projectiles.Clear();
             foreach (var target in Ai.SortedTargets)
             {
                 if (target.IsGrid) Grids.Add(target);
                 else Characters.Add(target);
             }
+            foreach (var lp in Ai.LiveProjectile) Projectiles.Add(lp);
+            Projectiles.Sort((a, b) => Vector3D.DistanceSquared(a.Position, Ai.MyGrid.PositionComp.WorldAABB.Center).CompareTo(Vector3D.DistanceSquared(b.Position, Ai.MyGrid.PositionComp.WorldAABB.Center)));
+
             var menu = Menus[_currentMenu];
             if (menu.ItemCount <= 1) menu.Refresh();
         }

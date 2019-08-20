@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -23,6 +24,7 @@ namespace WeaponCore
         internal bool ResetMenu;
         internal readonly List<GridAi.TargetInfo> Grids = new List<GridAi.TargetInfo>();
         internal readonly List<GridAi.TargetInfo> Characters = new List<GridAi.TargetInfo>();
+        internal readonly List<Projectile> Projectiles = new List<Projectile>();
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
@@ -30,6 +32,16 @@ namespace WeaponCore
         internal readonly Item[] GridItems =
         {
             new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), Message = "[Grids]", ParentName = "Main", SubName = "SubSystems"},
+        };
+
+        internal readonly Item[] CharacterItems =
+        {
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), Message = "[Characters]", ParentName = "Main", SubName = "WeaponGroups"},
+        };
+
+        internal readonly Item[] OrdinanceItems =
+        {
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), Message = "[Ordinance]", ParentName = "Main", SubName = "WeaponGroups"},
         };
 
         internal readonly Item[] SubSystemItems =
@@ -46,9 +58,19 @@ namespace WeaponCore
         {
             //new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_NoSelect"), Message = "Main" },
             new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Grids"), Message = "[Grids]", SubName = "Grids"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Players"), Message = "[Characters]" },
-            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_WeaponGroups"), Message = "[Weapon Groups]" },
-            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Ordinance"), Message = "[Ordinance]" },
+            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Players"), Message = "[Characters]", SubName = "Characters"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_WeaponGroups"), Message = "[Weapon Groups]", SubName = "WeaponGroups"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Ordinance"), Message = "[Ordinance]", SubName = "Ordinance"},
+        };
+
+        internal readonly Item[] WeaponGroupItems =
+        {
+            new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Comms"), Message = "[Production]", ParentName = "Main"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"), Message = "[Navigation]", ParentName = "Main"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Engines"), Message = "[Engines]", ParentName = "Main"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Weapons"), Message = "[Weapons]", ParentName = "Main"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Power"), Message = "[Power]", ParentName = "Main"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"), Message = "[Ordinance]", ParentName = "Main"},
         };
 
         internal enum State
@@ -75,14 +97,16 @@ namespace WeaponCore
             var main = new Menu(this, "Main", MainItems, MainItems.Length);
             var subSystems = new Menu(this, "SubSystems", SubSystemItems, SubSystemItems.Length);
             var grids = new Menu(this, "Grids", GridItems, GridItems.Length);
-            var characters = new Menu(this, "Characters", null, 0);
-            var ordinance = new Menu(this, "Ordinance", null, 0);
+            var characters = new Menu(this, "Characters", CharacterItems, CharacterItems.Length);
+            var ordinance = new Menu(this, "Ordinance", OrdinanceItems, OrdinanceItems.Length);
+            var weaponGroups = new Menu(this, "WeaponGroups", WeaponGroupItems, WeaponGroupItems.Length);
 
             Menus.Add(main.Name, main);
             Menus.Add(subSystems.Name, subSystems);
             Menus.Add(grids.Name, grids);
             Menus.Add(characters.Name, characters);
             Menus.Add(ordinance.Name, ordinance);
+            Menus.Add(weaponGroups.Name, weaponGroups);
         }
     }
 }

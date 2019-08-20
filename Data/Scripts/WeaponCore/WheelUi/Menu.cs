@@ -1,11 +1,14 @@
 ﻿using System.Collections.Generic;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using Math = System.Math;
 
@@ -22,6 +25,7 @@ namespace WeaponCore
             internal int SubSlot;
             internal int SubSlotCount;
             internal List<GridAi.TargetInfo> Targets;
+            internal List<Projectile> Projectiles;
         }
 
         internal class Menu
@@ -38,7 +42,7 @@ namespace WeaponCore
             internal readonly int ItemCount;
             internal int CurrentSlot;
             internal MyEntity Target;
-
+            internal IMyGps Gps;
             internal Menu(Wheel wheel, string name, Item[] items, int itemCount)
             {
                 Wheel = wheel;
@@ -92,6 +96,7 @@ namespace WeaponCore
                         }
                         break;
                 }
+
                 return message;
             }
 
@@ -119,6 +124,8 @@ namespace WeaponCore
                           + $"Speed:  {speed} m/s\n"
                           + $"Armed:  {armedStr}\n" 
                           + $"Intercept:  {interceptStr}]";
+                Gps.Coords = targetPos;
+                Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Intercept:  {interceptStr}";
                 return message;
             }
 
@@ -146,8 +153,19 @@ namespace WeaponCore
                         item.Targets = Wheel.Characters;
                         item.SubSlotCount = item.Targets.Count;
                         break;
+                    case "Ordinance":
+                        item.Projectiles = Wheel.Projectiles;
+                        item.SubSlotCount = item.Projectiles.Count;
+                        break;
                 }
-                var target = item.Targets.Count > 0 ? item.Targets[item.SubSlot].Target as MyCubeGrid : null;
+
+                if (Gps == null)
+                {
+                    Gps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
+                    MyAPIGateway.Session.GPS.AddLocalGps(Gps);
+                    MyVisualScriptLogicProvider.SetGPSColor(Gps.Name, Color.Yellow);
+                }
+                var target = item.Targets.Count > 0 ? item.Targets[item.SubSlot].Target  : null;
                 if (target != null)
                 {
                     Target = target;
