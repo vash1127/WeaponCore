@@ -55,7 +55,13 @@ namespace WeaponCore.Platform
                 var part = Parts.NameToEntity[m.Key.String];
                 var barrelCount = m.Value.Barrels.Length;
                 if (reset) Weapons[c].EntityPart = part;
-                Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+
+                if (Weapons[c].IsTurret)
+                    Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+                else
+                    Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+
+
                 for (int i = 0; i < barrelCount; i++)
                 {
                     var barrel = m.Value.Barrels[i];
@@ -88,7 +94,10 @@ namespace WeaponCore.Platform
             foreach (var w in comp.Platform.Weapons)
             {
                 if (w.EntityPart == null) continue;
-                w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
+                if(w.IsTurret)
+                    w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
+                else
+                    w.Comp.MyCube.PositionComp.OnPositionChanged -= w.PositionChanged;
                 w.EntityPart = null;
             }
             Parts.Reset(comp.Entity as MyEntity);
