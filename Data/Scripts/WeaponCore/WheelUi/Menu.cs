@@ -10,6 +10,7 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
+using Math = System.Math;
 
 namespace WeaponCore
 {
@@ -68,12 +69,7 @@ namespace WeaponCore
                                 else item.SubSlot = 0;
                                 var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
                                 if (target == null) break;
-                                var name = target.DisplayName;
-                                name = name.Replace("[", "(");
-                                name = name.Replace("]", ")");
-                                message = $"[Target:  {name}\n"
-                                          + $"Speed:  {target.Physics?.Speed}\n"
-                                          + $"Armed:  {Session.Instance.GridTargetingAIs.ContainsKey(target)}\n]";
+                                message = FormatMessage(target);
                             }
 
                             break;
@@ -92,15 +88,25 @@ namespace WeaponCore
                             else item.SubSlot = item.SubSlotCount - 1;
                             var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
                             if (target == null) break;
-                            var name = target.DisplayName;
-                            name = name.Replace("[", "(");
-                            name = name.Replace("]", ")");
-                            message = $"Target:  {name}\n"
-                                      + $"Speed:  {target.Physics?.Speed}\n"
-                                      + $"Armed:  {Session.Instance.GridTargetingAIs.ContainsKey(target)}\n";
+                            message = FormatMessage(target);
                         }
                         break;
                 }
+                return message;
+            }
+
+            internal string FormatMessage(MyCubeGrid target)
+            {
+                var name = target.DisplayName;
+                var speed = Math.Round(target.Physics?.Speed ?? 0, 2);
+                var nameLen = 30;
+
+                name = name.Replace("[", "(");
+                name = name.Replace("]", ")");
+                if (name.Length > nameLen) name = name.Substring(0, nameLen);
+                var message = $"[Target:  {name}\n"
+                          + $"Speed:  {speed} m/s\n"
+                          + $"Armed:  {Session.Instance.GridTargetingAIs.ContainsKey(target)}\n]";
                 return message;
             }
 
