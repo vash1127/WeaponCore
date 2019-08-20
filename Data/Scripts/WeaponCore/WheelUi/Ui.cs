@@ -65,6 +65,7 @@ namespace WeaponCore
                         _currentMenu = menuItem.ParentName;
                         UpdateTargets();
                     }
+                    else if (menu.Name == "Main") CloseWheel();
                 }
 
                 if (_currentWheel != _previousWheel && _currentWheel > _previousWheel)
@@ -97,11 +98,12 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             var menu = Menus[_currentMenu];
+
             if (Session.Instance.Tick20 && menu.ItemCount <= 1)
-            {
                 HudNotify.Text = menu.FormatMessage();
-            }
+
             HudNotify.Show();
+
             MyTransparentGeometry.AddBillboardOriented(menu.Items[menu.CurrentSlot].Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 

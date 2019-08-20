@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
@@ -79,24 +78,27 @@ namespace WeaponCore.Support
 
         private void IsWorkingChanged(MyCubeBlock myCubeBlock)
         {
-            var wasFunctional = IsFunctional;
-            IsFunctional = myCubeBlock.IsFunctional;
-            if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
-                Status = Start.ReInit;
-
-            Log.Line($"isWorking:{IsWorking} - isFunctional:{IsFunctional} - RemoveParts:{!wasFunctional && IsFunctional}");
-            IsWorking = myCubeBlock.IsWorking;
-            State.Value.Online = IsWorking && IsFunctional;
-            TerminalRefresh();
-            if (!IsWorking)
+            try
             {
-                foreach (var w in Platform.Weapons)
+                var wasFunctional = IsFunctional;
+                IsFunctional = myCubeBlock.IsFunctional;
+                if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
+                    Status = Start.ReInit;
+
+                IsWorking = myCubeBlock.IsWorking;
+                State.Value.Online = IsWorking && IsFunctional;
+                TerminalRefresh();
+                if (!IsWorking)
                 {
-                    //WepUi.SetEnable((IMyTerminalBlock)MyCube, w.WeaponId, false);
-                    w.StopShooting();
+                    foreach (var w in Platform.Weapons)
+                    {
+                        //WepUi.SetEnable((IMyTerminalBlock)MyCube, w.WeaponId, false);
+                        w.StopShooting();
+                    }
                 }
+                IsWorkingChangedTick = Session.Instance.Tick;
             }
-            IsWorkingChangedTick = Session.Instance.Tick;
+            catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}"); }
         }
 
         internal string GetSystemStatus()
@@ -125,29 +127,35 @@ namespace WeaponCore.Support
 
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
-            var currentInput = sink.CurrentInputByType(changedResourceTypeId);
-            var tick = Session.Instance.Tick;
-            if (Ai.ResetPower && tick != LastUpdateTick)
+            try
             {
-                if (currentInput < CurrentSinkPowerRequested)
-                {
-                    if (Ai.ResetPowerTick != tick)
-                    {
-                        Ai.CurrentWeaponsDraw = 0;
-                        Ai.ResetPowerTick = tick;
-                        Ai.RecalcLowPowerTick = tick + 20;
-                        Ai.UpdatePowerSources = true;
-                    }
 
-                    LastUpdateTick = tick;
-                    Ai.CurrentWeaponsDraw += currentInput;
-                    //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
-                }
-                else {
-                    DelayTicks = 0;
-                    ShootTick = 0;
+                var currentInput = sink.CurrentInputByType(changedResourceTypeId);
+                var tick = Session.Instance.Tick;
+                if (Ai.ResetPower && tick != LastUpdateTick)
+                {
+                    if (currentInput < CurrentSinkPowerRequested)
+                    {
+                        if (Ai.ResetPowerTick != tick)
+                        {
+                            Ai.CurrentWeaponsDraw = 0;
+                            Ai.ResetPowerTick = tick;
+                            Ai.RecalcLowPowerTick = tick + 20;
+                            Ai.UpdatePowerSources = true;
+                        }
+
+                        LastUpdateTick = tick;
+                        Ai.CurrentWeaponsDraw += currentInput;
+                        //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
+                    }
+                    else
+                    {
+                        DelayTicks = 0;
+                        ShootTick = 0;
+                    }
                 }
             }
+            catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
         }
     }
 }

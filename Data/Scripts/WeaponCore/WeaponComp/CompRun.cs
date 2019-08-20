@@ -34,7 +34,6 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
-                Log.Line("added to scene");
                 if (MainInit)
                 {
                     MyGrid = MyCube.CubeGrid;
@@ -106,7 +105,6 @@ namespace WeaponCore.Support
 
         private void OnAddedToSceneTasks()
         {
-            Log.Line($"on added tasks");
             if (MainInit)
                 Platform.ResetParts(this);
 
@@ -131,7 +129,6 @@ namespace WeaponCore.Support
 
         public override void OnRemovedFromScene()
         {
-            Log.Line($"remove from  inscene");
             try
             {
                 base.OnRemovedFromScene();
@@ -153,7 +150,6 @@ namespace WeaponCore.Support
 
         public override bool IsSerialized()
         {
-            Log.Line("IsSerialized");
             if (MyAPIGateway.Multiplayer.IsServer)
             {
                 if (Turret.Storage != null)
