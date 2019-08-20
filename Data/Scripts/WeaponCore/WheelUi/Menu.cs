@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using Math = System.Math;
 
@@ -40,6 +37,7 @@ namespace WeaponCore
             internal readonly Item[] Items;
             internal readonly int ItemCount;
             internal int CurrentSlot;
+            internal MyEntity Target;
 
             internal Menu(Wheel wheel, string name, Item[] items, int itemCount)
             {
@@ -69,7 +67,8 @@ namespace WeaponCore
                                 else item.SubSlot = 0;
                                 var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
                                 if (target == null) break;
-                                message = FormatMessage(target);
+                                Target = target;
+                                message = FormatMessage();
                             }
 
                             break;
@@ -88,25 +87,38 @@ namespace WeaponCore
                             else item.SubSlot = item.SubSlotCount - 1;
                             var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
                             if (target == null) break;
-                            message = FormatMessage(target);
+                            Target = target;
+                            message = FormatMessage();
                         }
                         break;
                 }
                 return message;
             }
 
-            internal string FormatMessage(MyCubeGrid target)
+            internal string FormatMessage()
             {
-                var name = target.DisplayName;
-                var speed = Math.Round(target.Physics?.Speed ?? 0, 2);
-                var nameLen = 30;
+                if (Target == null || Target.MarkedForClose) return string.Empty;
 
+                var targetDir = Vector3D.Normalize(Target.Physics?.LinearVelocity ?? Vector3.Zero);
+                var targetPos = Target.PositionComp.WorldAABB.Center;
+
+                var myPos = Wheel.Ai.MyGrid.PositionComp.WorldAABB.Center;
+                var myHeading = Vector3D.Normalize(myPos - targetPos);
+                var degrees = Math.Cos(MathHelper.ToRadians(25));
+                var name = Target.DisplayName;
+                var speed = Math.Round(Target.Physics?.Speed ?? 0, 2);
+                var nameLen = 30;
+                var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Target);
+                var intercept = Weapon.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
+                var armedStr = armed ? "Yes" : "No";
+                var interceptStr = intercept ? "Yes" : "No";
                 name = name.Replace("[", "(");
                 name = name.Replace("]", ")");
                 if (name.Length > nameLen) name = name.Substring(0, nameLen);
                 var message = $"[Target:  {name}\n"
                           + $"Speed:  {speed} m/s\n"
-                          + $"Armed:  {Session.Instance.GridTargetingAIs.ContainsKey(target)}\n]";
+                          + $"Armed:  {armedStr}\n" 
+                          + $"Intercept:  {interceptStr}]";
                 return message;
             }
 
@@ -115,9 +127,7 @@ namespace WeaponCore
                 if (wheel.ResetMenu)
                 {
                     var ai = wheel.Ai;
-                    MyEntity target = null;
-                    if (ai.SortedTargets.Count > 0) target = ai.SortedTargets[0].Target;
-                    if (target != null) MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.SpectatorDelta, target);
+                    if (Target != null) MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.SpectatorDelta, Target);
                     wheel.ResetMenu = false;
                 }
             }
@@ -136,6 +146,12 @@ namespace WeaponCore
                         item.Targets = Wheel.Characters;
                         item.SubSlotCount = item.Targets.Count;
                         break;
+                }
+                var target = item.Targets.Count > 0 ? item.Targets[item.SubSlot].Target as MyCubeGrid : null;
+                if (target != null)
+                {
+                    Target = target;
+                    item.Message = FormatMessage();
                 }
             }
         }

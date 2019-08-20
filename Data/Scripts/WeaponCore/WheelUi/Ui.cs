@@ -77,8 +77,6 @@ namespace WeaponCore
                     var menuItem = menu.Items[menu.CurrentSlot];
                     HudNotify.Text = menuItem.Message;
                 }
-
-                HudNotify.Show();
             }
         }
 
@@ -98,16 +96,22 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             var menu = Menus[_currentMenu];
-            menu.StatusUpdate(this);
+            if (Session.Instance.Tick20 && menu.ItemCount <= 1)
+            {
+                HudNotify.Text = menu.FormatMessage();
+            }
+            HudNotify.Show();
             MyTransparentGeometry.AddBillboardOriented(menu.Items[menu.CurrentSlot].Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()
         {
             WheelActive = true;
-            if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 100, "White");
-            HudNotify.Show();
+            if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 320, "UrlHighlight");
             if (_currentMenu == string.Empty) _currentMenu = "Main";
+            var menu = Menus[_currentMenu];
+            var menuItem = menu.Items[menu.CurrentSlot];
+            HudNotify.Text = menuItem.Message;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
