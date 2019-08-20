@@ -8,6 +8,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
+using VRageMath;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -67,8 +68,12 @@ namespace WeaponCore
                                 else item.SubSlot = 0;
                                 var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
                                 if (target == null) break;
-                                message = $"[Target: {target.DisplayName}\n" 
-                                          + $"Armed: {Session.Instance.GridTargetingAIs.ContainsKey(target)}]";
+                                var name = target.DisplayName;
+                                name = name.Replace("[", "(");
+                                name = name.Replace("]", ")");
+                                message = $"[Target:  {name}\n"
+                                          + $"Speed:  {target.Physics?.Speed}\n"
+                                          + $"Armed:  {Session.Instance.GridTargetingAIs.ContainsKey(target)}\n]";
                             }
 
                             break;
@@ -85,7 +90,14 @@ namespace WeaponCore
                             var item = Items[0];
                             if (item.SubSlot - 1 >= 0) item.SubSlot--;
                             else item.SubSlot = item.SubSlotCount - 1;
-                            message = item.Targets[item.SubSlot].Target.DisplayName;
+                            var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
+                            if (target == null) break;
+                            var name = target.DisplayName;
+                            name = name.Replace("[", "(");
+                            name = name.Replace("]", ")");
+                            message = $"Target:  {name}\n"
+                                      + $"Speed:  {target.Physics?.Speed}\n"
+                                      + $"Armed:  {Session.Instance.GridTargetingAIs.ContainsKey(target)}\n";
                         }
                         break;
                 }
