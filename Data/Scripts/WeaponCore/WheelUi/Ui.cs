@@ -125,7 +125,7 @@ namespace WeaponCore
 
         internal void CloseWheel()
         {
-            _currentMenu = string.Empty;
+            _currentMenu = "Main";
             WheelActive = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
