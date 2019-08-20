@@ -43,8 +43,8 @@ namespace WeaponCore
                 //TerminalHelpers.HideButton(comp.MyCube);
                 TerminalHelpers.Separator(comp, -1, "WC-L_sep0", WepUi.EnableModes, WepUi.EnableModes);
 
-                TerminalHelpers.WeaponOnOff(comp, 0, "WC-WNAME1", "Enable ", "Enable ", "On ", "Off ", WepUi.GetEnable0, WepUi.SetEnable0, WepUi.EnableModes, WepUi.EnableModes);
-                TerminalHelpers.WeaponOnOff(comp, 1, "WC-WNAME2", "Enable ", "Enable ", "On ", "Off ", WepUi.GetEnable1, WepUi.SetEnable1, WepUi.EnableModes, WepUi.EnableModes);
+                TerminalHelpers.AddOnOff(comp, 0, "WC-WNAME1", "Enable ", "Enable ", "On ", "Off ", WepUi.GetEnable0, WepUi.SetEnable0, WepUi.EnableModes, WepUi.EnableModes);
+                TerminalHelpers.AddOnOff(comp, 1, "WC-WNAME2", "Enable ", "Enable ", "On ", "Off ", WepUi.GetEnable1, WepUi.SetEnable1, WepUi.EnableModes, WepUi.EnableModes);
 
                 TerminalHelpers.Separator(comp, -1, "WC-L_sep1", WepUi.EnableModes, WepUi.EnableModes);
                 Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.EnableModes, WepUi.EnableModes);

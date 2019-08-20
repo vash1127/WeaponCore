@@ -61,6 +61,8 @@ namespace WeaponCore.Platform
                 else
                     Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
 
+                Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPOS;
+
 
                 for (int i = 0; i < barrelCount; i++)
                 {
@@ -98,6 +100,9 @@ namespace WeaponCore.Platform
                     w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
                 else
                     w.Comp.MyCube.PositionComp.OnPositionChanged -= w.PositionChanged;
+
+                w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPOS;
+
                 w.EntityPart = null;
             }
             Parts.Reset(comp.Entity as MyEntity);

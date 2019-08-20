@@ -52,6 +52,7 @@ namespace WeaponCore.Support
         internal uint ShootTick = 0;
         internal uint DelayTicks = 0;
         internal uint IsWorkingChangedTick;
+        internal uint PositionUpdateTick;
         internal int PullingAmmoCnt;
         internal float MaxAmmoVolume;
         internal float MaxAmmoMass;

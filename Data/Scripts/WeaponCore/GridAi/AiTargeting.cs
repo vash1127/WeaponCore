@@ -338,8 +338,7 @@ namespace WeaponCore.Support
                         if (w != null && !system.Values.Ammo.Trajectory.Smarts.OverideTarget)
                         {
                             Vector3D targetLinVel = grid.Physics?.LinearVelocity ?? Vector3D.Zero;
-                            bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel);
-                                bestTest = bestTest && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                            bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
                         }
                         else bestTest = true;
                     }

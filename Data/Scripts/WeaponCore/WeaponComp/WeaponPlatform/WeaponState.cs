@@ -15,6 +15,17 @@ namespace WeaponCore.Platform
             _posChangedTick = Session.Instance.Tick;
         }
 
+        internal void UpdatePartPOS(MyPositionComponentBase pComp)
+        {
+            var tick = Session.Instance.Tick;
+            if (Comp.PositionUpdateTick <= tick && Comp.LastPivotUpdateTick != tick)
+            {
+                MatrixD _parentMatrix = EntityPart.Parent.PositionComp.WorldMatrix;
+                EntityPart.PositionComp.UpdateWorldMatrix(ref _parentMatrix);
+                Comp.PositionUpdateTick = tick + 1;
+            }
+        }
+
         public class Muzzle
         {
             public Muzzle(int id)
