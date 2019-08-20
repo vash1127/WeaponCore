@@ -32,7 +32,7 @@ namespace WeaponCore.Support
             IsWorking = MyCube.IsWorking;
             IsFunctional = MyCube.IsFunctional;
             State.Value.Online = IsWorking && IsFunctional;
-            if (Turret.Enabled) Turret.Enabled = false; Turret.Enabled = true;
+            if (Turret.Enabled) { Turret.Enabled = false; Turret.Enabled = true; }
             Status = Start.Started;
             return true;
         }

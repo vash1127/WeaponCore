@@ -6,10 +6,11 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 
 namespace WeaponCore.Support
-{ 
+{
     public partial class WeaponComponent
     {
         internal void RegisterEvents(bool register = true)
@@ -31,10 +32,14 @@ namespace WeaponCore.Support
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
                 foreach (var w in Platform.Weapons)
-                    if(w.IsTurret)
+                {
+                    if (w.IsTurret)
                         w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
                     else
                         w.Comp.MyCube.PositionComp.OnPositionChanged -= w.PositionChanged;
+
+                    w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPOS;
+                }
             }
         }
 
