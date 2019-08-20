@@ -43,7 +43,7 @@ namespace WeaponCore.Support
                         {
                             if (bt != target.LastBlockType) target.Top5.Clear();
                             target.LastBlockType = bt;
-                            GetClosestHitableBlockOfType(subSystemList, target, weaponPos, w);
+                            GetClosestHitableBlockOfType(subSystemList, target, weaponPos, system, w);
                             if (target.Entity != null) return true;
                         }
                         else if (FindRandomBlock(system, ai, target, weaponPos, subSystemList, w)) return true;
@@ -299,7 +299,7 @@ namespace WeaponCore.Support
             targetType = TargetType.None;
         }
 
-        internal static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Target target, Vector3D currentPos, Weapon w = null)
+        internal static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Target target, Vector3D currentPos, WeaponSystem system, Weapon w = null)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -317,7 +317,6 @@ namespace WeaponCore.Support
             var testPos = currentPos;
             var top5 = target.Top5;
             var physics = MyAPIGateway.Physics;
-            var IgnoreLineOfSight = w.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
             IHitInfo hitInfo = null;
             
             for (int i = 0; i < cubes.Count + top5Count; i++)
@@ -336,11 +335,11 @@ namespace WeaponCore.Support
                     bool bestTest = false;
                     if (best)
                     {
-                        if (w != null)
+                        if (w != null && !system.Values.Ammo.Trajectory.Smarts.OverideTarget)
                         {
                             Vector3D targetLinVel = grid.Physics?.LinearVelocity ?? Vector3D.Zero;
                             bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel);
-                                if(!IgnoreLineOfSight) bestTest = bestTest && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                                bestTest = bestTest && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
                         }
                         else bestTest = true;
                     }
