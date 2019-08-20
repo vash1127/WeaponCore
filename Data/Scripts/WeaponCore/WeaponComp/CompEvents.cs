@@ -32,7 +32,10 @@ namespace WeaponCore.Support
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
                 foreach (var w in Platform.Weapons)
-                    w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
+                    if(w.IsTurret)
+                        w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
+                    else
+                        w.Comp.MyCube.PositionComp.OnPositionChanged -= w.PositionChanged;
             }
         }
 
