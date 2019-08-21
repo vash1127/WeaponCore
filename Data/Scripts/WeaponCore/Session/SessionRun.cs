@@ -71,7 +71,7 @@ namespace WeaponCore
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                         Ui.DrawWheel();
 
-                    //Pointer.PointingAt();
+                    Pointer.PointingAt();
 
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         lock (Projectiles.Wait[i])

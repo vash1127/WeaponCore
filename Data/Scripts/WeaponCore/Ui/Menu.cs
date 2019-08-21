@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -8,7 +9,6 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
-using Math = System.Math;
 
 namespace WeaponCore
 {

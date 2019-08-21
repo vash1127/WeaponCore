@@ -30,6 +30,7 @@ namespace WeaponCore
 
         internal void PointingAt()
         {
+            return;
             if (!GetAi()) return;
             var cockPos = MyAPIGateway.Session.Camera.Position;
             var cockDir = Vector3.Normalize(MyAPIGateway.Session.Camera.WorldMatrix.Forward);
