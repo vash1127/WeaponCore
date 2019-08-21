@@ -52,7 +52,7 @@ namespace WeaponCore
                     if (menuItem.SubName != null)
                     {
                         _currentMenu = menuItem.SubName;
-                        UpdateTargets();
+                        UpdateState(menu);
                     }
                 }
                 else if (MyAPIGateway.Input.IsNewRightMouseReleased())
@@ -63,21 +63,22 @@ namespace WeaponCore
                     if (menuItem.ParentName != null)
                     {
                         _currentMenu = menuItem.ParentName;
-                        UpdateTargets();
+                        UpdateState(menu);
                     }
                     else if (menu.Name == "Main") CloseWheel();
                 }
 
                 if (_currentWheel != _previousWheel && _currentWheel > _previousWheel)
-                    HudNotify.Text = Menus[_currentMenu].Move(Movement.Forward);
+                    Menus[_currentMenu].Move(Movement.Forward);
                 else if (_currentWheel != _previousWheel)
-                    HudNotify.Text = Menus[_currentMenu].Move(Movement.Backward);
+                    Menus[_currentMenu].Move(Movement.Backward);
 
                 if (previousMenu != _currentMenu)
                 {
                     var menu = Menus[_currentMenu];
                     var menuItem = menu.Items[menu.CurrentSlot];
                     HudNotify.Text = menuItem.Message;
+                    Log.Line($"{menuItem.Message}");
                 }
             }
         }
@@ -99,8 +100,8 @@ namespace WeaponCore
             scale = 1 * scale;
             var menu = Menus[_currentMenu];
 
-            if (Session.Instance.Tick20 && menu.ItemCount <= 1)
-                HudNotify.Text = menu.FormatMessage();
+            if (Session.Instance.Tick20)
+                HudNotify.Text = menu.Message;
 
             HudNotify.Show();
 
@@ -125,6 +126,8 @@ namespace WeaponCore
 
         internal void CloseWheel()
         {
+            Menus[_currentMenu].CleanUp();
+
             _currentMenu = "Main";
             WheelActive = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
@@ -135,8 +138,10 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
         }
 
-        internal void UpdateTargets()
+        internal void UpdateState(Menu oldMenu)
         {
+            oldMenu.CleanUp();
+
             Grids.Clear();
             Characters.Clear();
             Projectiles.Clear();
@@ -149,7 +154,7 @@ namespace WeaponCore
             Projectiles.Sort((a, b) => Vector3D.DistanceSquared(a.Position, Ai.MyGrid.PositionComp.WorldAABB.Center).CompareTo(Vector3D.DistanceSquared(b.Position, Ai.MyGrid.PositionComp.WorldAABB.Center)));
 
             var menu = Menus[_currentMenu];
-            if (menu.ItemCount <= 1) menu.Refresh();
+            if (menu.ItemCount <= 1) menu.LoadInfo();
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -24,8 +25,6 @@ namespace WeaponCore
             internal string ParentName;
             internal int SubSlot;
             internal int SubSlotCount;
-            internal List<GridAi.TargetInfo> Targets;
-            internal List<Projectile> Projectiles;
         }
 
         internal class Menu
@@ -42,7 +41,19 @@ namespace WeaponCore
             internal readonly int ItemCount;
             internal int CurrentSlot;
             internal MyEntity Target;
+            internal Projectile Projectile;
             internal IMyGps Gps;
+            internal List<GridAi.TargetInfo> Targets;
+            internal List<Projectile> Projectiles;
+
+            internal string Message;
+            /*
+            public string Message
+            {
+                get { return Message ?? string.Empty; }
+                set { Message = value ?? string.Empty; }
+            }
+            */
             internal Menu(Wheel wheel, string name, Item[] items, int itemCount)
             {
                 Wheel = wheel;
@@ -51,9 +62,8 @@ namespace WeaponCore
                 ItemCount = itemCount;
             }
 
-            internal string Move(Movement move)
+            internal void Move(Movement move)
             {
-                var message = string.Empty;
                 switch (move)
                 {
                     case Movement.Forward:
@@ -62,17 +72,14 @@ namespace WeaponCore
                             {
                                 if (CurrentSlot < ItemCount - 1) CurrentSlot++;
                                 else CurrentSlot = 0;
-                                message = Items[CurrentSlot].Message;
+                                Message = Items[CurrentSlot].Message;
                             }
                             else
                             {
                                 var item = Items[0];
                                 if (item.SubSlot < item.SubSlotCount - 1) item.SubSlot++;
                                 else item.SubSlot = 0;
-                                var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
-                                if (target == null) break;
-                                Target = target;
-                                message = FormatMessage();
+                                GetTargetInfo(item);
                             }
 
                             break;
@@ -82,27 +89,52 @@ namespace WeaponCore
                         {
                             if (CurrentSlot - 1 >= 0) CurrentSlot--;
                             else CurrentSlot = ItemCount - 1;
-                            message = Items[CurrentSlot].Message;
+                            Message = Items[CurrentSlot].Message;
                         }
                         else
                         {
                             var item = Items[0];
                             if (item.SubSlot - 1 >= 0) item.SubSlot--;
                             else item.SubSlot = item.SubSlotCount - 1;
-                            var target = item.Targets[item.SubSlot].Target as MyCubeGrid;
-                            if (target == null) break;
-                            Target = target;
-                            message = FormatMessage();
+                            GetTargetInfo(item);
                         }
                         break;
                 }
-
-                return message;
             }
 
-            internal string FormatMessage()
+            internal void GetTargetInfo(Item item)
             {
-                if (Target == null || Target.MarkedForClose) return string.Empty;
+                switch (Name)
+                {
+                    case "Grids":
+                    case "Characters":
+                        if (Targets.Count > 0)
+                        {
+                            var target = Targets[item.SubSlot].Target;
+                            if (target == null) break;
+                            Target = target;
+                            FormatGridMessage();
+                        }
+                        break;
+                    case "Ordinance":
+                        if (Projectiles.Count > 0)
+                        {
+                            var projectile = Projectiles[item.SubSlot];
+                            if (projectile == null) break;
+                            Projectile = projectile;
+                            FormatProjectileMessage();
+                        }
+                        break;
+                }
+            }
+
+            internal void FormatGridMessage()
+            {
+                if (Target == null || Target.MarkedForClose)
+                {
+                    Message = string.Empty;
+                    return;
+                }
 
                 var targetDir = Vector3D.Normalize(Target.Physics?.LinearVelocity ?? Vector3.Zero);
                 var targetPos = Target.PositionComp.WorldAABB.Center;
@@ -126,7 +158,40 @@ namespace WeaponCore
                           + $"Intercept:  {interceptStr}]";
                 Gps.Coords = targetPos;
                 Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Intercept:  {interceptStr}";
-                return message;
+                Message = message;
+            }
+
+            internal void FormatProjectileMessage()
+            {
+                if (Projectile == null || Projectile.State == Projectile.ProjectileState.Dead)
+                {
+                    Message = string.Empty;
+                    return;
+                }
+
+                var targetDir = Vector3D.Normalize(Target.Physics?.LinearVelocity ?? Vector3.Zero);
+                var targetPos = Target.PositionComp.WorldAABB.Center;
+
+                var myPos = Wheel.Ai.MyGrid.PositionComp.WorldAABB.Center;
+                var myHeading = Vector3D.Normalize(myPos - targetPos);
+                var degrees = Math.Cos(MathHelper.ToRadians(25));
+                var name = Target.DisplayName;
+                var speed = Math.Round(Target.Physics?.Speed ?? 0, 2);
+                var nameLen = 30;
+                var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Target);
+                var intercept = Weapon.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
+                var armedStr = armed ? "Yes" : "No";
+                var interceptStr = intercept ? "Yes" : "No";
+                name = name.Replace("[", "(");
+                name = name.Replace("]", ")");
+                if (name.Length > nameLen) name = name.Substring(0, nameLen);
+                var message = $"[Target:  {name}\n"
+                              + $"Speed:  {speed} m/s\n"
+                              + $"Armed:  {armedStr}\n"
+                              + $"Intercept:  {interceptStr}]";
+                Gps.Coords = targetPos;
+                Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Intercept:  {interceptStr}";
+                Message = message;
             }
 
             internal void StatusUpdate(Wheel wheel)
@@ -139,23 +204,23 @@ namespace WeaponCore
                 }
             }
 
-            internal void Refresh()
+            internal void LoadInfo()
             {
                 var item = Items[0];
                 item.SubSlot = 0;
                 switch (Name)
                 {
                     case "Grids":
-                        item.Targets = Wheel.Grids;
-                        item.SubSlotCount = item.Targets.Count;
+                        Targets = Wheel.Grids;
+                        item.SubSlotCount = Targets.Count;
                         break;
                     case "Characters":
-                        item.Targets = Wheel.Characters;
-                        item.SubSlotCount = item.Targets.Count;
+                        Targets = Wheel.Characters;
+                        item.SubSlotCount = Targets.Count;
                         break;
                     case "Ordinance":
-                        item.Projectiles = Wheel.Projectiles;
-                        item.SubSlotCount = item.Projectiles.Count;
+                        Projectiles = Wheel.Projectiles;
+                        item.SubSlotCount = Projectiles.Count;
                         break;
                 }
 
@@ -165,12 +230,19 @@ namespace WeaponCore
                     MyAPIGateway.Session.GPS.AddLocalGps(Gps);
                     MyVisualScriptLogicProvider.SetGPSColor(Gps.Name, Color.Yellow);
                 }
-                var target = item.Targets.Count > 0 ? item.Targets[item.SubSlot].Target  : null;
-                if (target != null)
+
+                GetTargetInfo(item);
+            }
+
+            internal void CleanUp()
+            {
+                if (Gps != null)
                 {
-                    Target = target;
-                    item.Message = FormatMessage();
+                    MyAPIGateway.Session.GPS.RemoveLocalGps(Gps);
+                    Gps = null;
                 }
+                Targets?.Clear();
+                Projectiles?.Clear();
             }
         }
     }
