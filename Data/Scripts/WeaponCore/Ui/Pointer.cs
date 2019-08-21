@@ -32,10 +32,15 @@ namespace WeaponCore
         {
             return;
             if (!GetAi()) return;
-            var cockPos = MyAPIGateway.Session.Camera.Position;
-            var cockDir = Vector3.Normalize(MyAPIGateway.Session.Camera.WorldMatrix.Forward);
-            Session.Instance.Physics.CastRay(cockPos, cockPos + (cockDir * 5000), _hitInfo);
-            DsDebugDraw.DrawLine(cockPos, cockPos + (cockDir * 5000), Color.Red, 0.1f);
+            var gridPos = _cockPit.CubeGrid.PositionComp.WorldAABB.Center;
+            var cockpitPos = _cockPit.PositionComp.WorldAABB.Center;
+            var cameraPos = Session.Instance.CameraPos;
+            var crosshairPos = (cameraPos - cockpitPos);
+            var cockDir = Vector3.Normalize(_cockPit.PositionComp.WorldMatrix.Forward);
+            DsDebugDraw.DrawLine(cockpitPos, crosshairPos, Color.Yellow, 0.5f);
+            DsDebugDraw.DrawLine(cockpitPos, cockpitPos + (cockDir * 5000000), Color.Blue, 0.5f);
+            DsDebugDraw.DrawLine(gridPos, gridPos + (cockDir * 5000000), Color.Red, 0.5f);
+            Session.Instance.Physics.CastRay(cockpitPos, cockpitPos + (cockDir * 5000000), _hitInfo);
             for (int i = 0; i < _hitInfo.Count; i++)
             {
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;

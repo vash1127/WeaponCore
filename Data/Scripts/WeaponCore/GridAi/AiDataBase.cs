@@ -36,7 +36,7 @@ namespace WeaponCore.Support
                     var grid = ent as MyCubeGrid;
                     if (grid != null)
                     {
-                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 && !((grid.CubeBlocks.FirstElement() as IMySlimBlock)?.FatBlock is IMyWarhead) || MyGrid.IsSameConstructAs(grid))
+                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 || MyGrid.IsSameConstructAs(grid))
                             continue;
 
                         var typeDict = BlockTypePool.Get();

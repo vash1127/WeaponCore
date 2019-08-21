@@ -53,7 +53,6 @@ namespace WeaponCore
                     db.SortedTargets.Add(targetInfo);
                 }
                 db.SortedTargets.Sort(db.TargetCompare1);
-                db.BlockTypeIsSorted.Clear();
 
                 db.Threats.Clear();
                 db.Threats.Capacity = db.ThreatsTmp.Count;
