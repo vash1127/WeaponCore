@@ -26,6 +26,7 @@ namespace WeaponCore.Support
         public readonly int ModelId;
         public readonly int MaxHeat;
         public readonly int HeatPShot;
+        public readonly int WeaponID;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -103,13 +104,14 @@ namespace WeaponCore.Support
             WhenDone
         }
 
-        public WeaponSystem(MyStringHash partName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
+        public WeaponSystem(MyStringHash partName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId, int weaponID)
         {
             PartName = partName;
             Values = values;
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
+            WeaponID = weaponID;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             ProjectileMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Material);
 
@@ -357,6 +359,7 @@ namespace WeaponCore.Support
 
     public class WeaponStructure
     {
+        private static int _weaponCount;
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
         public readonly MyStringHash[] PartNames;
@@ -391,7 +394,8 @@ namespace WeaponCore.Support
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
   
-                WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, typeName, ammoDefId));
+                WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, typeName, ammoDefId, _weaponCount));
+                _weaponCount++;
                 if (!ammoBlank)
                 {
                     if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();

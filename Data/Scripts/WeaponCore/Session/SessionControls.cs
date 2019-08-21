@@ -10,6 +10,7 @@ using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
+using VRage.Utils;
 
 namespace WeaponCore
 {
@@ -40,24 +41,58 @@ namespace WeaponCore
             try
             {
                 if (WepControl || comp == null) return;
-                //TerminalHelpers.HideButton(comp.MyCube);
-                TerminalHelpers.Separator(comp, -1, "WC-L_sep0", WepUi.EnableModes, WepUi.EnableModes);
+                TerminalHelpers.HideControls<IMyLargeTurretBase>((IMyLargeTurretBase)comp);
+                TerminalHelpers.Separator(comp, -1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
 
-                TerminalHelpers.AddOnOff(comp, 0, "WC-WNAME1", "Enable ", "Enable ", "On ", "Off ", WepUi.GetEnable0, WepUi.SetEnable0, WepUi.EnableModes, WepUi.EnableModes);
-                TerminalHelpers.AddOnOff(comp, 1, "WC-WNAME2", "Enable ", "Enable ", "On ", "Off ", WepUi.GetEnable1, WepUi.SetEnable1, WepUi.EnableModes, WepUi.EnableModes);
+                foreach(KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
+                {
+                    foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
+                    {
+                        var wepName = ws.Value.WeaponName;
 
-                TerminalHelpers.Separator(comp, -1, "WC-L_sep1", WepUi.EnableModes, WepUi.EnableModes);
-                Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.EnableModes, WepUi.EnableModes);
-                WeaponMode = TerminalHelpers.AddCombobox(comp, -1, "WC-L_WeaponMode", "Weapon Mode", "Weapon Mode", WepUi.GetModes, WepUi.SetModes, WepUi.ListAll, WepUi.EnableModes, WepUi.EnableModes);
-                TerminalHelpers.Separator(comp, -1, "WC-L_sep2",WepUi.EnableModes, WepUi.EnableModes);
+                        TerminalHelpers.AddOnOff(comp, ws.Value.WeaponID, $"WC-WNAME", $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
+                            delegate (IMyTerminalBlock block)
+                            {
+                                var tmpComp = block?.Components?.Get<WeaponComponent>();
+                                if (tmpComp == null) return false;
 
-                PowerSlider = TerminalHelpers.AddSlider(comp, -1, "WC-L_PowerLevel", "Change Power Level", "Change Power Level", WepUi.GetPowerLevel, WepUi.SetPowerLevel, WepUi.EnableModes, WepUi.EnableModes);
+                                var enabled = false;
+                                for(int i =0; i < tmpComp.Platform.Weapons.Length; i++)
+                                {
+                                    if (tmpComp.Platform.Weapons[i].System.WeaponID == ws.Value.WeaponID)
+                                        enabled = tmpComp.Set.Value.Weapons[i].Enable;
+                                }
+                                return enabled;
+                            },
+                            delegate (IMyTerminalBlock block, bool enabled)
+                            {
+                                var tmpComp = block?.Components?.Get<WeaponComponent>();
+                                if (tmpComp != null)
+                                {
+                                    for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
+                                    {
+                                        if (tmpComp.Platform.Weapons[i].System.WeaponID == ws.Value.WeaponID)
+                                            tmpComp.Set.Value.Weapons[i].Enable = enabled;
+                                    }
+                                }
+                            },
+                            WepUi.EnableWeapon, WepUi.EnableWeapon);
+                    }
+                }
+
+                /*TerminalHelpers.Separator(comp, -1, "WC-L_sep1", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+                Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+                WeaponMode = TerminalHelpers.AddCombobox(comp, -1, "WC-L_WeaponMode", "Weapon Mode", "Weapon Mode", WepUi.GetModes, WepUi.SetModes, WepUi.ListAll, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+                TerminalHelpers.Separator(comp, -1, "WC-L_sep2",WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+
+                PowerSlider = TerminalHelpers.AddSlider(comp, -1, "WC-L_PowerLevel", "Change Power Level", "Change Power Level", WepUi.GetPowerLevel, WepUi.SetPowerLevel, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
                 PowerSlider.SetLimits(0, 100);
 
-                DoubleRate = TerminalHelpers.AddCheckbox(comp, -1, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate, WepUi.EnableModes, WepUi.EnableModes);
+                DoubleRate = TerminalHelpers.AddCheckbox(comp, -1, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
                 CreateAction<IMyLargeTurretBase>(Guidance);
+                */
 
-                CreateActionChargeRate<IMyLargeTurretBase>(PowerSlider);
+                //CreateActionChargeRate<IMyLargeTurretBase>(PowerSlider);
 
                 WepControl = true;
             }

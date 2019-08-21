@@ -16,38 +16,6 @@ namespace WeaponCore
             new MyTerminalControlComboBoxItem() { Key = 2, Value = MyStringId.GetOrCompute("Visible On Hit") }
         };
 
-        internal static bool GetEnable0(IMyTerminalBlock block)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return false;
-            return comp.Set.Value.Weapons[0].Enable;
-        }
-
-        internal static void SetEnable0(IMyTerminalBlock block, bool newValue)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return;
-            var weapon = comp.Platform.Weapons[0];
-            comp.Set.Value.Weapons[0].Enable = newValue;
-            weapon.StopShooting();
-        }
-
-        internal static bool GetEnable1(IMyTerminalBlock block)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return false;
-            return comp.Set.Value.Weapons[1].Enable;
-        }
-
-        internal static void SetEnable1(IMyTerminalBlock block, bool newValue)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return;
-            var weapon = comp.Platform.Weapons[1];
-            comp.Set.Value.Weapons[1].Enable = newValue;
-            weapon.StopShooting();
-        }
-
         internal static bool GetGuidance(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
@@ -104,10 +72,31 @@ namespace WeaponCore
             return logic != null;
         }
 
-        internal static bool EnableModes(IMyTerminalBlock block, int count, int id)
+        internal static bool EnableWeapon(IMyTerminalBlock block, int count, int id)
         {
             var logic = block?.Components?.Get<WeaponComponent>();
-            var enable = logic != null && logic.Platform.Weapons.Length -1 >= id;
+            var enable = false;
+            if (logic != null)
+            {
+                for (int i = 0; i < logic.Platform.Weapons.Length; i++)
+                {
+                    if (logic.Platform.Weapons[i].System.WeaponID == id)
+                        enable = true;
+                }
+            }
+            //Log.Line($"{count} - {id} - {enable}");
+
+            return enable;
+        }
+
+        internal static bool IsCoreWeapon(IMyTerminalBlock block, int count, int id)
+        {
+            var logic = block?.Components?.Get<WeaponComponent>();
+            var enable = false;
+            if (logic != null)
+            {
+                enable = true;
+            }
             //Log.Line($"{count} - {id} - {enable}");
 
             return enable;
