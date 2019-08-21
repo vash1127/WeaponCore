@@ -41,7 +41,7 @@ namespace WeaponCore
             try
             {
                 if (WepControl || comp == null) return;
-                TerminalHelpers.HideControls<IMyLargeTurretBase>((IMyLargeTurretBase)comp);
+                TerminalHelpers.HideControls((IMyLargeTurretBase)comp);
                 TerminalHelpers.Separator(comp, -1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
 
                 foreach(KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)

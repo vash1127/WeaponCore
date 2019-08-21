@@ -12,6 +12,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using Math = System.Math;
+using MyCubeBlock = Sandbox.Game.Entities.MyCubeBlock;
 
 namespace WeaponCore
 {
@@ -20,7 +21,7 @@ namespace WeaponCore
         internal class Item
         {
             internal MyStringId Texture;
-            internal string Message;
+            internal string ItemMessage;
             internal string SubName;
             internal string ParentName;
             internal int SubSlot;
@@ -40,26 +41,31 @@ namespace WeaponCore
             internal readonly Item[] Items;
             internal readonly int ItemCount;
             internal int CurrentSlot;
+            internal bool OtherArms;
+            internal string Threat;
             internal MyEntity Target;
             internal Projectile Projectile;
             internal IMyGps Gps;
-            internal List<GridAi.TargetInfo> Targets;
-            internal List<Projectile> Projectiles;
+            internal List<MenuTarget> Targets;
 
-            internal string Message;
-            /*
+            private string _message;
             public string Message
             {
-                get { return Message ?? string.Empty; }
-                set { Message = value ?? string.Empty; }
+                get { return _message ?? string.Empty; }
+                set { _message = value ?? string.Empty; }
             }
-            */
+
             internal Menu(Wheel wheel, string name, Item[] items, int itemCount)
             {
                 Wheel = wheel;
                 Name = name;
                 Items = items;
                 ItemCount = itemCount;
+            }
+
+            internal string CurrentItemMessage()
+            {
+                return Items[CurrentSlot].ItemMessage;
             }
 
             internal void Move(Movement move)
@@ -72,7 +78,7 @@ namespace WeaponCore
                             {
                                 if (CurrentSlot < ItemCount - 1) CurrentSlot++;
                                 else CurrentSlot = 0;
-                                Message = Items[CurrentSlot].Message;
+                                Message = Items[CurrentSlot].ItemMessage;
                             }
                             else
                             {
@@ -89,7 +95,7 @@ namespace WeaponCore
                         {
                             if (CurrentSlot - 1 >= 0) CurrentSlot--;
                             else CurrentSlot = ItemCount - 1;
-                            Message = Items[CurrentSlot].Message;
+                            Message = Items[CurrentSlot].ItemMessage;
                         }
                         else
                         {
@@ -110,18 +116,22 @@ namespace WeaponCore
                     case "Characters":
                         if (Targets.Count > 0)
                         {
-                            var target = Targets[item.SubSlot].Target;
-                            if (target == null) break;
-                            Target = target;
+                            var target = Targets[item.SubSlot];
+                            if (target.MyEntity == null) break;
+                            OtherArms = target.OtherArms;
+                            Threat = target.Threat;
+                            Target = target.MyEntity;
                             FormatGridMessage();
                         }
                         break;
                     case "Ordinance":
-                        if (Projectiles.Count > 0)
+                        if (Targets.Count > 0)
                         {
-                            var projectile = Projectiles[item.SubSlot];
-                            if (projectile == null) break;
-                            Projectile = projectile;
+                            var target = Targets[item.SubSlot];
+                            if (target.Projectile == null) break;
+                            OtherArms = target.OtherArms;
+                            Threat = target.Threat;
+                            Projectile = target.Projectile;
                             FormatProjectileMessage();
                         }
                         break;
@@ -145,7 +155,7 @@ namespace WeaponCore
                 var name = Target.DisplayName;
                 var speed = Math.Round(Target.Physics?.Speed ?? 0, 2);
                 var nameLen = 30;
-                var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Target);
+                var armed = OtherArms || Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Target);
                 var intercept = Weapon.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
                 var armedStr = armed ? "Yes" : "No";
                 var interceptStr = intercept ? "Yes" : "No";
@@ -153,14 +163,14 @@ namespace WeaponCore
                 name = name.Replace("]", ")");
                 if (name.Length > nameLen) name = name.Substring(0, nameLen);
                 var message = $"[Target:  {name}\n"
-                          + $"Speed:  {speed} m/s\n"
-                          + $"Armed:  {armedStr}\n" 
-                          + $"Intercept:  {interceptStr}]";
+                              + $"Speed:  {speed} m/s\n"
+                              + $"Armed:  {armedStr}\n"
+                              + $"Threat:  {Threat}\n"
+                              + $"Intercept:  {interceptStr}]";
                 Gps.Coords = targetPos;
-                Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Intercept:  {interceptStr}";
+                Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
                 Message = message;
             }
-
             internal void FormatProjectileMessage()
             {
                 if (Projectile == null || Projectile.State == Projectile.ProjectileState.Dead)
@@ -188,20 +198,11 @@ namespace WeaponCore
                 var message = $"[Target:  {name}\n"
                               + $"Speed:  {speed} m/s\n"
                               + $"Armed:  {armedStr}\n"
+                              + $"Threat:  {Threat}\n"  
                               + $"Intercept:  {interceptStr}]";
                 Gps.Coords = targetPos;
-                Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Intercept:  {interceptStr}";
+                Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
                 Message = message;
-            }
-
-            internal void StatusUpdate(Wheel wheel)
-            {
-                if (wheel.ResetMenu)
-                {
-                    var ai = wheel.Ai;
-                    if (Target != null) MyAPIGateway.Session.SetCameraController(MyCameraControllerEnum.SpectatorDelta, Target);
-                    wheel.ResetMenu = false;
-                }
             }
 
             internal void LoadInfo()
@@ -219,8 +220,8 @@ namespace WeaponCore
                         item.SubSlotCount = Targets.Count;
                         break;
                     case "Ordinance":
-                        Projectiles = Wheel.Projectiles;
-                        item.SubSlotCount = Projectiles.Count;
+                        Targets = Wheel.Projectiles;
+                        item.SubSlotCount = Targets.Count;
                         break;
                 }
 
@@ -242,7 +243,6 @@ namespace WeaponCore
                     Gps = null;
                 }
                 Targets?.Clear();
-                Projectiles?.Clear();
             }
         }
     }

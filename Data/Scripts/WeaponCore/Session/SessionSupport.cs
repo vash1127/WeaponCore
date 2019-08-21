@@ -104,6 +104,7 @@ namespace WeaponCore
         internal void Timings()
         {
             Tick = (uint)(Session.ElapsedPlayTime.TotalMilliseconds * TickTimeDiv);
+            Tick10 = Tick % 10 == 0;
             Tick20 = Tick % 20 == 0;
             Tick60 = Tick % 60 == 0;
             Tick180 = Tick % 180 == 0;

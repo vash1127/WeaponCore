@@ -3,12 +3,12 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Wheel.Menu;
+using static WeaponCore.Support.TargetingDefinition.BlockTypes;
 namespace WeaponCore
 {
     internal partial class Wheel
@@ -46,40 +46,32 @@ namespace WeaponCore
                 var previousMenu = _currentMenu;
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                 {
-                    var menu = Menus[_currentMenu];
-                    var menuItem = menu.Items[menu.CurrentSlot];
-
-                    if (menuItem.SubName != null)
+                    var menu = GetCurrentMenu();
+                    var item = GetCurrentMenuItem();
+                    if (item.SubName != null)
                     {
-                        _currentMenu = menuItem.SubName;
+                        _currentMenu = item.SubName;
                         UpdateState(menu);
                     }
                 }
                 else if (MyAPIGateway.Input.IsNewRightMouseReleased())
                 {
-                    var menu = Menus[_currentMenu];
-                    var menuItem = menu.Items[menu.CurrentSlot];
-
-                    if (menuItem.ParentName != null)
+                    var menu = GetCurrentMenu();
+                    var item = GetCurrentMenuItem();
+                    if (item.ParentName != null)
                     {
-                        _currentMenu = menuItem.ParentName;
+                        _currentMenu = item.ParentName;
                         UpdateState(menu);
                     }
                     else if (menu.Name == "Main") CloseWheel();
                 }
 
                 if (_currentWheel != _previousWheel && _currentWheel > _previousWheel)
-                    Menus[_currentMenu].Move(Movement.Forward);
+                    GetCurrentMenu().Move(Movement.Forward);
                 else if (_currentWheel != _previousWheel)
-                    Menus[_currentMenu].Move(Movement.Backward);
+                    GetCurrentMenu().Move(Movement.Backward);
 
-                if (previousMenu != _currentMenu)
-                {
-                    var menu = Menus[_currentMenu];
-                    var menuItem = menu.Items[menu.CurrentSlot];
-                    HudNotify.Text = menuItem.Message;
-                    Log.Line($"{menuItem.Message}");
-                }
+                if (previousMenu != _currentMenu) SetCurrentMessage();
             }
         }
 
@@ -98,24 +90,18 @@ namespace WeaponCore
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
-            var menu = Menus[_currentMenu];
-
-            if (Session.Instance.Tick20)
-                HudNotify.Text = menu.Message;
-
-            HudNotify.Show();
-
-            MyTransparentGeometry.AddBillboardOriented(menu.Items[menu.CurrentSlot].Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            if (Session.Instance.Tick10)
+                SetCurrentMessage();
+            
+            MyTransparentGeometry.AddBillboardOriented(GetCurrentMenuItem().Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()
         {
             WheelActive = true;
-            if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 320, "UrlHighlight");
+            if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
             if (_currentMenu == string.Empty) _currentMenu = "Main";
-            var menu = Menus[_currentMenu];
-            var menuItem = menu.Items[menu.CurrentSlot];
-            HudNotify.Text = menuItem.Message;
+
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
@@ -126,7 +112,7 @@ namespace WeaponCore
 
         internal void CloseWheel()
         {
-            Menus[_currentMenu].CleanUp();
+            GetCurrentMenu().CleanUp();
 
             _currentMenu = "Main";
             WheelActive = false;
@@ -138,6 +124,26 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
         }
 
+        internal void SetCurrentMessage()
+        {
+            var currentMessage = GetCurrentMenu().Message;
+            if (currentMessage == string.Empty)
+                currentMessage = GetCurrentMenu().CurrentItemMessage();
+            HudNotify.Text = currentMessage;
+            HudNotify.Show();
+        }
+
+        internal Menu GetCurrentMenu()
+        {
+            return Menus[_currentMenu];
+        }
+
+        internal Item GetCurrentMenuItem()
+        {
+            var menu = Menus[_currentMenu];
+            return menu.Items[menu.CurrentSlot];
+        }
+
         internal void UpdateState(Menu oldMenu)
         {
             oldMenu.CleanUp();
@@ -147,14 +153,29 @@ namespace WeaponCore
             Projectiles.Clear();
             foreach (var target in Ai.SortedTargets)
             {
-                if (target.IsGrid) Grids.Add(target);
-                else Characters.Add(target);
+                if (target.IsGrid)
+                {
+                    var menuTarget = new MenuTarget { MyEntity = target.Target, OtherArms = target.TypeDict[Offense].Count > 0, Projectile = null, Threat = "High"};
+                    Grids.Add(menuTarget);
+                }
+                else
+                {
+                    var menuTarget = new MenuTarget { MyEntity = target.Target, OtherArms = false, Projectile = null, Threat = "Low" };
+                    Characters.Add(menuTarget);
+                }
             }
-            foreach (var lp in Ai.LiveProjectile) Projectiles.Add(lp);
-            Projectiles.Sort((a, b) => Vector3D.DistanceSquared(a.Position, Ai.MyGrid.PositionComp.WorldAABB.Center).CompareTo(Vector3D.DistanceSquared(b.Position, Ai.MyGrid.PositionComp.WorldAABB.Center)));
+
+            foreach (var lp in Ai.LiveProjectile)
+            {
+                var menuTarget = new MenuTarget { MyEntity = null, OtherArms = false, Projectile = lp, Threat = "Medium" };
+                Projectiles.Add(menuTarget);
+            }
+
+            Projectiles.Sort((a, b) => Vector3D.DistanceSquared(a.Projectile.Position, Ai.MyGrid.PositionComp.WorldAABB.Center).CompareTo(Vector3D.DistanceSquared(b.Projectile.Position, Ai.MyGrid.PositionComp.WorldAABB.Center)));
 
             var menu = Menus[_currentMenu];
             if (menu.ItemCount <= 1) menu.LoadInfo();
         }
+
     }
 }
