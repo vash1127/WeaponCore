@@ -20,10 +20,7 @@ namespace WepaonCore.Control
             {
                 var c = controls[i];
                if ((i > 7 && i < 10) || (i> 12 && i <22))
-               {
-                    Log.Line($"control:{i} - {c.Id}");
                     c.Visible = (IMyTerminalBlock tb) => false;
-               }
             }
             return false;
         }
