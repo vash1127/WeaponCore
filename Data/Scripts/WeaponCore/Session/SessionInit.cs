@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Utils;
-using VRageMath;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -51,6 +48,8 @@ namespace WeaponCore
             foreach (var mod in MyAPIGateway.Session.Mods)
                 if (mod.PublishedFileId == 1365616918) ShieldMod = true;
             ShieldMod = true;
+
+            Physics = MyAPIGateway.Physics;
         }
 
         internal void Init()

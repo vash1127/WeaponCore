@@ -1,5 +1,4 @@
-﻿using Sandbox.Game;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;

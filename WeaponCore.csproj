@@ -60,6 +60,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponStructure.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VoxelIntersect.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Pointer.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompInit.cs" />
@@ -99,9 +100,9 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\Utils.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompState.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WheelUi\Menu.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WheelUi\Ui.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WheelUi\UiFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Menu.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\WheelFields.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="HavokWrapper">

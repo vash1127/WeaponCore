@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -47,7 +46,7 @@ namespace WeaponCore
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
-        
+        internal IMyPhysics Physics;
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",
@@ -79,7 +78,7 @@ namespace WeaponCore
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
         internal readonly Wheel Ui = new Wheel();
-
+        internal readonly Pointer Pointer = new Pointer(); 
         internal uint Tick;
         internal int PlayerEventId;
         internal int ProCounter;

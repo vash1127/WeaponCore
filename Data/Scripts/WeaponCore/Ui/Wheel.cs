@@ -5,7 +5,6 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
 using VRageMath;
-using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Wheel.Menu;
 using static WeaponCore.Support.TargetingDefinition.BlockTypes;
