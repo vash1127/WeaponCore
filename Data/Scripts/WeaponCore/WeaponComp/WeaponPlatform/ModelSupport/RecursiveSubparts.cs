@@ -11,9 +11,9 @@ namespace WeaponCore.Support
     /// <summary>
     /// Maintains a list of all recursive subparts of the given entity.  Respects changes to the model.
     /// </summary>
-    internal class RecursiveSubparts : IEnumerable<IMyEntity>
+    internal class RecursiveSubparts : IEnumerable<MyEntity>
     {
-        private readonly List<IMyEntity> _subparts = new List<IMyEntity>();
+        private readonly List<MyEntity> _subparts = new List<MyEntity>();
         private readonly Dictionary<string, IMyModelDummy> _tmp = new Dictionary<string, IMyModelDummy>();
         internal readonly Dictionary<string, MyEntity> NameToEntity = new Dictionary<string, MyEntity>();
 
@@ -50,7 +50,7 @@ namespace WeaponCore.Support
                     if (query.Model == null)
                         continue;
                     _tmp.Clear();
-                    query.Model.GetDummies(_tmp);
+                    ((IMyEntity)query).Model.GetDummies(_tmp);
                     foreach (var kv in _tmp)
                         if (kv.Key.StartsWith("subpart_"))
                         {
@@ -68,12 +68,12 @@ namespace WeaponCore.Support
                 NameToEntity.Add("none", Entity);
             }
         }
-        IEnumerator<IMyEntity> IEnumerable<IMyEntity>.GetEnumerator()
+        IEnumerator<MyEntity> IEnumerable<MyEntity>.GetEnumerator()
         {
             return GetEnumerator();
         }
 
-        internal List<IMyEntity>.Enumerator GetEnumerator()
+        internal List<MyEntity>.Enumerator GetEnumerator()
         {
             CheckSubparts();
             return _subparts.GetEnumerator();

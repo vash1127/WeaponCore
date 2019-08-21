@@ -17,13 +17,11 @@ namespace WeaponCore.Support
         private readonly string[] _path;
         private readonly Dictionary<string, IMyModelDummy> _tmp1 = new Dictionary<string, IMyModelDummy>();
         private readonly Dictionary<string, IMyModelDummy> _tmp2 = new Dictionary<string, IMyModelDummy>();
-        private readonly bool _isSubPart;
 
         public Dummy(MyEntity e, params string[] path)
         {
             Entity = e;
             _path = path;
-            _isSubPart = (e is MyEntitySubpart);
         }
 
         private bool _failed = true;

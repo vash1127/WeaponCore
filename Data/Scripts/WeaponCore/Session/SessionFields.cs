@@ -116,6 +116,7 @@ namespace WeaponCore
         internal bool FirstLoop;
         internal bool GameLoaded;
         internal bool MiscLoaded;
+        internal bool Tick10;
         internal bool Tick20;
         internal bool Tick60;
         internal bool Tick180;

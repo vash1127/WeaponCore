@@ -1,4 +1,5 @@
 ﻿using Sandbox.ModAPI;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
 
@@ -6,7 +7,7 @@ namespace WeaponCore.Support
 {
     public static class EntityExtensions
     {
-        public static string ToStringSmart(this IMyEntity e)
+        public static string ToStringSmart(this MyEntity e)
         {
             var term = e as IMyTerminalBlock;
             if (term != null)
@@ -17,7 +18,7 @@ namespace WeaponCore.Support
             return e.ToString();
         }
 
-        public static bool IsPhysicallyPresent(this IMyEntity e)
+        public static bool IsPhysicallyPresent(this MyEntity e)
         {
             while (e != null)
             {
