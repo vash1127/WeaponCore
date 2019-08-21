@@ -103,13 +103,13 @@ namespace WeaponCore
                     {
                         _turretDefinitions[subTypeId] = new Dictionary<string, string>
                         {
-                            [partId] = weaponDef.HardPoint.DefinitionId
+                            [partId] = weaponDef.HardPoint.WeaponId
                         };
                         _subTypeIdToWeaponDefs[subTypeId] = new List<WeaponDefinition> {weaponDef};
                     }
                     else
                     {
-                        _turretDefinitions[subTypeId][partId] = weaponDef.HardPoint.DefinitionId;
+                        _turretDefinitions[subTypeId][partId] = weaponDef.HardPoint.WeaponId;
                         _subTypeIdToWeaponDefs[subTypeId].Add(weaponDef);
                     }
                 }

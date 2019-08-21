@@ -383,7 +383,7 @@ namespace WeaponCore.Support
                 var weaponDef = new WeaponDefinition();
 
                 foreach (var weapon in wDefList)
-                    if (weapon.HardPoint.DefinitionId == typeName) weaponDef = weapon;
+                    if (weapon.HardPoint.WeaponId == typeName) weaponDef = weapon;
 
                 var ammoDefId = new MyDefinitionId();
                 var ammoBlank = weaponDef.HardPoint.AmmoMagazineId == string.Empty || weaponDef.HardPoint.AmmoMagazineId == "Blank";
