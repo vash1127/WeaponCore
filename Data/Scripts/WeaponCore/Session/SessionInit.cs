@@ -50,6 +50,7 @@ namespace WeaponCore
             ShieldMod = true;
 
             Physics = MyAPIGateway.Physics;
+            Camera = MyAPIGateway.Session.Camera;
         }
 
         internal void Init()

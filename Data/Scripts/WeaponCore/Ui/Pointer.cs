@@ -1,5 +1,7 @@
 ﻿
+using System;
 using System.Collections.Generic;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -19,9 +21,10 @@ namespace WeaponCore
         private MyCockpit _cockPit;
         private MyEntity _target;
         private bool _inView;
-        private readonly MyStringId _centerCross = MyStringId.GetOrCompute("Crosshair_Center");
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
+        private readonly Vector2 _pointerPosition = new Vector2(0, 0.15f);
+
         internal bool GetAi()
         {
             _cockPit = Session.Instance.Session.ControlledObject as MyCockpit;
@@ -32,15 +35,31 @@ namespace WeaponCore
         {
             return;
             if (!GetAi()) return;
-            var gridPos = _cockPit.CubeGrid.PositionComp.WorldAABB.Center;
-            var cockpitPos = _cockPit.PositionComp.WorldAABB.Center;
-            var cameraPos = Session.Instance.CameraPos;
-            var crosshairPos = (cameraPos - cockpitPos);
-            var cockDir = Vector3.Normalize(_cockPit.PositionComp.WorldMatrix.Forward);
-            DsDebugDraw.DrawLine(cockpitPos, crosshairPos, Color.Yellow, 0.5f);
-            DsDebugDraw.DrawLine(cockpitPos, cockpitPos + (cockDir * 5000000), Color.Blue, 0.5f);
-            DsDebugDraw.DrawLine(gridPos, gridPos + (cockDir * 5000000), Color.Red, 0.5f);
-            Session.Instance.Physics.CastRay(cockpitPos, cockpitPos + (cockDir * 5000000), _hitInfo);
+            Vector3D start;
+            Vector3D end;
+            Vector3D targetDir;
+            Vector3D cameraUp;
+            /*
+            if (MyAPIGateway.Session.CameraController.IsInFirstPersonView)
+            {
+                fromPos = _cockPit.PositionComp.WorldAABB.Center;
+                targetDir = Vector3.Normalize(_cockPit.PositionComp.WorldMatrix.Forward);
+                toPos = fromPos + (targetDir * Ai.MaxTargetingRange);
+            }
+            else
+            {
+                targetDir = Vector3.Normalize(Session.Instance.Camera.WorldMatrix.Forward);
+                cameraUp = Vector3.Normalize(Session.Instance.Camera.WorldMatrix.Up);
+
+                fromPos = Session.Instance.CameraPos + (targetDir * 10);
+                fromPos += (cameraUp * 1);
+                toPos = fromPos + (targetDir * Ai.MaxTargetingRange);
+            }
+            */
+
+            DrawSelector(out start, out end);
+            Log.Line($"{start} - {end}");
+            Session.Instance.Physics.CastRay(start, end, _hitInfo);
             for (int i = 0; i < _hitInfo.Count; i++)
             {
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;
@@ -49,51 +68,26 @@ namespace WeaponCore
             }
         }
 
-        private void SetTarget(MyEntity target)
+        internal void DrawSelector(out Vector3D start, out Vector3D end)
         {
-            _inView = true;
-            var width = (float)target.PositionComp.WorldAABB.Extents.X;
-            var height = (float)target.PositionComp.WorldAABB.Extents.Z;
-            var box = _target.PositionComp.WorldAABB;
-            box.Translate(_target.PositionComp.WorldMatrix);
-            var center = _target.PositionComp.WorldAABB.Min;
-            center.X += box.HalfExtents.X;
-            center.Y += box.HalfExtents.Y;
-            center.Z += box.HalfExtents.Z;
+            var position = new Vector3D(_pointerPosition.X, _pointerPosition.Y, 0);
+            var fov = Session.Instance.Session.Camera.FovWithZoom;
+            double aspectratio = Session.Instance.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
+            var scale = 0.075 * Math.Tan(fov * 0.5);
+            position.X *= scale * aspectratio;
+            position.Y *= scale;
+            var cameraWorldMatrix = Session.Instance.Session.Camera.WorldMatrix;
+            position = Vector3D.Transform(new Vector3D(position.X, position.Y, -.1), cameraWorldMatrix);
 
-            MyTransparentGeometry.AddBillboardOriented(_cross, Color.WhiteSmoke.ToVector4(), center, MyAPIGateway.Session.Camera.WorldMatrix.Left, MyAPIGateway.Session.Camera.WorldMatrix.Up, height, BlendTypeEnum.PostPP);
-        }
-
-        private void updateCamera()
-        {
-            var targetPos = _target.PositionComp.WorldAABB.Center;
-            var startPos = MyAPIGateway.Session.Camera.WorldMatrix.Translation;
-            var dirA = targetPos - startPos;
-            var distance = dirA.Length();
-            dirA.Normalize();
-
-            float scale;
-            float dis;
-
-            if (distance < 150)
-            {
-                scale = 2.5f;
-                dis = 50f;
-            }
-            else
-            {
-                scale = 7.5f;
-                dis = 150f;
-            }
-
-            var drawAt = startPos + dirA * dis;
-
-            if (_inView)
-                MyTransparentGeometry.AddBillboardOriented(_centerCross, Color.Red.ToVector4(), drawAt, MyAPIGateway.Session.Camera.WorldMatrix.Left, MyAPIGateway.Session.Camera.WorldMatrix.Up, scale, BlendTypeEnum.SDR);
-            else
-                MyTransparentGeometry.AddBillboardOriented(_centerCross, Color.White.ToVector4(), drawAt, MyAPIGateway.Session.Camera.WorldMatrix.Left, MyAPIGateway.Session.Camera.WorldMatrix.Up, scale, BlendTypeEnum.SDR);
-
-            _inView = false;
+            var origin = position;
+            var left = cameraWorldMatrix.Left;
+            var up = cameraWorldMatrix.Up;
+            scale = 0.125 * scale;
+            start = position;
+            var camForward = Session.Instance.Camera.WorldMatrix.Forward;
+            end = position + (camForward * 5000);
+            DsDebugDraw.DrawLine(start, end, Color.Yellow, 0.1f);
+            MyTransparentGeometry.AddBillboardOriented(_cross, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
     }
 }

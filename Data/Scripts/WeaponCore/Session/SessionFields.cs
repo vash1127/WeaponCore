@@ -6,6 +6,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -47,6 +48,7 @@ namespace WeaponCore
         internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
         internal IMyPhysics Physics;
+        internal IMyCamera Camera;
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",

@@ -22,12 +22,10 @@ namespace WeaponCore
         internal bool MouseButtonLeft;
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
-        internal bool ResetMenu;
         internal readonly List<MenuTarget> Grids = new List<MenuTarget>();
         internal readonly List<MenuTarget> Characters = new List<MenuTarget>();
         internal readonly List<MenuTarget> Projectiles = new List<MenuTarget>();
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
-        internal readonly MyStringId GNoSelect = MyStringId.GetOrCompute("DS_Group_Wheel_NoSelect");
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
 
