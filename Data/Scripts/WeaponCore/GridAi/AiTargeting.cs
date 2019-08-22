@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -62,7 +63,7 @@ namespace WeaponCore.Support
             if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
             int[] deck = null;
             if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
-            var physics = MyAPIGateway.Physics;
+            var physics = Session.Instance.Physics;
             var turretCheck = w != null;
 
             for (int i = 0; i < totalBlocks; i++)
@@ -120,7 +121,7 @@ namespace WeaponCore.Support
         internal static bool ReacquireTarget(Projectile p)
         {
             p.ChaseAge = p.Age;
-            var physics = MyAPIGateway.Physics;
+            var physics = Session.Instance.Physics;
             var s = p.T.System;
             var ai = p.T.Ai;
             var weaponPos = p.Position;
@@ -172,7 +173,7 @@ namespace WeaponCore.Support
         private static void AcquireOther(Weapon w, out TargetType targetType)
         {
             var ai = w.Comp.Ai;
-            var physics = MyAPIGateway.Physics;
+            var physics = Session.Instance.Physics;
             var weaponPos = w.Comp.MyPivotPos;
             var target = w.NewTarget;
             var s = w.System;
@@ -188,7 +189,6 @@ namespace WeaponCore.Support
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > s.MaxTrajectorySqr) continue;
-
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
 
                 if (info.IsGrid && s.TrackGrids)
@@ -234,7 +234,7 @@ namespace WeaponCore.Support
             var s = w.System;
             var collection = s.ClosestFirst ? wCache.SortProjetiles : ai.LiveProjectile as IEnumerable<Projectile>;
             wCache.SortProjectiles(w);
-            var physics = MyAPIGateway.Physics;
+            var physics = Session.Instance.Physics;
             var target = w.NewTarget;
             var weaponPos = w.Comp.MyPivotPos;
             foreach (var lp in collection)
@@ -316,7 +316,7 @@ namespace WeaponCore.Support
             var top5Count = target.Top5.Count;
             var testPos = currentPos;
             var top5 = target.Top5;
-            var physics = MyAPIGateway.Physics;
+            var physics = Session.Instance.Physics;
             IHitInfo hitInfo = null;
             
             for (int i = 0; i < cubes.Count + top5Count; i++)
@@ -335,7 +335,7 @@ namespace WeaponCore.Support
                     bool bestTest = false;
                     if (best)
                     {
-                        if (w != null && !system.Values.Ammo.Trajectory.Smarts.OverideTarget)
+                        if (w != null && !(!w.IsTurret && system.Values.Ammo.Trajectory.Smarts.OverideTarget))
                         {
                             Vector3D targetLinVel = grid.Physics?.LinearVelocity ?? Vector3D.Zero;
                             bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;

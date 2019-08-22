@@ -81,7 +81,6 @@ namespace WeaponCore
             var objHp = SApi.GetCharge(shield) * 100;
             if (scaledDamage < objHp) t.BaseDamagePool = 0;
             else t.BaseDamagePool -= objHp;
-
             SApi.PointAttackShield(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, (float)scaledDamage, energy, t.System.Values.Graphics.ShieldHitDraw);
             if (system.Values.Ammo.Mass > 0)
             {
@@ -345,7 +344,13 @@ namespace WeaponCore
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as MyVoxelBase;
             var system = t.System;
-            if (destObj == null || entity == null || !system.Values.DamageScales.DamageVoxels) return;
+            if (destObj == null || entity == null) return;
+            if (!system.Values.DamageScales.DamageVoxels)
+            {
+                t.BaseDamagePool = 0;
+                return;
+            }
+
             t.ObjectsHit++;
 
             float damageScale = 1;

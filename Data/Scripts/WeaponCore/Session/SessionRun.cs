@@ -41,6 +41,9 @@ namespace WeaponCore
                 AiLoop();
                 UpdateWeaponPlatforms();
                 Projectiles.Update();
+
+                if (MyAPIGateway.Input.IsNewLeftMouseReleased())
+                    Pointer.SelectTarget();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -71,7 +74,7 @@ namespace WeaponCore
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                         Ui.DrawWheel();
 
-                    Pointer.PointingAt();
+                    Pointer.DrawSelector();
 
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         lock (Projectiles.Wait[i])

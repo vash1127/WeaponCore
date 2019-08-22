@@ -275,7 +275,7 @@ namespace WeaponCore.Platform
                 return;
             }
             Casting = true;
-            MyAPIGateway.Physics.CastRayParallel(ref Comp.MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
+            Session.Instance.Physics.CastRayParallel(ref Comp.MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
         }
 
         public void ShootRayCheckCallBack(IHitInfo hitInfo)

@@ -68,7 +68,7 @@ namespace WeaponCore.Projectiles
         private void Process(int i)
         {
             var noAv = Session.Instance.DedicatedServer;
-            var camera = Session.Instance.Session.Camera;
+            var camera = Session.Instance.Camera;
             var cameraPos = Session.Instance.CameraPos;
             lock (Wait[i])
             {
