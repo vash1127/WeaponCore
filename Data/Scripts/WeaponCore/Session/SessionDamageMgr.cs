@@ -67,7 +67,6 @@ namespace WeaponCore
             var shield = hitEnt.Entity as IMyTerminalBlock;
             var system = t.System;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
-
             t.ObjectsHit++;
 
             var damageScale = 1;
@@ -79,6 +78,7 @@ namespace WeaponCore
             var scaledDamage = ((t.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier;
 
             var objHp = SApi.GetCharge(shield) * 100;
+
             if (scaledDamage < objHp) t.BaseDamagePool = 0;
             else t.BaseDamagePool -= objHp;
             SApi.PointAttackShield(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, (float)scaledDamage, energy, t.System.Values.Graphics.ShieldHitDraw);
