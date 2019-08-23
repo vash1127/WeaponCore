@@ -61,7 +61,6 @@ namespace WeaponCore.Platform
             //Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
             var tracking = inRange && canTrack;
             return tracking;
-            
         }
 
         internal static bool TargetAligned(Weapon weapon, Target target)

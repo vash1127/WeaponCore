@@ -8,6 +8,33 @@ namespace WeaponCore.Support
 {
     internal static class VoxelIntersect
     {
+        internal static bool PosHasVoxel(MyVoxelBase voxel, Vector3D testPos)
+        {
+            var planet = voxel as MyPlanet;
+            var map = voxel as MyVoxelMap;
+            var hit = new VoxelHit();
+
+            if (planet != null)
+            {
+                var from = testPos;
+                var localPosition = (Vector3)(from - planet.PositionLeftBottomCorner);
+                var v = localPosition / 1f;
+                Vector3I voxelCoord;
+                Vector3I.Floor(ref v, out voxelCoord);
+                planet.Storage.ExecuteOperationFast(ref hit, MyStorageDataTypeFlags.Content, ref voxelCoord, ref voxelCoord, notifyRangeChanged: false);
+            }
+            else if (map != null)
+            {
+                var from = testPos;
+                var localPosition = (Vector3)(from - map.PositionLeftBottomCorner);
+                var v = localPosition / 1f;
+                Vector3I voxelCoord;
+                Vector3I.Floor(ref v, out voxelCoord);
+                map.Storage.ExecuteOperationFast(ref hit, MyStorageDataTypeFlags.Content, ref voxelCoord, ref voxelCoord, notifyRangeChanged: false);
+            }
+
+            return hit.HasHit;
+        }
         internal static Vector3D? ProcessVoxel(LineD trajectile, MyVoxelBase voxel, WeaponSystem system, List<Vector3I> testPoints)
         {
             var planet = voxel as MyPlanet;

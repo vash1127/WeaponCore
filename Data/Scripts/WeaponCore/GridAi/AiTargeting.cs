@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
@@ -137,6 +138,51 @@ namespace WeaponCore.Support
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr) continue;
+
+                var obstruction = false;
+                for (int j = 0; j < ai.Obstructions.Count; j++)
+                {
+                    var ent = ai.Obstructions[j];
+                    var voxel = ent as MyVoxelBase;
+                    var dir = (targetPos - p.Position);
+
+                    if (voxel != null)
+                    {
+                        var beam = new RayD(ref p.Position, ref dir);
+
+                        var obsSphere = ent.PositionComp.WorldVolume;
+                        if (beam.Intersects(obsSphere) != null)
+                        {
+                            var dirNorm = Vector3D.Normalize(dir);
+                            var targetDist = Vector3D.Distance(p.Position, targetPos);
+                            var tRadius = info.Target.PositionComp.LocalVolume.Radius;
+                            var testPos = p.Position + (dirNorm * (targetDist - tRadius));
+                            var lineTest = new LineD(p.Position, testPos);
+                            Vector3D? voxelHit = null;
+                            voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                            obstruction = voxelHit.HasValue;
+                            if (obstruction)
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        var beam = new RayD(ref p.Position, ref dir);
+
+                        var obsSphere = ent.PositionComp.WorldVolume;
+                        if (beam.Intersects(obsSphere) != null)
+                        {
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                            var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                            if (obb.Intersects(ref beam) != null)
+                            {
+                                obstruction = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (obstruction) continue;
 
                 if (info.IsGrid && s.TrackGrids)
                 {
