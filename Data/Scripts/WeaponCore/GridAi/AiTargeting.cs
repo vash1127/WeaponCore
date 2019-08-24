@@ -3,6 +3,7 @@ using Sandbox.Engine.Voxels;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -240,10 +241,7 @@ namespace WeaponCore.Support
                 var dir = (targetPos - p.Position);
                 if (voxel != null)
                 {
-                    var beam = new RayD(ref p.Position, ref dir);
-
-                    var obsSphere = ent.PositionComp.WorldVolume;
-                    if (beam.Intersects(obsSphere) != null)
+                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
                     {
                         var dirNorm = Vector3D.Normalize(dir);
                         var targetDist = Vector3D.Distance(p.Position, targetPos);
@@ -251,7 +249,12 @@ namespace WeaponCore.Support
                         var testPos = p.Position + (dirNorm * (targetDist - tRadius));
                         var lineTest = new LineD(p.Position, testPos);
                         Vector3D? voxelHit = null;
-                        voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                        var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+
+                        if (obb.Intersects(ref lineTest) != null)
+                            voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+
                         obstruction = voxelHit.HasValue;
                         if (obstruction)
                             break;
@@ -259,14 +262,12 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-                    var beam = new RayD(ref p.Position, ref dir);
-
-                    var obsSphere = ent.PositionComp.WorldVolume;
-                    if (beam.Intersects(obsSphere) != null)
+                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
                     {
                         var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                         var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                        if (obb.Intersects(ref beam) != null)
+                        var lineTest = new LineD(p.Position, targetPos);
+                        if (obb.Intersects(ref lineTest) != null)
                         {
                             obstruction = true;
                             break;
@@ -305,7 +306,6 @@ namespace WeaponCore.Support
                     }
                 }
             }
-
             return obstruction;
         }
 
