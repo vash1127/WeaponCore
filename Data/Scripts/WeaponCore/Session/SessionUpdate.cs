@@ -39,40 +39,36 @@ namespace WeaponCore
 
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable) continue;
 
-                        if (!gunner)
+                        if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
+                        else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
+                        else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile)) w.Target.Reset();
+                        else if (w.TrackingAi)
                         {
-                            if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
-                            else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
-                            else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile)) w.Target.Reset();
-                            else if (w.TrackingAi)
-                            {
-                                if (!Weapon.TrackingTarget(w, w.Target, true)) w.Target.Expired = true;
-                            }
-                            else
-                            {
-                                if (w.IsTurret)
-                                {
-                                    if (!w.TrackTarget)
-                                    {
-                                        if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
-                                            w.Target.Reset();
-                                    }
-                                    else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target))
-                                        w.Target.Reset();
-                                }
-                                else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target))
-                                    w.Target.Expired = true;
-                            }
+                            if (!Weapon.TrackingTarget(w, w.Target, !gunner)) w.Target.Expired = true;
                         }
                         else
                         {
-                            if (Ui.MouseButtonPressed)
+                            if (w.IsTurret)
                             {
-                                w.TargetPos = Vector3D.Zero;
-                                var currentAmmo = comp.Gun.GunBase.CurrentAmmo;
-                                if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
+                                if (!w.TrackTarget)
+                                {
+                                    if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
+                                        w.Target.Reset();
+                                }
+                                else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target))
+                                    w.Target.Reset();
                             }
+                            else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target))
+                                w.Target.Expired = true;
                         }
+
+                        if (gunner && Ui.MouseButtonPressed)
+                        {
+                            w.TargetPos = Vector3D.Zero;
+                            var currentAmmo = comp.Gun.GunBase.CurrentAmmo;
+                            if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
+                        }
+
                         if (w.DelayCeaseFire)
                         {
                             if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
@@ -81,9 +77,9 @@ namespace WeaponCore
                                 w.AiReady = (!w.Target.Expired && !InTurret) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
                             }
                         }
-                        else w.AiReady = (!w.Target.Expired && !gunner) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                        else w.AiReady = !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
-                        w.SeekTarget = !gunner && w.Target.Expired && w.TrackTarget;
+                        w.SeekTarget = w.Target.Expired && w.TrackTarget;
 
                         if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
 
@@ -208,7 +204,7 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (w.AiReady || comp.Gunner && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)) w.Shoot();
+                        if (w.AiReady && !comp.Gunner || comp.Gunner && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)) w.Shoot();
                         else if (w.IsShooting)
                         {
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);

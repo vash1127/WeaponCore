@@ -67,26 +67,17 @@ namespace WeaponCore
                     }
                 }
 
-                if (InTurret)
-                {
-                    var matrix = MatrixD.CreateFromDir(t.Direction);
-                    matrix.Translation = t.PrevPosition;
-                    TransparentRenderExt.DrawTransparentCylinder(ref matrix, newWidth, newWidth, (float)t.Length, 12, color, color, t.System.ProjectileMaterial, t.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
-                }
-                else
-                {
-                    var hitPos = t.PrevPosition + (t.Direction * t.Length);
-                    var distanceFromPoint = (float)Vector3D.Distance(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.PrevPosition, ref hitPos, ref CameraPos)));
-                    var thickness = newWidth;
-                    if (distanceFromPoint < 10) thickness *= 0.25f;
-                    else if (distanceFromPoint < 20) thickness *= 0.5f;
-                    else if (distanceFromPoint > 400) thickness *= 8f;
-                    else if (distanceFromPoint > 200) thickness *= 4f;
-                    else if (distanceFromPoint > 100) thickness *= 2f;
+                var hitPos = t.PrevPosition + (t.Direction * t.Length);
+                var distanceFromPoint = (float)Vector3D.Distance(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.PrevPosition, ref hitPos, ref CameraPos)));
+                var thickness = newWidth;
+                if (distanceFromPoint < 10) thickness *= 0.25f;
+                else if (distanceFromPoint < 20) thickness *= 0.5f;
+                else if (distanceFromPoint > 400) thickness *= 8f;
+                else if (distanceFromPoint > 200) thickness *= 4f;
+                else if (distanceFromPoint > 100) thickness *= 2f;
 
-                    if (!t.System.IsBeamWeapon) MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
-                    else MyTransparentGeometry.AddLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
-                }
+                if (!t.System.IsBeamWeapon) MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
+                else MyTransparentGeometry.AddLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
@@ -112,12 +103,12 @@ namespace WeaponCore
                                     effect = null;
                                 }
                             }
-                            var hitPos = t.HitEntity.HitPos.Value;
+                            var hit = t.HitEntity.HitPos.Value;
                             MatrixD matrix;
-                            MatrixD.CreateTranslation(ref hitPos, out matrix);
+                            MatrixD.CreateTranslation(ref hit, out matrix);
                             if (effect == null)
                             {
-                                MyParticlesManager.TryCreateParticleEffect(t.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hitPos, uint.MaxValue, out effect);
+                                MyParticlesManager.TryCreateParticleEffect(t.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hit, uint.MaxValue, out effect);
                                 if (effect == null)
                                 {
                                     weapon.HitEffects[t.MuzzleId] = null;
