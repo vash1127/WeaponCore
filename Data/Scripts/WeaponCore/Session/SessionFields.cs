@@ -67,7 +67,6 @@ namespace WeaponCore
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
-        private readonly List<Vector3I> _voxelTestPoints = new List<Vector3I>();
         internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
         internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
 
