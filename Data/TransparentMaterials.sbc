@@ -55,7 +55,7 @@
       <IsFlareOccluder>false</IsFlareOccluder>
     </TransparentMaterial>
 
-  <!-- Region Empty Wheels 0-3 -->
+  <!-- Region Empty Wheels 0-5 -->
        <TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
