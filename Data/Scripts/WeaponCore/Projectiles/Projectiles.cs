@@ -152,7 +152,6 @@ namespace WeaponCore.Projectiles
                                 p.PrevTargetVel = tVel;
                             }
                             else p.UpdateZombie();
-
                             var commandedAccel = CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.T.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, p.T.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
                             newVel = p.Velocity + (commandedAccel * StepConst);
                             p.AccelDir = commandedAccel / p.AccelPerSec;

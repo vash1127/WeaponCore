@@ -15,7 +15,6 @@ namespace WeaponCore.Support
     {
         internal void UpdateTargetDb()
         {
-            NewEntities.Clear();
             Targeting.AllowScanning = true;
             foreach (var ent in Targeting.TargetRoots)
             {
@@ -36,7 +35,12 @@ namespace WeaponCore.Support
                     var grid = ent as MyCubeGrid;
                     if (grid != null)
                     {
-                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2 || MyGrid.IsSameConstructAs(grid))
+                        if (MyGrid.IsSameConstructAs(grid))
+                        {
+                            SubGridsTmp.Add(grid);
+                            continue;
+                        }
+                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2)
                             continue;
 
                         var typeDict = BlockTypePool.Get();

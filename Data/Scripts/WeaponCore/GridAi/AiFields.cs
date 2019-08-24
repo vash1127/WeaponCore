@@ -25,6 +25,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>> ValidGrids = new Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>>();
 
         internal readonly HashSet<MyResourceSourceComponent> Sources = new HashSet<MyResourceSourceComponent>();
+        internal readonly List<MyCubeGrid> SubGridsTmp = new List<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 

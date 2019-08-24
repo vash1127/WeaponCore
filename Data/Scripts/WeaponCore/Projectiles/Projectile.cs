@@ -115,8 +115,6 @@ namespace WeaponCore.Projectiles
             T.EntityMatrix = MatrixD.Identity;
             ModelState = EntityState.None;
             LastEntityPos = Position;
-            PrevTargetPos = PredictedTargetPos;
-            PrevTargetVel = Vector3D.Zero;
 
             LastHitPos = null;
             LastHitEntVel = null;
@@ -165,8 +163,9 @@ namespace WeaponCore.Projectiles
                 MaxTrajectory = T.System.Values.Ammo.Trajectory.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
             }
             else MaxTrajectory = T.System.Values.Ammo.Trajectory.MaxTrajectory;
-
-
+            if (PredictedTargetPos == Vector3D.Zero) PredictedTargetPos = Position + (Direction * MaxTrajectory);
+            PrevTargetPos = PredictedTargetPos;
+            PrevTargetVel = Vector3D.Zero;
             T.ObjectsHit = 0;
             T.BaseDamagePool = T.System.Values.Ammo.BaseDamage;
             T.BaseHealthPool = T.System.Values.Ammo.Health;

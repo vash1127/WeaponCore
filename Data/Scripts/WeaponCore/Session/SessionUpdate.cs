@@ -68,6 +68,7 @@ namespace WeaponCore
                         {
                             if (Ui.MouseButtonPressed)
                             {
+                                w.TargetPos = Vector3D.Zero;
                                 var currentAmmo = comp.Gun.GunBase.CurrentAmmo;
                                 if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
                             }

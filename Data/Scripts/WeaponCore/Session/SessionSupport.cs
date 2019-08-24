@@ -35,8 +35,12 @@ namespace WeaponCore
         {
             foreach (var db in DbsToUpdate)
             {
+                for (int i = 0; i < db.SubGridsTmp.Count; i++) db.SubGrids.Add(db.SubGridsTmp[i]);
+                db.SubGridsTmp.Clear();
+
                 for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
                 db.SortedTargets.Clear();
+
                 for (int i = 0; i < db.NewEntities.Count; i++)
                 {
                     var detectInfo = db.NewEntities[i];
@@ -52,6 +56,7 @@ namespace WeaponCore
 
                     db.SortedTargets.Add(targetInfo);
                 }
+                db.NewEntities.Clear();
                 db.SortedTargets.Sort(db.TargetCompare1);
 
                 db.Threats.Clear();
