@@ -39,9 +39,7 @@ namespace WeaponCore
             internal int CurrentSlot;
             internal bool OtherArms;
             internal string Threat;
-            internal MyEntity Target;
             internal Projectile Projectile;
-            internal IMyGps Gps;
             internal List<MenuTarget> Targets;
 
             private string _message;
@@ -116,7 +114,7 @@ namespace WeaponCore
                             if (target.MyEntity == null) break;
                             OtherArms = target.OtherArms;
                             Threat = target.Threat;
-                            Target = target.MyEntity;
+                            Session.Instance.Target = target.MyEntity;
                             FormatGridMessage();
                         }
                         break;
@@ -136,22 +134,22 @@ namespace WeaponCore
 
             internal void FormatGridMessage()
             {
-                if (Target == null || Target.MarkedForClose)
+                if (Session.Instance.Target == null || Session.Instance.Target.MarkedForClose)
                 {
                     Message = string.Empty;
                     return;
                 }
 
-                var targetDir = Vector3D.Normalize(Target.Physics?.LinearVelocity ?? Vector3.Zero);
-                var targetPos = Target.PositionComp.WorldAABB.Center;
+                var targetDir = Vector3D.Normalize(Session.Instance.Target.Physics?.LinearVelocity ?? Vector3.Zero);
+                var targetPos = Session.Instance.Target.PositionComp.WorldAABB.Center;
 
                 var myPos = Wheel.Ai.MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
                 var degrees = Math.Cos(MathHelper.ToRadians(25));
-                var name = Target.DisplayName;
-                var speed = Math.Round(Target.Physics?.Speed ?? 0, 2);
+                var name = Session.Instance.Target.DisplayName;
+                var speed = Math.Round(Session.Instance.Target.Physics?.Speed ?? 0, 2);
                 var nameLen = 30;
-                var armed = OtherArms || Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Target);
+                var armed = OtherArms || Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Session.Instance.Target);
                 var intercept = Weapon.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
                 var armedStr = armed ? "Yes" : "No";
                 var interceptStr = intercept ? "Yes" : "No";
@@ -163,8 +161,8 @@ namespace WeaponCore
                               + $"Armed:  {armedStr}\n"
                               + $"Threat:  {Threat}\n"
                               + $"Intercept:  {interceptStr}]";
-                Gps.Coords = targetPos;
-                Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
+                Session.Instance.TargetGps.Coords = targetPos;
+                Session.Instance.TargetGps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
                 Message = message;
             }
             internal void FormatProjectileMessage()
@@ -175,16 +173,16 @@ namespace WeaponCore
                     return;
                 }
 
-                var targetDir = Vector3D.Normalize(Target.Physics?.LinearVelocity ?? Vector3.Zero);
-                var targetPos = Target.PositionComp.WorldAABB.Center;
+                var targetDir = Vector3D.Normalize(Session.Instance.Target.Physics?.LinearVelocity ?? Vector3.Zero);
+                var targetPos = Session.Instance.Target.PositionComp.WorldAABB.Center;
 
                 var myPos = Wheel.Ai.MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
                 var degrees = Math.Cos(MathHelper.ToRadians(25));
-                var name = Target.DisplayName;
-                var speed = Math.Round(Target.Physics?.Speed ?? 0, 2);
+                var name = Session.Instance.Target.DisplayName;
+                var speed = Math.Round(Session.Instance.Target.Physics?.Speed ?? 0, 2);
                 var nameLen = 30;
-                var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Target);
+                var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Session.Instance.Target);
                 var intercept = Weapon.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
                 var armedStr = armed ? "Yes" : "No";
                 var interceptStr = intercept ? "Yes" : "No";
@@ -196,8 +194,8 @@ namespace WeaponCore
                               + $"Armed:  {armedStr}\n"
                               + $"Threat:  {Threat}\n"  
                               + $"Intercept:  {interceptStr}]";
-                Gps.Coords = targetPos;
-                Gps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
+                Session.Instance.TargetGps.Coords = targetPos;
+                Session.Instance.TargetGps.Name = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
                 Message = message;
             }
 
@@ -221,11 +219,11 @@ namespace WeaponCore
                         break;
                 }
 
-                if (Gps == null)
+                if (Session.Instance.TargetGps == null)
                 {
-                    Gps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
-                    MyAPIGateway.Session.GPS.AddLocalGps(Gps);
-                    MyVisualScriptLogicProvider.SetGPSColor(Gps.Name, Color.Yellow);
+                    Session.Instance.TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
+                    MyAPIGateway.Session.GPS.AddLocalGps(Session.Instance.TargetGps);
+                    MyVisualScriptLogicProvider.SetGPSColor(Session.Instance.TargetGps.Name, Color.Yellow);
                 }
 
                 GetTargetInfo(item);
@@ -233,10 +231,10 @@ namespace WeaponCore
 
             internal void CleanUp()
             {
-                if (Gps != null)
+                if (Session.Instance.TargetGps != null)
                 {
-                    MyAPIGateway.Session.GPS.RemoveLocalGps(Gps);
-                    Gps = null;
+                    MyAPIGateway.Session.GPS.RemoveLocalGps(Session.Instance.TargetGps);
+                    Session.Instance.TargetGps = null;
                 }
                 Targets?.Clear();
             }

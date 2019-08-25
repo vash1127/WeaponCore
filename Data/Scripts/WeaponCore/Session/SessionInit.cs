@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
+using VRageMath;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -47,6 +48,14 @@ namespace WeaponCore
 
             Physics = MyAPIGateway.Physics;
             Camera = MyAPIGateway.Session.Camera;
+
+
+            if (TargetGps == null)
+            {
+                TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
+                MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
+                MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
+            }
         }
 
         internal void Init()
