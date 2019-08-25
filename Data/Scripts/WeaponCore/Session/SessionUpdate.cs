@@ -201,7 +201,8 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - comp.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
-                        if (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
+                        var manualShoot = w.ManualShoot;
+                        if (manualShoot == ShootOn || manualShoot == ShootOnce || (manualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((manualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
                         {
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {
