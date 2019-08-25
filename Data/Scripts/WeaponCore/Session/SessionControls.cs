@@ -166,7 +166,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => TerminalHelpers.ActionEnabled(id,b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -184,7 +184,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("On");
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => TerminalHelpers.ActionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -202,7 +202,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("Off");
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => TerminalHelpers.ActionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -220,7 +220,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("");
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => TerminalHelpers.ActionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -291,10 +291,12 @@ namespace WeaponCore
 
             if (actions.Count == 0 || turret == null) return;
 
-            for (int i = 0; i < actions.Count; i++)
+            var iterActions = new List<IMyTerminalAction>(actions);
+
+            for (int i = 0; i < iterActions.Count; i++)
             {
-                if (actions[i].Id.Contains($"WC_"))
-                    actions[i].Enabled = (b) => false;
+                if (iterActions[i].Id.Contains($"WC_"))
+                    actions.Remove(iterActions[i]);
             }
 
             var comp = block?.Components?.Get<WeaponComponent>();
@@ -306,23 +308,26 @@ namespace WeaponCore
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 IDs.Add(comp.Platform.Weapons[i].System.WeaponID);
-                Log.Line($"WepID: {comp.Platform.Weapons[i].WeaponId} WepName: {comp.Platform.Weapons[i].System.WeaponID}");
             }
 
-            for (int i = 0; i < actions.Count; i++)
+            for (int i = 0; i < iterActions.Count; i++)
             {
 
-                if (!actions[i].Id.Contains($"OnOff"))
-                    actions[i].Enabled = (b) => false;
+                if (!iterActions[i].Id.Contains($"OnOff") && !iterActions[i].Id.Contains($"WC_"))
+                {
+                    iterActions[i].Enabled = (b) =>false;
+                    actions.Remove(iterActions[i]);
+                }
 
-                if(actions[i].Id == "WC_Shoot_Click")
-                    actions[i].Enabled = (b) => true;
+                if (iterActions[i].Id == "WC_Shoot_Click")
+                    actions.Add(iterActions[i]);
+
 
                 foreach (int id in IDs)
                 {
-                    if (actions[i].Id.Contains($"WC_{id}"))
+                    if (iterActions[i].Id.Contains($"WC_{id}"))
                     {
-                        actions[i].Enabled = (b) => true;
+                        actions.Add(iterActions[i]);
                     }
                 }
             }
