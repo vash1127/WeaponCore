@@ -78,6 +78,7 @@ namespace WeaponCore.Projectiles
         internal bool PickTarget;
         internal bool GenerateShrapnel;
         internal bool Colliding;
+        internal bool CheckPlanet;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
@@ -97,6 +98,7 @@ namespace WeaponCore.Projectiles
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
+        internal MyEntityQueryType PruneQuery;
 
         internal void Start(bool noAv, int poolId)
         {
@@ -115,8 +117,6 @@ namespace WeaponCore.Projectiles
             T.EntityMatrix = MatrixD.Identity;
             ModelState = EntityState.None;
             LastEntityPos = Position;
-            PrevTargetPos = PredictedTargetPos;
-            PrevTargetVel = Vector3D.Zero;
 
             LastHitPos = null;
             LastHitEntVel = null;
@@ -165,8 +165,9 @@ namespace WeaponCore.Projectiles
                 MaxTrajectory = T.System.Values.Ammo.Trajectory.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
             }
             else MaxTrajectory = T.System.Values.Ammo.Trajectory.MaxTrajectory;
-
-
+            if (PredictedTargetPos == Vector3D.Zero) PredictedTargetPos = Position + (Direction * MaxTrajectory);
+            PrevTargetPos = PredictedTargetPos;
+            PrevTargetVel = Vector3D.Zero;
             T.ObjectsHit = 0;
             T.BaseDamagePool = T.System.Values.Ammo.BaseDamage;
             T.BaseHealthPool = T.System.Values.Ammo.Health;
@@ -210,6 +211,11 @@ namespace WeaponCore.Projectiles
             PickTarget = LockedTarget && T.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
             FiringSoundState = T.System.FiringSound;
             AmmoTravelSoundRangeSqr = T.System.AmmoTravelSoundDistSqr;
+
+            var smartGuidance = Guidance == AmmoTrajectory.GuidanceType.Smart;
+            PruneQuery = smartGuidance ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            if (T.Ai.StaticEntitiesInRange && !smartGuidance) StaticEntCheck();
+            else CheckPlanet = false;
 
             if (EnableAv)
             {
@@ -265,6 +271,39 @@ namespace WeaponCore.Projectiles
             else State = ProjectileState.OneAndDone;
 
             if (T.System.AmmoParticle && EnableAv && !T.System.IsBeamWeapon) PlayAmmoParticle();
+        }
+
+        internal void StaticEntCheck()
+        {
+            var ai = T.Ai;
+            CheckPlanet = false;
+            for (int i = 0; i < T.Ai.StaticsInRange.Count; i++)
+            {
+                var staticEnt = ai.StaticsInRange[i];
+                var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
+                var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                var lineTest = new LineD(Position, Position + (Direction * MaxTrajectory));
+                var voxel = staticEnt as MyVoxelBase;
+                if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) == ContainmentType.Contains)
+                {
+                    if (voxel != null)
+                    {
+                        Vector3D? voxelHit;
+                        voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                        if (voxelHit.HasValue)
+                        {
+                            PruneQuery = MyEntityQueryType.Both;
+                            if (voxel == ai.MyPlanet) CheckPlanet = true;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        PruneQuery = MyEntityQueryType.Both;
+                        if (CheckPlanet) break;
+                    }
+                }
+            }
         }
 
         internal void FireSoundStart()

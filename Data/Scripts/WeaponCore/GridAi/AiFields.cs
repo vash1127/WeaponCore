@@ -25,6 +25,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>> ValidGrids = new Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>>();
 
         internal readonly HashSet<MyResourceSourceComponent> Sources = new HashSet<MyResourceSourceComponent>();
+        internal readonly List<MyCubeGrid> SubGridsTmp = new List<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
@@ -35,6 +36,9 @@ namespace WeaponCore.Support
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
+        internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
+        internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
+
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
 
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -45,6 +49,11 @@ namespace WeaponCore.Support
         internal DSUtils DsWatch = new DSUtils();
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
+        internal MyPlanet MyPlanetTmp;
+        internal MyPlanet MyPlanet;
+        internal Vector3D PlanetClosestPoint;
+        internal bool PlanetSurfaceInRange;
+        internal bool FirstRun = true;
         internal uint SubTick;
         internal uint TargetsUpdatedTick;
         internal uint RecalcLowPowerTick;
@@ -63,6 +72,7 @@ namespace WeaponCore.Support
         internal bool UpdatePowerSources;
         internal bool AvailablePowerIncrease;
         internal bool RecalcDone;
+        internal bool StaticEntitiesInRange;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal float GridMaxPower;

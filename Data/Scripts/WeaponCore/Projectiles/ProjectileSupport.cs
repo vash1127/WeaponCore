@@ -49,6 +49,7 @@ namespace WeaponCore.Projectiles
             var listCnt = segmentList?.Count ?? p.T.HitList.Count;
             var found = false;
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
+            var ai = p.T.Ai;
             for (int i = 0; i < listCnt; i++)
             {
                 var ent = segmentList != null ? segmentList[i].Element : p.T.HitList[i].Entity;
@@ -86,14 +87,27 @@ namespace WeaponCore.Projectiles
                 var dist = obb.Intersects(ref extBeam);
                 if (dist == null && !quickCheck) continue;
 
-                if (ent.Physics != null && !ent.IsPreview && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
+                if (ent == ai.MyPlanet && (p.CheckPlanet || p.Guidance == AmmoTrajectory.GuidanceType.Smart) || ent.Physics != null && !ent.IsPreview && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                 {
                     var voxel = ent as MyVoxelBase;
                     Vector3D? voxelHit = null;
                     if (voxel != null)
                     {
                         if (voxel.RootVoxel != voxel) continue;
-                        voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                        if (voxel == ai.MyPlanet)
+                        {
+                            var check = false;
+                            var closestPos = ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
+                            var planetCenter = ai.MyPlanet.PositionComp.WorldAABB.Center;
+                            double cDistToCenter;
+                            Vector3D.DistanceSquared(ref closestPos, ref planetCenter, out cDistToCenter);
+                            double pDistTocenter;
+                            Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistTocenter);
+                            if (cDistToCenter > pDistTocenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) check = true;
+                            if (check)
+                                voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                        }
+                        else voxel.GetIntersectionWithLine(ref beam, out voxelHit);
                         if (!voxelHit.HasValue) continue;
                     }
 
@@ -332,18 +346,6 @@ namespace WeaponCore.Projectiles
                 foreach (var segmentOverlapResult in p.EntityRaycastResult)
                     (segmentOverlapResult.Element as MyPlanet)?.PrefetchShapeOnRay(ref ray);
             }
-        }
-
-        private static MyEntity GetSubpartOwner(MyEntity entity)
-        {
-            if (entity == null)
-                return null;
-            if (!(entity is MyEntitySubpart))
-                return entity;
-            var myEntity = entity;
-            while (myEntity is MyEntitySubpart)
-                myEntity = myEntity.Parent;
-            return myEntity ?? entity;
         }
     }
 }

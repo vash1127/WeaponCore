@@ -344,7 +344,7 @@ namespace WeaponCore
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as MyVoxelBase;
             var system = t.System;
-            if (destObj == null || entity == null) return;
+            if (destObj == null || entity == null || !hitEnt.HitPos.HasValue) return;
             if (!system.Values.DamageScales.DamageVoxels)
             {
                 t.BaseDamagePool = 0;
@@ -352,7 +352,6 @@ namespace WeaponCore
             }
 
             t.ObjectsHit++;
-
             float damageScale = 1;
             if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
 
@@ -360,10 +359,8 @@ namespace WeaponCore
             var objHp = 1;
             if (scaledDamage < objHp) t.BaseDamagePool = 0;
             else t.BaseDamagePool -= objHp;
-            var hitPos = VoxelIntersect.ProcessVoxel(hitEnt.Beam, destObj, system, _voxelTestPoints);
             var radius = system.AmmoAreaEffect ? system.Values.Ammo.AreaEffect.AreaEffectRadius : 1;
-            if (hitPos.HasValue)
-                destObj.PerformCutOutSphereFast(hitPos.Value, (float) radius, true);
+            destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float) radius, true);
         }
 
         private void ExplosionProximity(HitEntity hitEnt, Trajectile t)

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using Havok;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -72,7 +73,6 @@ namespace WeaponCore
             if (MyAPIGateway.Session.CameraController.IsInFirstPersonView || !GetAi()) return;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
             if (!_3RdPersonDraw) return;
-
             if (!_cachedPos) InitOffset();
             var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
             var offetPosition = Vector3D.Transform(Offset, cameraWorldMatrix);

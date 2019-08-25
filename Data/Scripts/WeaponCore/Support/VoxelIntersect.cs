@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRage.Voxels;
 using VRageMath;
 
@@ -35,44 +36,62 @@ namespace WeaponCore.Support
 
             return hit.HasHit;
         }
+
         internal static Vector3D? ProcessVoxel(LineD trajectile, MyVoxelBase voxel, WeaponSystem system, List<Vector3I> testPoints)
         {
             var planet = voxel as MyPlanet;
             var voxelMap = voxel as MyVoxelMap;
-            if (planet != null)
+            var ray = new RayD(trajectile.From, trajectile.Direction);
+            var voxelAABB = voxel.PositionComp.WorldAABB;
+            var rayVoxelDist = ray.Intersects(voxelAABB);
+            if (rayVoxelDist.HasValue)
             {
-                var startPos = trajectile.From - planet.PositionLeftBottomCorner;
-                var startInt = Vector3I.Round(startPos);
-                var endPos = trajectile.To - planet.PositionLeftBottomCorner;
-                var endInt = Vector3I.Round(endPos);
-
-                BresenhamLineDraw(startInt, endInt, testPoints);
-
-                for (int i = 0; i < testPoints.Count; ++i)
+                var voxelMaxLen = voxel.PositionComp.WorldVolume.Radius * 2;
+                var start = trajectile.From + (ray.Direction * rayVoxelDist.Value);
+                var lenRemain = trajectile.Length - rayVoxelDist.Value;
+                var end = voxelMaxLen > lenRemain ? start + (ray.Direction * lenRemain) : start + (ray.Direction * voxelMaxLen);
+                var testLine = new LineD(trajectile.From + (ray.Direction * rayVoxelDist.Value), end);
+                var rotMatrix = Quaternion.CreateFromRotationMatrix(voxel.WorldMatrix);
+                var obb = new MyOrientedBoundingBoxD(voxel.PositionComp.WorldAABB.Center, voxel.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                if (obb.Intersects(ref testLine) != null)
                 {
-                    var voxelCoord = testPoints[i];
-                    var voxelHit = new VoxelHit();
-                    planet.Storage.ExecuteOperationFast(ref voxelHit, MyStorageDataTypeFlags.Content, ref voxelCoord, ref voxelCoord, notifyRangeChanged: false);
-                    if (voxelHit.HasHit)
-                        return (Vector3D)voxelCoord + planet.PositionLeftBottomCorner;
-                }
-            }
-            else if (voxelMap != null)
-            {
-                var startPos = trajectile.From - voxelMap.PositionLeftBottomCorner;
-                var startInt = Vector3I.Round(startPos);
-                var endPos = trajectile.To - voxelMap.PositionLeftBottomCorner;
-                var endInt = Vector3I.Round(endPos);
+                    Log.Line("obb");
+                    if (planet != null)
+                    {
+                        var startPos = trajectile.From - planet.PositionLeftBottomCorner;
+                        var startInt = Vector3I.Round(startPos);
+                        var endPos = trajectile.To - planet.PositionLeftBottomCorner;
+                        var endInt = Vector3I.Round(endPos);
 
-                BresenhamLineDraw(startInt, endInt, testPoints);
+                        BresenhamLineDraw(startInt, endInt, testPoints);
 
-                for (int i = 0; i < testPoints.Count; ++i)
-                {
-                    var voxelCoord = testPoints[i];
-                    var voxelHit = new VoxelHit();
-                    voxelMap.Storage.ExecuteOperationFast(ref voxelHit, MyStorageDataTypeFlags.Content, ref voxelCoord, ref voxelCoord, notifyRangeChanged: false);
-                    if (voxelHit.HasHit)
-                        return (Vector3D)voxelCoord + voxelMap.PositionLeftBottomCorner;
+                        for (int i = 0; i < testPoints.Count; ++i)
+                        {
+                            var voxelCoord = testPoints[i];
+                            var voxelHit = new VoxelHit();
+                            planet.Storage.ExecuteOperationFast(ref voxelHit, MyStorageDataTypeFlags.Content, ref voxelCoord, ref voxelCoord, notifyRangeChanged: false);
+                            if (voxelHit.HasHit)
+                                return (Vector3D)voxelCoord + planet.PositionLeftBottomCorner;
+                        }
+                    }
+                    else if (voxelMap != null)
+                    {
+                        var startPos = trajectile.From - voxelMap.PositionLeftBottomCorner;
+                        var startInt = Vector3I.Round(startPos);
+                        var endPos = trajectile.To - voxelMap.PositionLeftBottomCorner;
+                        var endInt = Vector3I.Round(endPos);
+
+                        BresenhamLineDraw(startInt, endInt, testPoints);
+
+                        for (int i = 0; i < testPoints.Count; ++i)
+                        {
+                            var voxelCoord = testPoints[i];
+                            var voxelHit = new VoxelHit();
+                            voxelMap.Storage.ExecuteOperationFast(ref voxelHit, MyStorageDataTypeFlags.Content, ref voxelCoord, ref voxelCoord, notifyRangeChanged: false);
+                            if (voxelHit.HasHit)
+                                return (Vector3D)voxelCoord + voxelMap.PositionLeftBottomCorner;
+                        }
+                    }
                 }
             }
 

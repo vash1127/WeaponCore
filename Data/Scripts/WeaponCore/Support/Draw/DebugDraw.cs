@@ -125,12 +125,12 @@ namespace WeaponCore.Support
 
         public static void DrawSphere(BoundingSphereD sphere, Color color)
         {
-            var rangeGridResourceId = MyStringId.GetOrCompute("Build new");
+            var rangeGridResourceId = MyStringId.GetOrCompute("Sqaure");
             var radius = sphere.Radius;
             var transMatrix = MatrixD.CreateTranslation(sphere.Center);
             //var wm = MatrixD.Rescale(transMatrix, radius);
 
-            MySimpleObjectDraw.DrawTransparentSphere(ref transMatrix, (float)radius, ref color, MySimpleObjectRasterizer.Wireframe, 20, null, rangeGridResourceId, -1, -1);
+            MySimpleObjectDraw.DrawTransparentSphere(ref transMatrix, (float)radius, ref color, MySimpleObjectRasterizer.Solid, 20, null, rangeGridResourceId, -1, -1);
         }
         #endregion
     }
