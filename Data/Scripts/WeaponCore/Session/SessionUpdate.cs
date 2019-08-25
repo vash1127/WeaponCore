@@ -14,12 +14,12 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-                if (!gridAi.DbReady || !gridAi.MyGrid.InScene) continue;
                 if (!gridAi.DeadProjectiles.IsEmpty)
                 {
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
+                if (!gridAi.DbReady && ControlledEntity?.GetTopMostParent() != gridAi.MyGrid || !gridAi.MyGrid.InScene) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -35,8 +35,6 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (Tick60 && (comp.MyGrid != comp.Ai.MyGrid || comp.MyCube.CubeGrid != comp.MyGrid || comp.MyCube.CubeGrid != comp.Ai.MyGrid || w.Dummies[0].Entity == null || w.Dummies[0].Entity.MarkedForClose)) { Log.Line($"cube desync: compMyGridId:{comp.MyGrid.EntityId} - aiMyGridId:{comp.Ai.MyGrid.EntityId} - myCubeGridId:{comp.MyCube.CubeGrid.EntityId} - dummyNull:{w.Dummies[0].Entity == null} - dummyMarked:{w.Dummies[0]?.Entity?.MarkedForClose}"); }
-
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable) continue;
 
                         if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
@@ -74,10 +72,10 @@ namespace WeaponCore
                             if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
                             {
                                 w.DelayFireCount = 0;
-                                w.AiReady = (!w.Target.Expired && !InTurret) && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                                w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
                             }
                         }
-                        else w.AiReady = !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                        else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
                         w.SeekTarget = w.Target.Expired && w.TrackTarget;
 
@@ -101,7 +99,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if (!gridAi.Ready || !gridAi.DbReady && ControlledEntity?.GetTopMostParent() != gridAi.MyGrid || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
@@ -121,7 +119,6 @@ namespace WeaponCore
 
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
-
                         var w = comp.Platform.Weapons[j];
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated)) continue;
 
@@ -203,7 +200,6 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - comp.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
-
                         if (w.AiReady && !comp.Gunner || comp.Gunner && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)) w.Shoot();
                         else if (w.IsShooting)
                         {

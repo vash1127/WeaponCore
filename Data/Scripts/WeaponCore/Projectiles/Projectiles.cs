@@ -221,7 +221,7 @@ namespace WeaponCore.Projectiles
                     }
 
                     var beam = new LineD(p.LastPosition, p.Position);
-                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList);
+                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
                     var segCount = p.SegmentList.Count;
 
                     if (segCount > 0)

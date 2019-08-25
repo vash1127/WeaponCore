@@ -3,6 +3,7 @@ using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -35,6 +36,13 @@ namespace WeaponCore
         {
             foreach (var db in DbsToUpdate)
             {
+                if (db.MyPlanetTmp != null)
+                {
+                    var gridBox = db.MyGrid.PositionComp.WorldAABB;
+                    if (db.MyPlanetTmp.IntersectsWithGravityFast(ref gridBox)) db.MyPlanetInfo();
+                    else if (db.MyPlanet != null) db.MyPlanetInfo(clear: true);
+                }
+
                 for (int i = 0; i < db.SubGridsTmp.Count; i++) db.SubGrids.Add(db.SubGridsTmp[i]);
                 db.SubGridsTmp.Clear();
 
@@ -73,7 +81,16 @@ namespace WeaponCore
                 for (int i = 0; i < db.ObstructionsTmp.Count; i++) db.Obstructions.Add(db.ObstructionsTmp[i]);
                 db.ObstructionsTmp.Clear();
 
-                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0;
+                db.StaticsInRange.Clear();
+                if (db.PlanetSurfaceInRange) db.StaticsInRangeTmp.Add(db.MyPlanet);
+                var staticCount = db.StaticsInRangeTmp.Count;
+
+                for (int i = 0; i < staticCount; i++) db.StaticsInRange.Add(db.StaticsInRangeTmp[i]);
+                db.StaticsInRangeTmp.Clear();
+                db.StaticEntitiesInRange = staticCount > 0;
+
+                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || db.FirstRun;
+                db.FirstRun = false;
                 //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.MyShield = db.MyShieldTmp;
                 Interlocked.Exchange(ref db.DbUpdating, 0);

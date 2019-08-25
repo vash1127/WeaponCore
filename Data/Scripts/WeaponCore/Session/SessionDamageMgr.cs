@@ -352,7 +352,6 @@ namespace WeaponCore
             }
 
             t.ObjectsHit++;
-
             float damageScale = 1;
             if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
 

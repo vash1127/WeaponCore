@@ -36,7 +36,50 @@ namespace WeaponCore.Support
             return true;
         }
 
-        public void SubGridInfo()
+        internal void MyPlanetInfo(bool clear = false)
+        {
+            if (!clear)
+            {
+                MyPlanet = MyPlanetTmp;
+                var gridRadius = MyGrid.PositionComp.LocalVolume.Radius;
+                var planetCenter = MyPlanet.PositionComp.WorldAABB.Center;
+                if (new BoundingSphereD(planetCenter, MyPlanet.MaximumRadius + gridRadius).Intersects(MyGrid.PositionComp.WorldVolume))
+                {
+                    var gridCenter = MyGrid.PositionComp.WorldAABB.Center;
+                    PlanetClosestPoint = MyPlanet.GetClosestSurfacePointGlobal(gridCenter);
+                    double pointDistSqr;
+                    Vector3D.DistanceSquared(ref PlanetClosestPoint, ref gridCenter, out pointDistSqr);
+                    pointDistSqr -= (gridRadius * gridRadius);
+                    PlanetSurfaceInRange = pointDistSqr <= MaxTargetingRangeSqr;
+                }
+                else
+                {
+                    PlanetClosestPoint = Vector3D.Zero;
+                    PlanetSurfaceInRange = false;
+                }
+            }
+            else
+            {
+                MyPlanet = null;
+                PlanetClosestPoint = Vector3D.Zero;
+                PlanetSurfaceInRange = false;
+            }
+        }
+
+        internal void DebugPlanet()
+        {
+            if (MyPlanet == null) return;
+            var planetCenter = MyPlanet.PositionComp.WorldAABB.Center;
+            var closestPointSphere = new BoundingSphereD(planetCenter, Vector3D.Distance(planetCenter, PlanetClosestPoint));
+            var closestSphere = new BoundingSphereD(planetCenter, MyPlanet.MinimumRadius);
+            var furthestSphere = new BoundingSphereD(planetCenter, MyPlanet.MaximumRadius);
+            DsDebugDraw.DrawSphere(closestPointSphere, Color.Green);
+            DsDebugDraw.DrawSphere(closestSphere, Color.Blue);
+            DsDebugDraw.DrawSphere(furthestSphere, Color.Red);
+            DsDebugDraw.DrawSingleVec(PlanetClosestPoint, 10f, Color.Red);
+        }
+
+        internal void SubGridInfo()
         {
             SubUpdate = false;
             SubTick = Session.Instance.Tick + 10;

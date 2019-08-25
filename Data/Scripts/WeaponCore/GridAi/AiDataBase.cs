@@ -95,25 +95,33 @@ namespace WeaponCore.Support
 
         internal void FinalizeTargetDb()
         {
-            if (NewEntities.Count > 0)
+            MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(MyGrid.PositionComp.WorldAABB.Center);
+            var gridScanRadius = MaxTargetingRange + MyGrid.PositionComp.LocalVolume.Radius;
+            var sphere = new BoundingSphereD(MyGrid.PositionComp.WorldAABB.Center, gridScanRadius);
+            EntitiesInRange.Clear();
+            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, EntitiesInRange);
+            for (int i = 0; i < EntitiesInRange.Count; i++)
             {
-                var gridScanRadius = MaxTargetingRange + MyGrid.PositionComp.LocalVolume.Radius;
-                var sphere = new BoundingSphereD(MyGrid.PositionComp.WorldAABB.Center, gridScanRadius);
-                EntitiesInRange.Clear();
-                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, EntitiesInRange);
-                for (int i = 0; i < EntitiesInRange.Count; i++)
+                var ent = EntitiesInRange[i];
+                var hasPhysics = ent.Physics != null;
+                if (!hasPhysics && !ent.IsPreview)
                 {
-                    var ent = EntitiesInRange[i];
-                    var hasPhysics = ent.Physics != null;
-                    if (!hasPhysics && !ent.IsPreview)
-                    {
-                        var testId = Convert.ToInt64(ent.Name);
-                        if (testId != 0 && testId == MyGrid.EntityId) MyShieldTmp = ent; 
-                    } 
-                    var blockingThings = (ent is MyVoxelBase || ent is MyCubeGrid && ent.Physics != null);
-                    if (!blockingThings || ent == MyGrid || ValidGrids.ContainsKey(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
-                    ObstructionsTmp.Add(ent);
+                    long testId;
+                    long.TryParse(ent.Name, out testId);
+                    if (testId != 0 && testId == MyGrid.EntityId) MyShieldTmp = ent; 
                 }
+                var voxel = ent as MyVoxelBase;
+                var grid = ent as MyCubeGrid;
+                var blockingThings =  ent.Physics != null && (voxel != null && voxel.RootVoxel == voxel || grid != null);
+                if (!blockingThings) continue;
+                if (ent.Physics.IsStatic)
+                {
+                    if (voxel != null && MyPlanetTmp != null && MyPlanetTmp.PositionComp.WorldAABB.Contains(voxel.PositionComp.WorldVolume) == ContainmentType.Contains)
+                        continue;
+                    StaticsInRangeTmp.Add(ent);
+                }
+                if (grid != null && grid.IsSameConstructAs(MyGrid) || ValidGrids.ContainsKey(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
+                ObstructionsTmp.Add(ent);
             }
             ValidGrids.Clear();
         }
