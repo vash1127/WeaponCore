@@ -47,16 +47,21 @@ namespace WeaponCore
                     }
                 }
 
-                var controllerBase = myEntity as MyCockpit;
-                if (controllerBase != null)
+                var cockpit = myEntity as MyCockpit;
+                if (cockpit != null)
                 {
                     
                     MyAPIGateway.TerminalControls.CustomActionGetter += GetWeaponActions;
                     MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
                 }
 
+                var remote = myEntity as MyRemoteControl;
+                if (remote != null)
+                {
 
-
+                    MyAPIGateway.TerminalControls.CustomActionGetter += GetWeaponActions;
+                    MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
