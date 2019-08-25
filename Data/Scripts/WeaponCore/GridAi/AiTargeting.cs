@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Engine.Voxels;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -505,6 +506,25 @@ namespace WeaponCore.Support
             if (newEntity1 != null) top5.Add(newEntity1);
             if (newEntity2 != null) top5.Add(newEntity2);
             if (newEntity3 != null) top5.Add(newEntity3);
+        }
+
+        private bool TargetSphereInCone(BoundingSphereD targetSphere, Vector3D coneTip, Vector3D coneDir, double coneAngle)
+        {
+            Vector3D toSphere = targetSphere.Center - coneTip;
+            double angPos = MathHelperD.ToDegrees(Math.Acos(Vector3D.Dot(coneDir, toSphere) / coneDir.Normalize() * toSphere.Normalize()));
+            double angRad = MathHelperD.ToDegrees(Math.Asin(targetSphere.Radius / toSphere.Normalize()));
+
+            var ang1 = angPos + angRad;
+            var ang2 = angPos - angRad;
+
+            if (ang1 < -coneAngle)
+            {
+              return false; // sprintf('No intersection (+)');
+            }
+            if (ang2 > coneAngle)
+              return false; //result = sprintf('No intersection (-)');
+
+            return true;
         }
     }
 }

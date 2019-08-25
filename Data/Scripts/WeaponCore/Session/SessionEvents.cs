@@ -1,8 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Weapons;
+using Sandbox.ModAPI;
+using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -19,6 +24,7 @@ namespace WeaponCore
                     if (!Inited) lock (_configLock) Init();
 
                     var cube = (MyCubeBlock)myEntity;
+
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
                     using (myEntity.Pin())
                     {

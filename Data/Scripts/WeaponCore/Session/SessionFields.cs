@@ -49,6 +49,9 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
         internal IMyPhysics Physics;
         internal IMyCamera Camera;
+        internal IMyGps TargetGps;
+        internal MyEntity Target;
+
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",
