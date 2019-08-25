@@ -69,7 +69,7 @@ namespace WeaponCore.Support
         internal bool Starting;
         internal bool Sync = true;
         internal bool Charging;
-        internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
+        
         internal Start Status;
         internal enum Start
         {
@@ -78,13 +78,6 @@ namespace WeaponCore.Support
             Stopped,
             ReInit,
             WarmingUp,
-        }
-
-        internal enum TerminalActionState
-        {
-            ShootOn,
-            ShootOff,
-            ShootOnce,
         }
 
         internal MyCubeBlock MyCube;

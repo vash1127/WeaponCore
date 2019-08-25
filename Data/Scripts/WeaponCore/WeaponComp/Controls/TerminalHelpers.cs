@@ -12,65 +12,7 @@ namespace WepaonCore.Control
 {
     public static class TerminalHelpers
     {
-        internal static bool HideControls<T>() where T : IMyLargeTurretBase
-        {
-            List<IMyTerminalControl> controls;
-            MyAPIGateway.TerminalControls.GetControls<T>(out controls);
-            for (int i = 0; i < controls.Count; i++)
-            {
-                var c = controls[i];
-                //Log.Line($"Count: {i} ID:{c.Id}");
-                if ((i > 6 && i < 10) || (i> 12 && i <22))
-                    c.Visible = tb => false;
-            }
-            return false;
-        }
-
-        internal static bool HideActions<T>() where T : IMyLargeTurretBase
-        {
-            List<IMyTerminalAction> actions;
-            MyAPIGateway.TerminalControls.GetActions<T>(out actions);
-            for (int i = 0; i < actions.Count; i++)
-            {
-                var c = actions[i];
-                //Log.Line($"Count: {i} ID:{c.Id}");
-                if ((i > 2 && i < 6) || (i > 10 && i < 37))
-                    c.Enabled = tb => false;
-            }
-            return false;
-        }
-        
-        internal static void AlterShootActions<T>() where T : IMyLargeTurretBase
-        {
-            List<IMyTerminalAction> actions;
-            MyAPIGateway.TerminalControls.GetActions<T>(out actions);
-
-            for (int i = 0; i < actions.Count; i++)
-            {
-                var c = actions[i];
-                switch (c.Id)
-                {
-                    case "ShootOnce":
-                    case "Shoot":
-                    case "Shoot_On":
-                    case "Shoot_Off":
-                        actions[i].Action += delegate (IMyTerminalBlock blck)
-                        {
-                            var comp = blck?.Components?.Get<WeaponComponent>();
-                            if (comp == null) return;
-
-                            if (c.Id == "Shoot_Off")
-                                comp.ManualShoot = WeaponComponent.TerminalActionState.ShootOff;
-                            else if (c.Id == "ShootOnce")
-                                comp.ManualShoot = WeaponComponent.TerminalActionState.ShootOnce;
-                            else
-                                comp.ManualShoot = WeaponComponent.TerminalActionState.ShootOn;
-                        };
-                        break;
-                }
-            }
-        }
-
+           
         internal static bool UpdateControls<T>(T block) where T : IMyTerminalBlock
         {
             List<IMyTerminalControl> controls;
@@ -96,28 +38,22 @@ namespace WepaonCore.Control
             return comp == null;
         }
 
-        internal static bool WeaponCount(Func<IMyTerminalBlock, int, int, bool> getter, int id, IMyTerminalBlock block)
+        internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, int, bool> enabledGetter = null, Func<IMyTerminalBlock, int, int, bool> visibleGetter = null) where T : IMyTerminalBlock
         {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            return comp != null && getter(block, comp.Platform.Weapons.Length, id);
-        }
-
-        internal static IMyTerminalControlOnOffSwitch AddOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, int, bool> enabledGetter = null, Func<IMyTerminalBlock, int, int, bool> visibleGetter = null) where T : IMyTerminalBlock
-        {
-            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlOnOffSwitch, T>($"WC - WNAME_{name}");
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlOnOffSwitch, T>($"WC_{id}");
             var d = GetDefaultEnabled();
 
             c.Title = MyStringId.GetOrCompute(title);
             c.Tooltip = MyStringId.GetOrCompute(tooltip);
             c.OnText = MyStringId.GetOrCompute(onText);
             c.OffText = MyStringId.GetOrCompute(offText);
-            c.Enabled = x => WeaponCount(enabledGetter, id, x);
-            c.Visible = x => WeaponCount(enabledGetter, id, x);
+            c.Enabled = x => true;
+            c.Visible = x => true;
             c.Getter = getter;
             c.Setter = setter;
             MyAPIGateway.TerminalControls.AddControl<T>(c);
 
-            CreateActionSet<T>(c, name);
+            CreateOnOffActionSet<T>(c, name, id);
 
             return c;
         }
@@ -140,8 +76,8 @@ namespace WepaonCore.Control
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSeparator, T>(name);
             var d = GetDefaultEnabled();
 
-            c.Enabled = x => WeaponCount(enabledGetter, id, x);
-            c.Visible = x => WeaponCount(enabledGetter, id, x);
+            c.Enabled = x => true;
+            c.Visible = x => true;
             MyAPIGateway.TerminalControls.AddControl<T>(c);
 
             return c;
@@ -154,8 +90,8 @@ namespace WepaonCore.Control
 
             c.Title = MyStringId.GetOrCompute(title);
             c.Tooltip = MyStringId.GetOrCompute(tooltip);
-            c.Enabled = x => WeaponCount(enabledGetter, id, x);
-            c.Visible = x => WeaponCount(enabledGetter, id, x);
+            c.Enabled = x => true;
+            c.Visible = x => true;
             c.Getter = getter;
             c.Setter = setter;
             MyAPIGateway.TerminalControls.AddControl<T>(c);
@@ -170,8 +106,8 @@ namespace WepaonCore.Control
 
             s.Title = MyStringId.GetOrCompute(title);
             s.Tooltip = MyStringId.GetOrCompute(tooltip);
-            s.Enabled = x => WeaponCount(enabledGetter, id, x);
-            s.Visible = x => WeaponCount(enabledGetter, id, x);
+            s.Enabled = x => true;
+            s.Visible = x => true;
             s.Getter = getter;
             s.Setter = setter;
             s.Writer = (b, v) => v.Append(getter(b).ToString("N2"));
@@ -186,8 +122,8 @@ namespace WepaonCore.Control
 
             cmb.Title = MyStringId.GetOrCompute(title);
             cmb.Tooltip = MyStringId.GetOrCompute(tooltip);
-            cmb.Enabled = x => WeaponCount(enabledGetter, id, x);
-            cmb.Visible = x => WeaponCount(enabledGetter, id, x);
+            cmb.Enabled = x => true;
+            cmb.Visible = x => true;
             cmb.ComboBoxContent = fillAction;
             cmb.Getter = getter;
             cmb.Setter = setter;
@@ -195,36 +131,40 @@ namespace WepaonCore.Control
             return cmb;
         }
 
-        internal static void CreateActionSet<T>(IMyTerminalControlOnOffSwitch tc, string name) where T : IMyTerminalBlock
+        internal static void CreateOnOffActionSet<T>(IMyTerminalControlOnOffSwitch tc, string name, int id) where T : IMyTerminalBlock
         {
-            var noSpName = name.Replace(" ","");
-            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"{noSpName}Toggle");
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action.Name = new StringBuilder($"{name} Toggle On/Off");
             action.Action = (b) => tc.Setter(b, !tc.Getter(b));
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => tc.Enabled(b);
+            action.Enabled = (b) => true;
+            action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"{noSpName}Toggle_On");
+            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
             action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
             action.Name = new StringBuilder($"{name} On");
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => tc.Enabled(b);
+            action.Enabled = (b) => true;
+            action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"{noSpName}Toggle_Off");
+            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
             action.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
             action.Name = new StringBuilder($"{name} Off");
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => tc.Enabled(b);
+            action.Enabled = (b) => true;
+            action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
+
+        
         /*
         internal static IMyTerminalControl[] AddVectorEditor<T>(T block, string name, string title, string tooltip, Func<IMyTerminalBlock, Vector3> getter, Action<IMyTerminalBlock, Vector3> setter, float min = -10, float max = 10, Func<IMyTerminalBlock, int, bool> enabledGetter = null, Func<IMyTerminalBlock, int, bool> enabledGetter = null, string writerFormat = "0.##") where T : IMyTerminalBlock
         {
@@ -302,8 +242,8 @@ namespace WepaonCore.Control
             c.Tooltip = MyStringId.GetOrCompute(tooltip);
             c.Getter = getter;
             c.Setter = setter;
-            c.Visible = x => WeaponCount(enabledGetter, id, x);
-            c.Enabled = x => WeaponCount(enabledGetter, id, x);
+            c.Visible = x => true;
+            c.Enabled = x => true;
 
             MyAPIGateway.TerminalControls.AddControl<T>(c);
             return c;

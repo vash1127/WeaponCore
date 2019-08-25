@@ -46,7 +46,8 @@ namespace WeaponCore
                 if (controllerBase != null)
                 {
                     
-                    MyAPIGateway.TerminalControls.CustomActionGetter += ActionGetter;
+                    MyAPIGateway.TerminalControls.CustomActionGetter += GetWeaponActions;
+                    MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
                 }
 
 
@@ -55,9 +56,5 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
 
-        private void ActionGetter(IMyTerminalBlock block, List<IMyTerminalAction> actions)
-        {
-
-        }
     }
 }

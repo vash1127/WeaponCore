@@ -3,7 +3,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
-using static WeaponCore.Support.WeaponComponent.TerminalActionState;
+using static WeaponCore.Platform.Weapon.TerminalActionState;
 
 namespace WeaponCore
 {
@@ -80,7 +80,7 @@ namespace WeaponCore
 
                         w.SeekTarget = w.Target.Expired && w.TrackTarget;
 
-                        if (w.AiReady || w.SeekTarget || gunner || comp.ManualShoot != ShootOff) gridAi.Ready = true;
+                        if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff) gridAi.Ready = true;
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
@@ -201,7 +201,13 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - comp.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
-                        if (w.AiReady && !comp.Gunner || comp.Gunner && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)) w.Shoot();
+                        if (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
+                        {
+                            w.Shoot();
+                            if (w.ManualShoot == ShootOnce) {
+                                w.ManualShoot = ShootOff;
+                            }
+                        }
                         else if (w.IsShooting)
                         {
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);

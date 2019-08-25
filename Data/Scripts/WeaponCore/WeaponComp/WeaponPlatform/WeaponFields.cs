@@ -104,6 +104,15 @@ namespace WeaponCore.Platform
         internal bool AvCapable;
         internal bool DelayCeaseFire;
         internal bool TargetWasExpired;
+        internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
+
+        internal enum TerminalActionState
+        {
+            ShootOn,
+            ShootOff,
+            ShootOnce,
+            ShootClick,
+        }
         internal readonly List<string> FiringStrings = new List<string>()
         {
             "Firing0",

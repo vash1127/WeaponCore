@@ -6,6 +6,9 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using Sandbox.Game.Screens.Helpers;
 using WeaponCore.Support;
+using Sandbox.ModAPI.Interfaces.Terminal;
+using System.Collections.Generic;
+
 namespace WeaponCore
 {
     public partial class Session
