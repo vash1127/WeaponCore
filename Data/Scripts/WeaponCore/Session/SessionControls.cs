@@ -36,13 +36,15 @@ namespace WeaponCore
         internal IMyTerminalControlCombobox WeaponMode { get; set; }
         internal IMyTerminalControlSlider PowerSlider { get; set; }
         internal IMyTerminalControlCheckbox DoubleRate { get; set; }
-        public void CreateLogicElements(IMyTerminalBlock comp)
+        public void CreateLogicElements()
         {
             try
             {
-                if (WepControl || comp == null) return;
-                TerminalHelpers.HideControls((IMyLargeTurretBase)comp);
-                TerminalHelpers.Separator(comp, -1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+                if (WepControl) return;
+                TerminalHelpers.HideControls<IMyLargeTurretBase>();
+                TerminalHelpers.HideActions<IMyLargeTurretBase>();
+                TerminalHelpers.AlterShootActions<IMyLargeTurretBase>();
+                TerminalHelpers.Separator<IMyLargeTurretBase>(-1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
 
                 foreach(KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
                 {
@@ -50,7 +52,7 @@ namespace WeaponCore
                     {
                         var wepName = ws.Value.WeaponName;
 
-                        TerminalHelpers.AddOnOff(comp, ws.Value.WeaponID, $"WC-WNAME", $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
+                        TerminalHelpers.AddOnOff<IMyLargeTurretBase>(ws.Value.WeaponID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
                             delegate (IMyTerminalBlock block)
                             {
                                 var tmpComp = block?.Components?.Get<WeaponComponent>();
@@ -80,14 +82,16 @@ namespace WeaponCore
                     }
                 }
 
-                /*TerminalHelpers.Separator(comp, -1, "WC-L_sep1", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                WeaponMode = TerminalHelpers.AddCombobox(comp, -1, "WC-L_WeaponMode", "Weapon Mode", "Weapon Mode", WepUi.GetModes, WepUi.SetModes, WepUi.ListAll, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                TerminalHelpers.Separator(comp, -1, "WC-L_sep2",WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+                /*TerminalHelpers.Separator(comp, -1, "WC-L_sep1", WepUi.GuidanceEnabled, WepUi.GuidanceEnabled);
+                Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.GuidanceEnabled, WepUi.GuidanceEnabled);
 
+                
                 PowerSlider = TerminalHelpers.AddSlider(comp, -1, "WC-L_PowerLevel", "Change Power Level", "Change Power Level", WepUi.GetPowerLevel, WepUi.SetPowerLevel, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
                 PowerSlider.SetLimits(0, 100);
 
+
+
+                /*
                 DoubleRate = TerminalHelpers.AddCheckbox(comp, -1, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
                 CreateAction<IMyLargeTurretBase>(Guidance);
                 */
@@ -97,21 +101,6 @@ namespace WeaponCore
                 WepControl = true;
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
-        }
-
-
-        internal void CustomControls(IMyTerminalBlock tBlock, List<IMyTerminalControl> myTerminalControls)
-        {
-            try
-            {
-                LastTerminalId = tBlock.EntityId;
-                if (_subTypeIdToWeaponDefs.ContainsKey(tBlock.BlockDefinition.SubtypeId))
-                {
-                    TerminalHelpers.HideControls((IMyLargeTurretBase)tBlock);
-                    TerminalHelpers.UpdateControls(tBlock);
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in CustomControls: {ex}"); }
         }
 
         public void CreateAction<T>(IMyTerminalControlOnOffSwitch c)

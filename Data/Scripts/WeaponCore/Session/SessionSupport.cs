@@ -3,6 +3,7 @@ using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.ModAPI;
+using Sandbox.Game.Screens.Helpers;
 using WeaponCore.Support;
 namespace WeaponCore
 {
@@ -68,7 +69,8 @@ namespace WeaponCore
                 for (int i = 0; i < db.ObstructionsTmp.Count; i++) db.Obstructions.Add(db.ObstructionsTmp[i]);
                 db.ObstructionsTmp.Clear();
 
-                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0;
+                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || db.firstRun;
+                db.firstRun = false;
                 //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.MyShield = db.MyShieldTmp;
                 Interlocked.Exchange(ref db.DbUpdating, 0);

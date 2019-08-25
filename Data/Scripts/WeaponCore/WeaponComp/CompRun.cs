@@ -97,7 +97,6 @@ namespace WeaponCore.Support
 
             RegisterEvents(true);
 
-            CreateUi();
             OnAddedToSceneTasks();
 
             MainInit = true;

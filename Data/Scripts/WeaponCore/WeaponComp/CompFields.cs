@@ -61,14 +61,15 @@ namespace WeaponCore.Support
         internal float CurrentSinkPowerRequested;
         internal float CompPowerPerc;
         internal float IdlePower;
-        internal bool Overheated = false;
+        internal bool Overheated;
         internal bool TurretTargetLock;
         internal bool Gunner;
         internal bool NotFailed;
         internal bool WarmedUp;
         internal bool Starting;
         internal bool Sync = true;
-        internal bool Charging = false;
+        internal bool Charging;
+        internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal Start Status;
         internal enum Start
         {
@@ -77,6 +78,13 @@ namespace WeaponCore.Support
             Stopped,
             ReInit,
             WarmingUp,
+        }
+
+        internal enum TerminalActionState
+        {
+            ShootOn,
+            ShootOff,
+            ShootOnce,
         }
 
         internal MyCubeBlock MyCube;

@@ -3,6 +3,7 @@ using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
+using static WeaponCore.Support.WeaponComponent.TerminalActionState;
 
 namespace WeaponCore
 {
@@ -84,7 +85,7 @@ namespace WeaponCore
 
                         w.SeekTarget = !gunner && w.Target.Expired && w.TrackTarget;
 
-                        if (w.AiReady || w.SeekTarget || gunner) gridAi.Ready = true;
+                        if (w.AiReady || w.SeekTarget || gunner || comp.ManualShoot != ShootOff) gridAi.Ready = true;
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
@@ -103,6 +104,8 @@ namespace WeaponCore
             {
                 var gridAi = aiPair.Value;
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
+
+                Log.Line($"GridAiReady: {gridAi.Ready} gridAi.DbReady: {gridAi.DbReady} gridAi.MyGrid.InScene: {gridAi.MyGrid.InScene} gridAi.GridInit: {gridAi.GridInit}");
 
                 if (!gridAi.Ready || !gridAi.DbReady || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
@@ -207,7 +210,12 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (w.AiReady || comp.Gunner && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)) w.Shoot();
+                        if (comp.ManualShoot != ShootOff || w.AiReady || comp.Gunner && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight))
+                        {
+                            w.Shoot();
+                            if (comp.ManualShoot == ShootOnce)
+                                comp.ManualShoot = ShootOff;
+                        }
                         else if (w.IsShooting)
                         {
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);

@@ -1,8 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Gui;
+using Sandbox.Game.Screens.Helpers;
+using Sandbox.ModAPI;
+using Sandbox.ModAPI.Interfaces.Terminal;
 using SpaceEngineers.Game.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
+using WeaponCore.Data.Scripts.WeaponCore.Support;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -17,7 +25,6 @@ namespace WeaponCore
                 if (weaponBase != null)
                 {
                     if (!Inited) lock (_configLock) Init();
-
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
                     using (myEntity.Pin())
@@ -34,8 +41,23 @@ namespace WeaponCore
                             CompsToStart.Enqueue(weaponComp);
                     }
                 }
+
+                var controllerBase = myEntity as MyCockpit;
+                if (controllerBase != null)
+                {
+                    
+                    MyAPIGateway.TerminalControls.CustomActionGetter += ActionGetter;
+                }
+
+
+
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
+        }
+
+        private void ActionGetter(IMyTerminalBlock block, List<IMyTerminalAction> actions)
+        {
+
         }
     }
 }

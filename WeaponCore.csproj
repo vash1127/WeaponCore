@@ -58,6 +58,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponDefinitions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponStructure.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Support\CustomController.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VoxelIntersect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Pointer.cs" />

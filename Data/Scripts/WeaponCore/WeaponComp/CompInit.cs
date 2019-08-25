@@ -86,12 +86,5 @@ namespace WeaponCore.Support
                     w.Heat = 0;
             }
         }
-
-        private void CreateUi()
-        {
-            if (Session.Instance.ControlInit) return;
-            Session.Instance.ControlInit = true;
-            Session.Instance.CreateLogicElements(Turret);
-        }
     }
 }
