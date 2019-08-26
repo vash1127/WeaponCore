@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -51,6 +52,7 @@ namespace WeaponCore
         internal IMyCamera Camera;
         internal IMyGps TargetGps;
         internal MyEntity Target;
+        internal GridAi TrackingAi;
 
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
@@ -66,7 +68,7 @@ namespace WeaponCore
 
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
-        private readonly Dictionary<string, Dictionary<string, string>> _turretDefinitions = new Dictionary<string, Dictionary<string, string>>();
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
@@ -128,6 +130,7 @@ namespace WeaponCore
         internal bool Tick1800;
         internal bool ShieldMod;
         internal bool ShieldApiLoaded;
+        internal bool TargetArmed;
 
         internal bool InTurret;
 

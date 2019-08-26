@@ -37,7 +37,6 @@ namespace WeaponCore.Support
                 return;
             _trackedModel = Entity?.Model;
             _subparts.Clear();
-            //EntityToName.Clear();
             NameToEntity.Clear();
             if (Entity != null)
             {
@@ -64,8 +63,6 @@ namespace WeaponCore.Support
                             }
                         }
                 }
-                NameToEntity.Add("None", Entity);
-                NameToEntity.Add("none", Entity);
             }
         }
         IEnumerator<MyEntity> IEnumerable<MyEntity>.GetEnumerator()

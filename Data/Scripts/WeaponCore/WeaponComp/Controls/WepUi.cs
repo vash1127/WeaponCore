@@ -80,7 +80,7 @@ namespace WeaponCore
             {
                 for (int i = 0; i < logic.Platform.Weapons.Length; i++)
                 {
-                    if (logic.Platform.Weapons[i].System.WeaponID == id)
+                    if (logic.Platform.Weapons[i].System.WeaponId == id)
                         enable = true;
                 }
             }

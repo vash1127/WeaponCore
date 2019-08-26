@@ -50,7 +50,7 @@ namespace WeaponCore
                     {
                         var wepName = ws.Value.WeaponName;
 
-                        TerminalHelpers.AddOnOff(comp, ws.Value.WeaponID, $"WC-WNAME", $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
+                        TerminalHelpers.AddOnOff(comp, ws.Value.WeaponId, $"WC-WNAME", $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
                             delegate (IMyTerminalBlock block)
                             {
                                 var tmpComp = block?.Components?.Get<WeaponComponent>();
@@ -59,7 +59,7 @@ namespace WeaponCore
                                 var enabled = false;
                                 for(int i =0; i < tmpComp.Platform.Weapons.Length; i++)
                                 {
-                                    if (tmpComp.Platform.Weapons[i].System.WeaponID == ws.Value.WeaponID)
+                                    if (tmpComp.Platform.Weapons[i].System.WeaponId == ws.Value.WeaponId)
                                         enabled = tmpComp.Set.Value.Weapons[i].Enable;
                                 }
                                 return enabled;
@@ -71,7 +71,7 @@ namespace WeaponCore
                                 {
                                     for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
                                     {
-                                        if (tmpComp.Platform.Weapons[i].System.WeaponID == ws.Value.WeaponID)
+                                        if (tmpComp.Platform.Weapons[i].System.WeaponId == ws.Value.WeaponId)
                                             tmpComp.Set.Value.Weapons[i].Enable = enabled;
                                     }
                                 }

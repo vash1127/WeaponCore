@@ -2,6 +2,7 @@
 using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
@@ -107,18 +108,23 @@ namespace WeaponCore
                 foreach (var mount in weaponDef.Assignments.MountPoints)
                 {
                     var subTypeId = mount.SubtypeId;
-                    var partId = mount.SubpartId;
+                    var muzzlePartId = mount.MuzzlePartId;
+                    var aimPartId = mount.AimPartId;
+
+                    var extraInfo = new MyTuple<string, string> { Item1 = muzzlePartId, Item2 = weaponDef.HardPoint.WeaponId };
+
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                     {
-                        _turretDefinitions[subTypeId] = new Dictionary<string, string>
+
+                        _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string>>
                         {
-                            [partId] = weaponDef.HardPoint.WeaponId
+                            [aimPartId] = extraInfo
                         };
                         _subTypeIdToWeaponDefs[subTypeId] = new List<WeaponDefinition> {weaponDef};
                     }
                     else
                     {
-                        _turretDefinitions[subTypeId][partId] = weaponDef.HardPoint.WeaponId;
+                        _turretDefinitions[subTypeId][aimPartId] = extraInfo;
                         _subTypeIdToWeaponDefs[subTypeId].Add(weaponDef);
                     }
                 }

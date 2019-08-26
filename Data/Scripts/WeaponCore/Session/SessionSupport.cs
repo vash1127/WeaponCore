@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Threading;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
@@ -110,6 +112,82 @@ namespace WeaponCore
                     _weaponDefinitions.Add(wepDef);
             }
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
+        }
+
+        internal void ResetGps()
+        {
+            if (TargetGps == null)
+            {
+                TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
+                MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
+                MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
+            }
+        }
+
+        internal void RemoveGps()
+        {
+            if (TargetGps != null)
+            {
+                MyAPIGateway.Session.GPS.RemoveLocalGps(TargetGps);
+                TargetGps = null;
+            }
+        }
+
+        internal void SetGpsInfo(Vector3D pos, string name)
+        {
+            if (TargetGps != null)
+            {
+                TargetGps.Coords = pos;
+                TargetGps.Name = name;
+            }
+        }
+
+        internal bool CheckTarget(GridAi ai)
+        {
+            if (Target == null) return false;
+            if (Target.MarkedForClose || ai != TrackingAi)
+            {
+                Target = null;
+                TrackingAi = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        internal void SetTarget(MyEntity entity, GridAi ai)
+        {
+            Target = entity;
+            TrackingAi = ai;
+
+            GridAi gridAi;
+            if (GridTargetingAIs.TryGetValue((MyCubeGrid)entity, out gridAi))
+            {
+                TargetArmed = true;
+            }
+            else
+            {
+                foreach (var info in ai.SortedTargets)
+                {
+                    if (info.Target != entity) continue;
+                    TargetArmed = info.TypeDict[TargetingDefinition.BlockTypes.Offense].Count > 0;
+                    break;
+                }
+            }
+        }
+
+        internal void GetTargetInfo(GridAi ai, out double speed, out string armedStr, out string interceptStr)
+        {
+            var targetDir = Vector3D.Normalize(Target.Physics?.LinearVelocity ?? Vector3.Zero);
+            var targetPos = Target.PositionComp.WorldAABB.Center;
+            var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
+            var myHeading = Vector3D.Normalize(myPos - targetPos);
+            var degrees = Math.Cos(MathHelper.ToRadians(25));
+            var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
+
+            armedStr = TargetArmed ? "Yes" : "No";
+            interceptStr = intercept ? "Yes" : "No";
+            speed = Math.Round(Target.Physics?.Speed ?? 0, 2);
         }
 
         internal static double ModRadius(double radius, bool largeBlock)

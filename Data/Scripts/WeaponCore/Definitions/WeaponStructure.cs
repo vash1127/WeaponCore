@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Definitions;
+using VRage;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
@@ -10,7 +11,8 @@ namespace WeaponCore.Support
     {
         private const string Arc = "Arc";
 
-        public readonly MyStringHash PartName;
+        public readonly MyStringHash AimPartName;
+        public readonly MyStringHash MuzzlePartName;
         public readonly WeaponDefinition Values;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
@@ -26,7 +28,7 @@ namespace WeaponCore.Support
         public readonly int ModelId;
         public readonly int MaxHeat;
         public readonly int HeatPShot;
-        public readonly int WeaponID;
+        public readonly int WeaponId;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -104,14 +106,15 @@ namespace WeaponCore.Support
             WhenDone
         }
 
-        public WeaponSystem(MyStringHash partName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId, int weaponID)
+        public WeaponSystem(MyStringHash aimPartName, MyStringHash muzzlePartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId, int weaponId)
         {
-            PartName = partName;
+            AimPartName = aimPartName;
+            MuzzlePartName = muzzlePartName;
             Values = values;
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
-            WeaponID = weaponID;
+            WeaponId = weaponId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             ProjectileMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Material);
 
@@ -362,24 +365,29 @@ namespace WeaponCore.Support
         private static int _weaponCount;
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
-        public readonly MyStringHash[] PartNames;
+        public readonly MyStringHash[] AimPartNames;
+        public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
 
-        public WeaponStructure(KeyValuePair<string, Dictionary<string, string>> tDef, List<WeaponDefinition> wDefList)
+        public WeaponStructure(KeyValuePair<string, Dictionary<string, MyTuple<string, string>>> tDef, List<WeaponDefinition> wDefList)
         {
             var map = tDef.Value;
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
-            var names = new MyStringHash[numOfParts];
+            var aimPartNames = new MyStringHash[numOfParts];
+            var muzzlePartNames = new MyStringHash[numOfParts];
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
             foreach (var w in map)
             {
-                var myNameHash = MyStringHash.GetOrCompute(w.Key);
-                names[mapIndex] = myNameHash;
+                var myAimNameHash = MyStringHash.GetOrCompute(w.Key);
+                var myMuzzleNameHash = MyStringHash.GetOrCompute(w.Value.Item1);
 
-                var typeName = w.Value;
+                aimPartNames[mapIndex] = myAimNameHash;
+                muzzlePartNames[mapIndex] = myMuzzleNameHash;
+
+                var typeName = w.Value.Item2;
                 var weaponDef = new WeaponDefinition();
 
                 foreach (var weapon in wDefList)
@@ -394,7 +402,7 @@ namespace WeaponCore.Support
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
   
-                WeaponSystems.Add(myNameHash, new WeaponSystem(myNameHash, weaponDef, typeName, ammoDefId, _weaponCount));
+                WeaponSystems.Add(myAimNameHash, new WeaponSystem(myAimNameHash, myMuzzleNameHash, weaponDef, typeName, ammoDefId, _weaponCount));
                 _weaponCount++;
                 if (!ammoBlank)
                 {
@@ -413,7 +421,8 @@ namespace WeaponCore.Support
                   }
                   */
             }
-            PartNames = names;
+            AimPartNames = aimPartNames;
+            MuzzlePartNames = muzzlePartNames;
         }
     }
 }

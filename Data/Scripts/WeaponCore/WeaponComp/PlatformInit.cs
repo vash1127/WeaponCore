@@ -15,16 +15,17 @@ namespace WeaponCore.Platform
         {
             BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
             Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
-            var partCount = Structure.PartNames.Length;
+            var partCount = Structure.AimPartNames.Length;
             Weapons = new Weapon[partCount];
             Parts.Entity = comp.Entity as MyEntity;
             Parts.CheckSubparts();
             for (int i = 0; i < partCount; i++)
             {
-                var barrelCount = Structure.WeaponSystems[Structure.PartNames[i]].Barrels.Length;
-                MyEntity partEntity;
-                Parts.NameToEntity.TryGetValue(Structure.PartNames[i].String, out partEntity);
-                Weapons[i] = new Weapon(partEntity, Structure.WeaponSystems[Structure.PartNames[i]], i, comp)
+                var barrelCount = Structure.WeaponSystems[Structure.AimPartNames[i]].Barrels.Length;
+                MyEntity aimPartEntity;
+                Log.Line($"{Structure.AimPartNames[i].String} - {Structure.MuzzlePartNames[i].String}");
+                Parts.NameToEntity.TryGetValue(Structure.AimPartNames[i].String, out aimPartEntity);
+                Weapons[i] = new Weapon(aimPartEntity, Structure.WeaponSystems[Structure.AimPartNames[i]], i, comp)
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
@@ -43,31 +44,29 @@ namespace WeaponCore.Platform
                     }
                 }
             }
-            CompileTurret();
+            CompileTurret(comp);
         }
 
-        private void CompileTurret(bool reset = false)
+        private void CompileTurret(WeaponComponent comp, bool reset = false)
         {
             var c = 0;
             foreach (var m in Structure.WeaponSystems)
             {
                 Log.Line($"PartToNameCount:{Parts.NameToEntity.Count}");
-                var part = Parts.NameToEntity[m.Key.String];
+                var aimPart = Parts.NameToEntity[m.Key.String];
+                var muzzlePartName = m.Value.MuzzlePartName.String;
+                var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" || muzzlePartName == string.Empty;
+                var muzzlePart = (noMuzzlePart ? null : Parts.NameToEntity[m.Value.MuzzlePartName.String]) ?? comp.MyCube;
                 var barrelCount = m.Value.Barrels.Length;
-                if (reset) Weapons[c].EntityPart = part;
+                if (reset) Weapons[c].EntityPart = aimPart;
 
-                if (Weapons[c].IsTurret)
-                    Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
-                else
-                    Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
-
-                Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPOS;
-
+                Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+                Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPos;
 
                 for (int i = 0; i < barrelCount; i++)
                 {
                     var barrel = m.Value.Barrels[i];
-                    Weapons[c].Dummies[i] = new Dummy(part, barrel);
+                    Weapons[c].Dummies[i] = new Dummy(muzzlePart, barrel);
                     Weapons[c].Muzzles[i] = new Weapon.Muzzle(i);
                 }
                 c++;
@@ -85,7 +84,7 @@ namespace WeaponCore.Platform
                 w.Dummies = new Dummy[w.System.Barrels.Length];
             }
 
-            CompileTurret(true);
+            CompileTurret(comp, true);
             comp.Status = Started;
             return true;
         }
@@ -96,12 +95,9 @@ namespace WeaponCore.Platform
             foreach (var w in comp.Platform.Weapons)
             {
                 if (w.EntityPart == null) continue;
-                if(w.IsTurret)
-                    w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
-                else
-                    w.Comp.MyCube.PositionComp.OnPositionChanged -= w.PositionChanged;
 
-                w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPOS;
+                w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
+                w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
 
                 w.EntityPart = null;
             }
