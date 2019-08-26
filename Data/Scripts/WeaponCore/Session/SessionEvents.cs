@@ -16,6 +16,7 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Data.Scripts.WeaponCore.Support;
 using WeaponCore.Support;
+using Sandbox.Game.Entities.Cube;
 
 namespace WeaponCore
 {
@@ -47,7 +48,7 @@ namespace WeaponCore
                     }
                 }
 
-                var cockpit = myEntity as MyCockpit;
+                var cockpit = myEntity as IMyCockpit;
                 if (cockpit != null)
                 {
                     
@@ -65,6 +66,5 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
-
     }
 }
