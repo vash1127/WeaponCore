@@ -287,6 +287,9 @@ namespace WeaponCore
 
         private void PlayerControlAcquired(IMyEntityController myEntityController)
         {
+            if (ControlledEntity is MyCockpit)
+                GridTargetingAIs[((MyCockpit)ControlledEntity).CubeGrid].turnWeaponShootOff = true;
+
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }
 
