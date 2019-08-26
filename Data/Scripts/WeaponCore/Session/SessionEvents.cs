@@ -18,8 +18,9 @@ namespace WeaponCore
                 {
                     if (!Inited) lock (_configLock) Init();
                     var cube = (MyCubeBlock)myEntity;
-
+                    
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+
                     using (myEntity.Pin())
                     {
                         if (myEntity.MarkedForClose) return;

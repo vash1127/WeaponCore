@@ -21,6 +21,9 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
 
             w.Comp.UpdatePivotPos(w);
+            w.AimCone.ConeDir = w.Comp.MyPivotDir;
+            w.AimCone.ConeTip = w.Comp.MyPivotPos;
+
             if (pCount > 0 && w.System.TrackProjectile) AcquireProjectile(w, out targetType);
             if (targetType == TargetType.None && w.System.TrackOther) AcquireOther(w, out targetType);
             if (targetType == TargetType.None)
@@ -153,7 +156,7 @@ namespace WeaponCore.Support
 
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
-                if (hitInfo?.HitEntity == info.Target)
+                if (hitInfo.HitEntity == info.Target)
                 {
                     Log.Line($"{p.T.System.WeaponName} - found something");
 
@@ -191,8 +194,11 @@ namespace WeaponCore.Support
 
                 if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > s.MaxTrajectorySqr) continue;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
-
-                if (info.IsGrid && s.TrackGrids)
+                var targetSphere = info.Target.PositionComp.WorldVolume;
+                double intercept;
+                var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, w.Prediction, out intercept) : targetCenter;
+                targetSphere.Center = newCenter;
+                if (info.IsGrid && s.TrackGrids && MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone))
                 {
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
@@ -503,25 +509,6 @@ namespace WeaponCore.Support
             if (newEntity1 != null) top5.Add(newEntity1);
             if (newEntity2 != null) top5.Add(newEntity2);
             if (newEntity3 != null) top5.Add(newEntity3);
-        }
-
-        private bool TargetSphereInCone(BoundingSphereD targetSphere, Vector3D coneTip, Vector3D coneDir, double coneAngle)
-        {
-            Vector3D toSphere = targetSphere.Center - coneTip;
-            var angPos = MathHelperD.ToDegrees(MathFuncs.AngleBetween(coneDir, toSphere));
-            double angRad = MathHelperD.ToDegrees(Math.Asin(targetSphere.Radius / toSphere.Length()));
-
-            var ang1 = angPos + angRad;
-            var ang2 = angPos - angRad;
-
-            if (ang1 < -coneAngle)
-            {
-              return false; // sprintf('No intersection (+)');
-            }
-            if (ang2 > coneAngle)
-              return false; //result = sprintf('No intersection (-)');
-
-            return true;
         }
     }
 }

@@ -53,6 +53,7 @@ namespace WeaponCore.Platform
         internal Target NewTarget;
         internal Vector3D TargetPos;
         internal Vector3D TargetDir;
+        internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
@@ -105,6 +106,7 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool TargetWasExpired;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
+        internal HardPointDefinition.Prediction Prediction;
 
         internal enum TerminalActionState
         {
@@ -201,7 +203,11 @@ namespace WeaponCore.Platform
             TrackTarget = System.Values.HardPoint.TrackTargets;
             HSRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
-            AimingTolerance = Math.Cos(MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance));
+            var toleranceInRadians = MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance);
+            AimCone.ConeAngle = toleranceInRadians;
+            AimingTolerance = Math.Cos(toleranceInRadians);
+            Prediction = System.Values.HardPoint.AimLeadingPrediction;
+
             _ticksPerShot = (uint)(3600 / System.Values.HardPoint.Loading.RateOfFire);
             _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire);
             _numOfBarrels = System.Barrels.Length;

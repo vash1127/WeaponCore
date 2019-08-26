@@ -9,6 +9,30 @@ namespace WeaponCore.Support
 {
     internal static class MathFuncs
     {
+        internal struct Cone
+        {
+            internal Vector3D ConeDir;
+            internal Vector3D ConeTip;
+            internal double ConeAngle;
+        }
+
+        internal static bool TargetSphereInCone(ref BoundingSphereD targetSphere, ref Cone cone)
+        {
+            Vector3D toSphere = targetSphere.Center - cone.ConeTip;
+            var angPos = MathHelperD.ToDegrees(AngleBetween(cone.ConeDir, toSphere));
+            double angRad = MathHelperD.ToDegrees(Math.Asin(targetSphere.Radius / toSphere.Length()));
+
+            var ang1 = angPos + angRad;
+            var ang2 = angPos - angRad;
+
+            if (ang1 < -cone.ConeAngle)
+                return false; 
+
+            if (ang2 > cone.ConeAngle)
+                return false; 
+
+            return true;
+        }
 
         internal static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
         {

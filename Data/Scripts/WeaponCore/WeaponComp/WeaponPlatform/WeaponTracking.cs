@@ -65,8 +65,6 @@ namespace WeaponCore.Platform
 
         internal static bool TargetAligned(Weapon weapon, Target target)
         {
-            var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
-
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldMatrix.Translation;
@@ -78,8 +76,8 @@ namespace WeaponCore.Platform
             else if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
             else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
 
-            if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
+            if (weapon.Prediction != Prediction.Off)
+                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, weapon.Prediction, out timeToIntercept);
             else
                 targetPos = targetCenter;
 
@@ -101,7 +99,6 @@ namespace WeaponCore.Platform
         {    
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
-            var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldMatrix.Translation;
@@ -115,8 +112,8 @@ namespace WeaponCore.Platform
             if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3D.Zero;
 
 
-            if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
+            if (weapon.Prediction != Prediction.Off)
+                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, weapon.Prediction, out timeToIntercept);
             else
                 targetPos = targetCenter;
 
