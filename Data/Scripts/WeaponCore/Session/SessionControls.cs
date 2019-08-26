@@ -43,8 +43,10 @@ namespace WeaponCore
         {
             try
             {
-                MyAPIGateway.TerminalControls.CustomActionGetter += GetWeaponActions;
                 MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
+
+                TerminalHelpers.AlterActions<IMyLargeTurretBase>();
+                TerminalHelpers.AlterControls<IMyLargeTurretBase>();
 
                 if (WepControl) return;
                 TerminalHelpers.Separator<IMyLargeTurretBase>(-1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
@@ -249,49 +251,16 @@ namespace WeaponCore
 
         private void GetWeaponControls(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
-            var turret = block as IMyLargeTurretBase;
             var cockpit = block as MyCockpit;
 
-            if (controls.Count == 0 || (turret == null && cockpit == null)) return;
+            if (controls.Count == 0 || cockpit == null) return;
 
             if (cockpit != null) {
                 if (ControlledEntity == cockpit) {
                     var gridAI = GridTargetingAIs[cockpit.CubeGrid];
                     gridAI.turnWeaponShootOff = true;
                 }
-            }
-
-            var iterControls = new List<IMyTerminalControl>(controls);
-            for (int i = 0; i < iterControls.Count; i++)
-            {
-                if (iterControls[i].Id.Contains($"WC_"))
-                    controls.Remove(iterControls[i]);
-            }
-
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return;
-
-
-            HashSet<int> IDs = new HashSet<int>();
-
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
-                IDs.Add(comp.Platform.Weapons[i].System.WeaponID);
-            }
-
-            for (int i = 0; i < iterControls.Count; i++)
-            {
-                if ((i > 6 && i < 10) || (i > 12 && i < 22) && !iterControls[i].Id.Contains($"WC_"))
-                    controls.Remove(iterControls[i]);
-               
-
-                foreach (int id in IDs)
-                {
-                    if (iterControls[i].Id.Contains($"WC_{id}"))
-                    {
-                        controls.Add(iterControls[i]);
-                    }
-                }
+                return;
             }
         }
 
