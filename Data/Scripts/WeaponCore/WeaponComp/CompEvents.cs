@@ -33,12 +33,8 @@ namespace WeaponCore.Support
                 Sink.CurrentInputChanged -= CurrentInputChanged;
                 foreach (var w in Platform.Weapons)
                 {
-                    if (w.IsTurret)
-                        w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
-                    else
-                        w.Comp.MyCube.PositionComp.OnPositionChanged -= w.PositionChanged;
-
-                    w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPOS;
+                    w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
+                    w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
                 }
             }
         }

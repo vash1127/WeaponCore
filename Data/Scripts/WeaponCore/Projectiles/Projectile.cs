@@ -288,9 +288,15 @@ namespace WeaponCore.Projectiles
                 {
                     if (voxel != null)
                     {
-                        Vector3D? voxelHit;
-                        voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
-                        if (voxelHit.HasValue)
+                        var check = State == ProjectileState.OneAndDone;
+                        if (!check)
+                        {
+                            Vector3D? voxelHit;
+                            voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                            check = voxelHit.HasValue;
+                        }
+
+                        if (check)
                         {
                             PruneQuery = MyEntityQueryType.Both;
                             if (voxel == ai.MyPlanet) CheckPlanet = true;
@@ -300,7 +306,7 @@ namespace WeaponCore.Projectiles
                     else
                     {
                         PruneQuery = MyEntityQueryType.Both;
-                        if (CheckPlanet) break;
+                        if (CheckPlanet || !ai.PlanetSurfaceInRange) break;
                     }
                 }
             }
@@ -309,14 +315,12 @@ namespace WeaponCore.Projectiles
         internal void FireSoundStart()
         {
             FireEmitter.SetPosition(Origin);
-            //FireEmitter.PlaySoundWithDistance(FireSound.SoundId, false, false, false, true, false, false, false);
             FireEmitter.PlaySound(FireSound, true);
         }
 
         internal void AmmoSoundStart()
         {
             TravelEmitter.SetPosition(Position);
-            //TravelEmitter.PlaySoundWithDistance(TravelSound.SoundId, false, false, false, true, false, false, false);
             TravelEmitter.PlaySound(TravelSound, true);
 
             AmmoSound = true;

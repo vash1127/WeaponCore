@@ -36,7 +36,7 @@ namespace WeaponCore
         internal Vector3D PointerOffset;
         internal Vector3D TargetOffset;
         internal double AdjScale;
-        internal bool TargetArmed;
+
         internal bool GetAi()
         {
             _cockPit = Session.Instance.Session.ControlledObject as MyCockpit;
@@ -68,35 +68,9 @@ namespace WeaponCore
             {
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;
                 if (hit == null || hit.IsSameConstructAs(_ai.MyGrid)) continue;
-                Session.Instance.Target = hit;
-                GridAi gridAi;
-                if (Session.Instance.GridTargetingAIs.TryGetValue(hit, out gridAi))
-                {
-                    TargetArmed = true;
-                }
-                else
-                {
-                    foreach (var info in _ai.SortedTargets)
-                    {
-                        if (info.Target != hit) continue;
-                        TargetArmed = info.TypeDict[TargetingDefinition.BlockTypes.Offense].Count > 0;
-                        break;
-                    }
-                }
 
-                if (Session.Instance.TargetGps != null)
-                {
-                    MyAPIGateway.Session.GPS.RemoveLocalGps(Session.Instance.TargetGps);
-                    Session.Instance.TargetGps = null;
-                }
+                Session.Instance.SetTarget(hit, _ai);
 
-                foreach (var gps in MyAPIGateway.Session.GPS.GetGpsList(_hitInfo[i].HitEntity.EntityId))
-                {
-                    Log.Line($"{gps.Name}");
-                }
-                Session.Instance.TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
-                MyAPIGateway.Session.GPS.AddLocalGps(Session.Instance.TargetGps);
-                MyVisualScriptLogicProvider.SetGPSColor(Session.Instance.TargetGps.Name, Color.Yellow);
                 Log.Line($"{hit.DebugName}");
                 break;
             }
@@ -105,7 +79,7 @@ namespace WeaponCore
         internal void DrawSelector()
         {
             if (!GetAi() || Session.Instance.Ui.WheelActive) return;
-            if (Session.Instance.Target != null) UpdateTarget();
+            if (Session.Instance.CheckTarget(_ai)) UpdateTarget();
             if (MyAPIGateway.Session.CameraController.IsInFirstPersonView || !GetAi()) return;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
             if (!_3RdPersonDraw) return;
@@ -120,33 +94,17 @@ namespace WeaponCore
 
         private void UpdateTarget()
         {
-            var target = Session.Instance.Target;
-            if (target == null || target.MarkedForClose || Session.Instance.TargetGps == null) return;
+            if (!Session.Instance.CheckTarget(_ai) || Session.Instance.TargetGps == null) return;
+            var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
+            var offetPosition = Vector3D.Transform(TargetOffset, cameraWorldMatrix);
 
-            //if (Session.Instance.Tick10)
-            {
-                var targetDir = Vector3D.Normalize(Session.Instance.Target.Physics?.LinearVelocity ?? Vector3.Zero);
-                var targetPos = Session.Instance.Target.PositionComp.WorldAABB.Center;
+            double speed;
+            string armedStr;
+            string interceptStr;
+            Session.Instance.GetTargetInfo(_ai, out speed, out armedStr, out interceptStr);
 
-                var myPos = _ai.MyGrid.PositionComp.WorldAABB.Center;
-                var myHeading = Vector3D.Normalize(myPos - targetPos);
-                var degrees = Math.Cos(MathHelper.ToRadians(25));
-                var name = Session.Instance.Target.DisplayName;
-                var speed = Math.Round(Session.Instance.Target.Physics?.Speed ?? 0, 2);
-                var nameLen = 30;
-                var intercept = Weapon.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
-                var armedStr = TargetArmed ? "Yes" : "No";
-                var interceptStr = intercept ? "Yes" : "No";
-                name = name.Replace("[", "(");
-                name = name.Replace("]", ")");
-                if (name.Length > nameLen) name = name.Substring(0, nameLen);
-
-                var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
-                var offetPosition = Vector3D.Transform(TargetOffset, cameraWorldMatrix);
-
-                Session.Instance.TargetGps.Coords = offetPosition;
-                Session.Instance.TargetGps.Name = $"Speed: {speed} m/s - Armed: {armedStr}\n Threat:  High - Intercept: {interceptStr}\n";
-            }
+            var gpsName = $"Speed: {speed} m/s - Armed: {armedStr}\n Threat:  High - Intercept: {interceptStr}\n";
+            Session.Instance.SetGpsInfo(offetPosition, gpsName);
         }
 
         private void InitPointerOffset()

@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sandbox.Engine.Voxels;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Components;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -511,8 +508,8 @@ namespace WeaponCore.Support
         private bool TargetSphereInCone(BoundingSphereD targetSphere, Vector3D coneTip, Vector3D coneDir, double coneAngle)
         {
             Vector3D toSphere = targetSphere.Center - coneTip;
-            double angPos = MathHelperD.ToDegrees(Math.Acos(Vector3D.Dot(coneDir, toSphere) / coneDir.Normalize() * toSphere.Normalize()));
-            double angRad = MathHelperD.ToDegrees(Math.Asin(targetSphere.Radius / toSphere.Normalize()));
+            var angPos = MathHelperD.ToDegrees(MathFuncs.AngleBetween(coneDir, toSphere));
+            double angRad = MathHelperD.ToDegrees(Math.Asin(targetSphere.Radius / toSphere.Length()));
 
             var ang1 = angPos + angRad;
             var ang2 = angPos - angRad;

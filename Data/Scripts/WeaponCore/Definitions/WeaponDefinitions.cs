@@ -85,7 +85,8 @@ namespace WeaponCore.Support
     public struct MountPoint
     {
         [ProtoMember(1)] internal string SubtypeId;
-        [ProtoMember(2)] internal string SubpartId;
+        [ProtoMember(2)] internal string AimPartId;
+        [ProtoMember(3)] internal string MuzzlePartId;
     }
 
     [ProtoContract]

@@ -15,13 +15,17 @@ namespace WeaponCore.Platform
             _posChangedTick = Session.Instance.Tick;
         }
 
-        internal void UpdatePartPOS(MyPositionComponentBase pComp)
+        internal void UpdatePartPos(MyPositionComponentBase pComp)
         {
             var tick = Session.Instance.Tick;
+
+            if  (Comp.LastPivotUpdateTick != Session.Instance.Tick && !Target.Expired)
+                PositionChanged(pComp);
+
             if (Comp.PositionUpdateTick <= tick && Comp.LastPivotUpdateTick != tick)
             {
-                MatrixD _parentMatrix = EntityPart.Parent.PositionComp.WorldMatrix;
-                EntityPart.PositionComp.UpdateWorldMatrix(ref _parentMatrix);
+                var parentMatrix = EntityPart.Parent.PositionComp.WorldMatrix;
+                EntityPart.PositionComp.UpdateWorldMatrix(ref parentMatrix);
                 Comp.PositionUpdateTick = tick + 1;
             }
         }
@@ -185,7 +189,6 @@ namespace WeaponCore.Platform
                     Comp.TerminalRefresh();
                 }
                 IsShooting = false;
-
             }
         }
 
