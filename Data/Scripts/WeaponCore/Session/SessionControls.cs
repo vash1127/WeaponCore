@@ -255,13 +255,11 @@ namespace WeaponCore
 
             if (controls.Count == 0 || cockpit == null) return;
 
-            if (cockpit != null) {
-                if (ControlledEntity == cockpit) {
-                    var gridAI = GridTargetingAIs[cockpit.CubeGrid];
-                    gridAI.turnWeaponShootOff = true;
-                }
-                return;
+            if (ControlledEntity == cockpit) {
+                var gridAi = GridTargetingAIs[cockpit.CubeGrid];
+                gridAi.turnWeaponShootOff = true;
             }
+            return;
         }
 
         private void GetWeaponActions(IMyTerminalBlock block, List<IMyTerminalAction> actions)

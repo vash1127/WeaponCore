@@ -53,7 +53,6 @@ namespace WeaponCore
             Physics = MyAPIGateway.Physics;
             Camera = MyAPIGateway.Session.Camera;
 
-
             if (TargetGps == null)
             {
                 TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
