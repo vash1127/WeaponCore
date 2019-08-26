@@ -319,6 +319,7 @@ namespace WeaponCore
             }
             else Zoom = 1;
             InTurret = false;
+            Log.Line($"{InTurret}");
         }
 
         private void Paused()

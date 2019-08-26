@@ -37,7 +37,11 @@ namespace WeaponCore
         {
             try
             {
-                if (!DedicatedServer) CameraPos = Session.Camera.Position;
+                if (!DedicatedServer)
+                {
+                    ControlledEntity = Session.CameraController.Entity;
+                    CameraPos = Session.Camera.Position;
+                }
                 AiLoop();
                 UpdateWeaponPlatforms();
                 Projectiles.Update();
