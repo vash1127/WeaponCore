@@ -152,14 +152,7 @@ namespace WeaponCore
                 var trajectile = s.GetLine();
                 if (trajectile.HasValue)
                 {
-                    if (InTurret)
-                    {
-                        var matrix = MatrixD.CreateFromDir(trajectile.Value.Direction);
-                        matrix.Translation = trajectile.Value.PrevPosition;
-
-                        TransparentRenderExt.DrawTransparentCylinder(ref matrix, s.System.Values.Graphics.Line.Width, s.System.Values.Graphics.Line.Width, (float)trajectile.Value.Length, 6, s.System.Values.Graphics.Line.Color, s.System.Values.Graphics.Line.Color, s.System.ProjectileMaterial, s.System.ProjectileMaterial, 0f, BlendTypeEnum.Standard, BlendTypeEnum.Standard, false);
-                    }
-                    else MyTransparentGeometry.AddLocalLineBillboard(s.System.ProjectileMaterial, s.System.Values.Graphics.Line.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, s.System.Values.Graphics.Line.Width);
+                    MyTransparentGeometry.AddLocalLineBillboard(s.System.ProjectileMaterial, s.System.Values.Graphics.Line.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, s.System.Values.Graphics.Line.Width);
                 }
                 else
                 {

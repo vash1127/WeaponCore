@@ -119,12 +119,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
         }
 
-        internal bool UpdateLocalAiAndCockpit()
-        {
-            ActiveCockPit = ControlledEntity as MyCockpit;
-            return ActiveCockPit != null && GridTargetingAIs.TryGetValue(ActiveCockPit.CubeGrid, out TrackingAi);
-        }
-
         internal void ResetGps()
         {
             if (TargetGps == null)
@@ -277,6 +271,20 @@ namespace WeaponCore
             }
         }
 
+        internal bool UpdateLocalAiAndCockpit()
+        {
+            ActiveCockPit = ControlledEntity as MyCockpit;
+            if (ActiveCockPit != null && GridTargetingAIs.TryGetValue(ActiveCockPit.CubeGrid, out TrackingAi))
+            {
+                InGridAiCockPit = true;
+                return true;
+            }
+
+            TrackingAi = null;
+            ActiveCockPit = null;
+            return false;
+        }
+
         private void PlayerControlAcquired(IMyEntityController myEntityController)
         {
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
@@ -289,24 +297,28 @@ namespace WeaponCore
 
         private void PlayerReleasedControl()
         {
-            Log.Line($"{((MyEntity)MyAPIGateway.Session.CameraController.Entity).DebugName}");
+            ControlledEntity = Session.CameraController.Entity;
+            UpdateLocalAiAndCockpit();
+            ZoomInfo();
         }
 
         private void PlayerAcquiredControl()
         {
-            Log.Line($"{((MyEntity)MyAPIGateway.Session.CameraController.Entity).DebugName}");
+            ControlledEntity = Session.CameraController.Entity;
+            UpdateLocalAiAndCockpit();
+            ZoomInfo();
         }
 
-        private void CameraState()
+        private void ZoomInfo()
         {
-            CameraPos = Session.Camera.Position;
-            ControlledEntity = Session.CameraController.Entity;
             if (ControlledEntity is IMyGunBaseUser)
             {
+                InTurret = true;
                 var rawZoom = Session.Camera.FovWithZoom;
                 Zoom = rawZoom <= 1 ? rawZoom : 1;
             }
             else Zoom = 1;
+            InTurret = false;
         }
 
         private void Paused()

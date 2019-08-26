@@ -131,6 +131,7 @@ namespace WeaponCore
         internal bool ShieldApiLoaded;
         internal bool TargetArmed;
         internal bool InTurret;
+        internal bool InGridAiCockPit;
 
         internal Vector3D CameraPos;
         internal MyEntity ControlledEntity;
