@@ -26,7 +26,6 @@ namespace WeaponCore
                     var comp = basePair.Value;
 
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
-                    InTurret = gunner;
                     if (!comp.MainInit || !comp.State.Value.Online || comp.Status != Started)
                     {
                         if (comp.Status != Started) comp.HealthCheck();
