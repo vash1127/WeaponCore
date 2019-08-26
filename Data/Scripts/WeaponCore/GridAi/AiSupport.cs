@@ -282,6 +282,33 @@ namespace WeaponCore.Support
             }
         }
 
+        internal Dictionary<string,HashSet<IMyLargeTurretBase>> GetWeaponGroups() {
+
+            Dictionary<string, HashSet<IMyLargeTurretBase>> weaponGroups = new Dictionary<string, HashSet<IMyLargeTurretBase>>();
+
+            var TermSys = MyGrid.GridSystems.TerminalSystem as IMyGridTerminalSystem;
+            List<IMyBlockGroup> groups = new List<IMyBlockGroup>(MyGrid.GridSystems.TerminalSystem.BlockGroups);
+
+            List<IMyLargeTurretBase> blocks = new List<IMyLargeTurretBase>();
+
+            for (int i = 0; i < groups.Count; i++) {
+                groups[i].GetBlocksOfType(blocks);
+                var coreWeapons = new HashSet<IMyLargeTurretBase>();
+                for (int j = 0; j < blocks.Count; j++) {
+                    if(blocks[j]?.Components?.Get<WeaponComponent>() != null)
+                    {
+                        coreWeapons.Add(blocks[j]);
+                    }
+                }
+
+                if (coreWeapons.Count > 0)
+                    weaponGroups.Add(groups[i].Name,coreWeapons);
+
+                blocks.Clear();
+            }
+            return weaponGroups;
+        }
+
         #region Power
         internal bool UpdateGridPower(bool updateLast)
         {
