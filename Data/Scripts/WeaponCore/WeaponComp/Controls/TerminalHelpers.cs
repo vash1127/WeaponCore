@@ -8,35 +8,38 @@ using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
+using WeaponCore;
 
 namespace WepaonCore.Control
 {
     public static class TerminalHelpers
     {
-           
-        internal static bool UpdateControls<T>(T block) where T : IMyTerminalBlock
+        internal static bool AlterActions<T>() where T : IMyLargeTurretBase
         {
-            List<IMyTerminalControl> controls;
-            MyAPIGateway.TerminalControls.GetControls<T>(out controls);
-            var count = 0;
-            for (int i = 0; i < controls.Count; i++)
+            List<IMyTerminalAction> actions;
+            MyAPIGateway.TerminalControls.GetActions<T>(out actions);
+            for (int i = 0; i < actions.Count; i++)
             {
-                var c = controls[i];
-                if (c.Id.StartsWith("WC-WNAME"))
-                {
-                    var comp = block.Components.Get<WeaponComponent>();
-                    if (comp.Platform.Weapons.Length < count) ((IMyTerminalControlOnOffSwitch) c).Title = MyStringId.GetOrCompute($"Enable {comp.Platform.Weapons[count++].System.WeaponName}");
-                    c.RedrawControl();
-                }
-
+                var c = actions[i];
+                //Log.Line($"Count: {i} ID:{c.Id}");
+                if (c.Id != "Control" && !c.Id.Contains("OnOff"))
+                    c.Enabled = b => !WepUi.IsCoreWeapon(b,0,0);
             }
             return false;
         }
 
-        internal static bool ShowDisplayControl(IMyTerminalBlock block)
+        internal static bool AlterControls<T>() where T : IMyLargeTurretBase
         {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            return comp == null;
+            List<IMyTerminalControl> controls;
+            MyAPIGateway.TerminalControls.GetControls<T>(out controls);
+            for (int i = 0; i < controls.Count; i++)
+            {
+                var c = controls[i];
+                Log.Line($"Count: {i} ID:{c.Id}");
+                if ((i > 6 && i < 10) || i > 11 )
+                    c.Visible = b => !WepUi.IsCoreWeapon(b, 0, 0);
+            }
+            return false;
         }
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, int, bool> enabledGetter = null, Func<IMyTerminalBlock, int, int, bool> visibleGetter = null) where T : IMyTerminalBlock
@@ -49,7 +52,7 @@ namespace WepaonCore.Control
             c.OnText = MyStringId.GetOrCompute(onText);
             c.OffText = MyStringId.GetOrCompute(offText);
             c.Enabled = x => true;
-            c.Visible = x => true;
+            c.Visible = x => WeaponFunctionEnabled(id, x);
             c.Getter = getter;
             c.Setter = setter;
             MyAPIGateway.TerminalControls.AddControl<T>(c);
