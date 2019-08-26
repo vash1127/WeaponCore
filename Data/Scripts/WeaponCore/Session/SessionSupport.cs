@@ -10,6 +10,7 @@ using Sandbox.Game.Screens.Helpers;
 using WeaponCore.Support;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using System.Collections.Generic;
+using IMyControllableEntity = VRage.Game.ModAPI.Interfaces.IMyControllableEntity;
 
 namespace WeaponCore
 {
@@ -240,6 +241,7 @@ namespace WeaponCore
                     {
                         MiscLoaded = true;
                         if (!IsServer) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
+
                     }
                     GameLoaded = true;
                 }
@@ -274,6 +276,16 @@ namespace WeaponCore
                 }
                 //else RemoveGridAi(weaponComp);
             }
+        }
+
+        private void PlayerControlReleased(IMyEntityController myEntityController)
+        {
+            Log.Line($"myControllableEntity: {((MyEntity)myEntityController.ControlledEntity.Entity).DebugName}");
+        }
+
+        private void PlayerControlAcquired(IMyEntityController myEntityController)
+        {
+            Log.Line($"myControllableEntity: {((MyEntity)myEntityController.ControlledEntity.Entity).DebugName}");
         }
 
         /*

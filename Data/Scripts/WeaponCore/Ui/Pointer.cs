@@ -10,6 +10,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Game.ModAPI.Interfaces;
 using VRage.Input;
 using VRage.Utils;
 using VRageMath;
@@ -97,7 +98,6 @@ namespace WeaponCore
             string armedStr;
             string interceptStr;
             Session.Instance.GetTargetInfo(ai, out speed, out armedStr, out interceptStr);
-
             var gpsName = $"Speed: {speed} m/s - Armed: {armedStr}\n Threat:  High - Intercept: {interceptStr}\n";
             Session.Instance.SetGpsInfo(offetPosition, gpsName);
         }
