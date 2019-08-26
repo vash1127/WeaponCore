@@ -135,6 +135,8 @@ namespace WeaponCore
 
         internal Vector3D CameraPos;
         internal MyEntity ControlledEntity;
+        internal MyCockpit ActiveCockPit;
+
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
         internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
 

@@ -118,6 +118,12 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
         }
 
+        internal bool UpdateLocalAiAndCockpit()
+        {
+            ActiveCockPit = ControlledEntity as MyCockpit;
+            return ActiveCockPit != null && GridTargetingAIs.TryGetValue(ActiveCockPit.CubeGrid, out TrackingAi);
+        }
+
         internal void ResetGps()
         {
             if (TargetGps == null)
