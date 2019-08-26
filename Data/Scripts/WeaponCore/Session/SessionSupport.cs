@@ -287,8 +287,9 @@ namespace WeaponCore
 
         private void PlayerControlAcquired(IMyEntityController myEntityController)
         {
-            if (ControlledEntity is MyCockpit)
-                GridTargetingAIs[((MyCockpit)ControlledEntity).CubeGrid].turnWeaponShootOff = true;
+            var cockpit = ControlledEntity as MyCockpit;
+            if (cockpit != null)
+                GridTargetingAIs[cockpit.CubeGrid].turnWeaponShootOff = true;
 
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }
@@ -300,29 +301,12 @@ namespace WeaponCore
 
         private void PlayerReleasedControl()
         {
-            ControlledEntity = Session.CameraController.Entity;
             UpdateLocalAiAndCockpit();
-            ZoomInfo();
         }
 
         private void PlayerAcquiredControl()
         {
-            ControlledEntity = Session.CameraController.Entity;
             UpdateLocalAiAndCockpit();
-            ZoomInfo();
-        }
-
-        private void ZoomInfo()
-        {
-            if (ControlledEntity is IMyGunBaseUser)
-            {
-                InTurret = true;
-                var rawZoom = Session.Camera.FovWithZoom;
-                Zoom = rawZoom <= 1 ? rawZoom : 1;
-            }
-            else Zoom = 1;
-            InTurret = false;
-            Log.Line($"{InTurret}");
         }
 
         private void Paused()

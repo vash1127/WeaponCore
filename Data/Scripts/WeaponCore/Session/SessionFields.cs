@@ -7,6 +7,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Game.ModAPI.Interfaces;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -110,7 +111,6 @@ namespace WeaponCore
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
         internal double MaxEntitySpeed;
-        internal float Zoom;
 
         internal bool MpActive;
         internal bool IsServer;
@@ -130,7 +130,6 @@ namespace WeaponCore
         internal bool ShieldMod;
         internal bool ShieldApiLoaded;
         internal bool TargetArmed;
-        internal bool InTurret;
         internal bool InGridAiCockPit;
 
         internal Vector3D CameraPos;

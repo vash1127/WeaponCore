@@ -39,7 +39,7 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
-                    ControlledEntity = Session.CameraController.Entity;
+                    ControlledEntity = MyAPIGateway.Session.CameraController.Entity;
                     CameraPos = Session.Camera.Position;
                 }
                 AiLoop();
