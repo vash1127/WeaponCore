@@ -37,15 +37,9 @@ namespace WeaponCore
         internal Vector3D TargetOffset;
         internal double AdjScale;
 
-        internal bool GetAi()
-        {
-            _cockPit = Session.Instance.Session.ControlledObject as MyCockpit;
-            return _cockPit != null && Session.Instance.GridTargetingAIs.TryGetValue(_cockPit.CubeGrid, out _ai);
-        }
-
         internal void SelectTarget()
         {
-            if (!GetAi()) return;
+            if (!Session.Instance.UpdateLocalAiAndCockpit()) return;
             if (!_cachedPointerPos) InitPointerOffset();
             if (!_cachedTargetPos) InitTargetOffset();
             Vector3D start;
@@ -78,9 +72,9 @@ namespace WeaponCore
 
         internal void DrawSelector()
         {
-            if (!GetAi() || Session.Instance.Ui.WheelActive) return;
+            if (!Session.Instance.UpdateLocalAiAndCockpit() || Session.Instance.Ui.WheelActive) return;
             if (Session.Instance.CheckTarget(_ai)) UpdateTarget();
-            if (MyAPIGateway.Session.CameraController.IsInFirstPersonView || !GetAi()) return;
+            if (MyAPIGateway.Session.CameraController.IsInFirstPersonView) return;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
             if (!_3RdPersonDraw) return;
             if (!_cachedPointerPos) InitPointerOffset();
