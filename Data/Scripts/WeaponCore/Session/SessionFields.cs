@@ -130,7 +130,6 @@ namespace WeaponCore
         internal bool ShieldMod;
         internal bool ShieldApiLoaded;
         internal bool TargetArmed;
-
         internal bool InTurret;
 
         internal Vector3D CameraPos;
