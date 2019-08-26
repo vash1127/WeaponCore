@@ -22,8 +22,6 @@ namespace WeaponCore
 
     internal class Pointer
     {
-        private GridAi _ai;
-        private MyCockpit _cockPit;
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private readonly Vector2 _pointerPosition = new Vector2(0, 0.25f);
@@ -39,9 +37,11 @@ namespace WeaponCore
 
         internal void SelectTarget()
         {
-            if (!Session.Instance.UpdateLocalAiAndCockpit()) return;
             if (!_cachedPointerPos) InitPointerOffset();
             if (!_cachedTargetPos) InitTargetOffset();
+            if (!Session.Instance.UpdateLocalAiAndCockpit()) return;
+            var ai = Session.Instance.TrackingAi;
+            var cockPit = Session.Instance.ActiveCockPit;
             Vector3D start;
             Vector3D end;
             if (!MyAPIGateway.Session.CameraController.IsInFirstPersonView)
@@ -50,20 +50,20 @@ namespace WeaponCore
                 var offetPosition = Vector3D.Transform(PointerOffset, cameraWorldMatrix);
                 start = offetPosition;
                 var dir = Vector3D.Normalize(start - Session.Instance.CameraPos);
-                end = offetPosition + (dir * _ai.MaxTargetingRange);
+                end = offetPosition + (dir * ai.MaxTargetingRange);
             }
             else
             {
-                start = _cockPit.PositionComp.WorldAABB.Center;
-                end = start + (Vector3D.Normalize(_cockPit.PositionComp.WorldMatrix.Forward) * _ai.MaxTargetingRange);
+                start = cockPit.PositionComp.WorldAABB.Center;
+                end = start + (Vector3D.Normalize(cockPit.PositionComp.WorldMatrix.Forward) * Session.Instance.TrackingAi.MaxTargetingRange);
             }
             Session.Instance.Physics.CastRay(start, end, _hitInfo);
             for (int i = 0; i < _hitInfo.Count; i++)
             {
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;
-                if (hit == null || hit.IsSameConstructAs(_ai.MyGrid)) continue;
+                if (hit == null || hit.IsSameConstructAs(ai.MyGrid)) continue;
 
-                Session.Instance.SetTarget(hit, _ai);
+                Session.Instance.SetTarget(hit, ai);
 
                 Log.Line($"{hit.DebugName}");
                 break;
@@ -73,7 +73,7 @@ namespace WeaponCore
         internal void DrawSelector()
         {
             if (!Session.Instance.UpdateLocalAiAndCockpit() || Session.Instance.Ui.WheelActive) return;
-            if (Session.Instance.CheckTarget(_ai)) UpdateTarget();
+            if (Session.Instance.CheckTarget(Session.Instance.TrackingAi)) UpdateTarget();
             if (MyAPIGateway.Session.CameraController.IsInFirstPersonView) return;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
             if (!_3RdPersonDraw) return;
@@ -88,14 +88,15 @@ namespace WeaponCore
 
         private void UpdateTarget()
         {
-            if (!Session.Instance.CheckTarget(_ai) || Session.Instance.TargetGps == null) return;
+            var ai = Session.Instance.TrackingAi;
+            if (ai == null || !Session.Instance.CheckTarget(ai) || Session.Instance.TargetGps == null) return;
             var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
             var offetPosition = Vector3D.Transform(TargetOffset, cameraWorldMatrix);
 
             double speed;
             string armedStr;
             string interceptStr;
-            Session.Instance.GetTargetInfo(_ai, out speed, out armedStr, out interceptStr);
+            Session.Instance.GetTargetInfo(ai, out speed, out armedStr, out interceptStr);
 
             var gpsName = $"Speed: {speed} m/s - Armed: {armedStr}\n Threat:  High - Intercept: {interceptStr}\n";
             Session.Instance.SetGpsInfo(offetPosition, gpsName);
