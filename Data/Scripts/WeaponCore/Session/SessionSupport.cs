@@ -277,31 +277,25 @@ namespace WeaponCore
             }
         }
 
-        private void PlayerControlReleased(IMyEntityController myEntityController)
-        {
-            var controlledEntity = Session.CameraController.Entity;
-            var isCockPit = controlledEntity is MyCockpit;
-            Log.Line($"{isCockPit}");
-        }
-
         private void PlayerControlAcquired(IMyEntityController myEntityController)
         {
-            var controlledEntity = Session.CameraController.Entity;
-            var isCockPit = controlledEntity is MyCockpit;
-            Log.Line($"{isCockPit}");
+            MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }
 
-        /*
-        private void RemoveGridAi(WeaponComponent weaponComp)
+        private void PlayerControlReleased(IMyEntityController myEntityController)
         {
-            WeaponComponent removedComp;
-            GridTargetingAIs[weaponComp.MyCube.CubeGrid].WeaponBase.TryRemove(weaponComp.MyCube, out removedComp);
-
-            GridAi removedAi;
-            if (GridTargetingAIs[weaponComp.MyCube.CubeGrid].WeaponBase.Count == 0)
-                GridTargetingAIs.TryRemove(weaponComp.MyCube.CubeGrid, out removedAi);
+            MyAPIGateway.Utilities.InvokeOnGameThread(PlayerReleasedControl);
         }
-        */
+
+        private void PlayerReleasedControl()
+        {
+            Log.Line($"{((MyEntity)MyAPIGateway.Session.CameraController.Entity).DebugName}");
+        }
+
+        private void PlayerAcquiredControl()
+        {
+            Log.Line($"{((MyEntity)MyAPIGateway.Session.CameraController.Entity).DebugName}");
+        }
 
         private void CameraState()
         {
