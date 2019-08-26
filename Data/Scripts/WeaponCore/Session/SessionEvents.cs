@@ -1,13 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Weapons;
+using Sandbox.Game.Gui;
+using Sandbox.Game.Screens.Helpers;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Interfaces.Terminal;
+using Sandbox.Game.Weapons;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
+using WeaponCore.Data.Scripts.WeaponCore.Support;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -22,7 +29,6 @@ namespace WeaponCore
                 if (weaponBase != null)
                 {
                     if (!Inited) lock (_configLock) Init();
-
                     var cube = (MyCubeBlock)myEntity;
 
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
@@ -40,8 +46,25 @@ namespace WeaponCore
                             CompsToStart.Enqueue(weaponComp);
                     }
                 }
+
+                var cockpit = myEntity as MyCockpit;
+                if (cockpit != null)
+                {
+                    
+                    MyAPIGateway.TerminalControls.CustomActionGetter += GetWeaponActions;
+                    MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
+                }
+
+                var remote = myEntity as MyRemoteControl;
+                if (remote != null)
+                {
+
+                    MyAPIGateway.TerminalControls.CustomActionGetter += GetWeaponActions;
+                    MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
+
     }
 }

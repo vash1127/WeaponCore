@@ -26,10 +26,6 @@ namespace WeaponCore
 
             MyVisualScriptLogicProvider.PlayerDisconnected += PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest += PlayerConnected;
-            if (!DedicatedServer)
-            {
-                MyAPIGateway.TerminalControls.CustomControlGetter += CustomControls;
-            }
 
             var env = MyDefinitionManager.Static.EnvironmentDefinition;
             if (env.LargeShipMaxSpeed > MaxEntitySpeed) MaxEntitySpeed = env.LargeShipMaxSpeed;
@@ -143,6 +139,8 @@ namespace WeaponCore
                 for (int j = 0; j < ModelCount; j++)
                     Projectiles.EntityPool[i][j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.EntityActivator);
             }
+
+            CreateLogicElements();
             Inited = true;
         }
     }

@@ -11,6 +11,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 using VRage.Utils;
+using static WeaponCore.Platform.Weapon.TerminalActionState;
 
 namespace WeaponCore
 {
@@ -36,21 +37,21 @@ namespace WeaponCore
         internal IMyTerminalControlCombobox WeaponMode { get; set; }
         internal IMyTerminalControlSlider PowerSlider { get; set; }
         internal IMyTerminalControlCheckbox DoubleRate { get; set; }
-        public void CreateLogicElements(IMyTerminalBlock comp)
+        public void CreateLogicElements()
         {
             try
             {
-                if (WepControl || comp == null) return;
-                TerminalHelpers.HideControls((IMyLargeTurretBase)comp);
-                TerminalHelpers.Separator(comp, -1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+                if (WepControl) return;
+                TerminalHelpers.Separator<IMyLargeTurretBase>(-1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
 
                 foreach(KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
                 {
                     foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
                     {
                         var wepName = ws.Value.WeaponName;
+                        var wepID = ws.Value.WeaponID;
 
-                        TerminalHelpers.AddOnOff(comp, ws.Value.WeaponId, $"WC-WNAME", $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
+                        TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
                             delegate (IMyTerminalBlock block)
                             {
                                 var tmpComp = block?.Components?.Get<WeaponComponent>();
@@ -59,7 +60,7 @@ namespace WeaponCore
                                 var enabled = false;
                                 for(int i =0; i < tmpComp.Platform.Weapons.Length; i++)
                                 {
-                                    if (tmpComp.Platform.Weapons[i].System.WeaponId == ws.Value.WeaponId)
+                                    if (tmpComp.Platform.Weapons[i].System.WeaponID == wepID)
                                         enabled = tmpComp.Set.Value.Weapons[i].Enable;
                                 }
                                 return enabled;
@@ -71,23 +72,43 @@ namespace WeaponCore
                                 {
                                     for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
                                     {
-                                        if (tmpComp.Platform.Weapons[i].System.WeaponId == ws.Value.WeaponId)
+                                        if (tmpComp.Platform.Weapons[i].System.WeaponID == wepID)
                                             tmpComp.Set.Value.Weapons[i].Enable = enabled;
                                     }
                                 }
                             },
                             WepUi.EnableWeapon, WepUi.EnableWeapon);
+
+                        CreateShootActionSet<IMyLargeTurretBase>(wepName, wepID);
                     }
                 }
 
-                /*TerminalHelpers.Separator(comp, -1, "WC-L_sep1", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                WeaponMode = TerminalHelpers.AddCombobox(comp, -1, "WC-L_WeaponMode", "Weapon Mode", "Weapon Mode", WepUi.GetModes, WepUi.SetModes, WepUi.ListAll, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                TerminalHelpers.Separator(comp, -1, "WC-L_sep2",WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+                var action = MyAPIGateway.TerminalControls.CreateAction<IMyLargeTurretBase>($"WC_Shoot_Click");
+                action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+                action.Name = new StringBuilder($"Activate Mouse Shoot");
+                action.Action = delegate (IMyTerminalBlock blk) {
+                    var comp = blk?.Components?.Get<WeaponComponent>();
+                    if (comp == null) return;
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    {
+                        comp.Platform.Weapons[i].ManualShoot = comp.Platform.Weapons[i].ManualShoot != ShootClick ? ShootClick : ShootOff;
+                    }
+                };
+                action.Writer = (b, t) => t.Append("");
+                action.Enabled = (b) => true;
+                action.ValidForGroups = true;
 
+                MyAPIGateway.TerminalControls.AddAction<IMyLargeTurretBase>(action);
+                /*TerminalHelpers.Separator(comp, -1, "WC-L_sep1", WepUi.GuidanceEnabled, WepUi.GuidanceEnabled);
+                Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.GuidanceEnabled, WepUi.GuidanceEnabled);
+
+                
                 PowerSlider = TerminalHelpers.AddSlider(comp, -1, "WC-L_PowerLevel", "Change Power Level", "Change Power Level", WepUi.GetPowerLevel, WepUi.SetPowerLevel, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
                 PowerSlider.SetLimits(0, 100);
 
+
+
+                /*
                 DoubleRate = TerminalHelpers.AddCheckbox(comp, -1, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
                 CreateAction<IMyLargeTurretBase>(Guidance);
                 */
@@ -99,63 +120,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
         }
 
-
-        internal void CustomControls(IMyTerminalBlock tBlock, List<IMyTerminalControl> myTerminalControls)
-        {
-            try
-            {
-                LastTerminalId = tBlock.EntityId;
-                if (_subTypeIdToWeaponDefs.ContainsKey(tBlock.BlockDefinition.SubtypeId))
-                {
-                    TerminalHelpers.HideControls((IMyLargeTurretBase)tBlock);
-                    TerminalHelpers.UpdateControls(tBlock);
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in CustomControls: {ex}"); }
-        }
-
-        public void CreateAction<T>(IMyTerminalControlOnOffSwitch c)
-        {
-            try
-            {
-                var id = ((IMyTerminalControl)c).Id;
-                var gamePath = MyAPIGateway.Utilities.GamePaths.ContentPath;
-                Action<IMyTerminalBlock, StringBuilder> writer = (b, s) => s.Append(c.Getter(b) ? c.OnText : c.OffText);
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Toggle");
-                    a.Name = new StringBuilder(c.Title.String).Append(" - ").Append(c.OnText.String).Append("/").Append(c.OffText.String);
-
-                    a.Icon = gamePath + @"\Textures\GUI\Icons\Actions\SmallShipToggle.dds";
-
-                    a.ValidForGroups = true;
-                    a.Action = (b) => c.Setter(b, !c.Getter(b));
-                    a.Writer = writer;
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_On");
-                    a.Name = new StringBuilder(c.Title.String).Append(" - ").Append(c.OnText.String);
-                    a.Icon = gamePath + @"\Textures\GUI\Icons\Actions\SmallShipSwitchOn.dds";
-                    a.ValidForGroups = true;
-                    a.Action = (b) => c.Setter(b, true);
-                    a.Writer = writer;
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Off");
-                    a.Name = new StringBuilder(c.Title.String).Append(" - ").Append(c.OffText.String);
-                    a.Icon = gamePath + @"\Textures\GUI\Icons\Actions\LargeShipSwitchOn.dds";
-                    a.ValidForGroups = true;
-                    a.Action = (b) => c.Setter(b, false);
-                    a.Writer = writer;
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in CreateAction: {ex}"); }
-        }
 
         private void WarheadSetter(IMyTerminalBlock tBlock, bool isSet)
         {
@@ -182,283 +146,185 @@ namespace WeaponCore
             }
         }
 
-        private void CreateAction<T>(IMyTerminalControlCheckbox c,
-            bool addToggle = true,
-            bool addOnOff = false,
-            string iconPack = null,
-            string iconToggle = null,
-            string iconOn = null,
-            string iconOff = null)
+        internal static void CreateShootActionSet<T>(string name, int id) where T : IMyTerminalBlock
         {
-            try
-            {
-
-                var id = ((IMyTerminalControl)c).Id;
-                var name = c.Title.String;
-                Action<IMyTerminalBlock, StringBuilder> writer = (b, s) => s.Append(c.Getter(b) ? c.OnText : c.OffText);
-
-                if (iconToggle == null && iconOn == null && iconOff == null)
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On_Off");
+            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action.Name = new StringBuilder($"{name} Shoot On/Off");
+            action.Action = delegate (IMyTerminalBlock blk) {
+                var comp = blk?.Components?.Get<WeaponComponent>();
+                if (comp == null) return;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    var pack = iconPack ?? String.Empty;
-                    var gamePath = MyAPIGateway.Utilities.GamePaths.ContentPath;
-                    iconToggle = gamePath + @"\Textures\GUI\Icons\Actions\" + pack + "Toggle.dds";
-                    iconOn = gamePath + @"\Textures\GUI\Icons\Actions\" + pack + "SwitchOn.dds";
-                    iconOff = gamePath + @"\Textures\GUI\Icons\Actions\" + pack + "SwitchOff.dds";
-                }
-
-                if (addToggle)
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Toggle");
-                    a.Name = new StringBuilder(name).Append(" On/Off");
-                    a.Icon = iconToggle;
-                    a.ValidForGroups = true;
-                    a.Action = (b) => c.Setter(b, !c.Getter(b));
-                    if (writer != null)
-                        a.Writer = writer;
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
-
-                if (addOnOff)
-                {
+                    if (comp.Platform.Weapons[i].System.WeaponID == id)
                     {
-                        var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_On");
-                        a.Name = new StringBuilder(name).Append(" On");
-                        a.Icon = iconOn;
-                        a.ValidForGroups = true;
-                        a.Action = (b) => c.Setter(b, true);
-                        if (writer != null)
-                            a.Writer = writer;
-
-                        MyAPIGateway.TerminalControls.AddAction<T>(a);
-                    }
-                    {
-                        var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Off");
-                        a.Name = new StringBuilder(name).Append(" Off");
-                        a.Icon = iconOff;
-                        a.ValidForGroups = true;
-                        a.Action = (b) => c.Setter(b, false);
-                        if (writer != null)
-                            a.Writer = writer;
-
-                        MyAPIGateway.TerminalControls.AddAction<T>(a);
+                        if (comp.Platform.Weapons[i].ManualShoot != ShootOn)
+                            comp.Platform.Weapons[i].ManualShoot = ShootOn;
+                        else
+                            comp.Platform.Weapons[i].ManualShoot = ShootOff;
                     }
                 }
-            }
-            catch (Exception ex) { Log.Line($"Exception in CreateAction<T>(IMyTerminalControlCheckbox: {ex}"); }
+            };
+            action.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
+            action.Enabled = (b) => true;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+
+            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On");
+            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
+            action.Name = new StringBuilder($"{name} Shoot On");
+            action.Action = delegate (IMyTerminalBlock blk) {
+                var comp = blk?.Components?.Get<WeaponComponent>();
+                if (comp == null) return;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    if (comp.Platform.Weapons[i].System.WeaponID == id)
+                        comp.Platform.Weapons[i].ManualShoot = ShootOn;
+                }
+            };
+            action.Writer = (b, t) => t.Append("On");
+            action.Enabled = (b) => true;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+
+            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Off");
+            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
+            action.Name = new StringBuilder($"{name} Shoot Off");
+            action.Action = delegate (IMyTerminalBlock blk) {
+                var comp = blk?.Components?.Get<WeaponComponent>();
+                if (comp == null) return;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    if (comp.Platform.Weapons[i].System.WeaponID == id)
+                        comp.Platform.Weapons[i].ManualShoot = ShootOff;
+                }
+            };
+            action.Writer = (b, t) => t.Append("Off");
+            action.Enabled = (b) => true;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+
+            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Once");
+            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
+            action.Name = new StringBuilder($"{name} Shoot Once");
+            action.Action = delegate (IMyTerminalBlock blk) {
+                var comp = blk?.Components?.Get<WeaponComponent>();
+                if (comp == null) return;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    if (comp.Platform.Weapons[i].System.WeaponID == id)
+                        comp.Platform.Weapons[i].ManualShoot = ShootOnce;
+                }
+            };
+            action.Writer = (b, t) => t.Append("");
+            action.Enabled = (b) => true;
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        private void CreateActionChargeRate<T>(IMyTerminalControlSlider c,
-            float defaultValue = 50f, // HACK terminal controls don't have a default value built in...
-            float modifier = 1f,
-            string iconReset = null,
-            string iconIncrease = null,
-            string iconDecrease = null,
-            bool gridSizeDefaultValue = false) // hacky quick way to get a dynamic default value depending on grid size)
+        internal static bool CheckWeaponManualState(IMyTerminalBlock blk, int id)
         {
-            try
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null) return false;
+
+            var isShootOn = false;
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                var id = ((IMyTerminalControl)c).Id;
-                var name = c.Title.String;
-
-                if (iconReset == null && iconIncrease == null && iconDecrease == null)
-                {
-                    var gamePath = MyAPIGateway.Utilities.GamePaths.ContentPath;
-                    iconReset = gamePath + @"\Textures\GUI\Icons\Actions\Reset.dds";
-                    iconIncrease = gamePath + @"\Textures\GUI\Icons\Actions\Increase.dds";
-                    iconDecrease = gamePath + @"\Textures\GUI\Icons\Actions\Decrease.dds";
-                }
-
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Reset");
-                    a.Name = new StringBuilder("Default ").Append(name);
-                    if (!gridSizeDefaultValue)
-                        a.Name.Append(" (").Append(defaultValue.ToString("0.###")).Append(")");
-                    a.Icon = iconReset;
-                    a.ValidForGroups = true;
-                    a.Action = (b) => c.Setter(b, (gridSizeDefaultValue ? b.CubeGrid.GridSize : defaultValue));
-                    a.Writer = (b, s) => s.Append(c.Getter(b));
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Increase");
-                    a.Name = new StringBuilder("Increase ").Append(name).Append(" (+").Append(modifier.ToString("0.###")).Append(")");
-                    a.Icon = iconIncrease;
-                    a.ValidForGroups = true;
-                    a.Action = ActionAddChargeRate;
-                    a.Writer = (b, s) => s.Append(c.Getter(b));
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Decrease");
-                    a.Name = new StringBuilder("Decrease ").Append(name).Append(" (-").Append(modifier.ToString("0.###")).Append(")");
-                    a.Icon = iconDecrease;
-                    a.ValidForGroups = true;
-                    a.Action = ActionSubtractChargeRate;
-                    a.Writer = (b, s) => s.Append(c.Getter(b).ToString("0.###"));
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
+                if (comp.Platform.Weapons[i].System.WeaponID == id)
+                    if (comp.Platform.Weapons[i].ManualShoot != ShootOff)
+                        return true;
             }
-            catch (Exception ex) { Log.Line($"Exception in CreateActionChargeRate: {ex}"); }
+
+            return isShootOn;
         }
 
-        private void ActionAddChargeRate(IMyTerminalBlock b)
+        private void GetWeaponControls(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
-            try
+            var turret = block as IMyLargeTurretBase;
+
+            if (controls.Count == 0 || turret == null) return;
+
+            var comp = block?.Components?.Get<WeaponComponent>();
+
+            for (int i = 0; i < controls.Count; i++)
             {
-                List<IMyTerminalControl> controls;
-                MyAPIGateway.TerminalControls.GetControls<IMyLargeTurretBase>(out controls);
-                var chargeRate = controls.First((x) => x.Id.ToString() == "WC-L_ChargeRate");
-                var c = (IMyTerminalControlSlider)chargeRate;
-                if (c.Getter(b) > 94)
-                {
-                    c.Setter(b, 95f);
-                    return;
-                }
-                c.Setter(b, c.Getter(b) + 5f);
+                if (controls[i].Id.Contains($"WC_"))
+                    controls[i].Visible = (b) => false;
             }
-            catch (Exception ex) { Log.Line($"Exception in ActionSubtractChargeRate: {ex}"); }
-        }
 
-        private void ActionSubtractChargeRate(IMyTerminalBlock b)
-        {
-            try
+            if (comp == null) return;
+
+
+            HashSet<int> IDs = new HashSet<int>();
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                var controls = new List<IMyTerminalControl>();
-                MyAPIGateway.TerminalControls.GetControls<IMyLargeTurretBase>(out controls);
-                var chargeRate = controls.First((x) => x.Id.ToString() == "DS-C_ChargeRate");
-                var c = (IMyTerminalControlSlider)chargeRate;
-                if (c.Getter(b) < 21)
-                {
-                    c.Setter(b, 20f);
-                    return;
-                }
-                c.Setter(b, c.Getter(b) - 5f);
+                IDs.Add(comp.Platform.Weapons[i].System.WeaponID);
+                Log.Line($"WepID: {comp.Platform.Weapons[i].WeaponId} WepName: {comp.Platform.Weapons[i].System.WeaponID}");
             }
-            catch (Exception ex) { Log.Line($"Exception in ActionSubtractChargeRate: {ex}"); }
-        }
 
-        private void CreateActionDamageModRate<T>(IMyTerminalControlSlider c,
-        float defaultValue = 50f, // HACK terminal controls don't have a default value built in...
-        float modifier = 1f,
-        string iconReset = null,
-        string iconIncrease = null,
-        string iconDecrease = null,
-        bool gridSizeDefaultValue = false) // hacky quick way to get a dynamic default value depending on grid size)
-        {
-            try
+            for (int i = 0; i < controls.Count; i++)
             {
-                var id = ((IMyTerminalControl)c).Id;
-                var name = c.Title.String;
 
-                if (iconReset == null && iconIncrease == null && iconDecrease == null)
+                if ((i > 6 && i < 10) || (i > 12 && i < 22))
+                    controls[i].Visible = tb => false;
+
+
+
+                foreach (int id in IDs)
                 {
-                    var gamePath = MyAPIGateway.Utilities.GamePaths.ContentPath;
-                    iconReset = gamePath + @"\Textures\GUI\Icons\Actions\Reset.dds";
-                    iconIncrease = gamePath + @"\Textures\GUI\Icons\Actions\Increase.dds";
-                    iconDecrease = gamePath + @"\Textures\GUI\Icons\Actions\Decrease.dds";
-                }
-
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Reset");
-                    a.Name = new StringBuilder("Default ").Append(name);
-                    if (!gridSizeDefaultValue)
-                        a.Name.Append(" (").Append(defaultValue.ToString("0.###")).Append(")");
-                    a.Icon = iconReset;
-                    a.ValidForGroups = true;
-                    a.Action = (b) => c.Setter(b, gridSizeDefaultValue ? b.CubeGrid.GridSize : defaultValue);
-                    a.Writer = (b, s) => s.Append(c.Getter(b));
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Increase");
-                    a.Name = new StringBuilder("Increase ").Append(name).Append(" (+").Append(modifier.ToString("0.###")).Append(")");
-                    a.Icon = iconIncrease;
-                    a.ValidForGroups = true;
-                    a.Action = ActionAddDamageMod;
-                    a.Writer = (b, s) => s.Append(c.Getter(b));
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
-                }
-                {
-                    var a = MyAPIGateway.TerminalControls.CreateAction<T>(id + "_Decrease");
-                    a.Name = new StringBuilder("Decrease ").Append(name).Append(" (-").Append(modifier.ToString("0.###")).Append(")");
-                    a.Icon = iconDecrease;
-                    a.ValidForGroups = true;
-                    a.Action = ActionSubtractDamageMod;
-                    a.Writer = (b, s) => s.Append(c.Getter(b).ToString("0.###"));
-
-                    MyAPIGateway.TerminalControls.AddAction<T>(a);
+                    if (controls[i].Id.Contains($"WC_{id}"))
+                    {
+                        controls[i].Visible = (b) => true;
+                    }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in CreateActionDamageModRate: {ex}"); }
         }
 
-        private void ActionAddDamageMod(IMyTerminalBlock b)
+        private void GetWeaponActions(IMyTerminalBlock block, List<IMyTerminalAction> actions)
         {
-            try
+            var turret = block as IMyLargeTurretBase;
+
+            if (actions.Count == 0 || turret == null) return;
+
+            for (int i = 0; i < actions.Count; i++)
             {
-                List<IMyTerminalControl> controls;
-                MyAPIGateway.TerminalControls.GetControls<IMyLargeTurretBase>(out controls);
-                var damageMod = controls.First((x) => x.Id.ToString() == "WC-L_DamageModulation");
-                var c = (IMyTerminalControlSlider)damageMod;
-                if (c.Getter(b) > 179)
-                {
-                    c.Setter(b, 180f);
-                    return;
-                }
-                c.Setter(b, c.Getter(b) + 1f);
+                if (actions[i].Id.Contains($"WC_"))
+                    actions[i].Enabled = (b) => false;
             }
-            catch (Exception ex) { Log.Line($"Exception in ActionAddDamageMod: {ex}"); }
-        }
 
-        private void ActionSubtractDamageMod(IMyTerminalBlock b)
-        {
-            try
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null) return;
+
+
+            HashSet<int> IDs = new HashSet<int>();
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                List<IMyTerminalControl> controls;
-                MyAPIGateway.TerminalControls.GetControls<IMyLargeTurretBase>(out controls);
-                var chargeRate = controls.First((x) => x.Id.ToString() == "WC-L_DamageModulation");
-                var c = (IMyTerminalControlSlider)chargeRate;
-                if (c.Getter(b) < 21)
-                {
-                    c.Setter(b, 20f);
-                    return;
-                }
-                c.Setter(b, c.Getter(b) - 1f);
+                IDs.Add(comp.Platform.Weapons[i].System.WeaponID);
+                Log.Line($"WepID: {comp.Platform.Weapons[i].WeaponId} WepName: {comp.Platform.Weapons[i].System.WeaponID}");
             }
-            catch (Exception ex) { Log.Line($"Exception in ActionSubtractDamageMod: {ex}"); }
-        }
 
-        private void CreateActionCombobox<T>(IMyTerminalControlCombobox c,
-            string[] itemIds = null,
-            string[] itemNames = null,
-            string icon = null)
-        {
-            var items = new List<MyTerminalControlComboBoxItem>();
-            c.ComboBoxContent.Invoke(items);
-
-            foreach (var item in items)
+            for (int i = 0; i < actions.Count; i++)
             {
-                var id = itemIds == null ? item.Value.String : itemIds[item.Key];
 
-                if (id == null)
-                    continue; // item id is null intentionally in the array, this means "don't add action".
+                if (!actions[i].Id.Contains($"OnOff"))
+                    actions[i].Enabled = (b) => false;
 
-                var a = MyAPIGateway.TerminalControls.CreateAction<T>(id);
-                a.Name = new StringBuilder(itemNames == null ? item.Value.String : itemNames[item.Key]);
-                if (icon != null)
-                    a.Icon = icon;
-                a.ValidForGroups = true;
-                a.Action = (b) => c.Setter(b, item.Key);
-                //if(writer != null)
-                //    a.Writer = writer;
+                if(actions[i].Id == "WC_Shoot_Click")
+                    actions[i].Enabled = (b) => true;
 
-                MyAPIGateway.TerminalControls.AddAction<T>(a);
+                foreach (int id in IDs)
+                {
+                    if (actions[i].Id.Contains($"WC_{id}"))
+                    {
+                        actions[i].Enabled = (b) => true;
+                    }
+                }
             }
         }
         #endregion

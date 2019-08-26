@@ -112,7 +112,6 @@ namespace WeaponCore
         internal double MaxEntitySpeed;
         internal float Zoom;
 
-        internal bool ControlInit;
         internal bool MpActive;
         internal bool IsServer;
         internal bool DedicatedServer;

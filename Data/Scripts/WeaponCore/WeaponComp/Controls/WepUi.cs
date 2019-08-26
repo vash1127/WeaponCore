@@ -31,6 +31,22 @@ namespace WeaponCore
             comp.ClientUiUpdate = true;
         }
 
+        internal static bool GuidanceEnabled(IMyTerminalBlock block, int count, int id) {
+            var logic = block?.Components?.Get<WeaponComponent>();
+            var enable = false;
+            if (logic != null)
+            {
+                for (int i = 0; i < logic.Platform.Weapons.Length; i++)
+                {
+                    if (logic.Platform.Weapons[i].System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None)
+                        enable = true;
+                }
+            }
+            //Log.Line($"{count} - {id} - {enable}");
+
+            return enable;
+        }
+
         internal static float GetPowerLevel(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
