@@ -43,6 +43,9 @@ namespace WeaponCore
         {
             try
             {
+                MyAPIGateway.TerminalControls.CustomActionGetter += GetWeaponActions;
+                MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
+
                 if (WepControl) return;
                 TerminalHelpers.Separator<IMyLargeTurretBase>(-1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
 
@@ -247,11 +250,16 @@ namespace WeaponCore
         private void GetWeaponControls(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var turret = block as IMyLargeTurretBase;
-            var cockpit = block as IMyCockpit;
-
+            var cockpit = block as MyCockpit;
 
             if (controls.Count == 0 || (turret == null && cockpit == null)) return;
 
+            if (cockpit != null) {
+                if (ControlledEntity == cockpit) {
+                    var gridAI = GridTargetingAIs[cockpit.CubeGrid];
+                    gridAI.turnWeaponShootOff = true;
+                }
+            }
 
             var iterControls = new List<IMyTerminalControl>(controls);
             for (int i = 0; i < iterControls.Count; i++)

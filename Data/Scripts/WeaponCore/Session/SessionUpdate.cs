@@ -123,6 +123,9 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated)) continue;
 
+                        if (gridAi.turnWeaponShootOff)
+                            w.ManualShoot = ShootOff;
+
                         if (Tick60)
                         {
                             var weaponValue = comp.State.Value.Weapons[w.WeaponId];
@@ -220,6 +223,7 @@ namespace WeaponCore
                 gridAi.Ready = false;
                 gridAi.AvailablePowerIncrease = false;
                 gridAi.RecalcPowerPercent = false;
+                gridAi.turnWeaponShootOff = false;
 
                 if (gridAi.RecalcDone)
                 {
