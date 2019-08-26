@@ -274,18 +274,21 @@ namespace WeaponCore
                     weaponComp.OnAddedToScene();
                     Log.Line($"added to comp");
                 }
-                //else RemoveGridAi(weaponComp);
             }
         }
 
         private void PlayerControlReleased(IMyEntityController myEntityController)
         {
-            Log.Line($"myControllableEntity: {((MyEntity)myEntityController.ControlledEntity.Entity).DebugName}");
+            var controlledEntity = Session.CameraController.Entity;
+            var isCockPit = controlledEntity is MyCockpit;
+            Log.Line($"{isCockPit}");
         }
 
         private void PlayerControlAcquired(IMyEntityController myEntityController)
         {
-            Log.Line($"myControllableEntity: {((MyEntity)myEntityController.ControlledEntity.Entity).DebugName}");
+            var controlledEntity = Session.CameraController.Entity;
+            var isCockPit = controlledEntity is MyCockpit;
+            Log.Line($"{isCockPit}");
         }
 
         /*
