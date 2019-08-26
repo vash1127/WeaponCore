@@ -73,6 +73,7 @@ namespace WeaponCore.Support
         internal bool AvailablePowerIncrease;
         internal bool RecalcDone;
         internal bool StaticEntitiesInRange;
+        internal bool turnWeaponShootOff;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal float GridMaxPower;

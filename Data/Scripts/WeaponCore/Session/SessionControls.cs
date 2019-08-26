@@ -12,6 +12,8 @@ using WeaponCore.Platform;
 using WeaponCore.Support;
 using VRage.Utils;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using Sandbox.Game.Entities.Cube;
+using Sandbox.Game.Entities;
 
 namespace WeaponCore
 {
@@ -41,6 +43,9 @@ namespace WeaponCore
         {
             try
             {
+                MyAPIGateway.TerminalControls.CustomActionGetter += GetWeaponActions;
+                MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
+
                 if (WepControl) return;
                 TerminalHelpers.Separator<IMyLargeTurretBase>(-1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
 
@@ -49,7 +54,7 @@ namespace WeaponCore
                     foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
                     {
                         var wepName = ws.Value.WeaponName;
-                        var wepID = ws.Value.WeaponId;
+                        var wepID = ws.Value.WeaponID;
 
                         TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
                             delegate (IMyTerminalBlock block)
@@ -60,7 +65,7 @@ namespace WeaponCore
                                 var enabled = false;
                                 for(int i =0; i < tmpComp.Platform.Weapons.Length; i++)
                                 {
-                                    if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
+                                    if (tmpComp.Platform.Weapons[i].System.WeaponID == wepID)
                                         enabled = tmpComp.Set.Value.Weapons[i].Enable;
                                 }
                                 return enabled;
@@ -72,7 +77,7 @@ namespace WeaponCore
                                 {
                                     for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
                                     {
-                                        if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
+                                        if (tmpComp.Platform.Weapons[i].System.WeaponID == wepID)
                                             tmpComp.Set.Value.Weapons[i].Enable = enabled;
                                     }
                                 }
@@ -156,7 +161,7 @@ namespace WeaponCore
                 if (comp == null) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponId == id)
+                    if (comp.Platform.Weapons[i].System.WeaponID == id)
                     {
                         if (comp.Platform.Weapons[i].ManualShoot != ShootOn)
                             comp.Platform.Weapons[i].ManualShoot = ShootOn;
@@ -166,7 +171,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(id,b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -179,12 +184,12 @@ namespace WeaponCore
                 if (comp == null) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponId == id)
+                    if (comp.Platform.Weapons[i].System.WeaponID == id)
                         comp.Platform.Weapons[i].ManualShoot = ShootOn;
                 }
             };
             action.Writer = (b, t) => t.Append("On");
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -197,12 +202,12 @@ namespace WeaponCore
                 if (comp == null) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponId == id)
+                    if (comp.Platform.Weapons[i].System.WeaponID == id)
                         comp.Platform.Weapons[i].ManualShoot = ShootOff;
                 }
             };
             action.Writer = (b, t) => t.Append("Off");
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -215,12 +220,12 @@ namespace WeaponCore
                 if (comp == null) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponId == id)
+                    if (comp.Platform.Weapons[i].System.WeaponID == id)
                         comp.Platform.Weapons[i].ManualShoot = ShootOnce;
                 }
             };
             action.Writer = (b, t) => t.Append("");
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -234,7 +239,7 @@ namespace WeaponCore
             var isShootOn = false;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                if (comp.Platform.Weapons[i].System.WeaponId == id)
+                if (comp.Platform.Weapons[i].System.WeaponID == id)
                     if (comp.Platform.Weapons[i].ManualShoot != ShootOff)
                         return true;
             }
@@ -245,17 +250,25 @@ namespace WeaponCore
         private void GetWeaponControls(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var turret = block as IMyLargeTurretBase;
+            var cockpit = block as MyCockpit;
 
-            if (controls.Count == 0 || turret == null) return;
+            if (controls.Count == 0 || (turret == null && cockpit == null)) return;
 
-            var comp = block?.Components?.Get<WeaponComponent>();
-
-            for (int i = 0; i < controls.Count; i++)
-            {
-                if (controls[i].Id.Contains($"WC_"))
-                    controls[i].Visible = (b) => false;
+            if (cockpit != null) {
+                if (ControlledEntity == cockpit) {
+                    var gridAI = GridTargetingAIs[cockpit.CubeGrid];
+                    gridAI.turnWeaponShootOff = true;
+                }
             }
 
+            var iterControls = new List<IMyTerminalControl>(controls);
+            for (int i = 0; i < iterControls.Count; i++)
+            {
+                if (iterControls[i].Id.Contains($"WC_"))
+                    controls.Remove(iterControls[i]);
+            }
+
+            var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return;
 
 
@@ -263,23 +276,20 @@ namespace WeaponCore
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                IDs.Add(comp.Platform.Weapons[i].System.WeaponId);
-                Log.Line($"WepID: {comp.Platform.Weapons[i].WeaponId} WepName: {comp.Platform.Weapons[i].System.WeaponId}");
+                IDs.Add(comp.Platform.Weapons[i].System.WeaponID);
             }
 
-            for (int i = 0; i < controls.Count; i++)
+            for (int i = 0; i < iterControls.Count; i++)
             {
-
-                if ((i > 6 && i < 10) || (i > 12 && i < 22))
-                    controls[i].Visible = tb => false;
-
-
+                if ((i > 6 && i < 10) || (i > 12 && i < 22) && !iterControls[i].Id.Contains($"WC_"))
+                    controls.Remove(iterControls[i]);
+               
 
                 foreach (int id in IDs)
                 {
-                    if (controls[i].Id.Contains($"WC_{id}"))
+                    if (iterControls[i].Id.Contains($"WC_{id}"))
                     {
-                        controls[i].Visible = (b) => true;
+                        controls.Add(iterControls[i]);
                     }
                 }
             }
@@ -291,10 +301,12 @@ namespace WeaponCore
 
             if (actions.Count == 0 || turret == null) return;
 
-            for (int i = 0; i < actions.Count; i++)
+            var iterActions = new List<IMyTerminalAction>(actions);
+
+            for (int i = 0; i < iterActions.Count; i++)
             {
-                if (actions[i].Id.Contains($"WC_"))
-                    actions[i].Enabled = (b) => false;
+                if (iterActions[i].Id.Contains($"WC_"))
+                    actions.Remove(iterActions[i]);
             }
 
             var comp = block?.Components?.Get<WeaponComponent>();
@@ -305,27 +317,37 @@ namespace WeaponCore
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                IDs.Add(comp.Platform.Weapons[i].System.WeaponId);
-                Log.Line($"WepID: {comp.Platform.Weapons[i].WeaponId} WepName: {comp.Platform.Weapons[i].System.WeaponId}");
+                IDs.Add(comp.Platform.Weapons[i].System.WeaponID);
             }
 
-            for (int i = 0; i < actions.Count; i++)
+            for (int i = 0; i < iterActions.Count; i++)
             {
 
-                if (!actions[i].Id.Contains($"OnOff"))
-                    actions[i].Enabled = (b) => false;
+                if (!iterActions[i].Id.Contains($"OnOff") && !iterActions[i].Id.Contains($"WC_"))
+                    actions.Remove(iterActions[i]);
 
-                if(actions[i].Id == "WC_Shoot_Click")
-                    actions[i].Enabled = (b) => true;
+                if (iterActions[i].Id == "WC_Shoot_Click")
+                    actions.Add(iterActions[i]);
+
 
                 foreach (int id in IDs)
                 {
-                    if (actions[i].Id.Contains($"WC_{id}"))
+                    if (iterActions[i].Id.Contains($"WC_{id}"))
                     {
-                        actions[i].Enabled = (b) => true;
+                        actions.Add(iterActions[i]);
                     }
                 }
             }
+        }
+
+        private static void Changed(IMyTerminalBlock obj)
+        {
+            var cockpit = obj as MyCockpit;
+
+            if (cockpit.Pilot != null)
+                Log.Line($"Piloted");
+            else
+                Log.Line($"Un-Piloted");
         }
         #endregion
     }

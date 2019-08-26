@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using VRage.ModAPI;
@@ -138,7 +139,7 @@ namespace WepaonCore.Control
             action.Name = new StringBuilder($"{name} Toggle On/Off");
             action.Action = (b) => tc.Setter(b, !tc.Getter(b));
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => WeaponFunctionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -148,7 +149,7 @@ namespace WepaonCore.Control
             action.Name = new StringBuilder($"{name} On");
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => WeaponFunctionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -158,13 +159,25 @@ namespace WepaonCore.Control
             action.Name = new StringBuilder($"{name} Off");
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => true;
+            action.Enabled = (b) => WeaponFunctionEnabled(id, b);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        
+        internal static bool WeaponFunctionEnabled(int id, IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null) return false;
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                if (comp.Platform.Weapons[i].System.WeaponID == id)
+                    return true;
+            }
+            return false;
+        }
+
         /*
         internal static IMyTerminalControl[] AddVectorEditor<T>(T block, string name, string title, string tooltip, Func<IMyTerminalBlock, Vector3> getter, Action<IMyTerminalBlock, Vector3> setter, float min = -10, float max = 10, Func<IMyTerminalBlock, int, bool> enabledGetter = null, Func<IMyTerminalBlock, int, bool> enabledGetter = null, string writerFormat = "0.##") where T : IMyTerminalBlock
         {
