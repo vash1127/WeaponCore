@@ -28,7 +28,7 @@ namespace WeaponCore.Support
         public readonly int ModelId;
         public readonly int MaxHeat;
         public readonly int HeatPShot;
-        public readonly int WeaponId;
+        public readonly int WeaponID;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -114,7 +114,7 @@ namespace WeaponCore.Support
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
-            WeaponId = weaponId;
+            WeaponID = weaponId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             ProjectileMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Material);
 
