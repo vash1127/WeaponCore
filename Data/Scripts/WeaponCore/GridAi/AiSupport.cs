@@ -282,8 +282,8 @@ namespace WeaponCore.Support
             }
         }
 
-        internal Dictionary<string,HashSet<IMyLargeTurretBase>> GetWeaponGroups() {
-
+        internal Dictionary<string,HashSet<IMyLargeTurretBase>> GetWeaponGroups()
+        {
             Dictionary<string, HashSet<IMyLargeTurretBase>> weaponGroups = new Dictionary<string, HashSet<IMyLargeTurretBase>>();
 
             var TermSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);

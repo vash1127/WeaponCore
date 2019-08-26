@@ -108,11 +108,7 @@ namespace WeaponCore
         internal static bool IsCoreWeapon(IMyTerminalBlock block, int count, int id)
         {
             var logic = block?.Components?.Get<WeaponComponent>();
-            var enable = false;
-            if (logic != null)
-            {
-                enable = true;
-            }
+            bool enable = logic != null;
             //Log.Line($"{count} - {id} - {enable}");
 
             return enable;

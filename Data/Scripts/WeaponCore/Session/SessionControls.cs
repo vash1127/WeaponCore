@@ -1,18 +1,12 @@
 ﻿using WepaonCore.Control;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
-using SpaceEngineers.Game.ModAPI;
-using VRage.ModAPI;
-using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 using VRage.Utils;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.Game.Entities;
 
 namespace WeaponCore
@@ -127,32 +121,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
         }
 
-
-        private void WarheadSetter(IMyTerminalBlock tBlock, bool isSet)
-        {
-            var customData = tBlock.CustomData;
-            var iOf = tBlock.CustomData.IndexOf("@EMP", StringComparison.Ordinal);
-            if (isSet && iOf == -1)
-            {
-                if (customData.Length == 0) tBlock.CustomData = "@EMP";
-                else if (!customData.Contains("@EMP")) tBlock.CustomData = customData + "\n@EMP";
-                return;
-            }
-
-            if (iOf != -1)
-            {
-                if (iOf != 0)
-                {
-                    tBlock.CustomData = customData.Remove(iOf - 1, 5);
-                }
-                else
-                {
-                    if (customData.Length > 4 && customData.IndexOf("\n", StringComparison.Ordinal) == iOf + 4) tBlock.CustomData = customData.Remove(iOf, 5);
-                    else tBlock.CustomData = customData.Remove(iOf, iOf + 4);
-                }
-            }
-        }
-
         internal static void CreateShootActionSet<T>(string name, int id) where T : IMyTerminalBlock
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On_Off");
@@ -238,7 +206,6 @@ namespace WeaponCore
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null) return false;
 
-            var isShootOn = false;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 if (comp.Platform.Weapons[i].System.WeaponID == id)
@@ -246,7 +213,7 @@ namespace WeaponCore
                         return true;
             }
 
-            return isShootOn;
+            return false;
         }
 
         private void GetWeaponControls(IMyTerminalBlock block, List<IMyTerminalControl> controls)
@@ -259,7 +226,6 @@ namespace WeaponCore
                 var gridAi = GridTargetingAIs[cockpit.CubeGrid];
                 gridAi.turnWeaponShootOff = true;
             }
-            return;
         }
 
         private void GetWeaponActions(IMyTerminalBlock block, List<IMyTerminalAction> actions)
