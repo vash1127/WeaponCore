@@ -31,9 +31,8 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal bool RateOfFire;
         [ProtoMember(2)] internal bool DamageModifier;
-        [ProtoMember(3)] internal bool SelectableProjectileColor;
-        [ProtoMember(4)] internal bool ToggleGuidance;
-        [ProtoMember(5)] internal bool EnableOverload;
+        [ProtoMember(3)] internal bool ToggleGuidance;
+        [ProtoMember(4)] internal bool EnableOverload;
     }
 
     [ProtoContract]
