@@ -78,9 +78,6 @@ namespace WeaponCore.Support
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float WepCooldown;
-        public int HeatPShot;
-        public float BaseDamage;
-        public float ShotEnergyCost;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -140,7 +137,6 @@ namespace WeaponCore.Support
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
             DegROF = values.HardPoint.Loading.DegradeROF;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
-            HeatPShot = values.HardPoint.Loading.HeatPerShot;
             WepCooldown = values.HardPoint.Loading.Cooldown;
             if(WepCooldown < .2f) WepCooldown = .2f;
             if(WepCooldown > .95f) WepCooldown = .95f;

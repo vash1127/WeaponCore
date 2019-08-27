@@ -43,7 +43,7 @@ namespace WeaponCore
                 if (newBase < 1)
                     newBase = 1;
 
-                w.System.BaseDamage = comp.State.Value.Weapons[w.WeaponId].BaseDamage = newBase;
+                w.BaseDamage = comp.State.Value.Weapons[w.WeaponId].BaseDamage = newBase;
 
                 var oldRequired = w.RequiredPower;
                 w.UpdateShotEnergy();
@@ -51,19 +51,19 @@ namespace WeaponCore
 
                 if (w.System.EnergyAmmo && newBase > w.System.Values.Ammo.BaseDamage)
                 {
-                    w.System.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot * (int)((newBase / w.System.Values.Ammo.BaseDamage) * (newBase / w.System.Values.Ammo.BaseDamage));
+                    w.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot * (int)((newBase / w.System.Values.Ammo.BaseDamage) * (newBase / w.System.Values.Ammo.BaseDamage));
 
                     comp.MaxRequiredPower -= w.RequiredPower;
                     w.RequiredPower = w.RequiredPower * ((newBase / w.System.Values.Ammo.BaseDamage) * (newBase / w.System.Values.Ammo.BaseDamage));
                     comp.MaxRequiredPower += w.RequiredPower;
                 }
                 else
-                    w.System.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot;
+                    w.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot;
 
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
-                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.System.HeatPShot;
+                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot;
 
                 if (w.IsShooting)
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
@@ -111,7 +111,7 @@ namespace WeaponCore
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
-                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.System.HeatPShot;
+                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot;
 
                 if (w.IsShooting)
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);

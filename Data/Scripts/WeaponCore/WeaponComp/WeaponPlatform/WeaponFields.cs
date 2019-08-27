@@ -61,6 +61,8 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
         internal float RequiredPower;
+        internal float BaseDamage;
+        internal float ShotEnergyCost;
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
@@ -72,6 +74,7 @@ namespace WeaponCore.Platform
         internal int WeaponId;
         internal int HSRate;
         internal int EnergyPriority;
+        internal int HeatPShot;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
@@ -216,7 +219,7 @@ namespace WeaponCore.Platform
         internal void UpdateRequiredPower()
         {
             if (System.EnergyAmmo || System.IsHybrid)
-                RequiredPower = ((System.ShotEnergyCost * (RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+                RequiredPower = ((ShotEnergyCost * (RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
             else
                 RequiredPower = Comp.IdlePower;
 
@@ -225,7 +228,7 @@ namespace WeaponCore.Platform
 
         internal void UpdateShotEnergy()
         {
-            System.ShotEnergyCost = System.Values.HardPoint.EnergyCost * System.BaseDamage;
+            ShotEnergyCost = System.Values.HardPoint.EnergyCost * BaseDamage;
         }
     }
 }

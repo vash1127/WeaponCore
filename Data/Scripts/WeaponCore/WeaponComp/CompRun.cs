@@ -100,25 +100,25 @@ namespace WeaponCore.Support
             foreach (var weapon in Platform.Weapons)
             {
                 weapon.RateOfFire = State.Value.Weapons[weapon.WeaponId].ROF != 0 ? State.Value.Weapons[weapon.WeaponId].ROF : weapon.System.Values.HardPoint.Loading.RateOfFire;
-                weapon.System.BaseDamage = State.Value.Weapons[weapon.WeaponId].BaseDamage != 0 ? State.Value.Weapons[weapon.WeaponId].BaseDamage : weapon.System.Values.Ammo.BaseDamage;
+                weapon.BaseDamage = State.Value.Weapons[weapon.WeaponId].BaseDamage != 0 ? State.Value.Weapons[weapon.WeaponId].BaseDamage : weapon.System.Values.Ammo.BaseDamage;
 
                 weapon.UpdateShotEnergy();
                 weapon.UpdateRequiredPower();
 
-                if (weapon.System.EnergyAmmo && weapon.System.BaseDamage > weapon.System.Values.Ammo.BaseDamage)
+                if (weapon.System.EnergyAmmo && weapon.BaseDamage > weapon.System.Values.Ammo.BaseDamage)
                 {
 
-                    weapon.System.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * (int)((weapon.System.BaseDamage / weapon.System.Values.Ammo.BaseDamage) * (weapon.System.BaseDamage / weapon.System.Values.Ammo.BaseDamage));
+                    weapon.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * (int)((weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage) * (weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage));
 
                     MaxRequiredPower -= weapon.RequiredPower;
-                    weapon.RequiredPower = weapon.RequiredPower * ((weapon.System.BaseDamage / weapon.System.Values.Ammo.BaseDamage) * (weapon.System.BaseDamage / weapon.System.Values.Ammo.BaseDamage));
+                    weapon.RequiredPower = weapon.RequiredPower * ((weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage) * (weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage));
                     MaxRequiredPower += weapon.RequiredPower;
                 }
 
                 weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
-                HeatPerSecond += (60 / weapon.TicksPerShot) * weapon.System.HeatPShot;
+                HeatPerSecond += (60 / weapon.TicksPerShot) * weapon.HeatPShot;
 
                 HeatSinkRate += weapon.HSRate;
             }

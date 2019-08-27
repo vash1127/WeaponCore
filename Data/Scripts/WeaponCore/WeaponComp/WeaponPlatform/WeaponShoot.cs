@@ -157,6 +157,7 @@ namespace WeaponCore.Platform
                             p.T.Target.FiringCube = Comp.MyCube;
                             p.T.WeaponId = WeaponId;
                             p.T.MuzzleId = muzzle.MuzzleId;
+                            p.T.BaseDamagePool = BaseDamage;
 
                             p.GridVel = Comp.Ai.GridVel;
                             p.Origin = muzzle.Position;
@@ -199,7 +200,7 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    var heat = Comp.State.Value.Weapons[WeaponId].Heat += System.HeatPShot;
+                    var heat = Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                     if (heat > System.MaxHeat)
                     {
                         if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
@@ -227,6 +228,7 @@ namespace WeaponCore.Platform
             p.T.Target.Projectile = Target.Projectile;
             p.T.Target.IsProjectile = Target.Projectile != null;
             p.T.Target.FiringCube = Comp.MyCube;
+            p.T.BaseDamagePool = BaseDamage;
 
             p.T.WeaponCache = WeaponCache;
 

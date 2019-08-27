@@ -169,7 +169,6 @@ namespace WeaponCore.Projectiles
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
             T.ObjectsHit = 0;
-            T.BaseDamagePool = T.System.BaseDamage;
             T.BaseHealthPool = T.System.Values.Ammo.Health;
             LineLength = T.System.Values.Graphics.Line.Length;
 

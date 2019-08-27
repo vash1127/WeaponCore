@@ -163,7 +163,7 @@ namespace WeaponCore.Platform
         public void StartShooting()
         {
             if (FiringEmitter != null) StartFiringSound();
-            if (System.ShotEnergyCost > 0 && !IsShooting)
+            if (ShotEnergyCost > 0 && !IsShooting)
             {
                 Comp.SinkPower += RequiredPower;
                 Comp.CurrentSinkPowerRequested += RequiredPower;
