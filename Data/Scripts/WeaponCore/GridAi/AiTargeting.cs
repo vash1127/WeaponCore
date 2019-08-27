@@ -199,7 +199,8 @@ namespace WeaponCore.Support
                     var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, w.Prediction, out intercept) : targetCenter;
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
-                    if (!s.TrackGrids || !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
+                    if (!s.TrackGrids) continue;
+                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);

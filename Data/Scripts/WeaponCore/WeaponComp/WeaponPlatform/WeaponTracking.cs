@@ -147,7 +147,6 @@ namespace WeaponCore.Platform
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
             if (!step) return weapon.IsTracking;
-
             if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
             {
                 var oldAz = weapon.Azimuth;
@@ -162,8 +161,6 @@ namespace WeaponCore.Platform
                 var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
                 var aim = !azLocked || !elLocked;
                 weapon.Comp.AiMoving = aim;
-                //Log.Line($"aim:{aim} - azLock:{azLocked} - azDiff:{azDiff} - desiredAz:{desiredAzimuth} - elLock:{elLocked} - elDiff:{elDiff} - desiredEl:{desiredElevation}");
-                //Log.Line($"--- oldAz:{oldAz} - oldEl{oldEl} - Az:{weapon.Azimuth}({turret.Azimuth}) - El:{weapon.Elevation}({turret.Elevation})");
                 if (aim)
                 {
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;

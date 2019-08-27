@@ -24,8 +24,6 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-                    //comp.Turret.SetTarget(null);
-                    if (comp.Turret.HasTarget) Log.Line($"has target: {comp.Turret.AIEnabled} - {comp.Turret.EnableIdleRotation}");
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     if (!comp.MainInit || !comp.State.Value.Online || comp.Status != Started)
                     {
@@ -37,14 +35,11 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable) continue;
-
                         if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
                         else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile)) w.Target.Reset();
                         else if (w.TrackingAi)
-                        {
                             if (!Weapon.TrackingTarget(w, w.Target, !gunner)) w.Target.Expired = true;
-                        }
                         else
                         {
                             if (w.IsTurret)
