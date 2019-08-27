@@ -17,6 +17,7 @@ namespace WeaponCore.Platform
             Vector3D targetPos;
             double timeToIntercept;
             double rangeToTarget;
+            if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3D.Zero;
 
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
@@ -67,7 +68,7 @@ namespace WeaponCore.Platform
         {
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
-            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldMatrix.Translation;
+            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
             double timeToIntercept;
             double rangeToTarget;
 
@@ -75,6 +76,7 @@ namespace WeaponCore.Platform
                 targetLinVel = target.Projectile.Velocity;
             else if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
             else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
+            if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3D.Zero;
 
             if (weapon.Prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, weapon.Prediction, out timeToIntercept);
@@ -100,8 +102,8 @@ namespace WeaponCore.Platform
             var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             Vector3D targetPos;
-            Vector3 targetLinVel = Vector3.Zero;
-            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldMatrix.Translation;
+            Vector3D targetLinVel = Vector3D.Zero;
+            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
             double timeToIntercept;
             double rangeToTarget;
 
@@ -203,17 +205,7 @@ namespace WeaponCore.Platform
 
         public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Prediction prediction, out double timeToIntercept)
         {
-            var tick = Session.Instance.Tick;
-            /*
-            if (tick == _lastPredictionTick && _lastTarget == target)
-            {
-                timeToIntercept = _lastTimeToIntercept;
-                return _lastPredictedPos;
-            }
-            _lastTarget = target;
-            */
-            _lastPredictionTick = tick;
-
+            _lastPredictionTick = Session.Instance.Tick;
             var targetCenter = targetPos;
             var shooterPos = Comp.MyPivotPos;
             var shooterVel = Comp.Physics.LinearVelocity;

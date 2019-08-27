@@ -19,8 +19,8 @@ namespace WeaponCore.Support
         internal static bool TargetSphereInCone(ref BoundingSphereD targetSphere, ref Cone cone)
         {
             Vector3D toSphere = targetSphere.Center - cone.ConeTip;
-            var angPos = MathHelperD.ToDegrees(AngleBetween(cone.ConeDir, toSphere));
-            double angRad = MathHelperD.ToDegrees(Math.Asin(targetSphere.Radius / toSphere.Length()));
+            var angPos = AngleBetween(cone.ConeDir, toSphere);
+            double angRad = Math.Asin(targetSphere.Radius / toSphere.Length());
 
             var ang1 = angPos + angRad;
             var ang2 = angPos - angRad;

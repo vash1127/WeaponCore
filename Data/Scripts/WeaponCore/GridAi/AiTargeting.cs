@@ -194,12 +194,15 @@ namespace WeaponCore.Support
 
                 if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > s.MaxTrajectorySqr) continue;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
-                var targetSphere = info.Target.PositionComp.WorldVolume;
-                double intercept;
-                var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, w.Prediction, out intercept) : targetCenter;
-                targetSphere.Center = newCenter;
-                if (info.IsGrid && s.TrackGrids && MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone))
+
+
+                if (info.IsGrid)
                 {
+                    double intercept;
+                    var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, w.Prediction, out intercept) : targetCenter;
+                    var targetSphere = info.Target.PositionComp.WorldVolume;
+                    targetSphere.Center = newCenter;
+                    if (!s.TrackGrids || !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
