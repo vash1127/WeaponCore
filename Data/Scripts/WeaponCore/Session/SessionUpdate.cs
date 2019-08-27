@@ -24,7 +24,8 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-
+                    //comp.Turret.SetTarget(null);
+                    if (comp.Turret.HasTarget) Log.Line($"has target: {comp.Turret.AIEnabled} - {comp.Turret.EnableIdleRotation}");
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     if (!comp.MainInit || !comp.State.Value.Online || comp.Status != Started)
                     {

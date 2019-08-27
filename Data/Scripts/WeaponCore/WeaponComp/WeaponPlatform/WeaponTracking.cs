@@ -162,6 +162,8 @@ namespace WeaponCore.Platform
                 var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
                 var aim = !azLocked || !elLocked;
                 weapon.Comp.AiMoving = aim;
+                //Log.Line($"aim:{aim} - azLock:{azLocked} - azDiff:{azDiff} - desiredAz:{desiredAzimuth} - elLock:{elLocked} - elDiff:{elDiff} - desiredEl:{desiredElevation}");
+                //Log.Line($"--- oldAz:{oldAz} - oldEl{oldEl} - Az:{weapon.Azimuth}({turret.Azimuth}) - El:{weapon.Elevation}({turret.Elevation})");
                 if (aim)
                 {
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
