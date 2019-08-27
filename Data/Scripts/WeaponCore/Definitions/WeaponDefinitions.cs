@@ -29,8 +29,8 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct UiDefinition
     {
-        [ProtoMember(1)] internal Slider RateOfFire;
-        [ProtoMember(2)] internal Slider DamageModifier;
+        [ProtoMember(1)] internal bool RateOfFire;
+        [ProtoMember(2)] internal bool DamageModifier;
         [ProtoMember(3)] internal bool SelectableProjectileColor;
         [ProtoMember(4)] internal bool ToggleGuidance;
         [ProtoMember(5)] internal bool EnableOverload;
@@ -329,14 +329,6 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal bool Enable;
         [ProtoMember(2)] internal Vector4 Color;
-    }
-
-    [ProtoContract]
-    public struct Slider
-    {
-        [ProtoMember(1)] internal bool Enable;
-        [ProtoMember(2)] internal double Min;
-        [ProtoMember(3)] internal double Max;
     }
 
     [ProtoContract]

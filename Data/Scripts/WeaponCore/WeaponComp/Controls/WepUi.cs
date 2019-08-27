@@ -162,13 +162,13 @@ namespace WeaponCore
                         }
                         break;
                     case -2:
-                        if (w.System.Values.Ui.DamageModifier.Enable && w.System.EnergyAmmo)
+                        if (w.System.Values.Ui.DamageModifier && w.System.EnergyAmmo)
                         {
                             return true;
                         }
                         break;
                     case -3:
-                        if (w.System.Values.Ui.RateOfFire.Enable)
+                        if (w.System.Values.Ui.RateOfFire)
                         {
                             return true;
                         }
