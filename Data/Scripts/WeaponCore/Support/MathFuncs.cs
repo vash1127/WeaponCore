@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VRageMath;
 
 namespace WeaponCore.Support
@@ -67,25 +63,6 @@ namespace WeaponCore.Support
             return Math.Sqrt(maxedDiff) * missileToTarget + normalMissileAcceleration;
         }
 
-        internal static float NormalizeAngle(int angle)
-        {
-            int num = angle % 360;
-            if (num == 0 && angle != 0)
-                return 360f;
-            return num;
-        }
-
-        internal static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
-        {
-            var num1 = Vector3D.Dot(deltaVel, deltaVel) - projectileVel * projectileVel;
-            var num2 = 2.0 * Vector3D.Dot(deltaVel, deltaPos);
-            var num3 = Vector3D.Dot(deltaPos, deltaPos);
-            var d = num2 * num2 - 4.0 * num1 * num3;
-            if (d <= 0.0)
-                return -1.0;
-            return 2.0 * num3 / (Math.Sqrt(d) - num2);
-        }
-
         /*
         /// Whip's Get Rotation Angles Method v14 - 9/25/18 ///
         Dependencies: AngleBetween
@@ -121,5 +98,23 @@ namespace WeaponCore.Support
             return angle;
         }
 
+        internal static float NormalizeAngle(int angle)
+        {
+            int num = angle % 360;
+            if (num == 0 && angle != 0)
+                return 360f;
+            return num;
+        }
+
+        internal static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
+        {
+            var num1 = Vector3D.Dot(deltaVel, deltaVel) - projectileVel * projectileVel;
+            var num2 = 2.0 * Vector3D.Dot(deltaVel, deltaPos);
+            var num3 = Vector3D.Dot(deltaPos, deltaPos);
+            var d = num2 * num2 - 4.0 * num1 * num3;
+            if (d <= 0.0)
+                return -1.0;
+            return 2.0 * num3 / (Math.Sqrt(d) - num2);
+        }
     }
 }

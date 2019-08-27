@@ -24,6 +24,7 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
+
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     if (!comp.MainInit || !comp.State.Value.Online || comp.Status != Started)
                     {

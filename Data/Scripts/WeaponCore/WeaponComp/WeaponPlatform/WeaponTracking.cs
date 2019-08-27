@@ -59,7 +59,6 @@ namespace WeaponCore.Platform
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            //Log.Line($"{weapon.System.WeaponName} - inRange:{inRange} - canTrack:{canTrack}");
             var tracking = inRange && canTrack;
             return tracking;
         }
@@ -91,7 +90,6 @@ namespace WeaponCore.Platform
             var isAligned = inRange && MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             weapon.TargetPos = targetPos;
-            weapon.TargetDir = targetDir;
             weapon.IsAligned = isAligned;
 
             return isAligned;
@@ -123,7 +121,7 @@ namespace WeaponCore.Platform
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             weapon.TargetPos = targetPos;
-            weapon.TargetDir = targetPos - weapon.Comp.MyPivotPos;
+            var targetDir = targetPos - weapon.Comp.MyPivotPos;
 
             var maxAzimuthStep = step ? weapon.System.Values.HardPoint.RotateSpeed : double.MinValue;
             var maxElevationStep = step ? weapon.System.Values.HardPoint.ElevationSpeed : double.MinValue;
@@ -139,17 +137,15 @@ namespace WeaponCore.Platform
             var forward = Vector3D.Cross(left, up);
 
             var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
-
             double desiredAzimuth;
             double desiredElevation;
-            MathFuncs.GetRotationAngles(ref weapon.TargetDir, ref matrix, out desiredAzimuth, out desiredElevation);
+            MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
             var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
             var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
-
             if (!step) return weapon.IsTracking;
 
             if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
@@ -181,12 +177,10 @@ namespace WeaponCore.Platform
             {
                 isInView = weapon.IsTargetInViewInLined(targetPos);
                 if (isInView)
-                    isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref weapon.TargetDir, weapon.AimingTolerance);
+                    isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             }
             else
-            {
                 weapon.SeekTarget = true;
-            }
 
             weapon.IsInView = isInView;
             var wasAligned = weapon.IsAligned;
@@ -205,28 +199,31 @@ namespace WeaponCore.Platform
 
         public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Prediction prediction, out double timeToIntercept)
         {
-            _lastPredictionTick = Session.Instance.Tick;
-            var targetCenter = targetPos;
+
+            var ammoSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
+            if (ammoSpeed <= 0)
+            {
+                timeToIntercept = 0;
+                return targetPos;
+            }
+
             var shooterPos = Comp.MyPivotPos;
             var shooterVel = Comp.Physics.LinearVelocity;
-            var ammoSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
-            var projectileVel = ammoSpeed > 0 ? ammoSpeed : float.MaxValue * 0.1f;
             var targetVel = targetLinVel;
-
+            Vector3D predictedPos;
             if (prediction == Prediction.Basic) 
             {
-                var deltaPos = targetCenter - shooterPos;
+                var deltaPos = targetPos - shooterPos;
                 var deltaVel = targetVel - shooterVel;
-                timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, projectileVel);
-                _lastPredictedPos = targetCenter + (float)timeToIntercept * deltaVel;
+                timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, ammoSpeed);
+                predictedPos = targetPos + (float)timeToIntercept * deltaVel;
             }
             else if (prediction == Prediction.Accurate)
-                _lastPredictedPos = CalculateProjectileInterceptPointFast(projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
+                predictedPos = CalculateProjectileInterceptPointFast(ammoSpeed, 60, shooterVel, shooterPos, targetVel, targetPos, out timeToIntercept);
             else
-                _lastPredictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, projectileVel, 60, shooterVel, shooterPos, targetVel, targetCenter, out timeToIntercept);
+                predictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, ammoSpeed, 60, shooterVel, shooterPos, targetVel, targetPos, out timeToIntercept);
 
-            _lastTimeToIntercept = timeToIntercept;
-            return _lastPredictedPos;
+            return predictedPos;
         }
 
         /*
