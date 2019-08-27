@@ -16,8 +16,6 @@ namespace WeaponCore.Platform
     {
         internal void Shoot()
         {
-
-            Log.Line($"RequiredPower: {RequiredPower}");
             var session = Session.Instance;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;

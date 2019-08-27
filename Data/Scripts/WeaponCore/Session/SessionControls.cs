@@ -14,21 +14,6 @@ namespace WeaponCore
     public partial class Session
     {
         #region UI Config
-        public static void AppendConditionToAction<T>(Func<IMyTerminalAction, bool> actionFindCondition, Func<IMyTerminalAction, IMyTerminalBlock, bool> actionEnabledAppend)
-        {
-            List<IMyTerminalAction> actions;
-            MyAPIGateway.TerminalControls.GetActions<T>(out actions);
-
-            foreach (var a in actions)
-            {
-                if (actionFindCondition(a))
-                {
-                    var existingAction = a.Enabled;
-
-                    a.Enabled = (b) => (existingAction == null ? true : existingAction.Invoke(b)) && actionEnabledAppend(a, b);
-                }
-            }
-        }
 
         public void CreateLogicElements()
         {
@@ -113,13 +98,6 @@ namespace WeaponCore
                 TerminalHelpers.AddSlider<IMyLargeTurretBase>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetROF, WepUi.SetROF, WepUi.CoreWeaponEnableCheck);
 
                 TerminalHelpers.AddCheckbox<IMyLargeTurretBase>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
-
-                /*
-                DoubleRate = TerminalHelpers.AddCheckbox(comp, -1, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                CreateAction<IMyLargeTurretBase>(Guidance);
-                */
-
-                //CreateActionChargeRate<IMyLargeTurretBase>(PowerSlider);
 
                 WepControl = true;
             }
