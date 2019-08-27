@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VRageMath;
 
 namespace WeaponCore.Support
@@ -19,8 +15,8 @@ namespace WeaponCore.Support
         internal static bool TargetSphereInCone(ref BoundingSphereD targetSphere, ref Cone cone)
         {
             Vector3D toSphere = targetSphere.Center - cone.ConeTip;
-            var angPos = MathHelperD.ToDegrees(AngleBetween(cone.ConeDir, toSphere));
-            double angRad = MathHelperD.ToDegrees(Math.Asin(targetSphere.Radius / toSphere.Length()));
+            var angPos = AngleBetween(cone.ConeDir, toSphere);
+            double angRad = Math.Asin(targetSphere.Radius / toSphere.Length());
 
             var ang1 = angPos + angRad;
             var ang2 = angPos - angRad;
@@ -41,23 +37,30 @@ namespace WeaponCore.Support
             return Math.Abs(dot) * dot > num;
         }
 
-        internal static float NormalizeAngle(int angle)
-        {
-            int num = angle % 360;
-            if (num == 0 && angle != 0)
-                return 360f;
-            return num;
-        }
 
-        internal static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
+        //Relative velocity proportional navigation
+        //aka: Whip-Nav
+        internal static Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1, double maxLateralThrustProportion = 0.5)
         {
-            var num1 = Vector3D.Dot(deltaVel, deltaVel) - projectileVel * projectileVel;
-            var num2 = 2.0 * Vector3D.Dot(deltaVel, deltaPos);
-            var num3 = Vector3D.Dot(deltaPos, deltaPos);
-            var d = num2 * num2 - 4.0 * num1 * num3;
-            if (d <= 0.0)
-                return -1.0;
-            return 2.0 * num3 / (Math.Sqrt(d) - num2);
+            var missileToTarget = Vector3D.Normalize(targetPosition - missilePos);
+            var relativeVelocity = targetVelocity - missileVelocity;
+            var parallelVelocity = relativeVelocity.Dot(missileToTarget) * missileToTarget;
+            var normalVelocity = (relativeVelocity - parallelVelocity);
+
+            var normalMissileAcceleration = normalVelocity * compensationFactor;
+
+            if (Vector3D.IsZero(normalMissileAcceleration))
+                return missileToTarget * missileAcceleration;
+
+            double maxLateralThrust = missileAcceleration * Math.Min(1, Math.Max(0, maxLateralThrustProportion));
+            if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust)
+            {
+                Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
+                normalMissileAcceleration *= maxLateralThrust;
+            }
+            double diff = missileAcceleration * missileAcceleration - normalMissileAcceleration.LengthSquared();
+            var maxedDiff = Math.Max(0, diff);
+            return Math.Sqrt(maxedDiff) * missileToTarget + normalMissileAcceleration;
         }
 
         /*
@@ -95,5 +98,23 @@ namespace WeaponCore.Support
             return angle;
         }
 
+        internal static float NormalizeAngle(int angle)
+        {
+            int num = angle % 360;
+            if (num == 0 && angle != 0)
+                return 360f;
+            return num;
+        }
+
+        internal static double Intercept(Vector3D deltaPos, Vector3D deltaVel, float projectileVel)
+        {
+            var num1 = Vector3D.Dot(deltaVel, deltaVel) - projectileVel * projectileVel;
+            var num2 = 2.0 * Vector3D.Dot(deltaVel, deltaPos);
+            var num3 = Vector3D.Dot(deltaPos, deltaPos);
+            var d = num2 * num2 - 4.0 * num1 * num3;
+            if (d <= 0.0)
+                return -1.0;
+            return 2.0 * num3 / (Math.Sqrt(d) - num2);
+        }
     }
 }

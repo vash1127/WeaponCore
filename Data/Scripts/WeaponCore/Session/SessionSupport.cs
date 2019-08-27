@@ -275,6 +275,7 @@ namespace WeaponCore
         internal bool UpdateLocalAiAndCockpit()
         {
             ActiveCockPit = ControlledEntity as MyCockpit;
+            InGridAiCockPit = false;
             if (ActiveCockPit != null && GridTargetingAIs.TryGetValue(ActiveCockPit.CubeGrid, out TrackingAi))
             {
                 InGridAiCockPit = true;

@@ -123,7 +123,6 @@ namespace WeaponCore.Support
             MaxInventoryMass = BlockInventory.MaxMass;
             IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
             SinkPower = IdlePower;
-
             PowerInit();
 
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();

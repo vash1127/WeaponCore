@@ -24,6 +24,7 @@ namespace WeaponCore.Platform
 
             if (Comp.PositionUpdateTick <= tick && Comp.LastPivotUpdateTick != tick)
             {
+                if (EntityPart == null || EntityPart.MarkedForClose) return;
                 var parentMatrix = EntityPart.Parent.PositionComp.WorldMatrix;
                 EntityPart.PositionComp.UpdateWorldMatrix(ref parentMatrix);
                 Comp.PositionUpdateTick = tick + 1;

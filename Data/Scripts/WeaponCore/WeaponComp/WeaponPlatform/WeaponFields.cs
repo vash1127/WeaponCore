@@ -23,15 +23,12 @@ namespace WeaponCore.Platform
         private readonly Vector3 _localTranslation;
 
         private MyEntity _lastTarget;
-        private Vector3D _lastPredictedPos;
-        private double _lastTimeToIntercept;
         private int _rotationTime;
         private int _numOfBarrels;
         private int _shotsInCycle;
         private int _shots = 1;
         private int _nextVirtual;
         private uint _ticksUntilShoot;
-        private uint _lastPredictionTick;
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
         internal uint TicksPerShot;
@@ -52,7 +49,6 @@ namespace WeaponCore.Platform
         internal Target Target;
         internal Target NewTarget;
         internal Vector3D TargetPos;
-        internal Vector3D TargetDir;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
