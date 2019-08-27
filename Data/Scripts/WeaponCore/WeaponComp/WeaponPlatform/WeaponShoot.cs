@@ -158,6 +158,7 @@ namespace WeaponCore.Platform
                             p.T.WeaponId = WeaponId;
                             p.T.MuzzleId = muzzle.MuzzleId;
                             p.T.BaseDamagePool = BaseDamage;
+                            p.T.EnableGuidance = Comp.Set.Value.Guidance;
 
                             p.GridVel = Comp.Ai.GridVel;
                             p.Origin = muzzle.Position;
@@ -183,7 +184,7 @@ namespace WeaponCore.Platform
                                 for (int t = 0; t < targetAiCnt; t++)
                                 {
                                     var targetAi = Comp.Ai.TargetAis[t];
-                                    if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None)
+                                    if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None || Comp.Set.Value.Guidance)
                                     {
                                         var threatLin = targetAi.MyGrid.Physics?.LinearVelocity ?? Vector3.Zero;
 
@@ -201,6 +202,7 @@ namespace WeaponCore.Platform
                     }
 
                     var heat = Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
+                    Comp.CurrentHeat += HeatPShot;
                     if (heat > System.MaxHeat)
                     {
                         if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
@@ -229,6 +231,7 @@ namespace WeaponCore.Platform
             p.T.Target.IsProjectile = Target.Projectile != null;
             p.T.Target.FiringCube = Comp.MyCube;
             p.T.BaseDamagePool = BaseDamage;
+            p.T.EnableGuidance = Comp.Set.Value.Guidance;
 
             p.T.WeaponCache = WeaponCache;
 

@@ -97,6 +97,7 @@ namespace WeaponCore.Support
 
             MaxRequiredPower = 0;
             HeatPerSecond = 0;
+            OptimalDPS = 0;
             foreach (var weapon in Platform.Weapons)
             {
                 weapon.RateOfFire = State.Value.Weapons[weapon.WeaponId].ROF != 0 ? State.Value.Weapons[weapon.WeaponId].ROF : weapon.System.Values.HardPoint.Loading.RateOfFire;
@@ -105,20 +106,26 @@ namespace WeaponCore.Support
                 weapon.UpdateShotEnergy();
                 weapon.UpdateRequiredPower();
 
-                if (weapon.System.EnergyAmmo && weapon.BaseDamage > weapon.System.Values.Ammo.BaseDamage)
+                var mulitplier = weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage;
+
+                if (weapon.BaseDamage != weapon.System.Values.Ammo.BaseDamage)
                 {
 
-                    weapon.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * (int)((weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage) * (weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage));
+                    weapon.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * (int)(mulitplier * mulitplier);
 
                     MaxRequiredPower -= weapon.RequiredPower;
-                    weapon.RequiredPower = weapon.RequiredPower * ((weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage) * (weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage));
+                    weapon.RequiredPower = weapon.RequiredPower * (mulitplier * mulitplier);
                     MaxRequiredPower += weapon.RequiredPower;
                 }
+                else
+                    weapon.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot;
+
 
                 weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
                 HeatPerSecond += (60 / weapon.TicksPerShot) * weapon.HeatPShot;
+                OptimalDPS += (int)((60 / weapon.TicksPerShot) * weapon.BaseDamage);
 
                 HeatSinkRate += weapon.HSRate;
             }

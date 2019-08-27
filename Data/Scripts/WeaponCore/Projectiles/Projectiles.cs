@@ -111,7 +111,7 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     p.LastPosition = p.Position;
-                    if (p.Guidance == AmmoTrajectory.GuidanceType.Smart)
+                    if (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.T.EnableGuidance)
                     {
                         Vector3D newVel;
                         if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
@@ -268,7 +268,7 @@ namespace WeaponCore.Projectiles
                             p.T.UpdateShape(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
                         else
                         {
-                            var pointDir = p.Guidance == AmmoTrajectory.GuidanceType.Smart ? p.VisualDir : p.Direction;
+                            var pointDir = (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.T.EnableGuidance) ? p.VisualDir : p.Direction;
                             p.T.UpdateShape(p.Position + -(pointDir * p.LineLength), p.Position, pointDir, p.LineLength);
                         }
 

@@ -87,7 +87,7 @@ namespace WeaponCore.Projectiles
                 var dist = obb.Intersects(ref extBeam);
                 if (dist == null && !quickCheck) continue;
 
-                if (ent == ai.MyPlanet && (p.CheckPlanet || p.Guidance == AmmoTrajectory.GuidanceType.Smart) || ent.Physics != null && !ent.IsPreview && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
+                if (ent == ai.MyPlanet && (p.CheckPlanet || (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.T.EnableGuidance)) || ent.Physics != null && !ent.IsPreview && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                 {
                     var voxel = ent as MyVoxelBase;
                     Vector3D? voxelHit = null;

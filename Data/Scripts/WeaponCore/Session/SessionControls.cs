@@ -224,13 +224,23 @@ namespace WeaponCore
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var cockpit = block as MyCockpit;
+            var turret = block as IMyLargeTurretBase;
 
-            if (controls.Count == 0 || cockpit == null || !UpdateLocalAiAndCockpit()) return;
+            if (controls.Count == 0 || cockpit == null && turret == null) return;
 
-            if (ControlledEntity == cockpit) {
+            if (ControlledEntity == cockpit && UpdateLocalAiAndCockpit())
+            {
                 var gridAi = GridTargetingAIs[cockpit.CubeGrid];
                 gridAi.turnWeaponShootOff = true;
             }
+            else if (turret != null) {
+                var comp = turret?.Components?.Get<WeaponComponent>();
+                if (comp != null)
+                {
+                    comp.TerminalRefresh();
+                }
+            }
+            
         }
         #endregion
     }

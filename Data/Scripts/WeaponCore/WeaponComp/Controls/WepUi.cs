@@ -36,6 +36,7 @@ namespace WeaponCore
 
             comp.MaxRequiredPower = 0;
             comp.HeatPerSecond = 0;
+            comp.OptimalDPS = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                 var w = comp.Platform.Weapons[i];
                 var newBase = (int)Math.Ceiling((w.System.Values.Ammo.BaseDamage * newValue)* comp.Set.Value.Overload);
@@ -45,16 +46,18 @@ namespace WeaponCore
 
                 w.BaseDamage = comp.State.Value.Weapons[w.WeaponId].BaseDamage = newBase;
 
+                var mulitplier = w.BaseDamage / w.System.Values.Ammo.BaseDamage;
+
                 var oldRequired = w.RequiredPower;
                 w.UpdateShotEnergy();
                 w.UpdateRequiredPower();
 
-                if (w.System.EnergyAmmo && newBase > w.System.Values.Ammo.BaseDamage)
+                if (newBase != w.System.Values.Ammo.BaseDamage)
                 {
-                    w.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot * (int)((newBase / w.System.Values.Ammo.BaseDamage) * (newBase / w.System.Values.Ammo.BaseDamage));
+                    w.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot * (int)(mulitplier * mulitplier);
 
                     comp.MaxRequiredPower -= w.RequiredPower;
-                    w.RequiredPower = w.RequiredPower * ((newBase / w.System.Values.Ammo.BaseDamage) * (newBase / w.System.Values.Ammo.BaseDamage));
+                    w.RequiredPower = w.RequiredPower * (mulitplier * mulitplier);
                     comp.MaxRequiredPower += w.RequiredPower;
                 }
                 else
@@ -64,6 +67,7 @@ namespace WeaponCore
                 w.TimePerShot = (3600d / w.RateOfFire);
 
                 comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot;
+                comp.OptimalDPS += (int)((60 / w.TicksPerShot) * w.BaseDamage);
 
                 if (w.IsShooting)
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
@@ -92,13 +96,12 @@ namespace WeaponCore
 
             comp.MaxRequiredPower = 0;
             comp.HeatPerSecond = 0;
+            comp.OptimalDPS = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
 
                 var newRate = (int)(w.System.Values.HardPoint.Loading.RateOfFire * comp.Set.Value.ROFModifier);
-
-                Log.Line($"newRate: {newRate} overload: {comp.Set.Value.Overload} ROFModifier: {comp.Set.Value.ROFModifier} ROF: {w.System.Values.HardPoint.Loading.RateOfFire}");
 
                 if (newRate < 1)
                     newRate = 1;
@@ -112,6 +115,7 @@ namespace WeaponCore
                 w.TimePerShot = (3600d / w.RateOfFire);
 
                 comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot;
+                comp.OptimalDPS += (int)((60 / w.TicksPerShot) * w.BaseDamage);
 
                 if (w.IsShooting)
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
@@ -146,8 +150,11 @@ namespace WeaponCore
                 comp.Set.Value.Overload = 1;
                 comp.MaxRequiredPower = 0;
             }
-
-            SetDPS(block, comp.Set.Value.DPSModifier);
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                if(comp.Platform.Weapons[i].System.IsBeamWeapon)
+                    SetDPS(block, comp.Set.Value.DPSModifier);
+            }
         }
 
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
@@ -167,7 +174,7 @@ namespace WeaponCore
                         }
                         break;
                     case -2:
-                        if (w.System.Values.Ui.DamageModifier && w.System.EnergyAmmo)
+                        if (w.System.Values.Ui.DamageModifier && w.System.EnergyAmmo || w.System.IsHybrid)
                         {
                             return true;
                         }
@@ -179,7 +186,7 @@ namespace WeaponCore
                         }
                         break;
                     case -4:
-                        if (w.System.Values.Ui.EnableOverload && w.System.EnergyAmmo)
+                        if (w.System.Values.Ui.EnableOverload && w.System.IsBeamWeapon)
                         {
                             return true;
                         }

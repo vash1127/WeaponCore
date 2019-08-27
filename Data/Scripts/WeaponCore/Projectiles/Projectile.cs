@@ -135,9 +135,9 @@ namespace WeaponCore.Projectiles
             GrowStep = 1;
             DistanceTraveled = 0;
             Guidance = !(T.System.Values.Ammo.Shrapnel.NoGuidance && T.IsShrapnel) ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
-            DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None;
+            DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None && T.EnableGuidance;
 
-            if (Guidance == AmmoTrajectory.GuidanceType.Smart && !T.System.IsBeamWeapon)
+            if (Guidance == AmmoTrajectory.GuidanceType.Smart && !T.System.IsBeamWeapon && T.EnableGuidance)
                 MaxChaseAge = T.System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
             else MaxChaseAge = int.MaxValue;
 
@@ -198,7 +198,7 @@ namespace WeaponCore.Projectiles
 
             if (LockedTarget) FoundTarget = true;
             else if (DynamicGuidance) SeekTarget = true;
-            MoveToAndActivate = FoundTarget && !T.System.IsBeamWeapon && Guidance == AmmoTrajectory.GuidanceType.TravelTo;
+            MoveToAndActivate = FoundTarget && !T.System.IsBeamWeapon && Guidance == AmmoTrajectory.GuidanceType.TravelTo && T.EnableGuidance;
 
             if (MoveToAndActivate)
             {
@@ -211,7 +211,7 @@ namespace WeaponCore.Projectiles
             FiringSoundState = T.System.FiringSound;
             AmmoTravelSoundRangeSqr = T.System.AmmoTravelSoundDistSqr;
 
-            var smartGuidance = Guidance == AmmoTrajectory.GuidanceType.Smart;
+            var smartGuidance = Guidance == AmmoTrajectory.GuidanceType.Smart && T.EnableGuidance;
             PruneQuery = smartGuidance ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
             if (T.Ai.StaticEntitiesInRange && !smartGuidance) StaticEntCheck();
             else CheckPlanet = false;
