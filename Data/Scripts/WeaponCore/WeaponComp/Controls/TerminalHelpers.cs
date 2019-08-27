@@ -72,7 +72,7 @@ namespace WepaonCore.Control
             return c;
         }
 
-        internal static IMyTerminalControlSlider AddSlider<T>(int id, string name, string title, string tooltip,int min, int max, Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock,int,bool> visibleGetter) where T : IMyTerminalBlock
+        internal static IMyTerminalControlSlider AddSlider<T>(int id, string name, string title, string tooltip,int min, int max, float incAmt,Func<IMyTerminalBlock, float> getter, Action<IMyTerminalBlock, float> setter, Func<IMyTerminalBlock,int,bool> visibleGetter) where T : IMyTerminalBlock
         {
             var s = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlSlider, T>("WC_" + name);
 
@@ -84,6 +84,8 @@ namespace WepaonCore.Control
             s.Setter = setter;
             s.Writer = (b, v) => v.Append(getter(b).ToString("N2"));
             MyAPIGateway.TerminalControls.AddControl<T>(s);
+
+            CreateSliderActionSet<T>(s, name, id, min/100, max/100, incAmt, visibleGetter);
             return s;
         }
 
@@ -171,7 +173,30 @@ namespace WepaonCore.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int id)
+        internal static void CreateSliderActionSet<T>(IMyTerminalControlSlider tc, string name, int id, int min, int max, float incAmt, Func<IMyTerminalBlock, int, bool> enabler) where T : IMyTerminalBlock
+        {
+            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Increase");
+            action.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
+            action.Name = new StringBuilder($"Increase {name}");
+            action.Action = (b) => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
+            action.Writer = (b, t) => t.Append("");
+            action.Enabled = (b) => enabler(b, id);
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+
+            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Decrease");
+            action.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
+            action.Name = new StringBuilder($"Decrease {name}");
+            action.Action = (b) => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
+            action.Writer = (b, t) => t.Append("");
+            action.Enabled = (b) => enabler(b, id);
+            action.ValidForGroups = true;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action);
+        }
+
+            internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null) return false;

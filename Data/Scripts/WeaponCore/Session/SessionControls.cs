@@ -108,11 +108,11 @@ namespace WeaponCore
                 TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
 
                 
-                TerminalHelpers.AddSlider<IMyLargeTurretBase>( -2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, WepUi.GetDPS, WepUi.SetDPS, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<IMyLargeTurretBase>( -2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDPS, WepUi.SetDPS, WepUi.CoreWeaponEnableCheck);
 
-                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, WepUi.GetROF, WepUi.SetROF, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetROF, WepUi.SetROF, WepUi.CoreWeaponEnableCheck);
 
-                TerminalHelpers.AddCheckbox<IMyLargeTurretBase>(-4, "Overload", "Overload ROF x2", "Overload ROF x2", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddCheckbox<IMyLargeTurretBase>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
 
                 /*
                 DoubleRate = TerminalHelpers.AddCheckbox(comp, -1, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
