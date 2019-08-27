@@ -110,19 +110,21 @@ namespace WeaponCore
                     var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
-
+                    
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
+
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated)) continue;
 
                         if (gridAi.turnWeaponShootOff)
-                            w.ManualShoot = ShootOff;
+                            if(w.ManualShoot == ShootClick)
+                                w.ManualShoot = ShootOff;
 
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated)) continue;
                         if (Tick60)
                         {
                             var weaponValue = comp.State.Value.Weapons[w.WeaponId];

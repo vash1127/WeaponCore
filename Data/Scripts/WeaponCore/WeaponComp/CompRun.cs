@@ -95,6 +95,31 @@ namespace WeaponCore.Support
 
             StorageSetup();
 
+            foreach (var weapon in Platform.Weapons)
+            {
+                weapon.RateOfFire = State.Value.Weapons[weapon.WeaponId].ROF != 0 ? State.Value.Weapons[weapon.WeaponId].ROF : weapon.System.Values.HardPoint.Loading.RateOfFire;
+                weapon.System.BaseDamage = State.Value.Weapons[weapon.WeaponId].BaseDamage != 0 ? State.Value.Weapons[weapon.WeaponId].BaseDamage : weapon.System.Values.Ammo.BaseDamage;
+
+
+                if (weapon.RateOfFire > weapon.System.Values.HardPoint.Loading.HeatPerShot)
+                {
+                    weapon.System.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * (weapon.RateOfFire / weapon.System.Values.HardPoint.Loading.RateOfFire);
+
+                    weapon.RequiredPower = weapon.RequiredPower * (weapon.RateOfFire / weapon.System.Values.HardPoint.Loading.RateOfFire);
+                }
+
+                weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);
+                weapon.TimePerShot = (3600d / weapon.RateOfFire);
+
+                HeatPerSecond += (60 / weapon.TicksPerShot) * weapon.System.HeatPShot;
+
+                HeatSinkRate += weapon.HSRate;
+
+                weapon.Comp.MaxRequiredPower = 0;
+                weapon.UpdateShotEnergy();
+                weapon.UpdateRequiredPower();
+            }
+
             RegisterEvents(true);
 
             OnAddedToSceneTasks();

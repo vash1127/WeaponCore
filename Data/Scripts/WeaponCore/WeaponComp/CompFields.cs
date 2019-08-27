@@ -54,6 +54,8 @@ namespace WeaponCore.Support
         internal uint IsWorkingChangedTick;
         internal uint PositionUpdateTick;
         internal int PullingAmmoCnt;
+        internal float HeatPerSecond;
+        internal float HeatSinkRate;
         internal float MaxAmmoVolume;
         internal float MaxAmmoMass;
         internal float SinkPower;
@@ -103,6 +105,7 @@ namespace WeaponCore.Support
         internal bool FullInventory;
         internal bool MultiInventory;
         internal bool AiMoving;
+        internal bool HasEnergyWeapon;
         internal LogicSettings Set;
         internal LogicState State;
         //internal MyResourceSinkComponent Sink => MyCube.ResourceSink;

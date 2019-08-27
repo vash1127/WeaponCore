@@ -9,7 +9,7 @@ namespace WeaponCore.Support
         internal void TerminalRefresh(bool update = true)
         {
             Turret.RefreshCustomInfo();
-            if (update && InControlPanel && InThisTerminal)
+            if (update && InControlPanel)
             {
                  MyCube.UpdateTerminal();
             }

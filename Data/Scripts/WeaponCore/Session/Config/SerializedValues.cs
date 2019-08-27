@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel;
 using ProtoBuf;
 using VRageMath;
-using static WeaponCore.Support.GraphicDefinition;
 namespace WeaponCore
 {
     [ProtoContract]
@@ -20,24 +19,26 @@ namespace WeaponCore
     public class WeaponStateValues
     {
         [ProtoMember(1)] public int Heat;
+        [ProtoMember(2)] public int ROF;
+        [ProtoMember(3)] public int BaseDamage;
     }
 
     [ProtoContract]
     public class LogicSettingsValues
     {
         [ProtoMember(1)] public uint MId;
-        [ProtoMember(2), DefaultValue(true)] public bool Guidance;
-        [ProtoMember(3), DefaultValue(true)] public bool GetDoubleRate;
+        [ProtoMember(2)] public bool Guidance = true;
+        [ProtoMember(3)] public int Overload = 1;
         [ProtoMember(4)] public long Modes;
-        [ProtoMember(5)] public float PowerScale;
-        [ProtoMember(6), DefaultValue(-1)] public int PowerWatts = 999;
+        [ProtoMember(5)] public float DPSModifier = 1;
+        [ProtoMember(6)] public float ROFModifier = 1;
         [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
     }
 
     [ProtoContract]
     public class WeaponSettingsValues
     {
-        [ProtoMember(1)] public bool Enable;
+        [ProtoMember(1)] public bool Enable = true;
     }
 
 

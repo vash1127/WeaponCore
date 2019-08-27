@@ -51,9 +51,9 @@ namespace WeaponCore.Platform
             {
                 case Emissives.Firing:
                     var stages = System.Values.Graphics.Emissive.Firing.Stages;
-                    var stageSize = _ticksPerShot / 6;
+                    var stageSize = TicksPerShot / 6;
                     if (stageSize < 2) stageSize = 2;
-                    var timeToShoot = _ticksPerShot - ShotCounter;
+                    var timeToShoot = TicksPerShot - ShotCounter;
                     var stage = timeToShoot / stageSize - 1;
                     if (stage == 0) stage = 1;
                     var fIntensity = 1 / 6;

@@ -16,6 +16,8 @@ namespace WeaponCore.Platform
     {
         internal void Shoot()
         {
+
+            Log.Line($"RequiredPower: {RequiredPower}");
             var session = Session.Instance;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
@@ -44,7 +46,7 @@ namespace WeaponCore.Platform
                 _rotationTime = 0;
             }
 
-            if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
+            if (ShotCounter++ >= TicksPerShot - 1) ShotCounter = 0;
 
             _ticksUntilShoot++;
             if (ShotCounter != 0) return;
@@ -374,10 +376,10 @@ namespace WeaponCore.Platform
             BarrelMove = true;
             double radiansPerShot;
             var heat = Comp.State.Value.Weapons[WeaponId].Heat;
-            if (System.DegROF && heat > (System.MaxHeat * .8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (heat / System.MaxHeat);
-            if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
+            if (System.DegROF && heat > (System.MaxHeat * .8)) TimePerShot = (3600d / RateOfFire) / (heat / System.MaxHeat);
+            if (TimePerShot > 0.999999 && TimePerShot < 1.000001) radiansPerShot = 0.06666666666;
             else radiansPerShot = 2 * Math.PI / _numOfBarrels;
-            var radians = radiansPerShot / _timePerShot;
+            var radians = radiansPerShot / TimePerShot;
             var axis = System.Values.HardPoint.RotateBarrelAxis;
             MatrixD rotationMatrix;
             if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);

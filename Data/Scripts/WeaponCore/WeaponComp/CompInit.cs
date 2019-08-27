@@ -82,8 +82,11 @@ namespace WeaponCore.Support
             if (isServer)
             {
 
-                foreach (var w in State.Value.Weapons)
+                foreach (var w in State.Value.Weapons) {
                     w.Heat = 0;
+                }
+                    
+                
             }
         }
     }

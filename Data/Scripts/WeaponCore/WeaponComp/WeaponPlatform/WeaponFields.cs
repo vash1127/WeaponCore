@@ -34,8 +34,8 @@ namespace WeaponCore.Platform
         private uint _lastPredictionTick;
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
-        private uint _ticksPerShot;
-        private double _timePerShot;
+        internal uint TicksPerShot;
+        internal double TimePerShot;
 
         private bool _newCycle = false;
         //private bool _firstRun = true;
@@ -64,11 +64,12 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
-
+        internal float RequiredPower;
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal uint LastTargetCheck;
+        internal int RateOfFire;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
@@ -87,7 +88,6 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
-        internal float RequiredPower => (System.EnergyAmmo || System.IsHybrid) ? ((System.ShotEnergyCost * (System.Values.HardPoint.Loading.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel : 0;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -162,10 +162,7 @@ namespace WeaponCore.Platform
             _localTranslation = entity.PositionComp.LocalMatrix.Translation;
             System = system;
             Comp = comp;
-            if (System.EnergyAmmo || System.IsHybrid)
-                Comp.MaxRequiredPower += RequiredPower;
-            else
-                Comp.MaxRequiredPower += comp.IdlePower;
+            comp.HasEnergyWeapon = comp.HasEnergyWeapon || System.EnergyAmmo || System.IsHybrid;
 
             AvCapable = System.HasBarrelShootAv && !Session.Instance.DedicatedServer;
 
@@ -208,8 +205,6 @@ namespace WeaponCore.Platform
             AimingTolerance = Math.Cos(toleranceInRadians);
             Prediction = System.Values.HardPoint.AimLeadingPrediction;
 
-            _ticksPerShot = (uint)(3600 / System.Values.HardPoint.Loading.RateOfFire);
-            _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire);
             _numOfBarrels = System.Barrels.Length;
             DelayCeaseFire = System.TimeToCeaseFire > 0;
             BeamSlot = new uint[_numOfBarrels];
@@ -220,6 +215,21 @@ namespace WeaponCore.Platform
                 Comp.Ai.MaxTargetingRange = System.MaxTrajectory;
                 Comp.Ai.MaxTargetingRangeSqr = System.MaxTrajectorySqr;
             }
+        }
+
+        internal void UpdateRequiredPower()
+        {
+            if (System.EnergyAmmo || System.IsHybrid)
+                RequiredPower = ((System.ShotEnergyCost * (RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+            else
+                RequiredPower = Comp.IdlePower;
+
+            Comp.MaxRequiredPower += RequiredPower;
+        }
+
+        internal void UpdateShotEnergy()
+        {
+            System.ShotEnergyCost = System.Values.HardPoint.EnergyCost * System.BaseDamage;
         }
     }
 }
