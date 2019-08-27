@@ -96,6 +96,7 @@ namespace WeaponCore.Support
             StorageSetup();
 
             MaxRequiredPower = 0;
+            HeatPerSecond = 0;
             foreach (var weapon in Platform.Weapons)
             {
                 weapon.RateOfFire = State.Value.Weapons[weapon.WeaponId].ROF != 0 ? State.Value.Weapons[weapon.WeaponId].ROF : weapon.System.Values.HardPoint.Loading.RateOfFire;
@@ -104,13 +105,13 @@ namespace WeaponCore.Support
                 weapon.UpdateShotEnergy();
                 weapon.UpdateRequiredPower();
 
-                if (weapon.System.EnergyAmmo && weapon.RateOfFire > weapon.System.Values.HardPoint.Loading.RateOfFire)
+                if (weapon.System.EnergyAmmo && weapon.System.BaseDamage > weapon.System.Values.Ammo.BaseDamage)
                 {
 
-                    weapon.System.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * ((weapon.RateOfFire / weapon.System.Values.HardPoint.Loading.RateOfFire) * (weapon.RateOfFire / weapon.System.Values.HardPoint.Loading.RateOfFire));
+                    weapon.System.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * (int)((weapon.System.BaseDamage / weapon.System.Values.Ammo.BaseDamage) * (weapon.System.BaseDamage / weapon.System.Values.Ammo.BaseDamage));
 
                     MaxRequiredPower -= weapon.RequiredPower;
-                    weapon.RequiredPower = weapon.RequiredPower * ((weapon.RateOfFire / weapon.System.Values.HardPoint.Loading.RateOfFire) * (weapon.RateOfFire / weapon.System.Values.HardPoint.Loading.RateOfFire));
+                    weapon.RequiredPower = weapon.RequiredPower * ((weapon.System.BaseDamage / weapon.System.Values.Ammo.BaseDamage) * (weapon.System.BaseDamage / weapon.System.Values.Ammo.BaseDamage));
                     MaxRequiredPower += weapon.RequiredPower;
                 }
 
