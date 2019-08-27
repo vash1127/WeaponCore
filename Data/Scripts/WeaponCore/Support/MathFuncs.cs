@@ -41,6 +41,32 @@ namespace WeaponCore.Support
             return Math.Abs(dot) * dot > num;
         }
 
+
+        //Relative velocity proportional navigation
+        //aka: Whip-Nav
+        internal static Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1, double maxLateralThrustProportion = 0.5)
+        {
+            var missileToTarget = Vector3D.Normalize(targetPosition - missilePos);
+            var relativeVelocity = targetVelocity - missileVelocity;
+            var parallelVelocity = relativeVelocity.Dot(missileToTarget) * missileToTarget;
+            var normalVelocity = (relativeVelocity - parallelVelocity);
+
+            var normalMissileAcceleration = normalVelocity * compensationFactor;
+
+            if (Vector3D.IsZero(normalMissileAcceleration))
+                return missileToTarget * missileAcceleration;
+
+            double maxLateralThrust = missileAcceleration * Math.Min(1, Math.Max(0, maxLateralThrustProportion));
+            if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust)
+            {
+                Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
+                normalMissileAcceleration *= maxLateralThrust;
+            }
+            double diff = missileAcceleration * missileAcceleration - normalMissileAcceleration.LengthSquared();
+            var maxedDiff = Math.Max(0, diff);
+            return Math.Sqrt(maxedDiff) * missileToTarget + normalMissileAcceleration;
+        }
+
         internal static float NormalizeAngle(int angle)
         {
             int num = angle % 360;
