@@ -78,32 +78,31 @@ namespace WeaponCore
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
-                var newRate = (int)((w.System.Values.HardPoint.Loading.RateOfFire * newValue) * comp.Set.Value.Overload);
 
-                Log.Line($"newRate: {newRate}");
+                var newRate = (int)((w.System.Values.HardPoint.Loading.RateOfFire * comp.Set.Value.ROFModifier) * comp.Set.Value.Overload);
 
-                var oldRequired = w.RequiredPower;
-                w.UpdateRequiredPower();
+                Log.Line($"newRate: {newRate} overload: {comp.Set.Value.Overload} ROFModifier: {comp.Set.Value.ROFModifier} ROF: {w.System.Values.HardPoint.Loading.RateOfFire}");
 
                 if (newRate < 1)
                     newRate = 1;
-                else if (newRate > w.System.Values.HardPoint.Loading.RateOfFire) {
 
-                    w.System.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot * ((newRate / w.System.Values.HardPoint.Loading.RateOfFire)* (newRate / w.System.Values.HardPoint.Loading.RateOfFire));
+                w.RateOfFire = comp.State.Value.Weapons[w.WeaponId].ROF = newRate;
+                var oldRequired = w.RequiredPower;
+                w.UpdateRequiredPower();
 
-                    if (w.System.EnergyAmmo || w.System.IsHybrid)
-                    {
-                        comp.MaxRequiredPower -= w.RequiredPower;
-                        w.RequiredPower = w.RequiredPower * ((newRate / w.System.Values.HardPoint.Loading.RateOfFire) * (newRate / w.System.Values.HardPoint.Loading.RateOfFire));
-                        comp.MaxRequiredPower += w.RequiredPower;
-                    }
+                if (w.System.EnergyAmmo && newRate > w.System.Values.HardPoint.Loading.RateOfFire)
+                {
+
+                    w.System.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot * ((newRate / w.System.Values.HardPoint.Loading.RateOfFire) * (newRate / w.System.Values.HardPoint.Loading.RateOfFire));
+                    
+                    comp.MaxRequiredPower -= w.RequiredPower;
+                    w.RequiredPower = w.RequiredPower * ((newRate / w.System.Values.HardPoint.Loading.RateOfFire) * (newRate / w.System.Values.HardPoint.Loading.RateOfFire));
+                    comp.MaxRequiredPower += w.RequiredPower;
                 }
                 else
                     w.System.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot;
 
-                w.RateOfFire = comp.State.Value.Weapons[w.WeaponId].ROF = newRate;
 
-                
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
@@ -143,61 +142,7 @@ namespace WeaponCore
                 comp.MaxRequiredPower = 0;
             }
 
-            comp.MaxRequiredPower = 0;
-            comp.HeatPerSecond = 0;
-            var refresh = false;
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
-                var w = comp.Platform.Weapons[i];
-
-                if (w.System.EnergyAmmo)
-                {
-
-                    var newRate = (int)((w.System.Values.HardPoint.Loading.RateOfFire * comp.Set.Value.ROFModifier) * comp.Set.Value.Overload);
-
-                    Log.Line($"newRate: {newRate}");
-
-                    var oldRequired = w.RequiredPower;
-                    w.UpdateRequiredPower();
-
-                    if (newRate < 1)
-                        newRate = 1;
-                    else if (newRate > w.System.Values.HardPoint.Loading.RateOfFire)
-                    {
-                        w.System.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot * ((newRate / w.System.Values.HardPoint.Loading.RateOfFire) * (newRate / w.System.Values.HardPoint.Loading.RateOfFire));
-
-                        comp.MaxRequiredPower -= w.RequiredPower;
-                        w.RequiredPower = w.RequiredPower * ((newRate / w.System.Values.HardPoint.Loading.RateOfFire) * (newRate / w.System.Values.HardPoint.Loading.RateOfFire));
-                        comp.MaxRequiredPower += w.RequiredPower;
-                    }
-                    else
-                        w.System.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot;
-
-                    w.RateOfFire = comp.State.Value.Weapons[w.WeaponId].ROF = newRate;
-
-
-                    w.TicksPerShot = (uint)(3600 / w.RateOfFire);
-                    w.TimePerShot = (3600d / w.RateOfFire);
-
-                    comp.HeatPerSecond += (60 / w.TicksPerShot) * w.System.HeatPShot;
-
-                    if (w.IsShooting)
-                        comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
-
-                    comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
-
-                    refresh = true;
-                }
-            }
-
-            if (refresh)
-            {
-                comp.TerminalRefresh();
-                comp.Ai.RecalcPowerPercent = true;
-                comp.Ai.UpdatePowerSources = true;
-                comp.Ai.AvailablePowerIncrease = true;
-                comp.SettingsUpdated = true;
-                comp.ClientUiUpdate = true;
-            }
+            SetROF(block, comp.Set.Value.ROFModifier);
         }
 
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
