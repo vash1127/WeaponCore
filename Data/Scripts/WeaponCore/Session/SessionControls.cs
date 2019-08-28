@@ -14,36 +14,18 @@ namespace WeaponCore
     public partial class Session
     {
         #region UI Config
-        public static void AppendConditionToAction<T>(Func<IMyTerminalAction, bool> actionFindCondition, Func<IMyTerminalAction, IMyTerminalBlock, bool> actionEnabledAppend)
-        {
-            List<IMyTerminalAction> actions;
-            MyAPIGateway.TerminalControls.GetActions<T>(out actions);
 
-            foreach (var a in actions)
-            {
-                if (actionFindCondition(a))
-                {
-                    var existingAction = a.Enabled;
-
-                    a.Enabled = (b) => (existingAction == null ? true : existingAction.Invoke(b)) && actionEnabledAppend(a, b);
-                }
-            }
-        }
-        internal IMyTerminalControlOnOffSwitch Guidance { get; set; }
-        internal IMyTerminalControlCombobox WeaponMode { get; set; }
-        internal IMyTerminalControlSlider PowerSlider { get; set; }
-        internal IMyTerminalControlCheckbox DoubleRate { get; set; }
         public void CreateLogicElements()
         {
             try
             {
-                MyAPIGateway.TerminalControls.CustomControlGetter += GetWeaponControls;
+                MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
                 TerminalHelpers.AlterActions<IMyLargeTurretBase>();
                 TerminalHelpers.AlterControls<IMyLargeTurretBase>();
 
                 if (WepControl) return;
-                TerminalHelpers.Separator<IMyLargeTurretBase>(-1, "WC-L_sep0", WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
+                TerminalHelpers.Separator<IMyLargeTurretBase>(0, "WC_sep0");
 
                 foreach(KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
                 {
@@ -74,11 +56,16 @@ namespace WeaponCore
                                     for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
                                     {
                                         if (tmpComp.Platform.Weapons[i].System.WeaponID == wepID)
+                                        {
                                             tmpComp.Set.Value.Weapons[i].Enable = enabled;
+                                            tmpComp.SettingsUpdated = true;
+                                            tmpComp.ClientUiUpdate = true;
+                                        }
+
                                     }
                                 }
                             },
-                            WepUi.EnableWeapon, WepUi.EnableWeapon);
+                            TerminalHelpers.WeaponFunctionEnabled);
 
                         CreateShootActionSet<IMyLargeTurretBase>(wepName, wepID);
                     }
@@ -96,25 +83,21 @@ namespace WeaponCore
                     }
                 };
                 action.Writer = (b, t) => t.Append("");
-                action.Enabled = (b) => true;
+                action.Enabled = (b) => WepUi.CoreWeaponEnableCheck(b, 0);
                 action.ValidForGroups = true;
 
                 MyAPIGateway.TerminalControls.AddAction<IMyLargeTurretBase>(action);
-                /*TerminalHelpers.Separator(comp, -1, "WC-L_sep1", WepUi.GuidanceEnabled, WepUi.GuidanceEnabled);
-                Guidance = TerminalHelpers.AddOnOff(comp, -1, "WC-L_Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.GuidanceEnabled, WepUi.GuidanceEnabled);
+
+                TerminalHelpers.Separator<IMyLargeTurretBase>(0, "WC_sep1");
+
+                TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
 
                 
-                PowerSlider = TerminalHelpers.AddSlider(comp, -1, "WC-L_PowerLevel", "Change Power Level", "Change Power Level", WepUi.GetPowerLevel, WepUi.SetPowerLevel, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                PowerSlider.SetLimits(0, 100);
+                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDPS, WepUi.SetDPS, WepUi.CoreWeaponEnableCheck);
 
+                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetROF, WepUi.SetROF, WepUi.CoreWeaponEnableCheck);
 
-
-                /*
-                DoubleRate = TerminalHelpers.AddCheckbox(comp, -1, "WC-L_DoubleRate", "DoubleRate", "DoubleRate", WepUi.GetDoubleRate, WepUi.SetDoubleRate, WepUi.IsCoreWeapon, WepUi.IsCoreWeapon);
-                CreateAction<IMyLargeTurretBase>(Guidance);
-                */
-
-                //CreateActionChargeRate<IMyLargeTurretBase>(PowerSlider);
+                TerminalHelpers.AddCheckbox<IMyLargeTurretBase>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
 
                 WepControl = true;
             }
@@ -141,7 +124,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
-            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(id,b);
+            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -159,7 +142,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("On");
-            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(id, b);
+            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -177,7 +160,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("Off");
-            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(id, b);
+            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -195,7 +178,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("");
-            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(id, b);
+            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -216,71 +199,26 @@ namespace WeaponCore
             return false;
         }
 
-        private void GetWeaponControls(IMyTerminalBlock block, List<IMyTerminalControl> controls)
+        private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var cockpit = block as MyCockpit;
+            var turret = block as IMyLargeTurretBase;
 
-            if (controls.Count == 0 || cockpit == null) return;
+            if (controls.Count == 0 || cockpit == null && turret == null) return;
 
-            if (ControlledEntity == cockpit) {
+            if (ControlledEntity == cockpit && UpdateLocalAiAndCockpit())
+            {
                 var gridAi = GridTargetingAIs[cockpit.CubeGrid];
                 gridAi.turnWeaponShootOff = true;
             }
-        }
-
-        private void GetWeaponActions(IMyTerminalBlock block, List<IMyTerminalAction> actions)
-        {
-            var turret = block as IMyLargeTurretBase;
-
-            if (actions.Count == 0 || turret == null) return;
-
-            var iterActions = new List<IMyTerminalAction>(actions);
-
-            for (int i = 0; i < iterActions.Count; i++)
-            {
-                if (iterActions[i].Id.Contains($"WC_"))
-                    actions.Remove(iterActions[i]);
-            }
-
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return;
-
-
-            HashSet<int> IDs = new HashSet<int>();
-
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
-                IDs.Add(comp.Platform.Weapons[i].System.WeaponID);
-            }
-
-            for (int i = 0; i < iterActions.Count; i++)
-            {
-
-                if (!iterActions[i].Id.Contains($"OnOff") && !iterActions[i].Id.Contains($"WC_"))
-                    actions.Remove(iterActions[i]);
-
-                if (iterActions[i].Id == "WC_Shoot_Click")
-                    actions.Add(iterActions[i]);
-
-
-                foreach (int id in IDs)
+            else if (turret != null) {
+                var comp = turret?.Components?.Get<WeaponComponent>();
+                if (comp != null)
                 {
-                    if (iterActions[i].Id.Contains($"WC_{id}"))
-                    {
-                        actions.Add(iterActions[i]);
-                    }
+                    comp.TerminalRefresh();
                 }
             }
-        }
-
-        private static void Changed(IMyTerminalBlock obj)
-        {
-            var cockpit = obj as MyCockpit;
-
-            if (cockpit.Pilot != null)
-                Log.Line($"Piloted");
-            else
-                Log.Line($"Un-Piloted");
+            
         }
         #endregion
     }

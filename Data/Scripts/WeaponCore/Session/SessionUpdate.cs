@@ -107,23 +107,28 @@ namespace WeaponCore
                     var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
-
+                    
                     if (!comp.MainInit || !comp.State.Value.Online) continue;
 
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
+
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated)) continue;
 
                         if (gridAi.turnWeaponShootOff)
-                            w.ManualShoot = ShootOff;
+                            if(w.ManualShoot == ShootClick)
+                                w.ManualShoot = ShootOff;
 
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated)) continue;
                         if (Tick60)
                         {
                             var weaponValue = comp.State.Value.Weapons[w.WeaponId];
+                            comp.CurrentHeat = comp.CurrentHeat >= w.HSRate ? comp.CurrentHeat - w.HSRate : 0;
                             weaponValue.Heat = weaponValue.Heat >= w.HSRate ? weaponValue.Heat - w.HSRate : 0;
+                            
+                            comp.TerminalRefresh();
                             if (comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
                             {
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
@@ -150,10 +155,8 @@ namespace WeaponCore
                             else
                             {
                                 if (w.IsShooting)
-                                {
-                                    w.StopFiringSound(false);
-                                    w.StopRotateSound();
-                                }
+                                    w.StopShooting(true);
+
                                 comp.Charging = true;
                                 comp.TerminalRefresh();
                             }
@@ -171,18 +174,29 @@ namespace WeaponCore
                         }
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
+                            if (w.IsShooting)
+                                w.StopShooting(true);
+
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, true);
                                 if (w.CurrentMags != 0)
                                 {
                                     w.LoadAmmoMag = true;
+
                                     w.StartReloadSound();
                                 }
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, false);
+
+                            if (w.IsShooting)
+                            {
+                                if (w.FiringEmitter != null) w.StartFiringSound();
+                                if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying)
+                                    w.StartRotateSound();
+                            }
                         }
                         if (w.SeekTarget)
                         {

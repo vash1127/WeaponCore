@@ -34,6 +34,14 @@ namespace WeaponCore
                 }
 
                 var width = t.LineWidth;
+
+                var changeValue = 0.01f;
+                if (t.System.IsBeamWeapon && t.BaseDamagePool > t.System.Values.Ammo.BaseDamage)
+                {
+                    width *= t.BaseDamagePool / t.System.Values.Ammo.BaseDamage;
+                    changeValue = 0.02f;
+                }
+
                 if (t.Shrink && t.HitEntity != null)
                 {
                     sFound = true;
@@ -46,7 +54,6 @@ namespace WeaponCore
 
                 if (t.System.Values.Ammo.Trajectory.DesiredSpeed <= 0)
                 {
-                    var changeValue = 0.01f;
                     if (_lCount < 60)
                     {
                         var adder = (_lCount + 1);

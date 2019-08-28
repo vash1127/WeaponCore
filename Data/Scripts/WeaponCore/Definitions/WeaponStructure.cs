@@ -27,7 +27,6 @@ namespace WeaponCore.Support
         public readonly int TargetLossTime;
         public readonly int ModelId;
         public readonly int MaxHeat;
-        public readonly int HeatPShot;
         public readonly int WeaponID;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
@@ -78,7 +77,6 @@ namespace WeaponCore.Support
         public readonly double ShieldModifier;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
-        public readonly float ShotEnergyCost;
         public readonly float WepCooldown;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
@@ -139,7 +137,6 @@ namespace WeaponCore.Support
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
             DegROF = values.HardPoint.Loading.DegradeROF;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
-            HeatPShot = values.HardPoint.Loading.HeatPerShot;
             WepCooldown = values.HardPoint.Loading.Cooldown;
             if(WepCooldown < .2f) WepCooldown = .2f;
             if(WepCooldown > .95f) WepCooldown = .95f;
@@ -153,8 +150,6 @@ namespace WeaponCore.Support
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
             IsHybrid = values.HardPoint.Hybrid;
-
-            ShotEnergyCost = values.HardPoint.EnergyCost * values.Ammo.BaseDamage;
 
             MaxTrajectory = values.Ammo.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;

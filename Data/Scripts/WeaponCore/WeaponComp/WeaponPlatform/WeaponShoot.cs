@@ -44,7 +44,7 @@ namespace WeaponCore.Platform
                 _rotationTime = 0;
             }
 
-            if (ShotCounter++ >= _ticksPerShot - 1) ShotCounter = 0;
+            if (ShotCounter++ >= TicksPerShot - 1) ShotCounter = 0;
 
             _ticksUntilShoot++;
             if (ShotCounter != 0) return;
@@ -155,6 +155,8 @@ namespace WeaponCore.Platform
                             p.T.Target.FiringCube = Comp.MyCube;
                             p.T.WeaponId = WeaponId;
                             p.T.MuzzleId = muzzle.MuzzleId;
+                            p.T.BaseDamagePool = BaseDamage;
+                            p.T.EnableGuidance = Comp.Set.Value.Guidance;
 
                             p.GridVel = Comp.Ai.GridVel;
                             p.Origin = muzzle.Position;
@@ -180,7 +182,7 @@ namespace WeaponCore.Platform
                                 for (int t = 0; t < targetAiCnt; t++)
                                 {
                                     var targetAi = Comp.Ai.TargetAis[t];
-                                    if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None)
+                                    if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None || Comp.Set.Value.Guidance)
                                     {
                                         var threatLin = targetAi.MyGrid.Physics?.LinearVelocity ?? Vector3.Zero;
 
@@ -197,7 +199,8 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    var heat = Comp.State.Value.Weapons[WeaponId].Heat += System.HeatPShot;
+                    var heat = Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
+                    Comp.CurrentHeat += HeatPShot;
                     if (heat > System.MaxHeat)
                     {
                         if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
@@ -225,6 +228,8 @@ namespace WeaponCore.Platform
             p.T.Target.Projectile = Target.Projectile;
             p.T.Target.IsProjectile = Target.Projectile != null;
             p.T.Target.FiringCube = Comp.MyCube;
+            p.T.BaseDamagePool = BaseDamage;
+            p.T.EnableGuidance = Comp.Set.Value.Guidance;
 
             p.T.WeaponCache = WeaponCache;
 
@@ -374,10 +379,10 @@ namespace WeaponCore.Platform
             BarrelMove = true;
             double radiansPerShot;
             var heat = Comp.State.Value.Weapons[WeaponId].Heat;
-            if (System.DegROF && heat > (System.MaxHeat * .8)) _timePerShot = (3600d / System.Values.HardPoint.Loading.RateOfFire) / (heat / System.MaxHeat);
-            if (_timePerShot > 0.999999 && _timePerShot < 1.000001) radiansPerShot = 0.06666666666;
+            if (System.DegROF && heat > (System.MaxHeat * .8)) TimePerShot = (3600d / RateOfFire) / (heat / System.MaxHeat);
+            if (TimePerShot > 0.999999 && TimePerShot < 1.000001) radiansPerShot = 0.06666666666;
             else radiansPerShot = 2 * Math.PI / _numOfBarrels;
-            var radians = radiansPerShot / _timePerShot;
+            var radians = radiansPerShot / TimePerShot;
             var axis = System.Values.HardPoint.RotateBarrelAxis;
             MatrixD rotationMatrix;
             if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);

@@ -101,6 +101,41 @@ namespace WeaponCore.Support
 
             StorageSetup();
 
+            MaxRequiredPower = 0;
+            HeatPerSecond = 0;
+            OptimalDPS = 0;
+            foreach (var weapon in Platform.Weapons)
+            {
+                weapon.RateOfFire = State.Value.Weapons[weapon.WeaponId].ROF != 0 ? State.Value.Weapons[weapon.WeaponId].ROF : weapon.System.Values.HardPoint.Loading.RateOfFire;
+                weapon.BaseDamage = State.Value.Weapons[weapon.WeaponId].BaseDamage != 0 ? State.Value.Weapons[weapon.WeaponId].BaseDamage : weapon.System.Values.Ammo.BaseDamage;
+
+                weapon.UpdateShotEnergy();
+                weapon.UpdateRequiredPower();
+
+                var mulitplier = weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage;
+
+                if (weapon.BaseDamage != weapon.System.Values.Ammo.BaseDamage)
+                {
+
+                    weapon.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * (int)(mulitplier * mulitplier);
+
+                    MaxRequiredPower -= weapon.RequiredPower;
+                    weapon.RequiredPower = weapon.RequiredPower * (mulitplier * mulitplier);
+                    MaxRequiredPower += weapon.RequiredPower;
+                }
+                else
+                    weapon.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot;
+
+
+                weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);
+                weapon.TimePerShot = (3600d / weapon.RateOfFire);
+
+                HeatPerSecond += (60 / weapon.TicksPerShot) * weapon.HeatPShot;
+                OptimalDPS += (int)((60 / weapon.TicksPerShot) * weapon.BaseDamage);
+
+                HeatSinkRate += weapon.HSRate;
+            }
+
             RegisterEvents(true);
 
             OnAddedToSceneTasks();

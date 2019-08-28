@@ -106,7 +106,7 @@ namespace WeaponCore.Support
         {
             if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
             if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
-            if (Charging && SinkPower == 0) return "[Insufficient Power]";
+            if (Charging && !(SinkPower > 0)) return "[Insufficient Power]";
             if (Charging) return "[Systems Charging]";
             return "[Systems Online]";
         }
@@ -116,12 +116,23 @@ namespace WeaponCore.Support
             try
             {
                 var status = GetSystemStatus();
-                //if (status == "[Systems Online]" || status == "[Systems Fault]" || status == "[Systems Offline]" || status == "[Insufficient Power]" || status == "[Systems Charging]")
-                //{
-                    stringBuilder.Append(status +
-                                         "\n" +
-                                         "\n[Required Power]: " + SinkPower.ToString("0.0") + " Mw");
-               // }
+
+                stringBuilder.Append(status +
+                    "\n\n[Optimal DPS]: " + OptimalDPS.ToString("0.0"));
+
+                if (HeatPerSecond > 0)
+                    stringBuilder.Append("\n"+
+                    "\n[Heat Generated / s]: " + HeatPerSecond.ToString("0.0") + " W" +
+                    "\n[Heat Dissipated / s]: " + HeatSinkRate.ToString("0.0") + " W" +
+                    "\n[Current Heat]: " +CurrentHeat.ToString("0.0") + " j");
+
+                if (HeatPerSecond > 0 && HasEnergyWeapon)
+                    stringBuilder.Append("\n" + "\n-----------------------------------");
+
+                if(HasEnergyWeapon)
+                    stringBuilder.Append("\n[Current Draw]: " + SinkPower.ToString("0.0") + " Mw" +
+                        "\n[Required Power]: " +CurrentSinkPowerRequested.ToString("0.0") + " Mw"+
+                        "\n[Max Required Power]: " +MaxRequiredPower.ToString("0.0") + " Mw");
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }

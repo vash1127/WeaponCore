@@ -38,11 +38,6 @@ namespace WeaponCore.Support
             if (!_isServer && _clientNotReady) return false;
             //Session.Instance.CreateLogicElements(Turret);
             //WepUi.CreateUi(Turret);
-            if (!Session.Instance.WepAction)
-            {
-                Session.Instance.WepAction = true;
-                Session.AppendConditionToAction<IMyLargeTurretBase>((a) => Session.Instance.WepActions.Contains(a.Id), (a, b) => b.GameLogic.GetAs<WeaponComponent>() != null && Session.Instance.WepActions.Contains(a.Id));
-            }
             if (_isServer && !IsFunctional) return false;
 
             if (_mpActive && _isServer) State.NetworkUpdate();
@@ -82,8 +77,11 @@ namespace WeaponCore.Support
             if (isServer)
             {
 
-                foreach (var w in State.Value.Weapons)
+                foreach (var w in State.Value.Weapons) {
                     w.Heat = 0;
+                }
+                    
+                
             }
         }
     }

@@ -39,6 +39,7 @@ namespace WeaponCore.Support
         internal bool OnScreen;
         internal bool Last;
         internal bool IsShrapnel;
+        internal bool EnableGuidance = true;
 
         internal void Complete(HitEntity hitEntity, bool last)
         {
