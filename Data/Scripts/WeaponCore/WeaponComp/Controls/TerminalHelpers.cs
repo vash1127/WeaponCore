@@ -199,7 +199,7 @@ namespace WepaonCore.Control
             internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return false;
+            if (comp == null || !comp.Platform.Inited) return false;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {

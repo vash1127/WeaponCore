@@ -10,13 +10,14 @@ namespace WeaponCore
         internal static bool GetGuidance(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            return comp?.Set.Value.Guidance ?? false;
+            if (comp == null || !comp.Platform.Inited) return false;
+            return comp.Set.Value.Guidance;
         }
 
         internal static void SetGuidance(IMyTerminalBlock block, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return;
+            if (comp == null || !comp.Platform.Inited) return;
             comp.Set.Value.Guidance = newValue;
             comp.SettingsUpdated = true;
             comp.ClientUiUpdate = true;
@@ -25,13 +26,14 @@ namespace WeaponCore
         internal static float GetDPS(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            return comp?.Set.Value.DPSModifier ?? 0f;
+            if (comp == null || !comp.Platform.Inited) return 0;
+            return comp.Set.Value.DPSModifier;
         }
 
         internal static void SetDPS(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return;
+            if (comp == null || !comp.Platform.Inited) return;
             comp.Set.Value.DPSModifier = newValue;
 
             comp.MaxRequiredPower = 0;
@@ -85,13 +87,14 @@ namespace WeaponCore
         internal static float GetROF(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            return comp?.Set.Value.ROFModifier ?? 0f;
+            if (comp == null || !comp.Platform.Inited) return 0;
+            return comp.Set.Value.ROFModifier;
         }
 
         internal static void SetROF(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return;
+            if (comp == null || !comp.Platform.Inited) return;
             comp.Set.Value.ROFModifier = newValue;
 
             comp.MaxRequiredPower = 0;
@@ -135,13 +138,14 @@ namespace WeaponCore
         internal static bool GetOverload(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            return comp?.Set.Value.Overload == 2;
+            if (comp == null || !comp.Platform.Inited) return false;
+            return comp.Set.Value.Overload == 2;
         }
 
         internal static void SetOverload(IMyTerminalBlock block, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return;
+            if (comp == null || !comp.Platform.Inited) return;
 
             if (newValue)
                 comp.Set.Value.Overload = 2;
@@ -160,7 +164,7 @@ namespace WeaponCore
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null) return false;
+            if (comp == null || !comp.Platform.Inited) return false;
             else if (id == 0) return true;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)

@@ -38,7 +38,7 @@ namespace WeaponCore
                             delegate (IMyTerminalBlock block)
                             {
                                 var tmpComp = block?.Components?.Get<WeaponComponent>();
-                                if (tmpComp == null) return false;
+                                if (tmpComp == null || !tmpComp.Platform.Inited) return false;
 
                                 var enabled = false;
                                 for(int i =0; i < tmpComp.Platform.Weapons.Length; i++)
@@ -51,7 +51,7 @@ namespace WeaponCore
                             delegate (IMyTerminalBlock block, bool enabled)
                             {
                                 var tmpComp = block?.Components?.Get<WeaponComponent>();
-                                if (tmpComp != null)
+                                if (tmpComp != null && tmpComp.Platform.Inited)
                                 {
                                     for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
                                     {
