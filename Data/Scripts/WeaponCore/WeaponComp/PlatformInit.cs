@@ -27,6 +27,7 @@ namespace WeaponCore.Platform
                 }
                 else return;
             }
+            else Inited = true;
 
             BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
 
