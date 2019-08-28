@@ -18,7 +18,6 @@ namespace WeaponCore
                 {
                     if (!Inited) lock (_configLock) Init();
                     var cube = (MyCubeBlock)myEntity;
-                    
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
                     using (myEntity.Pin())
@@ -31,8 +30,11 @@ namespace WeaponCore
                             GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                         }
                         var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
-                        if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp));
+                        if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
+                        {
+                            gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
                             CompsToStart.Enqueue(weaponComp);
+                        }
                     }
                 }
             }

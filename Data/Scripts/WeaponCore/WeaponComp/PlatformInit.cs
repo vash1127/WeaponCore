@@ -11,10 +11,25 @@ namespace WeaponCore.Platform
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly WeaponStructure Structure;
         internal readonly MyLargeTurretBaseDefinition BaseDefinition;
+        internal readonly bool Inited;
         internal MyWeaponPlatform(WeaponComponent comp)
         {
-            BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
             Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
+
+            var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
+            wCounter.Max = Structure.GridWeaponCap;
+            if (wCounter.Max > 0)
+            {
+                if (wCounter.Current + 1 <= wCounter.Max)
+                {
+                    wCounter.Current++;
+                    Inited = true;
+                }
+                else return;
+            }
+
+            BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
+
             var partCount = Structure.AimPartNames.Length;
             Weapons = new Weapon[partCount];
             Parts.Entity = comp.Entity as MyEntity;
@@ -23,7 +38,6 @@ namespace WeaponCore.Platform
             {
                 var barrelCount = Structure.WeaponSystems[Structure.AimPartNames[i]].Barrels.Length;
                 MyEntity aimPartEntity;
-                Log.Line($"{Structure.AimPartNames[i].String} - {Structure.MuzzlePartNames[i].String}");
                 Parts.NameToEntity.TryGetValue(Structure.AimPartNames[i].String, out aimPartEntity);
                 Weapons[i] = new Weapon(aimPartEntity, Structure.WeaponSystems[Structure.AimPartNames[i]], i, comp)
                 {
@@ -52,7 +66,6 @@ namespace WeaponCore.Platform
             var c = 0;
             foreach (var m in Structure.WeaponSystems)
             {
-                Log.Line($"PartToNameCount:{Parts.NameToEntity.Count}");
                 var aimPart = Parts.NameToEntity[m.Key.String];
                 var muzzlePartName = m.Value.MuzzlePartName.String;
                 var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" || muzzlePartName == string.Empty;

@@ -64,6 +64,12 @@ namespace WeaponCore.Support
         public void InitPlatform()
         {
             Platform = new MyWeaponPlatform(this);
+            if (!Platform.Inited)
+            {
+                WeaponComponent removed;
+                Ai.WeaponBase.TryRemove(MyCube, out removed);
+                return;
+            }
 
             PullingAmmoCnt = Platform.Structure.AmmoToWeaponIds.Count;
 
@@ -123,6 +129,7 @@ namespace WeaponCore.Support
                 }
                 Ai.GridInit = true;
             }
+
             Status = Start.Starting;
         }
 

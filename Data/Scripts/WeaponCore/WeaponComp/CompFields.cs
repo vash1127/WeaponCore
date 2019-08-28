@@ -121,7 +121,6 @@ namespace WeaponCore.Support
             IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
             SinkPower = IdlePower;
             PowerInit();
-
             Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
         }        
     }

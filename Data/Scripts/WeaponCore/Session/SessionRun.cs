@@ -3,6 +3,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.ModAPI;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -65,6 +66,28 @@ namespace WeaponCore
         {
             try
             {
+                if (!MyCubeBuilder.Static.DynamicMode)
+                {
+                    if (MyCubeBuilder.Static.HitInfo.HasValue)
+                    {
+                        var hit = MyCubeBuilder.Static.HitInfo.Value as IHitInfo;
+                        var grid = hit.HitEntity as MyCubeGrid;
+                        GridAi gridAi;
+                        if (grid != null && GridTargetingAIs.TryGetValue(grid, out gridAi))
+                        {
+                            if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
+                            {
+                                var subtypeIdHash = MyCubeBuilder.Static.ToolbarBlockDefinition.Id.SubtypeId;
+                                GridAi.WeaponCount weaponCount;
+                                if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
+                                {
+                                    Log.Line($"{weaponCount.Current} - {weaponCount.Max}");
+                                    if (weaponCount.Current > weaponCount.Max) MyAPIGateway.CubeBuilder.DeactivateBlockCreation();
+                                }
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

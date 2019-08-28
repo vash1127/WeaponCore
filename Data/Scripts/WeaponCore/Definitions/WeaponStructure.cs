@@ -368,6 +368,7 @@ namespace WeaponCore.Support
         public readonly MyStringHash[] AimPartNames;
         public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
+        public readonly int GridWeaponCap;
 
         public WeaponStructure(KeyValuePair<string, Dictionary<string, MyTuple<string, string>>> tDef, List<WeaponDefinition> wDefList)
         {
@@ -379,6 +380,7 @@ namespace WeaponCore.Support
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
+            var gridWeaponCap = 0;
             foreach (var w in map)
             {
                 var myAimNameHash = MyStringHash.GetOrCompute(w.Key);
@@ -399,6 +401,10 @@ namespace WeaponCore.Support
                 {
                     if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == weaponDef.HardPoint.AmmoMagazineId) ammoDefId = def.Id;
                 }
+
+                var cap = weaponDef.HardPoint.GridWeaponCap;
+                if (gridWeaponCap == 0 && cap > 0) gridWeaponCap = cap;
+                else if (cap > 0 && gridWeaponCap > 0 && cap < gridWeaponCap) gridWeaponCap = cap;
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
   
@@ -421,6 +427,8 @@ namespace WeaponCore.Support
                   }
                   */
             }
+
+            GridWeaponCap = gridWeaponCap;
             AimPartNames = aimPartNames;
             MuzzlePartNames = muzzlePartNames;
         }

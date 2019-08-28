@@ -54,13 +54,14 @@ namespace WeaponCore.Support
         [ProtoMember(7)] internal int DelayCeaseFire;
         [ProtoMember(8)] internal int RotateBarrelAxis;
         [ProtoMember(9)] internal int EnergyPriority;
-        [ProtoMember(10)] internal double RotateSpeed;
-        [ProtoMember(11)] internal double ElevationSpeed;
-        [ProtoMember(12)] internal float DeviateShotAngle;
-        [ProtoMember(13)] internal float EnergyCost;
-        [ProtoMember(14)] internal double AimingTolerance;
-        [ProtoMember(15)] internal Prediction AimLeadingPrediction;
-        [ProtoMember(16)] internal AmmoLoading Loading;
+        [ProtoMember(10)] internal int GridWeaponCap;
+        [ProtoMember(11)] internal double RotateSpeed;
+        [ProtoMember(12)] internal double ElevationSpeed;
+        [ProtoMember(13)] internal float DeviateShotAngle;
+        [ProtoMember(14)] internal float EnergyCost;
+        [ProtoMember(15)] internal double AimingTolerance;
+        [ProtoMember(16)] internal Prediction AimLeadingPrediction;
+        [ProtoMember(17)] internal AmmoLoading Loading;
     }
 
     [ProtoContract]
