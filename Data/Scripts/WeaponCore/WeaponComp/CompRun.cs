@@ -107,32 +107,61 @@ namespace WeaponCore.Support
             OptimalDPS = 0;
             foreach (var weapon in Platform.Weapons)
             {
-                weapon.RateOfFire = State.Value.Weapons[weapon.WeaponId].ROF != 0 ? State.Value.Weapons[weapon.WeaponId].ROF : weapon.System.Values.HardPoint.Loading.RateOfFire;
-                weapon.BaseDamage = State.Value.Weapons[weapon.WeaponId].BaseDamage != 0 ? State.Value.Weapons[weapon.WeaponId].BaseDamage : weapon.System.Values.Ammo.BaseDamage;
+                MaxHeat += weapon.System.MaxHeat;
+                weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.ROFModifier);
+
+                if (weapon.System.EnergyAmmo)
+                    weapon.BaseDamage = (int)Math.Ceiling(weapon.System.BaseDamage * Set.Value.DPSModifier);
+                else
+                    weapon.BaseDamage = weapon.System.BaseDamage;
+
+                if (weapon.System.IsBeamWeapon)
+                    weapon.BaseDamage *= Set.Value.Overload;
+
+                if (weapon.BaseDamage < 1)
+                    weapon.BaseDamage = 1;
+
+                if (weapon.RateOfFire < 1)
+                    weapon.RateOfFire = 1;
 
                 weapon.UpdateShotEnergy();
                 weapon.UpdateRequiredPower();
 
-                var mulitplier = weapon.BaseDamage / weapon.System.Values.Ammo.BaseDamage;
+                var mulitplier = weapon.BaseDamage / weapon.System.BaseDamage;
 
-                if (weapon.BaseDamage != weapon.System.Values.Ammo.BaseDamage)
+                if (weapon.BaseDamage != weapon.System.BaseDamage)
                 {
 
-                    weapon.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot * (int)(mulitplier * mulitplier);
+                    weapon.HeatPShot = weapon.System.HeatPerShot * (int)(mulitplier * mulitplier);
+                    weapon.areaEffectDmg = weapon.System.AreaEffectDamage * (mulitplier * mulitplier);
+                    weapon.detonateDmg = weapon.System.DetonationDamage * (mulitplier * mulitplier); 
+
 
                     MaxRequiredPower -= weapon.RequiredPower;
                     weapon.RequiredPower = weapon.RequiredPower * (mulitplier * mulitplier);
                     MaxRequiredPower += weapon.RequiredPower;
                 }
                 else
-                    weapon.HeatPShot = weapon.System.Values.HardPoint.Loading.HeatPerShot;
+                {
+                    weapon.HeatPShot = weapon.System.HeatPerShot;
+                    weapon.areaEffectDmg = weapon.System.AreaEffectDamage;
+                    weapon.detonateDmg = weapon.System.DetonationDamage;
+                }
 
 
                 weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
-                HeatPerSecond += (60 / weapon.TicksPerShot) * weapon.HeatPShot;
-                OptimalDPS += (int)((60 / weapon.TicksPerShot) * weapon.BaseDamage);
+                weapon.DPS = ((60 / weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot);
+
+                if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
+                    weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.DesiredSpeed != 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
+                else
+                    weapon.DPS += (weapon.areaEffectDmg / 2) * (weapon.System.DesiredSpeed != 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
+
+                HeatPerSecond += (60 / weapon.TicksPerShot) *  weapon.HeatPShot * weapon.System.BarrelsPerShot;
+                OptimalDPS += weapon.DPS;
+                
 
                 HeatSinkRate += weapon.HSRate;
             }

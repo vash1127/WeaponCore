@@ -118,16 +118,17 @@ namespace WeaponCore.Support
                 var status = GetSystemStatus();
 
                 stringBuilder.Append(status +
-                    "\n\n[Optimal DPS]: " + OptimalDPS.ToString("0.0"));
+                    "\n[Optimal DPS]: " + OptimalDPS.ToString("0.0") + 
+                    "\n[Current DPS]: " + currentDPS.ToString("0.0") +" ("+ (currentDPS/OptimalDPS).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
-                    stringBuilder.Append("\n"+
+                    stringBuilder.Append("\n__________________________________" +
                     "\n[Heat Generated / s]: " + HeatPerSecond.ToString("0.0") + " W" +
                     "\n[Heat Dissipated / s]: " + HeatSinkRate.ToString("0.0") + " W" +
-                    "\n[Current Heat]: " +CurrentHeat.ToString("0.0") + " j");
+                    "\n[Current Heat]: " +CurrentHeat.ToString("0.0") + " j (" + (CurrentHeat /MaxHeat).ToString("P")+")");
 
                 if (HeatPerSecond > 0 && HasEnergyWeapon)
-                    stringBuilder.Append("\n" + "\n-----------------------------------");
+                    stringBuilder.Append("\n__________________________________");
 
                 if(HasEnergyWeapon)
                     stringBuilder.Append("\n[Current Draw]: " + SinkPower.ToString("0.0") + " Mw" +

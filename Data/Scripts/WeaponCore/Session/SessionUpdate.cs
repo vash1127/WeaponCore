@@ -174,8 +174,12 @@ namespace WeaponCore
                         }
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
-                            if (w.IsShooting)
+                            if (w.IsShooting && !w.Reloading)
+                            { 
                                 w.StopShooting(true);
+                                comp.currentDPS -= w.DPS;
+                                w.Reloading = true;
+                            }
 
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
@@ -194,8 +198,9 @@ namespace WeaponCore
                             if (w.IsShooting)
                             {
                                 if (w.FiringEmitter != null) w.StartFiringSound();
-                                if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying)
-                                    w.StartRotateSound();
+                                if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying) w.StartRotateSound();
+                                comp.currentDPS += w.DPS;
+                                w.Reloading = false;
                             }
                         }
                         if (w.SeekTarget)

@@ -63,6 +63,9 @@ namespace WeaponCore.Platform
         internal float RequiredPower;
         internal float BaseDamage;
         internal float ShotEnergyCost;
+        internal float DPS;
+        internal float areaEffectDmg;
+        internal float detonateDmg;
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
@@ -104,6 +107,7 @@ namespace WeaponCore.Platform
         internal bool AvCapable;
         internal bool DelayCeaseFire;
         internal bool TargetWasExpired;
+        internal bool Reloading;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 

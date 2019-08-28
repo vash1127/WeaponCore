@@ -41,38 +41,65 @@ namespace WeaponCore
             comp.OptimalDPS = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                 var w = comp.Platform.Weapons[i];
-                var newBase = (int)Math.Ceiling((w.System.Values.Ammo.BaseDamage * newValue)* comp.Set.Value.Overload);
-                
+                if (!w.System.EnergyAmmo) {
+                    comp.OptimalDPS += w.DPS;
+                    comp.MaxRequiredPower += w.RequiredPower;
+                    comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
+                    continue;
+                }
+                var newBase = (int)Math.Ceiling(w.System.BaseDamage * newValue);
+
+                if (w.System.IsBeamWeapon)
+                    newBase *= comp.Set.Value.Overload;
+
+
                 if (newBase < 1)
                     newBase = 1;
 
-                w.BaseDamage = comp.State.Value.Weapons[w.WeaponId].BaseDamage = newBase;
+                w.BaseDamage = newBase;
 
-                var mulitplier = w.BaseDamage / w.System.Values.Ammo.BaseDamage;
+                var mulitplier = w.BaseDamage / w.System.BaseDamage;
 
                 var oldRequired = w.RequiredPower;
                 w.UpdateShotEnergy();
                 w.UpdateRequiredPower();
 
-                if (newBase != w.System.Values.Ammo.BaseDamage)
+                if (newBase != w.System.BaseDamage)
                 {
-                    w.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot * (int)(mulitplier * mulitplier);
+                    w.HeatPShot = w.System.HeatPerShot * (int)(mulitplier * mulitplier);
+                    w.areaEffectDmg = w.System.AreaEffectDamage * (mulitplier * mulitplier);
+                    w.detonateDmg = w.System.DetonationDamage * (mulitplier * mulitplier);
 
                     comp.MaxRequiredPower -= w.RequiredPower;
                     w.RequiredPower = w.RequiredPower * (mulitplier * mulitplier);
                     comp.MaxRequiredPower += w.RequiredPower;
                 }
                 else
-                    w.HeatPShot = w.System.Values.HardPoint.Loading.HeatPerShot;
+                {
+                    w.HeatPShot = w.System.HeatPerShot;
+                    w.areaEffectDmg = w.System.AreaEffectDamage;
+                    w.detonateDmg = w.System.DetonationDamage;
+                }
 
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
-                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot;
-                comp.OptimalDPS += (int)((60 / w.TicksPerShot) * w.BaseDamage);
+                var oldDPS = w.DPS;
+                w.DPS = (60 / w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
+
+                if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
+                    w.DPS += (w.detonateDmg / 2) * (w.System.DesiredSpeed != 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
+                else
+                    w.DPS += (w.areaEffectDmg / 2) * (w.System.DesiredSpeed != 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
+
+                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
+                comp.OptimalDPS += w.DPS;
 
                 if (w.IsShooting)
+                {
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
+                    comp.currentDPS -= (oldDPS - w.DPS);
+                }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
             }
@@ -104,12 +131,12 @@ namespace WeaponCore
             {
                 var w = comp.Platform.Weapons[i];
 
-                var newRate = (int)(w.System.Values.HardPoint.Loading.RateOfFire * comp.Set.Value.ROFModifier);
+                var newRate = (int)(w.System.RateOfFire * comp.Set.Value.ROFModifier);
 
                 if (newRate < 1)
                     newRate = 1;
 
-                w.RateOfFire = comp.State.Value.Weapons[w.WeaponId].ROF = newRate;
+                w.RateOfFire = newRate;
                 var oldRequired = w.RequiredPower;
                 w.UpdateRequiredPower();
 
@@ -117,11 +144,17 @@ namespace WeaponCore
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
-                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot;
-                comp.OptimalDPS += (int)((60 / w.TicksPerShot) * w.BaseDamage);
+                var oldDPS = w.DPS;
+                w.DPS = (60 / w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
+
+                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
+                comp.OptimalDPS += w.DPS;
 
                 if (w.IsShooting)
+                {
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
+                    comp.currentDPS -= (oldDPS - w.DPS);
+                }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
 

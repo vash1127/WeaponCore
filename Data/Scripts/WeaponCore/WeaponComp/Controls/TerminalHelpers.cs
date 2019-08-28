@@ -36,7 +36,7 @@ namespace WepaonCore.Control
             {
                 var c = controls[i];
                 //Log.Line($"Count: {i} ID:{c.Id}");
-                if ((i > 6 && i < 10) || i > 11 )
+                if ((i > 6 && i < 10) || i > 12 )
                     c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
             }
             return false;

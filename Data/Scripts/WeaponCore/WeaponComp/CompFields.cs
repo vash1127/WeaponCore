@@ -54,8 +54,10 @@ namespace WeaponCore.Support
         internal uint IsWorkingChangedTick;
         internal uint PositionUpdateTick;
         internal int PullingAmmoCnt;
-        internal int OptimalDPS;
-        internal int CurrentHeat;
+        internal float OptimalDPS;
+        internal float currentDPS;
+        internal float CurrentHeat;
+        internal float MaxHeat;
         internal float HeatPerSecond;
         internal float HeatSinkRate;
         internal float MaxAmmoVolume;

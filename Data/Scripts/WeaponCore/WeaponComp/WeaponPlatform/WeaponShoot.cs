@@ -157,6 +157,8 @@ namespace WeaponCore.Platform
                             p.T.MuzzleId = muzzle.MuzzleId;
                             p.T.BaseDamagePool = BaseDamage;
                             p.T.EnableGuidance = Comp.Set.Value.Guidance;
+                            p.T.DetonationDamage = detonateDmg;
+                            p.T.AreaEffectDamage = areaEffectDmg;
 
                             p.GridVel = Comp.Ai.GridVel;
                             p.Origin = muzzle.Position;
@@ -230,6 +232,8 @@ namespace WeaponCore.Platform
             p.T.Target.FiringCube = Comp.MyCube;
             p.T.BaseDamagePool = BaseDamage;
             p.T.EnableGuidance = Comp.Set.Value.Guidance;
+            p.T.DetonationDamage = detonateDmg;
+            p.T.AreaEffectDamage = areaEffectDmg;
 
             p.T.WeaponCache = WeaponCache;
 
