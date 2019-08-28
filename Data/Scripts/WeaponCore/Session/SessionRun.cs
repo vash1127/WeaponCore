@@ -81,8 +81,8 @@ namespace WeaponCore
                                 GridAi.WeaponCount weaponCount;
                                 if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
                                 {
-                                    Log.Line($"{weaponCount.Current} - {weaponCount.Max}");
-                                    if (weaponCount.Current > weaponCount.Max) MyAPIGateway.CubeBuilder.DeactivateBlockCreation();
+                                    if (weaponCount.Current >= weaponCount.Max)
+                                        MyCubeBuilder.Static.Deactivate();
                                 }
                             }
                         }

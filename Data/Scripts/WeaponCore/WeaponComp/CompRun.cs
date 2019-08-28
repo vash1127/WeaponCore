@@ -174,11 +174,17 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                RegisterEvents(false);
-                StopAllSounds();
-                Platform.RemoveParts(this);
-                WeaponComponent comp;
-                Ai.WeaponBase.TryRemove(MyCube, out comp);
+                if (Platform.Inited)
+                {
+                    RegisterEvents(false);
+                    StopAllSounds();
+                    Platform.RemoveParts(this);
+                    Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;
+
+                    WeaponComponent comp;
+                    Ai.WeaponBase.TryRemove(MyCube, out comp);
+                }
+
                 if (Ai.WeaponBase.Count == 0)
                 {
                     GridAi gridAi;
