@@ -93,7 +93,7 @@ namespace WeaponCore
                 TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
 
                 
-                TerminalHelpers.AddSlider<IMyLargeTurretBase>( -2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDPS, WepUi.SetDPS, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDPS, WepUi.SetDPS, WepUi.CoreWeaponEnableCheck);
 
                 TerminalHelpers.AddSlider<IMyLargeTurretBase>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetROF, WepUi.SetROF, WepUi.CoreWeaponEnableCheck);
 

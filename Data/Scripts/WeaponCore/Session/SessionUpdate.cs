@@ -155,10 +155,8 @@ namespace WeaponCore
                             else
                             {
                                 if (w.IsShooting)
-                                {
-                                    w.StopFiringSound(false);
-                                    w.StopRotateSound();
-                                }
+                                    w.StopShooting(true);
+
                                 comp.Charging = true;
                                 comp.TerminalRefresh();
                             }
@@ -176,18 +174,29 @@ namespace WeaponCore
                         }
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
+                            if (w.IsShooting)
+                                w.StopShooting(true);
+
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, true);
                                 if (w.CurrentMags != 0)
                                 {
                                     w.LoadAmmoMag = true;
+
                                     w.StartReloadSound();
                                 }
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
                             if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, false);
+
+                            if (w.IsShooting)
+                            {
+                                if (w.FiringEmitter != null) w.StartFiringSound();
+                                if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying)
+                                    w.StartRotateSound();
+                            }
                         }
                         if (w.SeekTarget)
                         {
