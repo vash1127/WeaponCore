@@ -80,12 +80,12 @@ namespace WeaponCore
                 w.TimePerShot = (3600d / w.RateOfFire);
 
                 var oldDPS = w.DPS;
-                w.DPS = (60 / w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
+                w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
                 if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                    w.DPS += (w.detonateDmg / 2) * (w.System.DesiredSpeed != 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
+                    w.DPS += (w.detonateDmg / 2) * (w.System.DesiredSpeed > 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
                 else
-                    w.DPS += (w.areaEffectDmg / 2) * (w.System.DesiredSpeed != 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
+                    w.DPS += (w.areaEffectDmg / 2) * (w.System.DesiredSpeed > 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
 
                 comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                 comp.OptimalDPS += w.DPS;
@@ -140,7 +140,7 @@ namespace WeaponCore
                 w.TimePerShot = (3600d / w.RateOfFire);
 
                 var oldDPS = w.DPS;
-                w.DPS = (60 / w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
+                w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
                 comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                 comp.OptimalDPS += w.DPS;

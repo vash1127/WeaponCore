@@ -4,7 +4,6 @@ using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
-using VRage.Utils;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -145,12 +144,12 @@ namespace WeaponCore.Support
                 weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
-                weapon.DPS = ((60 / weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot);
+                weapon.DPS = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
 
                 if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                    weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.DesiredSpeed != 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
+                    weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.DesiredSpeed > 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
                 else
-                    weapon.DPS += (weapon.areaEffectDmg / 2) * (weapon.System.DesiredSpeed != 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
+                    weapon.DPS += (weapon.areaEffectDmg / 2) * (weapon.System.DesiredSpeed > 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
 
                 HeatPerSecond += (60 / weapon.TicksPerShot) *  weapon.HeatPShot * weapon.System.BarrelsPerShot;
                 OptimalDPS += weapon.DPS;
@@ -159,7 +158,7 @@ namespace WeaponCore.Support
                 HeatSinkRate += weapon.HsRate;
             }
 
-            RegisterEvents(true);
+            RegisterEvents();
 
             OnAddedToSceneTasks();
 
