@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI.Weapons;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
@@ -54,6 +55,7 @@ namespace WeaponCore
         internal IMyGps TargetGps;
         internal MyEntity Target;
         internal GridAi TrackingAi;
+        internal IMyBlockPlacerBase Placer;
 
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
