@@ -127,26 +127,19 @@ namespace WeaponCore.Support
                 weapon.UpdateShotEnergy();
                 weapon.UpdateRequiredPower();
 
-                var mulitplier = weapon.BaseDamage / weapon.System.BaseDamage;
+                var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage: 1;
 
-                if (weapon.BaseDamage != weapon.System.BaseDamage)
-                {
+                if (weapon.BaseDamage > weapon.System.BaseDamage)
+                    mulitplier = mulitplier * mulitplier;
 
-                    weapon.HeatPShot = weapon.System.HeatPerShot * (int)(mulitplier * mulitplier);
-                    weapon.areaEffectDmg = weapon.System.AreaEffectDamage * (mulitplier * mulitplier);
-                    weapon.detonateDmg = weapon.System.DetonationDamage * (mulitplier * mulitplier); 
+                weapon.HeatPShot = weapon.System.HeatPerShot * (int)(mulitplier);
+                weapon.areaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
+                weapon.detonateDmg = weapon.System.DetonationDamage * mulitplier; 
 
 
-                    MaxRequiredPower -= weapon.RequiredPower;
-                    weapon.RequiredPower = weapon.RequiredPower * (mulitplier * mulitplier);
-                    MaxRequiredPower += weapon.RequiredPower;
-                }
-                else
-                {
-                    weapon.HeatPShot = weapon.System.HeatPerShot;
-                    weapon.areaEffectDmg = weapon.System.AreaEffectDamage;
-                    weapon.detonateDmg = weapon.System.DetonationDamage;
-                }
+                MaxRequiredPower -= weapon.RequiredPower;
+                weapon.RequiredPower = weapon.RequiredPower *mulitplier;
+                MaxRequiredPower += weapon.RequiredPower;
 
 
                 weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);

@@ -58,28 +58,23 @@ namespace WeaponCore
 
                 w.BaseDamage = newBase;
 
-                var mulitplier = w.BaseDamage / w.System.BaseDamage;
-
                 var oldRequired = w.RequiredPower;
                 w.UpdateShotEnergy();
                 w.UpdateRequiredPower();
 
-                if (newBase != w.System.BaseDamage)
-                {
-                    w.HeatPShot = w.System.HeatPerShot * (int)(mulitplier * mulitplier);
-                    w.areaEffectDmg = w.System.AreaEffectDamage * (mulitplier * mulitplier);
-                    w.detonateDmg = w.System.DetonationDamage * (mulitplier * mulitplier);
+                var mulitplier = (w.System.EnergyAmmo && w.System.BaseDamage > 0) ? w.BaseDamage / w.System.BaseDamage : 1;
 
-                    comp.MaxRequiredPower -= w.RequiredPower;
-                    w.RequiredPower = w.RequiredPower * (mulitplier * mulitplier);
-                    comp.MaxRequiredPower += w.RequiredPower;
-                }
-                else
-                {
-                    w.HeatPShot = w.System.HeatPerShot;
-                    w.areaEffectDmg = w.System.AreaEffectDamage;
-                    w.detonateDmg = w.System.DetonationDamage;
-                }
+                if (w.BaseDamage > w.System.BaseDamage)
+                    mulitplier = mulitplier * mulitplier;
+
+                w.HeatPShot = w.System.HeatPerShot * (int)(mulitplier);
+                w.areaEffectDmg = w.System.AreaEffectDamage * mulitplier;
+                w.detonateDmg = w.System.DetonationDamage * mulitplier;
+
+
+                comp.MaxRequiredPower -= w.RequiredPower;
+                w.RequiredPower = w.RequiredPower * mulitplier;
+                comp.MaxRequiredPower += w.RequiredPower;
 
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
