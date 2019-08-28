@@ -134,7 +134,7 @@ namespace WeaponCore.Support
                 HeatPerSecond += (60 / weapon.TicksPerShot) * weapon.HeatPShot;
                 OptimalDPS += (int)((60 / weapon.TicksPerShot) * weapon.BaseDamage);
 
-                HeatSinkRate += weapon.HSRate;
+                HeatSinkRate += weapon.HsRate;
             }
 
             RegisterEvents(true);

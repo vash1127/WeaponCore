@@ -21,10 +21,9 @@ namespace WeaponCore.Platform
         internal volatile bool Casting;
 
         private readonly Vector3 _localTranslation;
+        private readonly int _numOfBarrels;
 
-        private MyEntity _lastTarget;
         private int _rotationTime;
-        private int _numOfBarrels;
         private int _shotsInCycle;
         private int _shots = 1;
         private int _nextVirtual;
@@ -34,7 +33,7 @@ namespace WeaponCore.Platform
         internal uint TicksPerShot;
         internal double TimePerShot;
 
-        private bool _newCycle = false;
+        private bool _newCycle;
         //private bool _firstRun = true;
 
         internal MyEntity EntityPart;
@@ -72,7 +71,7 @@ namespace WeaponCore.Platform
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
         internal int WeaponId;
-        internal int HSRate;
+        internal int HsRate;
         internal int EnergyPriority;
         internal int HeatPShot;
         internal MyFixedPoint CurrentMags;
@@ -197,7 +196,7 @@ namespace WeaponCore.Platform
             IsTurret = System.Values.HardPoint.IsTurret;
             TurretMode = System.Values.HardPoint.TurretController;
             TrackTarget = System.Values.HardPoint.TrackTargets;
-            HSRate = System.Values.HardPoint.Loading.HeatSinkRate;
+            HsRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
             var toleranceInRadians = MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;
