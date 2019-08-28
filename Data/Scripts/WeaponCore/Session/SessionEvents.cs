@@ -1,6 +1,7 @@
 ﻿using System;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
 using WeaponCore.Support;
@@ -14,6 +15,8 @@ namespace WeaponCore
             try
             {
                 var weaponBase = myEntity as IMyLargeMissileTurret;
+                var placer = myEntity as IMyBlockPlacerBase;
+                if (placer != null && Placer == null) Placer = placer;
                 if (weaponBase != null)
                 {
                     if (!Inited) lock (_configLock) Init();

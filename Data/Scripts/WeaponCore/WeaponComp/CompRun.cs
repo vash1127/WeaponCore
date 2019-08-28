@@ -163,7 +163,7 @@ namespace WeaponCore.Support
                 OptimalDPS += weapon.DPS;
                 
 
-                HeatSinkRate += weapon.HSRate;
+                HeatSinkRate += weapon.HsRate;
             }
 
             RegisterEvents(true);

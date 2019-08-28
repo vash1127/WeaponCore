@@ -125,8 +125,8 @@ namespace WeaponCore
                         if (Tick60)
                         {
                             var weaponValue = comp.State.Value.Weapons[w.WeaponId];
-                            comp.CurrentHeat = comp.CurrentHeat >= w.HSRate ? comp.CurrentHeat - w.HSRate : 0;
-                            weaponValue.Heat = weaponValue.Heat >= w.HSRate ? weaponValue.Heat - w.HSRate : 0;
+                            comp.CurrentHeat = comp.CurrentHeat >= w.HsRate ? comp.CurrentHeat - w.HsRate : 0;
+                            weaponValue.Heat = weaponValue.Heat >= w.HsRate ? weaponValue.Heat - w.HsRate : 0;
                             
                             comp.TerminalRefresh();
                             if (comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))

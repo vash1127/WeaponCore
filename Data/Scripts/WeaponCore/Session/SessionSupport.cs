@@ -119,10 +119,17 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
         }
 
+        internal bool PlayerInAiCockPit()
+        {
+            if (ActiveCockPit == null || ActiveCockPit.MarkedForClose || ((IMyControllerInfo)ActiveCockPit.ControllerInfo)?.ControllingIdentityId != MyAPIGateway.Session.Player.IdentityId) return false;
+            return true;
+        }
+
         internal void ResetGps()
         {
             if (TargetGps == null)
             {
+                Log.Line("resetgps");
                 TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
                 MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
                 MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
@@ -133,27 +140,33 @@ namespace WeaponCore
         {
             if (TargetGps != null)
             {
+                Log.Line("remove gps");
                 MyAPIGateway.Session.GPS.RemoveLocalGps(TargetGps);
                 TargetGps = null;
             }
         }
 
-        internal void SetGpsInfo(Vector3D pos, string name)
+        internal void SetGpsInfo(Vector3D pos, string name, double dist = 0)
         {
             if (TargetGps != null)
             {
-                TargetGps.Coords = pos;
+                var newPos = dist > 0 ? pos + (Camera.WorldMatrix.Up * dist) : pos;
+                TargetGps.Coords = newPos;
                 TargetGps.Name = name;
             }
         }
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (Target == null) return false;
+            if (Target == null)
+                return false;
+
             if (Target.MarkedForClose || ai != TrackingAi)
             {
+                Log.Line("resetting target");
                 Target = null;
                 TrackingAi = null;
+                RemoveGps();
                 return false;
             }
 
@@ -281,9 +294,9 @@ namespace WeaponCore
                 InGridAiCockPit = true;
                 return true;
             }
-
             TrackingAi = null;
             ActiveCockPit = null;
+            RemoveGps();
             return false;
         }
 

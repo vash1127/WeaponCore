@@ -63,8 +63,8 @@ namespace WeaponCore
             {
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;
                 if (hit == null || hit.IsSameConstructAs(ai.MyGrid)) continue;
-
                 Session.Instance.SetTarget(hit, ai);
+                Session.Instance.ResetGps();
 
                 Log.Line($"{hit.DebugName}");
                 break;
@@ -91,15 +91,16 @@ namespace WeaponCore
         {
             var ai = Session.Instance.TrackingAi;
             if (ai == null || !Session.Instance.CheckTarget(ai) || Session.Instance.TargetGps == null) return;
+
             var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
             var offetPosition = Vector3D.Transform(TargetOffset, cameraWorldMatrix);
-
             double speed;
             string armedStr;
             string interceptStr;
             Session.Instance.GetTargetInfo(ai, out speed, out armedStr, out interceptStr);
-            var gpsName = $"Speed: {speed} m/s - Armed: {armedStr}\n Threat:  High - Intercept: {interceptStr}\n";
-            Session.Instance.SetGpsInfo(offetPosition, gpsName);
+            var gpsName = $"Speed: {speed} m/s - Armed: {armedStr}    Threat:  High - Intercept: {interceptStr}";
+            var distance = Vector3D.Distance(Session.Instance.Target.PositionComp.WorldAABB.Center, Session.Instance.ActiveCockPit.PositionComp.WorldAABB.Center);
+            Session.Instance.SetGpsInfo(offetPosition, gpsName, distance);
         }
 
         private void InitPointerOffset()

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.Eventing.Reader;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -66,9 +67,10 @@ namespace WeaponCore
         {
             try
             {
-                if (!MyCubeBuilder.Static.DynamicMode)
+                if (Placer != null)
                 {
-                    if (MyCubeBuilder.Static.HitInfo.HasValue)
+                    if (Placer.MarkedForClose) Placer = null;
+                    if (!MyCubeBuilder.Static.DynamicMode && MyCubeBuilder.Static.HitInfo.HasValue)
                     {
                         var hit = MyCubeBuilder.Static.HitInfo.Value as IHitInfo;
                         var grid = hit.HitEntity as MyCubeGrid;
