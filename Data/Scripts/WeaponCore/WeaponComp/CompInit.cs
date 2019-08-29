@@ -73,7 +73,6 @@ namespace WeaponCore.Support
             Set.LoadSettings();
             if (!State.LoadState() && !isServer) _clientNotReady = true;
             UpdateSettings(Set.Value);
-            Log.Line($"StateWeapon:{State.Value.Weapons != null} - SetWeapon:{Set.Value.Weapons != null}");
             if (isServer)
             {
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
