@@ -28,6 +28,9 @@ namespace WeaponCore.Support
         public readonly int ModelId;
         public readonly int MaxHeat;
         public readonly int WeaponID;
+        public readonly int BarrelsPerShot;
+        public readonly int HeatPerShot;
+        public readonly int RateOfFire;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -78,6 +81,11 @@ namespace WeaponCore.Support
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float WepCooldown;
+        public readonly float BaseDamage;
+        public readonly float AreaEffectDamage;
+        public readonly float DetonationDamage;
+        public readonly float AccelPerSec;
+        public readonly float DesiredSpeed;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -138,7 +146,13 @@ namespace WeaponCore.Support
             DegROF = values.HardPoint.Loading.DegradeROF;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             WepCooldown = values.HardPoint.Loading.Cooldown;
-            if(WepCooldown < .2f) WepCooldown = .2f;
+            BarrelsPerShot = values.HardPoint.Loading.BarrelsPerShot;
+            HeatPerShot = values.HardPoint.Loading.HeatPerShot;
+            BaseDamage = values.Ammo.BaseDamage;
+            RateOfFire = values.HardPoint.Loading.RateOfFire;
+            AreaEffectDamage = Values.Ammo.AreaEffect.AreaEffectDamage;
+            DetonationDamage = Values.Ammo.AreaEffect.Detonation.DetonationDamage;
+            if (WepCooldown < .2f) WepCooldown = .2f;
             if(WepCooldown > .95f) WepCooldown = .95f;
             AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
             

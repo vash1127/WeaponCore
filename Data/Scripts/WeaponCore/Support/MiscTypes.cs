@@ -34,6 +34,8 @@ namespace WeaponCore.Support
         internal double MaxSpeedLength;
         internal float LineWidth;
         internal float BaseDamagePool;
+        internal float AreaEffectDamage;
+        internal float DetonationDamage;
         internal float BaseHealthPool;
         internal bool Shrink;
         internal bool OnScreen;

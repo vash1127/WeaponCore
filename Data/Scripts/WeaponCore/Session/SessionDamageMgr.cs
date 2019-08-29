@@ -110,8 +110,8 @@ namespace WeaponCore
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
             var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var attackerId = shieldByPass ? grid.EntityId : t.Target.FiringCube.EntityId;
-            var areaEffectDmg = system.Values.Ammo.AreaEffect.AreaEffectDamage;
-            var detonateDmg = system.Values.Ammo.AreaEffect.Detonation.DetonationDamage;
+            var areaEffectDmg = t.AreaEffectDamage;
+            var detonateDmg = t.DetonationDamage;
             var hitMass = system.Values.Ammo.Mass;
             if (t.IsShrapnel)
             {
