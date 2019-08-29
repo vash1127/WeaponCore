@@ -131,7 +131,7 @@ namespace WeaponCore.Support
                 if (weapon.BaseDamage > weapon.System.BaseDamage)
                     mulitplier = mulitplier * mulitplier;
 
-                weapon.HeatPShot = weapon.System.HeatPerShot * (int)(mulitplier);
+                weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
                 weapon.areaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
                 weapon.detonateDmg = weapon.System.DetonationDamage * mulitplier; 
 
@@ -151,7 +151,7 @@ namespace WeaponCore.Support
                 else
                     weapon.DPS += (weapon.areaEffectDmg / 2) * (weapon.System.DesiredSpeed > 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
 
-                HeatPerSecond += (60 / weapon.TicksPerShot) *  weapon.HeatPShot * weapon.System.BarrelsPerShot;
+                HeatPerSecond += (60 / (float)weapon.TicksPerShot) *  weapon.HeatPShot * weapon.System.BarrelsPerShot;
                 OptimalDPS += weapon.DPS;
                 
 

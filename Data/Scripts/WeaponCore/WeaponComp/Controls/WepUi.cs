@@ -44,7 +44,7 @@ namespace WeaponCore
                 if (!w.System.EnergyAmmo) {
                     comp.OptimalDPS += w.DPS;
                     comp.MaxRequiredPower += w.RequiredPower;
-                    comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
+                    comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                     continue;
                 }
                 var newBase = (int)Math.Ceiling(w.System.BaseDamage * newValue);
@@ -67,7 +67,7 @@ namespace WeaponCore
                 if (w.BaseDamage > w.System.BaseDamage)
                     mulitplier = mulitplier * mulitplier;
 
-                w.HeatPShot = w.System.HeatPerShot * (int)(mulitplier);
+                w.HeatPShot = w.System.HeatPerShot * mulitplier;
                 w.areaEffectDmg = w.System.AreaEffectDamage * mulitplier;
                 w.detonateDmg = w.System.DetonationDamage * mulitplier;
 
@@ -87,7 +87,7 @@ namespace WeaponCore
                 else
                     w.DPS += (w.areaEffectDmg / 2) * (w.System.DesiredSpeed > 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
 
-                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
+                comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                 comp.OptimalDPS += w.DPS;
 
                 if (w.IsShooting)
@@ -142,7 +142,7 @@ namespace WeaponCore
                 var oldDPS = w.DPS;
                 w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
-                comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
+                comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                 comp.OptimalDPS += w.DPS;
 
                 if (w.IsShooting)

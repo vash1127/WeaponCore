@@ -76,7 +76,7 @@ namespace WeaponCore.Platform
         internal int WeaponId;
         internal int HsRate;
         internal int EnergyPriority;
-        internal int HeatPShot;
+        internal float HeatPShot;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
