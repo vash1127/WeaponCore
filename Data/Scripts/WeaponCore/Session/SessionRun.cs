@@ -79,7 +79,7 @@ namespace WeaponCore
                         {
                             if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
                             {
-                                var subtypeIdHash = MyCubeBuilder.Static.ToolbarBlockDefinition.Id.SubtypeId;
+                                var subtypeIdHash = MyCubeBuilder.Static.CurrentBlockDefinition.Id.SubtypeId;
                                 GridAi.WeaponCount weaponCount;
                                 if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
                                 {
