@@ -18,7 +18,7 @@ namespace WeaponCore
     [ProtoContract]
     public class WeaponStateValues
     {
-        [ProtoMember(1)] public int Heat;
+        [ProtoMember(1)] public float Heat;
     }
 
     [ProtoContract]
