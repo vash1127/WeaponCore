@@ -147,9 +147,9 @@ namespace WeaponCore.Support
                 weapon.DPS = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
 
                 if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                    weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.DesiredSpeed > 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
+                    weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? weapon.System.Values.Ammo.Trajectory.AccelPerSec / weapon.System.Values.Ammo.Trajectory.DesiredSpeed : 1);
                 else
-                    weapon.DPS += (weapon.areaEffectDmg / 2) * (weapon.System.DesiredSpeed > 0 ? weapon.System.AccelPerSec / weapon.System.DesiredSpeed : 1);
+                    weapon.DPS += (weapon.areaEffectDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? weapon.System.Values.Ammo.Trajectory.AccelPerSec / weapon.System.Values.Ammo.Trajectory.DesiredSpeed : 1);
 
                 HeatPerSecond += (60 / weapon.TicksPerShot) *  weapon.HeatPShot * weapon.System.BarrelsPerShot;
                 OptimalDPS += weapon.DPS;

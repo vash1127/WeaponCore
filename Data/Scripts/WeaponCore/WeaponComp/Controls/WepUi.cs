@@ -23,14 +23,14 @@ namespace WeaponCore
             comp.ClientUiUpdate = true;
         }
 
-        internal static float GetDPS(IMyTerminalBlock block)
+        internal static float GetDps(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || !comp.Platform.Inited) return 0;
             return comp.Set.Value.DPSModifier;
         }
 
-        internal static void SetDPS(IMyTerminalBlock block, float newValue)
+        internal static void SetDps(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || !comp.Platform.Inited) return;
@@ -79,13 +79,13 @@ namespace WeaponCore
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
-                var oldDPS = w.DPS;
+                var oldDps = w.DPS;
                 w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
                 if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                    w.DPS += (w.detonateDmg / 2) * (w.System.DesiredSpeed > 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
+                    w.DPS += (w.detonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? w.System.Values.Ammo.Trajectory.AccelPerSec / w.System.Values.Ammo.Trajectory.DesiredSpeed : 1);
                 else
-                    w.DPS += (w.areaEffectDmg / 2) * (w.System.DesiredSpeed > 0 ? w.System.AccelPerSec / w.System.DesiredSpeed : 1);
+                    w.DPS += (w.areaEffectDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? w.System.Values.Ammo.Trajectory.AccelPerSec / w.System.Values.Ammo.Trajectory.DesiredSpeed : 1);
 
                 comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                 comp.OptimalDPS += w.DPS;
@@ -93,7 +93,7 @@ namespace WeaponCore
                 if (w.IsShooting)
                 {
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
-                    comp.currentDPS -= (oldDPS - w.DPS);
+                    comp.currentDPS -= (oldDps - w.DPS);
                 }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
@@ -106,14 +106,14 @@ namespace WeaponCore
             comp.ClientUiUpdate = true;
         }
 
-        internal static float GetROF(IMyTerminalBlock block)
+        internal static float GetRof(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || !comp.Platform.Inited) return 0;
             return comp.Set.Value.ROFModifier;
         }
 
-        internal static void SetROF(IMyTerminalBlock block, float newValue)
+        internal static void SetRof(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || !comp.Platform.Inited) return;
@@ -139,7 +139,7 @@ namespace WeaponCore
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
-                var oldDPS = w.DPS;
+                var oldDps = w.DPS;
                 w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
                 comp.HeatPerSecond += (60 / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
@@ -148,7 +148,7 @@ namespace WeaponCore
                 if (w.IsShooting)
                 {
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
-                    comp.currentDPS -= (oldDPS - w.DPS);
+                    comp.currentDPS -= (oldDps - w.DPS);
                 }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
@@ -185,7 +185,7 @@ namespace WeaponCore
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 if(comp.Platform.Weapons[i].System.IsBeamWeapon)
-                    SetDPS(block, comp.Set.Value.DPSModifier);
+                    SetDps(block, comp.Set.Value.DPSModifier);
             }
         }
 
@@ -193,7 +193,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || !comp.Platform.Inited) return false;
-            else if (id == 0) return true;
+            if (id == 0) return true;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {

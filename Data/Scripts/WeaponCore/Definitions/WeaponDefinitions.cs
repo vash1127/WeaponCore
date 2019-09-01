@@ -3,7 +3,6 @@ using VRageMath;
 
 namespace WeaponCore.Support
 {
-
     [ProtoContract]
     public struct WeaponDefinition
     {
@@ -17,7 +16,6 @@ namespace WeaponCore.Support
         [ProtoMember(8)] internal TargetingDefinition Targeting;
         [ProtoMember(9)] internal string ModPath;
     }
-
 
     [ProtoContract]
     public struct ModelAssignments
@@ -130,8 +128,8 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal float BaseDamage;
         [ProtoMember(2)] internal float Mass;
         [ProtoMember(3)] internal float Health;
-        [ProtoMember(4)] internal ObjectsHit ObjectsHit;
-        [ProtoMember(5)] internal float BackKickForce;
+        [ProtoMember(4)] internal float BackKickForce;
+        [ProtoMember(5)] internal ObjectsHit ObjectsHit;
         [ProtoMember(6)] internal AmmoTrajectory Trajectory;
         [ProtoMember(7)] internal AreaDamage AreaEffect;
         [ProtoMember(8)] internal BeamDefinition Beams;
@@ -164,13 +162,26 @@ namespace WeaponCore.Support
             Disabled,
             Explosive,
             Radiant,
+            AntiSmart,
+            JumpNullField,
+            EnergySink,
+            Anchor,
+            EmpPulse,
         }
 
         [ProtoMember(1)] internal double AreaEffectRadius;
         [ProtoMember(2)] internal float AreaEffectDamage;
-        [ProtoMember(3)] internal AreaEffectType AreaEffect;
-        [ProtoMember(4)] internal Detonate Detonation;
-        [ProtoMember(5)] internal Explosion Explosions;
+        [ProtoMember(3)] internal Pulse Pulse;
+        [ProtoMember(4)] internal AreaEffectType AreaEffect;
+        [ProtoMember(5)] internal Detonate Detonation;
+        [ProtoMember(6)] internal Explosion Explosions;
+    }
+
+    [ProtoContract]
+    public struct Pulse
+    {
+        [ProtoMember(1)] internal int Interval;
+        [ProtoMember(2)] internal int PulseChance;
     }
 
     [ProtoContract]
@@ -200,7 +211,8 @@ namespace WeaponCore.Support
             None,
             Remote,
             TravelTo,
-            Smart
+            Smart,
+            PulseDetect
         }
 
         [ProtoMember(1)] internal float MaxTrajectory;
@@ -208,10 +220,11 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal float DesiredSpeed;
         [ProtoMember(4)] internal float TargetLossDegree;
         [ProtoMember(5)] internal int TargetLossTime;
-        [ProtoMember(6)] internal Randomize SpeedVariance;
-        [ProtoMember(7)] internal Randomize RangeVariance;
-        [ProtoMember(8)] internal GuidanceType Guidance;
-        [ProtoMember(9)] internal Smarts Smarts;
+        [ProtoMember(6)] internal int RestTime;
+        [ProtoMember(7)] internal Randomize SpeedVariance;
+        [ProtoMember(8)] internal Randomize RangeVariance;
+        [ProtoMember(9)] internal GuidanceType Guidance;
+        [ProtoMember(10)] internal Smarts Smarts;
     }
 
     [ProtoContract]
@@ -297,14 +310,14 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct EmissiveDefinition
     {
-        [ProtoMember(1)] internal HeatEmissive Heating;
+        [ProtoMember(1)] internal HeatingEmissive Heating;
         [ProtoMember(2)] internal TrackingEmissive Tracking;
         [ProtoMember(3)] internal FiringEmissive Firing;
         [ProtoMember(4)] internal ReloadingEmissive Reloading;
     }
 
     [ProtoContract]
-    public struct HeatEmissive
+    public struct HeatingEmissive
     {
         [ProtoMember(1)] internal bool Enable;
     }

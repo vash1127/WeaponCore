@@ -1,10 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI;
+using VRageMath;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -67,6 +72,15 @@ namespace WeaponCore
         {
             try
             {
+                var playerSphere = MyAPIGateway.Session.Player.Character.WorldVolume;
+                playerSphere.Radius = 1;
+                var test = new List<Projectile>();
+                DynTrees.GetAllProjectilesInSphere(ref playerSphere, test);
+                var c = 0;
+                foreach (var t in test)
+                {
+                    c++;
+                }
                 if (Placer != null)
                 {
                     if (Placer.MarkedForClose) Placer = null;
@@ -100,6 +114,30 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
+                    /*
+                    if (LcdEntity1 != null)
+                    {
+                        var cameraMatrix = Camera.WorldMatrix;
+                        cameraMatrix.Translation += (Camera.WorldMatrix.Forward * 0.1f);
+                        //cameraMatrix.Translation += (Camera.WorldMatrix.Left * 0.075f);
+                        //cameraMatrix.Translation += (Camera.WorldMatrix.Up * 0.05f);
+
+                        LcdEntity1.WorldMatrix = cameraMatrix;
+                        if (LcdPanel1 != null && LcdPanel1.InScene)
+                        {
+                            if (!_initLcdPanel1)
+                            {
+                                if (LcdPanel1.IsFunctional && LcdPanel1.IsWorking)
+                                {
+                                    LcdPanel1.FontSize = 2;
+                                    _initLcdPanel1 = true;
+                                    LcdPanel1.ResourceSink.SetMaxRequiredInputByType(MyResourceDistributorComponent.ElectricityId, 0);
+                                    LcdPanel1.WriteText("test1");
+                                }
+                            }
+                        }
+                    }
+                    */
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                         Ui.DrawWheel();
 
@@ -121,9 +159,6 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
-                //MyEntities.OnEntityAdd += OnEntityAdd;
-                //MyEntities.OnEntityRemove += OnEntityRemove;
-                //MyEntities.OnEntityDelete += OnEntityDelete;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -140,12 +175,15 @@ namespace WeaponCore
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
-            //MyEntities.OnEntityAdd -= OnEntityAdd;
-            //MyEntities.OnEntityRemove -= OnEntityRemove;
-            //MyEntities.OnEntityDelete -= OnEntityDelete;
 
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
+            ProjectileTree.Clear();
+
+            //Session.Player.Character.ControllerInfo.ControlReleased -= PlayerControlReleased;
+            //Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
+            AllDefinitions = null;
+            SoundDefinitions = null;
 
             Instance = null;
             Log.Line("Logging stopped.");

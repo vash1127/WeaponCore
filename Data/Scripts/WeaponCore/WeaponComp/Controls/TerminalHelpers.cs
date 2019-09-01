@@ -203,7 +203,7 @@ namespace WepaonCore.Control
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                if (comp.Platform.Weapons[i].System.WeaponID == id)
+                if (comp.Platform.Weapons[i].System.WeaponId == id)
                     return true;
             }
             return false;

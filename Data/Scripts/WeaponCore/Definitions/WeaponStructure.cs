@@ -27,7 +27,7 @@ namespace WeaponCore.Support
         public readonly int TargetLossTime;
         public readonly int ModelId;
         public readonly int MaxHeat;
-        public readonly int WeaponID;
+        public readonly int WeaponId;
         public readonly int BarrelsPerShot;
         public readonly int HeatPerShot;
         public readonly int RateOfFire;
@@ -63,7 +63,7 @@ namespace WeaponCore.Support
         public readonly bool TargetSubSystems;
         public readonly bool OnlySubSystems;
         public readonly bool ClosestFirst;
-        public readonly bool DegROF;
+        public readonly bool DegRof;
         public readonly bool TrackProjectile;
         public readonly bool TrackOther;
         public readonly bool TrackGrids;
@@ -84,8 +84,8 @@ namespace WeaponCore.Support
         public readonly float BaseDamage;
         public readonly float AreaEffectDamage;
         public readonly float DetonationDamage;
-        public readonly float AccelPerSec;
-        public readonly float DesiredSpeed;
+        public readonly float MinTargetRadius;
+        public readonly float MaxTargetRadius;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -95,8 +95,6 @@ namespace WeaponCore.Support
         public float AmmoTravelSoundDistSqr;
         public float HardPointSoundMaxDistSqr;
         public float AmmoSoundMaxDistSqr;
-        public float MinTargetRadius;
-        public float MaxTargetRadius;
         public FiringSoundState FiringSound;
         public bool HitSound;
         public bool WeaponReloadSound;
@@ -120,7 +118,7 @@ namespace WeaponCore.Support
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
-            WeaponID = weaponId;
+            WeaponId = weaponId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             ProjectileMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Material);
 
@@ -143,7 +141,7 @@ namespace WeaponCore.Support
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
-            DegROF = values.HardPoint.Loading.DegradeROF;
+            DegRof = values.HardPoint.Loading.DegradeROF;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             WepCooldown = values.HardPoint.Loading.Cooldown;
             BarrelsPerShot = values.HardPoint.Loading.BarrelsPerShot;

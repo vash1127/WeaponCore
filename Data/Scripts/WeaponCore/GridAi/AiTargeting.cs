@@ -344,7 +344,6 @@ namespace WeaponCore.Support
                             var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                             if (obb.Intersects(ref beam) != null)
                             {
-                                Log.Line("possible obscure");
                                 needsCast = true;
                                 break;
                             }
@@ -367,9 +366,9 @@ namespace WeaponCore.Support
                             target.TransferTo(w.Target);
                             return;
                         }
-                        Log.Line($"is obscured");
                     }
-                    else {
+                    else
+                    {
                         double hitDist;
                         Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
                         var shortDist = hitDist;
@@ -381,7 +380,6 @@ namespace WeaponCore.Support
                         return;
                     }
                 }
-                else Log.Line("not in view");
             }
             targetType = TargetType.None;
         }

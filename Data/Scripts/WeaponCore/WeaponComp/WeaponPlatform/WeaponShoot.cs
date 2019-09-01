@@ -382,7 +382,7 @@ namespace WeaponCore.Platform
             BarrelMove = true;
             double radiansPerShot;
             var heat = Comp.State.Value.Weapons[WeaponId].Heat;
-            if (System.DegROF && heat > (System.MaxHeat * .8)) TimePerShot = (3600d / RateOfFire) / (heat / System.MaxHeat);
+            if (System.DegRof && heat > (System.MaxHeat * .8)) TimePerShot = (3600d / RateOfFire) / (heat / System.MaxHeat);
             if (TimePerShot > 0.999999 && TimePerShot < 1.000001) radiansPerShot = 0.06666666666;
             else radiansPerShot = 2 * Math.PI / _numOfBarrels;
             var radians = radiansPerShot / TimePerShot;

@@ -1,4 +1,5 @@
-﻿using VRageMath;
+﻿using Sandbox.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;

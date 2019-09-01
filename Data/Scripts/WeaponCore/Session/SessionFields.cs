@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
+using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using VRage;
 using VRage.Collections;
@@ -28,11 +30,13 @@ namespace WeaponCore
         internal volatile bool Inited;
         internal volatile bool Dispatched;
         internal bool DbsUpdating;
-        internal bool shooting; //used to check if comp is shooting in low power update, alocated once instead of in loop
+        private bool _initLcdPanel1;
+
         private int _count = -1;
         private int _lCount;
         private int _eCount;
         private double _syncDistSqr;
+
 
         private readonly object _configLock = new object();
 
@@ -56,7 +60,8 @@ namespace WeaponCore
         internal MyEntity Target;
         internal GridAi TrackingAi;
         internal IMyBlockPlacerBase Placer;
-
+        internal MyEntity LcdEntity1;
+        internal IMyTextPanel LcdPanel1;
         internal readonly HashSet<string> WepActions = new HashSet<string>()
         {
             "WC-L_PowerLevel",
@@ -75,19 +80,22 @@ namespace WeaponCore
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
-        internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
-        internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
 
+        internal readonly MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
+
+        internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
+        internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
 
         internal DSUtils DsUtil { get; set; } = new DSUtils();
 
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
         internal readonly Wheel Ui = new Wheel();
-        internal readonly Pointer Pointer = new Pointer(); 
+        internal readonly Pointer Pointer = new Pointer();
+
         internal uint Tick;
         internal int PlayerEventId;
         internal int ProCounter;

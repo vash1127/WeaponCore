@@ -41,6 +41,7 @@ namespace WeaponCore.Projectiles
         internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
         internal double LineLength;
+        internal double VelocityLengthSqr;
         internal double SmartsDelayDistSqr;
         internal double DistanceFromCameraSqr;
         internal double OffsetSqr;
@@ -54,12 +55,16 @@ namespace WeaponCore.Projectiles
         internal int PoolId;
         internal int Age;
         internal int ChaseAge;
+        internal int IdleTime;
         internal int MaxChaseAge;
         internal int GrowStep = 1;
         internal int EndStep;
         internal int ModelId;
         internal int ZombieLifeTime;
         internal int LastOffsetTime;
+        internal int PruningProxyId = -1;
+        internal int PulseChance;
+        internal int PulseInterval;
         internal bool Grow;
         internal bool EnableAv;
         internal bool DrawLine;
@@ -70,8 +75,6 @@ namespace WeaponCore.Projectiles
         internal bool PositionChecked;
         internal bool MoveToAndActivate;
         internal bool LockedTarget;
-        internal bool FoundTarget;
-        internal bool SeekTarget;
         internal bool DynamicGuidance;
         internal bool ParticleStopped;
         internal bool ParticleLateStart;
@@ -79,6 +82,10 @@ namespace WeaponCore.Projectiles
         internal bool GenerateShrapnel;
         internal bool Colliding;
         internal bool CheckPlanet;
+        internal bool SmartsOn;
+        internal bool Ewar;
+        internal bool Detect;
+
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
@@ -93,12 +100,14 @@ namespace WeaponCore.Projectiles
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
+        internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
         internal MyEntityQueryType PruneQuery;
+        internal AreaDamage.AreaEffectType AreaEffect;
 
         internal void Start(bool noAv, int poolId)
         {
@@ -134,19 +143,28 @@ namespace WeaponCore.Projectiles
             EndStep = 0;
             GrowStep = 1;
             DistanceTraveled = 0;
-            Guidance = !(T.System.Values.Ammo.Shrapnel.NoGuidance && T.IsShrapnel) ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
-            DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None && T.EnableGuidance;
 
-            if (Guidance == AmmoTrajectory.GuidanceType.Smart && !T.System.IsBeamWeapon && T.EnableGuidance)
+            Guidance = !(T.System.Values.Ammo.Shrapnel.NoGuidance && T.IsShrapnel) ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
+            DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None && Guidance != AmmoTrajectory.GuidanceType.TravelTo && !T.System.IsBeamWeapon && T.EnableGuidance;
+            if (DynamicGuidance) DynTrees.RegisterProjectile(this);
+
+            if (Guidance == AmmoTrajectory.GuidanceType.Smart && DynamicGuidance)
+            {
+                SmartsOn = true;
                 MaxChaseAge = T.System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
-            else MaxChaseAge = int.MaxValue;
+            }
+            else
+            {
+                MaxChaseAge = int.MaxValue;
+                SmartsOn = false;
+            }
 
             if (T.Target.IsProjectile) OriginTargetPos = T.Target.Projectile.Position;
             else if (T.Target.Entity != null) OriginTargetPos = T.Target.Entity.PositionComp.WorldAABB.Center;
             else OriginTargetPos = Vector3D.Zero;
             LockedTarget = OriginTargetPos != Vector3D.Zero;
 
-            if (T.System.TargetOffSet && LockedTarget)
+            if (SmartsOn && T.System.TargetOffSet && LockedTarget)
             {
                 OffSetTarget(out TargetOffSet);
                 OffsetSqr = T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy * T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
@@ -195,10 +213,7 @@ namespace WeaponCore.Projectiles
             }
             else DesiredSpeed = T.System.Values.Ammo.Trajectory.DesiredSpeed;
 
-
-            if (LockedTarget) FoundTarget = true;
-            else if (DynamicGuidance) SeekTarget = true;
-            MoveToAndActivate = FoundTarget && !T.System.IsBeamWeapon && Guidance == AmmoTrajectory.GuidanceType.TravelTo && T.EnableGuidance;
+            MoveToAndActivate = LockedTarget && !T.System.IsBeamWeapon && Guidance == AmmoTrajectory.GuidanceType.TravelTo;
 
             if (MoveToAndActivate)
             {
@@ -210,10 +225,14 @@ namespace WeaponCore.Projectiles
             PickTarget = LockedTarget && T.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
             FiringSoundState = T.System.FiringSound;
             AmmoTravelSoundRangeSqr = T.System.AmmoTravelSoundDistSqr;
+            Detect = T.System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.PulseDetect;
+            AreaEffect = T.System.Values.Ammo.AreaEffect.AreaEffect;
+            Ewar = AreaEffect > (AreaDamage.AreaEffectType) 2;
+            PulseInterval = T.System.Values.Ammo.AreaEffect.Pulse.Interval;
+            PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
 
-            var smartGuidance = Guidance == AmmoTrajectory.GuidanceType.Smart && T.EnableGuidance;
-            PruneQuery = smartGuidance ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
-            if (T.Ai.StaticEntitiesInRange && !smartGuidance) StaticEntCheck();
+            PruneQuery = DynamicGuidance ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            if (T.Ai.StaticEntitiesInRange && !DynamicGuidance) StaticEntCheck();
             else CheckPlanet = false;
 
             if (EnableAv)
@@ -259,6 +278,8 @@ namespace WeaponCore.Projectiles
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
+
+            IdleTime = T.System.Values.Ammo.Trajectory.RestTime;
             if (!T.System.IsBeamWeapon)
             {
                 var reSizeSteps = (int) (LineLength / T.MaxSpeedLength);
@@ -276,6 +297,7 @@ namespace WeaponCore.Projectiles
         {
             var ai = T.Ai;
             CheckPlanet = false;
+            var checkVoxels = T.System.Values.DamageScales.DamageVoxels;
             for (int i = 0; i < T.Ai.StaticsInRange.Count; i++)
             {
                 var staticEnt = ai.StaticsInRange[i];
@@ -287,11 +309,12 @@ namespace WeaponCore.Projectiles
                 {
                     if (voxel != null)
                     {
+                        if (!checkVoxels) continue;
                         var check = State == ProjectileState.OneAndDone;
                         if (!check)
                         {
                             Vector3D? voxelHit;
-                            voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                            using (voxel.Pin()) voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
                             check = voxelHit.HasValue;
                         }
 
@@ -351,6 +374,10 @@ namespace WeaponCore.Projectiles
                 T.HitList.Clear();
                 T.Target.Reset();
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
+                if (DynamicGuidance)
+                    DynTrees.UnregisterProjectile(this);
+                PruningProxyId = -1;
+
                 State = ProjectileState.Dead;
             }
             else State = ProjectileState.Ending;
@@ -369,10 +396,14 @@ namespace WeaponCore.Projectiles
                 for (int i = 0; i < VrTrajectiles.Count; i++)
                     manager.TrajectilePool[poolId].MarkForDeallocate(VrTrajectiles[i]);
 
+                if (DynamicGuidance)
+                    DynTrees.UnregisterProjectile(this);
+
                 VrTrajectiles.Clear();
                 T.HitList.Clear();
                 T.Target.Reset();
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
+                PruningProxyId = -1;
                 State = ProjectileState.Dead;
             }
         }
@@ -402,6 +433,21 @@ namespace WeaponCore.Projectiles
             return reaquire;
         }
 
+        internal void ForceNewTarget(bool projectile)
+        {
+            ChaseAge = Age;
+            PickTarget = false;
+            if (projectile)
+            {
+                T.Target.IsProjectile = true;
+                T.Target.Entity = null;
+            }
+            else
+            {
+                T.Target.IsProjectile = false;
+                T.Target.Projectile = null;
+            }
+        }
 
         internal void UpdateZombie(bool reset = false)
         {

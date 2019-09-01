@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
+using static WeaponCore.Support.AreaDamage.AreaEffectType;
 namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
@@ -26,7 +29,6 @@ namespace WeaponCore.Projectiles
         internal readonly ObjectsPool<Trajectile>[] TrajectilePool = new ObjectsPool<Trajectile>[PoolCount];
         internal readonly List<Trajectile>[] DrawProjectiles = new List<Trajectile>[PoolCount];
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
-
         internal readonly object[] Wait = new object[PoolCount];
 
         internal Projectiles()
@@ -61,8 +63,10 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
+            //Session.Instance.DsUtil.Start("");
             //MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
             for (int i = 0; i < Wait.Length; i++) Process(i);
+            //Session.Instance.DsUtil.Complete();
         }
 
         private void Process(int i)
@@ -110,89 +114,127 @@ namespace WeaponCore.Projectiles
                             }
                             continue;
                     }
-                    p.LastPosition = p.Position;
-                    if (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.T.EnableGuidance)
-                    {
-                        Vector3D newVel;
-                        if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
-                        {
-                            var giveUpChase = p.Age - p.ChaseAge > p.MaxChaseAge;
-                            var newChase = giveUpChase || p.PickTarget;
-                            var validTarget = p.T.Target.IsProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
 
-                            if (newChase && p.EndChase() || validTarget || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
+                    if (p.AccelLength > 0)
+                    {
+                        if (p.SmartsOn)
+                        {
+                            Vector3D newVel;
+                            if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
                             {
-                                if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
-                                var targetPos = Vector3D.Zero;
-                                if (p.T.Target.IsProjectile) targetPos = p.T.Target.Projectile.Position;
-                                else if (p.T.Target.Entity != null) targetPos = p.T.Target.Entity.PositionComp.WorldAABB.Center;
+                                var giveUpChase = p.Age - p.ChaseAge > p.MaxChaseAge;
+                                var newChase = giveUpChase || p.PickTarget;
+                                var targetIsProjectile = p.T.Target.IsProjectile;
+                                if (!targetIsProjectile && p.T.Target.Projectile != null)
+                                    p.ForceNewTarget(!targetIsProjectile);
 
-                                if (p.T.System.TargetOffSet)
+                                var validTarget = targetIsProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
+
+                                if (newChase && p.EndChase() || validTarget || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
                                 {
-                                    if (p.Age - p.LastOffsetTime > 300)
+                                    if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
+                                    var targetPos = Vector3D.Zero;
+                                    if (p.T.Target.IsProjectile) targetPos = p.T.Target.Projectile.Position;
+                                    else if (p.T.Target.Entity != null) targetPos = p.T.Target.Entity.PositionComp.WorldAABB.Center;
+
+                                    if (p.T.System.TargetOffSet)
                                     {
-                                        double dist;
-                                        Vector3D.DistanceSquared(ref p.Position, ref targetPos, out dist);
-                                        if (dist < p.OffsetSqr && Vector3.Dot(p.Direction, p.Position - targetPos) > 0)
-                                            p.OffSetTarget(out p.TargetOffSet);
+                                        if (p.Age - p.LastOffsetTime > 300)
+                                        {
+                                            double dist;
+                                            Vector3D.DistanceSquared(ref p.Position, ref targetPos, out dist);
+                                            if (dist < p.OffsetSqr && Vector3.Dot(p.Direction, p.Position - targetPos) > 0)
+                                                p.OffSetTarget(out p.TargetOffSet);
+                                        }
+                                        targetPos += p.TargetOffSet;
                                     }
-                                    targetPos += p.TargetOffSet;
+
+                                    var physics = p.T.Target.Entity?.Physics ?? p.T.Target.Entity?.Parent?.Physics;
+
+                                    if (!p.T.Target.IsProjectile && (physics == null || targetPos == Vector3D.Zero))
+                                        p.PrevTargetPos = p.PredictedTargetPos;
+                                    else p.PrevTargetPos = targetPos;
+
+                                    var tVel = Vector3.Zero;
+                                    if (p.T.Target.IsProjectile) tVel = p.T.Target.Projectile.Velocity;
+                                    else if (physics != null) tVel = physics.LinearVelocity;
+
+                                    p.PrevTargetVel = tVel;
                                 }
-
-                                var physics = p.T.Target.Entity?.Physics ?? p.T.Target.Entity?.Parent?.Physics;
-
-                                if (!p.T.Target.IsProjectile && (physics == null || targetPos == Vector3D.Zero))
-                                    p.PrevTargetPos = p.PredictedTargetPos;
-                                else p.PrevTargetPos = targetPos;
-
-                                var tVel = Vector3.Zero;
-                                if (p.T.Target.IsProjectile) tVel = p.T.Target.Projectile.Velocity;
-                                else if (physics != null) tVel = physics.LinearVelocity;
-
-                                p.PrevTargetVel = tVel;
+                                else p.UpdateZombie();
+                                var commandedAccel = MathFuncs.CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.T.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, p.T.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
+                                newVel = p.Velocity + (commandedAccel * StepConst);
+                                p.AccelDir = commandedAccel / p.AccelPerSec;
                             }
-                            else p.UpdateZombie();
-                            var commandedAccel = MathFuncs.CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.T.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, p.T.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
-                            newVel = p.Velocity + (commandedAccel * StepConst);
-                            p.AccelDir = commandedAccel / p.AccelPerSec;
+                            else newVel = p.Velocity += (p.Direction * p.AccelLength);
+                            p.VelocityLengthSqr = newVel.LengthSquared();
+
+                            Vector3D.Normalize(ref p.Velocity, out p.Direction);
+                            if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
+                            p.Velocity = newVel;
+
+                            if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
+                            {
+                                p.VisualStep += 0.0025;
+                                if (p.VisualStep > 1) p.VisualStep = 1;
+
+                                Vector3D lerpDir;
+                                Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
+                                Vector3D.Normalize(ref lerpDir, out p.VisualDir);
+                            }
+                            else if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
+                            {
+                                p.VisualDir = p.AccelDir;
+                                p.VisualStep = 0;
+                            }
                         }
-                        else newVel = p.Velocity += (p.Direction * p.AccelLength);
-
-                        Vector3D.Normalize(ref p.Velocity, out p.Direction);
-                        if (newVel.LengthSquared() > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
-
-                        p.Velocity = newVel;
-
-                        if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
+                        else
                         {
-                            p.VisualStep += 0.0025;
-                            if (p.VisualStep > 1) p.VisualStep = 1;
+                            var accel = true;
+                            Vector3D newVel;
+                            if (p.IdleTime > 0)
+                            {
+                                var distToMax = p.MaxTrajectory - p.DistanceTraveled;
 
-                            Vector3D lerpDir;
-                            Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
-                            Vector3D.Normalize(ref lerpDir, out p.VisualDir);
-                        }
-                        else if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
-                        {
-                            p.VisualDir = p.AccelDir;
-                            p.VisualStep = 0;
+                                var stopDist = p.VelocityLengthSqr / 2 / (p.AccelPerSec);
+                                if (distToMax <= stopDist)
+                                    accel = false;
+
+                                newVel = accel ? p.Velocity + p.AccelVelocity : p.Velocity - p.AccelVelocity;
+                                p.VelocityLengthSqr = newVel.LengthSquared();
+
+                                if (accel && p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
+                                else if (!accel && distToMax < 0)
+                                {
+                                    newVel = Vector3D.Zero;
+                                    p.VelocityLengthSqr = 0;
+                                }
+                                //Log.Line($"distToMax:{distToMax} - stopDist:{stopDist} - maxDist:{p.MaxTrajectory}({p.DistanceTraveled}) - Speed:{newVel.Length()}({p.VelocityLengthSqr}) - accel:{accel}");
+                            }
+                            else
+                            {
+                                newVel = p.Velocity + p.AccelVelocity;
+                                p.VelocityLengthSqr = newVel.LengthSquared();
+                                if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
+                            }
+
+                            p.Velocity = newVel;
+                            //Log.Line($"accel:{accel} - Velocity:{p.Velocity.Length()}");
                         }
                     }
-                    else if (p.AccelLength > 0)
-                    {
-                        var newVel = p.Velocity + p.AccelVelocity;
-                        if (newVel.LengthSquared() > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
-                        p.Velocity = newVel;
-                    }
-
+                    
                     if (p.State == ProjectileState.OneAndDone)
                     {
+                        p.LastPosition = p.Position;
                         var beamEnd = p.Position + (p.Direction * p.MaxTrajectory);
                         p.TravelMagnitude = p.Position - beamEnd;
                         p.Position = beamEnd;
                     }
                     else
                     {
+                        if (p.VelocityLengthSqr > 0) p.LastPosition = p.Position;
+                        else p.LastPosition = p.Position + (-p.Direction * p.LineLength);
+
                         p.TravelMagnitude = p.Velocity * StepConst;
                         p.Position += p.TravelMagnitude;
                     }
@@ -211,15 +253,55 @@ namespace WeaponCore.Projectiles
                     else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle)
                         p.AmmoEffect.Velocity = p.Velocity;
 
+                    if (p.DynamicGuidance)
+                        DynTrees.OnProjectileMoved(p, ref p.Velocity);
+
                     if (p.State != ProjectileState.OneAndDone)
                     {
                         if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
-                            Die(p, i);
-                            continue;
+                            if (p.IdleTime == 0) Die(p, i);
+                            else
+                                p.IdleTime--;
+                        }
+                        if (p.Ewar)
+                        {
+                            if (p.Age % p.PulseInterval == 0)
+                            {
+                                switch (p.AreaEffect)
+                                {
+                                    case AntiSmart:
+                                        var eWarSphere = new BoundingSphereD(p.Position, p.T.System.Values.Ammo.AreaEffect.AreaEffectRadius);
+                                        DynTrees.GetAllProjectilesInSphere(ref eWarSphere, p.EwaredProjectiles, false);
+                                        for (int j = 0; j < p.EwaredProjectiles.Count; j++)
+                                        {
+                                            var netted = p.EwaredProjectiles[j];
+                                            if (netted.T.Ai == p.T.Ai || netted.T.Target.Projectile != null) continue;
+                                            Log.Line("netted");
+                                            if (MyUtils.GetRandomInt(0, 100) < p.PulseChance)
+                                            {
+                                                Log.Line("change course");
+                                                netted.T.Target.Projectile = p;
+                                            }
+                                        }
+                                        p.EwaredProjectiles.Clear();
+                                        break;
+                                    case JumpNullField:
+                                        break;
+                                    case Anchor:
+                                        break;
+                                    case EnergySink:
+                                        break;
+                                    case EmpPulse:
+                                        break;
+                                }
+                            }
+                        }
+                        else if (p.Detect)
+                        {
+
                         }
                     }
-
                     var beam = new LineD(p.LastPosition, p.Position);
                     MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
                     var segCount = p.SegmentList.Count;
@@ -268,7 +350,7 @@ namespace WeaponCore.Projectiles
                             p.T.UpdateShape(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
                         else
                         {
-                            var pointDir = (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.T.EnableGuidance) ? p.VisualDir : p.Direction;
+                            var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
                             p.T.UpdateShape(p.Position + -(pointDir * p.LineLength), p.Position, pointDir, p.LineLength);
                         }
 

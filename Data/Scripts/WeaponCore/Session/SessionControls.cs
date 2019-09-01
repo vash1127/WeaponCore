@@ -32,7 +32,7 @@ namespace WeaponCore
                     foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
                     {
                         var wepName = ws.Value.WeaponName;
-                        var wepID = ws.Value.WeaponID;
+                        var wepID = ws.Value.WeaponId;
 
                         TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
                             delegate (IMyTerminalBlock block)
@@ -43,7 +43,7 @@ namespace WeaponCore
                                 var enabled = false;
                                 for(int i =0; i < tmpComp.Platform.Weapons.Length; i++)
                                 {
-                                    if (tmpComp.Platform.Weapons[i].System.WeaponID == wepID)
+                                    if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
                                         enabled = tmpComp.Set.Value.Weapons[i].Enable;
                                 }
                                 return enabled;
@@ -55,7 +55,7 @@ namespace WeaponCore
                                 {
                                     for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
                                     {
-                                        if (tmpComp.Platform.Weapons[i].System.WeaponID == wepID)
+                                        if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
                                         {
                                             tmpComp.Set.Value.Weapons[i].Enable = enabled;
                                             tmpComp.SettingsUpdated = true;
@@ -93,9 +93,9 @@ namespace WeaponCore
                 TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
 
                 
-                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDPS, WepUi.SetDPS, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps, WepUi.CoreWeaponEnableCheck);
 
-                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetROF, WepUi.SetROF, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
 
                 TerminalHelpers.AddCheckbox<IMyLargeTurretBase>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
 
@@ -114,7 +114,7 @@ namespace WeaponCore
                 if (comp == null) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponID == id)
+                    if (comp.Platform.Weapons[i].System.WeaponId == id)
                     {
                         if (comp.Platform.Weapons[i].ManualShoot != ShootOn)
                             comp.Platform.Weapons[i].ManualShoot = ShootOn;
@@ -137,7 +137,7 @@ namespace WeaponCore
                 if (comp == null) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponID == id)
+                    if (comp.Platform.Weapons[i].System.WeaponId == id)
                         comp.Platform.Weapons[i].ManualShoot = ShootOn;
                 }
             };
@@ -155,7 +155,7 @@ namespace WeaponCore
                 if (comp == null) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponID == id)
+                    if (comp.Platform.Weapons[i].System.WeaponId == id)
                         comp.Platform.Weapons[i].ManualShoot = ShootOff;
                 }
             };
@@ -173,7 +173,7 @@ namespace WeaponCore
                 if (comp == null) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponID == id)
+                    if (comp.Platform.Weapons[i].System.WeaponId == id)
                         comp.Platform.Weapons[i].ManualShoot = ShootOnce;
                 }
             };
@@ -191,7 +191,7 @@ namespace WeaponCore
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                if (comp.Platform.Weapons[i].System.WeaponID == id)
+                if (comp.Platform.Weapons[i].System.WeaponId == id)
                     if (comp.Platform.Weapons[i].ManualShoot != ShootOff)
                         return true;
             }

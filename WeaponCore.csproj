@@ -40,6 +40,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="Data\EntityComponents.sbc" />
+    <None Include="Data\lcd.sbc" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDataBase.cs" />

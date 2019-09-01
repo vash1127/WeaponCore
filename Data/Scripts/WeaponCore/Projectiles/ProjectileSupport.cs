@@ -87,7 +87,7 @@ namespace WeaponCore.Projectiles
                 var dist = obb.Intersects(ref extBeam);
                 if (dist == null && !quickCheck) continue;
 
-                if (ent == ai.MyPlanet && (p.CheckPlanet || (p.Guidance == AmmoTrajectory.GuidanceType.Smart && p.T.EnableGuidance)) || ent.Physics != null && !ent.IsPreview && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
+                if ((ent == ai.MyPlanet && (p.CheckPlanet || p.DynamicGuidance)) || ent.Physics != null && !ent.IsPreview && (ent is MyCubeGrid || ent is MyVoxelBase || ent is IMyDestroyableObject))
                 {
                     var voxel = ent as MyVoxelBase;
                     Vector3D? voxelHit = null;
@@ -105,9 +105,14 @@ namespace WeaponCore.Projectiles
                             Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistTocenter);
                             if (cDistToCenter > pDistTocenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) check = true;
                             if (check)
-                                voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                            {
+                                using (voxel.Pin())
+                                {
+                                    voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                                }
+                            }
                         }
-                        else voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                        else using (voxel.Pin()) voxel.GetIntersectionWithLine(ref beam, out voxelHit);
                         if (!voxelHit.HasValue) continue;
                     }
 
@@ -133,7 +138,9 @@ namespace WeaponCore.Projectiles
             {
                 var ray = new RayD(p.LastPosition, p.Direction);
                 var targetPos = p.T.Target.Projectile.Position;
-                var sphere = new BoundingSphereD(targetPos, 2.5f);
+                var tAreaEffectRadius = p.T.Target.Projectile.T.System.Values.Ammo.AreaEffect.AreaEffectRadius;
+                var targetRadius = tAreaEffectRadius > 0 ? tAreaEffectRadius : 2.5f;
+                var sphere = new BoundingSphereD(targetPos, targetRadius);
                 if (sphere.Intersects(ray) != null)
                 {
                     var hitEntity = HitEntityPool[poolId].Get();

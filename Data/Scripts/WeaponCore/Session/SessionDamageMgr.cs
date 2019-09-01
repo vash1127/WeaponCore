@@ -332,6 +332,7 @@ namespace WeaponCore
 
             var scaledDamage = t.BaseDamagePool * damageScale;
 
+            Log.Line($"tpHealth:{pEntity.T.BaseHealthPool} - pHealth:{t.BaseHealthPool} - damage:{scaledDamage} - {objHp} - Ewar:{pEntity.Ewar}");
             if (scaledDamage < objHp) t.BaseDamagePool = 0;
             else t.BaseDamagePool -= objHp;
             pEntity.T.BaseHealthPool -= scaledDamage;
