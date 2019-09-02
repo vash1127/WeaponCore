@@ -268,13 +268,19 @@ namespace WeaponCore.Projectiles
                                 sphere.Center = hitEnt.Beam.To;
                                 sphere.Radius = hitEnt.CheckSize;
                             }
-
                             var hashSet = HitEntity.CastOrGetHashSet(hitEnt, ((MyCubeGrid)null)?.CubeBlocks);
                             grid.GetBlocksInsideSphere(ref sphere, hashSet, false);
                             dist = 0;
-                            hitEnt.HitPos = hitEnt.Beam.To;
                             hitEnt.Hit = true;
+                            var hitPos = sphere.Center + (hitEnt.Beam.Direction * sphere.Radius);
+                            hitEnt.HitPos = hitPos;
                             hitEnt.Blocks.AddRange(hashSet);
+                            hitEnt.Blocks.Sort((a, b) =>
+                            {
+                                var aPos = grid.GridIntegerToWorld(a.Position);
+                                var bPos = grid.GridIntegerToWorld(b.Position);
+                                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
+                            });
                         }
                         else
                         {
