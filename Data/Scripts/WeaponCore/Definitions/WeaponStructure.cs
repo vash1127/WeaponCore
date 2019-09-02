@@ -70,6 +70,8 @@ namespace WeaponCore.Support
         public readonly bool TrackCharacters;
         public readonly bool TrackMeteors;
         public readonly bool TrackNeutrals;
+        public readonly bool CollisionIsLine;
+        public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
         public readonly double AreaRadiusSmall;
@@ -173,6 +175,7 @@ namespace WeaponCore.Support
             Sound();
 
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales);
+            CollisionShape(out CollisionIsLine, out CollisionSize);
             Models(out ModelId);
             Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
             Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle);
@@ -291,6 +294,21 @@ namespace WeaponCore.Support
             rotateRealBeam = Values.Ammo.Beams.RotateRealBeam && VirtualBeams;
             convergeBeams = !RotateRealBeam && Values.Ammo.Beams.ConvergeBeams && VirtualBeams;
             oneHitParticle = Values.Ammo.Beams.OneParticle && IsBeamWeapon;
+        }
+
+        private void CollisionShape(out bool collisionIsLine, out double collisionSize)
+        {
+            var isLine = Values.Ammo.Shape.Shape == ShapeDefinition.Shapes.Line;
+            var size = Values.Ammo.Shape.Diameter;
+            if (size <= 0)
+            {
+                if (!isLine) isLine = true;
+                size = Values.Graphics.Line.Length;
+            }
+            else if (!isLine) size = size * 0.5;
+
+            collisionIsLine = isLine;
+            collisionSize = size;
         }
 
         private void Sound()

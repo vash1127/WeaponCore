@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Entities.Cube;
 using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
@@ -119,8 +120,41 @@ namespace WeaponCore.Support
         internal Projectile Projectile;
         public LineD Beam;
         public bool Hit;
+        public bool SphereCheck;
+        public double CheckSize;
         public Vector3D? HitPos;
         public Type EventType;
+        private object _listCache;
+        private object _hashSetCache;
+
+        public int PoolId = - 1;
+
+        internal static HashSet<T> SwapSet<T>(object cacheObject, HashSet<T> lst)
+        {
+            return cacheObject as HashSet<T>;
+        }
+
+        internal static List<T> SwapList<T>(object cacheObject, HashSet<T> lst)
+        {
+            return cacheObject as List<T>;
+        }
+
+        internal static List<T> CastOrGetList<T>(HitEntity hitEnt, HashSet<T> lst)
+        {
+            if (hitEnt._listCache == null)
+                hitEnt._listCache = Session.Instance.Projectiles.GenericListPool[hitEnt.PoolId].Get();
+            var list = hitEnt._listCache as List<T>;
+            return list;
+        }
+
+        internal static HashSet<T> CastOrGetHashSet<T>(HitEntity hitEnt, HashSet<T> lst)
+        {
+            if (hitEnt._hashSetCache == null)
+                hitEnt._hashSetCache = Session.Instance.Projectiles.GenericHashSetPool[hitEnt.PoolId].Get();
+            var hashSet = hitEnt._hashSetCache as HashSet<T>;
+
+            return hashSet;
+        }
 
         public HitEntity()
         {
@@ -130,6 +164,32 @@ namespace WeaponCore.Support
         {
             Entity = null;
             Projectile = null;
+            if (PoolId >= 0)
+            {
+                /*
+                if (_listCache != null)
+                {
+                    var set = SwapList(_listCache, ((MyCubeGrid)null)?.CubeBlocks);
+                    if (set != null)
+                    {
+                        set.Clear();
+                        Session.Instance.Projectiles.GenericListPool[PoolId].Return(_listCache);
+                    }
+                    _listCache = null;
+                }
+                */
+                if (_hashSetCache != null)
+                {
+                    var set = SwapSet(_hashSetCache, ((MyCubeGrid)null)?.CubeBlocks);
+                    if (set != null)
+                    {
+                        set.Clear();
+                        Session.Instance.Projectiles.GenericHashSetPool[PoolId].Return(_hashSetCache);
+                    }
+                    _hashSetCache = null;
+                }
+            }
+            PoolId = -1;
             Beam.Length = 0;
             Beam.Direction = Vector3D.Zero;
             Beam.From = Vector3D.Zero;
@@ -138,6 +198,8 @@ namespace WeaponCore.Support
             Hit = false;
             HitPos = null;
             EventType = Stale;
+            CheckSize = 1;
+            SphereCheck = false;
         }
     }
 

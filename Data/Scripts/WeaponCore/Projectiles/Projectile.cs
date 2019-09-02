@@ -7,6 +7,8 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Support.AreaDamage.AreaEffectType;
+
 namespace WeaponCore.Projectiles
 {
     internal class Projectile
@@ -108,7 +110,7 @@ namespace WeaponCore.Projectiles
         internal MySoundPair HitSound = new MySoundPair();
         internal MyEntityQueryType PruneQuery;
         internal AreaDamage.AreaEffectType AreaEffect;
-
+        
         internal void Start(bool noAv, int poolId)
         {
             PoolId = poolId;
@@ -297,7 +299,6 @@ namespace WeaponCore.Projectiles
         {
             var ai = T.Ai;
             CheckPlanet = false;
-            var checkVoxels = T.System.Values.DamageScales.DamageVoxels;
             for (int i = 0; i < T.Ai.StaticsInRange.Count; i++)
             {
                 var staticEnt = ai.StaticsInRange[i];
@@ -305,11 +306,11 @@ namespace WeaponCore.Projectiles
                 var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                 var lineTest = new LineD(Position, Position + (Direction * MaxTrajectory));
                 var voxel = staticEnt as MyVoxelBase;
+                var grid = staticEnt as MyCubeGrid;
                 if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) == ContainmentType.Contains)
                 {
                     if (voxel != null)
                     {
-                        if (!checkVoxels) continue;
                         var check = State == ProjectileState.OneAndDone;
                         if (!check)
                         {
@@ -327,6 +328,7 @@ namespace WeaponCore.Projectiles
                     }
                     else
                     {
+                        if (grid != null && grid.IsSameConstructAs(T.Ai.MyGrid)) continue;
                         PruneQuery = MyEntityQueryType.Both;
                         if (CheckPlanet || !ai.PlanetSurfaceInRange) break;
                     }
@@ -460,6 +462,37 @@ namespace WeaponCore.Projectiles
             {
                 PrevTargetPos = PredictedTargetPos;
                 if (ZombieLifeTime++ > T.System.TargetLossTime) DistanceToTravelSqr = DistanceTraveled * DistanceTraveled;
+            }
+        }
+
+        internal void ElectronicWarfare()
+        {
+            switch (AreaEffect)
+            {
+                case AntiSmart:
+                    var eWarSphere = new BoundingSphereD(Position, T.System.Values.Ammo.AreaEffect.AreaEffectRadius);
+                    DynTrees.GetAllProjectilesInSphere(ref eWarSphere, EwaredProjectiles, false);
+                    for (int j = 0; j < EwaredProjectiles.Count; j++)
+                    {
+                        var netted = EwaredProjectiles[j];
+                        if (netted.T.Ai == T.Ai || netted.T.Target.Projectile != null) continue;
+                        Log.Line("netted");
+                        if (MyUtils.GetRandomInt(0, 100) < PulseChance)
+                        {
+                            Log.Line("change course");
+                            netted.T.Target.Projectile = this;
+                        }
+                    }
+                    EwaredProjectiles.Clear();
+                    break;
+                case JumpNullField:
+                    break;
+                case Anchor:
+                    break;
+                case EnergySink:
+                    break;
+                case EmpPulse:
+                    break;
             }
         }
 

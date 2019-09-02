@@ -10,7 +10,6 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
-using static WeaponCore.Support.AreaDamage.AreaEffectType;
 namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
@@ -28,6 +27,19 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
         internal readonly ObjectsPool<Trajectile>[] TrajectilePool = new ObjectsPool<Trajectile>[PoolCount];
         internal readonly List<Trajectile>[] DrawProjectiles = new List<Trajectile>[PoolCount];
+        internal readonly MyConcurrentPool<object>[] GenericListPool = new MyConcurrentPool<object>[PoolCount];
+        internal readonly MyConcurrentPool<object>[] GenericHashSetPool = new MyConcurrentPool<object>[PoolCount];
+
+        object CreateListInstance<T>(HashSet<T> lst)
+        {
+            return new List<T>();
+        }
+
+        object CreateHashSetInstance<T>(HashSet<T> lst)
+        {
+            return new HashSet<T>();
+        }
+
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
         internal readonly object[] Wait = new object[PoolCount];
 
@@ -37,6 +49,8 @@ namespace WeaponCore.Projectiles
             {
                 Wait[i] = new object();
                 ShrapnelToSpawn[i] = new List<Fragments>(25);
+                GenericListPool[i] = new MyConcurrentPool<object>(25, null, 10000, () => CreateListInstance(((MyCubeGrid)null)?.CubeBlocks));
+                GenericHashSetPool[i] = new MyConcurrentPool<object>(25, null, 10000, () => CreateHashSetInstance(((MyCubeGrid)null)?.CubeBlocks));
                 ShrapnelPool[i] = new MyConcurrentPool<Fragments>(25);
                 FragmentPool[i] = new MyConcurrentPool<Fragment>(100);
                 CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(50);
@@ -233,7 +247,6 @@ namespace WeaponCore.Projectiles
                     else
                     {
                         if (p.VelocityLengthSqr > 0) p.LastPosition = p.Position;
-                        else p.LastPosition = p.Position + (-p.Direction * p.LineLength);
 
                         p.TravelMagnitude = p.Velocity * StepConst;
                         p.Position += p.TravelMagnitude;
@@ -267,51 +280,15 @@ namespace WeaponCore.Projectiles
                         if (p.Ewar)
                         {
                             if (p.Age % p.PulseInterval == 0)
-                            {
-                                switch (p.AreaEffect)
-                                {
-                                    case AntiSmart:
-                                        var eWarSphere = new BoundingSphereD(p.Position, p.T.System.Values.Ammo.AreaEffect.AreaEffectRadius);
-                                        DynTrees.GetAllProjectilesInSphere(ref eWarSphere, p.EwaredProjectiles, false);
-                                        for (int j = 0; j < p.EwaredProjectiles.Count; j++)
-                                        {
-                                            var netted = p.EwaredProjectiles[j];
-                                            if (netted.T.Ai == p.T.Ai || netted.T.Target.Projectile != null) continue;
-                                            Log.Line("netted");
-                                            if (MyUtils.GetRandomInt(0, 100) < p.PulseChance)
-                                            {
-                                                Log.Line("change course");
-                                                netted.T.Target.Projectile = p;
-                                            }
-                                        }
-                                        p.EwaredProjectiles.Clear();
-                                        break;
-                                    case JumpNullField:
-                                        break;
-                                    case Anchor:
-                                        break;
-                                    case EnergySink:
-                                        break;
-                                    case EmpPulse:
-                                        break;
-                                }
-                            }
+                                p.ElectronicWarfare();
                         }
                         else if (p.Detect)
                         {
 
                         }
                     }
-                    var beam = new LineD(p.LastPosition, p.Position);
-                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
-                    var segCount = p.SegmentList.Count;
 
-                    if (segCount > 0)
-                    {
-                        var nearestHitEnt = GetAllEntitiesInLine(p, beam, p.SegmentList, i);
-                        if (nearestHitEnt != null && Intersected(p, drawList, nearestHitEnt)) continue;
-                        p.T.HitList.Clear();
-                    }
+                    if (Hit(p, i, p.T.System.CollisionIsLine)) continue;
 
                     if (!p.EnableAv) continue;
 
@@ -470,16 +447,10 @@ namespace WeaponCore.Projectiles
             var dInfo = p.T.System.Values.Ammo.AreaEffect.Detonation;
             if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
             {
-                GetEntitiesInBlastRadius(p, poolId);
-                var hitEntity = p.T.HitList[0];
-                if (hitEntity != null)
-                {
-                    p.LastHitPos = hitEntity.HitPos;
-                    p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
-                }
+                if (!Hit(p, poolId, false))
+                    p.ProjectileClose(this, poolId);
             }
             else p.ProjectileClose(this, poolId);
         }
-
     }
 }
