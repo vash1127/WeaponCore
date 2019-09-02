@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
 using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
@@ -113,6 +112,7 @@ namespace WeaponCore.Support
             Destroyable,
             Stale,
             Projectile,
+            JumpNullField,
         }
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();

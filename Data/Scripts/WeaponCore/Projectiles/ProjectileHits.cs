@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -53,6 +54,10 @@ namespace WeaponCore.Projectiles
             var ai = p.T.Ai;
             var found = false;
             var pSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
+            var jumpNullField = p.AreaEffect == AreaDamage.AreaEffectType.JumpNullField;
+            var anchor = p.AreaEffect == AreaDamage.AreaEffectType.Anchor;
+            var movementEffect = (jumpNullField || anchor);
+
             if (pSphere.Radius <= p.T.System.CollisionSize)
             {
                 pSphere.Center = p.Position;
@@ -63,10 +68,11 @@ namespace WeaponCore.Projectiles
             {
                 var ent = p.SegmentList[i].Element;
                 var grid = ent as MyCubeGrid;
-
+                var destroyable = ent as IMyDestroyableObject;
                 if (grid != null && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
+                if (jumpNullField && p.VelocityLengthSqr <= 0 && grid == null) continue;
 
-                if (!shieldByPass)
+                if (!shieldByPass && !movementEffect)
                 {
                     var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                     if (shieldBlock != null)
@@ -88,17 +94,16 @@ namespace WeaponCore.Projectiles
                         else continue;
                     }
                 }
-
-                var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
-                var extBeam = new LineD(extFrom, beam.To);
-                var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref pSphere)) continue;
                 var voxel = ent as MyVoxelBase;
-                var destroyable = ent as IMyDestroyableObject;
 
                 if ((ent == ai.MyPlanet && (p.CheckPlanet || p.DynamicGuidance)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
                 {
+                    var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
+                    var extBeam = new LineD(extFrom, beam.To);
+                    var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                    var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                    if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref pSphere)) continue;
+
                     Vector3D? voxelHit = null;
                     if (voxel != null)
                     {
@@ -146,7 +151,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (p.T.Target.IsProjectile)
+            if (p.T.Target.IsProjectile && !movementEffect)
             {
                 var targetPos = p.T.Target.Projectile.Position;
                 var tAreaEffectRadius = p.T.Target.Projectile.T.System.CollisionSize;

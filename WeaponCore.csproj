@@ -47,7 +47,7 @@
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileSupport.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileHits.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectilePool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\EntityPool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\CompData.cs" />

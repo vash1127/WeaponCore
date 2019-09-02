@@ -237,6 +237,7 @@ namespace WeaponCore
                         scaledDamage = areaEffectDmg * damageScale;
                         if (scaledDamage >= blockHp) _destroyedSlims.Add(block);
                     }
+
                     block.DoDamage(scaledDamage, damageType, true, null, attackerId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
@@ -363,6 +364,26 @@ namespace WeaponCore
         }
 
         private void ExplosionProximity(HitEntity hitEnt, Trajectile t)
+        {
+            var system = t.System;
+            t.BaseDamagePool = 0;
+            var radius = system.Values.Ammo.AreaEffect.AreaEffectRadius;
+            var damage = system.Values.Ammo.AreaEffect.AreaEffectDamage;
+            if (system.VirtualBeams)
+                damage *= t.WeaponCache.Hits;
+
+            if (hitEnt.HitPos.HasValue)
+            {
+                if (ExplosionReady)
+                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system);
+                else
+                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system, true);
+            }
+            else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue)
+                UtilsStatic.CreateFakeExplosion(radius, hitEnt.HitPos.Value, system);
+        }
+
+        private void JumpNullField(HitEntity hitEnt, Trajectile t)
         {
             var system = t.System;
             t.BaseDamagePool = 0;
