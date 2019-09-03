@@ -43,7 +43,9 @@ namespace WeaponCore
                     }
 
                     var matrix = t.TriggerMatrix;
-                    if (++t.TriggerGrowthSteps * 0.01f <= 1) matrix = MatrixD.Rescale(t.TriggerMatrix, t.TriggerGrowthSteps * 0.01f);
+                    var scale = 0.01f;
+                    if (++t.TriggerGrowthSteps * scale <= 2) matrix = MatrixD.Rescale(t.TriggerMatrix, t.TriggerGrowthSteps * scale);
+                    else matrix = MatrixD.Rescale(t.TriggerMatrix, t.TriggerGrowthSteps * 2);
                     t.TriggerEntity.PositionComp.SetWorldMatrix(matrix, null, false, false, false);
                     if (t.Last)
                     {
