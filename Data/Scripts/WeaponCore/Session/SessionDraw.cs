@@ -35,7 +35,6 @@ namespace WeaponCore
 
                 if (t.Triggered && t.TriggerEntity != null)
                 {
-                    Log.Line($"{Tick} - {t.TriggerEntity.InScene} - {t.Last}");
                     if (!t.Last && !t.TriggerEntity.InScene)
                     {
                         t.TriggerEntity.InScene = true;
@@ -44,8 +43,10 @@ namespace WeaponCore
 
                     var matrix = t.TriggerMatrix;
                     var scale = 0.01f;
-                    if (++t.TriggerGrowthSteps * scale <= 2) matrix = MatrixD.Rescale(t.TriggerMatrix, t.TriggerGrowthSteps * scale);
-                    else matrix = MatrixD.Rescale(t.TriggerMatrix, t.TriggerGrowthSteps * 2);
+                    if (++t.TriggerGrowthSteps * scale <= 3) matrix = MatrixD.Rescale(t.TriggerMatrix, t.TriggerGrowthSteps * scale);
+                    else matrix = MatrixD.Rescale(t.TriggerMatrix, 3);
+                    Log.Line($"{Tick} - {t.TriggerEntity.InScene} - {t.Last} - {matrix.Scale.AbsMax()}");
+
                     t.TriggerEntity.PositionComp.SetWorldMatrix(matrix, null, false, false, false);
                     if (t.Last)
                     {
