@@ -41,7 +41,7 @@ namespace WeaponCore
                         t.TriggerEntity.Render.UpdateRenderObject(true, false);
                     }
 
-                    var matrix = t.TriggerMatrix;
+                    MatrixD matrix;
                     var scale = 0.01f;
                     if (++t.TriggerGrowthSteps * scale <= 3) matrix = MatrixD.Rescale(t.TriggerMatrix, t.TriggerGrowthSteps * scale);
                     else matrix = MatrixD.Rescale(t.TriggerMatrix, 3);
