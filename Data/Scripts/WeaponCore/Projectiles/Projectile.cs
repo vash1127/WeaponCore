@@ -8,6 +8,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.AreaDamage.AreaEffectType;
+using static WeaponCore.Support.Trajectile;
 
 namespace WeaponCore.Projectiles
 {
@@ -424,7 +425,7 @@ namespace WeaponCore.Projectiles
         {
             T.PrimeMatrix = MatrixD.Identity;
             T.TriggerMatrix = MatrixD.Identity;
-            T.Complete(null, true);
+            T.Complete(null, DrawState.Last);
             manager.DrawProjectiles[poolId].Add(T);
             if (PrimeModelId != -1) manager.EntityPool[poolId][PrimeModelId].MarkForDeallocate(T.PrimeEntity);
             if (TriggerModelId != -1) manager.EntityPool[poolId][TriggerModelId].MarkForDeallocate(T.TriggerEntity);

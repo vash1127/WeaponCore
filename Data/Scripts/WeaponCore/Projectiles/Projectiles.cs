@@ -10,6 +10,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
+using static WeaponCore.Support.Trajectile;
 namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
@@ -370,7 +371,7 @@ namespace WeaponCore.Projectiles
 
                     if (p.T.OnScreen)
                     {
-                        p.T.Complete(null, false);
+                        p.T.Complete(null, DrawState.Default);
                         drawList.Add(p.T);
                     }
                 }
@@ -391,14 +392,14 @@ namespace WeaponCore.Projectiles
             {
                 var hitPos = hitEntity.HitPos.Value;
                 p.TestSphere.Center = hitPos;
-                var bb = new BoundingBoxD(Vector3D.Min(p.T.PrevPosition, p.T.Position), Vector3D.Max(p.T.PrevPosition, p.T.Position));
-                if (Session.Instance.Session.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
+
+                if (!p.T.OnScreen) CameraCheck(p);
 
                 if (p.T.MuzzleId != -1)
                 {
                     var length = Vector3D.Distance(p.LastPosition, hitPos);
                     p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, length);
-                    p.T.Complete(hitEntity, true);
+                    p.T.Complete(hitEntity, DrawState.Hit);
                     drawList.Add(p.T);
                 }
             }
@@ -447,7 +448,7 @@ namespace WeaponCore.Projectiles
                         vt.UpdateVrShape(line.From, hitEntity.HitPos.Value, line.Direction, line.Length);
                     else vt.UpdateVrShape(line.From, line.To, line.Direction, line.Length);
                 }
-                vt.Complete(hitEntity, true);
+                vt.Complete(hitEntity, DrawState.Hit);
                 drawList.Add(vt);
             }
         }
@@ -461,6 +462,27 @@ namespace WeaponCore.Projectiles
                     p.ProjectileClose(this, poolId);
             }
             else p.ProjectileClose(this, poolId);
+        }
+
+        private void CameraCheck(Projectile p)
+        {
+            if (p.ModelState == EntityState.Exists)
+            {
+                p.ModelSphereLast.Center = p.LastEntityPos;
+                p.ModelSphereCurrent.Center = p.Position;
+                if (Session.Instance.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Instance.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
+                {
+                    p.T.OnScreen = true;
+                    p.FirstOffScreen = false;
+                    p.LastEntityPos = p.Position;
+                }
+            }
+
+            if (!p.T.OnScreen && p.DrawLine)
+            {
+                var bb = new BoundingBoxD(Vector3D.Min(p.T.PrevPosition, p.T.Position), Vector3D.Max(p.T.PrevPosition, p.T.Position));
+                if (Session.Instance.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
+            }
         }
     }
 }

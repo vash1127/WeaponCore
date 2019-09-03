@@ -39,6 +39,7 @@ namespace WeaponCore.Projectiles
             }
             if (p.SegmentList.Count > 0)
             {
+                Log.Line("MyGamePruningStructure found something");
                 var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId, lineCheck);
                 if (nearestHitEnt != null && Intersected(p, DrawProjectiles[poolId], nearestHitEnt)) return true;
                 p.T.HitList.Clear();
@@ -65,9 +66,10 @@ namespace WeaponCore.Projectiles
                 pSphere.Center = p.Position;
                 pSphere.Radius = !eWarActive ? p.T.System.CollisionSize : p.T.System.Values.Ammo.AreaEffect.AreaEffectRadius;
             }
-
+            Log.Line("start Loop");
             for (int i = 0; i < p.SegmentList.Count; i++)
             {
+                Log.Line("loop1");
                 var ent = p.SegmentList[i].Element;
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
@@ -97,7 +99,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
                 var voxel = ent as MyVoxelBase;
-
+                Log.Line("loop2");
                 if ((ent == ai.MyPlanet && (p.CheckPlanet || p.DynamicGuidance)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
                 {
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));

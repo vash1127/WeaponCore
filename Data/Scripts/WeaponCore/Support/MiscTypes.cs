@@ -14,6 +14,13 @@ namespace WeaponCore.Support
 {
     internal class Trajectile
     {
+        public enum DrawState
+        {
+            Last,
+            Hit,
+            Default
+        }
+
         internal readonly Target Target = new Target();
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
         internal WeaponSystem System;
@@ -42,15 +49,15 @@ namespace WeaponCore.Support
         internal float BaseHealthPool;
         internal bool Shrink;
         internal bool OnScreen;
-        internal bool Last;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool Triggered;
+        internal DrawState Draw;
 
-        internal void Complete(HitEntity hitEntity, bool last)
+        internal void Complete(HitEntity hitEntity, DrawState draw)
         {
             HitEntity = hitEntity;
-            Last = last;
+            Draw = draw;
 
             var color = System.Values.Graphics.Line.Color;
             if (System.LineColorVariance)

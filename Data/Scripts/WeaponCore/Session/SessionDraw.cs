@@ -18,14 +18,14 @@ namespace WeaponCore
                 var t = drawList[i];
                 if (t.PrimeEntity != null)
                 {
-                    if (!t.Last && !t.PrimeEntity.InScene)
+                    if (t.Draw != Trajectile.DrawState.Last && !t.PrimeEntity.InScene)
                     {
                         t.PrimeEntity.InScene = true;
                         t.PrimeEntity.Render.UpdateRenderObject(true, false);
                     }
 
                     t.PrimeEntity.PositionComp.SetWorldMatrix(t.PrimeMatrix, null, false, false, false);
-                    if (t.Last)
+                    if (t.Draw == Trajectile.DrawState.Last)
                     {
                         t.PrimeEntity.InScene = false;
                         t.PrimeEntity.Render.RemoveRenderObjects();
@@ -35,7 +35,7 @@ namespace WeaponCore
 
                 if (t.Triggered && t.TriggerEntity != null)
                 {
-                    if (!t.Last && !t.TriggerEntity.InScene)
+                    if ((t.Draw != Trajectile.DrawState.Last && !t.TriggerEntity.InScene))
                     {
                         t.TriggerEntity.InScene = true;
                         t.TriggerEntity.Render.UpdateRenderObject(true, false);
@@ -48,7 +48,7 @@ namespace WeaponCore
                     //Log.Line($"{Tick} - {t.TriggerEntity.InScene} - {t.Last} - {matrix.Scale.AbsMax()}");
 
                     t.TriggerEntity.PositionComp.SetWorldMatrix(matrix, null, false, false, false);
-                    if (t.Last)
+                    if (t.Draw == Trajectile.DrawState.Last)
                     {
                         t.TriggerEntity.InScene = false;
                         t.TriggerEntity.Render.RemoveRenderObjects();
