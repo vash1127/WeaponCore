@@ -502,6 +502,7 @@ namespace WeaponCore.Projectiles
                 case JumpNullField:
                     if (MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
+                        Log.Line($"jumpNullField Pulse");
                         EwarActive = true;
                     }
                     break;
