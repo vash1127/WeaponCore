@@ -48,7 +48,6 @@ namespace WeaponCore.Projectiles
             }
             if (p.SegmentList.Count > 0)
             {
-                Log.Line($"test:{p.SegmentList.Count}");
                 var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId, lineCheck);
                 if (nearestHitEnt != null && Intersected(p, DrawProjectiles[poolId], nearestHitEnt)) return true;
                 p.T.HitList.Clear();
@@ -141,7 +140,6 @@ namespace WeaponCore.Projectiles
                     if (grid != null)
                     {
                         hitEntity.EventType = !(p.EwarActive && p.AreaEffect == AreaDamage.AreaEffectType.JumpNullField) ? Grid : JumpNullField;
-                        Log.Line($"see grid: {hitEntity.EventType}");
                     }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;
