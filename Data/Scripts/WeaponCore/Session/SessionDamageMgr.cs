@@ -396,9 +396,8 @@ namespace WeaponCore
             if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
 
             var scaledDamage = t.BaseDamagePool * damageScale;
-
-
             var c = 0;
+            DsUtil.Start("");
             foreach (var fat in grid.GetFatBlocks())
             {
                 var drive = fat as MyJumpDrive;
@@ -407,9 +406,9 @@ namespace WeaponCore
                 var drivePower = drive.CurrentStoredPower;
                 if (scaledDamage < drivePower) drive.CurrentStoredPower -= scaledDamage;
                 else drive.CurrentStoredPower = 0;
-
                 c++;
             }
+            DsUtil.Complete();
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)

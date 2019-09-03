@@ -508,7 +508,7 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case JumpNullField:
-                    if (MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
                         Log.Line($"jumpNullField Pulse");
                         EwarActive = true;
