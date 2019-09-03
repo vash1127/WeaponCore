@@ -39,8 +39,11 @@ namespace WeaponCore.Platform
             {
                 var barrelCount = Structure.WeaponSystems[Structure.AimPartNames[i]].Barrels.Length;
                 MyEntity aimPartEntity;
+
+                var weaponAnimationSet = Session.Instance.CreateAnimationSets(Structure.WeaponSystems[Structure.AimPartNames[i]].Values.Animations.WeaponAnimationSets, Parts);
+
                 Parts.NameToEntity.TryGetValue(Structure.AimPartNames[i].String, out aimPartEntity);
-                Weapons[i] = new Weapon(aimPartEntity, Structure.WeaponSystems[Structure.AimPartNames[i]], i, comp)
+                Weapons[i] = new Weapon(aimPartEntity, Structure.WeaponSystems[Structure.AimPartNames[i]], i, comp, weaponAnimationSet)
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],

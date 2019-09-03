@@ -9,6 +9,7 @@ using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
+using static WeaponCore.Support.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {
@@ -59,6 +60,7 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
+        internal readonly Dictionary<EventOptions, HashSet<PartAnimation>> AnimationsSet;
         internal float RequiredPower;
         internal float BaseDamage;
         internal float ShotEnergyCost;
@@ -158,9 +160,10 @@ namespace WeaponCore.Platform
             Heating,
         }
 
-        public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp)
+        public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventOptions, HashSet<PartAnimation>> animationSets)
         {
             EntityPart = entity;
+            AnimationsSet = animationSets;
             _localTranslation = entity.PositionComp.LocalMatrix.Translation;
             System = system;
             Comp = comp;

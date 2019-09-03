@@ -48,6 +48,7 @@ namespace WeaponCore
                 {
                     ControlledEntity = MyAPIGateway.Session.CameraController.Entity;
                     CameraPos = Session.Camera.Position;
+                    ProcessAnimationQueue();
                 }
                 AiLoop();
                 UpdateWeaponPlatforms();
@@ -104,6 +105,8 @@ namespace WeaponCore
                         }
                     }
                 }
+                if(!DedicatedServer)
+                    ProcessAnimations();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

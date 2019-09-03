@@ -1,4 +1,5 @@
-﻿using ProtoBuf;
+﻿using System.Collections.Generic;
+using ProtoBuf;
 using VRageMath;
 
 namespace WeaponCore.Support
@@ -15,6 +16,7 @@ namespace WeaponCore.Support
         [ProtoMember(7)] internal DamageScaleDefinition DamageScales;
         [ProtoMember(8)] internal TargetingDefinition Targeting;
         [ProtoMember(9)] internal string ModPath;
+        [ProtoMember(10)] internal AnimationDefinition Animations;
     }
 
     [ProtoContract]
@@ -445,5 +447,60 @@ namespace WeaponCore.Support
 
         [ProtoMember(1)] internal float Modifier;
         [ProtoMember(2)] internal ShieldType Type;
+    }
+
+    [ProtoContract]
+    public struct AnimationDefinition
+    {
+        [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
+    }
+
+    [ProtoContract(IgnoreListHandling = true)]
+    public struct PartAnimationSetDef
+    {
+        public enum EventOptions
+        {
+            Firing,
+            Reloading,
+            Overheated,
+            Tracking,
+            Locked,
+            OnOff,
+        }
+
+        [ProtoMember(1)] internal string SubpartId;
+        [ProtoMember(2)] internal string muzzle;
+        [ProtoMember(3)] internal uint StartupDelay;
+        [ProtoMember(4)] internal EventOptions[] Reverse;
+        [ProtoMember(5)] internal EventOptions[] Loop;
+        [ProtoMember(6)] internal Dictionary<EventOptions, RelMove[]> EventMoveSets;
+
+    }
+
+    [ProtoContract]
+    internal struct RelMove
+    {
+        public enum MoveType
+        {
+            Linear,
+            ExpoDecay,
+            ExpoGrowth
+        }
+
+        [ProtoMember(1)] internal MoveType MovementType;
+        [ProtoMember(2)] internal XYZ[] linearPoints;
+        [ProtoMember(3)] internal XYZ rotation;
+        [ProtoMember(4)] internal XYZ rotAroundCenter;
+        [ProtoMember(5)] internal uint ticksToMove;
+        [ProtoMember(6)] internal string CenterEmpty;
+        [ProtoMember(7)] internal uint motionDelay;
+    }
+
+    [ProtoContract]
+    internal struct XYZ
+    {
+        [ProtoMember(1)] internal double x;
+        [ProtoMember(2)] internal double y;
+        [ProtoMember(3)] internal double z;
     }
 }
