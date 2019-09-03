@@ -293,10 +293,6 @@ namespace WeaponCore.Projectiles
                                 p.ElectronicWarfare();
                             else p.EwarActive = false;
                         }
-                        else if (p.Detect)
-                        {
-
-                        }
                     }
 
                     if (Hit(p, i, p.T.System.CollisionIsLine)) continue;

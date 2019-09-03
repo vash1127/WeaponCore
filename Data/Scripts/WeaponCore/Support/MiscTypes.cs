@@ -148,7 +148,7 @@ namespace WeaponCore.Support
         public LineD Beam;
         public bool Hit;
         public bool SphereCheck;
-        public double CheckSize;
+        public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public Type EventType;
         private object _listCache;
@@ -225,7 +225,7 @@ namespace WeaponCore.Support
             Hit = false;
             HitPos = null;
             EventType = Stale;
-            CheckSize = 1;
+            PruneSphere = new BoundingSphereD();
             SphereCheck = false;
         }
     }

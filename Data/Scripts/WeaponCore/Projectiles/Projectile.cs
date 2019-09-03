@@ -89,13 +89,16 @@ namespace WeaponCore.Projectiles
         internal bool SmartsOn;
         internal bool Ewar;
         internal bool EwarActive;
-        internal bool Detect;
-
+        internal bool FieldActive;
+        internal bool MovementField;
+        internal bool JumpField;
+        internal bool AnchorField;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
         internal BoundingSphereD ModelSphereCurrent;
         internal BoundingSphereD ModelSphereLast;
+        internal BoundingSphereD PruneSphere;
         internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal Trajectile T = new Trajectile();
@@ -147,6 +150,7 @@ namespace WeaponCore.Projectiles
             AmmoSound = false;
             PositionChecked = false;
             EwarActive = false;
+            FieldActive = false;
             EndStep = 0;
             GrowStep = 1;
             DistanceTraveled = 0;
@@ -232,11 +236,15 @@ namespace WeaponCore.Projectiles
             PickTarget = LockedTarget && T.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
             FiringSoundState = T.System.FiringSound;
             AmmoTravelSoundRangeSqr = T.System.AmmoTravelSoundDistSqr;
-            Detect = T.System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.PulseDetect;
             AreaEffect = T.System.Values.Ammo.AreaEffect.AreaEffect;
+
             Ewar = AreaEffect > (AreaDamage.AreaEffectType) 2;
             PulseInterval = T.System.Values.Ammo.AreaEffect.Pulse.Interval;
             PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
+
+            JumpField = AreaEffect == JumpNullField;
+            AnchorField = AreaEffect == Anchor;
+            MovementField = (JumpField || AnchorField);
 
             PruneQuery = DynamicGuidance ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
             if (T.Ai.StaticEntitiesInRange && !DynamicGuidance) StaticEntCheck();
@@ -483,7 +491,7 @@ namespace WeaponCore.Projectiles
             switch (AreaEffect)
             {
                 case AntiSmart:
-                    var eWarSphere = new BoundingSphereD(Position, T.System.Values.Ammo.AreaEffect.AreaEffectRadius);
+                    var eWarSphere = new BoundingSphereD(Position, T.System.AreaEffectSize);
                     DynTrees.GetAllProjectilesInSphere(ref eWarSphere, EwaredProjectiles, false);
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
@@ -500,7 +508,7 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case JumpNullField:
-                    if (MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
                         Log.Line($"jumpNullField Pulse");
                         EwarActive = true;
