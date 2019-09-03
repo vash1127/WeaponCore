@@ -61,7 +61,8 @@ namespace WeaponCore.Projectiles
         internal int MaxChaseAge;
         internal int GrowStep = 1;
         internal int EndStep;
-        internal int ModelId;
+        internal int PrimeModelId;
+        internal int TriggerModelId;
         internal int ZombieLifeTime;
         internal int LastOffsetTime;
         internal int PruningProxyId = -1;
@@ -86,6 +87,7 @@ namespace WeaponCore.Projectiles
         internal bool CheckPlanet;
         internal bool SmartsOn;
         internal bool Ewar;
+        internal bool EwarActive;
         internal bool Detect;
 
         internal WeaponSystem.FiringSoundState FiringSoundState;
@@ -125,7 +127,8 @@ namespace WeaponCore.Projectiles
             var probability = T.System.Values.Graphics.VisualProbability;
             EnableAv = !noAv && !noSAv && DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
 
-            T.EntityMatrix = MatrixD.Identity;
+            T.PrimeMatrix = MatrixD.Identity;
+            T.TriggerMatrix = MatrixD.Identity;
             ModelState = EntityState.None;
             LastEntityPos = Position;
 
@@ -142,6 +145,7 @@ namespace WeaponCore.Projectiles
             FirstOffScreen = true;
             AmmoSound = false;
             PositionChecked = false;
+            EwarActive = false;
             EndStep = 0;
             GrowStep = 1;
             DistanceTraveled = 0;
@@ -256,15 +260,23 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            ModelId = T.System.ModelId;
-            if (ModelId == -1 || T.System.IsBeamWeapon) ModelState = EntityState.None;
+            PrimeModelId = T.System.PrimeModelId;
+            TriggerModelId = T.System.TriggerModelId;
+            if (PrimeModelId == -1 && TriggerModelId == -1 || T.System.IsBeamWeapon) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)
                 {
                     ModelState = EntityState.Exists;
-                    ModelSphereCurrent.Radius = T.Entity.PositionComp.WorldVolume.Radius * 2;
-                    ModelSphereLast.Radius = T.Entity.PositionComp.WorldVolume.Radius * 2;
+
+                    double triggerModelSize = 0;
+                    double primeModelSize = 0;
+                    if (TriggerModelId != -1) triggerModelSize = T.TriggerEntity.PositionComp.WorldVolume.Radius;
+                    if (PrimeModelId != -1) primeModelSize = T.PrimeEntity.PositionComp.WorldVolume.Radius;
+                    var largestSize = triggerModelSize > primeModelSize ? triggerModelSize : primeModelSize;
+
+                    ModelSphereCurrent.Radius = largestSize * 2;
+                    ModelSphereLast.Radius = largestSize * 2;
                 }
                 else ModelState = EntityState.NoDraw;
             }
@@ -368,13 +380,12 @@ namespace WeaponCore.Projectiles
                 Watchers.Clear();
             }
 
-            if (!EnableAv && ModelId == -1)
+            if (!EnableAv && PrimeModelId == -1 && TriggerModelId == -1)
             {
                 for (int i = 0; i < VrTrajectiles.Count; i++)
                     manager.TrajectilePool[poolId].MarkForDeallocate(VrTrajectiles[i]);
                 VrTrajectiles.Clear();
-                T.HitList.Clear();
-                T.Target.Reset();
+                T.Clean();
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 if (DynamicGuidance)
                     DynTrees.UnregisterProjectile(this);
@@ -402,8 +413,7 @@ namespace WeaponCore.Projectiles
                     DynTrees.UnregisterProjectile(this);
 
                 VrTrajectiles.Clear();
-                T.HitList.Clear();
-                T.Target.Reset();
+                T.Clean();
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 PruningProxyId = -1;
                 State = ProjectileState.Dead;
@@ -412,10 +422,12 @@ namespace WeaponCore.Projectiles
 
         internal bool CloseModel(Projectiles manager, int poolId)
         {
-            T.EntityMatrix = MatrixD.Identity;
+            T.PrimeMatrix = MatrixD.Identity;
+            T.TriggerMatrix = MatrixD.Identity;
             T.Complete(null, true);
             manager.DrawProjectiles[poolId].Add(T);
-            manager.EntityPool[poolId][ModelId].MarkForDeallocate(T.Entity);
+            if (PrimeModelId != -1) manager.EntityPool[poolId][PrimeModelId].MarkForDeallocate(T.PrimeEntity);
+            if (TriggerModelId != -1) manager.EntityPool[poolId][TriggerModelId].MarkForDeallocate(T.TriggerEntity);
             ModelState = EntityState.None;
             return true;
         }
@@ -479,6 +491,7 @@ namespace WeaponCore.Projectiles
                         Log.Line("netted");
                         if (MyUtils.GetRandomInt(0, 100) < PulseChance)
                         {
+                            EwarActive = true;
                             Log.Line("change course");
                             netted.T.Target.Projectile = this;
                         }
@@ -486,12 +499,16 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case JumpNullField:
+                    if (MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    {
+                        EwarActive = true;
+                    }
                     break;
                 case Anchor:
                     break;
                 case EnergySink:
                     break;
-                case EmpPulse:
+                case Emp:
                     break;
             }
         }
@@ -539,11 +556,11 @@ namespace WeaponCore.Projectiles
             MatrixD matrix;
             if (ModelState == EntityState.Exists)
             {
-                matrix = MatrixD.CreateWorld(Position, AccelDir, T.Entity.PositionComp.WorldMatrix.Up);
+                matrix = MatrixD.CreateWorld(Position, AccelDir, T.PrimeEntity.PositionComp.WorldMatrix.Up);
                 if (T.IsShrapnel) MatrixD.Rescale(ref matrix, 0.5f);
                 var offVec = Position + Vector3D.Rotate(T.System.Values.Graphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
-                T.EntityMatrix = matrix;
+                T.PrimeMatrix = matrix;
             }
             else
             {
@@ -565,7 +582,6 @@ namespace WeaponCore.Projectiles
             ParticleStopped = false;
             ParticleLateStart = false;
         }
-
 
         private void PlayHitParticle()
         {

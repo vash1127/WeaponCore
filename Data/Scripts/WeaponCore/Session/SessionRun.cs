@@ -163,6 +163,9 @@ namespace WeaponCore
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
+
+                ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\SafeZone.mwm");
+                ModelCount++;
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }

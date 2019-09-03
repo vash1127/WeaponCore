@@ -9,10 +9,10 @@ namespace WeaponCore
 
     public class LogicState
     {
-        internal LogicStateValues Value = new LogicStateValues();
-        internal readonly WeaponComponent Comp;
-        internal readonly IMyLargeMissileTurret Turret;
-        internal LogicState(WeaponComponent comp)
+        public LogicStateValues Value = new LogicStateValues();
+        public readonly WeaponComponent Comp;
+        public readonly IMyLargeMissileTurret Turret;
+        public LogicState(WeaponComponent comp)
         {
             Comp = comp;
             Turret = comp.Turret;
@@ -21,7 +21,7 @@ namespace WeaponCore
                 if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponStateValues();
         }
 
-        internal void StorageInit()
+        public void StorageInit()
         {
             if (Turret.Storage == null)
             {
@@ -29,7 +29,7 @@ namespace WeaponCore
             }
         }
 
-        internal void SaveState(bool createStorage = false)
+        public void SaveState(bool createStorage = false)
         {
             if (Turret.Storage == null) return;
 
@@ -37,7 +37,7 @@ namespace WeaponCore
             Turret.Storage[Session.Instance.LogicStateGuid] = Convert.ToBase64String(binary);
         }
 
-        internal bool LoadState()
+        public bool LoadState()
         {
             if (Turret.Storage == null) return false;
 
@@ -60,7 +60,7 @@ namespace WeaponCore
         }
 
         #region Network
-        internal void NetworkUpdate()
+        public void NetworkUpdate()
         {
 
             if (Session.Instance.IsServer)
@@ -72,12 +72,12 @@ namespace WeaponCore
         #endregion
     }
 
-    internal class LogicSettings
+    public class LogicSettings
     {
-        internal LogicSettingsValues Value = new LogicSettingsValues();
-        internal readonly WeaponComponent Comp;
-        internal readonly IMyLargeMissileTurret Turret;
-        internal LogicSettings(WeaponComponent comp)
+        public LogicSettingsValues Value = new LogicSettingsValues();
+        public readonly WeaponComponent Comp;
+        public readonly IMyLargeMissileTurret Turret;
+        public LogicSettings(WeaponComponent comp)
         {
             Comp = comp;
             Turret = comp.Turret;
@@ -86,7 +86,7 @@ namespace WeaponCore
                 if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();
         }
 
-        internal void SaveSettings(bool createStorage = false)
+        public void SaveSettings(bool createStorage = false)
         {
             if (Turret.Storage == null) return;
 
@@ -94,7 +94,7 @@ namespace WeaponCore
             Turret.Storage[Session.Instance.LogicSettingsGuid] = Convert.ToBase64String(binary);
         }
 
-        internal bool LoadSettings()
+        public bool LoadSettings()
         {
             if (Turret.Storage == null) return false;
             string rawData;
@@ -117,7 +117,7 @@ namespace WeaponCore
         }
 
         #region Network
-        internal void NetworkUpdate()
+        public void NetworkUpdate()
         {
             Value.MId++;
             if (Session.Instance.IsServer)

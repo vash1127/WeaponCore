@@ -68,7 +68,6 @@ namespace WeaponCore
             if (Inited) return;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
-            DsUtil.Start("blockSpheres", true);
 
             foreach (var x in _weaponDefinitions)
             {
@@ -102,7 +101,6 @@ namespace WeaponCore
                         GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius / fragments, false));
                 }
             }
-            DsUtil.Complete();
             foreach (var weaponDef in _weaponDefinitions)
             {
                 foreach (var mount in weaponDef.Assignments.MountPoints)

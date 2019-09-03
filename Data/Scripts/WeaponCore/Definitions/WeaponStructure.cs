@@ -25,7 +25,9 @@ namespace WeaponCore.Support
         public readonly int TimeToCeaseFire;
         public readonly int MaxObjectsHit;
         public readonly int TargetLossTime;
-        public readonly int ModelId;
+        public readonly int PrimeModelId;
+        public readonly int TriggerModelId;
+
         public readonly int MaxHeat;
         public readonly int WeaponId;
         public readonly int BarrelsPerShot;
@@ -176,7 +178,7 @@ namespace WeaponCore.Support
 
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales);
             CollisionShape(out CollisionIsLine, out CollisionSize);
-            Models(out ModelId);
+            Models(out PrimeModelId, out TriggerModelId);
             Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
             Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
@@ -268,15 +270,17 @@ namespace WeaponCore.Support
             maxTargetRadius = (float)(maxDiameter > 0 ? maxDiameter * 0.5d : float.MaxValue);
         }
 
-        private void Models(out int modelId)
+        private void Models(out int primeModelId, out int triggerModelId)
         {
-
+            //triggerModelId = Values.Ammo.AreaEffect.AreaEffect > (AreaDamage.AreaEffectType) 3 ? (int)Values.Ammo.AreaEffect.AreaEffect - 3 : -1;
+            triggerModelId = 0;
             if (Values.Graphics.ModelName != string.Empty)
             {
-                modelId = Session.Instance.ModelCount++;
-                Session.Instance.ModelIdToName.Add(ModelId, Values.ModPath + Values.Graphics.ModelName);
+                primeModelId = Session.Instance.ModelCount++;
+                Session.Instance.ModelIdToName.Add(PrimeModelId, Values.ModPath + Values.Graphics.ModelName);
             }
-            else modelId = -1;
+            else primeModelId = -1;
+            Log.Line($"{primeModelId} - {triggerModelId}");
         }
 
         private void Emissives(out bool tracking, out bool firing, out bool heating, out bool reloading)

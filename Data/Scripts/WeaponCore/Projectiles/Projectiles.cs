@@ -64,6 +64,7 @@ namespace WeaponCore.Projectiles
         internal static MyEntity EntityActivator(string model)
         {
             var ent = new MyEntity();
+            Log.Line($"{model}");
             ent.Init(null, model, null, null, null);
             ent.Render.CastShadows = false;
             ent.IsPreview = true;
@@ -255,11 +256,13 @@ namespace WeaponCore.Projectiles
 
                     if (p.ModelState == EntityState.Exists)
                     {
-                        p.T.EntityMatrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
-                        if (p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle)
+                        var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
+                        if (p.PrimeModelId != -1) p.T.PrimeMatrix = matrix;
+                        if (p.TriggerModelId != -1) p.T.TriggerMatrix = matrix;
+                        if (p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle && p.PrimeModelId != -1)
                         {
-                            var offVec = p.Position + Vector3D.Rotate(p.T.System.Values.Graphics.Particles.Ammo.Offset, p.T.EntityMatrix);
-                            p.AmmoEffect.WorldMatrix = p.T.EntityMatrix;
+                            var offVec = p.Position + Vector3D.Rotate(p.T.System.Values.Graphics.Particles.Ammo.Offset, p.T.PrimeMatrix);
+                            p.AmmoEffect.WorldMatrix = p.T.PrimeMatrix;
                             p.AmmoEffect.SetTranslation(offVec);
                         }
                     }
@@ -279,8 +282,15 @@ namespace WeaponCore.Projectiles
                         }
                         if (p.Ewar)
                         {
+                            if (p.VelocityLengthSqr <= 0 && !p.T.Triggered)
+                            {
+                                Log.Line($"trigger active");
+                                p.T.Triggered = true;
+                            }
+
                             if (p.Age % p.PulseInterval == 0)
                                 p.ElectronicWarfare();
+                            else p.EwarActive = false;
                         }
                         else if (p.Detect)
                         {
@@ -377,7 +387,7 @@ namespace WeaponCore.Projectiles
         private bool Intersected(Projectile p,  List<Trajectile> drawList, HitEntity hitEntity)
         {
             if (hitEntity?.HitPos == null) return false;
-            if (p.EnableAv && (p.DrawLine || p.ModelId != -1))
+            if (p.EnableAv && (p.DrawLine || p.PrimeModelId != -1 || p.TriggerModelId != -1))
             {
                 var hitPos = hitEntity.HitPos.Value;
                 p.TestSphere.Center = hitPos;

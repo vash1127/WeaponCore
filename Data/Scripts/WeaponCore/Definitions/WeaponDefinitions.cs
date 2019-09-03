@@ -180,7 +180,7 @@ namespace WeaponCore.Support
             JumpNullField,
             EnergySink,
             Anchor,
-            EmpPulse,
+            Emp,
         }
 
         [ProtoMember(1)] internal double AreaEffectRadius;

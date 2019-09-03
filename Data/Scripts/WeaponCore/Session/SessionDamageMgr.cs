@@ -51,6 +51,9 @@ namespace WeaponCore
                         case HitEntity.Type.Projectile:
                             DamageProjectile(hitEnt, t);
                             continue;
+                        case HitEntity.Type.JumpNullField:
+                            JumpNullField(hitEnt, t);
+                            continue;
                     }
                     Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
                 }
@@ -385,22 +388,28 @@ namespace WeaponCore
 
         private void JumpNullField(HitEntity hitEnt, Trajectile t)
         {
+            var grid = hitEnt.Entity as MyCubeGrid;
             var system = t.System;
-            t.BaseDamagePool = 0;
-            var radius = system.Values.Ammo.AreaEffect.AreaEffectRadius;
-            var damage = system.Values.Ammo.AreaEffect.AreaEffectDamage;
-            if (system.VirtualBeams)
-                damage *= t.WeaponCache.Hits;
+            if (grid == null || !hitEnt.HitPos.HasValue) return;
+            t.ObjectsHit++;
+            float damageScale = 1;
+            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
 
-            if (hitEnt.HitPos.HasValue)
+            var scaledDamage = t.BaseDamagePool * damageScale;
+
+
+            var c = 0;
+            foreach (var fat in grid.GetFatBlocks())
             {
-                if (ExplosionReady)
-                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system);
-                else
-                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system, true);
+                var drive = fat as MyJumpDrive;
+                if (drive == null) continue;
+                //drive.IsJumping = false;
+                var drivePower = drive.CurrentStoredPower;
+                if (scaledDamage < drivePower) drive.CurrentStoredPower -= scaledDamage;
+                else drive.CurrentStoredPower = 0;
+
+                c++;
             }
-            else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue)
-                UtilsStatic.CreateFakeExplosion(radius, hitEnt.HitPos.Value, system);
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)

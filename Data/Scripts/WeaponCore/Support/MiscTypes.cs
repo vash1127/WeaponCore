@@ -18,10 +18,12 @@ namespace WeaponCore.Support
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
         internal WeaponSystem System;
         internal GridAi Ai;
-        internal MyEntity Entity;
+        internal MyEntity PrimeEntity;
+        internal MyEntity TriggerEntity;
         internal HitEntity HitEntity;
         internal WeaponFrameCache WeaponCache;
-        internal MatrixD EntityMatrix = MatrixD.Identity;
+        internal MatrixD PrimeMatrix = MatrixD.Identity;
+        internal MatrixD TriggerMatrix = MatrixD.Identity;
         internal Vector3D Position;
         internal Vector3D PrevPosition;
         internal Vector3D Direction;
@@ -29,6 +31,7 @@ namespace WeaponCore.Support
         internal int WeaponId;
         internal int MuzzleId;
         internal int ReSizeSteps;
+        internal int TriggerGrowthSteps;
         internal int ObjectsHit;
         internal double Length;
         internal double MaxSpeedLength;
@@ -42,11 +45,13 @@ namespace WeaponCore.Support
         internal bool Last;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
+        internal bool Triggered;
 
         internal void Complete(HitEntity hitEntity, bool last)
         {
             HitEntity = hitEntity;
             Last = last;
+
             var color = System.Values.Graphics.Line.Color;
             if (System.LineColorVariance)
             {
@@ -69,11 +74,12 @@ namespace WeaponCore.Support
             Color = color;
         }
 
-        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity entity, Target target, int weaponId, int muzzleId, Vector3D position, Vector3D direction)
+        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D position, Vector3D direction)
         {
             System = system;
             Ai = ai;
-            Entity = entity;
+            PrimeEntity = primeEntity;
+            TriggerEntity = triggerEntity;
             Target.Entity = target.Entity;
             Target.Projectile = target.Projectile;
             Target.FiringCube = target.FiringCube;
@@ -98,6 +104,20 @@ namespace WeaponCore.Support
             Position = position;
             Direction = direction;
             Length = length;
+        }
+
+        internal void Clean()
+        {
+            Target.Reset();
+            HitList.Clear();
+            System = null;
+            Ai = null;
+            PrimeEntity = null;
+            TriggerEntity = null;
+            HitEntity = null;
+            WeaponCache = null;
+            Triggered = false;
+            TriggerGrowthSteps = 0;
         }
     }
 

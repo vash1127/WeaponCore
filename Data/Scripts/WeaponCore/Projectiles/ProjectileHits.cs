@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -54,14 +53,17 @@ namespace WeaponCore.Projectiles
             var ai = p.T.Ai;
             var found = false;
             var pSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
+            var eWarInactive = p.Ewar && !p.EwarActive;
+            var eWarActive = p.Ewar && p.EwarActive;
             var jumpNullField = p.AreaEffect == AreaDamage.AreaEffectType.JumpNullField;
             var anchor = p.AreaEffect == AreaDamage.AreaEffectType.Anchor;
             var movementEffect = (jumpNullField || anchor);
-
+            var nullFieldActive = jumpNullField && eWarActive;
+            //Log.Line($"get all entities in line: LineCheck:{lineCheck} - ewarActive:{eWarActive} - ewarInactive:{eWarInactive} - jump:{jumpNullField} - Vel:{p.VelocityLengthSqr}");
             if (pSphere.Radius <= p.T.System.CollisionSize)
             {
                 pSphere.Center = p.Position;
-                pSphere.Radius = p.T.System.CollisionSize;
+                pSphere.Radius = !eWarActive ? p.T.System.CollisionSize : p.T.System.Values.Ammo.AreaEffect.AreaEffectRadius;
             }
 
             for (int i = 0; i < p.SegmentList.Count; i++)
@@ -70,7 +72,7 @@ namespace WeaponCore.Projectiles
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
                 if (grid != null && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
-                if (jumpNullField && p.VelocityLengthSqr <= 0 && grid == null) continue;
+                if (p.VelocityLengthSqr <= 0 && (eWarInactive || jumpNullField && grid == null)) continue;
 
                 if (!shieldByPass && !movementEffect)
                 {
@@ -103,6 +105,7 @@ namespace WeaponCore.Projectiles
                     var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                     var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                     if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref pSphere)) continue;
+                    Log.Line("loop3");
 
                     Vector3D? voxelHit = null;
                     if (voxel != null)
@@ -129,7 +132,6 @@ namespace WeaponCore.Projectiles
                         else using (voxel.Pin()) voxel.GetIntersectionWithLine(ref beam, out voxelHit);
                         if (!voxelHit.HasValue) continue;
                     }
-
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
                     hitEntity.PoolId = poolId;
@@ -139,9 +141,13 @@ namespace WeaponCore.Projectiles
                     hitEntity.CheckSize = p.T.System.CollisionSize;
 
                     if (voxelHit != null) hitEntity.HitPos = voxelHit;
+                    Log.Line("loop4");
 
                     if (grid != null)
-                        hitEntity.EventType = Grid;
+                    {
+                        hitEntity.EventType = !nullFieldActive ? Grid : JumpNullField;
+                        Log.Line($"see grid: {hitEntity.EventType}");
+                    }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;
                     else if (voxel != null)
@@ -264,8 +270,11 @@ namespace WeaponCore.Projectiles
                     if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Beam.From, hitEnt.HitPos.Value);
                     else
                     {
+                        Log.Line("test1");
                         if (hitEnt.SphereCheck)
                         {
+                            Log.Line("test2");
+                            var jumpNullField = hitEnt.EventType == JumpNullField;
                             var sphere = new BoundingSphereD(hitEnt.Beam.To, 0).Include(new BoundingSphereD(hitEnt.Beam.From, 0));
                             if (sphere.Radius < hitEnt.CheckSize) sphere.Radius = hitEnt.CheckSize;
                             if (sphere.Radius <= hitEnt.CheckSize)
@@ -273,22 +282,29 @@ namespace WeaponCore.Projectiles
                                 sphere.Center = hitEnt.Beam.To;
                                 sphere.Radius = hitEnt.CheckSize;
                             }
-                            var hashSet = HitEntity.CastOrGetHashSet(hitEnt, ((MyCubeGrid)null)?.CubeBlocks);
-                            grid.GetBlocksInsideSphere(ref sphere, hashSet, false);
                             dist = 0;
                             hitEnt.Hit = true;
-                            var hitPos = sphere.Center + (hitEnt.Beam.Direction * sphere.Radius);
+                            var hitPos = !jumpNullField ? sphere.Center + (hitEnt.Beam.Direction * sphere.Radius) : sphere.Center;
                             hitEnt.HitPos = hitPos;
-                            hitEnt.Blocks.AddRange(hashSet);
-                            hitEnt.Blocks.Sort((a, b) =>
+
+                            if (!jumpNullField)
                             {
-                                var aPos = grid.GridIntegerToWorld(a.Position);
-                                var bPos = grid.GridIntegerToWorld(b.Position);
-                                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
-                            });
+                                Log.Line("test3");
+                                var hashSet = HitEntity.CastOrGetHashSet(hitEnt, ((MyCubeGrid)null)?.CubeBlocks);
+                                grid.GetBlocksInsideSphere(ref sphere, hashSet, false);
+
+                                hitEnt.Blocks.AddRange(hashSet);
+                                hitEnt.Blocks.Sort((a, b) =>
+                                {
+                                    var aPos = grid.GridIntegerToWorld(a.Position);
+                                    var bPos = grid.GridIntegerToWorld(b.Position);
+                                    return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
+                                });
+                            }
                         }
                         else
                         {
+                            Log.Line("test4");
                             grid.RayCastCells(beam.From, beam.To, slims, null, true, true);
                             var closestBlockFound = false;
                             for (int j = 0; j < slims.Count; j++)

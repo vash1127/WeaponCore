@@ -73,9 +73,7 @@ namespace WeaponCore.Platform
                 Projectile vProjectile = null;
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
                 var targetable = System.Values.Ammo.Health > 0;
-
                 if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
-
                 var isStatic = Comp.Physics.IsStatic;
                 for (int i = 0; i < bps; i++)
                 {
@@ -120,21 +118,36 @@ namespace WeaponCore.Platform
 
                         if (System.VirtualBeams && j == 0)
                         {
-                            MyEntity e = null;
+                            MyEntity primeE = null;
+                            MyEntity triggerE = null;
+
                             Trajectile t;
                             session.Projectiles.TrajectilePool[session.ProCounter].AllocateOrCreate(out t);
-                            if (System.ModelId != -1)
+                            if (System.PrimeModelId != -1)
                             {
                                 MyEntity ent;
-                                session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out ent);
+                                session.Projectiles.EntityPool[session.ProCounter][System.PrimeModelId].AllocateOrCreate(out ent);
                                 if (!ent.InScene)
                                 {
                                     ent.InScene = true;
                                     ent.Render.AddRenderObjects();
                                 }
-                                e = ent;
+                                primeE = ent;
                             }
-                            t.InitVirtual(System, Comp.Ai, e, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
+
+                            if (System.TriggerModelId != -1)
+                            {
+                                MyEntity ent;
+                                session.Projectiles.EntityPool[session.ProCounter][System.TriggerModelId].AllocateOrCreate(out ent);
+                                if (!ent.InScene)
+                                {
+                                    //ent.InScene = false;
+                                    //ent.Render.AddRenderObjects();
+                                }
+                                triggerE = ent;
+                            }
+
+                            t.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                             vProjectile.VrTrajectiles.Add(t);
                             if (System.RotateRealBeam && i == _nextVirtual)
                             {
@@ -166,16 +179,29 @@ namespace WeaponCore.Platform
                             p.Direction = muzzle.DeviatedDir;
                             p.State = Projectile.ProjectileState.Start;
 
-                            if (System.ModelId != -1)
+                            if (System.PrimeModelId != -1)
                             {
+                                Log.Line($"Prime:{System.PrimeModelId}");
                                 MyEntity ent;
-                                session.Projectiles.EntityPool[session.ProCounter][System.ModelId].AllocateOrCreate(out ent);
+                                session.Projectiles.EntityPool[session.ProCounter][System.PrimeModelId].AllocateOrCreate(out ent);
                                 if (!ent.InScene)
                                 {
                                     ent.InScene = true;
                                     ent.Render.AddRenderObjects();
                                 }
-                                p.T.Entity = ent;
+                                p.T.PrimeEntity = ent;
+                            }
+
+                            if (System.TriggerModelId != -1)
+                            {
+                                MyEntity ent;
+                                session.Projectiles.EntityPool[session.ProCounter][System.TriggerModelId].AllocateOrCreate(out ent);
+                                if (!ent.InScene)
+                                {
+                                    //ent.InScene = true;
+                                    //ent.Render.AddRenderObjects();
+                                }
+                                p.T.TriggerEntity = ent;
                             }
 
                             if (targetable)

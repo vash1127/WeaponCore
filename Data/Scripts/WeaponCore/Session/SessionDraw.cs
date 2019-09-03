@@ -16,19 +16,39 @@ namespace WeaponCore
             for (int i = 0; i < drawList.Count; i++)
             {
                 var t = drawList[i];
-                if (t.Entity != null)
+                if (t.PrimeEntity != null)
                 {
-                    if (!t.Last && !t.Entity.InScene)
+                    if (!t.Last && !t.PrimeEntity.InScene)
                     {
-                        t.Entity.InScene = true;
-                        t.Entity.Render.UpdateRenderObject(true, false);
+                        t.PrimeEntity.InScene = true;
+                        t.PrimeEntity.Render.UpdateRenderObject(true, false);
                     }
 
-                    t.Entity.PositionComp.SetWorldMatrix(t.EntityMatrix, null, false, false, false);
+                    t.PrimeEntity.PositionComp.SetWorldMatrix(t.PrimeMatrix, null, false, false, false);
                     if (t.Last)
                     {
-                        t.Entity.InScene = false;
-                        t.Entity.Render.RemoveRenderObjects();
+                        t.PrimeEntity.InScene = false;
+                        t.PrimeEntity.Render.RemoveRenderObjects();
+                    }
+                    if (!t.System.Values.Graphics.Line.Trail && t.TriggerEntity == null) continue;
+                }
+
+                if (t.Triggered && t.TriggerEntity != null)
+                {
+                    Log.Line($"{Tick} - {t.TriggerEntity.InScene} - {t.Last}");
+                    if (!t.Last && !t.TriggerEntity.InScene)
+                    {
+                        t.TriggerEntity.InScene = true;
+                        t.TriggerEntity.Render.UpdateRenderObject(true, false);
+                    }
+
+                    var matrix = t.TriggerMatrix;
+                    if (++t.TriggerGrowthSteps * 0.01f <= 1) matrix = MatrixD.Rescale(t.TriggerMatrix, t.TriggerGrowthSteps * 0.01f);
+                    t.TriggerEntity.PositionComp.SetWorldMatrix(matrix, null, false, false, false);
+                    if (t.Last)
+                    {
+                        t.TriggerEntity.InScene = false;
+                        t.TriggerEntity.Render.RemoveRenderObjects();
                     }
                     if (!t.System.Values.Graphics.Line.Trail) continue;
                 }
