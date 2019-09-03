@@ -78,6 +78,7 @@ namespace WeaponCore.Support
         public readonly double MaxTrajectorySqr;
         public readonly double AreaRadiusSmall;
         public readonly double AreaRadiusLarge;
+        public readonly double AreaEffectSize;
         public readonly double DetonateRadiusSmall;
         public readonly double DetonateRadiusLarge;
         public readonly double MaxTargetSpeed;
@@ -153,6 +154,7 @@ namespace WeaponCore.Support
             BaseDamage = values.Ammo.BaseDamage;
             RateOfFire = values.HardPoint.Loading.RateOfFire;
             AreaEffectDamage = Values.Ammo.AreaEffect.AreaEffectDamage;
+            AreaEffectSize = Values.Ammo.AreaEffect.AreaEffectRadius;
             DetonationDamage = Values.Ammo.AreaEffect.Detonation.DetonationDamage;
             if (WepCooldown < .2f) WepCooldown = .2f;
             if(WepCooldown > .95f) WepCooldown = .95f;
