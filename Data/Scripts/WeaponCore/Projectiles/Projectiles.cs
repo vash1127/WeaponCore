@@ -284,7 +284,7 @@ namespace WeaponCore.Projectiles
                         {
                             if (p.VelocityLengthSqr <= 0 && !p.T.Triggered)
                             {
-                                Log.Line($"trigger active");
+                                Log.Line($"trigger active - Age:{p.Age}");
                                 p.T.Triggered = true;
                             }
 
