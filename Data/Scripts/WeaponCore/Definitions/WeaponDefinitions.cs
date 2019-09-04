@@ -17,6 +17,7 @@ namespace WeaponCore.Support
         [ProtoMember(9)] internal string ModPath;
     }
 
+
     [ProtoContract]
     public struct ModelAssignments
     {
@@ -157,7 +158,6 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal bool CountBlocks;
     }
 
-
     [ProtoContract]
     public struct BeamDefinition
     {
@@ -178,9 +178,11 @@ namespace WeaponCore.Support
             Radiant,
             AntiSmart,
             JumpNullField,
-            EnergySink,
-            Anchor,
-            Emp,
+            EnergySinkField,
+            AnchorField,
+            EmpField,
+            OffenseField,
+            NavField,
         }
 
         [ProtoMember(1)] internal double AreaEffectRadius;
@@ -189,6 +191,7 @@ namespace WeaponCore.Support
         [ProtoMember(4)] internal AreaEffectType AreaEffect;
         [ProtoMember(5)] internal Detonate Detonation;
         [ProtoMember(6)] internal Explosion Explosions;
+        [ProtoMember(7)] internal EwarFields EwarFields;
     }
 
     [ProtoContract]
@@ -196,6 +199,14 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal int Interval;
         [ProtoMember(2)] internal int PulseChance;
+    }
+
+    [ProtoContract]
+    public struct EwarFields
+    {
+        [ProtoMember(1)] internal int Duration;
+        [ProtoMember(2)] internal bool StackDuration;
+        [ProtoMember(3)] internal bool Depletable;
     }
 
     [ProtoContract]

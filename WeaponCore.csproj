@@ -53,6 +53,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\CompData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializeDataClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializedValues.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionAreaEffect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionDamageMgr.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionInventory.cs" />

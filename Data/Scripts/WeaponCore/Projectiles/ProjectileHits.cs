@@ -71,7 +71,7 @@ namespace WeaponCore.Projectiles
                 var destroyable = ent as IMyDestroyableObject;
                 if (grid != null && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
 
-                if (!shieldByPass && !p.MovementField)
+                if (!shieldByPass && !p.EwarActive)
                 {
                     var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                     if (shieldBlock != null)
@@ -139,7 +139,7 @@ namespace WeaponCore.Projectiles
 
                     if (grid != null)
                     {
-                        hitEntity.EventType = !(p.EwarActive && p.AreaEffect == AreaDamage.AreaEffectType.JumpNullField) ? Grid : JumpNullField;
+                        hitEntity.EventType = !(p.EwarActive && p.FieldEffect) ? Grid : Field;
                     }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;
@@ -150,7 +150,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (p.T.Target.IsProjectile && !p.MovementField)
+            if (p.T.Target.IsProjectile && !p.FieldEffect)
             {
                 var targetPos = p.T.Target.Projectile.Position;
                 var sphere = new BoundingSphereD(targetPos, p.T.Target.Projectile.T.System.CollisionSize);
@@ -263,7 +263,7 @@ namespace WeaponCore.Projectiles
                     {
                         if (hitEnt.SphereCheck)
                         {
-                            var fieldActive = hitEnt.EventType == JumpNullField;
+                            var fieldActive = hitEnt.EventType == Field;
 
                             dist = 0;
                             hitEnt.Hit = true;

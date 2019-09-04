@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -51,8 +52,10 @@ namespace WeaponCore
                         case HitEntity.Type.Projectile:
                             DamageProjectile(hitEnt, t);
                             continue;
-                        case HitEntity.Type.JumpNullField:
-                            JumpNullField(hitEnt, t);
+                        case HitEntity.Type.Field:
+                            DsUtil.Start("");
+                            ComputeField(hitEnt, t);
+                            DsUtil.Complete();
                             continue;
                     }
                     Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
@@ -384,31 +387,6 @@ namespace WeaponCore
             }
             else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue)
                 UtilsStatic.CreateFakeExplosion(radius, hitEnt.HitPos.Value, system);
-        }
-
-        private void JumpNullField(HitEntity hitEnt, Trajectile t)
-        {
-            var grid = hitEnt.Entity as MyCubeGrid;
-            var system = t.System;
-            if (grid == null || !hitEnt.HitPos.HasValue) return;
-            t.ObjectsHit++;
-            float damageScale = 1;
-            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
-
-            var scaledDamage = t.BaseDamagePool * damageScale;
-            var c = 0;
-            DsUtil.Start("");
-            foreach (var fat in grid.GetFatBlocks())
-            {
-                var drive = fat as MyJumpDrive;
-                if (drive == null) continue;
-                //drive.IsJumping = false;
-                var drivePower = drive.CurrentStoredPower;
-                if (scaledDamage < drivePower) drive.CurrentStoredPower -= scaledDamage;
-                else drive.CurrentStoredPower = 0;
-                c++;
-            }
-            DsUtil.Complete();
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)

@@ -274,7 +274,7 @@ namespace WeaponCore.Support
 
         private void Models(out int primeModelId, out int triggerModelId)
         {
-            if (Values.Ammo.AreaEffect.AreaEffect == AreaDamage.AreaEffectType.JumpNullField) triggerModelId = 0;
+            if (Values.Ammo.AreaEffect.AreaEffect > (AreaDamage.AreaEffectType)3) triggerModelId = 0;
             else triggerModelId  = -1;
             if (Values.Graphics.ModelName != string.Empty)
             {
