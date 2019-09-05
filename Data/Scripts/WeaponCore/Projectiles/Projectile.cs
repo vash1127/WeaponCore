@@ -235,7 +235,6 @@ namespace WeaponCore.Projectiles
             FiringSoundState = T.System.FiringSound;
             AmmoTravelSoundRangeSqr = T.System.AmmoTravelSoundDistSqr;
             AreaEffect = T.System.Values.Ammo.AreaEffect.AreaEffect;
-
             Ewar = AreaEffect > (AreaEffectType) 2;
             FieldEffect = AreaEffect > (AreaEffectType) 3;
             PulseInterval = T.System.Values.Ammo.AreaEffect.Pulse.Interval;

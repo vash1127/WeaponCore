@@ -172,7 +172,6 @@ namespace WeaponCore
             var healthPool = !depletable ? t.BaseHealthPool : float.MaxValue;
             var pruneSphere = hitEnt.PruneSphere;
             if (grid == null || grid.MarkedForClose || healthPool <= 0) return;
-
             var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
             var duration = (uint)eWarInfo.Duration;
             var stack = eWarInfo.StackDuration;

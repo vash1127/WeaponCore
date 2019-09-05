@@ -257,8 +257,12 @@ namespace WeaponCore.Projectiles
                     if (p.ModelState == EntityState.Exists)
                     {
                         var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
-                        if (p.PrimeModelId != -1) p.T.PrimeMatrix = matrix;
-                        if (p.TriggerModelId != -1) p.T.TriggerMatrix = matrix;
+
+                        if (p.PrimeModelId != -1)
+                            p.T.PrimeMatrix = matrix;
+                        if (p.TriggerModelId != -1 && p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize)
+                            p.T.TriggerMatrix = matrix;
+
                         if (p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle && p.PrimeModelId != -1)
                         {
                             var offVec = p.Position + Vector3D.Rotate(p.T.System.Values.Graphics.Particles.Ammo.Offset, p.T.PrimeMatrix);
@@ -286,6 +290,30 @@ namespace WeaponCore.Projectiles
                             {
                                 Log.Line($"trigger active - Age:{p.Age} - {p.VelocityLengthSqr}");
                                 p.T.Triggered = true;
+                            }
+
+                            if (p.T.Triggered)
+                            {
+                                var areaSize = p.T.System.AreaEffectSize;
+                                if (p.T.TriggerGrowthSteps < areaSize)
+                                {
+                                    const int expansionPerTick = 100 / 60;
+                                    var nextSize = (double)++p.T.TriggerGrowthSteps * expansionPerTick;
+                                    if (nextSize <= areaSize)
+                                    {
+                                        var nextRound = nextSize + 1;
+                                        if (nextRound > areaSize)
+                                        {
+                                            if (nextSize < areaSize)
+                                            {
+                                                nextSize = areaSize;
+                                                ++p.T.TriggerGrowthSteps;
+                                            }
+                                        }
+                                        MatrixD.Rescale(ref p.T.TriggerMatrix, nextSize * 2);
+                                    }
+                                    Log.Line($"{p.T.TriggerMatrix.Scale.AbsMax()}");
+                                }
                             }
 
                             if (p.Age % p.PulseInterval == 0)
