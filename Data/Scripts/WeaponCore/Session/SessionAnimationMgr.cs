@@ -83,7 +83,10 @@ namespace WeaponCore
                             rotationSet.Add(rotation);
                         }
                         else
+                        {
                             rotationSet.Add(null);
+                            Log.Line($"Move type: {move.MovementType}");
+                        }
 
                         if (move.linearPoints != null && move.linearPoints.Length > 0 || move.MovementType == RelMove.MoveType.Delay)
                         {
@@ -323,7 +326,11 @@ namespace WeaponCore
             }
 
             if (rotation != null)
-                localMatrix *= (Matrix)rotation;
+            {
+                //AnimationData.Animation.Part.Render.FadeOut = true;
+                //AnimationData.Animation.Part.Render.RemoveRenderObjects();
+                localMatrix *= (Matrix) rotation;
+            }
 
 
             AnimationData.newMatrix = localMatrix;
