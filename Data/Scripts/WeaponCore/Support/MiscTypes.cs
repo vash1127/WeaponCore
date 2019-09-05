@@ -139,7 +139,7 @@ namespace WeaponCore.Support
             Destroyable,
             Stale,
             Projectile,
-            JumpNullField,
+            Field,
         }
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();

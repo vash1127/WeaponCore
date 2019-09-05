@@ -54,6 +54,8 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 Projectiles.Update();
 
+                if (_effectedCubes.Count > 0) ApplyEffect();
+
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
             }
@@ -175,6 +177,7 @@ namespace WeaponCore
 
         protected override void UnloadData()
         {
+            PurgeAllEffects();
             SApi.Unload();
 
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);

@@ -7,7 +7,7 @@ using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.AreaDamage.AreaEffectType;
+using static WeaponCore.Support.AreaDamage;
 using static WeaponCore.Support.Trajectile;
 
 namespace WeaponCore.Projectiles
@@ -90,9 +90,7 @@ namespace WeaponCore.Projectiles
         internal bool Ewar;
         internal bool EwarActive;
         internal bool FieldActive;
-        internal bool MovementField;
-        internal bool JumpField;
-        internal bool AnchorField;
+        internal bool FieldEffect;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
@@ -238,13 +236,10 @@ namespace WeaponCore.Projectiles
             AmmoTravelSoundRangeSqr = T.System.AmmoTravelSoundDistSqr;
             AreaEffect = T.System.Values.Ammo.AreaEffect.AreaEffect;
 
-            Ewar = AreaEffect > (AreaDamage.AreaEffectType) 2;
+            Ewar = AreaEffect > (AreaEffectType) 2;
+            FieldEffect = AreaEffect > (AreaEffectType) 3;
             PulseInterval = T.System.Values.Ammo.AreaEffect.Pulse.Interval;
             PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
-
-            JumpField = AreaEffect == JumpNullField;
-            AnchorField = AreaEffect == Anchor;
-            MovementField = (JumpField || AnchorField);
 
             PruneQuery = DynamicGuidance ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
             if (T.Ai.StaticEntitiesInRange && !DynamicGuidance) StaticEntCheck();
@@ -490,7 +485,7 @@ namespace WeaponCore.Projectiles
         {
             switch (AreaEffect)
             {
-                case AntiSmart:
+                case AreaEffectType.AntiSmart:
                     var eWarSphere = new BoundingSphereD(Position, T.System.AreaEffectSize);
                     DynTrees.GetAllProjectilesInSphere(ref eWarSphere, EwaredProjectiles, false);
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
@@ -507,18 +502,47 @@ namespace WeaponCore.Projectiles
                     }
                     EwaredProjectiles.Clear();
                     break;
-                case JumpNullField:
+                case AreaEffectType.JumpNullField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
                         Log.Line($"jumpNullField Pulse");
                         EwarActive = true;
                     }
                     break;
-                case Anchor:
+                case AreaEffectType.AnchorField:
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    {
+                        Log.Line($"jumpAnchorFieldNullField Pulse");
+                        EwarActive = true;
+                    }
                     break;
-                case EnergySink:
+                case AreaEffectType.EnergySinkField:
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    {
+                        Log.Line($"EnergySinkField Pulse");
+                        EwarActive = true;
+                    }
                     break;
-                case Emp:
+                case AreaEffectType.EmpField:
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    {
+                        Log.Line($"EmpField Pulse");
+                        EwarActive = true;
+                    }
+                    break;
+                case AreaEffectType.OffenseField:
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    {
+                        Log.Line($"OffenseField Pulse");
+                        EwarActive = true;
+                    }
+                    break;
+                case AreaEffectType.NavField:
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    {
+                        Log.Line($"NavField Pulse");
+                        EwarActive = true;
+                    }
                     break;
             }
         }
