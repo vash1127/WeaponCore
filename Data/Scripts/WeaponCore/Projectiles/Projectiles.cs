@@ -65,7 +65,6 @@ namespace WeaponCore.Projectiles
         internal static MyEntity EntityActivator(string model)
         {
             var ent = new MyEntity();
-            Log.Line($"{model}");
             ent.Init(null, model, null, null, null);
             ent.Render.CastShadows = false;
             ent.IsPreview = true;

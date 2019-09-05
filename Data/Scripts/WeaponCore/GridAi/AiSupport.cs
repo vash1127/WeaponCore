@@ -328,7 +328,7 @@ namespace WeaponCore.Support
 
             foreach (var source in Sources)
             {
-                var battery = source.Entity as IMyBatteryBlock;
+                var battery = source.Entity as MyBatteryBlock;
                 if (battery != null)
                 {
                     if (!battery.IsWorking) continue;

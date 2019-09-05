@@ -196,10 +196,10 @@ namespace WeaponCore
                         if (!(cube is IMyPowerProducer)) continue;
                         break;
                     case AnchorField:
-                        if (!(cube is IMyThrust)) continue;
+                        if (!(cube is MyThrust)) continue;
                         break;
                     case NavField:
-                        if (!(cube is IMyGyro)) continue;
+                        if (!(cube is MyGyro)) continue;
                         break;
                     case OffenseField:
                         if (!(cube is IMyGunBaseUser)) continue;
