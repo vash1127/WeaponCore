@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 using ParallelTasks;
-using Sandbox.Game.GUI.HudViewers;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimationSetDef;
@@ -29,25 +22,24 @@ namespace WeaponCore
         {
             var allAnimationSet = new Dictionary<EventOptions, HashSet<PartAnimation>>();
 
-
+            if(weaponAnimationSets == null) return new Dictionary<EventOptions, HashSet<PartAnimation>>();
             foreach (var animationSet in weaponAnimationSets)
             {
-                var subpart = parts.NameToEntity[animationSet.SubpartId];
+                MyEntitySubpart subpart = parts.NameToEntity[animationSet.SubpartId] as MyEntitySubpart;
                 if (subpart == null) continue;
+                Vector3 center = parts.NameToEntity[animationSet.SubpartId].PositionComp.GetPosition() - parts.NameToEntity[animationSet.SubpartId].Parent.PositionComp.GetPosition();
+
 
                 foreach (var moves in animationSet.EventMoveSets)
                 {
                     if (!allAnimationSet.ContainsKey(moves.Key))
                         allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
 
-                    List<double> moveSet = new List<double>();
-                    List<MatrixD> rotationSet = new List<MatrixD>();
-                    List<MatrixD> rotCenterSet = new List<MatrixD>();
+                    List<Vector3?> moveSet = new List<Vector3?>();
+                    List<MatrixD?> rotationSet = new List<MatrixD?>();
+                    List<MatrixD?> rotCenterSet = new List<MatrixD?>();
                     var moveIndexer = new List<int[]>();
-                    var rotation = MatrixD.Zero;
                     var rotCenter = MatrixD.Zero;
-                    var center = Vector3D.Zero;
-                    var dirVectors = new double[][] { new double[] { 0, 0, 0, 0 } };
 
                     for (int i = 0; i < moves.Value.Length; i++)
                     {
@@ -67,111 +59,172 @@ namespace WeaponCore
                         if (move.rotation.x > 0 || move.rotation.y > 0 || move.rotation.z > 0 ||
                             move.rotation.x < 0 || move.rotation.y < 0 || move.rotation.z < 0)
                         {
-                            rotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.rotation.x)) +
-                                       MatrixD.CreateRotationY(MathHelperD.ToRadians(move.rotation.y)) +
-                                       MatrixD.CreateRotationZ(MathHelperD.ToRadians(move.rotation.z));
-                        }
+                            var rotation = MatrixD.Zero;
 
-                        rotationSet.Add(rotation);
+                            if (move.rotation.x > 0 || move.rotation.x < 0)
+                                rotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.rotation.x / move.ticksToMove)); ;
 
-                        if (move.linearPoints.Length > 0)
-                        {
-
-                            dirVectors = new double[move.linearPoints.Length][];
-                            double distance = 0;
-                            for (int j = 0; j < move.linearPoints.Length; j++)
-                            {
-                                var point = move.linearPoints[j];
-
-                                var d = Math.Sqrt((point.x * point.x) + (point.y * point.y) +
-                                                  (point.z * point.z));
-
-                                distance += d;
-
-                                var dv = new double[4] { d, point.x / d, point.y / d, point.z / d };
-
-                                dirVectors[j] = dv;
-                            }
-                            try
-                            {
-                                if (move.MovementType == RelMove.MoveType.ExpoDecay)
-                                {
-
-                                    var traveled = 0d;
-
-                                    var check = 1d;
-                                    var rate = 0d;
-                                    while (check > 0)
-                                    {
-                                        rate += 0.001;
-                                        check = distance * Math.Pow(1 - rate, move.ticksToMove);
-                                        if (check < 0.0001) check = 0;
-
-                                    }
-                                    for (int j = 0; j < move.ticksToMove; j++)
-                                    {
-                                        var step = distance * Math.Pow(1 - rate, j + 1);
-                                        if (step < 0.0001) step = 0;
-
-                                        var lastTraveled = traveled;
-                                        traveled = distance - step;
-                                        var changed = traveled - lastTraveled;
-
-                                        moveSet.Add(changed);
-                                        moveIndexer.Add(new[] { j, rotationSet.Count - 1, rotCenterSet.Count - 1 });
-                                    }
-                                }
-                                else if (move.MovementType == RelMove.MoveType.ExpoGrowth)
-                                {
-                                }
+                            if (move.rotation.y > 0 || move.rotation.y < 0)
+                                if(move.rotation.x > 0 || move.rotation.x < 0)
+                                    rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.rotation.y / move.ticksToMove));
                                 else
+                                    rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.rotation.y / move.ticksToMove));
+
+                            if (move.rotation.z > 0 || move.rotation.z < 0)
+                                if (move.rotation.x > 0 || move.rotation.x < 0 || move.rotation.y > 0 || move.rotation.y < 0)
+                                    rotation *= MatrixD.CreateRotationZ(MathHelperD.ToRadians(move.rotation.z / move.ticksToMove));
+                                else
+                                    rotation = MatrixD.CreateRotationZ(MathHelperD.ToRadians(move.rotation.z / move.ticksToMove));
+
+
+                            rotation = Matrix.CreateTranslation(-center) * (Matrix) rotation *
+                                       Matrix.CreateTranslation(center);
+
+                            rotationSet.Add(rotation);
+                        }
+                        else
+                            rotationSet.Add(null);
+
+                        if (move.linearPoints != null && move.linearPoints.Length > 0 || move.MovementType == RelMove.MoveType.Delay)
+                        {
+                            double[][] tmpDirVec = new double[0][];
+                            double distance = 0;
+
+                            if (move.linearPoints != null)
+                            {
+                                 tmpDirVec = new double[move.linearPoints.Length][];
+                                
+                                for (int j = 0; j < move.linearPoints.Length; j++)
                                 {
-                                    var distancePerTick = distance / move.ticksToMove;
-                                    moveSet.Add(distancePerTick);
-                                    for (int j = 0; j < move.ticksToMove; j++)
-                                    {
-                                        moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1 });
-                                    }
+                                    var point = move.linearPoints[j];
+
+                                    var d = Math.Sqrt((point.x * point.x) + (point.y * point.y) +
+                                                      (point.z * point.z));
+
+                                    distance += d;
+
+                                    var dv = new double[4] {d, point.x / d, point.y / d, point.z / d};
+
+                                    tmpDirVec[j] = dv;
                                 }
                             }
-                            catch (Exception ex)
+
+                            if (move.MovementType == RelMove.MoveType.ExpoDecay && tmpDirVec != null)
                             {
-                                Log.Line($"Exception In animation Creation: {ex.Message}   {ex.StackTrace}");
-                                allAnimationSet = new Dictionary<EventOptions, HashSet<PartAnimation>>();
+                                var traveled = 0d;
+
+                                var check = 1d;
+                                var rate = 0d;
+                                while (check > 0)
+                                {
+                                    rate += 0.001;
+                                    check = distance * Math.Pow(1 - rate, move.ticksToMove);
+                                    if (check < 0.01) check = 0;
+
+                                }
+
+                                var vectorCount = 0;
+                                var remaining = 0d;
+                                var vecTotalMoved = 0d;
+                                for (int j = 0; j < move.ticksToMove; j++)
+                                {
+                                    var step = distance * Math.Pow(1 - rate, j + 1);
+                                    if (step < 0.01) step = 0;
+
+                                    var lastTraveled = traveled;
+                                    traveled = distance - step;
+                                    var changed = traveled - lastTraveled;
+
+                                    changed += remaining;
+                                    if ( changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
+                                    {
+                                        var origMove = changed;
+                                        changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                        remaining = origMove - changed;
+                                        vecTotalMoved = 0;
+                                    }
+                                    else
+                                    {
+                                        vecTotalMoved += changed;
+                                        remaining = 0;
+                                    }
+
+
+                                    var vector = new Vector3(tmpDirVec[vectorCount][1] * changed, tmpDirVec[vectorCount][2] * changed, tmpDirVec[vectorCount][3] * changed);
+
+                                    moveSet.Add(vector);
+                                    moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1 });
+
+                                    if(remaining > 0)
+                                        vectorCount++;
+                                }
+                            }
+                            else if (move.MovementType == RelMove.MoveType.ExpoGrowth && tmpDirVec != null)
+                            {
+
+                            }
+                            else if (move.MovementType == RelMove.MoveType.Delay)
+                            {
+                                moveSet.Add(null);
+                                for (int j = 0; j < move.ticksToMove; j++)
+                                {
+                                    moveIndexer.Add(new[]
+                                        {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1});
+                                }
+                            }
+                            else if (move.MovementType == RelMove.MoveType.Linear && tmpDirVec != null)
+                            {
+                                var distancePerTick = distance / move.ticksToMove;
+                                var vectorCount = 0;
+                                var remaining = 0d;
+                                var vecTotalMoved = 0d;
+                                for (int j = 0; j < move.ticksToMove; j++)
+                                {
+                                    var changed = distancePerTick + remaining;
+                                    if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
+                                    {
+                                        var origMove = changed;
+                                        changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                        remaining = origMove - changed;
+                                        vecTotalMoved = 0;
+                                    }
+                                    else
+                                    {
+                                        vecTotalMoved += changed;
+                                        remaining = 0;
+                                    }
+
+                                    var vector = new Vector3(tmpDirVec[vectorCount][1] * changed, tmpDirVec[vectorCount][2] * changed, tmpDirVec[vectorCount][3] * changed);
+
+                                    moveSet.Add(vector);
+                                    moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1 });
+
+                                    if (remaining > 0)
+                                        vectorCount++;
+                                }
+                            }
+                            else
+                            {
+                                moveSet.Add(new Vector3(0, 0, 0));
+
+                                for (int j = 0; j < move.ticksToMove; j++)
+                                {
+
+                                    moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1 });
+                                }
                             }
 
                         }
                         else
                         {
-                            //var singleMove = MatrixD.Zero;
-                            //moveSet.Add(singleMove);
-                            moveSet.Add(0);
+                            moveSet.Add(new Vector3(0,0,0));
 
                             for (int j = 0; j < move.ticksToMove; j++)
                             {
 
-                                moveIndexer[j] = new[] { 0, rotationSet.Count - 1, rotCenterSet.Count - 1 };
+                                moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1 });
                             }
                         }
-
-                        /*for (int j = 0; j < dirVectors.Length; j++)
-                                {
-                                    //var singleMove = MatrixD.CreateTranslation(dirVectors[j][1] * distancePerTick,
-                                    //    dirVectors[j][2] * distancePerTick, dirVectors[j][3] * distancePerTick);
-                                    //moveSet.Add(singleMove);
-
-                                    var numMoves = dirVectors[j][0] / distancePerTick;
-                                    for (int k = 0; k < numMoves; k++)
-                                    {
-                                        moveIndexer.Add(new int[]
-                                        {
-                                            moveSet.Count - 1,
-                                            rotationSet.Count - 1,
-                                            rotCenterSet.Count - 1,
-                                        });
-                                    }
-                                }*/
-
                     }
 
                     var loop = false;
@@ -183,9 +236,11 @@ namespace WeaponCore
                     if (animationSet.Reverse != null && animationSet.Reverse.Contains(moves.Key))
                         reverse = true;
 
-                    var partAnim = new PartAnimation(moveSet.ToArray(), dirVectors, rotationSet.ToArray(),
+                    Log.Line($"Move count: {moveIndexer.Count}");
+
+                    var partAnim = new PartAnimation(moveSet.ToArray(), rotationSet.ToArray(),
                         rotCenterSet.ToArray(), moveIndexer.ToArray(), subpart, parts.Entity, center,
-                        animationSet.StartupDelay, rotation, rotCenter, loop, reverse);
+                        animationSet.StartupDelay, animationSet.motionDelay, loop, reverse);
 
                     allAnimationSet[moves.Key].Add(partAnim);
                 }
@@ -203,8 +258,20 @@ namespace WeaponCore
                 var data = new AnimationParallelData(ref animation);
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null)
                 {
-
-                    MyAPIGateway.Parallel.Start(AnimateParts, DoAnimation, data);
+                    if (animation.MotionDelay <= 0 || animation.CurrentMove > 0 || (animation.MotionDelay > 0 && animation.StartTick <= Tick && animation.StartTick > 0 && animation.CurrentMove == 0))
+                    {
+                        MyAPIGateway.Parallel.Start(AnimateParts, DoAnimation, data);
+                        animation.StartTick = 0;
+                    }
+                    else if (animation.MotionDelay > 0 && animation.StartTick == 0)
+                    {
+                        animation.StartTick = Tick + animation.MotionDelay;
+                        animationsToQueue.Enqueue(animation);
+                    }
+                    else
+                    {
+                        animationsToQueue.Enqueue(animation);
+                    }
 
                 }
             }
@@ -223,43 +290,58 @@ namespace WeaponCore
 
         internal void AnimateParts(WorkData data)
         {
-            var realData = data as AnimationParallelData;
+            var AnimationData = data as AnimationParallelData;
 
-            var localMatrix = realData.Animation.Part.PositionComp.LocalMatrix;
+            var localMatrix = AnimationData.Animation.Part.PositionComp.LocalMatrix;
+            MatrixD? rotation;
+            Vector3D translation;
+            bool delay;
 
-            if (realData.Animation.Reverse)
+            AnimationData.Animation.GetCurrentMove(out translation, out rotation, out delay);
+
+            if (AnimationData.Animation.Reverse)
             {
-                localMatrix.Translation = localMatrix.Translation - realData.Animation.GetCurrentMove();
-                realData.Animation.Previous();
-                if (realData.Animation.Previous(false) == realData.Animation.NumberOfMoves - 1)
+                if(!delay)
+                    localMatrix.Translation = localMatrix.Translation - translation;
+
+                AnimationData.Animation.Previous();
+                if (AnimationData.Animation.Previous(false) == AnimationData.Animation.NumberOfMoves - 1)
                 {
-                    realData.Animation.Reverse = false;
+                    AnimationData.Animation.Reverse = false;
                 }
             }
             else
             {
-                localMatrix.Translation = localMatrix.Translation + realData.Animation.GetCurrentMove();
-                realData.Animation.Next();
-                if (realData.Animation.DoesReverse && realData.Animation.Next(false) == 0)
+                if (!delay)
+                    localMatrix.Translation = localMatrix.Translation + translation;
+
+                AnimationData.Animation.Next();
+                if (AnimationData.Animation.DoesReverse && AnimationData.Animation.Next(false) == 0)
                 {
-                    realData.Animation.Reverse = true;
+                    AnimationData.Animation.Reverse = true;
                 }
             }
 
-            realData.newMatrix = localMatrix;
+            if (rotation != null)
+                localMatrix *= (Matrix)rotation;
+
+
+            AnimationData.newMatrix = localMatrix;
+            AnimationData.delay = delay;
         }
 
         internal void DoAnimation(WorkData data)
         {
-            var realData = data as AnimationParallelData;
+            var AnimationData = data as AnimationParallelData;
 
-            realData.Animation.Part.PositionComp.SetLocalMatrix(ref realData.newMatrix, realData.Animation.MainEnt, true);
+            if(!AnimationData.delay)
+                AnimationData.Animation.Part.PositionComp.SetLocalMatrix(ref AnimationData.newMatrix, AnimationData.Animation.MainEnt, true);
 
-            var Animation = realData.Animation;
+            var Animation = AnimationData.Animation;
 
             if (Animation.Reverse || !Animation.PauseAnimation && (Animation.DoesLoop || Animation.CurrentMove > 0))
             {
-                animationsToQueue.Enqueue(realData.Animation);
+                animationsToQueue.Enqueue(AnimationData.Animation);
             }
 
         }
@@ -269,6 +351,7 @@ namespace WeaponCore
     {
         public PartAnimation Animation;
         public Matrix newMatrix;
+        public bool delay;
 
         public AnimationParallelData(ref PartAnimation animation)
         {

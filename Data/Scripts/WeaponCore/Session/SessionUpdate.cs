@@ -175,15 +175,28 @@ namespace WeaponCore
                         }
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
-                            if (w.IsShooting && !w.Reloading)
-                            { 
-                                w.StopShooting(true);
-                                comp.currentDPS -= w.DPS;
-                                w.Reloading = true;
-                            }
+                            
 
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
+                                if (!w.Reloading)
+                                {
+                                    if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
+                                    {
+                                        foreach (var animation in w.AnimationsSet[
+                                            PartAnimationSetDef.EventOptions.Reloading])
+                                        {
+                                            animationsToProcess.Enqueue(animation);
+                                        }
+                                    }
+                                    if (w.IsShooting)
+                                    {
+                                        w.StopShooting(true);
+                                        comp.currentDPS -= w.DPS;
+                                    }
+                                    w.Reloading = true;
+                                }
+
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, true);
                                 if (w.CurrentMags != 0)
                                 {

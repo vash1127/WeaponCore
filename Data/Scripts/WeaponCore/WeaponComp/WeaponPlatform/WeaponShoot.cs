@@ -60,7 +60,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
 
-            if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
+            if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59 && Target != null ) ShootRayCheck();
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
@@ -223,6 +223,13 @@ namespace WeaponCore.Platform
                         }
                     }
 
+                    if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing)){
+                        foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
+                        {
+                            Session.Instance.animationsToProcess.Enqueue(animation);
+                        }
+                    }
+
                     var heat = Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;
                     if (heat > System.MaxHeat)
@@ -278,7 +285,7 @@ namespace WeaponCore.Platform
         private void ShootRayCheck()
         {
             Comp.LastRayCastTick = Session.Instance.Tick;
-            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
+            var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
             if (Target.Projectile != null)
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))

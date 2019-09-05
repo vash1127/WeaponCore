@@ -6,18 +6,14 @@ using VRageMath;
 namespace WeaponCore.Support { 
     public class PartAnimation
     {
-        internal readonly double[] MoveSet;
-        internal readonly double[] DistTravel;
-        internal readonly double[] RevDistTravel;
-        internal readonly double[][] DirVetors;
-        internal readonly MatrixD[] RotationSet;
-        internal readonly MatrixD[] RotCenterSet;
-        internal readonly MatrixD Rotation;
-        internal readonly MatrixD RotCenter;
+        internal readonly Vector3?[] MoveSet;
+        internal readonly MatrixD?[] RotationSet;
+        internal readonly MatrixD?[] RotCenterSet;
         internal readonly int[][] MoveToSetIndexer;
         internal readonly int NumberOfMoves;
         internal readonly uint FireDelay;
-        internal readonly MyEntity Part;
+        internal readonly uint MotionDelay;
+        internal readonly MyEntitySubpart Part;
         internal readonly MyEntity MainEnt;
         internal readonly Vector3D CenterPoint;
         internal readonly bool DoesLoop;
@@ -25,6 +21,7 @@ namespace WeaponCore.Support {
 
         internal bool Reverse;
         internal bool PauseAnimation;
+        internal uint StartTick;
 
         private int currentMove;
         private double addToNext;
@@ -34,89 +31,41 @@ namespace WeaponCore.Support {
             get { return currentMove; }
         }
 
-        internal PartAnimation(double[] moveSet, double[][] dirVectors, MatrixD[] rotationSet, MatrixD[] rotCeterSet, int[][] moveToSetIndexer, MyEntity part, MyEntity mainEnt, Vector3D centerPoint, uint fireDelay, MatrixD rotation, MatrixD rotCenter, bool loop = false, bool reverse = false)
+        internal PartAnimation(Vector3?[] moveSet, MatrixD?[] rotationSet, MatrixD?[] rotCeterSet, int[][] moveToSetIndexer, MyEntitySubpart part, MyEntity mainEnt, Vector3D centerPoint, uint fireDelay, uint motionDelay, bool loop = false, bool reverse = false)
         {
             MoveSet = moveSet;
-            DirVetors = dirVectors;
             RotationSet = rotationSet;
             RotCenterSet = rotCeterSet;
 
             MoveToSetIndexer = moveToSetIndexer;
             NumberOfMoves = MoveToSetIndexer.Length;
             Part = part;
+
             MainEnt = mainEnt;
             CenterPoint = centerPoint;
             FireDelay = fireDelay;
+            MotionDelay = motionDelay;
             DoesLoop = loop;
             DoesReverse = reverse;
             currentMove = 0;
-            Rotation = rotation;
-            RotCenter = rotCenter;
-
-            DistTravel = new double[NumberOfMoves];
-            RevDistTravel = new double[NumberOfMoves];
-
-            var traveled = 0d;
-            for (int i = 0; i < NumberOfMoves; i++)
-            {
-                DistTravel[i] = traveled;
-                traveled += moveSet[moveToSetIndexer[i][0]];
-            }
-            traveled = 0d;
-            var count = 0;
-            for (int i = NumberOfMoves - 1; i >= 0; i--)
-            {
-                RevDistTravel[count] = traveled;
-                traveled += moveSet[moveToSetIndexer[i][0]];
-                count++;
-            }
         }
-
-        internal Vector3D GetCurrentMove()
+        
+        internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out bool delay)
         {
-            var currentVector = new double[]{0,0,0,0};
-            double distRemaining;
-            double totVectorLength = 0;
-            double travel;
-
-            if (Reverse)
+            if (MoveSet[MoveToSetIndexer[currentMove][0]] != null || RotationSet[MoveToSetIndexer[currentMove][1]] != null)
             {
-                travel = RevDistTravel[MoveToSetIndexer[currentMove][0]] + addToNext;
-                for (int i = DirVetors.Length - 1; i >= 0; i--)
-                {
-                    currentVector = DirVetors[i];
-                    
-                    if (totVectorLength >= travel) break;
-                    totVectorLength += DirVetors[i][0];
-                }
+                var move = MatrixD.CreateTranslation((Vector3)MoveSet[MoveToSetIndexer[currentMove][0]]);
+                translation = move.Translation;
+                rotation = RotationSet[MoveToSetIndexer[currentMove][1]];
+                delay = false;
             }
             else
             {
-                travel = DistTravel[MoveToSetIndexer[currentMove][0]] + addToNext;
-                for (int i = 0; i < DirVetors.Length; i++)
-                {
-                    currentVector = DirVetors[i];
-                    if (totVectorLength >= travel) break;
-                    totVectorLength += DirVetors[i][0];
-                }
+                translation = Vector3D.Zero;
+                rotation = MatrixD.Zero;
+                delay = true;
             }
 
-            distRemaining = totVectorLength - travel;
-
-            var change = MoveSet[MoveToSetIndexer[currentMove][0]] + addToNext;
-            if (distRemaining < 0)
-            {
-                change = change + distRemaining;
-                addToNext = MoveSet[MoveToSetIndexer[currentMove][0]] - change;
-            }
-            else
-            {
-                addToNext = 0;
-            }
-
-
-            var move = MatrixD.CreateTranslation(currentVector[1] * change, currentVector[2] * change, currentVector[3] * change) + RotationSet[MoveToSetIndexer[currentMove][1]] + RotCenterSet[MoveToSetIndexer[currentMove][2]];
-            return move.Translation;
         }
 
         internal int Next(bool inc = true)
