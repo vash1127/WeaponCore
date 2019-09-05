@@ -9,7 +9,7 @@
 	<Definition xsi:type="MyObjectBuilder_SafeZoneTexturesDefinition">
         <Id Type="MyObjectBuilder_SafeZoneTexturesDefinition" Subtype="EnergyField" />
         <DisplayTextId>Energy Field</DisplayTextId>
-        <Alphamask>Textures\EnergyField_alphamask.DDS</Alphamask>
-        <NormalGloss>Textures\EnergyField_ng.DDS</NormalGloss>
+        <Alphamask>Textures\EnergyField_alphamask.dds</Alphamask>
+        <NormalGloss>Textures\EnergyField_ng.dds</NormalGloss>
     </Definition>
 </Definitions>
