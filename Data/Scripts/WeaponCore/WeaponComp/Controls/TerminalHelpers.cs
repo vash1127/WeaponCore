@@ -9,6 +9,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using WeaponCore;
+using static WeaponCore.Platform.Weapon.TerminalActionState;
 
 namespace WepaonCore.Control
 {
@@ -21,9 +22,21 @@ namespace WepaonCore.Control
             for (int i = 0; i < actions.Count; i++)
             {
                 var c = actions[i];
-                //Log.Line($"Count: {i} ID:{c.Id}");
-                if (c.Id != "Control" && !c.Id.Contains("OnOff"))
+                Log.Line($"Count: {i} ID:{c.Id}");
+                if (c.Id != "Control" && !c.Id.Contains("OnOff") && !c.Id.Equals("Shoot") && !c.Id.Equals("ShootOnce"))
                     c.Enabled = b => !WepUi.CoreWeaponEnableCheck(b, 0);
+
+                if (c.Id.Equals("Shoot") || c.Id.Equals("ShootOnce"))
+                {
+                    c.Action = blk =>
+                    {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null) return;
+                        for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                            comp.Platform.Weapons[j].ManualShoot = ShootOnce;
+
+                    };
+                }
             }
             return false;
         }

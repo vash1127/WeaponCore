@@ -254,6 +254,8 @@ namespace WeaponCore.Platform
                             foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
                             {
                                 Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
                             }
                         }
 

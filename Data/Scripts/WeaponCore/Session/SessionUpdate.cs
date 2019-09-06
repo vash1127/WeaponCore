@@ -133,6 +133,14 @@ namespace WeaponCore
                             {
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
                                 comp.Overheated = false;
+                                if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                                {
+                                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
+                                    {
+                                        if (animation.DoesLoop && animation.Looping)
+                                            animation.Looping = false;
+                                    }
+                                }
                             }
                         }
 
