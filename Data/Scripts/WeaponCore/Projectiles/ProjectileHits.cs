@@ -27,7 +27,6 @@ namespace WeaponCore.Projectiles
             else
             {
                 p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                if (p.SelfDamage && p.PruneSphere.Contains(p.Origin) != ContainmentType.Disjoint) return false;
                 var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() * 0.5d : p.T.System.AreaEffectSize;
                 if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
                 {
@@ -39,6 +38,7 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.T.System.CollisionSize;
                 }
+                if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(p.Origin) != ContainmentType.Disjoint) return false;
 
                 var checkList = CheckPool[poolId].Get();
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
@@ -71,7 +71,6 @@ namespace WeaponCore.Projectiles
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
                 if (grid != null && !p.SelfDamage && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
-
                 if (!shieldByPass && !p.EwarActive)
                 {
                     var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
