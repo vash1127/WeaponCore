@@ -172,7 +172,7 @@ namespace WeaponCore.Platform
                             p.T.DetonationDamage = detonateDmg;
                             p.T.AreaEffectDamage = areaEffectDmg;
 
-                            p.SelfDamage = !IsTurret & !TrackTarget || Comp.Gunner;
+                            p.SelfDamage = System.SelfDamage || Comp.Gunner;
                             p.GridVel = Comp.Ai.GridVel;
                             p.Origin = muzzle.Position;
                             p.OriginUp = Comp.MyPivotUp;
@@ -265,7 +265,7 @@ namespace WeaponCore.Platform
             p.T.WeaponId = WeaponId;
             p.T.MuzzleId = -1;
 
-            p.SelfDamage = !IsTurret & !TrackTarget || Comp.Gunner;
+            p.SelfDamage = System.SelfDamage || Comp.Gunner;
             p.GridVel = Comp.Ai.GridVel;
             p.Origin = Comp.MyPivotPos;
             p.OriginUp = Comp.MyPivotUp;

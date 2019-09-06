@@ -73,6 +73,8 @@ namespace WeaponCore.Support
         public readonly bool TrackMeteors;
         public readonly bool TrackNeutrals;
         public readonly bool CollisionIsLine;
+        public readonly bool SelfDamage;
+        public readonly bool VoxelDamage;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -178,7 +180,7 @@ namespace WeaponCore.Support
 
             Sound();
 
-            DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales);
+            DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
             CollisionShape(out CollisionIsLine, out CollisionSize);
             Models(out PrimeModelId, out TriggerModelId);
             Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
@@ -189,7 +191,7 @@ namespace WeaponCore.Support
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
         }
 
-        private void DamageScales(out bool damageScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef)
+        private void DamageScales(out bool damageScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage)
         {
             armorScaling = false;
             customDamageScales = false;
@@ -208,6 +210,8 @@ namespace WeaponCore.Support
             }
             damageScaling = d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
             if (damageScaling) armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
+            selfDamage = Values.DamageScales.SelfDamage;
+            voxelDamage = Values.DamageScales.DamageVoxels;
         }
 
         private void Track(out bool trackProjectile, out bool trackGrids, out bool trackCharacters, out bool trackMeteors, out bool trackNeutrals, out bool trackOther)
@@ -282,7 +286,6 @@ namespace WeaponCore.Support
                 Session.Instance.ModelIdToName.Add(PrimeModelId, Values.ModPath + Values.Graphics.ModelName);
             }
             else primeModelId = -1;
-            Log.Line($"{primeModelId} - {triggerModelId}");
         }
 
         private void Emissives(out bool tracking, out bool firing, out bool heating, out bool reloading)

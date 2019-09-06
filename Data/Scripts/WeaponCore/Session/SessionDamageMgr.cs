@@ -53,9 +53,7 @@ namespace WeaponCore
                             DamageProjectile(hitEnt, t);
                             continue;
                         case HitEntity.Type.Field:
-                            DsUtil.Start("");
                             ComputeField(hitEnt, t);
-                            DsUtil.Complete();
                             continue;
                     }
                     Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
@@ -104,6 +102,8 @@ namespace WeaponCore
                 hitEnt.Blocks?.Clear();
                 return;
             }
+
+            grid.Physics.Gravity = grid.PositionComp.WorldMatrix.Down;
             _destroyedSlims.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var areaRadius = largeGrid ? system.AreaRadiusLarge : system.AreaRadiusSmall;
@@ -351,7 +351,7 @@ namespace WeaponCore
             var destObj = hitEnt.Entity as MyVoxelBase;
             var system = t.System;
             if (destObj == null || entity == null || !hitEnt.HitPos.HasValue) return;
-            if (!system.Values.DamageScales.DamageVoxels)
+            if (!system.VoxelDamage)
             {
                 t.BaseDamagePool = 0;
                 return;
