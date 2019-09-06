@@ -172,7 +172,6 @@ namespace WeaponCore
             var healthPool = !depletable ? t.BaseHealthPool : float.MaxValue;
             var pruneSphere = hitEnt.PruneSphere;
             if (grid == null || grid.MarkedForClose || healthPool <= 0) return;
-
             var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
             var duration = (uint)eWarInfo.Duration;
             var stack = eWarInfo.StackDuration;
@@ -196,10 +195,10 @@ namespace WeaponCore
                         if (!(cube is IMyPowerProducer)) continue;
                         break;
                     case AnchorField:
-                        if (!(cube is IMyThrust)) continue;
+                        if (!(cube is MyThrust)) continue;
                         break;
                     case NavField:
-                        if (!(cube is IMyGyro)) continue;
+                        if (!(cube is MyGyro)) continue;
                         break;
                     case OffenseField:
                         if (!(cube is IMyGunBaseUser)) continue;

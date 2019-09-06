@@ -166,7 +166,7 @@ namespace WeaponCore
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
 
-                ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm");
+                ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\Field.mwm");
                 ModelCount++;
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }

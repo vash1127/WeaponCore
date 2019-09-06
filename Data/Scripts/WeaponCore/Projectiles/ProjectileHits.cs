@@ -27,10 +27,11 @@ namespace WeaponCore.Projectiles
             else
             {
                 p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                if (p.EwarActive && p.PruneSphere.Radius < p.T.System.AreaEffectSize)
+                var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() * 0.5d : p.T.System.AreaEffectSize;
+                if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
                 {
                     p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = p.T.System.AreaEffectSize;
+                    p.PruneSphere.Radius = currentRadius;
                 }
                 else if (p.PruneSphere.Radius < p.T.System.CollisionSize)
                 {
@@ -61,7 +62,6 @@ namespace WeaponCore.Projectiles
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var ai = p.T.Ai;
             var found = false;
-
             //Log.Line($"get all entities in line: LineCheck:{lineCheck} - ewarActive:{eWarActive} - ewarInactive:{eWarInactive} - jump:{jumpNullField} - Vel:{p.VelocityLengthSqr}");
 
             for (int i = 0; i < p.SegmentList.Count; i++)
