@@ -1,5 +1,4 @@
-﻿using Sandbox.ModAPI;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -181,14 +180,28 @@ namespace WeaponCore
                             {
                                 if (!w.Reloading)
                                 {
-                                    if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
+                                    if (!DedicatedServer)
                                     {
-                                        foreach (var animation in w.AnimationsSet[
-                                            PartAnimationSetDef.EventOptions.Reloading])
+                                        if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
                                         {
-                                            animationsToProcess.Enqueue(animation);
+                                            foreach (var animation in w.AnimationsSet[
+                                                PartAnimationSetDef.EventOptions.Reloading])
+                                            {
+                                                animationsToProcess.Enqueue(animation);
+                                            }
+                                        }
+
+                                        if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                        {
+                                            foreach (var animation in w.AnimationsSet[
+                                                PartAnimationSetDef.EventOptions.Firing])
+                                            {
+                                                if (animation.DoesLoop && animation.Looping)
+                                                    animation.PauseAnimation = true;
+                                            }
                                         }
                                     }
+
                                     if (w.IsShooting)
                                     {
                                         w.StopShooting(true);
@@ -211,11 +224,19 @@ namespace WeaponCore
 
                             if (w.IsShooting)
                             {
+                                if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                {
+                                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Reloading])
+                                    {
+                                        if (animation.DoesLoop && animation.Looping)
+                                            animation.PauseAnimation = false;
+                                    }
+                                }
                                 if (w.FiringEmitter != null) w.StartFiringSound();
                                 if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying) w.StartRotateSound();
                                 comp.currentDPS += w.DPS;
-                                w.Reloading = false;
                             }
+                            w.Reloading = false;
                         }
                         if (w.SeekTarget)
                         {

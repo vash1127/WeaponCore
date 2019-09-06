@@ -5,9 +5,7 @@ using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.ModAPI;
 using VRageMath;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimationSetDef;
 
@@ -23,6 +21,7 @@ namespace WeaponCore.Platform
 
         private readonly Vector3 _localTranslation;
         private readonly int _numOfBarrels;
+        internal readonly Dictionary<int, string> MuzzleIDToName = new Dictionary<int, string>();
 
         private int _rotationTime;
         private int _shotsInCycle;

@@ -223,10 +223,25 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing)){
-                        foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
+                    if (!Session.Instance.DedicatedServer)
+                    {
+                        if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
                         {
-                            Session.Instance.animationsToProcess.Enqueue(animation);
+                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
+                            {
+                                if (animation.Muzzle == "Any" || animation.Muzzle == MuzzleIDToName[current])
+                                {
+                                    if (animation.DoesLoop && animation.PauseAnimation && animation.Looping)
+                                        animation.PauseAnimation = false;
+                                    else if (!animation.Looping)
+                                    {
+                                        Session.Instance.animationsToProcess.Enqueue(animation);
+                                        if (animation.DoesLoop)
+                                            animation.Looping = true;
+
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -234,6 +249,14 @@ namespace WeaponCore.Platform
                     Comp.CurrentHeat += HeatPShot;
                     if (heat > System.MaxHeat)
                     {
+                        if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                        {
+                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                            }
+                        }
+
                         if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
                         Comp.Overheated = true;
                         StopShooting();

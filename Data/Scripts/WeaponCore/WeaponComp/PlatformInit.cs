@@ -84,6 +84,7 @@ namespace WeaponCore.Platform
                 {
                     var barrel = m.Value.Barrels[i];
                     Weapons[c].Dummies[i] = new Dummy(muzzlePart, barrel);
+                    Weapons[c].MuzzleIDToName.Add(i,barrel);
                     Weapons[c].Muzzles[i] = new Weapon.Muzzle(i);
                 }
                 c++;

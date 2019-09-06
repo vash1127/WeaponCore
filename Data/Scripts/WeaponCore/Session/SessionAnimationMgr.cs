@@ -1,10 +1,14 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using ParallelTasks;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRage.Game.ModAPI.Ingame;
 using VRageMath;
+using VRageRender.Import;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimationSetDef;
 
@@ -27,7 +31,7 @@ namespace WeaponCore
             {
                 MyEntitySubpart subpart = parts.NameToEntity[animationSet.SubpartId] as MyEntitySubpart;
                 if (subpart == null) continue;
-                Vector3 center = parts.NameToEntity[animationSet.SubpartId].PositionComp.GetPosition() - parts.NameToEntity[animationSet.SubpartId].Parent.PositionComp.GetPosition();
+                Vector3 center = subpart.PositionComp.GetPosition() - subpart.Parent.PositionComp.GetPosition();
 
 
                 foreach (var moves in animationSet.EventMoveSets)
@@ -51,42 +55,28 @@ namespace WeaponCore
                              move.rotAroundCenter.z > 0 || move.rotAroundCenter.x < 0 ||
                              move.rotAroundCenter.y < 0 || move.rotAroundCenter.z < 0))
                         {
-                            //TODO rotate around point
-                        }
+                            Dictionary<string, IMyModelDummy> _dummyList = new Dictionary<string, IMyModelDummy>();
+                            ((IMyModel) subpart.Model).GetDummies(_dummyList);
 
-                        rotCenterSet.Add(rotCenter);
+                            IMyModelDummy dummy;
+                            if (_dummyList.TryGetValue(move.CenterEmpty, out dummy))
+                            {
+                                var dummyCenter = Vector3D.Transform(MatrixD.Normalize(dummy.Matrix).Translation, subpart.WorldMatrix);
+
+                                rotCenterSet.Add(CreateRotation(move.rotAroundCenter.x / move.ticksToMove,
+                                    move.rotAroundCenter.y / move.ticksToMove, move.rotAroundCenter.z / move.ticksToMove, dummyCenter));
+                            }
+                            else
+                                rotCenterSet.Add(null);
+                        }
+                        else
+                            rotCenterSet.Add(null);
 
                         if (move.rotation.x > 0 || move.rotation.y > 0 || move.rotation.z > 0 ||
                             move.rotation.x < 0 || move.rotation.y < 0 || move.rotation.z < 0)
-                        {
-                            var rotation = MatrixD.Zero;
-
-                            if (move.rotation.x > 0 || move.rotation.x < 0)
-                                rotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(move.rotation.x / move.ticksToMove)); ;
-
-                            if (move.rotation.y > 0 || move.rotation.y < 0)
-                                if(move.rotation.x > 0 || move.rotation.x < 0)
-                                    rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(move.rotation.y / move.ticksToMove));
-                                else
-                                    rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(move.rotation.y / move.ticksToMove));
-
-                            if (move.rotation.z > 0 || move.rotation.z < 0)
-                                if (move.rotation.x > 0 || move.rotation.x < 0 || move.rotation.y > 0 || move.rotation.y < 0)
-                                    rotation *= MatrixD.CreateRotationZ(MathHelperD.ToRadians(move.rotation.z / move.ticksToMove));
-                                else
-                                    rotation = MatrixD.CreateRotationZ(MathHelperD.ToRadians(move.rotation.z / move.ticksToMove));
-
-
-                            rotation = Matrix.CreateTranslation(-center) * (Matrix) rotation *
-                                       Matrix.CreateTranslation(center);
-
-                            rotationSet.Add(rotation);
-                        }
+                            rotationSet.Add(CreateRotation(move.rotation.x / move.ticksToMove, move.rotation.y / move.ticksToMove, move.rotation.z / move.ticksToMove, center));
                         else
-                        {
                             rotationSet.Add(null);
-                            Log.Line($"Move type: {move.MovementType}");
-                        }
 
                         if (move.linearPoints != null && move.linearPoints.Length > 0 || move.MovementType == RelMove.MoveType.Delay)
                         {
@@ -164,7 +154,53 @@ namespace WeaponCore
                             }
                             else if (move.MovementType == RelMove.MoveType.ExpoGrowth && tmpDirVec != null)
                             {
+                                var traveled = 0d;
 
+                                var check = 0d;
+                                var rate = 0d;
+                                while (check > 0)
+                                {
+                                    rate += 0.001;
+                                    check = distance * Math.Pow(1 - rate, move.ticksToMove);
+                                    if (check <= 0.01) check = 0;
+
+                                }
+
+                                var vectorCount = 0;
+                                var remaining = 0d;
+                                var vecTotalMoved = 0d;
+                                for (int j = 0; j < move.ticksToMove; j++)
+                                {
+                                    var step = distance * Math.Pow(1 - rate, j + 1);
+                                    if (step < 0.01) step = 0;
+
+                                    var lastTraveled = traveled;
+                                    traveled = distance - step;
+                                    var changed = traveled - lastTraveled;
+
+                                    changed += remaining;
+                                    if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
+                                    {
+                                        var origMove = changed;
+                                        changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                        remaining = origMove - changed;
+                                        vecTotalMoved = 0;
+                                    }
+                                    else
+                                    {
+                                        vecTotalMoved += changed;
+                                        remaining = 0;
+                                    }
+
+
+                                    var vector = new Vector3(tmpDirVec[vectorCount][1] * changed, tmpDirVec[vectorCount][2] * changed, tmpDirVec[vectorCount][3] * changed);
+
+                                    moveSet.Add(vector);
+                                    moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1 });
+
+                                    if (remaining > 0)
+                                        vectorCount++;
+                                }
                             }
                             else if (move.MovementType == RelMove.MoveType.Delay)
                             {
@@ -239,10 +275,8 @@ namespace WeaponCore
                     if (animationSet.Reverse != null && animationSet.Reverse.Contains(moves.Key))
                         reverse = true;
 
-                    Log.Line($"Move count: {moveIndexer.Count}");
-
                     var partAnim = new PartAnimation(moveSet.ToArray(), rotationSet.ToArray(),
-                        rotCenterSet.ToArray(), moveIndexer.ToArray(), subpart, parts.Entity, center,
+                        rotCenterSet.ToArray(), moveIndexer.ToArray(), subpart, parts.Entity, center, animationSet.muzzle,
                         animationSet.StartupDelay, animationSet.motionDelay, loop, reverse);
 
                     allAnimationSet[moves.Key].Add(partAnim);
@@ -250,6 +284,31 @@ namespace WeaponCore
             }
 
             return allAnimationSet;
+        }
+
+        internal Matrix CreateRotation(double x, double y, double z, Vector3 center)
+        {
+
+            var rotation = MatrixD.Zero;
+
+            if (x > 0 || x < 0)
+                rotation = MatrixD.CreateRotationX(MathHelperD.ToRadians(x)); ;
+
+            if (y > 0 || y < 0)
+                if (x > 0 || x < 0)
+                    rotation *= MatrixD.CreateRotationY(MathHelperD.ToRadians(y));
+                else
+                    rotation = MatrixD.CreateRotationY(MathHelperD.ToRadians(y));
+
+            if (z > 0 || z < 0)
+                if (x > 0 || x < 0 || y > 0 || y < 0)
+                    rotation *= MatrixD.CreateRotationZ(MathHelperD.ToRadians(z));
+                else
+                    rotation = MatrixD.CreateRotationZ(MathHelperD.ToRadians(z));
+
+
+            return Matrix.CreateTranslation(-center) * (Matrix)rotation *
+                       Matrix.CreateTranslation(center);
         }
 
 
@@ -261,7 +320,7 @@ namespace WeaponCore
                 var data = new AnimationParallelData(ref animation);
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null)
                 {
-                    if (animation.MotionDelay <= 0 || animation.CurrentMove > 0 || (animation.MotionDelay > 0 && animation.StartTick <= Tick && animation.StartTick > 0 && animation.CurrentMove == 0))
+                    if ((animation.DoesLoop && animation.Looping && !animation.PauseAnimation) && animation.MotionDelay <= 0 || animation.CurrentMove > 0 || (animation.MotionDelay > 0 && animation.StartTick <= Tick && animation.StartTick > 0 && animation.CurrentMove == 0))
                     {
                         MyAPIGateway.Parallel.Start(AnimateParts, DoAnimation, data);
                         animation.StartTick = 0;
@@ -301,10 +360,9 @@ namespace WeaponCore
             bool delay;
 
             AnimationData.Animation.GetCurrentMove(out translation, out rotation, out delay);
-
             if (AnimationData.Animation.Reverse)
             {
-                if(!delay)
+                if (!delay)
                     localMatrix.Translation = localMatrix.Translation - translation;
 
                 AnimationData.Animation.Previous();
@@ -332,7 +390,6 @@ namespace WeaponCore
                 localMatrix *= (Matrix) rotation;
             }
 
-
             AnimationData.newMatrix = localMatrix;
             AnimationData.delay = delay;
         }
@@ -346,7 +403,7 @@ namespace WeaponCore
 
             var Animation = AnimationData.Animation;
 
-            if (Animation.Reverse || !Animation.PauseAnimation && (Animation.DoesLoop || Animation.CurrentMove > 0))
+            if (Animation.Reverse || Animation.DoesLoop || Animation.CurrentMove > 0)
             {
                 animationsToQueue.Enqueue(AnimationData.Animation);
             }

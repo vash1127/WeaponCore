@@ -497,7 +497,10 @@ namespace WeaponCore.Support
             Linear,
             ExpoDecay,
             ExpoGrowth,
-            Delay
+            Delay,
+            Show, //instant or fade
+            Hide, //instant or fade
+            Teleport 
         }
 
         [ProtoMember(1)] internal MoveType MovementType;

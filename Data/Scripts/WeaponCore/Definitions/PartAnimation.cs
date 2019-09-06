@@ -18,25 +18,26 @@ namespace WeaponCore.Support {
         internal readonly Vector3D CenterPoint;
         internal readonly bool DoesLoop;
         internal readonly bool DoesReverse;
+        internal readonly string Muzzle;
 
         internal bool Reverse;
+        internal bool Looping;
         internal bool PauseAnimation;
         internal uint StartTick;
 
-        private int currentMove;
-        private double addToNext;
+        private int _currentMove;
 
         internal int CurrentMove
         {
-            get { return currentMove; }
+            get { return _currentMove; }
         }
 
-        internal PartAnimation(Vector3?[] moveSet, MatrixD?[] rotationSet, MatrixD?[] rotCeterSet, int[][] moveToSetIndexer, MyEntitySubpart part, MyEntity mainEnt, Vector3D centerPoint, uint fireDelay, uint motionDelay, bool loop = false, bool reverse = false)
+        internal PartAnimation(Vector3?[] moveSet, MatrixD?[] rotationSet, MatrixD?[] rotCeterSet, int[][] moveToSetIndexer, MyEntitySubpart part, MyEntity mainEnt, Vector3D centerPoint, string muzzle, uint fireDelay, uint motionDelay, bool loop = false, bool reverse = false)
         {
             MoveSet = moveSet;
             RotationSet = rotationSet;
             RotCenterSet = rotCeterSet;
-
+            Muzzle = muzzle;
             MoveToSetIndexer = moveToSetIndexer;
             NumberOfMoves = MoveToSetIndexer.Length;
             Part = part;
@@ -47,16 +48,16 @@ namespace WeaponCore.Support {
             MotionDelay = motionDelay;
             DoesLoop = loop;
             DoesReverse = reverse;
-            currentMove = 0;
+            _currentMove = 0;
         }
         
         internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out bool delay)
         {
-            if (MoveSet[MoveToSetIndexer[currentMove][0]] != null || RotationSet[MoveToSetIndexer[currentMove][1]] != null)
+            if (MoveSet[MoveToSetIndexer[_currentMove][0]] != null || RotationSet[MoveToSetIndexer[_currentMove][1]] != null)
             {
-                var move = MatrixD.CreateTranslation((Vector3)MoveSet[MoveToSetIndexer[currentMove][0]]);
+                var move = MatrixD.CreateTranslation((Vector3)MoveSet[MoveToSetIndexer[_currentMove][0]]);
                 translation = move.Translation;
-                rotation = RotationSet[MoveToSetIndexer[currentMove][1]];
+                rotation = RotationSet[MoveToSetIndexer[_currentMove][1]];
                 delay = false;
             }
             else
@@ -72,22 +73,22 @@ namespace WeaponCore.Support {
         {
             if (inc)
             {
-                currentMove = currentMove + 1 <= NumberOfMoves - 1 ? currentMove + 1 : 0;
-                return currentMove;
+                _currentMove = _currentMove + 1 <= NumberOfMoves - 1 ? _currentMove + 1 : 0;
+                return _currentMove;
             }
 
-            return currentMove + 1 <= NumberOfMoves - 1 ? currentMove + 1 : 0;
+            return _currentMove + 1 <= NumberOfMoves - 1 ? _currentMove + 1 : 0;
         }
 
         internal int Previous(bool dec = true)
         {
             if (dec)
             {
-                currentMove = currentMove - 1 >= 0 ? currentMove - 1 : NumberOfMoves - 1;
-                return currentMove;
+                _currentMove = _currentMove - 1 >= 0 ? _currentMove - 1 : NumberOfMoves - 1;
+                return _currentMove;
             }
 
-            return currentMove - 1 >= 0 ? currentMove - 1 : NumberOfMoves - 1; 
+            return _currentMove - 1 >= 0 ? _currentMove - 1 : NumberOfMoves - 1; 
         }
 
         protected bool Equals(PartAnimation other)
