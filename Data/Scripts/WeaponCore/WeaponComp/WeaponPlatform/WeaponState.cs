@@ -119,6 +119,8 @@ namespace WeaponCore.Platform
                             {
                                 BarrelEffects1[id].WorldMatrix = matrix;
                                 BarrelEffects1[id].Velocity = vel;
+                                BarrelEffects1[id].UserColorMultiplier = particles.Barrel1.Color;
+                                BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                             }
                         }
                         else if (BarrelEffects1[id] != null)
@@ -141,6 +143,8 @@ namespace WeaponCore.Platform
                             {
                                 BarrelEffects2[id].WorldMatrix = matrix;
                                 BarrelEffects2[id].Velocity = vel;
+                                BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
+                                BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                             }
                         }
                         else if (BarrelEffects2[id] != null)
