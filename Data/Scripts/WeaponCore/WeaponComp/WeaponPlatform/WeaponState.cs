@@ -111,7 +111,15 @@ namespace WeaponCore.Platform
                         if (entityExists && ticksAgo <= System.Barrel1AvTicks)
                         {
                             if (BarrelEffects1[id] == null)
+                            {
                                 MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[id]);
+                                if (BarrelEffects1[id] != null)
+                                {
+                                    BarrelEffects1[id].UserColorMultiplier = particles.Barrel1.Color;
+                                    BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
+                                    BarrelEffects1[id].DistanceMax = particles.Barrel1.Extras.MaxDistance;
+                                }
+                            }
                             else if (particles.Barrel1.Extras.Restart && BarrelEffects1[id].IsEmittingStopped)
                                 BarrelEffects1[id].Play();
 
@@ -119,8 +127,6 @@ namespace WeaponCore.Platform
                             {
                                 BarrelEffects1[id].WorldMatrix = matrix;
                                 BarrelEffects1[id].Velocity = vel;
-                                BarrelEffects1[id].UserColorMultiplier = particles.Barrel1.Color;
-                                BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                             }
                         }
                         else if (BarrelEffects1[id] != null)
@@ -135,7 +141,15 @@ namespace WeaponCore.Platform
                         if (entityExists && ticksAgo <= System.Barrel2AvTicks)
                         {
                             if (BarrelEffects2[id] == null)
+                            {
                                 MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);
+                                if (BarrelEffects2[id] != null)
+                                {
+                                    BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
+                                    BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
+                                    BarrelEffects2[id].DistanceMax = particles.Barrel2.Extras.MaxDistance;
+                                }
+                            }
                             else if (particles.Barrel2.Extras.Restart && BarrelEffects2[id].IsEmittingStopped)
                                 BarrelEffects2[id].Play();
 
@@ -143,8 +157,6 @@ namespace WeaponCore.Platform
                             {
                                 BarrelEffects2[id].WorldMatrix = matrix;
                                 BarrelEffects2[id].Velocity = vel;
-                                BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
-                                BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                             }
                         }
                         else if (BarrelEffects2[id] != null)
