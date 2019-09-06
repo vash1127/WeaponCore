@@ -27,7 +27,7 @@ namespace WeaponCore.Projectiles
             else
             {
                 p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() * 0.5d : p.T.System.AreaEffectSize;
+                var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() : p.T.System.AreaEffectSize;
                 if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
                 {
                     p.PruneSphere.Center = p.Position;

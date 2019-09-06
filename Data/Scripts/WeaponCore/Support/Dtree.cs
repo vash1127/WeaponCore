@@ -10,7 +10,7 @@ namespace WeaponCore.Support
         {
             if (projectile.PruningProxyId != -1)
                 return;
-            BoundingSphereD sphere = new BoundingSphereD(projectile.Position, 1.0);
+            BoundingSphereD sphere = new BoundingSphereD(projectile.Position, projectile.T.System.AreaEffectSize);
             BoundingBoxD result;
             BoundingBoxD.CreateFromSphere(ref sphere, out result);
             projectile.PruningProxyId = Session.Instance.ProjectileTree.AddProxy(ref result, projectile, 0U, true);
@@ -28,7 +28,7 @@ namespace WeaponCore.Support
         {
             if (projectile.PruningProxyId == -1)
                 return;
-            BoundingSphereD sphere = new BoundingSphereD(projectile.Position, 1.0);
+            BoundingSphereD sphere = new BoundingSphereD(projectile.Position, projectile.T.System.AreaEffectSize);
             BoundingBoxD result;
             BoundingBoxD.CreateFromSphere(ref sphere, out result);
             Session.Instance.ProjectileTree.MoveProxy(projectile.PruningProxyId, ref result, velocity);

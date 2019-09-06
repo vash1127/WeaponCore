@@ -5,6 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -310,9 +311,8 @@ namespace WeaponCore.Projectiles
                                                 ++p.T.TriggerGrowthSteps;
                                             }
                                         }
-                                        MatrixD.Rescale(ref p.T.TriggerMatrix, nextSize * 2);
+                                        MatrixD.Rescale(ref p.T.TriggerMatrix, nextSize);
                                     }
-                                    Log.Line($"{p.T.TriggerMatrix.Scale.AbsMax()}");
                                 }
                             }
 
