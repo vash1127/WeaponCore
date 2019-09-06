@@ -87,17 +87,15 @@ namespace WeaponCore
                                  move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
                                  move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
                             {
-                                Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
-                                ((IMyModel)subpart.Model).GetDummies(dummyList);
-
-                                IMyModelDummy dummy;
-                                if (dummyList.TryGetValue(move.CenterEmpty, out dummy))
+                                var partCenter = getPartLocation(move.CenterEmpty, (IMyModel) subpart.Parent.Model);
+                                var emptyCenter = getPartLocation(move.CenterEmpty, (IMyModel)subpart.Model);
+                                if (partCenter != null && emptyCenter != null)
                                 {
-                                    var dummyCenter = dummy.Matrix.Translation;
+                                    var center = (Vector3)emptyCenter + (Vector3)partCenter;
 
                                     rotCenterSet.Add(CreateRotation(move.RotAroundCenter.x / move.TicksToMove,
                                         move.RotAroundCenter.y / move.TicksToMove,
-                                        move.RotAroundCenter.z / move.TicksToMove, dummyCenter));
+                                        move.RotAroundCenter.z / move.TicksToMove, center));
                                 }
                                 else
                                     rotCenterSet.Add(null);
@@ -109,17 +107,10 @@ namespace WeaponCore
                                 move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
                             {
 
-                                Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
-                                ((IMyModel)subpart.Parent.Model).GetDummies(dummyList);
-
-                                IMyModelDummy dummy;
-                                if (dummyList.TryGetValue("subpart_" + animationSet.SubpartId, out dummy))
-                                {
-                                    var dummyCenter = dummy.Matrix.Translation;
-
+                                var partCenter = getPartLocation("subpart_" + animationSet.SubpartId, (IMyModel)subpart.Parent.Model);
+                                if (partCenter != null)
                                     rotationSet.Add(CreateRotation(move.Rotation.x / move.TicksToMove,
-                                        move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove, dummyCenter));
-                                }
+                                        move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove, (Vector3)partCenter));
                                 else
                                     rotationSet.Add(null);
 
@@ -356,6 +347,21 @@ namespace WeaponCore
 
 
 
+        }
+
+        internal Vector3? getPartLocation(string partName, IMyModel model)
+        {
+            Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
+            model.GetDummies(dummyList);
+
+            IMyModelDummy dummy;
+            if (dummyList.TryGetValue(partName, out dummy))
+            {
+                return dummy.Matrix.Translation;
+
+            }
+
+            return null;
         }
 
         internal void ProcessAnimations()

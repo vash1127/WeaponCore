@@ -22,7 +22,7 @@ namespace WepaonCore.Control
             for (int i = 0; i < actions.Count; i++)
             {
                 var c = actions[i];
-                Log.Line($"Count: {i} ID:{c.Id}");
+                //Log.Line($"Count: {i} ID:{c.Id}");
                 if (c.Id != "Control" && !c.Id.Contains("OnOff") && !c.Id.Equals("Shoot") && !c.Id.Equals("ShootOnce"))
                     c.Enabled = b => !WepUi.CoreWeaponEnableCheck(b, 0);
 
