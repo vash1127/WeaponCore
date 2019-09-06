@@ -407,9 +407,10 @@ namespace WeaponCore
         {
             var localMatrix = animation.Part.PositionComp.LocalMatrix;
             MatrixD? rotation;
+            MatrixD? rotAroundCenter;
             Vector3D translation;
             AnimationType animationType;
-            animation.GetCurrentMove(out translation, out rotation, out animationType);
+            animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType);
 
 
             if (animation.Reverse)
@@ -436,6 +437,11 @@ namespace WeaponCore
             if (rotation != null)
             {
                 localMatrix *= (Matrix)rotation;
+            }
+
+            if (rotAroundCenter != null)
+            {
+                localMatrix *= (Matrix)rotAroundCenter;
             }
 
             if (animationType == AnimationType.Movement)

@@ -52,7 +52,7 @@ namespace WeaponCore.Support {
             _currentMove = 0;
         }
         
-        internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out Session.AnimationType type)
+        internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out MatrixD? rotAroundCenter, out Session.AnimationType type)
         {
             type = TypeSet[MoveToSetIndexer[CurrentMove][3]];
             if (type == Session.AnimationType.Movement)
@@ -66,12 +66,14 @@ namespace WeaponCore.Support {
                     translation = Vector3D.Zero;
 
                 rotation = RotationSet[MoveToSetIndexer[_currentMove][1]];
-                
+                rotAroundCenter = RotCenterSet[MoveToSetIndexer[_currentMove][2]];
+
             }
             else
             {
                 translation = Vector3D.Zero;
                 rotation = MatrixD.Zero;
+                rotAroundCenter = MatrixD.Zero;
             }
 
         }
