@@ -103,7 +103,7 @@ namespace WeaponCore
                 return;
             }
 
-            grid.Physics.Gravity = grid.PositionComp.WorldMatrix.Down;
+            grid.Physics.Gravity = (grid.PositionComp.WorldMatrix.Down * 1);
             _destroyedSlims.Clear();
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var areaRadius = largeGrid ? system.AreaRadiusLarge : system.AreaRadiusSmall;
