@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Engine.Physics;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -103,8 +104,8 @@ namespace WeaponCore
                 return;
             }
 
-            grid.Physics.Gravity = (grid.PositionComp.WorldMatrix.Down * 1);
             _destroyedSlims.Clear();
+            //grid.Physics.Gravity = (Vector3D.Normalize(hitEnt.Beam.From - grid.Physics.CenterOfMassWorld) * 10);
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var areaRadius = largeGrid ? system.AreaRadiusLarge : system.AreaRadiusSmall;
             var detonateRadius = largeGrid ? system.DetonateRadiusLarge : system.DetonateRadiusSmall;
@@ -303,14 +304,13 @@ namespace WeaponCore
             var integrityCheck = system.Values.DamageScales.MaxIntegrity > 0;
             if (integrityCheck && objHp > system.Values.DamageScales.MaxIntegrity) return;
 
-            var character = hitEnt.Entity is IMyCharacter;
+            var character = hitEnt.Entity as IMyCharacter;
             float damageScale = 1;
             if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
-            if (character && system.Values.DamageScales.Characters >= 0)
+            if (character != null && system.Values.DamageScales.Characters >= 0)
                 damageScale *= system.Values.DamageScales.Characters;
 
             var scaledDamage = t.BaseDamagePool * damageScale;
-
             if (scaledDamage < objHp) t.BaseDamagePool = 0;
             else t.BaseDamagePool -= objHp;
 

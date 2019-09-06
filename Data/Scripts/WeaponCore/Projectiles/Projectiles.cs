@@ -310,9 +310,8 @@ namespace WeaponCore.Projectiles
                                                 ++p.T.TriggerGrowthSteps;
                                             }
                                         }
-                                        MatrixD.Rescale(ref p.T.TriggerMatrix, nextSize * 2);
+                                        MatrixD.Rescale(ref p.T.TriggerMatrix, nextSize);
                                     }
-                                    Log.Line($"{p.T.TriggerMatrix.Scale.AbsMax()}");
                                 }
                             }
 
