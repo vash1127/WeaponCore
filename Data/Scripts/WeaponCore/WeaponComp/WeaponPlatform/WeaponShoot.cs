@@ -182,7 +182,6 @@ namespace WeaponCore.Platform
 
                             if (System.PrimeModelId != -1)
                             {
-                                Log.Line($"Prime:{System.PrimeModelId}");
                                 MyEntity ent;
                                 session.Projectiles.EntityPool[session.ProCounter][System.PrimeModelId].AllocateOrCreate(out ent);
                                 if (!ent.InScene)
