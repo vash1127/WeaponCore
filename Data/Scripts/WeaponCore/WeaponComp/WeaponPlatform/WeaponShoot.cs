@@ -172,6 +172,7 @@ namespace WeaponCore.Platform
                             p.T.DetonationDamage = detonateDmg;
                             p.T.AreaEffectDamage = areaEffectDmg;
 
+                            p.SelfDamage = !IsTurret & !TrackTarget || Comp.Gunner;
                             p.GridVel = Comp.Ai.GridVel;
                             p.Origin = muzzle.Position;
                             p.OriginUp = Comp.MyPivotUp;
@@ -181,7 +182,6 @@ namespace WeaponCore.Platform
 
                             if (System.PrimeModelId != -1)
                             {
-                                Log.Line($"Prime:{System.PrimeModelId}");
                                 MyEntity ent;
                                 session.Projectiles.EntityPool[session.ProCounter][System.PrimeModelId].AllocateOrCreate(out ent);
                                 if (!ent.InScene)
@@ -295,6 +295,7 @@ namespace WeaponCore.Platform
             p.T.WeaponId = WeaponId;
             p.T.MuzzleId = -1;
 
+            p.SelfDamage = !IsTurret & !TrackTarget || Comp.Gunner;
             p.GridVel = Comp.Ai.GridVel;
             p.Origin = Comp.MyPivotPos;
             p.OriginUp = Comp.MyPivotUp;
