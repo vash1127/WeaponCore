@@ -477,13 +477,14 @@ namespace WeaponCore.Support
             Overheated,
             Tracking,
             Locked,
-            OnOff,
+            On,
+            Off,
         }
 
         [ProtoMember(1)] internal string SubpartId;
-        [ProtoMember(2)] internal string muzzle;
+        [ProtoMember(2)] internal string BarrelId;
         [ProtoMember(3)] internal uint StartupDelay;
-        [ProtoMember(4)] internal uint motionDelay;
+        [ProtoMember(4)] internal Dictionary<EventOptions, uint> AnimationDelays;
         [ProtoMember(5)] internal EventOptions[] Reverse;
         [ProtoMember(6)] internal EventOptions[] Loop;
         [ProtoMember(7)] internal Dictionary<EventOptions, RelMove[]> EventMoveSets;
@@ -501,15 +502,15 @@ namespace WeaponCore.Support
             Delay,
             Show, //instant or fade
             Hide, //instant or fade
-            Teleport 
         }
 
         [ProtoMember(1)] internal MoveType MovementType;
-        [ProtoMember(2)] internal XYZ[] linearPoints;
-        [ProtoMember(3)] internal XYZ rotation;
-        [ProtoMember(4)] internal XYZ rotAroundCenter;
-        [ProtoMember(5)] internal uint ticksToMove;
+        [ProtoMember(2)] internal XYZ[] LinearPoints;
+        [ProtoMember(3)] internal XYZ Rotation;
+        [ProtoMember(4)] internal XYZ RotAroundCenter;
+        [ProtoMember(5)] internal uint TicksToMove;
         [ProtoMember(6)] internal string CenterEmpty;
+        [ProtoMember(7)] internal bool Fade;
     }
 
     [ProtoContract]
