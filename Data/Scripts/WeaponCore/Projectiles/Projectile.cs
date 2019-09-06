@@ -91,6 +91,7 @@ namespace WeaponCore.Projectiles
         internal bool EwarActive;
         internal bool FieldActive;
         internal bool FieldEffect;
+        internal bool SelfDamage;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);

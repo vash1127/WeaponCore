@@ -69,7 +69,7 @@ namespace WeaponCore.Projectiles
                 var ent = p.SegmentList[i].Element;
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
-                if (grid != null && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
+                if (grid != null && !p.SelfDamage && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
 
                 if (!shieldByPass && !p.EwarActive)
                 {
