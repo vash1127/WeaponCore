@@ -1,16 +1,9 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
-using Havok;
 using ParallelTasks;
-using Sandbox.Common.ObjectBuilders.Definitions;
-using Sandbox.ModAPI;
-using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Game.ModAPI.Ingame;
 using VRageMath;
-using VRageRender.Import;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimationSetDef;
 
@@ -25,292 +18,307 @@ namespace WeaponCore
             if (weaponAnimationSets == null) return new Dictionary<EventOptions, HashSet<PartAnimation>>();
             foreach (var animationSet in weaponAnimationSets)
             {
-                var subpart = parts.NameToEntity[animationSet.SubpartId] as MyEntitySubpart;
-                if (subpart == null) continue;
-
-                foreach (var moves in animationSet.EventMoveSets)
+                for (int t = 0; t < animationSet.SubpartId.Length; t++)
                 {
-                    if (!allAnimationSet.ContainsKey(moves.Key))
-                        allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
 
-                    List<Vector3?> moveSet = new List<Vector3?>();
-                    List<MatrixD?> rotationSet = new List<MatrixD?>();
-                    List<MatrixD?> rotCenterSet = new List<MatrixD?>();
-                    AnimationType[] typeSet = new[]
+                    var subpart = parts.NameToEntity[animationSet.SubpartId[t]] as MyEntitySubpart;
+                    if (subpart == null) continue;
+
+                    foreach (var moves in animationSet.EventMoveSets)
                     {
-                        AnimationType.Movement,
-                        AnimationType.ShowInstant,
-                        AnimationType.HideInstant,
-                        AnimationType.ShowFade,
-                        AnimationType.HideFade,
-                        AnimationType.Delay
-                    };
+                        if (!allAnimationSet.ContainsKey(moves.Key))
+                            allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
 
-                    var moveIndexer = new List<int[]>();
-                    var rotCenter = MatrixD.Zero;
-
-                    for (int i = 0; i < moves.Value.Length; i++)
-                    {
-                        var move = moves.Value[i];
-
-                        if (move.MovementType == RelMove.MoveType.Delay || move.MovementType == RelMove.MoveType.Show || move.MovementType == RelMove.MoveType.Hide)
+                        List<Vector3?> moveSet = new List<Vector3?>();
+                        List<MatrixD?> rotationSet = new List<MatrixD?>();
+                        List<MatrixD?> rotCenterSet = new List<MatrixD?>();
+                        AnimationType[] typeSet = new[]
                         {
-                            moveSet.Add(null);
-                            rotationSet.Add(null);
-                            rotCenterSet.Add(null);
-                            for (var j = 0; j < move.TicksToMove; j++)
+                            AnimationType.Movement,
+                            AnimationType.ShowInstant,
+                            AnimationType.HideInstant,
+                            AnimationType.ShowFade,
+                            AnimationType.HideFade,
+                            AnimationType.Delay
+                        };
+
+                        var moveIndexer = new List<int[]>();
+
+                        for (int i = 0; i < moves.Value.Length; i++)
+                        {
+                            var move = moves.Value[i];
+
+                            if (move.MovementType == RelMove.MoveType.Delay ||
+                                move.MovementType == RelMove.MoveType.Show ||
+                                move.MovementType == RelMove.MoveType.Hide)
                             {
-                                var type = 5;
-
-                                switch (move.MovementType)
+                                moveSet.Add(null);
+                                rotationSet.Add(null);
+                                rotCenterSet.Add(null);
+                                for (var j = 0; j < move.TicksToMove; j++)
                                 {
-                                    case RelMove.MoveType.Delay:
-                                        break;
+                                    var type = 5;
 
-                                    case RelMove.MoveType.Show:
-                                        type = move.Fade ? 3 : 1;
-                                        break;
+                                    switch (move.MovementType)
+                                    {
+                                        case RelMove.MoveType.Delay:
+                                            break;
 
-                                    case RelMove.MoveType.Hide:
-                                        type = move.Fade ? 4 : 2;
-                                        break;
-                                    
+                                        case RelMove.MoveType.Show:
+                                            type = move.Fade ? 3 : 1;
+                                            break;
+
+                                        case RelMove.MoveType.Hide:
+                                            type = move.Fade ? 4 : 2;
+                                            break;
+
+                                    }
+
+                                    moveIndexer.Add(new[]
+                                        {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type});
                                 }
-                                moveIndexer.Add(new[]
-                                    {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type});
                             }
-                        }
-                        else
-                        {
-                            if (!String.IsNullOrEmpty(move.CenterEmpty) &&
-                                (move.RotAroundCenter.x > 0 || move.RotAroundCenter.y > 0 ||
-                                 move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
-                                 move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
+                            else
                             {
-                                var partCenter = getPartLocation(move.CenterEmpty, (IMyModel) subpart.Parent.Model);
-                                var emptyCenter = getPartLocation(move.CenterEmpty, (IMyModel)subpart.Model);
-                                if (partCenter != null && emptyCenter != null)
+                                if (!String.IsNullOrEmpty(move.CenterEmpty) &&
+                                    (move.RotAroundCenter.x > 0 || move.RotAroundCenter.y > 0 ||
+                                     move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
+                                     move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
                                 {
-                                    var center = (Vector3)emptyCenter + (Vector3)partCenter;
+                                    var partCenter = GetPartLocation(move.CenterEmpty, subpart.Parent.Model);
+                                    var emptyCenter = GetPartLocation(move.CenterEmpty, subpart.Model);
+                                    if (partCenter != null && emptyCenter != null)
+                                    {
+                                        var center = (Vector3) emptyCenter + (Vector3) partCenter;
 
-                                    rotCenterSet.Add(CreateRotation(move.RotAroundCenter.x / move.TicksToMove,
-                                        move.RotAroundCenter.y / move.TicksToMove,
-                                        move.RotAroundCenter.z / move.TicksToMove, center));
+                                        rotCenterSet.Add(CreateRotation(move.RotAroundCenter.x / move.TicksToMove,
+                                            move.RotAroundCenter.y / move.TicksToMove,
+                                            move.RotAroundCenter.z / move.TicksToMove, center));
+                                    }
+                                    else
+                                        rotCenterSet.Add(null);
                                 }
                                 else
                                     rotCenterSet.Add(null);
-                            }
-                            else
-                                rotCenterSet.Add(null);
 
-                            if (move.Rotation.x > 0 || move.Rotation.y > 0 || move.Rotation.z > 0 ||
-                                move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
-                            {
+                                if (move.Rotation.x > 0 || move.Rotation.y > 0 || move.Rotation.z > 0 ||
+                                    move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
+                                {
 
-                                var partCenter = getPartLocation("subpart_" + animationSet.SubpartId, (IMyModel)subpart.Parent.Model);
-                                if (partCenter != null)
-                                    rotationSet.Add(CreateRotation(move.Rotation.x / move.TicksToMove,
-                                        move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove, (Vector3)partCenter));
+
+                                    var partCenter = GetPartLocation("subpart_" + animationSet.SubpartId[t],
+                                        subpart.Parent.Model);
+                                    if (partCenter != null)
+                                        rotationSet.Add(CreateRotation(move.Rotation.x / move.TicksToMove,
+                                            move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove,
+                                            (Vector3) partCenter));
+                                    else
+                                        rotationSet.Add(null);
+
+
+                                }
                                 else
                                     rotationSet.Add(null);
 
-
-                            }
-                            else
-                                rotationSet.Add(null);
-
-                            if (move.LinearPoints != null && move.LinearPoints.Length > 0)
-                            {
-                                double distance = 0;
-                                var tmpDirVec = new double[move.LinearPoints.Length][];
-
-                                for (int j = 0; j < move.LinearPoints.Length; j++)
+                                if (move.LinearPoints != null && move.LinearPoints.Length > 0)
                                 {
-                                    var point = move.LinearPoints[j];
+                                    double distance = 0;
+                                    var tmpDirVec = new double[move.LinearPoints.Length][];
 
-                                    var d = Math.Sqrt((point.x * point.x) + (point.y * point.y) +
-                                                      (point.z * point.z));
-
-                                    distance += d;
-
-                                    var dv = new[] { d, point.x / d, point.y / d, point.z / d };
-
-                                    tmpDirVec[j] = dv;
-                                }
-
-                                if (move.MovementType == RelMove.MoveType.ExpoDecay)
-                                {
-                                    var traveled = 0d;
-
-                                    var check = 1d;
-                                    var rate = 0d;
-                                    while (check > 0)
+                                    for (int j = 0; j < move.LinearPoints.Length; j++)
                                     {
-                                        rate += 0.001;
-                                        check = distance * Math.Pow(1 - rate, move.TicksToMove);
-                                        if (check < 0.01) check = 0;
+                                        var point = move.LinearPoints[j];
 
+                                        var d = Math.Sqrt((point.x * point.x) + (point.y * point.y) +
+                                                          (point.z * point.z));
+
+                                        distance += d;
+
+                                        var dv = new[] {d, point.x / d, point.y / d, point.z / d};
+
+                                        tmpDirVec[j] = dv;
                                     }
 
-                                    var vectorCount = 0;
-                                    var remaining = 0d;
-                                    var vecTotalMoved = 0d;
-                                    rate = 1 - rate;
-
-                                    for (int j = 0; j < move.TicksToMove; j++)
+                                    if (move.MovementType == RelMove.MoveType.ExpoDecay)
                                     {
-                                        var step = distance * Math.Pow(rate, j + 1);
-                                        if (step < 0.01) step = 0;
+                                        var traveled = 0d;
 
-                                        var lastTraveled = traveled;
-                                        traveled = distance - step;
-                                        var changed = traveled - lastTraveled;
+                                        var check = 1d;
+                                        var rate = 0d;
+                                        while (check > 0)
+                                        {
+                                            rate += 0.001;
+                                            check = distance * Math.Pow(1 - rate, move.TicksToMove);
+                                            if (check < 0.01) check = 0;
 
-                                        changed += remaining;
-                                        if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
-                                        {
-                                            var origMove = changed;
-                                            changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
-                                            remaining = origMove - changed;
-                                            vecTotalMoved = 0;
-                                        }
-                                        else
-                                        {
-                                            vecTotalMoved += changed;
-                                            remaining = 0;
                                         }
 
+                                        var vectorCount = 0;
+                                        var remaining = 0d;
+                                        var vecTotalMoved = 0d;
+                                        rate = 1 - rate;
 
-                                        var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
-                                            tmpDirVec[vectorCount][2] * changed, tmpDirVec[vectorCount][3] * changed);
+                                        for (int j = 0; j < move.TicksToMove; j++)
+                                        {
+                                            var step = distance * Math.Pow(rate, j + 1);
+                                            if (step < 0.01) step = 0;
 
-                                        moveSet.Add(vector);
-                                        moveIndexer.Add(new[]
-                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0});
+                                            var lastTraveled = traveled;
+                                            traveled = distance - step;
+                                            var changed = traveled - lastTraveled;
 
-                                        if (remaining > 0)
-                                            vectorCount++;
+                                            changed += remaining;
+                                            if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
+                                            {
+                                                var origMove = changed;
+                                                changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                                remaining = origMove - changed;
+                                                vecTotalMoved = 0;
+                                            }
+                                            else
+                                            {
+                                                vecTotalMoved += changed;
+                                                remaining = 0;
+                                            }
 
+
+                                            var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
+                                                tmpDirVec[vectorCount][2] * changed,
+                                                tmpDirVec[vectorCount][3] * changed);
+
+                                            moveSet.Add(vector);
+                                            moveIndexer.Add(new[]
+                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0});
+
+                                            if (remaining > 0)
+                                                vectorCount++;
+
+                                        }
                                     }
-                                }
-                                else if (move.MovementType == RelMove.MoveType.ExpoGrowth)
-                                {
-                                    var traveled = 0d;
-
-                                    var rateFound = false;
-                                    var rate = 0d;
-                                    var check = 0d;
-                                    while (check < distance)
+                                    else if (move.MovementType == RelMove.MoveType.ExpoGrowth)
                                     {
-                                        rate += 0.001;
-                                        check = 0.01 * Math.Pow(1 + rate, move.TicksToMove);
+                                        var traveled = 0d;
+
+                                        var rate = 0d;
+                                        var check = 0d;
+                                        while (check < distance)
+                                        {
+                                            rate += 0.001;
+                                            check = 0.01 * Math.Pow(1 + rate, move.TicksToMove);
+                                        }
+
+                                        var vectorCount = 0;
+                                        var remaining = 0d;
+                                        var vecTotalMoved = 0d;
+                                        rate += 1;
+
+                                        for (int j = 0; j < move.TicksToMove; j++)
+                                        {
+                                            var step = 0.01 * Math.Pow(rate, j + 1);
+                                            if (step > distance) step = distance;
+
+                                            var lastTraveled = traveled;
+                                            traveled = step;
+                                            var changed = traveled - lastTraveled;
+
+                                            changed += remaining;
+                                            if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
+                                            {
+                                                var origMove = changed;
+                                                changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                                remaining = origMove - changed;
+                                                vecTotalMoved = 0;
+                                            }
+                                            else
+                                            {
+                                                vecTotalMoved += changed;
+                                                remaining = 0;
+                                            }
+
+
+                                            var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
+                                                tmpDirVec[vectorCount][2] * changed,
+                                                tmpDirVec[vectorCount][3] * changed);
+
+                                            moveSet.Add(vector);
+                                            moveIndexer.Add(new[]
+                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0});
+
+                                            if (remaining > 0)
+                                                vectorCount++;
+                                        }
                                     }
-
-                                    var vectorCount = 0;
-                                    var remaining = 0d;
-                                    var vecTotalMoved = 0d;
-                                    rate += 1;
-
-                                    for (int j = 0; j < move.TicksToMove; j++)
+                                    else if (move.MovementType == RelMove.MoveType.Linear)
                                     {
-                                        var step = 0.01 * Math.Pow(rate, j + 1);
-                                        if (step > distance) step = distance;
-
-                                        var lastTraveled = traveled;
-                                        traveled = step;
-                                        var changed = traveled - lastTraveled;
-
-                                        changed += remaining;
-                                        if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
+                                        var distancePerTick = distance / move.TicksToMove;
+                                        var vectorCount = 0;
+                                        var remaining = 0d;
+                                        var vecTotalMoved = 0d;
+                                        for (int j = 0; j < move.TicksToMove; j++)
                                         {
-                                            var origMove = changed;
-                                            changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
-                                            remaining = origMove - changed;
-                                            vecTotalMoved = 0;
+                                            var changed = distancePerTick + remaining;
+                                            if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
+                                            {
+                                                var origMove = changed;
+                                                changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                                remaining = origMove - changed;
+                                                vecTotalMoved = 0;
+                                            }
+                                            else
+                                            {
+                                                vecTotalMoved += changed;
+                                                remaining = 0;
+                                            }
+
+                                            var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
+                                                tmpDirVec[vectorCount][2] * changed,
+                                                tmpDirVec[vectorCount][3] * changed);
+
+                                            moveSet.Add(vector);
+                                            moveIndexer.Add(new[]
+                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0});
+
+                                            if (remaining > 0)
+                                                vectorCount++;
                                         }
-                                        else
-                                        {
-                                            vecTotalMoved += changed;
-                                            remaining = 0;
-                                        }
-
-
-                                        var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,
-                                            tmpDirVec[vectorCount][2] * changed, tmpDirVec[vectorCount][3] * changed);
-
-                                        moveSet.Add(vector);
-                                        moveIndexer.Add(new[]
-                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0});
-
-                                        if (remaining > 0)
-                                            vectorCount++;
                                     }
-                                }
-                                else if (move.MovementType == RelMove.MoveType.Linear)
-                                {
-                                    var distancePerTick = distance / move.TicksToMove;
-                                    var vectorCount = 0;
-                                    var remaining = 0d;
-                                    var vecTotalMoved = 0d;
-                                    for (int j = 0; j < move.TicksToMove; j++)
+                                    else
                                     {
-                                        var changed = distancePerTick + remaining;
-                                        if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
-                                        {
-                                            var origMove = changed;
-                                            changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
-                                            remaining = origMove - changed;
-                                            vecTotalMoved = 0;
-                                        }
-                                        else
-                                        {
-                                            vecTotalMoved += changed;
-                                            remaining = 0;
-                                        }
+                                        moveSet.Add(null);
 
-                                        var vector = new Vector3(tmpDirVec[vectorCount][1] * changed,tmpDirVec[vectorCount][2] * changed, tmpDirVec[vectorCount][3] * changed);
-
-                                        moveSet.Add(vector);
-                                        moveIndexer.Add(new[]
-                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0});
-
-                                        if (remaining > 0)
-                                            vectorCount++;
+                                        for (int j = 0; j < move.TicksToMove; j++)
+                                            moveIndexer.Add(new[]
+                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0});
                                     }
+
                                 }
                                 else
                                 {
                                     moveSet.Add(null);
 
                                     for (int j = 0; j < move.TicksToMove; j++)
-                                        moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0 });
+                                        moveIndexer.Add(new[]
+                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0});
                                 }
-
-                            }
-                            else
-                            {
-                                moveSet.Add(null);
-
-                                for (int j = 0; j < move.TicksToMove; j++)
-                                    moveIndexer.Add(new[] { moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0 });
                             }
                         }
+
+                        var loop = false;
+                        var reverse = false;
+
+                        if (animationSet.Loop != null && animationSet.Loop.Contains(moves.Key))
+                            loop = true;
+
+                        if (animationSet.Reverse != null && animationSet.Reverse.Contains(moves.Key))
+                            reverse = true;
+
+                        var partAnim = new PartAnimation(moveSet.ToArray(), rotationSet.ToArray(),
+                            rotCenterSet.ToArray(), typeSet, moveIndexer.ToArray(), subpart, parts.Entity,
+                            animationSet.BarrelId,
+                            animationSet.StartupDelay, animationSet.AnimationDelays[moves.Key], loop, reverse);
+
+                        allAnimationSet[moves.Key].Add(partAnim);
                     }
-
-                    var loop = false;
-                    var reverse = false;
-
-                    if (animationSet.Loop != null && animationSet.Loop.Contains(moves.Key))
-                        loop = true;
-
-                    if (animationSet.Reverse != null && animationSet.Reverse.Contains(moves.Key))
-                        reverse = true;
-
-                    var partAnim = new PartAnimation(moveSet.ToArray(), rotationSet.ToArray(),
-                        rotCenterSet.ToArray(), typeSet, moveIndexer.ToArray(), subpart, parts.Entity, animationSet.BarrelId,
-                        animationSet.StartupDelay, animationSet.AnimationDelays[moves.Key], loop, reverse);
-
-                    allAnimationSet[moves.Key].Add(partAnim);
                 }
             }
 
@@ -349,7 +357,7 @@ namespace WeaponCore
 
         }
 
-        internal Vector3? getPartLocation(string partName, IMyModel model)
+        internal Vector3? GetPartLocation(string partName, IMyModel model)
         {
             Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
             model.GetDummies(dummyList);
@@ -461,9 +469,7 @@ namespace WeaponCore
                 animation.Part.Render.RemoveRenderObjects();
             }
 
-            var Animation = animation;
-
-            if (Animation.Reverse || Animation.DoesLoop || Animation.CurrentMove > 0)
+            if (animation.Reverse || animation.DoesLoop || animation.CurrentMove > 0)
             {
                 animationsToQueue.Enqueue(animation);
             }
@@ -477,9 +483,10 @@ namespace WeaponCore
 
             var localMatrix = animationData.Animation.Part.PositionComp.LocalMatrix;
             MatrixD? rotation;
+            MatrixD? rotAroundCenter;
             Vector3D translation;
             AnimationType animationType;
-            animationData.Animation.GetCurrentMove(out translation, out rotation, out animationType);
+            animationData.Animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType);
 
 
             if (animationData.Animation.Reverse)
@@ -508,6 +515,11 @@ namespace WeaponCore
                 localMatrix *= (Matrix)rotation;
             }
 
+            if (rotAroundCenter != null)
+            {
+                localMatrix *= (Matrix)rotAroundCenter;
+            }
+
 
             animationData.NewMatrix = localMatrix;
             animationData.Type = animationType;
@@ -523,7 +535,6 @@ namespace WeaponCore
             {
                 animationData.Animation.Part.PositionComp.SetLocalMatrix(ref animationData.NewMatrix,
                     animationData.Animation.MainEnt, true);
-                Log.Line("Movement");
             }
 
             else if (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade)
@@ -537,9 +548,9 @@ namespace WeaponCore
                 animationData.Animation.Part.Render.RemoveRenderObjects();
             }
 
-            var Animation = animationData.Animation;
+            var animation = animationData.Animation;
 
-            if (Animation.Reverse || Animation.DoesLoop || Animation.CurrentMove > 0)
+            if (animation.Reverse || animation.DoesLoop || animation.CurrentMove > 0)
             {
                 animationsToQueue.Enqueue(animationData.Animation);
             }

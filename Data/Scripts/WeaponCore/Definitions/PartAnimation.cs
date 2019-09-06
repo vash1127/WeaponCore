@@ -72,8 +72,8 @@ namespace WeaponCore.Support {
             else
             {
                 translation = Vector3D.Zero;
-                rotation = MatrixD.Zero;
-                rotAroundCenter = MatrixD.Zero;
+                rotation = null;
+                rotAroundCenter = null;
             }
 
         }

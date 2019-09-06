@@ -481,7 +481,7 @@ namespace WeaponCore.Support
             Off,
         }
 
-        [ProtoMember(1)] internal string SubpartId;
+        [ProtoMember(1)] internal string[] SubpartId;
         [ProtoMember(2)] internal string BarrelId;
         [ProtoMember(3)] internal uint StartupDelay;
         [ProtoMember(4)] internal Dictionary<EventOptions, uint> AnimationDelays;
