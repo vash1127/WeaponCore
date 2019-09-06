@@ -249,7 +249,7 @@ namespace WeaponCore.Platform
                     Comp.CurrentHeat += HeatPShot;
                     if (heat > System.MaxHeat)
                     {
-                        if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
                         {
                             foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
                             {

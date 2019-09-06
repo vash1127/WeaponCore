@@ -133,7 +133,7 @@ namespace WeaponCore
                             {
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
                                 comp.Overheated = false;
-                                if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                                if (!DedicatedServer && w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
                                 {
                                     foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
                                     {
@@ -232,7 +232,7 @@ namespace WeaponCore
 
                             if (w.IsShooting)
                             {
-                                if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                if (!DedicatedServer && w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
                                 {
                                     foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Reloading])
                                     {
