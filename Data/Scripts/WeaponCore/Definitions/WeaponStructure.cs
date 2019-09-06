@@ -210,7 +210,7 @@ namespace WeaponCore.Support
             }
             damageScaling = d.MaxIntegrity > 0 || d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0 || d.Grids.Large >= 0 || d.Grids.Small >= 0 || customDamageScales;
             if (damageScaling) armorScaling = d.Armor.Armor >= 0 || d.Armor.NonArmor >= 0 || d.Armor.Heavy >= 0 || d.Armor.Light >= 0;
-            selfDamage = Values.DamageScales.SelfDamage;
+            selfDamage = Values.DamageScales.SelfDamage && !IsBeamWeapon;
             voxelDamage = Values.DamageScales.DamageVoxels;
         }
 

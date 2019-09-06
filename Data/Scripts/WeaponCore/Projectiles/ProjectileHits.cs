@@ -27,7 +27,7 @@ namespace WeaponCore.Projectiles
             else
             {
                 p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                if (!p.T.System.IsBeamWeapon && p.PruneSphere.Contains(p.Origin) != ContainmentType.Disjoint) return false;
+                if (p.SelfDamage && p.PruneSphere.Contains(p.Origin) != ContainmentType.Disjoint) return false;
                 var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() * 0.5d : p.T.System.AreaEffectSize;
                 if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
                 {
