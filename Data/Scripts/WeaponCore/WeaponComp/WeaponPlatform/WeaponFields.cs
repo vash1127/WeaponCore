@@ -219,6 +219,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.MaxTargetingRange = System.MaxTrajectory;
                 Comp.Ai.MaxTargetingRangeSqr = System.MaxTrajectorySqr;
             }
+            Comp.UpdatePivotPos(this);
         }
 
         internal void UpdateRequiredPower()

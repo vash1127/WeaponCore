@@ -511,6 +511,7 @@ namespace WeaponCore.Support
             Locked,
             On,
             Off,
+            BurstReload,
         }
 
         [ProtoMember(1)] internal string[] SubpartId;
