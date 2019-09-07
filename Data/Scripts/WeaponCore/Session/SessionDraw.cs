@@ -102,8 +102,12 @@ namespace WeaponCore
                 else if (distanceFromPoint > 200) thickness *= 4f;
                 else if (distanceFromPoint > 100) thickness *= 2f;
 
-                if (!t.System.IsBeamWeapon) MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
-                else MyTransparentGeometry.AddLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
+                if (!t.System.IsBeamWeapon && t.Length < 10) MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
+                else
+                {
+                    if (t.System.OffsetEffect) LineOffsetEffect(t, thickness, color);
+                    else MyTransparentGeometry.AddLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
+                }
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
@@ -187,6 +191,55 @@ namespace WeaponCore
                 }
             }
             if (sRemove) _shrinking.ApplyRemovals();
+        }
+
+        internal void LineOffsetEffect(Trajectile t, float beamRadius, Vector4 color)
+        {
+            MatrixD matrix;
+            var up = MatrixD.Identity.Up;
+            MatrixD.CreateWorld(ref t.PrevPosition, ref t.Direction, ref up, out matrix);
+            var distance = t.Length;
+            var offsetMaterial = t.System.ProjectileMaterial;
+            var distSqr = distance * distance;
+            var maxOffset = t.System.Values.Ammo.Beams.OffsetEffect.MaxOffset;
+            var minLength = t.System.Values.Ammo.Beams.OffsetEffect.MinLength;
+            var maxLength = t.System.Values.Ammo.Beams.OffsetEffect.MaxLength;
+
+            double currentForwardDistance = 0;
+
+            while (currentForwardDistance < distance)
+            {
+                currentForwardDistance += MyUtils.GetRandomDouble(minLength, maxLength);
+                var lateralXDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
+                var lateralYDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
+                _offsetList.Add(new Vector3D(lateralXDistance, lateralYDistance, currentForwardDistance * -1));
+            }
+
+            for (int i = 0; i < _offsetList.Count; i++)
+            {
+                Vector3D fromBeam;
+                Vector3D toBeam;
+
+                if (i == 0)
+                {
+                    fromBeam = matrix.Translation;
+                    toBeam = Vector3D.Transform(_offsetList[i], matrix);
+                }
+                else
+                {
+                    fromBeam = Vector3D.Transform(_offsetList[i - 1], matrix);
+                    toBeam = Vector3D.Transform(_offsetList[i], matrix);
+                }
+
+                Vector3 direction = (toBeam - fromBeam);
+                var length = direction.Length();
+                var normDir = Vector3D.Normalize(direction);
+
+                MyTransparentGeometry.AddLineBillboard(offsetMaterial, color, fromBeam, normDir, length, beamRadius);
+
+                if (Vector3D.DistanceSquared(matrix.Translation, toBeam) > distSqr) break;
+            }
+            _offsetList.Clear();
         }
     }
 }

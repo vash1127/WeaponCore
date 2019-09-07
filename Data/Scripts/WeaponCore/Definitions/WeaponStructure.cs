@@ -75,6 +75,7 @@ namespace WeaponCore.Support
         public readonly bool CollisionIsLine;
         public readonly bool SelfDamage;
         public readonly bool VoxelDamage;
+        public readonly bool OffsetEffect;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -184,7 +185,7 @@ namespace WeaponCore.Support
             CollisionShape(out CollisionIsLine, out CollisionSize);
             Models(out PrimeModelId, out TriggerModelId);
             Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
-            Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle);
+            Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
@@ -296,13 +297,14 @@ namespace WeaponCore.Support
             reloading = Values.Graphics.Emissive.Reloading.Enable;
         }
 
-        private void Beams(out bool isBeamWeapon, out bool virtualBeams, out bool rotateRealBeam, out bool convergeBeams, out bool oneHitParticle)
+        private void Beams(out bool isBeamWeapon, out bool virtualBeams, out bool rotateRealBeam, out bool convergeBeams, out bool oneHitParticle, out bool offsetEffect)
         {
             isBeamWeapon = Values.Ammo.Beams.Enable;
             virtualBeams = Values.Ammo.Beams.VirtualBeams && IsBeamWeapon;
             rotateRealBeam = Values.Ammo.Beams.RotateRealBeam && VirtualBeams;
             convergeBeams = !RotateRealBeam && Values.Ammo.Beams.ConvergeBeams && VirtualBeams;
             oneHitParticle = Values.Ammo.Beams.OneParticle && IsBeamWeapon;
+            offsetEffect = Values.Ammo.Beams.OffsetEffect.MaxOffset > 0;
         }
 
         private void CollisionShape(out bool collisionIsLine, out double collisionSize)
