@@ -340,49 +340,6 @@ namespace WeaponCore.Projectiles
             return xDist.CompareTo(yDist);
         }
 
-        public static List<Vector3D> CreateRandomLineSegOffsets(double maxRange, double minForwardStep, double maxForwardStep, double maxOffset, ref List<Vector3D> offsetList)
-        {
-            double currentForwardDistance = 0;
-
-            while (currentForwardDistance < maxRange)
-            {
-                currentForwardDistance += MyUtils.GetRandomDouble(minForwardStep, maxForwardStep);
-                var lateralXDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
-                var lateralYDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
-                offsetList.Add(new Vector3D(lateralXDistance, lateralYDistance, currentForwardDistance * -1));
-            }
-            return offsetList;
-        }
-
-        public static void DisplayLineOffsetEffect(MatrixD startMatrix, Vector3D endCoords, float beamRadius, Color color, List<Vector3D> offsetList, MyStringId offsetMaterial, bool isDedicated = false)
-        {
-
-            var maxDistance = Vector3D.Distance(startMatrix.Translation, endCoords);
-
-            for (int i = 0; i < offsetList.Count; i++)
-            {
-
-                Vector3D fromBeam;
-                Vector3D toBeam;
-
-                if (i == 0)
-                {
-                    fromBeam = startMatrix.Translation;
-                    toBeam = Vector3D.Transform(offsetList[i], startMatrix);
-                }
-                else
-                {
-                    fromBeam = Vector3D.Transform(offsetList[i - 1], startMatrix);
-                    toBeam = Vector3D.Transform(offsetList[i], startMatrix);
-                }
-
-                var vectorColor = color.ToVector4();
-                MySimpleObjectDraw.DrawLine(fromBeam, toBeam, offsetMaterial, ref vectorColor, beamRadius);
-
-                if (Vector3D.Distance(startMatrix.Translation, toBeam) > maxDistance) break;
-            }
-        }
-
         private static void PrefetchVoxelPhysicsIfNeeded(Projectile p)
         {
             var ray = new LineD(p.Origin, p.Origin + p.Direction * p.MaxTrajectory, p.MaxTrajectory);
