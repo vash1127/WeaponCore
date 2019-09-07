@@ -60,7 +60,7 @@ namespace WeaponCore.Support
             HitEntity = hitEntity;
             Draw = draw;
 
-            var color = System.Values.Graphics.Line.Color;
+            var color = System.Values.Graphics.Line.Tracer.Color;
             if (System.LineColorVariance)
             {
                 var cv = System.Values.Graphics.Line.ColorVariance;
@@ -70,7 +70,7 @@ namespace WeaponCore.Support
                 color.Z *= randomValue;
             }
 
-            var width = System.Values.Graphics.Line.Width;
+            var width = System.Values.Graphics.Line.Tracer.Width;
             if (System.LineWidthVariance)
             {
                 var wv = System.Values.Graphics.Line.WidthVariance;

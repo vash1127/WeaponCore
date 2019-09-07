@@ -123,8 +123,8 @@ namespace WeaponCore.Platform
             weapon.TargetPos = targetPos;
             var targetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            var maxAzimuthStep = step ? weapon.System.Values.HardPoint.RotateSpeed : double.MinValue;
-            var maxElevationStep = step ? weapon.System.Values.HardPoint.ElevationSpeed : double.MinValue;
+            var maxAzimuthStep = step ? weapon.System.Values.HardPoint.Block.RotateRate : double.MinValue;
+            var maxElevationStep = step ? weapon.System.Values.HardPoint.Block.ElevateRate : double.MinValue;
 
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);

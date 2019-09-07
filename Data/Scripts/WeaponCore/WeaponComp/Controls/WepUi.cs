@@ -201,24 +201,24 @@ namespace WeaponCore
                 var w = comp.Platform.Weapons[i];
                 switch (id) {
                     case -1:
-                        if (w.System.Values.Ui.ToggleGuidance && w.System.Values.Ammo.Trajectory.Guidance != None) {
+                        if (w.System.Values.HardPoint.Ui.ToggleGuidance && w.System.Values.Ammo.Trajectory.Guidance != None) {
                             return true;
                         }
                         break;
                     case -2:
-                        if (w.System.Values.Ui.DamageModifier && w.System.EnergyAmmo || w.System.IsHybrid)
+                        if (w.System.Values.HardPoint.Ui.DamageModifier && w.System.EnergyAmmo || w.System.IsHybrid)
                         {
                             return true;
                         }
                         break;
                     case -3:
-                        if (w.System.Values.Ui.RateOfFire)
+                        if (w.System.Values.HardPoint.Ui.RateOfFire)
                         {
                             return true;
                         }
                         break;
                     case -4:
-                        if (w.System.Values.Ui.EnableOverload && w.System.IsBeamWeapon)
+                        if (w.System.Values.HardPoint.Ui.EnableOverload && w.System.IsBeamWeapon)
                         {
                             return true;
                         }
