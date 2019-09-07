@@ -20,7 +20,6 @@ namespace WeaponCore
             {
                 for (int t = 0; t < animationSet.SubpartId.Length; t++)
                 {
-
                     var subpart = parts.NameToEntity[animationSet.SubpartId[t]] as MyEntitySubpart;
                     if (subpart == null) continue;
 
@@ -71,7 +70,6 @@ namespace WeaponCore
                                         case RelMove.MoveType.Hide:
                                             type = move.Fade ? 4 : 2;
                                             break;
-
                                     }
 
                                     moveIndexer.Add(new[]
@@ -114,8 +112,6 @@ namespace WeaponCore
                                             (Vector3) partCenter));
                                     else
                                         rotationSet.Add(null);
-
-
                                 }
                                 else
                                     rotationSet.Add(null);
@@ -171,7 +167,7 @@ namespace WeaponCore
                                             if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
                                             {
                                                 var origMove = changed;
-                                                changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                                changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
                                                 remaining = origMove - changed;
                                                 vecTotalMoved = 0;
                                             }
@@ -225,7 +221,7 @@ namespace WeaponCore
                                             if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
                                             {
                                                 var origMove = changed;
-                                                changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                                changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
                                                 remaining = origMove - changed;
                                                 vecTotalMoved = 0;
                                             }
@@ -254,13 +250,14 @@ namespace WeaponCore
                                         var vectorCount = 0;
                                         var remaining = 0d;
                                         var vecTotalMoved = 0d;
+
                                         for (int j = 0; j < move.TicksToMove; j++)
                                         {
                                             var changed = distancePerTick + remaining;
                                             if (changed > tmpDirVec[vectorCount][0] - vecTotalMoved)
                                             {
                                                 var origMove = changed;
-                                                changed = changed - tmpDirVec[vectorCount][0] - vecTotalMoved;
+                                                changed = changed - (tmpDirVec[vectorCount][0] - vecTotalMoved);
                                                 remaining = origMove - changed;
                                                 vecTotalMoved = 0;
                                             }
