@@ -110,6 +110,13 @@
     <Compile Include="Data\Scripts\WeaponCore\Ui\WheelFields.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\netstandard.dll</HintPath>
+    </Reference>
+    <Reference Include="ProtoBuf.Net">
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\ProtoBuf.Net.dll</HintPath>
+    </Reference>
     <Reference Include="ProtoBuf.Net.Core">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\ProtoBuf.Net.Core.dll</HintPath>
     </Reference>
@@ -166,9 +173,6 @@
     </Reference>
     <Reference Include="VRage.Network">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Network.dll</HintPath>
-    </Reference>
-    <Reference Include="VRage.Platform.Windows">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Platform.Windows.dll</HintPath>
     </Reference>
     <Reference Include="VRage.Render">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Render.dll</HintPath>
