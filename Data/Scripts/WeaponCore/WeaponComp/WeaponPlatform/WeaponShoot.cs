@@ -60,7 +60,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
 
-            if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59) ShootRayCheck();
+            if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59 && Target != null ) ShootRayCheck();
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
@@ -223,10 +223,42 @@ namespace WeaponCore.Platform
                         }
                     }
 
+                    if (!Session.Instance.DedicatedServer)
+                    {
+                        if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                        {
+                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
+                            {
+                                if (animation.Muzzle == "Any" || animation.Muzzle == MuzzleIDToName[current])
+                                {
+                                    if (animation.DoesLoop && animation.PauseAnimation && animation.Looping)
+                                        animation.PauseAnimation = false;
+                                    else if (!animation.Looping)
+                                    {
+                                        Session.Instance.animationsToProcess.Enqueue(animation);
+                                        if (animation.DoesLoop)
+                                            animation.Looping = true;
+
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     var heat = Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;
                     if (heat > System.MaxHeat)
                     {
+                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                        {
+                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                        }
+
                         if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
                         Comp.Overheated = true;
                         StopShooting();
@@ -279,7 +311,7 @@ namespace WeaponCore.Platform
         private void ShootRayCheck()
         {
             Comp.LastRayCastTick = Session.Instance.Tick;
-            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
+            var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
             if (Target.Projectile != null)
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))

@@ -54,7 +54,9 @@ namespace WeaponCore
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
-        internal readonly MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
+        internal MyConcurrentQueue<PartAnimation> animationsToProcess = new MyConcurrentQueue<PartAnimation>();
+        internal MyConcurrentQueue<PartAnimation> animationsToQueue = new MyConcurrentQueue<PartAnimation>();
+
         internal IMyPhysics Physics;
         internal IMyCamera Camera;
         internal IMyGps TargetGps;
@@ -81,8 +83,8 @@ namespace WeaponCore
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
         private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
-        private readonly List<Vector3D> _offsetList = new List<Vector3D>();
 
+        internal readonly MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
@@ -113,6 +115,16 @@ namespace WeaponCore
                 }
                 return false;
             }
+        }
+
+        internal enum AnimationType
+        {
+            Movement,
+            ShowInstant,
+            HideInstant,
+            ShowFade,
+            HideFade,
+            Delay
         }
 
         internal ulong AuthorSteamId = 76561197969691953;
