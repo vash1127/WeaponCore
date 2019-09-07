@@ -101,7 +101,7 @@ namespace WeaponCore.Support
         public float NoAmmoSoundDistSqr;
         public float HitSoundDistSqr;
         public float AmmoTravelSoundDistSqr;
-        public float HardPointSoundMaxDistSqr;
+        public float HardPointAvMaxDistSqr;
         public float AmmoSoundMaxDistSqr;
         public FiringSoundState FiringSound;
         public bool HitSound;
@@ -353,7 +353,7 @@ namespace WeaponCore.Support
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) FiringSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (FiringSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = FiringSoundDistSqr;
+                    if (FiringSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = FiringSoundDistSqr;
                 }
                 if (HitSound && id == hitSound)
                 {
@@ -371,27 +371,33 @@ namespace WeaponCore.Support
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) ReloadSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (ReloadSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = ReloadSoundDistSqr;
+                    if (ReloadSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = ReloadSoundDistSqr;
 
                 }
                 else if (BarrelRotationSound && id == barrelSound)
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) BarrelSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (BarrelSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = BarrelSoundDistSqr;
+                    if (BarrelSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = BarrelSoundDistSqr;
                 }
                 else if (HardPointRotationSound && id == hardPointSound)
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) HardPointSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (HardPointSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = HardPointSoundDistSqr;
+                    if (HardPointSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = HardPointSoundDistSqr;
                 }
                 else if (NoAmmoSound && id == noAmmoSound)
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) NoAmmoSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (NoAmmoSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = NoAmmoSoundDistSqr;
+                    if (NoAmmoSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = NoAmmoSoundDistSqr;
                 }
+
+                if (Values.Graphics.Particles.Barrel1.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                    HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel1.Extras.MaxDistance;
+
+                if (Values.Graphics.Particles.Barrel2.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                    HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel2.Extras.MaxDistance;
             }
         }
     }

@@ -33,7 +33,7 @@ namespace WeaponCore.Platform
             }
 
             if (AvCapable && (!PlayTurretAv || session.Tick60))
-                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointSoundMaxDistSqr;
+                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointAvMaxDistSqr;
 
             if (System.BarrelAxisRotation) MovePart(-1 * bps);
 

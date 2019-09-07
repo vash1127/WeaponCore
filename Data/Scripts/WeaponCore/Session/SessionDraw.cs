@@ -13,6 +13,7 @@ namespace WeaponCore
         private void DrawLists(List<Trajectile> drawList)
         {
             var sFound = false;
+            var gFound = false;
             for (int i = 0; i < drawList.Count; i++)
             {
                 var t = drawList[i];
@@ -68,6 +69,15 @@ namespace WeaponCore
                     shrink.Init(t);
                     _shrinking.Add(shrink);
                 }
+
+                if (t.AfterGlow)
+                {
+                    gFound = true;
+                    var afterGlow = _afterGlowPool.Get();
+                    afterGlow.Init(t);
+                    _afterGlow.Add(afterGlow);
+                }
+
                 var color = t.Color;
                 var newWidth = width;
 
@@ -193,6 +203,25 @@ namespace WeaponCore
             if (sRemove) _shrinking.ApplyRemovals();
         }
 
+        private void TrailEffect()
+        {
+            var sRemove = false;
+            foreach (var s in _shrinking)
+            {
+                var trajectile = s.GetLine();
+                if (trajectile.HasValue)
+                {
+                    MyTransparentGeometry.AddLocalLineBillboard(s.System.ProjectileMaterial, s.System.Values.Graphics.Line.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, s.System.Values.Graphics.Line.Width);
+                }
+                else
+                {
+                    _shrinking.Remove(s);
+                    sRemove = true;
+                }
+            }
+            if (sRemove) _shrinking.ApplyRemovals();
+        }
+
         internal void LineOffsetEffect(Trajectile t, float beamRadius, Vector4 color)
         {
             MatrixD matrix;
@@ -233,9 +262,8 @@ namespace WeaponCore
 
                 Vector3 direction = (toBeam - fromBeam);
                 var length = direction.Length();
-                var normDir = Vector3D.Normalize(direction);
 
-                MyTransparentGeometry.AddLineBillboard(offsetMaterial, color, fromBeam, normDir, length, beamRadius);
+                MyTransparentGeometry.AddLineBillboard(offsetMaterial, color, fromBeam, direction / length, length, beamRadius);
 
                 if (Vector3D.DistanceSquared(matrix.Translation, toBeam) > distSqr) break;
             }
