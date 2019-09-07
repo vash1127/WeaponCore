@@ -118,6 +118,8 @@ namespace WeaponCore.Platform
                                     BarrelEffects1[id].UserColorMultiplier = particles.Barrel1.Color;
                                     BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                                     BarrelEffects1[id].DistanceMax = particles.Barrel1.Extras.MaxDistance;
+                                    BarrelEffects1[id].DurationMax = particles.Barrel1.Extras.MaxDuration;
+                                    BarrelEffects1[id].Loop = particles.Barrel1.Extras.Loop;
                                 }
                             }
                             else if (particles.Barrel1.Extras.Restart && BarrelEffects1[id].IsEmittingStopped)
@@ -148,6 +150,8 @@ namespace WeaponCore.Platform
                                     BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
                                     BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                                     BarrelEffects2[id].DistanceMax = particles.Barrel2.Extras.MaxDistance;
+                                    BarrelEffects2[id].DurationMax = particles.Barrel2.Extras.MaxDuration;
+                                    BarrelEffects2[id].Loop = particles.Barrel2.Extras.Loop;
                                 }
                             }
                             else if (particles.Barrel2.Extras.Restart && BarrelEffects2[id].IsEmittingStopped)

@@ -22,9 +22,29 @@ namespace WeaponCore.Platform
             {
                 if (_shots > System.Values.HardPoint.Loading.ShotsInBurst)
                 {
-                    if (tick - _lastShotTick > System.Values.HardPoint.Loading.DelayAfterBurst) _shots = 1;
+                    if (tick - _lastShotTick > System.Values.HardPoint.Loading.DelayAfterBurst)
+                    {
+                        _shots = 1;
+                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.BurstReload))
+                        {
+                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.BurstReload])
+                            {
+                                animation.Looping = false;
+                            }
+                        }
+                    }
                     else
                     {
+                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.BurstReload))
+                        {
+                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.BurstReload])
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                        }
+
                         if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
                         return;
                     }
@@ -34,6 +54,7 @@ namespace WeaponCore.Platform
 
             if (AvCapable && (!PlayTurretAv || session.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointAvMaxDistSqr;
+
 
             if (System.BarrelAxisRotation) MovePart(-1 * bps);
 
