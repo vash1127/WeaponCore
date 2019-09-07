@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using VRage;
@@ -10,7 +9,6 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Game.ModAPI.Interfaces;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -54,6 +52,9 @@ namespace WeaponCore
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
+        internal MyConcurrentQueue<PartAnimation> animationsToProcess = new MyConcurrentQueue<PartAnimation>();
+        internal MyConcurrentQueue<PartAnimation> animationsToQueue = new MyConcurrentQueue<PartAnimation>();
+
         internal IMyPhysics Physics;
         internal IMyCamera Camera;
         internal IMyGps TargetGps;
@@ -76,11 +77,14 @@ namespace WeaponCore
 
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
+        private readonly CachingList<AfterGlow> _afterGlow = new CachingList<AfterGlow>();
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
-        private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
+        private readonly MyConcurrentPool<AfterGlow> _afterGlowPool = new MyConcurrentPool<AfterGlow>();
 
+        private readonly List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
+        private readonly List<Vector3D> _offsetList = new List<Vector3D>();
         internal readonly MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
@@ -112,6 +116,16 @@ namespace WeaponCore
                 }
                 return false;
             }
+        }
+
+        internal enum AnimationType
+        {
+            Movement,
+            ShowInstant,
+            HideInstant,
+            ShowFade,
+            HideFade,
+            Delay
         }
 
         internal ulong AuthorSteamId = 76561197969691953;

@@ -1,5 +1,4 @@
-﻿using Sandbox.ModAPI;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -134,6 +133,14 @@ namespace WeaponCore
                             {
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
                                 comp.Overheated = false;
+                                if (!DedicatedServer && w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                                {
+                                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
+                                    {
+                                        if (animation.DoesLoop && animation.Looping)
+                                            animation.Looping = false;
+                                    }
+                                }
                             }
                         }
 
@@ -175,15 +182,42 @@ namespace WeaponCore
                         }
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
-                            if (w.IsShooting && !w.Reloading)
-                            { 
-                                w.StopShooting(true);
-                                comp.currentDPS -= w.DPS;
-                                w.Reloading = true;
-                            }
+                            
 
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
+                                if (!w.Reloading)
+                                {
+                                    if (!DedicatedServer)
+                                    {
+                                        if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
+                                        {
+                                            foreach (var animation in w.AnimationsSet[
+                                                PartAnimationSetDef.EventOptions.Reloading])
+                                            {
+                                                animationsToProcess.Enqueue(animation);
+                                            }
+                                        }
+
+                                        if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                        {
+                                            foreach (var animation in w.AnimationsSet[
+                                                PartAnimationSetDef.EventOptions.Firing])
+                                            {
+                                                if (animation.DoesLoop && animation.Looping)
+                                                    animation.PauseAnimation = true;
+                                            }
+                                        }
+                                    }
+
+                                    if (w.IsShooting)
+                                    {
+                                        w.StopShooting(true);
+                                        comp.currentDPS -= w.DPS;
+                                    }
+                                    w.Reloading = true;
+                                }
+
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, true);
                                 if (w.CurrentMags != 0)
                                 {
@@ -198,11 +232,19 @@ namespace WeaponCore
 
                             if (w.IsShooting)
                             {
+                                if (!DedicatedServer && w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                {
+                                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Reloading])
+                                    {
+                                        if (animation.DoesLoop && animation.Looping)
+                                            animation.PauseAnimation = false;
+                                    }
+                                }
                                 if (w.FiringEmitter != null) w.StartFiringSound();
                                 if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying) w.StartRotateSound();
                                 comp.currentDPS += w.DPS;
-                                w.Reloading = false;
                             }
+                            w.Reloading = false;
                         }
                         if (w.SeekTarget)
                         {

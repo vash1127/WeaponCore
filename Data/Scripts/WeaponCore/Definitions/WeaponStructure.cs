@@ -75,6 +75,7 @@ namespace WeaponCore.Support
         public readonly bool CollisionIsLine;
         public readonly bool SelfDamage;
         public readonly bool VoxelDamage;
+        public readonly bool OffsetEffect;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -100,7 +101,7 @@ namespace WeaponCore.Support
         public float NoAmmoSoundDistSqr;
         public float HitSoundDistSqr;
         public float AmmoTravelSoundDistSqr;
-        public float HardPointSoundMaxDistSqr;
+        public float HardPointAvMaxDistSqr;
         public float AmmoSoundMaxDistSqr;
         public FiringSoundState FiringSound;
         public bool HitSound;
@@ -184,7 +185,7 @@ namespace WeaponCore.Support
             CollisionShape(out CollisionIsLine, out CollisionSize);
             Models(out PrimeModelId, out TriggerModelId);
             Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
-            Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle);
+            Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
@@ -296,13 +297,14 @@ namespace WeaponCore.Support
             reloading = Values.Graphics.Emissive.Reloading.Enable;
         }
 
-        private void Beams(out bool isBeamWeapon, out bool virtualBeams, out bool rotateRealBeam, out bool convergeBeams, out bool oneHitParticle)
+        private void Beams(out bool isBeamWeapon, out bool virtualBeams, out bool rotateRealBeam, out bool convergeBeams, out bool oneHitParticle, out bool offsetEffect)
         {
             isBeamWeapon = Values.Ammo.Beams.Enable;
             virtualBeams = Values.Ammo.Beams.VirtualBeams && IsBeamWeapon;
             rotateRealBeam = Values.Ammo.Beams.RotateRealBeam && VirtualBeams;
             convergeBeams = !RotateRealBeam && Values.Ammo.Beams.ConvergeBeams && VirtualBeams;
             oneHitParticle = Values.Ammo.Beams.OneParticle && IsBeamWeapon;
+            offsetEffect = Values.Ammo.Beams.OffsetEffect.MaxOffset > 0;
         }
 
         private void CollisionShape(out bool collisionIsLine, out double collisionSize)
@@ -351,7 +353,7 @@ namespace WeaponCore.Support
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) FiringSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (FiringSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = FiringSoundDistSqr;
+                    if (FiringSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = FiringSoundDistSqr;
                 }
                 if (HitSound && id == hitSound)
                 {
@@ -369,27 +371,33 @@ namespace WeaponCore.Support
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) ReloadSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (ReloadSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = ReloadSoundDistSqr;
+                    if (ReloadSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = ReloadSoundDistSqr;
 
                 }
                 else if (BarrelRotationSound && id == barrelSound)
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) BarrelSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (BarrelSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = BarrelSoundDistSqr;
+                    if (BarrelSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = BarrelSoundDistSqr;
                 }
                 else if (HardPointRotationSound && id == hardPointSound)
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) HardPointSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (HardPointSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = HardPointSoundDistSqr;
+                    if (HardPointSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = HardPointSoundDistSqr;
                 }
                 else if (NoAmmoSound && id == noAmmoSound)
                 {
                     var ob = def.GetObjectBuilder() as MyObjectBuilder_AudioDefinition;
                     if (ob != null) NoAmmoSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
-                    if (NoAmmoSoundDistSqr > HardPointSoundMaxDistSqr) HardPointSoundMaxDistSqr = NoAmmoSoundDistSqr;
+                    if (NoAmmoSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = NoAmmoSoundDistSqr;
                 }
+
+                if (Values.Graphics.Particles.Barrel1.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                    HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel1.Extras.MaxDistance;
+
+                if (Values.Graphics.Particles.Barrel2.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                    HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel2.Extras.MaxDistance;
             }
         }
     }

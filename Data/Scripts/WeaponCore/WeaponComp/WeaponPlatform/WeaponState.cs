@@ -118,6 +118,9 @@ namespace WeaponCore.Platform
                                     BarrelEffects1[id].UserColorMultiplier = particles.Barrel1.Color;
                                     BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                                     BarrelEffects1[id].DistanceMax = particles.Barrel1.Extras.MaxDistance;
+                                    //BarrelEffects1[id].DurationMin = particles.Barrel1.Extras.MaxDuration;
+                                    //BarrelEffects1[id].Length = particles.Barrel1.Extras.MaxDuration;
+                                    BarrelEffects1[id].Loop = particles.Barrel1.Extras.Loop;
                                 }
                             }
                             else if (particles.Barrel1.Extras.Restart && BarrelEffects1[id].IsEmittingStopped)
@@ -148,6 +151,9 @@ namespace WeaponCore.Platform
                                     BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
                                     BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                                     BarrelEffects2[id].DistanceMax = particles.Barrel2.Extras.MaxDistance;
+                                    //BarrelEffects2[id].DurationMin = particles.Barrel2.Extras.MaxDuration;
+                                    //BarrelEffects2[id].Length = particles.Barrel2.Extras.MaxDuration;
+                                    BarrelEffects2[id].Loop = particles.Barrel2.Extras.Loop;
                                 }
                             }
                             else if (particles.Barrel2.Extras.Restart && BarrelEffects2[id].IsEmittingStopped)
@@ -201,6 +207,15 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
+                    if (!Session.Instance.DedicatedServer)
+                    {
+                        foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
+                        {
+                            animation.PauseAnimation = false;
+                            animation.Looping = false;
+                        }
+                    }
+
                     Comp.currentDPS -= DPS;
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                     Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
