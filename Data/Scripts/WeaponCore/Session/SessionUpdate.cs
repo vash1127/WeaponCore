@@ -27,6 +27,7 @@ namespace WeaponCore
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     if (!comp.MainInit || !comp.State.Value.Online || comp.Status != Started)
                     {
+                        Log.Line($"Status: {comp.Status}");
                         if (comp.Status != Started) comp.HealthCheck();
                         continue;
                     }
@@ -213,7 +214,7 @@ namespace WeaponCore
                                     if (w.IsShooting)
                                     {
                                         w.StopShooting(true);
-                                        comp.currentDPS -= w.DPS;
+                                        comp.CurrentDPS -= w.DPS;
                                     }
                                     w.Reloading = true;
                                 }
@@ -242,7 +243,7 @@ namespace WeaponCore
                                 }
                                 if (w.FiringEmitter != null) w.StartFiringSound();
                                 if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying) w.StartRotateSound();
-                                comp.currentDPS += w.DPS;
+                                comp.CurrentDPS += w.DPS;
                             }
                             w.Reloading = false;
                         }

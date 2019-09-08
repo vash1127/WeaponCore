@@ -1,5 +1,6 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Game.Entities;
+using System;
 using VRage.Game.Entity;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
@@ -43,6 +44,12 @@ namespace WeaponCore.Platform
                 var weaponAnimationSet = Session.Instance.CreateAnimationSets(Structure.WeaponSystems[Structure.AimPartNames[i]].Values.Animations.WeaponAnimationSets, Parts);
 
                 Parts.NameToEntity.TryGetValue(Structure.AimPartNames[i].String, out aimPartEntity);
+                foreach (var part in Parts.NameToEntity)
+                {
+                    part.Value.OnClose += comp.SubpartClosed;
+                    break;
+                }
+
                 Weapons[i] = new Weapon(aimPartEntity, Structure.WeaponSystems[Structure.AimPartNames[i]], i, comp, weaponAnimationSet)
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
@@ -70,24 +77,57 @@ namespace WeaponCore.Platform
             var c = 0;
             foreach (var m in Structure.WeaponSystems)
             {
-                var aimPart = Parts.NameToEntity[m.Key.String];
-                var muzzlePartName = m.Value.MuzzlePartName.String;
-                var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" || muzzlePartName == string.Empty;
-                var muzzlePart = (noMuzzlePart ? null : Parts.NameToEntity[m.Value.MuzzlePartName.String]) ?? comp.MyCube;
-                var barrelCount = m.Value.Barrels.Length;
-                if (reset) Weapons[c].EntityPart = aimPart;
-
-                Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
-                Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPos;
-
-                for (int i = 0; i < barrelCount; i++)
+                MyEntity aimPart;
+                if (Parts.NameToEntity.TryGetValue(m.Key.String, out aimPart))
                 {
-                    var barrel = m.Value.Barrels[i];
-                    Weapons[c].Dummies[i] = new Dummy(muzzlePart, barrel);
-                    Weapons[c].MuzzleIDToName.Add(i,barrel);
-                    Weapons[c].Muzzles[i] = new Weapon.Muzzle(i);
+                    var muzzlePartName = m.Value.MuzzlePartName.String;
+                    var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" ||
+                                       muzzlePartName == string.Empty;
+                    var muzzlePart = (noMuzzlePart ? null : Parts.NameToEntity[m.Value.MuzzlePartName.String]) ??
+                                     comp.MyCube;
+                    var barrelCount = m.Value.Barrels.Length;
+                    if (reset)
+                    {
+                        Weapons[c].EntityPart = aimPart;
+                        var Registered = false;
+                        try
+                        {
+                            foreach (var animationSet in Weapons[c].AnimationsSet)
+                            {
+                                foreach (var animation in animationSet.Value)
+                                {
+                                    MyEntity part;
+                                    if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
+                                    {
+                                        animation.Part = (MyEntitySubpart) part;
+                                        if (!Registered)
+                                        {
+                                            animation.Part.OnClose += comp.SubpartClosed;
+                                            Registered = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Log.Line($"Exception in Compile Turret: {ex.Message}  -  {ex.StackTrace}");
+                        }
+                    }
+
+                    Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+                    Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPos;
+
+                    for (int i = 0; i < barrelCount; i++)
+                    {
+                        var barrel = m.Value.Barrels[i];
+                        Weapons[c].Dummies[i] = new Dummy(muzzlePart, barrel);
+                        Weapons[c].MuzzleIDToName.Add(i, barrel);
+                        Weapons[c].Muzzles[i] = new Weapon.Muzzle(i);
+                    }
+
+                    c++;
                 }
-                c++;
             }
         }
 
@@ -98,6 +138,7 @@ namespace WeaponCore.Platform
             Parts.CheckSubparts();
             foreach (var w in Weapons)
             {
+                w.MuzzleIDToName.Clear();
                 w.Muzzles = new Weapon.Muzzle[w.System.Barrels.Length];
                 w.Dummies = new Dummy[w.System.Barrels.Length];
             }
@@ -109,7 +150,6 @@ namespace WeaponCore.Platform
 
         internal void RemoveParts(WeaponComponent comp)
         {
-            Log.Line("Remove parts");
             foreach (var w in comp.Platform.Weapons)
             {
                 if (w.EntityPart == null) continue;

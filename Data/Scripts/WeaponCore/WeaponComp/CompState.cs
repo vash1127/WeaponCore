@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Sandbox.Game;
+using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -35,6 +36,11 @@ namespace WeaponCore.Support
             if (Turret.Enabled) { Turret.Enabled = false; Turret.Enabled = true; }
             Status = Start.Started;
             return true;
+        }
+
+        internal void SubpartClosed(MyEntity ent)
+        {
+            ReInit();
         }
 
         private bool ReInit()

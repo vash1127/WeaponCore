@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using ParallelTasks;
+using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
+using SpaceEngineers.Game.Weapons.Guns;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimationSetDef;
+using IMyLargeMissileTurret = SpaceEngineers.Game.ModAPI.Ingame.IMyLargeMissileTurret;
 
 namespace WeaponCore
 {
@@ -310,9 +314,8 @@ namespace WeaponCore
                             reverse = true;
 
                         var partAnim = new PartAnimation(moveSet.ToArray(), rotationSet.ToArray(),
-                            rotCenterSet.ToArray(), typeSet, moveIndexer.ToArray(), subpart, parts.Entity,
-                            animationSet.BarrelId,
-                            animationSet.StartupDelay, animationSet.AnimationDelays[moves.Key], loop, reverse);
+                            rotCenterSet.ToArray(), typeSet, moveIndexer.ToArray(), animationSet.SubpartId[t], subpart, parts.Entity,
+                            animationSet.BarrelId,animationSet.StartupDelay, animationSet.AnimationDelays[moves.Key], loop, reverse);
 
                         allAnimationSet[moves.Key].Add(partAnim);
                     }
@@ -346,12 +349,7 @@ namespace WeaponCore
             rotation = Matrix.CreateTranslation(-center) * (Matrix)rotation *
                        Matrix.CreateTranslation(center);
 
-
-
             return rotation;
-
-
-
         }
 
         internal Vector3? GetPartLocation(string partName, IMyModel model)

@@ -119,7 +119,7 @@ namespace WeaponCore.Support
 
                 stringBuilder.Append(status +
                     "\n[Optimal DPS]: " + OptimalDPS.ToString("0.0") + 
-                    "\n[Current DPS]: " + currentDPS.ToString("0.0") +" ("+ (currentDPS/OptimalDPS).ToString("P") + ")");
+                    "\n[Current DPS]: " + CurrentDPS.ToString("0.0") +" ("+ (CurrentDPS/OptimalDPS).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append("\n__________________________________" +
