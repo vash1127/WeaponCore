@@ -509,8 +509,8 @@ namespace WeaponCore.Support
             Overheated,
             Tracking,
             Locked,
-            On,
-            Off,
+            TurnOn,
+            TurnOff,
             BurstReload,
         }
 
