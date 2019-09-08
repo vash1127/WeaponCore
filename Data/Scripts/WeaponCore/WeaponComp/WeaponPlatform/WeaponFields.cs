@@ -199,9 +199,9 @@ namespace WeaponCore.Platform
             }
 
             WeaponId = weaponId;
-            IsTurret = System.Values.HardPoint.IsTurret;
-            TurretMode = System.Values.HardPoint.TurretController;
-            TrackTarget = System.Values.HardPoint.TrackTargets;
+            IsTurret = System.Values.HardPoint.Block.TurretAttached;
+            TurretMode = System.Values.HardPoint.Block.TurretController;
+            TrackTarget = System.Values.HardPoint.Block.TrackTargets;
             HsRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
             var toleranceInRadians = MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance);

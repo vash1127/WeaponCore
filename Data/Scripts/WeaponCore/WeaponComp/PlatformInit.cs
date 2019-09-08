@@ -57,7 +57,7 @@ namespace WeaponCore.Platform
                 };
 
                 var weapon = Weapons[i];
-                if (weapon.System.Values.HardPoint.TurretController && comp.TrackingWeapon == null)
+                if (weapon.System.Values.HardPoint.Block.TurretController && comp.TrackingWeapon == null)
                 {
                     weapon.TrackingAi = true;
                     comp.TrackingWeapon = weapon;

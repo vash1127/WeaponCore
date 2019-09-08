@@ -354,7 +354,7 @@ namespace WeaponCore.Projectiles
                         if (p.Grow)
                         {
                             if (p.AccelLength <= 0 && p.GrowStep++ >= p.T.ReSizeSteps) p.Grow = false;
-                            else if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.LineLength * p.LineLength) p.Grow = false;
+                            else if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.TracerLength * p.TracerLength) p.Grow = false;
                             p.T.UpdateShape(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
                         }
                         else if (p.State == ProjectileState.OneAndDone)
@@ -362,7 +362,7 @@ namespace WeaponCore.Projectiles
                         else
                         {
                             var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
-                            p.T.UpdateShape(p.Position + -(pointDir * p.LineLength), p.Position, pointDir, p.LineLength);
+                            p.T.UpdateShape(p.Position + -(pointDir * p.TracerLength), p.Position, pointDir, p.TracerLength);
                         }
 
                     }

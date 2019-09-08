@@ -151,8 +151,11 @@ namespace WeaponCore
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         lock (Projectiles.Wait[i])
                             DrawLists(Projectiles.DrawProjectiles[i]);
+
                     if (_shrinking.Count > 0)
                         Shrink();
+                    if (_afterGlow.Count > 0)
+                        AfterGlow();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }

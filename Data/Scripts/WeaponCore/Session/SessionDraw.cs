@@ -31,7 +31,7 @@ namespace WeaponCore
                         t.PrimeEntity.InScene = false;
                         t.PrimeEntity.Render.RemoveRenderObjects();
                     }
-                    if (!t.System.Values.Graphics.Line.Trail && t.TriggerEntity == null) continue;
+                    if (!t.System.Values.Graphics.Line.Tracer.Enable && t.TriggerEntity == null) continue;
                 }
 
                 if (t.Triggered && t.TriggerEntity != null)
@@ -42,24 +42,13 @@ namespace WeaponCore
                         t.TriggerEntity.Render.UpdateRenderObject(true, false);
                     }
 
-                    //Log.Line($"{Tick} - {t.TriggerEntity.InScene} - {t.Last} - {matrix.Scale.AbsMax()}");
-
                     t.TriggerEntity.PositionComp.SetWorldMatrix(t.TriggerMatrix, null, false, false, false);
                     if (t.Draw == Trajectile.DrawState.Last)
                     {
                         t.TriggerEntity.InScene = false;
                         t.TriggerEntity.Render.RemoveRenderObjects();
                     }
-                    if (!t.System.Values.Graphics.Line.Trail) continue;
-                }
-
-                var width = t.LineWidth;
-
-                var changeValue = 0.01f;
-                if (t.System.IsBeamWeapon && t.BaseDamagePool > t.System.Values.Ammo.BaseDamage)
-                {
-                    width *= t.BaseDamagePool / t.System.Values.Ammo.BaseDamage;
-                    changeValue = 0.02f;
+                    if (!t.System.Values.Graphics.Line.Tracer.Enable) continue;
                 }
 
                 if (t.Shrink && t.HitEntity != null)
@@ -78,17 +67,24 @@ namespace WeaponCore
                     _afterGlow.Add(afterGlow);
                 }
 
-                var color = t.Color;
-                var newWidth = width;
+                var thickness = t.LineWidth;
 
-                if (t.System.Values.Ammo.Trajectory.DesiredSpeed <= 0)
+                var changeValue = 0.01f;
+                if (t.System.IsBeamWeapon && t.BaseDamagePool > t.System.Values.Ammo.BaseDamage)
+                {
+                    thickness *= t.BaseDamagePool / t.System.Values.Ammo.BaseDamage;
+                    changeValue = 0.02f;
+                }
+
+                var color = t.Color;
+                if (t.System.IsBeamWeapon)
                 {
                     if (_lCount < 60)
                     {
                         var adder = (_lCount + 1);
                         var adder2 = adder * changeValue;
                         var adder3 = adder2 + 1;
-                        newWidth = adder3 * width;
+                        thickness = adder3 * thickness;
                         color *= adder3;
                     }
                     else
@@ -98,35 +94,32 @@ namespace WeaponCore
                         var adder = (_lCount - 59);
                         var adder2 = adder * changeValue;
                         var scaler = (shrinkFrom - adder2);
-                        newWidth = scaler * width;
+                        thickness = scaler * thickness;
                         color *= (shrinkFrom - adder2);
                     }
                 }
 
                 var hitPos = t.PrevPosition + (t.Direction * t.Length);
-                var distanceFromPoint = (float)Vector3D.Distance(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.PrevPosition, ref hitPos, ref CameraPos)));
-                var thickness = newWidth;
-                if (distanceFromPoint < 10) thickness *= 0.25f;
-                else if (distanceFromPoint < 20) thickness *= 0.5f;
-                else if (distanceFromPoint > 400) thickness *= 8f;
-                else if (distanceFromPoint > 200) thickness *= 4f;
-                else if (distanceFromPoint > 100) thickness *= 2f;
+                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.PrevPosition, ref hitPos, ref CameraPos)));
+                if (distanceFromPointSqr < 100) thickness *= 0.25f;
+                else if (distanceFromPointSqr < 400) thickness *= 0.5f;
+                else if (distanceFromPointSqr > 160000) thickness *= 8f;
+                else if (distanceFromPointSqr > 40000) thickness *= 4f;
+                else if (distanceFromPointSqr > 10000) thickness *= 2f;
 
-                if (!t.System.IsBeamWeapon && t.Length < 10) MyTransparentGeometry.AddLocalLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
+                if (!t.System.IsBeamWeapon && t.Length < 10) MyTransparentGeometry.AddLocalLineBillboard(t.System.TracerMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
                 else
                 {
                     if (t.System.OffsetEffect) LineOffsetEffect(t, thickness, color);
-                    else MyTransparentGeometry.AddLineBillboard(t.System.ProjectileMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
+                    else MyTransparentGeometry.AddLineBillboard(t.System.TracerMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
                 }
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
                     var c = t.Target.FiringCube;
                     if (c == null || c.MarkedForClose)
-                    {
-                        Log.Line($"FiringCube marked for close");
                         continue;
-                    }
+
                     WeaponComponent weaponComp;
                     if (t.Ai.WeaponBase.TryGetValue(c, out weaponComp))
                     {
@@ -192,7 +185,7 @@ namespace WeaponCore
                 var trajectile = s.GetLine();
                 if (trajectile.HasValue)
                 {
-                    MyTransparentGeometry.AddLocalLineBillboard(s.System.ProjectileMaterial, s.System.Values.Graphics.Line.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, s.System.Values.Graphics.Line.Width);
+                    MyTransparentGeometry.AddLocalLineBillboard(s.System.TracerMaterial, s.System.Values.Graphics.Line.Tracer.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, s.System.Values.Graphics.Line.Tracer.Width);
                 }
                 else
                 {
@@ -203,23 +196,23 @@ namespace WeaponCore
             if (sRemove) _shrinking.ApplyRemovals();
         }
 
-        private void TrailEffect()
+        private void AfterGlow()
         {
-            var sRemove = false;
-            foreach (var s in _shrinking)
+            var gRemove = false;
+            foreach (var a in _afterGlow)
             {
-                var trajectile = s.GetLine();
+                var trajectile = a.GetLine();
                 if (trajectile.HasValue)
                 {
-                    MyTransparentGeometry.AddLocalLineBillboard(s.System.ProjectileMaterial, s.System.Values.Graphics.Line.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, s.System.Values.Graphics.Line.Width);
+                    MyTransparentGeometry.AddLocalLineBillboard(a.System.TracerMaterial, a.System.Values.Graphics.Line.Tracer.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, a.System.Values.Graphics.Line.Tracer.Width);
                 }
                 else
                 {
-                    _shrinking.Remove(s);
-                    sRemove = true;
+                    _afterGlow.Remove(a);
+                    gRemove = true;
                 }
             }
-            if (sRemove) _shrinking.ApplyRemovals();
+            if (gRemove) _afterGlow.ApplyRemovals();
         }
 
         internal void LineOffsetEffect(Trajectile t, float beamRadius, Vector4 color)
@@ -228,7 +221,7 @@ namespace WeaponCore
             var up = MatrixD.Identity.Up;
             MatrixD.CreateWorld(ref t.PrevPosition, ref t.Direction, ref up, out matrix);
             var distance = t.Length;
-            var offsetMaterial = t.System.ProjectileMaterial;
+            var offsetMaterial = t.System.TracerMaterial;
             var distSqr = distance * distance;
             var maxOffset = t.System.Values.Ammo.Beams.OffsetEffect.MaxOffset;
             var minLength = t.System.Values.Ammo.Beams.OffsetEffect.MinLength;

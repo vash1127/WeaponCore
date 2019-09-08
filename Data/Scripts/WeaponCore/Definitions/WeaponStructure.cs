@@ -16,7 +16,9 @@ namespace WeaponCore.Support
         public readonly WeaponDefinition Values;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
-        public readonly MyStringId ProjectileMaterial;
+        public readonly MyStringId TracerMaterial;
+        public readonly MyStringId TrailMaterial;
+
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly string WeaponName;
         public readonly string[] Barrels;
@@ -128,7 +130,8 @@ namespace WeaponCore.Support
             AmmoDefId = ammoDefId;
             WeaponId = weaponId;
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
-            ProjectileMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Material);
+            TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
+            TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);
 
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
@@ -314,7 +317,7 @@ namespace WeaponCore.Support
             if (size <= 0)
             {
                 if (!isLine) isLine = true;
-                size = Values.Graphics.Line.Length;
+                size = Values.Graphics.Line.Tracer.Length;
             }
             else if (!isLine) size = size * 0.5;
 

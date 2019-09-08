@@ -4,6 +4,7 @@ using VRageMath;
 
 namespace WeaponCore.Support
 {
+
     [ProtoContract]
     public struct WeaponDefinition
     {
@@ -12,11 +13,10 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal GraphicDefinition Graphics;
         [ProtoMember(4)] internal AudioDefinition Audio;
         [ProtoMember(5)] internal ModelAssignments Assignments;
-        [ProtoMember(6)] internal UiDefinition Ui;
-        [ProtoMember(7)] internal DamageScaleDefinition DamageScales;
-        [ProtoMember(8)] internal TargetingDefinition Targeting;
-        [ProtoMember(9)] internal string ModPath;
-        [ProtoMember(10)] internal AnimationDefinition Animations;
+        [ProtoMember(6)] internal DamageScaleDefinition DamageScales;
+        [ProtoMember(7)] internal TargetingDefinition Targeting;
+        [ProtoMember(8)] internal string ModPath;
+        [ProtoMember(9)] internal AnimationDefinition Animations;
     }
 
 
@@ -49,21 +49,28 @@ namespace WeaponCore.Support
 
         [ProtoMember(1)] internal string WeaponId;
         [ProtoMember(2)] internal string AmmoMagazineId;
-        [ProtoMember(3)] internal bool IsTurret;
-        [ProtoMember(4)] internal bool TurretController;
-        [ProtoMember(5)] internal bool TrackTargets;
-        [ProtoMember(6)] internal bool Hybrid;
-        [ProtoMember(7)] internal int DelayCeaseFire;
-        [ProtoMember(8)] internal int RotateBarrelAxis;
-        [ProtoMember(9)] internal int EnergyPriority;
-        [ProtoMember(10)] internal int GridWeaponCap;
-        [ProtoMember(11)] internal double RotateSpeed;
-        [ProtoMember(12)] internal double ElevationSpeed;
-        [ProtoMember(13)] internal float DeviateShotAngle;
-        [ProtoMember(14)] internal float EnergyCost;
-        [ProtoMember(15)] internal double AimingTolerance;
-        [ProtoMember(16)] internal Prediction AimLeadingPrediction;
-        [ProtoMember(17)] internal AmmoLoading Loading;
+        [ProtoMember(3)] internal bool Hybrid;
+        [ProtoMember(4)] internal int DelayCeaseFire;
+        [ProtoMember(5)] internal int RotateBarrelAxis;
+        [ProtoMember(6)] internal int EnergyPriority;
+        [ProtoMember(7)] internal int GridWeaponCap;
+        [ProtoMember(8)] internal float DeviateShotAngle;
+        [ProtoMember(9)] internal float EnergyCost;
+        [ProtoMember(10)] internal double AimingTolerance;
+        [ProtoMember(11)] internal Prediction AimLeadingPrediction;
+        [ProtoMember(12)] internal AmmoLoading Loading;
+        [ProtoMember(13)] internal AimControlDefinition Block;
+        [ProtoMember(14)] internal UiDefinition Ui;
+    }
+
+    [ProtoContract]
+    public struct AimControlDefinition
+    {
+        [ProtoMember(1)] internal bool TrackTargets;
+        [ProtoMember(2)] internal bool TurretAttached;
+        [ProtoMember(3)] internal bool TurretController;
+        [ProtoMember(4)] internal float RotateRate;
+        [ProtoMember(5)] internal float ElevateRate;
     }
 
     [ProtoContract]
@@ -334,13 +341,29 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct LineDefinition
     {
-        [ProtoMember(1)] internal bool Trail;
+        [ProtoMember(1)] internal TracerBaseDefinition Tracer;
+        [ProtoMember(2)] internal string TracerMaterial;
+        [ProtoMember(3)] internal Randomize ColorVariance;
+        [ProtoMember(4)] internal Randomize WidthVariance;
+        [ProtoMember(5)] internal TrailDefinition Trail;
+    }
+
+    [ProtoContract]
+    public struct TracerBaseDefinition
+    {
+        [ProtoMember(1)] internal bool Enable;
         [ProtoMember(2)] internal float Length;
         [ProtoMember(3)] internal float Width;
-        [ProtoMember(4)] internal string Material;
-        [ProtoMember(5)] internal Vector4 Color;
-        [ProtoMember(6)] internal Randomize ColorVariance;
-        [ProtoMember(7)] internal Randomize WidthVariance;
+        [ProtoMember(4)] internal Vector4 Color;
+    }
+
+    [ProtoContract]
+    public struct TrailDefinition
+    {
+        [ProtoMember(1)] internal bool Enable;
+        [ProtoMember(2)] internal string Material;
+        [ProtoMember(3)] internal int DecayTime;
+        [ProtoMember(4)] internal Vector4 Color;
     }
 
     [ProtoContract]
@@ -530,4 +553,5 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal double y;
         [ProtoMember(3)] internal double z;
     }
+
 }

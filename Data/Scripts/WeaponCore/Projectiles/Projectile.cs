@@ -43,7 +43,7 @@ namespace WeaponCore.Projectiles
         internal double MaxTrajectorySqr;
         internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
-        internal double LineLength;
+        internal double TracerLength;
         internal double VelocityLengthSqr;
         internal double SmartsDelayDistSqr;
         internal double DistanceFromCameraSqr;
@@ -185,7 +185,7 @@ namespace WeaponCore.Projectiles
                 OffsetSqr = 0;
             }
 
-            DrawLine = T.System.Values.Graphics.Line.Trail;
+            DrawLine = T.System.Values.Graphics.Line.Tracer.Enable;
             if (T.System.RangeVariance)
             {
                 var min = T.System.Values.Ammo.Trajectory.RangeVariance.Start;
@@ -198,19 +198,19 @@ namespace WeaponCore.Projectiles
             PrevTargetVel = Vector3D.Zero;
             T.ObjectsHit = 0;
             T.BaseHealthPool = T.System.Values.Ammo.Health;
-            LineLength = T.System.Values.Graphics.Line.Length;
+            TracerLength = T.System.Values.Graphics.Line.Tracer.Length;
 
             if (T.IsShrapnel)
             {
                 var shrapnel = T.System.Values.Ammo.Shrapnel;
                 T.BaseDamagePool = shrapnel.BaseDamage;
                 MaxTrajectory = shrapnel.MaxTrajectory;
-                LineLength = LineLength / shrapnel.Fragments >= 1 ? LineLength / shrapnel.Fragments : 1;
+                TracerLength = TracerLength / shrapnel.Fragments >= 1 ? TracerLength / shrapnel.Fragments : 1;
             }
 
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
 
-            var smartsDelayDist = LineLength * T.System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
+            var smartsDelayDist = T.System.CollisionSize * T.System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
             SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
 
             if (!T.IsShrapnel) StartSpeed = GridVel;
@@ -300,9 +300,9 @@ namespace WeaponCore.Projectiles
             IdleTime = T.System.Values.Ammo.Trajectory.RestTime;
             if (!T.System.IsBeamWeapon)
             {
-                var reSizeSteps = (int) (LineLength / T.MaxSpeedLength);
+                var reSizeSteps = (int) (TracerLength / T.MaxSpeedLength);
                 T.ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
-                Grow = T.ReSizeSteps > 1 || AccelLength > 0 && AccelLength < LineLength;
+                Grow = T.ReSizeSteps > 1 || AccelLength > 0 && AccelLength < TracerLength;
                 T.Shrink = Grow;
                 State = ProjectileState.Alive;
             }
