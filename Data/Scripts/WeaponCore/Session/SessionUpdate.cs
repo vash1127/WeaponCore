@@ -20,7 +20,7 @@ namespace WeaponCore
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
-                if (!gridAi.DbReady && ControlledEntity?.GetTopMostParent() != gridAi.MyGrid || !gridAi.MyGrid.InScene) continue;
+                if (!gridAi.Ready && gridAi.ManualComps == 0 || !gridAi.MyGrid.InScene) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -96,7 +96,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if (!gridAi.Ready || !gridAi.DbReady && ControlledEntity?.GetTopMostParent() != gridAi.MyGrid || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if (!gridAi.Ready && gridAi.ManualComps == 0 || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
@@ -119,8 +119,13 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
 
                         if (gridAi.turnWeaponShootOff)
-                            if(w.ManualShoot == ShootClick)
+                        {
+                            if (w.ManualShoot == ShootClick)
+                            {
                                 w.ManualShoot = ShootOff;
+                                gridAi.ManualComps--;
+                            }
+                        }
 
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated)) continue;
                         if (Tick60)
@@ -274,6 +279,7 @@ namespace WeaponCore
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {
                                 w.ManualShoot = ShootOff;
+                                gridAi.ManualComps--;
                             }
                         }
                         else if (w.IsShooting)

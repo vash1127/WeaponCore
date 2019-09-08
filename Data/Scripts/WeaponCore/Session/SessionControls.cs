@@ -124,7 +124,7 @@ namespace WeaponCore
                         else
                         {
                             comp.Platform.Weapons[i].ManualShoot = ShootOff;
-                            comp.Ai.ManualComps++;
+                            comp.Ai.ManualComps--;
                         }
                     }
                 }
@@ -180,7 +180,10 @@ namespace WeaponCore
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
+                    {
                         comp.Platform.Weapons[i].ManualShoot = ShootOnce;
+                        comp.Ai.ManualComps++;
+                    }
                 }
             };
             action.Writer = (b, t) => t.Append("");
