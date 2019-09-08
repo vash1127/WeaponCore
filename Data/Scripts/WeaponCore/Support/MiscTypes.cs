@@ -454,46 +454,15 @@ namespace WeaponCore.Support
         }
     }
 
-    public class AfterGlow
+    internal struct AfterGlow
     {
         internal WeaponSystem System;
-        internal Vector3D Position;
         internal Vector3D PrevPosition;
         internal Vector3D Direction;
-        internal int ReSizeSteps;
-        internal double LineReSizeLen;
-
-        internal void Init(Trajectile trajectile)
-        {
-            System = trajectile.System;
-            Position = trajectile.Position;
-            PrevPosition = trajectile.PrevPosition;
-            Direction = trajectile.Direction;
-            ReSizeSteps = trajectile.ReSizeSteps;
-            LineReSizeLen = trajectile.MaxSpeedLength;
-        }
-
-        internal Glow? GetLine()
-        {
-            if (ReSizeSteps-- <= 0) return null;
-            var length = ReSizeSteps * LineReSizeLen;
-            return new Glow(PrevPosition + -(Direction * length), Position, Direction, length);
-        }
-    }
-
-    internal struct Glow
-    {
-        internal readonly Vector3D PrevPosition;
-        internal readonly Vector3D Position;
-        internal readonly Vector3D Direction;
-        internal readonly double Length;
-        internal Glow(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
-        {
-            PrevPosition = prevPosition;
-            Position = position;
-            Direction = direction;
-            Length = length;
-        }
+        internal float Length;
+        internal uint FirstTick;
+        internal int DecayTime;
+        internal Vector4 Color;
     }
 
     public struct InventoryChange

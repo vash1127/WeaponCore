@@ -207,13 +207,10 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
-                    if (!Session.Instance.DedicatedServer)
+                    foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
                     {
-                        foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
-                        {
-                            animation.PauseAnimation = false;
-                            animation.Looping = false;
-                        }
+                        animation.PauseAnimation = false;
+                        animation.Looping = false;
                     }
 
                     Comp.currentDPS -= DPS;
