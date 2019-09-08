@@ -75,6 +75,8 @@ namespace WepaonCore.Control
                     {
                         w.FirstFireDelay = animation.FireDelay;
                         Session.Instance.animationsToProcess.Enqueue(animation);
+                        if (animation.DoesLoop)
+                            animation.Looping = true;
                     }
                 }
                 else
