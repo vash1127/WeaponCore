@@ -117,9 +117,15 @@ namespace WeaponCore
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
                     {
                         if (comp.Platform.Weapons[i].ManualShoot != ShootOn)
+                        {
                             comp.Platform.Weapons[i].ManualShoot = ShootOn;
+                            comp.Ai.ManualComps++;
+                        }
                         else
+                        {
                             comp.Platform.Weapons[i].ManualShoot = ShootOff;
+                            comp.Ai.ManualComps++;
+                        }
                     }
                 }
             };

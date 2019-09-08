@@ -63,6 +63,7 @@ namespace WeaponCore.Support
         internal uint VelocityUpdateTick;
         internal int DbUpdating;
         internal int SourceCount;
+        internal int ManualComps;
         internal long MyOwner;
         internal bool TargetNeutrals;
         internal bool TargetNoOwners;
