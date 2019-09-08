@@ -134,7 +134,7 @@ namespace WeaponCore
                             {
                                 if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
                                 comp.Overheated = false;
-                                if (!DedicatedServer && w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                                if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
                                 {
                                     foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
                                     {
@@ -189,27 +189,28 @@ namespace WeaponCore
                             {
                                 if (!w.Reloading)
                                 {
-                                    if (!DedicatedServer)
+                                    
+                                    if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
                                     {
-                                        if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
+                                        foreach (var animation in w.AnimationsSet[
+                                            PartAnimationSetDef.EventOptions.Reloading])
                                         {
-                                            foreach (var animation in w.AnimationsSet[
-                                                PartAnimationSetDef.EventOptions.Reloading])
-                                            {
-                                                animationsToProcess.Enqueue(animation);
-                                            }
-                                        }
-
-                                        if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
-                                        {
-                                            foreach (var animation in w.AnimationsSet[
-                                                PartAnimationSetDef.EventOptions.Firing])
-                                            {
-                                                if (animation.DoesLoop && animation.Looping)
-                                                    animation.PauseAnimation = true;
-                                            }
+                                            animationsToProcess.Enqueue(animation);
+                                            if (animation.DoesLoop)
+                                                animation.Looping = true;
                                         }
                                     }
+
+                                    if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                    {
+                                        foreach (var animation in w.AnimationsSet[
+                                            PartAnimationSetDef.EventOptions.Firing])
+                                        {
+                                            if (animation.DoesLoop && animation.Looping)
+                                                animation.PauseAnimation = true;
+                                        }
+                                    }
+                                
 
                                     if (w.IsShooting)
                                     {
@@ -233,9 +234,9 @@ namespace WeaponCore
 
                             if (w.IsShooting)
                             {
-                                if (!DedicatedServer && w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
                                 {
-                                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Reloading])
+                                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
                                     {
                                         if (animation.DoesLoop && animation.Looping)
                                             animation.PauseAnimation = false;
@@ -244,6 +245,12 @@ namespace WeaponCore
                                 if (w.FiringEmitter != null) w.StartFiringSound();
                                 if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying) w.StartRotateSound();
                                 comp.CurrentDPS += w.DPS;
+                            }
+
+                            if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
+                            {
+                                foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Reloading])
+                                    animation.Looping = false;
                             }
                             w.Reloading = false;
                         }

@@ -71,7 +71,9 @@ namespace WeaponCore.Platform
 
             if (!IsShooting) StartShooting();
 
-            if (_ticksUntilShoot < System.DelayToFire) return;
+            if (_ticksUntilShoot < System.DelayToFire + FirstFireDelay) return;
+
+            FirstFireDelay = 0;
 
             _shots++;
 

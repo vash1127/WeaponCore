@@ -70,6 +70,7 @@ namespace WeaponCore.Platform
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal uint LastTargetCheck;
+        internal uint FirstFireDelay;
         internal int RateOfFire;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;

@@ -48,11 +48,43 @@ namespace WepaonCore.Control
             for (int i = 0; i < controls.Count; i++)
             {
                 var c = controls[i];
-                //Log.Line($"Count: {i} ID:{c.Id}");
+                Log.Line($"Count: {i} ID:{c.Id}");
                 if ((i > 6 && i < 10) || i > 12 )
                     c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
+
+                if (c.Id.Equals("OnOff"))
+                    ((IMyTerminalControlOnOffSwitch) c).Setter += OnOffAnimations;
             }
             return false;
+        }
+
+        private static void OnOffAnimations(IMyTerminalBlock blk, bool On)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || !comp.Platform.Inited) return;
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var w = comp.Platform.Weapons[i];
+
+                if ((On && !w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.TurnOn)) || (!On && !w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.TurnOff))) continue;
+
+                if (On)
+                {
+                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.TurnOn])
+                    {
+                        w.FirstFireDelay = animation.FireDelay;
+                        Session.Instance.animationsToProcess.Enqueue(animation);
+                    }
+                }
+                else
+                {
+                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.TurnOff])
+                    {
+                        Session.Instance.animationsToProcess.Enqueue(animation);
+                    }
+                }
+            }
         }
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, bool> VisibleGetter) where T : IMyTerminalBlock
