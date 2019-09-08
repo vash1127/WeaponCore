@@ -78,6 +78,7 @@ namespace WeaponCore.Support
         public readonly bool SelfDamage;
         public readonly bool VoxelDamage;
         public readonly bool OffsetEffect;
+        public readonly bool Trail;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -132,6 +133,7 @@ namespace WeaponCore.Support
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);
+            Trail = values.Graphics.Line.Trail.Enable;
 
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;

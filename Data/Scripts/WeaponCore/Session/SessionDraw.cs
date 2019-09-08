@@ -59,11 +59,21 @@ namespace WeaponCore
                     _shrinking.Add(shrink);
                 }
 
-                if (t.AfterGlow)
+                if (t.System.Trail)
                 {
                     gFound = true;
-                    var afterGlow = _afterGlowPool.Get();
-                    afterGlow.Init(t);
+                    var trail = t.System.Values.Graphics.Line.Trail;
+                    var afterGlow = new AfterGlow
+                    {
+                        System = t.System,
+                        Length = (float) t.Length,
+                        Direction = t.Direction,
+                        PrevPosition = t.PrevPosition,
+                        FirstTick = (Tick + 1u),
+                        DecayTime = trail.DecayTime,
+                        Color = trail.Color,
+                            
+                    };
                     _afterGlow.Add(afterGlow);
                 }
 
@@ -175,6 +185,8 @@ namespace WeaponCore
             }
             drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();
+            if (gFound) _afterGlow.ApplyAdditions();
+
         }
 
         private void Shrink()
@@ -199,13 +211,17 @@ namespace WeaponCore
         private void AfterGlow()
         {
             var gRemove = false;
-            foreach (var a in _afterGlow)
+            for (int i = 0; i < _afterGlow.Count; i++)
             {
-                var trajectile = a.GetLine();
-                if (trajectile.HasValue)
-                {
-                    MyTransparentGeometry.AddLocalLineBillboard(a.System.TracerMaterial, a.System.Values.Graphics.Line.Tracer.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, a.System.Values.Graphics.Line.Tracer.Width);
-                }
+                var a = _afterGlow[i];
+                var fullSize = a.System.Values.Graphics.Line.Tracer.Width;
+
+                var steps = a.DecayTime;
+                var stepsLeft = (a.FirstTick + steps) - Tick;
+                var thisStep = steps - stepsLeft;
+                var shrinkAmount = fullSize / steps;
+                var thickness = fullSize - (shrinkAmount * thisStep);  
+                if (stepsLeft > 0) MyTransparentGeometry.AddLocalLineBillboard(a.System.TrailMaterial, a.Color, a.PrevPosition, 0, a.Direction, a.Length, thickness);
                 else
                 {
                     _afterGlow.Remove(a);
