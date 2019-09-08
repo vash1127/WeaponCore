@@ -83,6 +83,14 @@ namespace WepaonCore.Control
                     {
                         Session.Instance.animationsToProcess.Enqueue(animation);
                     }
+
+                    foreach (var set in w.AnimationsSet)
+                    {
+                        foreach (var animation in set.Value)
+                        {
+                            animation.Looping = false;
+                        }
+                    }
                 }
             }
         }
