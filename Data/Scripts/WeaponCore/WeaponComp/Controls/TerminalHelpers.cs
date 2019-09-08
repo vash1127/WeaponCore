@@ -48,7 +48,7 @@ namespace WepaonCore.Control
             for (int i = 0; i < controls.Count; i++)
             {
                 var c = controls[i];
-                Log.Line($"Count: {i} ID:{c.Id}");
+                //Log.Line($"Count: {i} ID:{c.Id}");
                 if ((i > 6 && i < 10) || i > 12 )
                     c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
 
