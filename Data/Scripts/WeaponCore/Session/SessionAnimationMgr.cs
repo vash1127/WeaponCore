@@ -149,7 +149,7 @@ namespace WeaponCore
                                         {
                                             rate += 0.001;
                                             check = distance * Math.Pow(1 - rate, move.TicksToMove);
-                                            if (check < 0.01) check = 0;
+                                            if (check < 0.001) check = 0;
 
                                         }
 
@@ -161,7 +161,7 @@ namespace WeaponCore
                                         for (int j = 0; j < move.TicksToMove; j++)
                                         {
                                             var step = distance * Math.Pow(rate, j + 1);
-                                            if (step < 0.01) step = 0;
+                                            if (step < 0.001) step = 0;
 
                                             var lastTraveled = traveled;
                                             traveled = distance - step;
@@ -204,7 +204,7 @@ namespace WeaponCore
                                         while (check < distance)
                                         {
                                             rate += 0.001;
-                                            check = 0.01 * Math.Pow(1 + rate, move.TicksToMove);
+                                            check = 0.001 * Math.Pow(1 + rate, move.TicksToMove);
                                         }
 
                                         var vectorCount = 0;
@@ -214,7 +214,7 @@ namespace WeaponCore
 
                                         for (int j = 0; j < move.TicksToMove; j++)
                                         {
-                                            var step = 0.01 * Math.Pow(rate, j + 1);
+                                            var step = 0.001 * Math.Pow(rate, j + 1);
                                             if (step > distance) step = distance;
 
                                             var lastTraveled = traveled;
