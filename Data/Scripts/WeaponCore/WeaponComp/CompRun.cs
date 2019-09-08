@@ -195,7 +195,7 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                if (Platform.Inited)
+                if (Platform != null && Platform.Inited)
                 {
                     RegisterEvents(false);
                     StopAllSounds();
