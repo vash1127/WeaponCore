@@ -1,4 +1,5 @@
-﻿using VRage.Game;
+﻿using System;
+using VRage.Game;
 using VRage.Game.Components;
 using VRageMath;
 using WeaponCore.Support;
@@ -112,14 +113,14 @@ namespace WeaponCore.Platform
                         {
                             if (BarrelEffects1[id] == null)
                             {
-                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix, ref pos, uint.MaxValue, out BarrelEffects1[id]);
+                                var matrix1 = matrix;
+                                matrix1.Translation += particles.Barrel1.Offset;
+                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix1, ref pos, uint.MaxValue, out BarrelEffects1[id]);
                                 if (BarrelEffects1[id] != null)
                                 {
                                     BarrelEffects1[id].UserColorMultiplier = particles.Barrel1.Color;
                                     BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                                     BarrelEffects1[id].DistanceMax = particles.Barrel1.Extras.MaxDistance;
-                                    //BarrelEffects1[id].DurationMin = particles.Barrel1.Extras.MaxDuration;
-                                    //BarrelEffects1[id].Length = particles.Barrel1.Extras.MaxDuration;
                                     BarrelEffects1[id].Loop = particles.Barrel1.Extras.Loop;
                                 }
                             }
@@ -145,14 +146,14 @@ namespace WeaponCore.Platform
                         {
                             if (BarrelEffects2[id] == null)
                             {
+                                var matrix2 = matrix;
+                                matrix2.Translation += particles.Barrel2.Offset;
                                 MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);
                                 if (BarrelEffects2[id] != null)
                                 {
                                     BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
                                     BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                                     BarrelEffects2[id].DistanceMax = particles.Barrel2.Extras.MaxDistance;
-                                    //BarrelEffects2[id].DurationMin = particles.Barrel2.Extras.MaxDuration;
-                                    //BarrelEffects2[id].Length = particles.Barrel2.Extras.MaxDuration;
                                     BarrelEffects2[id].Loop = particles.Barrel2.Extras.Loop;
                                 }
                             }
@@ -187,7 +188,7 @@ namespace WeaponCore.Platform
             if (FiringEmitter != null) StartFiringSound();
             if (ShotEnergyCost > 0 && !IsShooting)
             {
-                Comp.currentDPS += DPS;
+                Comp.CurrentDPS += DPS;
                 Comp.SinkPower += RequiredPower;
                 Comp.CurrentSinkPowerRequested += RequiredPower;
                 Comp.Sink.Update();
@@ -207,7 +208,7 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
-                    if (!Session.Instance.DedicatedServer)
+                    if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
                     {
                         foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
                         {
@@ -216,7 +217,7 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    Comp.currentDPS -= DPS;
+                    Comp.CurrentDPS -= DPS;
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                     Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
                     Comp.Sink.Update();

@@ -93,7 +93,7 @@ namespace WeaponCore
                 if (w.IsShooting)
                 {
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
-                    comp.currentDPS -= (oldDps - w.DPS);
+                    comp.CurrentDPS -= (oldDps - w.DPS);
                 }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
@@ -148,7 +148,7 @@ namespace WeaponCore
                 if (w.IsShooting)
                 {
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
-                    comp.currentDPS -= (oldDps - w.DPS);
+                    comp.CurrentDPS -= (oldDps - w.DPS);
                 }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);

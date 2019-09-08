@@ -14,12 +14,13 @@ namespace WeaponCore.Support {
         internal readonly int NumberOfMoves;
         internal readonly uint FireDelay;
         internal readonly uint MotionDelay;
-        internal readonly MyEntitySubpart Part;
         internal readonly MyEntity MainEnt;
         internal readonly bool DoesLoop;
         internal readonly bool DoesReverse;
         internal readonly string Muzzle;
+        internal readonly string SubpartId;
 
+        internal MyEntitySubpart Part;
         internal bool Reverse;
         internal bool Looping;
         internal bool PauseAnimation;
@@ -32,7 +33,7 @@ namespace WeaponCore.Support {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(Vector3?[] moveSet, MatrixD?[] rotationSet, MatrixD?[] rotCeterSet, Session.AnimationType[] typeSet, int[][] moveToSetIndexer, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, bool loop = false, bool reverse = false)
+        internal PartAnimation(Vector3?[] moveSet, MatrixD?[] rotationSet, MatrixD?[] rotCeterSet, Session.AnimationType[] typeSet, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, bool loop = false, bool reverse = false)
         {
             MoveSet = moveSet;
             RotationSet = rotationSet;
@@ -42,6 +43,7 @@ namespace WeaponCore.Support {
             MoveToSetIndexer = moveToSetIndexer;
             NumberOfMoves = MoveToSetIndexer.Length;
             Part = part;
+            SubpartId = subpartId;
 
             MotionDelay = motionDelay;
             FireDelay = fireDelay;
