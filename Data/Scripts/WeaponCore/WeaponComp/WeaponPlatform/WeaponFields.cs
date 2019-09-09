@@ -30,6 +30,7 @@ namespace WeaponCore.Platform
         private uint _ticksUntilShoot;
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
+        private uint _ReloadedTick;
         internal uint TicksPerShot;
         internal double TimePerShot;
 
@@ -138,6 +139,7 @@ namespace WeaponCore.Platform
                 {
                     Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
                     AmmoMagTimer = FirstLoad ? 1 : System.ReloadTime;
+                    _ReloadedTick = Session.Instance.Tick + (uint)AmmoMagTimer;
                     FirstLoad = false;
                 }
             }
@@ -147,7 +149,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                if (--AmmoMagTimer > 0) return false;
+                if (_ReloadedTick > Session.Instance.Tick) return false;
                 CurrentAmmo = System.MagazineDef.Capacity;
                 AmmoMagTimer = int.MaxValue;
                 return true;

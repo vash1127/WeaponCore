@@ -207,6 +207,7 @@ namespace WeaponCore.Platform
                     break;
 
                 case EventTriggers.TurnOn:
+                    Session.ComputeStorage(this);
                     if (active && AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn))
                     {
                         foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOn])
