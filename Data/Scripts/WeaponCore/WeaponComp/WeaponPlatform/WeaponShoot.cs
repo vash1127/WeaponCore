@@ -25,9 +25,9 @@ namespace WeaponCore.Platform
                     if (tick - _lastShotTick > System.Values.HardPoint.Loading.DelayAfterBurst)
                     {
                         _shots = 1;
-                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.BurstReload))
+                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(Weapon.EventTriggers.BurstReload))
                         {
-                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.BurstReload])
+                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.BurstReload])
                             {
                                 animation.Looping = false;
                             }
@@ -35,9 +35,9 @@ namespace WeaponCore.Platform
                     }
                     else
                     {
-                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.BurstReload))
+                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(Weapon.EventTriggers.BurstReload))
                         {
-                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.BurstReload])
+                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.BurstReload])
                             {
                                 Session.Instance.animationsToProcess.Enqueue(animation);
                                 if (animation.DoesLoop)
@@ -71,7 +71,9 @@ namespace WeaponCore.Platform
 
             if (!IsShooting) StartShooting();
 
-            if (_ticksUntilShoot < System.DelayToFire) return;
+            if (_ticksUntilShoot < System.DelayToFire + FirstFireDelay) return;
+
+            FirstFireDelay = 0;
 
             _shots++;
 
@@ -246,9 +248,9 @@ namespace WeaponCore.Platform
 
                     if (!Session.Instance.DedicatedServer)
                     {
-                        if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                        if (AnimationsSet.ContainsKey(Weapon.EventTriggers.Firing))
                         {
-                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
+                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.Firing])
                             {
                                 if (animation.Muzzle == "Any" || animation.Muzzle == MuzzleIDToName[current])
                                 {
@@ -270,9 +272,9 @@ namespace WeaponCore.Platform
                     Comp.CurrentHeat += HeatPShot;
                     if (heat > System.MaxHeat)
                     {
-                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(Weapon.EventTriggers.Overheated))
                         {
-                            foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
+                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.Overheated])
                             {
                                 Session.Instance.animationsToProcess.Enqueue(animation);
                                 if (animation.DoesLoop)
@@ -280,7 +282,7 @@ namespace WeaponCore.Platform
                             }
                         }
 
-                        if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(Emissives.Heating, true);
+                        if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(EventTriggers.Overheated, true);
                         Comp.Overheated = true;
                         StopShooting();
                     }

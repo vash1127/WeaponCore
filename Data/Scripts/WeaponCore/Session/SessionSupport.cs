@@ -303,8 +303,13 @@ namespace WeaponCore
         private void PlayerControlAcquired(IMyEntityController myEntityController)
         {
             var cockpit = ControlledEntity as MyCockpit;
+            var remote = ControlledEntity as MyRemoteControl;
+
             if (cockpit != null && UpdateLocalAiAndCockpit())
                 GridTargetingAIs[cockpit.CubeGrid].turnWeaponShootOff = true;
+
+            if (remote != null)
+                GridTargetingAIs[remote.CubeGrid].turnWeaponShootOff = true;
 
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }

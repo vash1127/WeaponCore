@@ -59,7 +59,7 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
-        internal readonly Dictionary<EventOptions, HashSet<PartAnimation>> AnimationsSet;
+        internal readonly Dictionary<EventTriggers, HashSet<PartAnimation>> AnimationsSet;
         internal float RequiredPower;
         internal float BaseDamage;
         internal float ShotEnergyCost;
@@ -70,6 +70,7 @@ namespace WeaponCore.Platform
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal uint LastTargetCheck;
+        internal uint FirstFireDelay;
         internal int RateOfFire;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
@@ -151,15 +152,19 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal enum Emissives
+        public enum EventTriggers
         {
             Reloading,
             Firing,
             Tracking,
-            Heating,
+            Overheated,
+            TurnOn,
+            TurnOff,
+            BurstReload,
+            Locked,
         }
 
-        public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventOptions, HashSet<PartAnimation>> animationSets)
+        public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, HashSet<PartAnimation>> animationSets)
         {
             EntityPart = entity;
             AnimationsSet = animationSets;

@@ -162,6 +162,18 @@ namespace WeaponCore.Support
 
             OnAddedToSceneTasks();
 
+            if(!Turret.Enabled)
+            {
+                foreach (var w in Platform.Weapons)
+                {
+                    if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))
+                    {
+                        foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOff])
+                            Session.Instance.animationsToProcess.Enqueue(animation);
+                    }
+                }
+            }
+
             MainInit = true;
         }
 

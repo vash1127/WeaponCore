@@ -9,6 +9,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using WeaponCore;
+using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 
 namespace WepaonCore.Control
@@ -51,8 +52,50 @@ namespace WepaonCore.Control
                 //Log.Line($"Count: {i} ID:{c.Id}");
                 if ((i > 6 && i < 10) || i > 12 )
                     c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
+
+                if (c.Id.Equals("OnOff"))
+                    ((IMyTerminalControlOnOffSwitch) c).Setter += OnOffAnimations;
             }
             return false;
+        }
+
+        private static void OnOffAnimations(IMyTerminalBlock blk, bool On)
+        {
+            var comp = blk?.Components?.Get<WeaponComponent>();
+            if (comp == null || !comp.Platform.Inited) return;
+
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var w = comp.Platform.Weapons[i];
+
+                if ((On && !w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn)) || (!On && !w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))) continue;
+
+                if (On)
+                {
+                    foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOn])
+                    {
+                        w.FirstFireDelay = animation.FireDelay;
+                        Session.Instance.animationsToProcess.Enqueue(animation);
+                        if (animation.DoesLoop)
+                            animation.Looping = true;
+                    }
+                }
+                else
+                {
+                    foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOff])
+                    {
+                        Session.Instance.animationsToProcess.Enqueue(animation);
+                    }
+
+                    foreach (var set in w.AnimationsSet)
+                    {
+                        foreach (var animation in set.Value)
+                        {
+                            animation.Looping = false;
+                        }
+                    }
+                }
+            }
         }
 
         internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, bool> VisibleGetter) where T : IMyTerminalBlock
