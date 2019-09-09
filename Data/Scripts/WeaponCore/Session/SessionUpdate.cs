@@ -189,7 +189,6 @@ namespace WeaponCore
                                         w.StopShooting(true);
                                         comp.CurrentDPS -= w.DPS;
                                     }
-                                    w.Reloading = true;
                                 }
                                 if (w.CurrentMags != 0)
                                 {
@@ -197,11 +196,15 @@ namespace WeaponCore
                                     w.LoadAmmoMag = true;
                                     w.StartReloadSound();
                                 }
+                                else if(!w.Reloading)
+                                    w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, true);
+
+                                w.Reloading = true;
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Reloading, false);
-
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, false);
                             if (w.IsShooting)
                             {
                                 if (w.FiringEmitter != null) w.StartFiringSound();

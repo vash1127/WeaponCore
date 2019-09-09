@@ -237,9 +237,6 @@ namespace WeaponCore.Platform
                     }
                     break;
 
-                case EventTriggers.OutOfAmmo:
-                    break;
-
                 case EventTriggers.EmptyOnGameLoad:
                     if (AnimationsSet.ContainsKey(EventTriggers.EmptyOnGameLoad))
                     {
@@ -254,6 +251,7 @@ namespace WeaponCore.Platform
 
                     break;
 
+                case EventTriggers.OutOfAmmo:
                 case EventTriggers.BurstReload:
                 case EventTriggers.PreFire:
                     if (AnimationsSet.ContainsKey(state))
