@@ -57,9 +57,19 @@ namespace WeaponCore.Platform
 
             if (!IsShooting) StartShooting();
 
-            if (_ticksUntilShoot < System.DelayToFire + FirstFireDelay) return;
+            if(_ticksUntilShoot < FirstFireDelay) return;
 
             FirstFireDelay = 0;
+
+            if (_ticksUntilShoot < System.DelayToFire)
+            {
+                EventTriggerStateChanged(EventTriggers.PreFire, true);
+                return;
+            }
+            else if(System.DelayToFire > 0)
+                EventTriggerStateChanged(EventTriggers.PreFire, false);
+
+
 
             _shots++;
 

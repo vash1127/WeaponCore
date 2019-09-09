@@ -182,24 +182,6 @@ namespace WeaponCore.Platform
 
                     break;
 
-                case EventTriggers.BurstReload:
-                    if (AnimationsSet.ContainsKey(EventTriggers.BurstReload))
-                    {
-                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.BurstReload])
-                        {
-                            if (active && animation.Looping != true)
-                            {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                            else
-                                animation.Looping = false;
-                        }
-                    }
-
-                    break;
-
                 case EventTriggers.TurnOn:
                     if (active && AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn))
                     {
@@ -234,7 +216,23 @@ namespace WeaponCore.Platform
                 case EventTriggers.OutOfAmmo:
                     break;
 
+
+                case EventTriggers.BurstReload:
                 case EventTriggers.PreFire:
+                    if (AnimationsSet.ContainsKey(state))
+                    {
+                        foreach (var animation in AnimationsSet[state])
+                        {
+                            if (active && animation.Looping != true)
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                            else
+                                animation.Looping = false;
+                        }
+                    }
                     break;
             }
         }
