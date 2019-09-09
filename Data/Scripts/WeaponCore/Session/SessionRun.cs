@@ -79,11 +79,6 @@ namespace WeaponCore
                 playerSphere.Radius = 1;
                 var test = new List<Projectile>();
                 DynTrees.GetAllProjectilesInSphere(ref playerSphere, test);
-                var c = 0;
-                foreach (var t in test)
-                {
-                    c++;
-                }
                 if (Placer != null)
                 {
                     if (Placer.MarkedForClose) Placer = null;
@@ -154,6 +149,7 @@ namespace WeaponCore
 
                     if (_shrinking.Count > 0)
                         Shrink();
+
                     if (_afterGlow.Count > 0)
                         AfterGlow();
                 }

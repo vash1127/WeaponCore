@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.Game.World;
+﻿using System.Collections.Generic;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
@@ -51,32 +49,6 @@ namespace WeaponCore
                     if (!t.System.Values.Graphics.Line.Tracer.Enable) continue;
                 }
 
-                if (t.Shrink && t.HitEntity != null)
-                {
-                    sFound = true;
-                    var shrink = _shrinkPool.Get();
-                    shrink.Init(t);
-                    _shrinking.Add(shrink);
-                }
-
-                if (t.System.Trail)
-                {
-                    gFound = true;
-                    var trail = t.System.Values.Graphics.Line.Trail;
-                    var afterGlow = new AfterGlow
-                    {
-                        System = t.System,
-                        Length = (float) t.Length,
-                        Direction = t.Direction,
-                        PrevPosition = t.PrevPosition,
-                        FirstTick = (Tick + 1u),
-                        DecayTime = trail.DecayTime,
-                        Color = trail.Color,
-                            
-                    };
-                    _afterGlow.Add(afterGlow);
-                }
-
                 var thickness = t.LineWidth;
 
                 var changeValue = 0.01f;
@@ -108,21 +80,42 @@ namespace WeaponCore
                         color *= (shrinkFrom - adder2);
                     }
                 }
+                else
+                {
+                    if (t.ReSizing == Trajectile.ReSize.Shrink && t.HitEntity != null)
+                    {
+                        sFound = true;
+                        var shrink = _shrinkPool.Get();
+                        shrink.Init(t);
+                        _shrinking.Add(shrink);
+                    }
+                    else if (t.System.Trail)
+                    {
+                        gFound = true;
+                        var afterGlow = new AfterGlow
+                        {
+                            System = t.System,
+                            StepLength = (t.DistanceTraveled - t.PrevDistanceTraveled),
+                            Direction = -t.Direction,
+                            Back = t.Back,
+                            FirstTick = Tick,
+                        };
+                        _afterGlow.Add(afterGlow);
+                    }
+                }
 
-                var hitPos = t.PrevPosition + (t.Direction * t.Length);
-                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.PrevPosition, ref hitPos, ref CameraPos)));
+                var hitPos = t.Back + (t.Direction * t.Length);
+                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.Back, ref hitPos, ref CameraPos)));
                 if (distanceFromPointSqr < 100) thickness *= 0.25f;
                 else if (distanceFromPointSqr < 400) thickness *= 0.5f;
                 else if (distanceFromPointSqr > 160000) thickness *= 8f;
                 else if (distanceFromPointSqr > 40000) thickness *= 4f;
                 else if (distanceFromPointSqr > 10000) thickness *= 2f;
 
-                if (!t.System.IsBeamWeapon && t.Length < 10) MyTransparentGeometry.AddLocalLineBillboard(t.System.TracerMaterial, color, t.PrevPosition, uint.MaxValue, t.Direction, (float)t.Length, thickness);
+                if (t.System.OffsetEffect)
+                    LineOffsetEffect(t.System, t.Back, t.Direction, (float)t.DistanceTraveled, t.Length, thickness, color);
                 else
-                {
-                    if (t.System.OffsetEffect) LineOffsetEffect(t, thickness, color);
-                    else MyTransparentGeometry.AddLineBillboard(t.System.TracerMaterial, color, t.PrevPosition, t.Direction, (float)t.Length, thickness);
-                }
+                    MyTransparentGeometry.AddLineBillboard(t.System.TracerMaterial, color, t.Back, t.Direction, (float)t.Length, thickness);
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
                 {
@@ -161,7 +154,7 @@ namespace WeaponCore
                                 effect.DistanceMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
                                 effect.DurationMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
                                 effect.UserColorMultiplier = t.System.Values.Graphics.Particles.Hit.Color;
-                                var scaler = 1;
+                                const int scaler = 1;
                                 effect.Loop = t.System.Values.Graphics.Particles.Hit.Extras.Loop;
 
                                 effect.UserRadiusMultiplier = t.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
@@ -183,21 +176,35 @@ namespace WeaponCore
                     }
                 }
             }
-            drawList.Clear();
             if (sFound) _shrinking.ApplyAdditions();
             if (gFound) _afterGlow.ApplyAdditions();
-
+            drawList.Clear();
         }
 
         private void Shrink()
         {
             var sRemove = false;
+            var gRemove = false;
             foreach (var s in _shrinking)
             {
-                var trajectile = s.GetLine();
-                if (trajectile.HasValue)
+                var shrunk = s.GetLine();
+                if (shrunk.HasValue)
                 {
-                    MyTransparentGeometry.AddLocalLineBillboard(s.System.TracerMaterial, s.System.Values.Graphics.Line.Tracer.Color, trajectile.Value.PrevPosition, 0, trajectile.Value.Direction, (float)trajectile.Value.Length, s.System.Values.Graphics.Line.Tracer.Width);
+                    MyTransparentGeometry.AddLineBillboard(s.System.TracerMaterial, s.System.Values.Graphics.Line.Tracer.Color, shrunk.Value.Back, shrunk.Value.Direction, (float)shrunk.Value.Length, s.System.Values.Graphics.Line.Tracer.Width);
+                    if (s.System.Trail)
+                    {
+                        gRemove = true;
+                        var afterGlow = new AfterGlow
+                        {
+                            System = s.System,
+                            StepLength = shrunk.Value.StepLength,
+                            Direction = shrunk.Value.Direction,
+                            Back = shrunk.Value.Back,
+                            FirstTick = Tick,
+                        };
+
+                        _afterGlow.Add(afterGlow);
+                    }
                 }
                 else
                 {
@@ -205,6 +212,7 @@ namespace WeaponCore
                     sRemove = true;
                 }
             }
+            if (gRemove) _afterGlow.ApplyRemovals();
             if (sRemove) _shrinking.ApplyRemovals();
         }
 
@@ -214,14 +222,23 @@ namespace WeaponCore
             for (int i = 0; i < _afterGlow.Count; i++)
             {
                 var a = _afterGlow[i];
-                var fullSize = a.System.Values.Graphics.Line.Tracer.Width;
-
-                var steps = a.DecayTime;
-                var stepsLeft = (a.FirstTick + steps) - Tick;
-                var thisStep = steps - stepsLeft;
+                var system = a.System;
+                var fullSize = system.Values.Graphics.Line.Tracer.Width;
+                var steps = system.Values.Graphics.Line.Trail.DecayTime;
+                var thisStep = (Tick - a.FirstTick);
                 var shrinkAmount = fullSize / steps;
-                var thickness = fullSize - (shrinkAmount * thisStep);  
-                if (stepsLeft > 0) MyTransparentGeometry.AddLocalLineBillboard(a.System.TrailMaterial, a.Color, a.PrevPosition, 0, a.Direction, a.Length, thickness);
+                var reduction = (shrinkAmount * thisStep);
+                var thickness = fullSize - reduction;
+
+                var hitPos = a.Back + (-a.Direction * a.StepLength);
+                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref a.Back, ref hitPos, ref CameraPos)));
+                if (distanceFromPointSqr > 160000) thickness *= 8f;
+                else if (distanceFromPointSqr > 40000) thickness *= 4f;
+                else if (distanceFromPointSqr > 10000) thickness *= 2f;
+                if (thisStep < steps)
+                {
+                    MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, system.Values.Graphics.Line.Trail.Color, a.Back, a.Direction, (float) a.StepLength, thickness);
+                }
                 else
                 {
                     _afterGlow.Remove(a);
@@ -231,21 +248,20 @@ namespace WeaponCore
             if (gRemove) _afterGlow.ApplyRemovals();
         }
 
-        internal void LineOffsetEffect(Trajectile t, float beamRadius, Vector4 color)
+        internal void LineOffsetEffect(WeaponSystem system, Vector3D startPos, Vector3D direction, float distanceTraveled, double tracerLength, float beamRadius, Vector4 color)
         {
             MatrixD matrix;
             var up = MatrixD.Identity.Up;
-            MatrixD.CreateWorld(ref t.PrevPosition, ref t.Direction, ref up, out matrix);
-            var distance = t.Length;
-            var offsetMaterial = t.System.TracerMaterial;
-            var distSqr = distance * distance;
-            var maxOffset = t.System.Values.Ammo.Beams.OffsetEffect.MaxOffset;
-            var minLength = t.System.Values.Ammo.Beams.OffsetEffect.MinLength;
-            var maxLength = t.System.Values.Ammo.Beams.OffsetEffect.MaxLength;
+            MatrixD.CreateWorld(ref startPos, ref direction, ref up, out matrix);
+            var offsetMaterial = system.TracerMaterial;
+            var tracerLengthSqr = tracerLength * tracerLength;
+            var maxOffset = system.Values.Graphics.Line.OffsetEffect.MaxOffset;
+            var minLength = system.Values.Graphics.Line.OffsetEffect.MinLength;
+            var maxLength = system.Values.Graphics.Line.OffsetEffect.MaxLength;
 
             double currentForwardDistance = 0;
 
-            while (currentForwardDistance < distance)
+            while (currentForwardDistance < tracerLength)
             {
                 currentForwardDistance += MyUtils.GetRandomDouble(minLength, maxLength);
                 var lateralXDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
@@ -269,12 +285,12 @@ namespace WeaponCore
                     toBeam = Vector3D.Transform(_offsetList[i], matrix);
                 }
 
-                Vector3 direction = (toBeam - fromBeam);
-                var length = direction.Length();
+                Vector3 dir = (toBeam - fromBeam);
+                var length = dir.Length();
+                var normDir = dir / length;
+                MyTransparentGeometry.AddLineBillboard(offsetMaterial, color, fromBeam, normDir, length, beamRadius);
 
-                MyTransparentGeometry.AddLineBillboard(offsetMaterial, color, fromBeam, direction / length, length, beamRadius);
-
-                if (Vector3D.DistanceSquared(matrix.Translation, toBeam) > distSqr) break;
+                if (Vector3D.DistanceSquared(matrix.Translation, toBeam) > tracerLengthSqr) break;
             }
             _offsetList.Clear();
         }

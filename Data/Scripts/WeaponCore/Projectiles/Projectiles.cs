@@ -210,7 +210,7 @@ namespace WeaponCore.Projectiles
                             Vector3D newVel;
                             if (p.IdleTime > 0)
                             {
-                                var distToMax = p.MaxTrajectory - p.DistanceTraveled;
+                                var distToMax = p.MaxTrajectory - p.T.DistanceTraveled;
 
                                 var stopDist = p.VelocityLengthSqr / 2 / (p.AccelPerSec);
                                 if (distToMax <= stopDist)
@@ -248,12 +248,12 @@ namespace WeaponCore.Projectiles
                     }
                     else
                     {
-                        if (p.VelocityLengthSqr > 0) p.LastPosition = p.Position;
-
+                        if (p.ConstantSpeed || p.VelocityLengthSqr > 0) p.LastPosition = p.Position;
                         p.TravelMagnitude = p.Velocity * StepConst;
                         p.Position += p.TravelMagnitude;
                     }
-                    p.DistanceTraveled += Vector3D.Dot(p.Direction, p.Velocity * StepConst);
+                    p.T.PrevDistanceTraveled = p.T.DistanceTraveled;
+                    p.T.DistanceTraveled += Vector3D.Dot(p.Direction, p.Velocity * StepConst);
 
                     if (p.ModelState == EntityState.Exists)
                     {
@@ -279,7 +279,7 @@ namespace WeaponCore.Projectiles
 
                     if (p.State != ProjectileState.OneAndDone)
                     {
-                        if (p.DistanceTraveled * p.DistanceTraveled >= p.DistanceToTravelSqr)
+                        if (p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
                             if (p.IdleTime == 0) Die(p, i);
                             else
@@ -351,23 +351,32 @@ namespace WeaponCore.Projectiles
 
                     if (p.DrawLine)
                     {
-                        if (p.Grow)
+                        if (p.State == ProjectileState.OneAndDone)
+                            p.T.UpdateShape(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
+                        else 
                         {
-                            if (p.AccelLength <= 0 && p.GrowStep++ >= p.T.ReSizeSteps) p.Grow = false;
-                            else if (Vector3D.DistanceSquared(p.Origin, p.Position) > p.TracerLength * p.TracerLength) p.Grow = false;
-                            p.T.UpdateShape(p.Position + -(p.Direction * p.DistanceTraveled), p.Position, p.Direction, p.DistanceTraveled);
+                            if (Vector3D.DistanceSquared(p.Origin, p.Position) <= p.TracerLength * p.TracerLength)
+                            {
+                                var growth = p.Position + -(p.Direction * p.T.DistanceTraveled);
+                                p.T.UpdateShape(growth, p.Position, p.Direction, p.T.DistanceTraveled, ReSize.Grow);
+                            }
+                            else
+                            {
+                                var prevPos = p.Position + -(p.Direction * p.TracerLength);
+                                p.T.UpdateShape(prevPos, p.Position, p.Direction, p.TracerLength, ReSize.None);
+                            }
                         }
-                        else if (p.State == ProjectileState.OneAndDone)
-                            p.T.UpdateShape(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory);
+                        /*
                         else
                         {
                             var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
-                            p.T.UpdateShape(p.Position + -(pointDir * p.TracerLength), p.Position, pointDir, p.TracerLength);
+                            var prevPos = p.Position + -(pointDir * p.TracerLength);
+                            p.T.UpdateShape(prevPos, p.Position, pointDir, p.TracerLength);
                         }
-
+                        */
                     }
 
-                    p.T.OnScreen = false;
+                    p.T.OnScreen = true;
                     if (p.ModelState == EntityState.Exists)
                     {
                         p.ModelSphereLast.Center = p.LastEntityPos;
@@ -382,7 +391,8 @@ namespace WeaponCore.Projectiles
 
                     if (!p.T.OnScreen && p.DrawLine)
                     {
-                        var bb = new BoundingBoxD(Vector3D.Min(p.T.PrevPosition, p.T.Position), Vector3D.Max(p.T.PrevPosition, p.T.Position));
+                        var back = !p.T.System.Trail ? p.T.Back : p.T.Back + (-p.Direction * (p.TravelMagnitude * p.T.System.Values.Graphics.Line.Trail.DecayTime));
+                        var bb = new BoundingBoxD(Vector3D.Min(back, p.T.Front), Vector3D.Max(back, p.T.Front));
                         if (camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
                     }
 
@@ -421,7 +431,10 @@ namespace WeaponCore.Projectiles
                 if (p.T.MuzzleId != -1)
                 {
                     var length = Vector3D.Distance(p.LastPosition, hitPos);
-                    p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, length);
+                    var moveLength = p.T.DistanceTraveled - p.T.PrevDistanceTraveled;
+                    var shrink = !p.T.System.IsBeamWeapon && moveLength > 0 && moveLength < p.TracerLength;
+                    var reSize = shrink ? ReSize.Shrink : ReSize.None;
+                    p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, length, reSize);
                     p.T.Complete(hitEntity, DrawState.Hit);
                     drawList.Add(p.T);
                 }
@@ -453,23 +466,23 @@ namespace WeaponCore.Projectiles
                 vt.OnScreen = p.T.OnScreen;
                 if (vt.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vt.PrevPosition, hitEntity.HitPos ?? p.Position) : new LineD(vt.PrevPosition, p.Position);
-                    vt.UpdateVrShape(beam.From, beam.To, beam.Direction, beam.Length);
+                    var beam = !miss ? new LineD(vt.Back, hitEntity.HitPos ?? p.Position) : new LineD(vt.Back, p.Position);
+                    vt.UpdateVrShape(beam.From, beam.To, beam.Direction, beam.Length, ReSize.None);
                 }
                 else
                 {
                     Vector3D beamEnd;
                     var hit = !miss && hitEntity.HitPos.HasValue;
                     if (!hit)
-                        beamEnd = vt.PrevPosition + (vt.Direction * p.MaxTrajectory);
+                        beamEnd = vt.Back + (vt.Direction * p.MaxTrajectory);
                     else
-                        beamEnd = vt.PrevPosition + (vt.Direction * p.T.WeaponCache.HitDistance);
+                        beamEnd = vt.Back + (vt.Direction * p.T.WeaponCache.HitDistance);
 
-                    var line = new LineD(vt.PrevPosition, beamEnd);
+                    var line = new LineD(vt.Back, beamEnd);
                     //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
                     if (!miss && hitEntity.HitPos.HasValue)
-                        vt.UpdateVrShape(line.From, hitEntity.HitPos.Value, line.Direction, line.Length);
-                    else vt.UpdateVrShape(line.From, line.To, line.Direction, line.Length);
+                        vt.UpdateVrShape(line.From, hitEntity.HitPos.Value, line.Direction, line.Length, ReSize.None);
+                    else vt.UpdateVrShape(line.From, line.To, line.Direction, line.Length, ReSize.None);
                 }
                 vt.Complete(hitEntity, DrawState.Hit);
                 drawList.Add(vt);
@@ -503,7 +516,9 @@ namespace WeaponCore.Projectiles
 
             if (!p.T.OnScreen && p.DrawLine)
             {
-                var bb = new BoundingBoxD(Vector3D.Min(p.T.PrevPosition, p.T.Position), Vector3D.Max(p.T.PrevPosition, p.T.Position));
+                p.T.OnScreen = true;
+                var back = !p.T.System.Trail ? p.T.Back : p.T.Back + (-p.Direction * ((p.T.DistanceTraveled - p.T.PrevDistanceTraveled) * p.T.System.Values.Graphics.Line.Trail.DecayTime));
+                var bb = new BoundingBoxD(Vector3D.Min(back, p.T.Front), Vector3D.Max(back, p.T.Front));
                 if (Session.Instance.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
             }
         }

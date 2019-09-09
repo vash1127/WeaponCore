@@ -133,7 +133,6 @@ namespace WeaponCore.Support
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);
-            Trail = values.Graphics.Line.Trail.Enable;
 
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
@@ -195,6 +194,8 @@ namespace WeaponCore.Support
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
+
+            Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
         }
 
         private void DamageScales(out bool damageScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage)
@@ -309,7 +310,7 @@ namespace WeaponCore.Support
             rotateRealBeam = Values.Ammo.Beams.RotateRealBeam && VirtualBeams;
             convergeBeams = !RotateRealBeam && Values.Ammo.Beams.ConvergeBeams && VirtualBeams;
             oneHitParticle = Values.Ammo.Beams.OneParticle && IsBeamWeapon;
-            offsetEffect = Values.Ammo.Beams.OffsetEffect.MaxOffset > 0;
+            offsetEffect = Values.Graphics.Line.OffsetEffect.MaxOffset > 0;
         }
 
         private void CollisionShape(out bool collisionIsLine, out double collisionSize)

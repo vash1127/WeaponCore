@@ -20,14 +20,13 @@ namespace WeaponCore
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
-                if (!gridAi.DbReady && ControlledEntity?.GetTopMostParent() != gridAi.MyGrid || !gridAi.MyGrid.InScene) continue;
+                if (!gridAi.DbReady && !gridAi.MyGrid.InScene) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     if (!comp.MainInit || !comp.State.Value.Online || comp.Status != Started)
                     {
-                        Log.Line($"Status: {comp.Status}");
                         if (comp.Status != Started) comp.HealthCheck();
                         continue;
                     }

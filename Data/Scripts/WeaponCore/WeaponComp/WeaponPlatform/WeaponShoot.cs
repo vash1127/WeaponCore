@@ -80,8 +80,8 @@ namespace WeaponCore.Platform
                 _shotsInCycle = 0;
                 _newCycle = true;
             }
-
-            if (!Comp.Gunner && !Casting && tick - Comp.LastRayCastTick > 59 && Target != null ) ShootRayCheck();
+            var userControlled = Comp.Gunner || ManualShoot != TerminalActionState.ShootOff;
+            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 59 && Target != null ) ShootRayCheck();
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {

@@ -356,6 +356,7 @@ namespace WeaponCore
                 t.BaseDamagePool = 0;
                 return;
             }
+            var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
 
             t.ObjectsHit++;
             float damageScale = 1;
@@ -367,6 +368,12 @@ namespace WeaponCore
             else t.BaseDamagePool -= objHp;
             var radius = system.AmmoAreaEffect ? system.Values.Ammo.AreaEffect.AreaEffectRadius : 1;
             destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float) radius, true);
+
+            if (detonateOnEnd)
+            {
+                var det = system.Values.Ammo.AreaEffect.Detonation;
+                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, det.DetonationRadius, true);
+            }
         }
 
         private void ExplosionProximity(HitEntity hitEnt, Trajectile t)

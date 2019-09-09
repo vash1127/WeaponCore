@@ -21,6 +21,13 @@ namespace WeaponCore.Support
             Default
         }
 
+        public enum ReSize
+        {
+            Grow,
+            Shrink,
+            None
+        }
+
         internal readonly Target Target = new Target();
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
         internal WeaponSystem System;
@@ -31,24 +38,25 @@ namespace WeaponCore.Support
         internal WeaponFrameCache WeaponCache;
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
-        internal Vector3D Position;
-        internal Vector3D PrevPosition;
+        internal Vector3D Back;
+        internal Vector3D Front;
         internal Vector3D Direction;
         internal Vector4 Color;
         internal int WeaponId;
         internal int MuzzleId;
-        internal int ReSizeSteps;
+        //internal double ReSizeSteps;
         internal int TriggerGrowthSteps;
         internal int ObjectsHit;
         internal double Length;
-        internal double MaxSpeedLength;
+        //internal double MaxSpeedLength;
+        internal double DistanceTraveled;
+        internal double PrevDistanceTraveled;
         internal float LineWidth;
         internal float BaseDamagePool;
         internal float AreaEffectDamage;
         internal float DetonationDamage;
         internal float BaseHealthPool;
-        internal bool Shrink;
-        internal bool AfterGlow;
+        internal ReSize ReSizing;
         internal bool OnScreen;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
@@ -82,7 +90,7 @@ namespace WeaponCore.Support
             Color = color;
         }
 
-        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D position, Vector3D direction)
+        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D front, Vector3D direction)
         {
             System = system;
             Ai = ai;
@@ -93,25 +101,27 @@ namespace WeaponCore.Support
             Target.FiringCube = target.FiringCube;
             WeaponId = weaponId;
             MuzzleId = muzzleId;
-            Position = position;
-            PrevPosition = Position;
+            Front = front;
+            Back = front;
             Direction = direction;
         }
 
-        internal void UpdateVrShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
+        internal void UpdateVrShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length, ReSize resizing)
         {
-            PrevPosition = prevPosition;
-            Position = position;
+            Back = prevPosition;
+            Front = position;
             Direction = direction;
             Length = length;
+            ReSizing = resizing;
         }
 
-        internal void UpdateShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
+        internal void UpdateShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length, ReSize resizing)
         {
-            PrevPosition = prevPosition;
-            Position = position;
+            Back = prevPosition;
+            Front = position;
             Direction = direction;
             Length = length;
+            ReSizing = resizing;
         }
 
         internal void Clean()
@@ -126,6 +136,7 @@ namespace WeaponCore.Support
             WeaponCache = null;
             Triggered = false;
             TriggerGrowthSteps = 0;
+            ReSizing = ReSize.None;
         }
     }
 
@@ -415,54 +426,62 @@ namespace WeaponCore.Support
     public class Shrinking
     {
         internal WeaponSystem System;
-        internal Vector3D Position;
-        internal Vector3D PrevPosition;
+        internal Vector3D Front;
+        internal Vector3D Back;
         internal Vector3D Direction;
-        internal int ReSizeSteps;
-        internal double LineReSizeLen;
+        internal double ResizeLen;
+        internal double Steps;
+        internal double StepLength;
 
         internal void Init(Trajectile trajectile)
         {
             System = trajectile.System;
-            Position = trajectile.Position;
-            PrevPosition = trajectile.PrevPosition;
+            Front = trajectile.Front;
+            Back = trajectile.Back;
             Direction = trajectile.Direction;
-            ReSizeSteps = trajectile.ReSizeSteps;
-            LineReSizeLen = trajectile.MaxSpeedLength;
+            ResizeLen = trajectile.DistanceTraveled - trajectile.PrevDistanceTraveled;
+            Steps = trajectile.System.Values.Graphics.Line.Tracer.Length / ResizeLen;
+            StepLength = trajectile.DistanceTraveled -  trajectile.PrevDistanceTraveled;
         }
 
         internal Shrunk? GetLine()
         {
-            if (ReSizeSteps-- <= 0) return null;
-            var length = ReSizeSteps * LineReSizeLen;
-            return new Shrunk(PrevPosition + -(Direction * length), Position, Direction, length);
+            if (Steps-- > 0)
+            {
+                var reduced = Steps * ResizeLen;
+                var newBack = Front + -(Direction * reduced);
+                return new Shrunk(newBack, Front, Direction, reduced, StepLength);
+            }
+
+            return null;
         }
     }
 
     internal struct Shrunk
     {
-        internal readonly Vector3D PrevPosition;
-        internal readonly Vector3D Position;
+        internal readonly Vector3D Back;
+        internal readonly Vector3D Front;
         internal readonly Vector3D Direction;
         internal readonly double Length;
-        internal Shrunk(Vector3D prevPosition, Vector3D position, Vector3D direction, double length)
+        internal readonly double StepLength;
+
+        internal Shrunk(Vector3D back, Vector3D front, Vector3D direction, double length, double stepLength)
         {
-            PrevPosition = prevPosition;
-            Position = position;
+            Back = back;
+            Front = front;
             Direction = direction;
             Length = length;
+            StepLength = stepLength;
         }
     }
 
     internal struct AfterGlow
     {
         internal WeaponSystem System;
-        internal Vector3D PrevPosition;
+        internal Vector3D Back;
         internal Vector3D Direction;
-        internal float Length;
+        internal double StepLength;
         internal uint FirstTick;
-        internal int DecayTime;
-        internal Vector4 Color;
     }
 
     public struct InventoryChange

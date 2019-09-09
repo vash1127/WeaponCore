@@ -175,15 +175,6 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal bool VirtualBeams;
         [ProtoMember(4)] internal bool RotateRealBeam;
         [ProtoMember(5)] internal bool OneParticle;
-        [ProtoMember(6)] internal OffsetEffect OffsetEffect;
-    }
-
-    [ProtoContract]
-    public struct OffsetEffect
-    {
-        [ProtoMember(1)] internal double MaxOffset;
-        [ProtoMember(2)] internal double MinLength;
-        [ProtoMember(3)] internal double MaxLength;
     }
 
     [ProtoContract]
@@ -346,6 +337,15 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal Randomize ColorVariance;
         [ProtoMember(4)] internal Randomize WidthVariance;
         [ProtoMember(5)] internal TrailDefinition Trail;
+        [ProtoMember(6)] internal OffsetEffect OffsetEffect;
+    }
+
+    [ProtoContract]
+    public struct OffsetEffect
+    {
+        [ProtoMember(1)] internal double MaxOffset;
+        [ProtoMember(2)] internal double MinLength;
+        [ProtoMember(3)] internal double MaxLength;
     }
 
     [ProtoContract]
@@ -553,5 +553,4 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal double y;
         [ProtoMember(3)] internal double z;
     }
-
 }

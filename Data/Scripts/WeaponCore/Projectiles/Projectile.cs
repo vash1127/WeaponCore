@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
@@ -41,7 +40,6 @@ namespace WeaponCore.Projectiles
         internal Vector3? LastHitEntVel;
         internal double AccelLength;
         internal double MaxTrajectorySqr;
-        internal double DistanceTraveled;
         internal double DistanceToTravelSqr;
         internal double TracerLength;
         internal double VelocityLengthSqr;
@@ -60,7 +58,6 @@ namespace WeaponCore.Projectiles
         internal int ChaseAge;
         internal int IdleTime;
         internal int MaxChaseAge;
-        internal int GrowStep = 1;
         internal int EndStep;
         internal int PrimeModelId;
         internal int TriggerModelId;
@@ -69,7 +66,6 @@ namespace WeaponCore.Projectiles
         internal int PruningProxyId = -1;
         internal int PulseChance;
         internal int PulseInterval;
-        internal bool Grow;
         internal bool EnableAv;
         internal bool DrawLine;
         internal bool AmmoSound;
@@ -114,7 +110,7 @@ namespace WeaponCore.Projectiles
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
         internal MyEntityQueryType PruneQuery;
-        internal AreaDamage.AreaEffectType AreaEffect;
+        internal AreaEffectType AreaEffect;
         
         internal void Start(bool noAv, int poolId)
         {
@@ -151,8 +147,8 @@ namespace WeaponCore.Projectiles
             EwarActive = false;
             FieldActive = false;
             EndStep = 0;
-            GrowStep = 1;
-            DistanceTraveled = 0;
+            T.PrevDistanceTraveled = 0;
+            T.DistanceTraveled = 0;
 
             Guidance = !(T.System.Values.Ammo.Shrapnel.NoGuidance && T.IsShrapnel) ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None && Guidance != AmmoTrajectory.GuidanceType.TravelTo && !T.System.IsBeamWeapon && T.EnableGuidance;
@@ -291,22 +287,14 @@ namespace WeaponCore.Projectiles
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
-            T.MaxSpeedLength = MaxSpeed * StepConst;
             AccelLength = T.System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
             Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
             TravelMagnitude = Velocity * StepConst;
 
             IdleTime = T.System.Values.Ammo.Trajectory.RestTime;
-            if (!T.System.IsBeamWeapon)
-            {
-                var reSizeSteps = (int) (TracerLength / T.MaxSpeedLength);
-                T.ReSizeSteps = ModelState == EntityState.None && reSizeSteps > 0 ? reSizeSteps : 1;
-                Grow = T.ReSizeSteps > 1 || AccelLength > 0 && AccelLength < TracerLength;
-                T.Shrink = Grow;
-                State = ProjectileState.Alive;
-            }
-            else State = ProjectileState.OneAndDone;
+
+            State = !T.System.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
 
             if (T.System.AmmoParticle && EnableAv && !T.System.IsBeamWeapon) PlayAmmoParticle();
         }
@@ -477,7 +465,7 @@ namespace WeaponCore.Projectiles
             else
             {
                 PrevTargetPos = PredictedTargetPos;
-                if (ZombieLifeTime++ > T.System.TargetLossTime) DistanceToTravelSqr = DistanceTraveled * DistanceTraveled;
+                if (ZombieLifeTime++ > T.System.TargetLossTime) DistanceToTravelSqr = T.DistanceTraveled * T.DistanceTraveled;
             }
         }
 
