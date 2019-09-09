@@ -250,7 +250,7 @@ namespace WeaponCore.Platform
                     }
 
                     break;
-
+                
                 case EventTriggers.OutOfAmmo:
                 case EventTriggers.BurstReload:
                 case EventTriggers.PreFire:
