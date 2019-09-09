@@ -141,8 +141,11 @@ namespace WeaponCore.Support
                 
 
                 HeatSinkRate += weapon.HsRate;
-                if(weapon.CurrentMags == 0)
+                if (weapon.CurrentMags == 0)
+                {
                     weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+                    weapon.FirstLoad = false;
+                }
             }
 
             var gun = Gun.GunBase;
