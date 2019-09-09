@@ -489,6 +489,7 @@ namespace WeaponCore.Support
         public enum ChangeType
         {
             Add,
+            Changed
         }
 
         public readonly Weapon Weapon;

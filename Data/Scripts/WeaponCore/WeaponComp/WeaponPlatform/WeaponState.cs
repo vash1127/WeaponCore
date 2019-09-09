@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using VRage.Game;
 using VRage.Game.Components;
 using VRageMath;
@@ -108,7 +109,30 @@ namespace WeaponCore.Platform
                         EntityPart.SetEmissiveParts("Reloading", reloadColor, rIntensity);
                     }
 
-                    if (AnimationsSet.ContainsKey(EventTriggers.Reloading))
+                    var canReload = true;
+
+                    if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                    {
+                        foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
+                        {
+                            if (Session.Instance.animationsToProcess.Contains(animation) ||
+                                Session.Instance.animationsToQueue.Contains(animation))
+                                canReload = false;
+                        }
+                    }
+
+                    if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                    {
+                        foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
+                        {
+                            if (Session.Instance.animationsToProcess.Contains(animation) ||
+                                Session.Instance.animationsToQueue.Contains(animation))
+                                canReload = false;
+                        }
+                    }
+
+
+                    if (canReload && AnimationsSet.ContainsKey(EventTriggers.Reloading))
                     {
                         foreach (var animation in AnimationsSet[
                             EventTriggers.Reloading])
@@ -216,6 +240,19 @@ namespace WeaponCore.Platform
                 case EventTriggers.OutOfAmmo:
                     break;
 
+                case EventTriggers.EmptyOnGameLoad:
+                    if (AnimationsSet.ContainsKey(EventTriggers.EmptyOnGameLoad))
+                    {
+                        foreach (var animation in AnimationsSet[EventTriggers.EmptyOnGameLoad])
+                        {
+                            if (active)
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                            }
+                        }
+                    }
+
+                    break;
 
                 case EventTriggers.BurstReload:
                 case EventTriggers.PreFire:

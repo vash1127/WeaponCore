@@ -8,6 +8,7 @@ using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 
 namespace WeaponCore.Support
 {
@@ -15,12 +16,14 @@ namespace WeaponCore.Support
     {
         internal void RegisterEvents(bool register = true)
         {
+                Log.Line("Registered");
             if (register)
             {
                 Turret.AppendingCustomInfo += AppendingCustomInfo;
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
-                BlockInventory.ContentsAdded += OnContentsAdded;
+                //BlockInventory.ContentsAdded += OnContentsAdded;
+                BlockInventory.ContentsChanged += OnContentsChanged;
                 BlockInventory.ContentsRemoved += OnContentsRemoved;
                 Sink.CurrentInputChanged += CurrentInputChanged;
             }
@@ -28,7 +31,8 @@ namespace WeaponCore.Support
             {
                 Turret.AppendingCustomInfo -= AppendingCustomInfo;
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
-                BlockInventory.ContentsAdded -= OnContentsAdded;
+                //BlockInventory.ContentsAdded -= OnContentsAdded;
+                BlockInventory.ContentsChanged -= OnContentsChanged;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
                 foreach (var w in Platform.Weapons)
@@ -39,10 +43,36 @@ namespace WeaponCore.Support
             }
         }
 
+        private void OnContentsChanged(MyInventoryBase obj)
+        {
+            try
+            {
+                if (lastInventoryChangedTick < Session.Instance.Tick)
+                {
+                    if (obj.GetItems().Count > 0)
+                    {
+                        foreach (var w in Platform.Weapons)
+                        {
+                            Session.Instance.InventoryEvent.Enqueue(new InventoryChange(w,
+                                new MyPhysicalInventoryItem(), 0,
+                                InventoryChange.ChangeType.Changed));
+                        }
+                    }
+
+                    lastInventoryChangedTick = Session.Instance.Tick;
+                }
+            }
+            catch (Exception ex)
+            {
+                Log.Line($"Exception in OnContentsChanged: {ex}");
+            }
+        }
+
         internal void OnContentsAdded(MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
             try
             {
+                Log.Line("InventoryAdded");
                 var defId = item.Content.GetId();
 
                 List<int> weaponIds;

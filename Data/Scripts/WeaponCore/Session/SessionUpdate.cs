@@ -20,7 +20,7 @@ namespace WeaponCore
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
-                if (!gridAi.Ready && gridAi.ManualComps == 0 || !gridAi.MyGrid.InScene) continue;
+                if ((!gridAi.Ready && gridAi.ManualComps == 0 && !gridAi.Reloading) || !gridAi.MyGrid.InScene) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -94,7 +94,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if (!gridAi.Ready && gridAi.ManualComps == 0 || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if ((!gridAi.Ready && gridAi.ManualComps == 0 && !gridAi.Reloading) || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
@@ -178,13 +178,10 @@ namespace WeaponCore
                         }
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
-                            
-
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
                                 if (!w.Reloading)
                                 {
-                                    w.EventTriggerStateChanged(Weapon.EventTriggers.Reloading, true);
                                     w.EventTriggerStateChanged(state: Weapon.EventTriggers.Firing, active: true, pause: true);
 
                                     if (w.IsShooting)
@@ -194,11 +191,10 @@ namespace WeaponCore
                                     }
                                     w.Reloading = true;
                                 }
-
                                 if (w.CurrentMags != 0)
                                 {
+                                    w.EventTriggerStateChanged(Weapon.EventTriggers.Reloading, true);
                                     w.LoadAmmoMag = true;
-
                                     w.StartReloadSound();
                                 }
                                 continue;
@@ -249,6 +245,7 @@ namespace WeaponCore
                 gridAi.AvailablePowerIncrease = false;
                 gridAi.RecalcPowerPercent = false;
                 gridAi.turnWeaponShootOff = false;
+                gridAi.Reloading = false;
 
                 if (gridAi.RecalcDone)
                 {

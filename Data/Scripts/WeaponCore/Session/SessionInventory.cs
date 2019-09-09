@@ -15,8 +15,8 @@ namespace WeaponCore
             {
                 var weapon = change.Weapon;
                 var comp = weapon.Comp;
-                ComputeStorage(weapon);
-                if (comp.MultiInventory && change.Type == InventoryChange.ChangeType.Add)
+                var add = ComputeStorage(weapon);
+                if (comp.MultiInventory && add)
                 {
                     Log.Line("add mag");
                     var nextDefRaw = NextActiveAmmoDef(comp, weapon);
@@ -136,21 +136,26 @@ namespace WeaponCore
             return null;
         }
 
-        internal static void ComputeStorage(Weapon weapon)
+        internal static bool ComputeStorage(Weapon weapon)
         {
             var comp = weapon.Comp;
             comp.BlockInventory.Refresh();
             var def = weapon.System.AmmoDefId;
             comp.FullInventory = comp.BlockInventory.CargoPercentage >= 0.5;
+            var lastMags = weapon.CurrentMags;
             weapon.CurrentMags = comp.BlockInventory.GetItemAmount(def);
+            
+            if (lastMags == 0 && weapon.CurrentMags > lastMags)
+                weapon.Comp.Ai.Reloading = true;
 
             float itemMass;
             float itemVolume;
             MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
             var ammoMass = itemMass * weapon.CurrentMags.ToIntSafe();
             var ammoVolume = itemVolume * weapon.CurrentMags.ToIntSafe();
-            weapon.AmmoFull = ammoMass >= comp.MaxAmmoMass || ammoVolume >= comp.MaxAmmoVolume; 
+            weapon.AmmoFull = ammoMass >= comp.MaxAmmoMass || ammoVolume >= comp.MaxAmmoVolume;
 
+            return weapon.CurrentMags > lastMags;
             //Log.Line($"[computed storage] AmmoDef:{def.SubtypeId.String}({weapon.CurrentMags.ToIntSafe()}) - Full:{weapon.AmmoFull} - Mass:<{itemMass}>{ammoMass}({comp.MaxAmmoMass})[{comp.MaxAmmoMass}] - Volume:<{itemVolume}>{ammoVolume}({comp.MaxAmmoVolume})[{comp.MaxInventoryVolume}]");
         }
     }

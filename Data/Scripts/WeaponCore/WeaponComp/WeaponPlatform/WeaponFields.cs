@@ -109,6 +109,7 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool TargetWasExpired;
         internal bool Reloading;
+        internal bool FirstLoad = true;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 
@@ -136,7 +137,8 @@ namespace WeaponCore.Platform
                 if (value)
                 {
                     Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
-                    AmmoMagTimer = System.ReloadTime;
+                    AmmoMagTimer = FirstLoad ? 1 : System.ReloadTime;
+                    FirstLoad = false;
                 }
             }
         }
@@ -163,6 +165,7 @@ namespace WeaponCore.Platform
             BurstReload,
             OutOfAmmo,
             PreFire,
+            EmptyOnGameLoad
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, HashSet<PartAnimation>> animationSets)

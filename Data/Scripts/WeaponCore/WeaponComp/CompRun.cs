@@ -46,7 +46,7 @@ namespace WeaponCore.Support
                     if (Ai.MyGrid != MyCube.CubeGrid) Log.Line("grid mismatch");
                     MyGrid = MyCube.CubeGrid;
                     PowerInit();
-                    RegisterEvents();
+                    //RegisterEvents();
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                         OnAddedToSceneTasks();
 
@@ -80,24 +80,6 @@ namespace WeaponCore.Support
                 MaxAmmoVolume = (float)MyFixedPoint.MultiplySafe(MaxInventoryVolume, 1 / (float)PullingAmmoCnt) * 0.5f;
                 MaxAmmoMass = (float)MyFixedPoint.MultiplySafe(MaxInventoryMass, 1 / (float)PullingAmmoCnt) * 0.5f;
             }
-            foreach (var weapon in Platform.Weapons)
-            {
-                weapon.InitTracking();
-                Session.ComputeStorage(weapon);
-            }
-
-            var gun = Gun.GunBase;
-            var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id
-                : Platform.Structure.AmmoToWeaponIds.First().Key;
-            BlockInventory.Constraint.Clear();
-            BlockInventory.Constraint.Add(id);
-            gun.SwitchAmmoMagazine(id);
-            foreach (var w in Platform.Weapons)
-            {
-                var otherId = w.System.MagazineDef.AmmoDefinitionId;
-                if (otherId == id) continue;
-                BlockInventory.Constraint.Add(otherId);
-            }
 
             StorageSetup();
 
@@ -106,6 +88,9 @@ namespace WeaponCore.Support
             OptimalDPS = 0;
             foreach (var weapon in Platform.Weapons)
             {
+                weapon.InitTracking();
+                Session.ComputeStorage(weapon);
+
                 MaxHeat += weapon.System.MaxHeat;
                 weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.ROFModifier);
 
@@ -156,6 +141,21 @@ namespace WeaponCore.Support
                 
 
                 HeatSinkRate += weapon.HsRate;
+                if(weapon.CurrentMags == 0)
+                    weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+            }
+
+            var gun = Gun.GunBase;
+            var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id
+                : Platform.Structure.AmmoToWeaponIds.First().Key;
+            BlockInventory.Constraint.Clear();
+            BlockInventory.Constraint.Add(id);
+            gun.SwitchAmmoMagazine(id);
+            foreach (var w in Platform.Weapons)
+            {
+                var otherId = w.System.MagazineDef.AmmoDefinitionId;
+                if (otherId == id) continue;
+                BlockInventory.Constraint.Add(otherId);
             }
 
             RegisterEvents();
@@ -165,13 +165,7 @@ namespace WeaponCore.Support
             if(!Turret.Enabled)
             {
                 foreach (var w in Platform.Weapons)
-                {
-                    if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))
-                    {
-                        foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOff])
-                            Session.Instance.animationsToProcess.Enqueue(animation);
-                    }
-                }
+                    w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
             }
 
             MainInit = true;
