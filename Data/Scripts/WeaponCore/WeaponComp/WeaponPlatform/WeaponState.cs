@@ -47,41 +47,194 @@ namespace WeaponCore.Platform
             public int MuzzleId;
         }
 
-        internal void ChangeEmissiveState(EventTriggers state, bool active)
+        internal void EventTriggerStateChanged(EventTriggers state, bool active, bool pause = false, string muzzle = "Any")
         {
             switch (state)
             {
                 case EventTriggers.Firing:
-                    var stages = System.Values.Graphics.Emissive.Firing.Stages;
-                    var stageSize = TicksPerShot / 6;
-                    if (stageSize < 2) stageSize = 2;
-                    var timeToShoot = TicksPerShot - ShotCounter;
-                    var stage = timeToShoot / stageSize - 1;
-                    if (stage == 0) stage = 1;
-                    var fIntensity = 1 / 6;
-                    var firingColor = System.Values.Graphics.Emissive.Firing.Color;
-                    for (int i = 0; i < stages; i++)
+                    if (AvCapable && !pause)
                     {
-                        if (stage < 0 || !active)
-                            EntityPart.SetEmissiveParts(FiringStrings[i], Color.Transparent, 0);
-                        else if (stage >= i)
-                            EntityPart.SetEmissiveParts(FiringStrings[i], firingColor, fIntensity * i);
+                        var stages = System.Values.Graphics.Emissive.Firing.Stages;
+                        var stageSize = TicksPerShot / 6;
+                        if (stageSize < 2) stageSize = 2;
+                        var timeToShoot = TicksPerShot - ShotCounter;
+                        var stage = timeToShoot / stageSize - 1;
+                        if (stage == 0) stage = 1;
+                        var fIntensity = 1 / 6;
+                        var firingColor = System.Values.Graphics.Emissive.Firing.Color;
+                        for (int i = 0; i < stages; i++)
+                        {
+                            if (stage < 0 || !active)
+                                EntityPart.SetEmissiveParts(FiringStrings[i], Color.Transparent, 0);
+                            else if (stage >= i)
+                                EntityPart.SetEmissiveParts(FiringStrings[i], firingColor, fIntensity * i);
+                        }
                     }
+
+                    if (AnimationsSet.ContainsKey(EventTriggers.Firing))
+                    {
+                        foreach (var animation in AnimationsSet[EventTriggers.Firing])
+                        {
+                            if (active && animation.Looping != true && !pause)
+                            {
+                                if (animation.Muzzle == "Any" || animation.Muzzle == muzzle)
+                                {
+                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                            }
+                            else if (active && animation.Looping && pause)
+                                animation.PauseAnimation = true;
+
+                            else if (active && animation.Looping)
+                                animation.PauseAnimation = false;
+
+                            else
+                            {
+                                animation.PauseAnimation = false;
+                                animation.Looping = false;
+                            }
+                        }
+                    }
+
+
                     break;
                 case EventTriggers.Reloading:
-                    var reloadColor = System.Values.Graphics.Emissive.Reloading.Color;
-                    var rIntensity = active ? 1 : reloadColor.W;
-                    EntityPart.SetEmissiveParts("Reloading", reloadColor, rIntensity);
+                    if (AvCapable)
+                    {
+                        var reloadColor = System.Values.Graphics.Emissive.Reloading.Color;
+                        var rIntensity = active ? 1 : reloadColor.W;
+                        EntityPart.SetEmissiveParts("Reloading", reloadColor, rIntensity);
+                    }
+
+                    if (AnimationsSet.ContainsKey(EventTriggers.Reloading))
+                    {
+                        foreach (var animation in AnimationsSet[
+                            EventTriggers.Reloading])
+                        {
+                            if (active && animation.Looping != true && !pause)
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                            else if (active && animation.Looping && pause)
+                                animation.PauseAnimation = true;
+
+                            else if (active && animation.Looping)
+                                animation.PauseAnimation = false;
+
+                            else
+                            {
+                                animation.PauseAnimation = false;
+                                animation.Looping = false;
+                            }
+                        }
+                    }
+
                     break;
                 case EventTriggers.Tracking:
                     var trackingColor = System.Values.Graphics.Emissive.Tracking.Color;
                     var tIntensity = active ? 1 : trackingColor.W;
                     EntityPart.SetEmissiveParts("Tracking", trackingColor, tIntensity);
                     TargetWasExpired = Target.Expired;
+
+                    if (AnimationsSet.ContainsKey(Weapon.EventTriggers.Tracking))
+                    {
+                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.Tracking])
+                        {
+                            if (active)
+                            {
+                                if (animation.CurrentMove == 0 && !animation.Looping)
+                                    Session.Instance.animationsToProcess.Enqueue(animation);
+
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                            else
+                                animation.Looping = false;
+                        }
+                    }
+
                     break;
                 case EventTriggers.Overheated:
-                    var hIntensity = active ? 1 : 0.1f;
-                    EntityPart.SetEmissiveParts("Heating", Color.Red, hIntensity);
+                    if (AvCapable)
+                    {
+                        var hIntensity = active ? 1 : 0.1f;
+                        EntityPart.SetEmissiveParts("Heating", Color.Red, hIntensity);
+                    }
+
+                    if (AnimationsSet.ContainsKey(EventTriggers.Overheated))
+                    {
+                        foreach (var animation in AnimationsSet[EventTriggers.Overheated])
+                        {
+                            if (active && animation.Looping != true)
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                            else if (!active)
+                                animation.Looping = false;
+                        }
+                    }
+
+                    break;
+
+                case EventTriggers.BurstReload:
+                    if (AnimationsSet.ContainsKey(EventTriggers.BurstReload))
+                    {
+                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.BurstReload])
+                        {
+                            if (active && animation.Looping != true)
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                            else
+                                animation.Looping = false;
+                        }
+                    }
+
+                    break;
+
+                case EventTriggers.TurnOn:
+                    if (active && AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn))
+                    {
+                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOn])
+                        {
+                            Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                        }
+                    }
+
+                    break;
+
+                case EventTriggers.TurnOff:
+                    if (active && AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))
+                    {
+                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOff])
+                        {
+                            Session.Instance.animationsToProcess.Enqueue(animation);
+                            foreach (var set in AnimationsSet)
+                            {
+                                foreach (var anim in set.Value)
+                                {
+                                    anim.PauseAnimation = false;
+                                    anim.Looping = false;
+                                }
+                            }
+                        }
+                    }
+                    break;
+
+                case EventTriggers.OutOfAmmo:
+                    break;
+
+                case EventTriggers.PreFire:
                     break;
             }
         }
@@ -208,15 +361,6 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
-                    if (AnimationsSet.ContainsKey(Weapon.EventTriggers.Firing))
-                    {
-                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.Firing])
-                        {
-                            animation.PauseAnimation = false;
-                            animation.Looping = false;
-                        }
-                    }
-
                     Comp.CurrentDPS -= DPS;
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                     Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;

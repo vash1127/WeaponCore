@@ -161,7 +161,8 @@ namespace WeaponCore.Platform
             TurnOn,
             TurnOff,
             BurstReload,
-            Locked,
+            OutOfAmmo,
+            PreFire,
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, HashSet<PartAnimation>> animationSets)

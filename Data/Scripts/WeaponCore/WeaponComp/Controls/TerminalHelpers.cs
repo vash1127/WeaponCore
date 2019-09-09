@@ -68,33 +68,8 @@ namespace WepaonCore.Control
             {
                 var w = comp.Platform.Weapons[i];
 
-                if ((On && !w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn)) || (!On && !w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))) continue;
-
-                if (On)
-                {
-                    foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOn])
-                    {
-                        w.FirstFireDelay = animation.FireDelay;
-                        Session.Instance.animationsToProcess.Enqueue(animation);
-                        if (animation.DoesLoop)
-                            animation.Looping = true;
-                    }
-                }
-                else
-                {
-                    foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOff])
-                    {
-                        Session.Instance.animationsToProcess.Enqueue(animation);
-                    }
-
-                    foreach (var set in w.AnimationsSet)
-                    {
-                        foreach (var animation in set.Value)
-                        {
-                            animation.Looping = false;
-                        }
-                    }
-                }
+                w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
+                w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
             }
         }
 

@@ -25,26 +25,12 @@ namespace WeaponCore.Platform
                     if (tick - _lastShotTick > System.Values.HardPoint.Loading.DelayAfterBurst)
                     {
                         _shots = 1;
-                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(Weapon.EventTriggers.BurstReload))
-                        {
-                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.BurstReload])
-                            {
-                                animation.Looping = false;
-                            }
-                        }
+                        EventTriggerStateChanged(EventTriggers.BurstReload,false);
                     }
+
                     else
                     {
-                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(Weapon.EventTriggers.BurstReload))
-                        {
-                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.BurstReload])
-                            {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                        }
-
+                        EventTriggerStateChanged(EventTriggers.BurstReload, true);
                         if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
                         return;
                     }
@@ -246,43 +232,13 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    if (!Session.Instance.DedicatedServer)
-                    {
-                        if (AnimationsSet.ContainsKey(Weapon.EventTriggers.Firing))
-                        {
-                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.Firing])
-                            {
-                                if (animation.Muzzle == "Any" || animation.Muzzle == MuzzleIDToName[current])
-                                {
-                                    if (animation.DoesLoop && animation.PauseAnimation && animation.Looping)
-                                        animation.PauseAnimation = false;
-                                    else if (!animation.Looping)
-                                    {
-                                        Session.Instance.animationsToProcess.Enqueue(animation);
-                                        if (animation.DoesLoop)
-                                            animation.Looping = true;
-
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzle: MuzzleIDToName[current]);
 
                     var heat = Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;
                     if (heat > System.MaxHeat)
                     {
-                        if (!Session.Instance.DedicatedServer && AnimationsSet.ContainsKey(Weapon.EventTriggers.Overheated))
-                        {
-                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.Overheated])
-                            {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                        }
-
-                        if (AvCapable) if (!Comp.Overheated) ChangeEmissiveState(EventTriggers.Overheated, true);
+                        EventTriggerStateChanged(EventTriggers.Overheated, true);
                         Comp.Overheated = true;
                         StopShooting();
                     }
