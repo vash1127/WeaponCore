@@ -80,7 +80,23 @@ namespace WeaponCore
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
-                            w.ChangeEmissiveState(Weapon.Emissives.Tracking, !w.Target.Expired);
+                            w.ChangeEmissiveState(Weapon.EventTriggers.Tracking, !w.Target.Expired);
+                            if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.Tracking))
+                            {
+                                foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.Tracking])
+                                {
+                                    if (!w.Target.Expired)
+                                    {
+                                        if (animation.CurrentMove == 0 && !animation.Looping)
+                                            animationsToProcess.Enqueue(animation);
+
+                                        if (animation.DoesLoop)
+                                            animation.Looping = true;
+                                    }
+                                    else
+                                        animation.Looping = false;
+                                }
+                            }
                         }
                     }
                 }
@@ -137,11 +153,11 @@ namespace WeaponCore
                             comp.TerminalRefresh();
                             if (comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
                             {
-                                if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Heating, false);
+                                if (w.AvCapable) w.ChangeEmissiveState(Weapon.EventTriggers.Overheated, false);
                                 comp.Overheated = false;
-                                if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Overheated))
+                                if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.Overheated))
                                 {
-                                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Overheated])
+                                    foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.Overheated])
                                     {
                                         if (animation.DoesLoop && animation.Looping)
                                             animation.Looping = false;
@@ -195,10 +211,10 @@ namespace WeaponCore
                                 if (!w.Reloading)
                                 {
                                     
-                                    if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
+                                    if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.Reloading))
                                     {
                                         foreach (var animation in w.AnimationsSet[
-                                            PartAnimationSetDef.EventOptions.Reloading])
+                                            Weapon.EventTriggers.Reloading])
                                         {
                                             animationsToProcess.Enqueue(animation);
                                             if (animation.DoesLoop)
@@ -206,10 +222,10 @@ namespace WeaponCore
                                         }
                                     }
 
-                                    if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                    if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.Firing))
                                     {
                                         foreach (var animation in w.AnimationsSet[
-                                            PartAnimationSetDef.EventOptions.Firing])
+                                            Weapon.EventTriggers.Firing])
                                         {
                                             if (animation.DoesLoop && animation.Looping)
                                                 animation.PauseAnimation = true;
@@ -225,7 +241,7 @@ namespace WeaponCore
                                     w.Reloading = true;
                                 }
 
-                                if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, true);
+                                if (w.AvCapable) w.ChangeEmissiveState(Weapon.EventTriggers.Reloading, true);
                                 if (w.CurrentMags != 0)
                                 {
                                     w.LoadAmmoMag = true;
@@ -235,13 +251,13 @@ namespace WeaponCore
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
-                            if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Reloading, false);
+                            if (w.AvCapable) w.ChangeEmissiveState(Weapon.EventTriggers.Reloading, false);
 
                             if (w.IsShooting)
                             {
-                                if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                                if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.Firing))
                                 {
-                                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
+                                    foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.Firing])
                                     {
                                         if (animation.DoesLoop && animation.Looping)
                                             animation.PauseAnimation = false;
@@ -252,9 +268,9 @@ namespace WeaponCore
                                 comp.CurrentDPS += w.DPS;
                             }
 
-                            if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Reloading))
+                            if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.Reloading))
                             {
-                                foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.Reloading])
+                                foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.Reloading])
                                     animation.Looping = false;
                             }
                             w.Reloading = false;
@@ -284,7 +300,7 @@ namespace WeaponCore
                         }
                         else if (w.IsShooting)
                         {
-                            if (w.AvCapable) w.ChangeEmissiveState(Weapon.Emissives.Firing, false);
+                            if (w.AvCapable) w.ChangeEmissiveState(Weapon.EventTriggers.Firing, false);
                             w.StopShooting();
                         }
                         if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();

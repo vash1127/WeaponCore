@@ -7,6 +7,7 @@ using SpaceEngineers.Game.Weapons.Guns;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.PartAnimationSetDef;
 using IMyLargeMissileTurret = SpaceEngineers.Game.ModAPI.Ingame.IMyLargeMissileTurret;
@@ -15,11 +16,11 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal Dictionary<EventOptions, HashSet<PartAnimation>> CreateAnimationSets(PartAnimationSetDef[] weaponAnimationSets, RecursiveSubparts parts)
+        internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateAnimationSets(PartAnimationSetDef[] weaponAnimationSets, RecursiveSubparts parts)
         {
-            var allAnimationSet = new Dictionary<EventOptions, HashSet<PartAnimation>>();
+            var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
 
-            if (weaponAnimationSets == null) return new Dictionary<EventOptions, HashSet<PartAnimation>>();
+            if (weaponAnimationSets == null) return new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
             foreach (var animationSet in weaponAnimationSets)
             {
                 for (int t = 0; t < animationSet.SubpartId.Length; t++)

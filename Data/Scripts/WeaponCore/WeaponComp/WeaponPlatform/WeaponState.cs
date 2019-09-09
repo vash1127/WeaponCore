@@ -47,11 +47,11 @@ namespace WeaponCore.Platform
             public int MuzzleId;
         }
 
-        internal void ChangeEmissiveState(Emissives state, bool active)
+        internal void ChangeEmissiveState(EventTriggers state, bool active)
         {
             switch (state)
             {
-                case Emissives.Firing:
+                case EventTriggers.Firing:
                     var stages = System.Values.Graphics.Emissive.Firing.Stages;
                     var stageSize = TicksPerShot / 6;
                     if (stageSize < 2) stageSize = 2;
@@ -68,18 +68,18 @@ namespace WeaponCore.Platform
                             EntityPart.SetEmissiveParts(FiringStrings[i], firingColor, fIntensity * i);
                     }
                     break;
-                case Emissives.Reloading:
+                case EventTriggers.Reloading:
                     var reloadColor = System.Values.Graphics.Emissive.Reloading.Color;
                     var rIntensity = active ? 1 : reloadColor.W;
                     EntityPart.SetEmissiveParts("Reloading", reloadColor, rIntensity);
                     break;
-                case Emissives.Tracking:
+                case EventTriggers.Tracking:
                     var trackingColor = System.Values.Graphics.Emissive.Tracking.Color;
                     var tIntensity = active ? 1 : trackingColor.W;
                     EntityPart.SetEmissiveParts("Tracking", trackingColor, tIntensity);
                     TargetWasExpired = Target.Expired;
                     break;
-                case Emissives.Heating:
+                case EventTriggers.Overheated:
                     var hIntensity = active ? 1 : 0.1f;
                     EntityPart.SetEmissiveParts("Heating", Color.Red, hIntensity);
                     break;
@@ -208,9 +208,9 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
-                    if (AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.Firing))
+                    if (AnimationsSet.ContainsKey(Weapon.EventTriggers.Firing))
                     {
-                        foreach (var animation in AnimationsSet[PartAnimationSetDef.EventOptions.Firing])
+                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.Firing])
                         {
                             animation.PauseAnimation = false;
                             animation.Looping = false;

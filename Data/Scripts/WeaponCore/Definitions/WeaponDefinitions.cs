@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using ProtoBuf;
 using VRageMath;
+using static WeaponCore.Platform.Weapon;
 
 namespace WeaponCore.Support
 {
@@ -502,26 +503,13 @@ namespace WeaponCore.Support
     [ProtoContract(IgnoreListHandling = true)]
     public struct PartAnimationSetDef
     {
-        public enum EventOptions
-        {
-            Firing,
-            Reloading,
-            Overheated,
-            Tracking,
-            Locked,
-            TurnOn,
-            TurnOff,
-            BurstReload,
-        }
-
         [ProtoMember(1)] internal string[] SubpartId;
         [ProtoMember(2)] internal string BarrelId;
         [ProtoMember(3)] internal uint StartupDelay;
-        [ProtoMember(4)] internal Dictionary<EventOptions, uint> AnimationDelays;
-        [ProtoMember(5)] internal EventOptions[] Reverse;
-        [ProtoMember(6)] internal EventOptions[] Loop;
-        [ProtoMember(7)] internal Dictionary<EventOptions, RelMove[]> EventMoveSets;
-
+        [ProtoMember(4)] internal Dictionary<EventTriggers, uint> AnimationDelays;
+        [ProtoMember(5)] internal EventTriggers[] Reverse;
+        [ProtoMember(6)] internal EventTriggers[] Loop;
+        [ProtoMember(7)] internal Dictionary<EventTriggers, RelMove[]> EventMoveSets;
     }
 
     [ProtoContract]

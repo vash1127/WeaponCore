@@ -166,9 +166,9 @@ namespace WeaponCore.Support
             {
                 foreach (var w in Platform.Weapons)
                 {
-                    if (w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.TurnOff))
+                    if (w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))
                     {
-                        foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.TurnOff])
+                        foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOff])
                             Session.Instance.animationsToProcess.Enqueue(animation);
                     }
                 }

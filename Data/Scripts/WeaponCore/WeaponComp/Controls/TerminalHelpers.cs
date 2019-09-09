@@ -9,6 +9,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using WeaponCore;
+using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 
 namespace WepaonCore.Control
@@ -67,11 +68,11 @@ namespace WepaonCore.Control
             {
                 var w = comp.Platform.Weapons[i];
 
-                if ((On && !w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.TurnOn)) || (!On && !w.AnimationsSet.ContainsKey(PartAnimationSetDef.EventOptions.TurnOff))) continue;
+                if ((On && !w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn)) || (!On && !w.AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))) continue;
 
                 if (On)
                 {
-                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.TurnOn])
+                    foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOn])
                     {
                         w.FirstFireDelay = animation.FireDelay;
                         Session.Instance.animationsToProcess.Enqueue(animation);
@@ -81,7 +82,7 @@ namespace WepaonCore.Control
                 }
                 else
                 {
-                    foreach (var animation in w.AnimationsSet[PartAnimationSetDef.EventOptions.TurnOff])
+                    foreach (var animation in w.AnimationsSet[Weapon.EventTriggers.TurnOff])
                     {
                         Session.Instance.animationsToProcess.Enqueue(animation);
                     }
