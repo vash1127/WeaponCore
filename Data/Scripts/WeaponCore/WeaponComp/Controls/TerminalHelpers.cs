@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
-using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -12,6 +10,7 @@ using WeaponCore.Support;
 using WeaponCore;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using SpaceEngineers.Game.ModAPI;
 
 namespace WepaonCore.Control
 {
@@ -74,12 +73,11 @@ namespace WepaonCore.Control
 
                 if (!On)
                 {
-                    ((IMyLargeMissileTurret) w.Comp.MyCube).Elevation = 0;
-                    ((IMyLargeMissileTurret)w.Comp.MyCube).Azimuth = 0;
-                    ((IMyLargeMissileTurret)w.Comp.MyCube).SyncElevation();
-                    ((IMyLargeMissileTurret)w.Comp.MyCube).SyncAzimuth();
+                    w.ReturnHome = true;
+                    comp.ReturnHome = true;
                 }
 
+                comp.Set.Value.Weapons[w.WeaponId].Enable = On;
             }
         }
 

@@ -71,6 +71,7 @@ namespace WeaponCore.Platform
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal uint LastTargetCheck;
+        internal uint LastTargetLock;
         internal uint FirstFireDelay;
         internal int RateOfFire;
         internal int CurrentAmmo;
@@ -111,6 +112,7 @@ namespace WeaponCore.Platform
         internal bool TargetWasExpired;
         internal bool Reloading;
         internal bool FirstLoad = true;
+        internal bool ReturnHome;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 

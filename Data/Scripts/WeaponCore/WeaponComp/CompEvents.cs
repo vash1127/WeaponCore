@@ -16,7 +16,6 @@ namespace WeaponCore.Support
     {
         internal void RegisterEvents(bool register = true)
         {
-                Log.Line("Registered");
             if (register)
             {
                 Turret.AppendingCustomInfo += AppendingCustomInfo;

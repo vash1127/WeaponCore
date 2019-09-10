@@ -76,6 +76,7 @@ namespace WeaponCore.Support
         internal bool Starting;
         internal bool Sync = true;
         internal bool Charging;
+        internal bool ReturnHome;
         
         internal Start Status;
         internal enum Start
