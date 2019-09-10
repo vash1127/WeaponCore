@@ -4,6 +4,7 @@ using System.Text;
 using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
+using SpaceEngineers.Game.ModAPI.Ingame;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -70,6 +71,15 @@ namespace WepaonCore.Control
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
+
+                if (!On)
+                {
+                    ((IMyLargeMissileTurret) w.Comp.MyCube).Elevation = 0;
+                    ((IMyLargeMissileTurret)w.Comp.MyCube).Azimuth = 0;
+                    ((IMyLargeMissileTurret)w.Comp.MyCube).SyncElevation();
+                    ((IMyLargeMissileTurret)w.Comp.MyCube).SyncAzimuth();
+                }
+
             }
         }
 
