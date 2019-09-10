@@ -144,9 +144,6 @@ namespace WeaponCore
             comp.FullInventory = comp.BlockInventory.CargoPercentage >= 0.5;
             var lastMags = weapon.CurrentMags;
             weapon.CurrentMags = comp.BlockInventory.GetItemAmount(def);
-            
-            if (lastMags == 0 && weapon.CurrentMags > lastMags)
-                weapon.Comp.Ai.Reloading = true;
 
             float itemMass;
             float itemVolume;
