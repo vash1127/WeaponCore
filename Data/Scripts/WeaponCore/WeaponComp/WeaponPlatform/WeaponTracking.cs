@@ -60,6 +60,7 @@ namespace WeaponCore.Platform
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             var tracking = inRange && canTrack;
+
             return tracking;
         }
 
