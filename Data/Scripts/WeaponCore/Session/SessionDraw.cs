@@ -50,17 +50,16 @@ namespace WeaponCore
                 }
 
                 var thickness = t.LineWidth;
-
-                var changeValue = 0.01f;
-                if (t.System.IsBeamWeapon && t.BaseDamagePool > t.System.Values.Ammo.BaseDamage)
-                {
-                    thickness *= t.BaseDamagePool / t.System.Values.Ammo.BaseDamage;
-                    changeValue = 0.02f;
-                }
-
                 var color = t.Color;
+
                 if (t.System.IsBeamWeapon)
                 {
+                    var changeValue = 0.01f;
+                    if (t.System.IsBeamWeapon && t.BaseDamagePool > t.System.Values.Ammo.BaseDamage)
+                    {
+                        thickness *= t.BaseDamagePool / t.System.Values.Ammo.BaseDamage;
+                        changeValue = 0.02f;
+                    }
                     if (_lCount < 60)
                     {
                         var adder = (_lCount + 1);
@@ -193,13 +192,28 @@ namespace WeaponCore
                     MyTransparentGeometry.AddLineBillboard(s.System.TracerMaterial, s.System.Values.Graphics.Line.Tracer.Color, shrunk.Value.Back, shrunk.Value.Direction, (float)shrunk.Value.Length, s.System.Values.Graphics.Line.Tracer.Width);
                     if (s.System.Trail)
                     {
+                        Vector3D back;
+                        Vector3D direction;
+                        double stepLength;
+                        if (shrunk.Value.First)
+                        {
+                            stepLength = shrunk.Value.StepLength * 3;
+                            back = shrunk.Value.Back + (shrunk.Value.Direction * shrunk.Value.Length);
+                            direction = -shrunk.Value.Direction;
+                        }
+                        else
+                        {
+                            back = shrunk.Value.Back;
+                            stepLength = shrunk.Value.StepLength;
+                            direction = shrunk.Value.Direction;
+                        }
                         gAdd = true;
                         var afterGlow = new AfterGlow
                         {
                             System = s.System,
-                            StepLength = shrunk.Value.StepLength,
-                            Direction = shrunk.Value.Direction,
-                            Back = (shrunk.Value.Back + (-shrunk.Value.Direction * (shrunk.Value.StepLength * 2))),
+                            StepLength = stepLength,
+                            Direction = direction,
+                            Back = back,
                             FirstTick = Tick,
                         };
                         _afterGlow.Add(afterGlow);
@@ -229,7 +243,6 @@ namespace WeaponCore
                 var reduction = (shrinkAmount * thisStep);
                 var thickness = fullSize - reduction;
                 var hitPos = a.Back + (-a.Direction * a.StepLength);
-                if (thisStep == 0) DsDebugDraw.DrawSingleVec(a.Back, 0.5f, Color.Red);
                 var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref a.Back, ref hitPos, ref CameraPos)));
                 if (distanceFromPointSqr > 160000) thickness *= 8f;
                 else if (distanceFromPointSqr > 40000) thickness *= 4f;

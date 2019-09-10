@@ -433,6 +433,7 @@ namespace WeaponCore.Support
         internal double ResizeLen;
         internal double Steps;
         internal double StepLength;
+        internal bool First;
 
         internal void Init(Trajectile trajectile)
         {
@@ -444,15 +445,22 @@ namespace WeaponCore.Support
             Steps = trajectile.System.Values.Graphics.Line.Tracer.Length / ResizeLen;
             StepLength = trajectile.DistanceTraveled -  trajectile.PrevDistanceTraveled;
             if (trajectile.HitEntity.HitPos != null) HitPos = trajectile.HitEntity.HitPos.Value;
+            First = true;
         }
 
         internal Shrunk? GetLine()
         {
             if (--Steps > 0)
             {
+                var first = false;
+                if (First)
+                {
+                    First = false;
+                    first = true;
+                }
                 var reduced = Steps * ResizeLen;
                 var newBack = Front + -(Direction * reduced);
-                return new Shrunk(ref newBack, ref Front, ref Direction, reduced, StepLength, ResizeLen);
+                return new Shrunk(ref newBack, ref Direction, reduced, StepLength, first);
             }
 
             return null;
@@ -462,20 +470,18 @@ namespace WeaponCore.Support
     internal struct Shrunk
     {
         internal readonly Vector3D Back;
-        internal readonly Vector3D Front;
         internal readonly Vector3D Direction;
-        internal readonly double ResizeLen;
         internal readonly double Length;
         internal readonly double StepLength;
+        internal readonly bool First;
 
-        internal Shrunk(ref Vector3D back, ref Vector3D front, ref Vector3D direction, double length, double stepLength, double resizeLen)
+        internal Shrunk(ref Vector3D back, ref Vector3D direction,  double length, double stepLength, bool first)
         {
             Back = back;
-            Front = front;
             Direction = direction;
             Length = length;
             StepLength = stepLength;
-            ResizeLen = resizeLen;
+            First = first;
         }
     }
 
