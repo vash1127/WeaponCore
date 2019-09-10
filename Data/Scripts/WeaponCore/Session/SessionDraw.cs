@@ -89,7 +89,7 @@ namespace WeaponCore
                         shrink.Init(t);
                         _shrinking.Add(shrink);
                     }
-                    else if (t.System.Trail)
+                    else if (t.System.Trail && t.ReSizing != Trajectile.ReSize.Grow)
                     {
                         gFound = true;
                         var afterGlow = new AfterGlow
@@ -184,7 +184,7 @@ namespace WeaponCore
         private void Shrink()
         {
             var sRemove = false;
-            var gRemove = false;
+            var gAdd = false;
             foreach (var s in _shrinking)
             {
                 var shrunk = s.GetLine();
@@ -193,16 +193,15 @@ namespace WeaponCore
                     MyTransparentGeometry.AddLineBillboard(s.System.TracerMaterial, s.System.Values.Graphics.Line.Tracer.Color, shrunk.Value.Back, shrunk.Value.Direction, (float)shrunk.Value.Length, s.System.Values.Graphics.Line.Tracer.Width);
                     if (s.System.Trail)
                     {
-                        gRemove = true;
+                        gAdd = true;
                         var afterGlow = new AfterGlow
                         {
                             System = s.System,
                             StepLength = shrunk.Value.StepLength,
                             Direction = shrunk.Value.Direction,
-                            Back = shrunk.Value.Back,
+                            Back = (shrunk.Value.Back + (-shrunk.Value.Direction * (shrunk.Value.StepLength * 2))),
                             FirstTick = Tick,
                         };
-
                         _afterGlow.Add(afterGlow);
                     }
                 }
@@ -212,7 +211,7 @@ namespace WeaponCore
                     sRemove = true;
                 }
             }
-            if (gRemove) _afterGlow.ApplyRemovals();
+            if (gAdd) _afterGlow.ApplyAdditions();
             if (sRemove) _shrinking.ApplyRemovals();
         }
 
@@ -229,8 +228,8 @@ namespace WeaponCore
                 var shrinkAmount = fullSize / steps;
                 var reduction = (shrinkAmount * thisStep);
                 var thickness = fullSize - reduction;
-
                 var hitPos = a.Back + (-a.Direction * a.StepLength);
+                if (thisStep == 0) DsDebugDraw.DrawSingleVec(a.Back, 0.5f, Color.Red);
                 var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref a.Back, ref hitPos, ref CameraPos)));
                 if (distanceFromPointSqr > 160000) thickness *= 8f;
                 else if (distanceFromPointSqr > 40000) thickness *= 4f;
@@ -241,7 +240,7 @@ namespace WeaponCore
                 }
                 else
                 {
-                    _afterGlow.Remove(a);
+                    //_afterGlow.Remove(a);
                     gRemove = true;
                 }
             }

@@ -429,6 +429,7 @@ namespace WeaponCore.Support
         internal Vector3D Front;
         internal Vector3D Back;
         internal Vector3D Direction;
+        internal Vector3D HitPos;
         internal double ResizeLen;
         internal double Steps;
         internal double StepLength;
@@ -442,15 +443,16 @@ namespace WeaponCore.Support
             ResizeLen = trajectile.DistanceTraveled - trajectile.PrevDistanceTraveled;
             Steps = trajectile.System.Values.Graphics.Line.Tracer.Length / ResizeLen;
             StepLength = trajectile.DistanceTraveled -  trajectile.PrevDistanceTraveled;
+            if (trajectile.HitEntity.HitPos != null) HitPos = trajectile.HitEntity.HitPos.Value;
         }
 
         internal Shrunk? GetLine()
         {
-            if (Steps-- > 0)
+            if (--Steps > 0)
             {
                 var reduced = Steps * ResizeLen;
                 var newBack = Front + -(Direction * reduced);
-                return new Shrunk(newBack, Front, Direction, reduced, StepLength);
+                return new Shrunk(ref newBack, ref Front, ref Direction, reduced, StepLength, ResizeLen);
             }
 
             return null;
@@ -462,16 +464,18 @@ namespace WeaponCore.Support
         internal readonly Vector3D Back;
         internal readonly Vector3D Front;
         internal readonly Vector3D Direction;
+        internal readonly double ResizeLen;
         internal readonly double Length;
         internal readonly double StepLength;
 
-        internal Shrunk(Vector3D back, Vector3D front, Vector3D direction, double length, double stepLength)
+        internal Shrunk(ref Vector3D back, ref Vector3D front, ref Vector3D direction, double length, double stepLength, double resizeLen)
         {
             Back = back;
             Front = front;
             Direction = direction;
             Length = length;
             StepLength = stepLength;
+            ResizeLen = resizeLen;
         }
     }
 
