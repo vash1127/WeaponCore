@@ -77,7 +77,7 @@ namespace WeaponCore.Support
         internal bool RecalcDone;
         internal bool StaticEntitiesInRange;
         internal bool turnWeaponShootOff;
-        internal bool Reloading = true;
+        internal bool Reloading;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal float GridMaxPower;

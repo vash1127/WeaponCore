@@ -131,13 +131,12 @@ namespace WeaponCore.Platform
                         }
                     }
 
-
                     if (canReload && AnimationsSet.ContainsKey(EventTriggers.Reloading))
                     {
                         foreach (var animation in AnimationsSet[
                             EventTriggers.Reloading])
                         {
-                            if (active && animation.Looping != true && !pause)
+                            if (active && animation.Looping != true && !pause && !Session.Instance.animationsToProcess.Contains(animation))
                             {
                                 Session.Instance.animationsToProcess.Enqueue(animation);
                                 if (animation.DoesLoop)
