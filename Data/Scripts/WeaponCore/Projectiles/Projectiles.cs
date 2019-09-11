@@ -432,7 +432,8 @@ namespace WeaponCore.Projectiles
                 {
                     var length = Vector3D.Distance(p.LastPosition, hitPos);
                     var moveLength = p.T.DistanceTraveled - p.T.PrevDistanceTraveled;
-                    var shrink = !p.T.System.IsBeamWeapon && moveLength > 0 && moveLength < p.TracerLength;
+                    //var shrink = !p.T.System.IsBeamWeapon && moveLength > 0 && moveLength < p.TracerLength;
+                    var shrink = !p.T.System.IsBeamWeapon;
                     var reSize = shrink ? ReSize.Shrink : ReSize.None;
                     p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, length, reSize);
                     p.T.Complete(hitEntity, DrawState.Hit);

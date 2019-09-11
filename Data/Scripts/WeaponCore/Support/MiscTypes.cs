@@ -450,19 +450,35 @@ namespace WeaponCore.Support
 
         internal Shrunk? GetLine()
         {
-            if (--Steps > 0)
+            if (Steps-- > 0)
             {
-                var first = false;
+                var reduced = Steps * ResizeLen;
+                var newBack = Front + -(Direction * reduced);
+                var type = Shrunk.ShrinkType.Other;
                 if (First)
                 {
                     First = false;
-                    first = true;
+                    if (Steps <= 0)
+                    {
+                        Log.Line("first and only");
+                        newBack = HitPos;
+                        type = Shrunk.ShrinkType.FirstAndOnly;
+                    }
+                    else
+                    {
+                        Log.Line("first");
+                        type = Shrunk.ShrinkType.First;
+                    }
                 }
-                var reduced = Steps * ResizeLen;
-                var newBack = Front + -(Direction * reduced);
-                return new Shrunk(ref newBack, ref Direction, reduced, StepLength, first);
-            }
+                else if (Steps <= 0)
+                {
+                    newBack = HitPos;
+                    type = Shrunk.ShrinkType.Last;
+                }
+                else type = Shrunk.ShrinkType.Other;
 
+                return new Shrunk(ref newBack, ref Direction, ref HitPos, reduced, StepLength, type);
+            }
             return null;
         }
     }
@@ -471,17 +487,28 @@ namespace WeaponCore.Support
     {
         internal readonly Vector3D Back;
         internal readonly Vector3D Direction;
+        internal readonly Vector3D HitPos;
         internal readonly double Length;
         internal readonly double StepLength;
-        internal readonly bool First;
+        internal readonly ShrinkType Type;
 
-        internal Shrunk(ref Vector3D back, ref Vector3D direction,  double length, double stepLength, bool first)
+        public enum ShrinkType
+        {
+            None,
+            Other,
+            First,
+            FirstAndOnly,
+            Last,
+        }
+
+        internal Shrunk(ref Vector3D back, ref Vector3D direction, ref Vector3D hitPos, double length, double stepLength, ShrinkType type)
         {
             Back = back;
             Direction = direction;
             Length = length;
+            HitPos = hitPos;
             StepLength = stepLength;
-            First = first;
+            Type = type;
         }
     }
 
@@ -492,6 +519,7 @@ namespace WeaponCore.Support
         internal Vector3D Direction;
         internal double StepLength;
         internal uint FirstTick;
+        internal Shrunk.ShrinkType Type;
     }
 
     public struct InventoryChange

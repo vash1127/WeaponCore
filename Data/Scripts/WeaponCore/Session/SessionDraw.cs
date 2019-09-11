@@ -189,23 +189,40 @@ namespace WeaponCore
                 var shrunk = s.GetLine();
                 if (shrunk.HasValue)
                 {
-                    MyTransparentGeometry.AddLineBillboard(s.System.TracerMaterial, s.System.Values.Graphics.Line.Tracer.Color, shrunk.Value.Back, shrunk.Value.Direction, (float)shrunk.Value.Length, s.System.Values.Graphics.Line.Tracer.Width);
+                    if (s.System.OffsetEffect)
+                        LineOffsetEffect(s.System, shrunk.Value.Back, shrunk.Value.Direction, (float)shrunk.Value.Length, shrunk.Value.Length, s.System.Values.Graphics.Line.Tracer.Width, s.System.Values.Graphics.Line.Tracer.Color);
+                    else MyTransparentGeometry.AddLineBillboard(s.System.TracerMaterial, s.System.Values.Graphics.Line.Tracer.Color, shrunk.Value.Back, shrunk.Value.Direction, (float)shrunk.Value.Length, s.System.Values.Graphics.Line.Tracer.Width);
                     if (s.System.Trail)
                     {
                         Vector3D back;
                         Vector3D direction;
                         double stepLength;
-                        if (shrunk.Value.First)
+                        switch (shrunk.Value.Type)
                         {
-                            stepLength = shrunk.Value.StepLength * 3;
-                            back = shrunk.Value.Back + (shrunk.Value.Direction * shrunk.Value.Length);
-                            direction = -shrunk.Value.Direction;
-                        }
-                        else
-                        {
-                            back = shrunk.Value.Back;
-                            stepLength = shrunk.Value.StepLength;
-                            direction = shrunk.Value.Direction;
+                            /*
+                            case Shrunk.ShrinkType.First:
+                                var threeStep = shrunk.Value.StepLength * 3;
+                                var threeLength = shrunk.Value.Length * 3;
+                                stepLength = threeLength > threeStep ? threeLength : threeStep;
+                                back = shrunk.Value.Back + (shrunk.Value.Direction * shrunk.Value.Length);
+                                direction = -shrunk.Value.Direction;
+                                break;
+                            case Shrunk.ShrinkType.FirstAndOnly:
+                                back = shrunk.Value.HitPos;
+                                stepLength = shrunk.Value.StepLength * 2;
+                                direction = -shrunk.Value.Direction;
+                                break;
+                            case Shrunk.ShrinkType.Last:
+                                back = shrunk.Value.HitPos;
+                                stepLength = shrunk.Value.StepLength * 2;
+                                direction = -shrunk.Value.Direction;
+                                break;
+                                */
+                            default:
+                                back = shrunk.Value.Back;
+                                stepLength = shrunk.Value.StepLength;
+                                direction = shrunk.Value.Direction;
+                                break;
                         }
                         gAdd = true;
                         var afterGlow = new AfterGlow
@@ -215,6 +232,7 @@ namespace WeaponCore
                             Direction = direction,
                             Back = back,
                             FirstTick = Tick,
+                            Type = shrunk.Value.Type,
                         };
                         _afterGlow.Add(afterGlow);
                     }
@@ -247,9 +265,14 @@ namespace WeaponCore
                 if (distanceFromPointSqr > 160000) thickness *= 8f;
                 else if (distanceFromPointSqr > 40000) thickness *= 4f;
                 else if (distanceFromPointSqr > 10000) thickness *= 2f;
+                var color = system.Values.Graphics.Line.Trail.Color;
+                if (a.Type == Shrunk.ShrinkType.Last) color = Color.Red.ToVector4();
+                else if (a.Type == Shrunk.ShrinkType.First) color = Color.Green.ToVector4();
+                else if (a.Type == Shrunk.ShrinkType.FirstAndOnly) color = Color.Black.ToVector4();
+                else if (a.Type == Shrunk.ShrinkType.Other) color = Color.Yellow.ToVector4();
                 if (thisStep < steps)
                 {
-                    MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, system.Values.Graphics.Line.Trail.Color, a.Back, a.Direction, (float) a.StepLength, thickness);
+                    MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, color, a.Back, a.Direction, (float) a.StepLength, thickness);
                 }
                 else
                 {
