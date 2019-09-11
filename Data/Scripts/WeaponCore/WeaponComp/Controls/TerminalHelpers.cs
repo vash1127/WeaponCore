@@ -72,10 +72,7 @@ namespace WepaonCore.Control
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
 
                 if (!On)
-                {
-                    w.ReturnHome = true;
-                    comp.Ai.ReturnHome = true;
-                }
+                    w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
 
                 comp.Set.Value.Weapons[w.WeaponId].Enable = On;
             }

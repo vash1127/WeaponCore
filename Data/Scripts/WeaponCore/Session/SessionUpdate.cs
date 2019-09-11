@@ -21,7 +21,7 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                if ((!gridAi.DbReady && !gridAi.ReturnHome) || !gridAi.MyGrid.InScene) continue;
+                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0) || !gridAi.MyGrid.InScene) continue;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -81,10 +81,10 @@ namespace WeaponCore
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
 
-                        if (w.TurretMode)
+                        if (w.TurretMode && comp.State.Value.Online)
                         {
                             if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) ||
-                                 (gunner != LastGunner && !gunner)) && w.ManualShoot == ShootOff)
+                                 (gunner != LastGunner && !gunner)))
                                 w.LastTargetLock = Tick;
 
                             comp.ReturnHome = gridAi.ReturnHome = false;
@@ -92,7 +92,7 @@ namespace WeaponCore
                             if (w.LastTargetLock > 0)
                                 comp.ReturnHome = gridAi.ReturnHome = true;
 
-                            w.ReturnHome = w.LastTargetLock + 240 < Tick && w.LastTargetLock > 0 || w.ReturnHome;
+                            w.ReturnHome = (w.LastTargetLock + 240 < Tick && w.LastTargetLock > 0 || w.ReturnHome) && w.ManualShoot == ShootOff;
                         }
 
                         
@@ -112,7 +112,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if ((!gridAi.Ready && gridAi.ManualComps == 0 && !gridAi.Reloading && !gridAi.ReturnHome) || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if ((!gridAi.Ready && !gridAi.Reloading && !gridAi.ReturnHome) || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
