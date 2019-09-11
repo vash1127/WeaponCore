@@ -159,7 +159,6 @@ namespace WeaponCore.Platform
                     var trackingColor = System.Values.Graphics.Emissive.Tracking.Color;
                     var tIntensity = active ? 1 : trackingColor.W;
                     EntityPart.SetEmissiveParts("Tracking", trackingColor, tIntensity);
-                    TargetWasExpired = Target.Expired;
 
                     if (AnimationsSet.ContainsKey(Weapon.EventTriggers.Tracking))
                     {
@@ -298,6 +297,9 @@ namespace WeaponCore.Platform
 
             az = turret.Azimuth;
             el = turret.Elevation;
+
+            turret.SyncAzimuth();
+            turret.SyncElevation();
 
             if (az > 0 || az < 0 || el > 0 || el < 0) return true;
 

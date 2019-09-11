@@ -74,7 +74,7 @@ namespace WepaonCore.Control
                 if (!On)
                 {
                     w.ReturnHome = true;
-                    comp.ReturnHome = true;
+                    comp.Ai.ReturnHome = true;
                 }
 
                 comp.Set.Value.Weapons[w.WeaponId].Enable = On;
