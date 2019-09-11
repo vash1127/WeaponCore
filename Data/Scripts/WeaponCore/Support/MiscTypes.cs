@@ -44,11 +44,9 @@ namespace WeaponCore.Support
         internal Vector4 Color;
         internal int WeaponId;
         internal int MuzzleId;
-        //internal double ReSizeSteps;
         internal int TriggerGrowthSteps;
         internal int ObjectsHit;
         internal double Length;
-        //internal double MaxSpeedLength;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
         internal float LineWidth;
