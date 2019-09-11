@@ -391,8 +391,8 @@ namespace WeaponCore.Projectiles
 
                     if (!p.T.OnScreen && p.DrawLine)
                     {
-                        var back = !p.T.System.Trail ? p.T.Back : p.T.Back + (-p.Direction * (p.TravelMagnitude * p.T.System.Values.Graphics.Line.Trail.DecayTime));
-                        var bb = new BoundingBoxD(Vector3D.Min(back, p.T.Front), Vector3D.Max(back, p.T.Front));
+                        var back = !p.T.System.Trail ? p.T.PrevPosition : p.T.PrevPosition + (-p.Direction * (p.TravelMagnitude * p.T.System.Values.Graphics.Line.Trail.DecayTime));
+                        var bb = new BoundingBoxD(Vector3D.Min(back, p.T.Position), Vector3D.Max(back, p.T.Position));
                         if (camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
                     }
 
@@ -467,7 +467,7 @@ namespace WeaponCore.Projectiles
                 vt.OnScreen = p.T.OnScreen;
                 if (vt.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vt.Back, hitEntity.HitPos ?? p.Position) : new LineD(vt.Back, p.Position);
+                    var beam = !miss ? new LineD(vt.PrevPosition, hitEntity.HitPos ?? p.Position) : new LineD(vt.PrevPosition, p.Position);
                     vt.UpdateVrShape(beam.From, beam.To, beam.Direction, beam.Length, ReSize.None);
                 }
                 else
@@ -475,11 +475,11 @@ namespace WeaponCore.Projectiles
                     Vector3D beamEnd;
                     var hit = !miss && hitEntity.HitPos.HasValue;
                     if (!hit)
-                        beamEnd = vt.Back + (vt.Direction * p.MaxTrajectory);
+                        beamEnd = vt.PrevPosition + (vt.Direction * p.MaxTrajectory);
                     else
-                        beamEnd = vt.Back + (vt.Direction * p.T.WeaponCache.HitDistance);
+                        beamEnd = vt.PrevPosition + (vt.Direction * p.T.WeaponCache.HitDistance);
 
-                    var line = new LineD(vt.Back, beamEnd);
+                    var line = new LineD(vt.PrevPosition, beamEnd);
                     //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
                     if (!miss && hitEntity.HitPos.HasValue)
                         vt.UpdateVrShape(line.From, hitEntity.HitPos.Value, line.Direction, line.Length, ReSize.None);
@@ -518,8 +518,8 @@ namespace WeaponCore.Projectiles
             if (!p.T.OnScreen && p.DrawLine)
             {
                 p.T.OnScreen = true;
-                var back = !p.T.System.Trail ? p.T.Back : p.T.Back + (-p.Direction * ((p.T.DistanceTraveled - p.T.PrevDistanceTraveled) * p.T.System.Values.Graphics.Line.Trail.DecayTime));
-                var bb = new BoundingBoxD(Vector3D.Min(back, p.T.Front), Vector3D.Max(back, p.T.Front));
+                var back = !p.T.System.Trail ? p.T.PrevPosition : p.T.PrevPosition + (-p.Direction * ((p.T.DistanceTraveled - p.T.PrevDistanceTraveled) * p.T.System.Values.Graphics.Line.Trail.DecayTime));
+                var bb = new BoundingBoxD(Vector3D.Min(back, p.T.Position), Vector3D.Max(back, p.T.Position));
                 if (Session.Instance.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
             }
         }
