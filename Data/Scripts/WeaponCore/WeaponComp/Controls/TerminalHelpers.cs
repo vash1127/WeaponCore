@@ -67,12 +67,24 @@ namespace WepaonCore.Control
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
+                
+                if (!On && w.TurretMode)
+                {
+                    var az = ((IMyLargeMissileTurret) w.Comp.MyCube).Azimuth;
+                    var el = ((IMyLargeMissileTurret)w.Comp.MyCube).Elevation;
+                    var azSteps = az / w.System.Values.HardPoint.Block.RotateRate;
+                    var elSteps = el / w.System.Values.HardPoint.Block.ElevateRate;
+
+                    if (az < 0) az = az * -1;
+                    if (az < 0) el = el * -1;
+
+                    w.OffDelay = (uint)(az + el > 0 ? az > el ? az : el : 0);
+
+                    w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
+                }
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
-
-                if (!On && w.TurretMode)
-                    w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
 
                 comp.Set.Value.Weapons[w.WeaponId].Enable = On;
             }
