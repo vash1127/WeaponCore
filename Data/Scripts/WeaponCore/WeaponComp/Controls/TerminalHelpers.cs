@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Sandbox.Game.Entities.Cube;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using VRage.ModAPI;
@@ -11,6 +10,7 @@ using WeaponCore.Support;
 using WeaponCore;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using SpaceEngineers.Game.ModAPI;
 
 namespace WepaonCore.Control
 {
@@ -70,6 +70,11 @@ namespace WepaonCore.Control
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
+
+                if (!On && w.TurretMode)
+                    w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
+
+                comp.Set.Value.Weapons[w.WeaponId].Enable = On;
             }
         }
 

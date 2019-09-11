@@ -1,9 +1,8 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
+using SpaceEngineers.Game.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRageMath;
-using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -98,8 +97,7 @@ namespace WeaponCore.Platform
                             }
                         }
                     }
-
-
+                    
                     break;
                 case EventTriggers.Reloading:
                     if (AvCapable)
@@ -161,7 +159,6 @@ namespace WeaponCore.Platform
                     var trackingColor = System.Values.Graphics.Emissive.Tracking.Color;
                     var tIntensity = active ? 1 : trackingColor.W;
                     EntityPart.SetEmissiveParts("Tracking", trackingColor, tIntensity);
-                    TargetWasExpired = Target.Expired;
 
                     if (AnimationsSet.ContainsKey(Weapon.EventTriggers.Tracking))
                     {
@@ -170,7 +167,12 @@ namespace WeaponCore.Platform
                             if (active)
                             {
                                 if (animation.CurrentMove == 0 && !animation.Looping)
-                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                {
+                                    if (!Session.Instance.animationsToProcess.Contains(animation))
+                                        Session.Instance.animationsToProcess.Enqueue(animation);
+                                    else
+                                        animation.Looping = true;
+                                }
 
                                 if (animation.DoesLoop)
                                     animation.Looping = true;
@@ -270,6 +272,38 @@ namespace WeaponCore.Platform
                     }
                     break;
             }
+        }
+
+        public bool TurretHomePosition()
+        {
+            var turret = Comp.MyCube as IMyLargeMissileTurret;
+            if (turret == null) return false;
+            
+            var azStep = System.Values.HardPoint.Block.RotateRate;
+            var elStep = System.Values.HardPoint.Block.ElevateRate;
+
+            var az = turret.Azimuth;
+            var el = turret.Elevation;
+
+            if (az > 0)
+                turret.Azimuth = az - azStep > 0 ? az - azStep : 0;
+            else if (az < 0)
+                turret.Azimuth = az + azStep < 0 ? az + azStep : 0;
+
+            if (el > 0)
+                turret.Elevation = el - elStep > 0 ? el - elStep : 0;
+            else if (el < 0)
+                turret.Azimuth = el + elStep < 0 ? el + elStep : 0;
+
+            az = turret.Azimuth;
+            el = turret.Elevation;
+
+            turret.SyncAzimuth();
+            turret.SyncElevation();
+
+            if (az > 0 || az < 0 || el > 0 || el < 0) return true;
+
+            return false;
         }
 
         public void ShootGraphics()
