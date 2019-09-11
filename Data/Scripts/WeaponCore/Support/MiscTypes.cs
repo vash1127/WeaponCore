@@ -38,17 +38,15 @@ namespace WeaponCore.Support
         internal WeaponFrameCache WeaponCache;
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
-        internal Vector3D Back;
-        internal Vector3D Front;
+        internal Vector3D PrevPosition;
+        internal Vector3D Position;
         internal Vector3D Direction;
         internal Vector4 Color;
         internal int WeaponId;
         internal int MuzzleId;
-        //internal double ReSizeSteps;
         internal int TriggerGrowthSteps;
         internal int ObjectsHit;
         internal double Length;
-        //internal double MaxSpeedLength;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
         internal float LineWidth;
@@ -90,7 +88,7 @@ namespace WeaponCore.Support
             Color = color;
         }
 
-        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D front, Vector3D direction)
+        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D direction)
         {
             System = system;
             Ai = ai;
@@ -101,15 +99,15 @@ namespace WeaponCore.Support
             Target.FiringCube = target.FiringCube;
             WeaponId = weaponId;
             MuzzleId = muzzleId;
-            Front = front;
-            Back = front;
+            Position = origin;
+            PrevPosition = origin;
             Direction = direction;
         }
 
         internal void UpdateVrShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length, ReSize resizing)
         {
-            Back = prevPosition;
-            Front = position;
+            PrevPosition = prevPosition;
+            Position = position;
             Direction = direction;
             Length = length;
             ReSizing = resizing;
@@ -117,8 +115,8 @@ namespace WeaponCore.Support
 
         internal void UpdateShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length, ReSize resizing)
         {
-            Back = prevPosition;
-            Front = position;
+            PrevPosition = prevPosition;
+            Position = position;
             Direction = direction;
             Length = length;
             ReSizing = resizing;
@@ -426,68 +424,71 @@ namespace WeaponCore.Support
     public class Shrinking
     {
         internal WeaponSystem System;
-        internal Vector3D Front;
-        internal Vector3D Back;
-        internal Vector3D Direction;
         internal Vector3D HitPos;
+        internal Vector3D PrevPosition;
+        internal Vector3D BackOfTracer;
+        internal Vector3D Direction;
         internal double ResizeLen;
-        internal double Steps;
-        internal double StepLength;
+        internal double TracerSteps;
+        internal int TailSteps;
         internal bool First;
 
         internal void Init(Trajectile trajectile)
         {
             System = trajectile.System;
-            Front = trajectile.Front;
-            Back = trajectile.Back;
+            HitPos = trajectile.Position;
+            PrevPosition = trajectile.PrevPosition;
             Direction = trajectile.Direction;
             ResizeLen = trajectile.DistanceTraveled - trajectile.PrevDistanceTraveled;
-            Steps = trajectile.System.Values.Graphics.Line.Tracer.Length / ResizeLen;
-            StepLength = trajectile.DistanceTraveled -  trajectile.PrevDistanceTraveled;
-            if (trajectile.HitEntity.HitPos != null) HitPos = trajectile.HitEntity.HitPos.Value;
+            TracerSteps = trajectile.System.Values.Graphics.Line.Tracer.Length / ResizeLen;
+            var frontOfTracer = (PrevPosition + (Direction * ResizeLen));
+            var tracerLength = trajectile.System.Values.Graphics.Line.Tracer.Length;
+            BackOfTracer = frontOfTracer + (-Direction * (tracerLength + ResizeLen));
+            //Log.Line($"StepDist:{Vector3D.Distance(HitPos, PrevPosition)} - Dists:{Vector3D.Distance(BackOfTracer, HitPos)}({Vector3D.Distance(BackOfTracer, PrevPosition)}) - tLen:{tracerLength} - lastStep:{ResizeLen} - t+l:{tracerLength + ResizeLen} - ReSize:{ResizeLen} - {Direction}");
             First = true;
         }
 
         internal Shrunk? GetLine()
         {
-            if (Steps-- > 0)
+            if (TracerSteps-- > 0)
             {
-                var reduced = Steps * ResizeLen;
-                var newBack = Front + -(Direction * reduced);
-                var type = Shrunk.ShrinkType.Other;
+                First = false;
+                var backOfTail = BackOfTracer + (Direction * (TailSteps++ * ResizeLen));
+                var reduced = TracerSteps * ResizeLen;
+                var newTracerBack = HitPos + -(Direction * TracerSteps * ResizeLen);
+                Shrunk.ShrinkType type = Shrunk.ShrinkType.None;
+                /*
                 if (First)
                 {
                     First = false;
-                    if (Steps <= 0)
+                    if (TracerSteps <= 0)
                     {
-                        Log.Line("first and only");
-                        newBack = HitPos;
                         type = Shrunk.ShrinkType.FirstAndOnly;
                     }
                     else
                     {
-                        Log.Line("first");
                         type = Shrunk.ShrinkType.First;
                     }
                 }
-                else if (Steps <= 0)
+                else if (TracerSteps <= 0)
                 {
-                    newBack = HitPos;
                     type = Shrunk.ShrinkType.Last;
                 }
                 else type = Shrunk.ShrinkType.Other;
-
-                return new Shrunk(ref newBack, ref Direction, ref HitPos, reduced, StepLength, type);
+                */
+                if (TracerSteps < 0) ResizeLen = Vector3D.Distance(backOfTail, HitPos);
+                return new Shrunk(ref newTracerBack, ref Direction, ref backOfTail, reduced, ResizeLen, type);
             }
+            //Log.Line($"{TracerSteps}");
             return null;
         }
     }
 
     internal struct Shrunk
     {
-        internal readonly Vector3D Back;
+        internal readonly Vector3D PrevPosition;
+        internal readonly Vector3D BackOfGlow;
         internal readonly Vector3D Direction;
-        internal readonly Vector3D HitPos;
         internal readonly double Length;
         internal readonly double StepLength;
         internal readonly ShrinkType Type;
@@ -501,12 +502,12 @@ namespace WeaponCore.Support
             Last,
         }
 
-        internal Shrunk(ref Vector3D back, ref Vector3D direction, ref Vector3D hitPos, double length, double stepLength, ShrinkType type)
+        internal Shrunk(ref Vector3D prevPosition, ref Vector3D direction, ref Vector3D backOfGlow, double length, double stepLength, ShrinkType type)
         {
-            Back = back;
+            PrevPosition = prevPosition;
             Direction = direction;
             Length = length;
-            HitPos = hitPos;
+            BackOfGlow = backOfGlow;
             StepLength = stepLength;
             Type = type;
         }

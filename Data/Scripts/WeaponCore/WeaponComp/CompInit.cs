@@ -21,6 +21,7 @@ namespace WeaponCore.Support
             Sink.AddType(ref resourceInfo);
             Sink.Update();
         }
+
         private bool EntityAlive()
         {
             if (MyGrid?.Physics == null) return false;
