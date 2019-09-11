@@ -71,7 +71,7 @@ namespace WepaonCore.Control
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
 
-                if (!On)
+                if (!On && w.TurretMode)
                     w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
 
                 comp.Set.Value.Weapons[w.WeaponId].Enable = On;
