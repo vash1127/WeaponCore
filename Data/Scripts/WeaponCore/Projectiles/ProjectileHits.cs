@@ -37,6 +37,7 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.T.System.CollisionSize;
                 }
+
                 if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(p.Origin) != ContainmentType.Disjoint) return false;
 
                 var checkList = CheckPool[poolId].Get();
@@ -69,7 +70,7 @@ namespace WeaponCore.Projectiles
                 var ent = p.SegmentList[i].Element;
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
-                if (grid != null && !p.SelfDamage && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
+                if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
                     var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
