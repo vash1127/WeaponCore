@@ -18,6 +18,8 @@ namespace WeaponCore
     {
         internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateAnimationSets(PartAnimationSetDef[] weaponAnimationSets)
         {
+            var timer = new DSUtils();
+            timer.Start("System Animation Init");
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
 
             if (weaponAnimationSets == null) return new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
@@ -308,12 +310,14 @@ namespace WeaponCore
                     }
                 }
             }
-
+            timer.Complete();
             return allAnimationSet;
         }
 
         internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateWeaponAnimationSet(Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> systemAnimations, RecursiveSubparts parts)
         {
+            var timer = new DSUtils();
+            timer.Start("Weapon Animation Init");
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
 
             foreach (var animationSet in systemAnimations)
@@ -323,24 +327,30 @@ namespace WeaponCore
                 {
                     MyEntity part;
                     parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
-                    Log.Line($"animation.SubpartId: {animation.SubpartId}");
                     var subpart = part as MyEntitySubpart;
                     if(subpart == null)continue;
 
-                    Log.Line($"animation.SubpartId: {animation.SubpartId}");
+                    var rotations = new MatrixD?[animation.RotationSet.Length];
+                    var rotCenters = new MatrixD?[animation.RotCenterSet.Length];
+                    animation.RotationSet.CopyTo(rotations, 0);
+                    animation.RotCenterSet.CopyTo(rotCenters, 0);
 
-                    var rotations = animation.RotationSet;
-                    var rotCenters = animation.RotCenterSet;
                     var rotCenterNames = animation.RotCenterNameSet;
 
                     var partCenter = GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
+
+                    
 
                     if (partCenter != null)
                     {
                         for (int i = 0; i < rotations.Length; i++)
                         {
                             if (rotations[i] != null)
-                                rotations[i] = Matrix.CreateTranslation(-(Vector3)partCenter) * (Matrix)rotations[i] * Matrix.CreateTranslation((Vector3)partCenter);
+                            {
+                                Log.Line($"Part Center {partCenter} Subpart: {animation.SubpartId}");
+                                rotations[i] = Matrix.CreateTranslation(-(Vector3) partCenter) * (Matrix)rotations[i] *
+                                               Matrix.CreateTranslation((Vector3) partCenter);
+                            }
                         }
                     }
 
@@ -365,7 +375,7 @@ namespace WeaponCore
                         animation.DoesReverse));
                 }
             }
-
+            timer.Complete();
             return allAnimationSet;
         }
 

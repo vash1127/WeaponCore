@@ -41,9 +41,8 @@ namespace WeaponCore.Platform
                 var barrelCount = Structure.WeaponSystems[Structure.AimPartNames[i]].Barrels.Length;
                 MyEntity aimPartEntity;
 
-                var weaponAnimationSet =
-                    Session.Instance.CreateWeaponAnimationSet(
-                        Structure.WeaponSystems[Structure.AimPartNames[i]].WeaponAnimationSet, Parts);
+                var wepAnimationSet =
+                    Session.Instance.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.AimPartNames[i]].WeaponAnimationSet, Parts);
 
                 Parts.NameToEntity.TryGetValue(Structure.AimPartNames[i].String, out aimPartEntity);
                 foreach (var part in Parts.NameToEntity)
@@ -52,7 +51,7 @@ namespace WeaponCore.Platform
                     break;
                 }
 
-                Weapons[i] = new Weapon(aimPartEntity, Structure.WeaponSystems[Structure.AimPartNames[i]], i, comp, weaponAnimationSet)
+                Weapons[i] = new Weapon(aimPartEntity, Structure.WeaponSystems[Structure.AimPartNames[i]], i, comp, wepAnimationSet)
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
