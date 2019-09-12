@@ -18,8 +18,6 @@ namespace WeaponCore
     {
         internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateAnimationSets(PartAnimationSetDef[] weaponAnimationSets)
         {
-            var timer = new DSUtils();
-            timer.Start("System Animation Init");
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
 
             if (weaponAnimationSets == null) return new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
@@ -310,14 +308,12 @@ namespace WeaponCore
                     }
                 }
             }
-            timer.Complete();
+
             return allAnimationSet;
         }
 
         internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateWeaponAnimationSet(Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> systemAnimations, RecursiveSubparts parts)
         {
-            var timer = new DSUtils();
-            timer.Start("Weapon Animation Init");
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
 
             foreach (var animationSet in systemAnimations)
@@ -346,11 +342,8 @@ namespace WeaponCore
                         for (int i = 0; i < rotations.Length; i++)
                         {
                             if (rotations[i] != null)
-                            {
-                                Log.Line($"Part Center {partCenter} Subpart: {animation.SubpartId}");
                                 rotations[i] = Matrix.CreateTranslation(-(Vector3) partCenter) * (Matrix)rotations[i] *
                                                Matrix.CreateTranslation((Vector3) partCenter);
-                            }
                         }
                     }
 
@@ -375,7 +368,6 @@ namespace WeaponCore
                         animation.DoesReverse));
                 }
             }
-            timer.Complete();
             return allAnimationSet;
         }
 
