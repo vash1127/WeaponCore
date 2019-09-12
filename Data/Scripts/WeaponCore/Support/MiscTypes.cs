@@ -430,11 +430,12 @@ namespace WeaponCore.Support
         internal Vector3D Direction;
         internal double ResizeLen;
         internal double TracerSteps;
+        internal float Thickness;
         internal int TailSteps;
-        internal bool First;
 
-        internal void Init(Trajectile trajectile)
+        internal void Init(Trajectile trajectile, float thickness)
         {
+            Thickness = thickness;
             System = trajectile.System;
             HitPos = trajectile.Position;
             PrevPosition = trajectile.PrevPosition;
@@ -444,42 +445,20 @@ namespace WeaponCore.Support
             var frontOfTracer = (PrevPosition + (Direction * ResizeLen));
             var tracerLength = trajectile.System.Values.Graphics.Line.Tracer.Length;
             BackOfTracer = frontOfTracer + (-Direction * (tracerLength + ResizeLen));
-            //Log.Line($"StepDist:{Vector3D.Distance(HitPos, PrevPosition)} - Dists:{Vector3D.Distance(BackOfTracer, HitPos)}({Vector3D.Distance(BackOfTracer, PrevPosition)}) - tLen:{tracerLength} - lastStep:{ResizeLen} - t+l:{tracerLength + ResizeLen} - ReSize:{ResizeLen} - {Direction}");
-            First = true;
         }
 
         internal Shrunk? GetLine()
         {
             if (TracerSteps-- > 0)
             {
-                First = false;
-                var backOfTail = BackOfTracer + (Direction * (TailSteps++ * ResizeLen));
-                var reduced = TracerSteps * ResizeLen;
-                var newTracerBack = HitPos + -(Direction * TracerSteps * ResizeLen);
-                Shrunk.ShrinkType type = Shrunk.ShrinkType.None;
-                /*
-                if (First)
-                {
-                    First = false;
-                    if (TracerSteps <= 0)
-                    {
-                        type = Shrunk.ShrinkType.FirstAndOnly;
-                    }
-                    else
-                    {
-                        type = Shrunk.ShrinkType.First;
-                    }
-                }
-                else if (TracerSteps <= 0)
-                {
-                    type = Shrunk.ShrinkType.Last;
-                }
-                else type = Shrunk.ShrinkType.Other;
-                */
-                if (TracerSteps < 0) ResizeLen = Vector3D.Distance(backOfTail, HitPos);
-                return new Shrunk(ref newTracerBack, ref Direction, ref backOfTail, reduced, ResizeLen, type);
+                var stepLength = ResizeLen;
+                var backOfTail = BackOfTracer + (Direction * (TailSteps++ * stepLength));
+                var newTracerBack = HitPos + -(Direction * TracerSteps * stepLength);
+                var reduced = TracerSteps * stepLength;
+                if (TracerSteps < 0) stepLength = Vector3D.Distance(backOfTail, HitPos);
+
+                return new Shrunk(ref newTracerBack, ref backOfTail, reduced, stepLength);
             }
-            //Log.Line($"{TracerSteps}");
             return null;
         }
     }
@@ -488,28 +467,15 @@ namespace WeaponCore.Support
     {
         internal readonly Vector3D PrevPosition;
         internal readonly Vector3D BackOfGlow;
-        internal readonly Vector3D Direction;
-        internal readonly double Length;
+        internal readonly double Reduced;
         internal readonly double StepLength;
-        internal readonly ShrinkType Type;
 
-        public enum ShrinkType
-        {
-            None,
-            Other,
-            First,
-            FirstAndOnly,
-            Last,
-        }
-
-        internal Shrunk(ref Vector3D prevPosition, ref Vector3D direction, ref Vector3D backOfGlow, double length, double stepLength, ShrinkType type)
+        internal Shrunk(ref Vector3D prevPosition, ref Vector3D backOfGlow, double reduced, double stepLength)
         {
             PrevPosition = prevPosition;
-            Direction = direction;
-            Length = length;
             BackOfGlow = backOfGlow;
+            Reduced = reduced;
             StepLength = stepLength;
-            Type = type;
         }
     }
 
@@ -520,7 +486,6 @@ namespace WeaponCore.Support
         internal Vector3D Direction;
         internal double StepLength;
         internal uint FirstTick;
-        internal Shrunk.ShrinkType Type;
     }
 
     public struct InventoryChange
