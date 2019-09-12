@@ -131,13 +131,13 @@ namespace WeaponCore.Projectiles
                             }
                             continue;
                     }
-
+                    if (p.Age < 2) Log.Line($"age:{p.Age} - pVel:{p.Velocity.Length()}");
                     if (p.AccelLength > 0)
                     {
                         if (p.SmartsOn)
                         {
                             Vector3D newVel;
-                            if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) > p.SmartsDelayDistSqr))
+                            if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) >= p.SmartsDelayDistSqr))
                             {
                                 var giveUpChase = p.Age - p.ChaseAge > p.MaxChaseAge;
                                 var newChase = giveUpChase || p.PickTarget;
@@ -182,11 +182,11 @@ namespace WeaponCore.Projectiles
                                 var commandedAccel = MathFuncs.CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.T.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, p.T.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
                                 newVel = p.Velocity + (commandedAccel * StepConst);
                                 p.AccelDir = commandedAccel / p.AccelPerSec;
+                                Vector3D.Normalize(ref p.Velocity, out p.Direction);
                             }
                             else newVel = p.Velocity += (p.Direction * p.AccelLength);
                             p.VelocityLengthSqr = newVel.LengthSquared();
-
-                            Vector3D.Normalize(ref p.Velocity, out p.Direction);
+                            
                             if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
                             p.Velocity = newVel;
 
