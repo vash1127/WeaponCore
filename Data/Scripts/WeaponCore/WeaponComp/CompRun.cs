@@ -46,7 +46,7 @@ namespace WeaponCore.Support
                     if (Ai.MyGrid != MyCube.CubeGrid) Log.Line("grid mismatch");
                     MyGrid = MyCube.CubeGrid;
                     PowerInit();
-                    //RegisterEvents();
+                    RegisterEvents();
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                         OnAddedToSceneTasks();
 
