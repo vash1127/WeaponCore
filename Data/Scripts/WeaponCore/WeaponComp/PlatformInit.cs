@@ -41,7 +41,9 @@ namespace WeaponCore.Platform
                 var barrelCount = Structure.WeaponSystems[Structure.AimPartNames[i]].Barrels.Length;
                 MyEntity aimPartEntity;
 
-                var weaponAnimationSet = Session.Instance.CreateAnimationSets(Structure.WeaponSystems[Structure.AimPartNames[i]].Values.Animations.WeaponAnimationSets, Parts);
+                var weaponAnimationSet =
+                    Session.Instance.CreateWeaponAnimationSet(
+                        Structure.WeaponSystems[Structure.AimPartNames[i]].WeaponAnimationSet, Parts);
 
                 Parts.NameToEntity.TryGetValue(Structure.AimPartNames[i].String, out aimPartEntity);
                 foreach (var part in Parts.NameToEntity)
