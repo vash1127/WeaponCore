@@ -73,6 +73,7 @@ namespace WeaponCore.Platform
         internal uint LastTargetCheck;
         internal uint LastTargetLock;
         internal uint FirstFireDelay;
+        internal uint OffDelay;
         internal int RateOfFire;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;

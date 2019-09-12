@@ -21,7 +21,8 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0) || !gridAi.MyGrid.InScene) continue;
+                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading) || !gridAi.MyGrid.InScene) continue;
+                gridAi.Reloading = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -95,9 +96,11 @@ namespace WeaponCore
                             w.ReturnHome = (w.LastTargetLock + 240 < Tick && w.LastTargetLock > 0 || w.ReturnHome) && w.ManualShoot == ShootOff;
                         }
 
-                        
-                        
-                        if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)) gridAi.Ready = true;
+                        if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
+                            gridAi.Reloading = true;
+
+
+                        if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading) gridAi.Ready = true;
                     }
                 }
             }
@@ -112,7 +115,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if ((!gridAi.Ready && !gridAi.Reloading && !gridAi.ReturnHome) || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if ((!gridAi.Ready && !gridAi.ReturnHome) || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
@@ -143,7 +146,7 @@ namespace WeaponCore
                             }
                         }
 
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated))
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated) || (!gridAi.Ready && !w.Reloading))
                         {
                             if (w.ReturnHome)
                                 w.ReturnHome = w.TurretHomePosition();
@@ -290,7 +293,6 @@ namespace WeaponCore
                 gridAi.AvailablePowerIncrease = false;
                 gridAi.RecalcPowerPercent = false;
                 gridAi.turnWeaponShootOff = false;
-                gridAi.Reloading = false;
 
                 if (gridAi.RecalcDone)
                 {

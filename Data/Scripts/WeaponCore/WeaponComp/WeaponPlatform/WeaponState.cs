@@ -211,11 +211,28 @@ namespace WeaponCore.Platform
                     Session.ComputeStorage(this);
                     if (active && AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn))
                     {
-                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOn])
+                        var OnAnimations = true;
+
+                        if (AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))
                         {
-                            Session.Instance.animationsToProcess.Enqueue(animation);
+                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOff])
+                            {
+                                if (Session.Instance.animationsToProcess.Contains(animation))
+                                {
+                                    OnAnimations = false;
+                                    animation.Reverse = true;
+                                }
+                            }
+                        }
+
+                        if(OnAnimations)
+                        {
+                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOn])
+                            {
+                                Session.Instance.animationsToProcess.Enqueue(animation);
                                 if (animation.DoesLoop)
                                     animation.Looping = true;
+                            }
                         }
                     }
 
@@ -224,19 +241,42 @@ namespace WeaponCore.Platform
                 case EventTriggers.TurnOff:
                     if (active && AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))
                     {
-                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOff])
+                        var OffAnimations = true;
+
+                        if (AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn))
                         {
-                            Session.Instance.animationsToProcess.Enqueue(animation);
-                            foreach (var set in AnimationsSet)
+                            
+                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOn])
                             {
-                                foreach (var anim in set.Value)
+                                if (Session.Instance.animationsToProcess.Contains(animation))
                                 {
-                                    anim.PauseAnimation = false;
-                                    anim.Looping = false;
+                                    OffAnimations = false;
+                                    animation.Reverse = true;
+                                }
+                            }
+                        }
+                        if(OffAnimations)
+                        {
+
+                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOff])
+                            {
+                                animation.StartTick = OffDelay > 0
+                                    ? Session.Instance.Tick + animation.MotionDelay + OffDelay
+                                    : 0;
+
+                                Session.Instance.animationsToProcess.Enqueue(animation);
+                                foreach (var set in AnimationsSet)
+                                {
+                                    foreach (var anim in set.Value)
+                                    {
+                                        anim.PauseAnimation = false;
+                                        anim.Looping = false;
+                                    }
                                 }
                             }
                         }
                     }
+
                     break;
 
                 case EventTriggers.EmptyOnGameLoad:

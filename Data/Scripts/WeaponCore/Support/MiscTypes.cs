@@ -449,7 +449,7 @@ namespace WeaponCore.Support
 
         internal Shrunk? GetLine()
         {
-            if (TracerSteps-- > 0)
+            if (--TracerSteps > 0)
             {
                 var stepLength = ResizeLen;
                 var backOfTail = BackOfTracer + (Direction * (TailSteps++ * stepLength));
