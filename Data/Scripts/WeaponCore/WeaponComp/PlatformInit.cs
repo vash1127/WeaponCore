@@ -117,6 +117,7 @@ namespace WeaponCore.Platform
                     }
 
                     Weapons[c].EntityPart.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+                    Weapons[c].EntityPart.OnMarkForClose += Weapons[c].EntPartClose;
                     Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPos;
 
                     for (int i = 0; i < barrelCount; i++)

@@ -81,7 +81,7 @@ namespace WeaponCore
                 DynTrees.GetAllProjectilesInSphere(ref playerSphere, test);
                 if (Placer != null)
                 {
-                    if (Placer.MarkedForClose) Placer = null;
+                    if (!Placer.Visible) Placer = null;
                     if (!MyCubeBuilder.Static.DynamicMode && MyCubeBuilder.Static.HitInfo.HasValue)
                     {
                         var hit = MyCubeBuilder.Static.HitInfo.Value as IHitInfo;
@@ -95,8 +95,11 @@ namespace WeaponCore
                                 GridAi.WeaponCount weaponCount;
                                 if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
                                 {
-                                    if (weaponCount.Current >= weaponCount.Max)
+                                    if (weaponCount.Current >= weaponCount.Max && weaponCount.Max > 0)
+                                    {
+                                        MyCubeBuilder.Static.NotifyPlacementUnable();
                                         MyCubeBuilder.Static.Deactivate();
+                                    }
                                 }
                             }
                         }

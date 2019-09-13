@@ -206,10 +206,11 @@ namespace WeaponCore.Support
                 base.OnRemovedFromScene();
                 if (Platform.Inited)
                 {
+                    Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;
                     RegisterEvents(false);
                     StopAllSounds();
                     Platform.RemoveParts(this);
-                    Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;
+                    
 
                     WeaponComponent comp;
                     Ai.WeaponBase.TryRemove(MyCube, out comp);

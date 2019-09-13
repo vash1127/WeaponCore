@@ -131,7 +131,7 @@ namespace WeaponCore.Projectiles
                             }
                             continue;
                     }
-                    if (p.Age < 2) Log.Line($"age:{p.Age} - pVel:{p.Velocity.Length()}");
+                    //if (p.Age < 2) Log.Line($"age:{p.Age} - pVel:{p.Velocity.Length()}");
                     if (p.AccelLength > 0)
                     {
                         if (p.SmartsOn)

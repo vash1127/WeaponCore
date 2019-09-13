@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRageMath;
 
 namespace WeaponCore.Platform
@@ -30,6 +32,12 @@ namespace WeaponCore.Platform
                 EntityPart.PositionComp.UpdateWorldMatrix(ref parentMatrix);
                 Comp.PositionUpdateTick = tick + 1;
             }
+        }
+
+        internal void EntPartClose(MyEntity obj)
+        {
+            obj.PositionComp.OnPositionChanged -= PositionChanged;
+            obj.OnMarkForClose -= EntPartClose;
         }
 
         public class Muzzle
