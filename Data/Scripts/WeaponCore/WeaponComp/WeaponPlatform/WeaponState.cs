@@ -1,7 +1,9 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRageMath;
 
 namespace WeaponCore.Platform
@@ -30,6 +32,12 @@ namespace WeaponCore.Platform
                 EntityPart.PositionComp.UpdateWorldMatrix(ref parentMatrix);
                 Comp.PositionUpdateTick = tick + 1;
             }
+        }
+
+        internal void EntPartClose(MyEntity obj)
+        {
+            obj.PositionComp.OnPositionChanged -= PositionChanged;
+            obj.OnMarkForClose -= EntPartClose;
         }
 
         public class Muzzle
@@ -333,15 +341,13 @@ namespace WeaponCore.Platform
             if (el > 0)
                 turret.Elevation = el - elStep > 0 ? el - elStep : 0;
             else if (el < 0)
-                turret.Azimuth = el + elStep < 0 ? el + elStep : 0;
+                turret.Elevation = el + elStep < 0 ? el + elStep : 0;
 
-            az = turret.Azimuth;
-            el = turret.Elevation;
+            Azimuth = turret.Azimuth;
+            Elevation = turret.Elevation;
 
-            turret.SyncAzimuth();
-            turret.SyncElevation();
 
-            if (az > 0 || az < 0 || el > 0 || el < 0) return true;
+            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return true;
 
             return false;
         }

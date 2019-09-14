@@ -19,8 +19,10 @@ namespace WeaponCore.Support {
         internal readonly bool DoesReverse;
         internal readonly string Muzzle;
         internal readonly string SubpartId;
+        
 
         internal MyEntitySubpart Part;
+        internal string[] RotCenterNameSet;
         internal bool Reverse;
         internal bool Looping;
         internal bool PauseAnimation;
@@ -53,6 +55,7 @@ namespace WeaponCore.Support {
             DoesReverse = reverse;
             _currentMove = 0;
         }
+
         
         internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out MatrixD? rotAroundCenter, out Session.AnimationType type)
         {
@@ -104,7 +107,7 @@ namespace WeaponCore.Support {
 
         protected bool Equals(PartAnimation other)
         {
-            return Equals(Part, other.Part);
+            return Equals(Part, other.Part) && Equals(SubpartId, other.SubpartId);
         }
 
         public override bool Equals(object obj)
@@ -117,7 +120,7 @@ namespace WeaponCore.Support {
 
         public override int GetHashCode()
         {
-            return (Part != null ? Part.GetHashCode() : 0);
+            return (SubpartId != null ? SubpartId.GetHashCode() : 0);
         }
     }
 }

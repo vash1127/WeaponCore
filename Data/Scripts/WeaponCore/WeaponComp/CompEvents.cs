@@ -34,11 +34,9 @@ namespace WeaponCore.Support
                 BlockInventory.ContentsChanged -= OnContentsChanged;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
+
                 foreach (var w in Platform.Weapons)
-                {
-                    w.EntityPart.PositionComp.OnPositionChanged -= w.PositionChanged;
                     w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
-                }
             }
         }
 

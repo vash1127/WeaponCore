@@ -46,7 +46,7 @@ namespace WeaponCore.Support
                     if (Ai.MyGrid != MyCube.CubeGrid) Log.Line("grid mismatch");
                     MyGrid = MyCube.CubeGrid;
                     PowerInit();
-                    //RegisterEvents();
+                    RegisterEvents();
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                         OnAddedToSceneTasks();
 
@@ -206,10 +206,11 @@ namespace WeaponCore.Support
                 base.OnRemovedFromScene();
                 if (Platform.Inited)
                 {
+                    Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;
                     RegisterEvents(false);
                     StopAllSounds();
                     Platform.RemoveParts(this);
-                    Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;
+                    
 
                     WeaponComponent comp;
                     Ai.WeaponBase.TryRemove(MyCube, out comp);

@@ -16,7 +16,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateAnimationSets(PartAnimationSetDef[] weaponAnimationSets, RecursiveSubparts parts)
+        internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateAnimationSets(PartAnimationSetDef[] weaponAnimationSets)
         {
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
 
@@ -25,9 +25,6 @@ namespace WeaponCore
             {
                 for (int t = 0; t < animationSet.SubpartId.Length; t++)
                 {
-                    var subpart = parts.NameToEntity[animationSet.SubpartId[t]] as MyEntitySubpart;
-                    if (subpart == null) continue;
-
                     foreach (var moves in animationSet.EventMoveSets)
                     {
                         if (!allAnimationSet.ContainsKey(moves.Key))
@@ -36,6 +33,7 @@ namespace WeaponCore
                         List<Vector3?> moveSet = new List<Vector3?>();
                         List<MatrixD?> rotationSet = new List<MatrixD?>();
                         List<MatrixD?> rotCenterSet = new List<MatrixD?>();
+                        List<string> rotCenterNameSet = new List<string>();
                         AnimationType[] typeSet = new[]
                         {
                             AnimationType.Movement,
@@ -88,35 +86,21 @@ namespace WeaponCore
                                      move.RotAroundCenter.z > 0 || move.RotAroundCenter.x < 0 ||
                                      move.RotAroundCenter.y < 0 || move.RotAroundCenter.z < 0))
                                 {
-                                    var partCenter = GetPartLocation(move.CenterEmpty, subpart.Parent.Model);
-                                    var emptyCenter = GetPartLocation(move.CenterEmpty, subpart.Model);
-                                    if (partCenter != null && emptyCenter != null)
-                                    {
-                                        var center = (Vector3) emptyCenter + (Vector3) partCenter;
-
-                                        rotCenterSet.Add(CreateRotation(move.RotAroundCenter.x / move.TicksToMove,
-                                            move.RotAroundCenter.y / move.TicksToMove,
-                                            move.RotAroundCenter.z / move.TicksToMove, center));
-                                    }
-                                    else
-                                        rotCenterSet.Add(null);
+                                    rotCenterNameSet.Add(move.CenterEmpty);
+                                    rotCenterSet.Add(CreateRotation(move.RotAroundCenter.x / move.TicksToMove,
+                                        move.RotAroundCenter.y / move.TicksToMove,
+                                        move.RotAroundCenter.z / move.TicksToMove));
                                 }
                                 else
+                                {
+                                    rotCenterNameSet.Add(null);
                                     rotCenterSet.Add(null);
+                                }
 
                                 if (move.Rotation.x > 0 || move.Rotation.y > 0 || move.Rotation.z > 0 ||
                                     move.Rotation.x < 0 || move.Rotation.y < 0 || move.Rotation.z < 0)
                                 {
-
-
-                                    var partCenter = GetPartLocation("subpart_" + animationSet.SubpartId[t],
-                                        subpart.Parent.Model);
-                                    if (partCenter != null)
-                                        rotationSet.Add(CreateRotation(move.Rotation.x / move.TicksToMove,
-                                            move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove,
-                                            (Vector3) partCenter));
-                                    else
-                                        rotationSet.Add(null);
+                                    rotationSet.Add(CreateRotation(move.Rotation.x / move.TicksToMove, move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove));
                                 }
                                 else
                                     rotationSet.Add(null);
@@ -315,8 +299,10 @@ namespace WeaponCore
                             reverse = true;
 
                         var partAnim = new PartAnimation(moveSet.ToArray(), rotationSet.ToArray(),
-                            rotCenterSet.ToArray(), typeSet, moveIndexer.ToArray(), animationSet.SubpartId[t], subpart, parts.Entity,
+                            rotCenterSet.ToArray(), typeSet, moveIndexer.ToArray(), animationSet.SubpartId[t], null, null,
                             animationSet.BarrelId,animationSet.StartupDelay, animationSet.AnimationDelays[moves.Key], loop, reverse);
+
+                        partAnim.RotCenterNameSet = rotCenterNameSet.ToArray();
 
                         allAnimationSet[moves.Key].Add(partAnim);
                     }
@@ -326,7 +312,66 @@ namespace WeaponCore
             return allAnimationSet;
         }
 
-        internal Matrix CreateRotation(double x, double y, double z, Vector3 center)
+        internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateWeaponAnimationSet(Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> systemAnimations, RecursiveSubparts parts)
+        {
+            var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
+
+            foreach (var animationSet in systemAnimations)
+            {
+                allAnimationSet.Add(animationSet.Key, new HashSet<PartAnimation>());
+                foreach (var animation in animationSet.Value)
+                {
+                    MyEntity part;
+                    parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
+                    var subpart = part as MyEntitySubpart;
+                    if(subpart == null)continue;
+
+                    var rotations = new MatrixD?[animation.RotationSet.Length];
+                    var rotCenters = new MatrixD?[animation.RotCenterSet.Length];
+                    animation.RotationSet.CopyTo(rotations, 0);
+                    animation.RotCenterSet.CopyTo(rotCenters, 0);
+
+                    var rotCenterNames = animation.RotCenterNameSet;
+
+                    var partCenter = GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
+
+                    
+
+                    if (partCenter != null)
+                    {
+                        for (int i = 0; i < rotations.Length; i++)
+                        {
+                            if (rotations[i] != null)
+                                rotations[i] = Matrix.CreateTranslation(-(Vector3) partCenter) * (Matrix)rotations[i] *
+                                               Matrix.CreateTranslation((Vector3) partCenter);
+                        }
+                    }
+
+                    if (partCenter != null)
+                    {
+                        for (int i = 0; i < rotCenters.Length; i++)
+                        {
+                            if (rotCenters[i] != null && rotCenterNames != null)
+                            {
+                                var dummyCenter = GetPartLocation(rotCenterNames[i], subpart.Model);
+                                if(dummyCenter != null)
+                                    rotCenters[i] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * (Matrix)rotCenters[i] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
+                            }
+
+                            
+                        }
+                    }
+
+                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.MoveSet, rotations, rotCenters,
+                        animation.TypeSet, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
+                        animation.Muzzle, animation.FireDelay, animation.MotionDelay, animation.DoesLoop,
+                        animation.DoesReverse));
+                }
+            }
+            return allAnimationSet;
+        }
+
+        internal Matrix CreateRotation(double x, double y, double z)
         {
 
             var rotation = MatrixD.Zero;
@@ -345,10 +390,6 @@ namespace WeaponCore
                     rotation *= MatrixD.CreateRotationZ(MathHelperD.ToRadians(z));
                 else
                     rotation = MatrixD.CreateRotationZ(MathHelperD.ToRadians(z));
-
-
-            rotation = Matrix.CreateTranslation(-center) * (Matrix)rotation *
-                       Matrix.CreateTranslation(center);
 
             return rotation;
         }

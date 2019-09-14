@@ -2,8 +2,10 @@
 using Sandbox.Definitions;
 using VRage;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 
 namespace WeaponCore.Support
 {
@@ -20,6 +22,7 @@ namespace WeaponCore.Support
         public readonly MyStringId TrailMaterial;
 
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
+        public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly int ReloadTime;
@@ -196,6 +199,13 @@ namespace WeaponCore.Support
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
 
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
+
+            WeaponAnimationSet = Session.Instance.CreateAnimationSets(Values.Animations.WeaponAnimationSets);
+        }
+
+        private void SetWeaponAnimations( )
+        {
+            
         }
 
         private void DamageScales(out bool damageScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage)
