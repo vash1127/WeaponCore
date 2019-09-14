@@ -538,6 +538,14 @@ namespace WeaponCore.Projectiles
                         Log.Line($"NavField Pulse");
                         EwarActive = true;
                     }
+
+                    break;
+                case AreaEffectType.DotField:
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    {
+                        Log.Line($"DotField Pulse");
+                        EwarActive = true;
+                    }
                     break;
             }
         }

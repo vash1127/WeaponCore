@@ -9,6 +9,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.HitEntity.Type;
+using static WeaponCore.Support.AreaDamage.AreaEffectType;
 
 namespace WeaponCore.Projectiles
 {
@@ -70,6 +71,8 @@ namespace WeaponCore.Projectiles
                 var ent = p.SegmentList[i].Element;
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
+                var voxel = ent as MyVoxelBase;
+                if (voxel != null && p.EwarActive) continue;
                 if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
@@ -80,6 +83,7 @@ namespace WeaponCore.Projectiles
                         {
                             var hitEntity = HitEntityPool[poolId].Get();
                             hitEntity.Clean();
+                            hitEntity.System = p.T.System;
                             hitEntity.PoolId = poolId;
                             hitEntity.Entity = (MyEntity)shieldBlock;
                             hitEntity.Beam = beam;
@@ -93,7 +97,6 @@ namespace WeaponCore.Projectiles
                         else continue;
                     }
                 }
-                var voxel = ent as MyVoxelBase;
                 if ((ent == ai.MyPlanet && (p.CheckPlanet || p.DynamicGuidance)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
                 {
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
@@ -129,6 +132,7 @@ namespace WeaponCore.Projectiles
                     }
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
+                    hitEntity.System = p.T.System;
                     hitEntity.PoolId = poolId;
                     hitEntity.Entity = ent;
                     hitEntity.Beam = beam;
@@ -140,6 +144,7 @@ namespace WeaponCore.Projectiles
                     if (grid != null)
                     {
                         hitEntity.EventType = !(p.EwarActive && p.FieldEffect) ? Grid : Field;
+                        if (p.AreaEffect == AreaDamage.AreaEffectType.DotField) hitEntity.DamageOverTime = true;
                     }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;
@@ -160,6 +165,7 @@ namespace WeaponCore.Projectiles
                 {
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
+                    hitEntity.System = p.T.System;
                     hitEntity.PoolId = poolId;
                     hitEntity.EventType = HitEntity.Type.Projectile;
                     hitEntity.Hit = true;
@@ -271,18 +277,7 @@ namespace WeaponCore.Projectiles
                             hitEnt.HitPos = hitPos;
 
                             if (!fieldActive)
-                            {
-                                var hashSet = HitEntity.CastOrGetHashSet(hitEnt, ((MyCubeGrid)null)?.CubeBlocks);
-                                grid.GetBlocksInsideSphere(ref hitEnt.PruneSphere, hashSet, false);
-
-                                hitEnt.Blocks.AddRange(hashSet);
-                                hitEnt.Blocks.Sort((a, b) =>
-                                {
-                                    var aPos = grid.GridIntegerToWorld(a.Position);
-                                    var bPos = grid.GridIntegerToWorld(b.Position);
-                                    return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
-                                });
-                            }
+                                GetAndSortBlocksInSphere(hitEnt, grid, hitPos, false);
                         }
                         else
                         {
@@ -340,6 +335,64 @@ namespace WeaponCore.Projectiles
             return xDist.CompareTo(yDist);
         }
 
+        internal static void GetAndSortBlocksInSphere(HitEntity hitEnt, MyCubeGrid grid, Vector3D hitPos, bool fatOnly)
+        {
+            var sphere = hitEnt.PruneSphere;
+            var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
+            Vector3D result;
+            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
+            var localSphere = new BoundingSphere(result, (float)sphere.Radius);
+            var fieldType = hitEnt.System.Values.Ammo.AreaEffect.AreaEffect;
+            if (fatOnly)
+            {
+                foreach (var cube in grid.GetFatBlocks())
+                {
+                    switch (fieldType)
+                    {
+                        case JumpNullField:
+                            if (!(cube is MyJumpDrive)) continue;
+                            break;
+                        case EnergySinkField:
+                            if (!(cube is IMyPowerProducer)) continue;
+                            break;
+                        case AnchorField:
+                            if (!(cube is MyThrust)) continue;
+                            break;
+                        case NavField:
+                            if (!(cube is MyGyro)) continue;
+                            break;
+                        case OffenseField:
+                            if (!(cube is IMyGunBaseUser)) continue;
+                            break;
+                        case EmpField:
+                        case DotField:
+                            break;
+                        default: continue;
+                    }
+                    var block = cube.SlimBlock as IMySlimBlock;
+                    if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                        continue;
+                    hitEnt.Blocks.Add(block);
+                }
+            }
+            else
+            {
+                foreach (IMySlimBlock block in grid.GetBlocks())
+                {
+                    if (block.IsDestroyed) continue;
+                    if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                        continue;
+                    hitEnt.Blocks.Add(block);
+                }
+            }
+
+            hitEnt.Blocks.Sort((a, b) =>
+            {
+                var aPos = grid.GridIntegerToWorld(a.Position);
+                var bPos = grid.GridIntegerToWorld(b.Position);
+                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
+            });
+        }
         private static void PrefetchVoxelPhysicsIfNeeded(Projectile p)
         {
             var ray = new LineD(p.Origin, p.Origin + p.Direction * p.MaxTrajectory, p.MaxTrajectory);

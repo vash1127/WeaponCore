@@ -193,6 +193,7 @@ namespace WeaponCore.Support
             EmpField,
             OffenseField,
             NavField,
+            DotField,
         }
 
         [ProtoMember(1)] internal double AreaEffectRadius;

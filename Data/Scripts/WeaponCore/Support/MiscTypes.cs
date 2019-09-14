@@ -56,11 +56,11 @@ namespace WeaponCore.Support
         internal float AreaEffectDamage;
         internal float DetonationDamage;
         internal float BaseHealthPool;
-        internal ReSize ReSizing;
         internal bool OnScreen;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool Triggered;
+        internal ReSize ReSizing;
         internal DrawState Draw;
 
         internal void Complete(HitEntity hitEntity, DrawState draw)
@@ -157,10 +157,12 @@ namespace WeaponCore.Support
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();
         public MyEntity Entity;
+        public WeaponSystem System;
         internal Projectile Projectile;
         public LineD Beam;
         public bool Hit;
         public bool SphereCheck;
+        public bool DamageOverTime;
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public Type EventType;
@@ -240,6 +242,7 @@ namespace WeaponCore.Support
             EventType = Stale;
             PruneSphere = new BoundingSphereD();
             SphereCheck = false;
+            DamageOverTime = false;
         }
     }
 

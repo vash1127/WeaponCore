@@ -182,35 +182,18 @@ namespace WeaponCore
             var countBlocksAsObjects = system.Values.Ammo.ObjectsHit.CountBlocks;
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
             var maxObjects = t.System.MaxObjectsHit;
-
-            foreach (var cube in grid.GetFatBlocks())
+            var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
+            var attackerId = shieldByPass ? grid.EntityId : t.Target.FiringCube.EntityId;
+            WeaponCore.Projectiles.Projectiles.GetAndSortBlocksInSphere(hitEnt, grid, hitEnt.PruneSphere.Center, !hitEnt.DamageOverTime);
+            foreach (var block in hitEnt.Blocks)
             {
+                var cube = block.FatBlock as MyCubeBlock;
                 if (damagePool <= 0 || objectsHit >= maxObjects || healthPool <= 0) break;
-                switch (fieldType)
-                {
-                    case JumpNullField:
-                        if (!(cube is MyJumpDrive)) continue;
-                        break;
-                    case EnergySinkField:
-                        if (!(cube is IMyPowerProducer)) continue;
-                        break;
-                    case AnchorField:
-                        if (!(cube is MyThrust)) continue;
-                        break;
-                    case NavField:
-                        if (!(cube is MyGyro)) continue;
-                        break;
-                    case OffenseField:
-                        if (!(cube is IMyGunBaseUser)) continue;
-                        break;
-                    case EmpField:
-                        break;
-                    default: continue;
-                }
-                if (cube == null || cube.MarkedForClose || !cube.IsWorking && !_effectedCubes.ContainsKey(cube.EntityId)) continue;
-                if (!cube.PositionComp.WorldAABB.Intersects(ref pruneSphere)) continue;
 
-                var block = ((IMySlimBlock) cube.SlimBlock);
+                if (fieldType != DotField)
+                {
+                    if (cube == null || cube.MarkedForClose || !cube.IsWorking && !_effectedCubes.ContainsKey(cube.EntityId)) continue;
+                }
                 var blockHp = block.Integrity;
                 float damageScale = 1;
                 var tmpDamagePool = damagePool;
@@ -262,6 +245,12 @@ namespace WeaponCore
                     tmpDamagePool -= blockHp;
                 }
 
+                if (fieldType == DotField)
+                {
+                    block.DoDamage(scaledDamage, MyDamageType.Explosion, true, null, attackerId);
+                    continue;
+                }
+
                 BlockState blockState;
                 var cubeId = cube.EntityId;
                 if (stack && _effectedCubes.TryGetValue(cubeId, out blockState))
@@ -295,7 +284,6 @@ namespace WeaponCore
                         blockState.Health = 0;
                     }
                 }
-
                 _effectedCubes[cube.EntityId] = blockState;
             }
 
@@ -306,6 +294,11 @@ namespace WeaponCore
         {
             EffectDispatched = false;
             if (_effectedCubes.Count > 0) _effectActive = true;
+        }
+
+        private void ApplyDamage()
+        {
+
         }
 
         private void ApplyEffect()
@@ -393,8 +386,8 @@ namespace WeaponCore
                 _effectedCubes.Remove(_effectPurge.Dequeue());
             }
 
-           _effectActive = false;
-           RemoveEffectsFromGrid.Clear();
+            _effectActive = false;
+            RemoveEffectsFromGrid.Clear();
         }
 
         private static void ForceDisable(IMyTerminalBlock myTerminalBlock)

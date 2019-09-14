@@ -50,9 +50,7 @@ namespace WeaponCore.Support
                     {
                         foreach (var w in Platform.Weapons)
                         {
-                            Session.Instance.InventoryEvent.Enqueue(new InventoryChange(w,
-                                new MyPhysicalInventoryItem(), 0,
-                                InventoryChange.ChangeType.Changed));
+                            Session.Instance.InventoryEvent.Enqueue(new InventoryChange(w, new MyPhysicalInventoryItem(), 0, InventoryChange.ChangeType.Changed));
                         }
                     }
 
