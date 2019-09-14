@@ -144,7 +144,7 @@ namespace WeaponCore.Projectiles
                     if (grid != null)
                     {
                         hitEntity.EventType = !(p.EwarActive && p.FieldEffect) ? Grid : Field;
-                        if (p.AreaEffect == AreaDamage.AreaEffectType.DotField) hitEntity.DamageOverTime = true;
+                        if (p.AreaEffect == DotField) hitEntity.DamageOverTime = true;
                     }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;
@@ -318,13 +318,31 @@ namespace WeaponCore.Projectiles
                 }
                 else if (ent is IMyDestroyableObject)
                 {
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                    dist = obb.Intersects(ref beam) ?? double.MaxValue;
-                    if (dist < double.MaxValue)
+                    if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Beam.From, hitEnt.HitPos.Value);
+                    else
                     {
-                        hitEnt.Hit = true;
-                        hitEnt.HitPos = beam.From + (beam.Direction * dist);
+                        if (hitEnt.SphereCheck)
+                        {
+                            var fieldActive = hitEnt.EventType == Field;
+
+                            dist = 0;
+                            hitEnt.Hit = true;
+                            var hitPos = !fieldActive
+                                ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius)
+                                : hitEnt.PruneSphere.Center;
+                            hitEnt.HitPos = hitPos;
+                        }
+                        else
+                        {
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
+                            var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                            dist = obb.Intersects(ref beam) ?? double.MaxValue;
+                            if (dist < double.MaxValue)
+                            {
+                                hitEnt.Hit = true;
+                                hitEnt.HitPos = beam.From + (beam.Direction * dist);
+                            }
+                        }
                     }
                 }
 
