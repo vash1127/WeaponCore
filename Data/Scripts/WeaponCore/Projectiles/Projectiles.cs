@@ -131,7 +131,6 @@ namespace WeaponCore.Projectiles
                             }
                             continue;
                     }
-                    if (p.Age < 2) Log.Line($"age:{p.Age} - pVel:{p.Velocity.Length()}");
                     if (p.AccelLength > 0)
                     {
                         if (p.SmartsOn)
@@ -249,13 +248,14 @@ namespace WeaponCore.Projectiles
                     }
                     else
                     {
-                        if (p.ConstantSpeed || p.VelocityLengthSqr > 0) p.LastPosition = p.Position;
+                        if (p.ConstantSpeed || p.VelocityLengthSqr > 0)
+                            p.LastPosition = p.Position;
+
                         p.TravelMagnitude = p.Velocity * StepConst;
                         p.Position += p.TravelMagnitude;
                     }
                     p.T.PrevDistanceTraveled = p.T.DistanceTraveled;
-                    p.T.DistanceTraveled += Vector3D.Dot(p.Direction, p.Velocity * StepConst);
-
+                    p.T.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Direction, p.Velocity * StepConst));
                     if (p.ModelState == EntityState.Exists)
                     {
                         var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
@@ -353,30 +353,22 @@ namespace WeaponCore.Projectiles
                     if (p.DrawLine)
                     {
                         if (p.State == ProjectileState.OneAndDone)
-                            p.T.UpdateShape(p.LastPosition, p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
+                            p.T.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
                         else 
                         {
-                            if (Vector3D.DistanceSquared(p.Origin, p.Position) <= p.TracerLength * p.TracerLength)
+                            p.T.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Direction, (p.Velocity - p.StartSpeed) * StepConst));
+                            if (p.T.ProjectileDisplacement < p.TracerLength)
                             {
-                                var growth = p.Position + -(p.Direction * p.T.DistanceTraveled);
-                                p.T.UpdateShape(growth, p.Position, p.Direction, p.T.DistanceTraveled, ReSize.Grow);
+                                p.T.UpdateShape(p.Position, p.Direction, p.T.ProjectileDisplacement, ReSize.Grow);
                             }
                             else
                             {
-                                var prevPos = p.Position + -(p.Direction * p.TracerLength);
-                                p.T.UpdateShape(prevPos, p.Position, p.Direction, p.TracerLength, ReSize.None);
+                                var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
+                                var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;
+                                p.T.UpdateShape(drawStartPos, pointDir, p.TracerLength, ReSize.None);
                             }
                         }
-                        /*
-                        else
-                        {
-                            var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
-                            var prevPos = p.Position + -(pointDir * p.TracerLength);
-                            p.T.UpdateShape(prevPos, p.Position, pointDir, p.TracerLength);
-                        }
-                        */
                     }
-
                     if (p.ModelState == EntityState.Exists)
                     {
                         p.ModelSphereLast.Center = p.LastEntityPos;
@@ -397,10 +389,9 @@ namespace WeaponCore.Projectiles
                         }
                         else
                         {
-                            var bb = new BoundingBoxD(Vector3D.Min(p.T.PrevPosition, p.T.Position), Vector3D.Max(p.T.PrevPosition, p.T.Position));
+                            var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
                             if (camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
                         }
-
                     }
 
                     if (p.T.MuzzleId == -1)
@@ -439,7 +430,7 @@ namespace WeaponCore.Projectiles
                     var length = Vector3D.Distance(p.LastPosition, hitPos);
                     var shrink = !p.T.System.IsBeamWeapon;
                     var reSize = shrink ? ReSize.Shrink : ReSize.None;
-                    p.T.UpdateShape(p.LastPosition, hitPos, p.Direction, length, reSize);
+                    p.T.UpdateShape(hitPos, p.Direction, length, reSize);
                     p.T.Complete(hitEntity, DrawState.Hit);
                     drawList.Add(p.T);
                 }
@@ -471,23 +462,23 @@ namespace WeaponCore.Projectiles
                 vt.OnScreen = p.T.OnScreen;
                 if (vt.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vt.PrevPosition, hitEntity.HitPos ?? p.Position) : new LineD(vt.PrevPosition, p.Position);
-                    vt.UpdateVrShape(beam.From, beam.To, beam.Direction, beam.Length, ReSize.None);
+                    var beam = !miss ? new LineD(vt.LineStart, hitEntity.HitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
+                    vt.UpdateVrShape(beam.To, beam.Direction, beam.Length, ReSize.None);
                 }
                 else
                 {
                     Vector3D beamEnd;
                     var hit = !miss && hitEntity.HitPos.HasValue;
                     if (!hit)
-                        beamEnd = vt.PrevPosition + (vt.Direction * p.MaxTrajectory);
+                        beamEnd = vt.LineStart + (vt.Direction * p.MaxTrajectory);
                     else
-                        beamEnd = vt.PrevPosition + (vt.Direction * p.T.WeaponCache.HitDistance);
+                        beamEnd = vt.LineStart + (vt.Direction * p.T.WeaponCache.HitDistance);
 
-                    var line = new LineD(vt.PrevPosition, beamEnd);
+                    var line = new LineD(vt.LineStart, beamEnd);
                     //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
                     if (!miss && hitEntity.HitPos.HasValue)
-                        vt.UpdateVrShape(line.From, hitEntity.HitPos.Value, line.Direction, line.Length, ReSize.None);
-                    else vt.UpdateVrShape(line.From, line.To, line.Direction, line.Length, ReSize.None);
+                        vt.UpdateVrShape(hitEntity.HitPos.Value, line.Direction, line.Length, ReSize.None);
+                    else vt.UpdateVrShape(line.To, line.Direction, line.Length, ReSize.None);
                 }
                 vt.Complete(hitEntity, DrawState.Hit);
                 drawList.Add(vt);
@@ -526,7 +517,7 @@ namespace WeaponCore.Projectiles
                     p.T.OnScreen = true;
                     return;
                 }
-                var bb = new BoundingBoxD(Vector3D.Min(p.T.PrevPosition, p.T.Position), Vector3D.Max(p.T.PrevPosition, p.T.Position));
+                var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
                 if (Session.Instance.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
             }
         }

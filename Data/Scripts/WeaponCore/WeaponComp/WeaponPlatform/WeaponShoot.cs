@@ -69,8 +69,6 @@ namespace WeaponCore.Platform
             else if(System.DelayToFire > 0)
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
 
-
-
             _shots++;
 
             if (_shotsInCycle++ == _numOfBarrels - 1)

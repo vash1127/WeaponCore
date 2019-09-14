@@ -289,7 +289,14 @@ namespace WeaponCore.Projectiles
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelLength = T.System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
-            Velocity = ConstantSpeed ? MaxVelocity : StartSpeed + AccelVelocity;
+
+            if (ConstantSpeed)
+            {
+                Velocity = MaxVelocity;
+                VelocityLengthSqr = MaxSpeed * MaxSpeed;
+            }
+            else Velocity = StartSpeed + AccelVelocity;
+
             TravelMagnitude = Velocity * StepConst;
 
             IdleTime = T.System.Values.Ammo.Trajectory.RestTime;

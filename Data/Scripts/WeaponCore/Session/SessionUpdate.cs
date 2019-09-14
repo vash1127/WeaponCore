@@ -26,7 +26,7 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-                    var LastGunner = comp.Gunner;
+                    var lastGunner = comp.Gunner;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
                     if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || comp.Status != Started)
                     {
@@ -85,7 +85,7 @@ namespace WeaponCore
                         if (w.TurretMode && comp.State.Value.Online)
                         {
                             if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) ||
-                                 (gunner != LastGunner && !gunner)))
+                                 (gunner != lastGunner && !gunner)))
                                 w.LastTargetLock = Tick;
 
                             comp.ReturnHome = gridAi.ReturnHome = false;
@@ -129,7 +129,6 @@ namespace WeaponCore
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
                     if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || (!gridAi.Ready && !comp.ReturnHome)) continue;
-
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
 
@@ -238,7 +237,7 @@ namespace WeaponCore
                             }
                             if (!w.AmmoMagLoaded) continue;
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Reloading, false);
-                            
+
                             if (w.IsShooting)
                             {
                                 if (w.FiringEmitter != null) w.StartFiringSound();
