@@ -17,14 +17,13 @@ namespace WeaponCore
                 var t = drawList[i];
                 if (t.PrimeEntity != null)
                 {
-                    if (t.Draw != Trajectile.DrawState.Last && !t.PrimeEntity.InScene)
+                    if (t.Draw != Trajectile.DrawState.Last && !t.PrimeEntity.InScene && !t.Cloaked)
                     {
                         t.PrimeEntity.InScene = true;
                         t.PrimeEntity.Render.UpdateRenderObject(true, false);
                     }
-
                     t.PrimeEntity.PositionComp.SetWorldMatrix(t.PrimeMatrix, null, false, false, false);
-                    if (t.Draw == Trajectile.DrawState.Last)
+                    if (t.Draw == Trajectile.DrawState.Last || t.Cloaked && t.PrimeEntity.InScene)
                     {
                         t.PrimeEntity.InScene = false;
                         t.PrimeEntity.Render.RemoveRenderObjects();

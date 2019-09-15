@@ -60,6 +60,7 @@ namespace WeaponCore.Support
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool Triggered;
+        internal bool Cloaked;
         internal ReSize ReSizing;
         internal DrawState Draw;
 

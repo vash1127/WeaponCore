@@ -248,7 +248,9 @@ namespace WeaponCore.Support
             Remote,
             TravelTo,
             Smart,
-            PulseDetect
+            DetectTravelTo,
+            DetectSmart,
+            DetectFixed,
         }
 
         [ProtoMember(1)] internal float MaxTrajectory;
@@ -261,6 +263,7 @@ namespace WeaponCore.Support
         [ProtoMember(8)] internal Randomize RangeVariance;
         [ProtoMember(9)] internal GuidanceType Guidance;
         [ProtoMember(10)] internal Smarts Smarts;
+        [ProtoMember(11)] internal Mines Mines;
     }
 
     [ProtoContract]
@@ -272,6 +275,15 @@ namespace WeaponCore.Support
         [ProtoMember(4)] internal double TrackingDelay;
         [ProtoMember(5)] internal int MaxChaseTime;
         [ProtoMember(6)] internal bool OverideTarget;
+    }
+
+    [ProtoContract]
+    public struct Mines
+    {
+        [ProtoMember(1)] internal double DetectRadius;
+        [ProtoMember(2)] internal double DeCloakRadius;
+        [ProtoMember(3)] internal bool Cloak;
+        [ProtoMember(4)] internal bool Persist;
     }
 
     [ProtoContract]

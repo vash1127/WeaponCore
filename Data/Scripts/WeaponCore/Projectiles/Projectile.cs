@@ -5,6 +5,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.AreaDamage;
 using static WeaponCore.Support.Trajectile;
@@ -88,6 +89,8 @@ namespace WeaponCore.Projectiles
         internal bool FieldActive;
         internal bool FieldEffect;
         internal bool SelfDamage;
+        internal bool Seeking;
+        internal bool Activated;
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
@@ -146,6 +149,9 @@ namespace WeaponCore.Projectiles
             PositionChecked = false;
             EwarActive = false;
             FieldActive = false;
+            Seeking = false;
+            Activated = false;
+            T.Cloaked = false;
             EndStep = 0;
             T.PrevDistanceTraveled = 0;
             T.DistanceTraveled = 0;
@@ -460,6 +466,64 @@ namespace WeaponCore.Projectiles
                 T.Target.IsProjectile = false;
                 T.Target.Projectile = null;
             }
+        }
+
+        internal void ActivateMine()
+        {
+            var ent = T.Target.Entity;
+            Activated = true;
+            var targetPos = ent.PositionComp.WorldAABB.Center;
+            var deltaPos = targetPos - Position;
+            var targetVel = ent.Physics?.LinearVelocity ?? Vector3.Zero;
+            var deltaVel = targetVel - Vector3.Zero;
+            var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, T.System.Values.Ammo.Trajectory.DesiredSpeed);
+            var predictedPos = targetPos + (float)timeToIntercept * deltaVel;
+            PredictedTargetPos = predictedPos;
+            PrevTargetPos = predictedPos;
+            PrevTargetVel = targetVel;
+            LockedTarget = true;
+            if (Guidance == AmmoTrajectory.GuidanceType.DetectFixed) return;
+
+            Vector3D.DistanceSquared(ref Origin, ref predictedPos, out DistanceToTravelSqr);
+            T.DistanceTraveled = 0;
+            T.PrevDistanceTraveled = 0;
+
+            Direction = Vector3D.Normalize(predictedPos - Position);
+            AccelDir = Direction;
+            VisualDir = Direction;
+            VelocityLengthSqr = 0;
+
+            MaxVelocity = (Direction * DesiredSpeed);
+            MaxSpeed = MaxVelocity.Length();
+            MaxSpeedSqr = MaxSpeed * MaxSpeed;
+            AccelVelocity = (Direction * AccelLength);
+
+            if (ConstantSpeed)
+            {
+                Velocity = MaxVelocity;
+                VelocityLengthSqr = MaxSpeed * MaxSpeed;
+            }
+            else Velocity = AccelVelocity;
+
+            if (Guidance == AmmoTrajectory.GuidanceType.DetectSmart)
+            {
+                SmartsOn = true;
+                var smartsDelayDist = T.System.CollisionSize * T.System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
+                SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
+                MaxChaseAge = T.System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
+                if (SmartsOn && T.System.TargetOffSet && LockedTarget)
+                {
+                    OffSetTarget(out TargetOffSet);
+                    OffsetSqr = T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy * T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
+                }
+                else
+                {
+                    TargetOffSet = Vector3D.Zero;
+                    OffsetSqr = 0;
+                }
+            }
+
+            TravelMagnitude = Velocity * StepConst;
         }
 
         internal void UpdateZombie(bool reset = false)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
@@ -15,10 +16,12 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-        private bool Hit(Projectile p, int poolId, bool lineCheck)
+        private bool Hit(Projectile p, int poolId)
         {
             var beam = new LineD(p.LastPosition, p.Position);
-            if (lineCheck)
+            if (p.Seeking)
+                SeekEnemy(p, beam, poolId);
+            else if (p.T.System.CollisionIsLine)
             {
                 p.PruneSphere.Center = p.Position;
                 p.PruneSphere.Radius = p.T.System.CollisionSize;
@@ -38,8 +41,7 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.T.System.CollisionSize;
                 }
-
-                if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(p.Origin) != ContainmentType.Disjoint) return false;
+                if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Origin, 5f)) != ContainmentType.Disjoint) return false;
 
                 var checkList = CheckPool[poolId].Get();
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
@@ -49,9 +51,10 @@ namespace WeaponCore.Projectiles
                 checkList.Clear();
                 CheckPool[poolId].Return(checkList);
             }
+
             if (p.SegmentList.Count > 0)
             {
-                var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId, lineCheck);
+                var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId);
                 if (nearestHitEnt != null && Intersected(p, DrawProjectiles[poolId], nearestHitEnt)) return true;
                 p.T.HitList.Clear();
             }
@@ -59,11 +62,12 @@ namespace WeaponCore.Projectiles
             return false;
         }
 
-        internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, int poolId, bool lineCheck)
+        internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, int poolId)
         {
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var ai = p.T.Ai;
             var found = false;
+            var lineCheck = p.T.System.CollisionIsLine;
             //Log.Line($"get all entities in line: LineCheck:{lineCheck} - ewarActive:{eWarActive} - ewarInactive:{eWarInactive} - jump:{jumpNullField} - Vel:{p.VelocityLengthSqr}");
 
             for (int i = 0; i < p.SegmentList.Count; i++)
@@ -227,7 +231,6 @@ namespace WeaponCore.Projectiles
             var xDist = double.MaxValue;
             var yDist = double.MaxValue;
             var beam = x.Beam;
-
             var count = y != null ? 2 : 1;
             for (int i = 0; i < count; i++)
             {
@@ -351,6 +354,90 @@ namespace WeaponCore.Projectiles
             }
             V3Pool.Return(slims);
             return xDist.CompareTo(yDist);
+        }
+
+        private void SeekEnemy(Projectile p, LineD beam, int poolId)
+        {
+            var mineInfo = p.T.System.Values.Ammo.Trajectory.Mines;
+            var detectRadius = mineInfo.DetectRadius;
+            var deCloakRadius = mineInfo.DeCloakRadius;
+
+            var wakeRadius = detectRadius > deCloakRadius ? detectRadius : deCloakRadius;
+            p.PruneSphere = new BoundingSphereD(p.Position, wakeRadius);
+            var checkList = CheckPool[poolId].Get();
+            var mark = false;
+            var activate = false;
+            var minDist = double.MaxValue;
+            if (!p.Activated)
+            {
+                MyEntity closestEnt = null;
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, MyEntityQueryType.Dynamic);
+                for (int i = 0; i < checkList.Count; i++)
+                {
+                    var ent = checkList[i];
+                    var grid = ent as MyCubeGrid;
+                    var character = ent as IMyCharacter;
+                    if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
+                    Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
+                    if (!GridAi.CreateEntInfo(ent, p.T.Ai.MyOwner, out entInfo)) continue;
+                    switch (entInfo.Relationship)
+                    {
+                        case MyRelationsBetweenPlayerAndBlock.Owner:
+                            continue;
+                        case MyRelationsBetweenPlayerAndBlock.FactionShare:
+                            continue;
+                    }
+                    var entCenter = ent.PositionComp.WorldAABB.Center;
+
+                    var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                    var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                    var lineTest = new LineD(p.Position, entCenter);
+                    var dist = obb.Intersects(ref lineTest) ?? 0;
+                    if (dist >= minDist) continue;
+                    minDist = dist;
+                    closestEnt = ent;
+                    if (p.T.Cloaked && minDist <= deCloakRadius) p.T.Cloaked = false;
+                    if (minDist <= detectRadius) mark = true;
+                    if (minDist <= p.T.System.CollisionSize) activate = true;
+                }
+
+                if (closestEnt != null)
+                {
+                    p.ForceNewTarget(false);
+                    p.T.Target.Entity = closestEnt;
+                }
+            }
+            else
+            {
+                if (p.T.Target.Entity == null || p.T.Target.Entity.MarkedForClose)
+                {
+                    p.DistanceToTravelSqr = (p.T.DistanceTraveled * p.T.DistanceTraveled) + 1;
+                    p.IdleTime = 0;
+                    return;
+                }
+                var ent = p.T.Target.Entity;
+                var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                var lineTest = new LineD(p.Position, ent.PositionComp.WorldAABB.Center);
+                minDist = obb.Intersects(ref lineTest) ?? 0;
+                if (p.T.Cloaked && minDist <= deCloakRadius) p.T.Cloaked = false;
+                if (minDist <= detectRadius) mark = true;
+                if (minDist <= p.T.System.CollisionSize) activate = true;
+                if (!mark)
+                {
+                    p.DistanceToTravelSqr = (p.T.DistanceTraveled * p.T.DistanceTraveled) + 1;
+                    p.IdleTime = 0;
+                    return;
+                }
+            }
+
+            if (activate)
+                p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = minDist, Element = p.T.Target.Entity });
+            else if (!p.Activated && mark)
+                p.ActivateMine();
+
+            checkList.Clear();
+            CheckPool[poolId].Return(checkList);
         }
 
         internal static void GetAndSortBlocksInSphere(HitEntity hitEnt, MyCubeGrid grid, Vector3D hitPos, bool fatOnly)

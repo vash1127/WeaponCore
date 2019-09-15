@@ -122,7 +122,7 @@ namespace WeaponCore.Support
             return deck;
         }
 
-        internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
+        internal static bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
         {
             if (entity == null)
             {

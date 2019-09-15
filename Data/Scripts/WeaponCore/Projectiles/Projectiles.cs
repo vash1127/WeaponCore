@@ -139,14 +139,13 @@ namespace WeaponCore.Projectiles
                             if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) >= p.SmartsDelayDistSqr))
                             {
                                 var giveUpChase = p.Age - p.ChaseAge > p.MaxChaseAge;
-                                var newChase = giveUpChase || p.PickTarget;
+                                var newChase = (giveUpChase || p.PickTarget);
                                 var targetIsProjectile = p.T.Target.IsProjectile;
                                 if (!targetIsProjectile && p.T.Target.Projectile != null)
                                     p.ForceNewTarget(!targetIsProjectile);
 
                                 var validTarget = targetIsProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
-
-                                if (newChase && p.EndChase() || validTarget || p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
+                                if (newChase && p.EndChase() || validTarget || !p.Activated && p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
                                 {
                                     if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                     var targetPos = Vector3D.Zero;
@@ -284,7 +283,16 @@ namespace WeaponCore.Projectiles
                         {
                             if (p.IdleTime == 0) Die(p, i);
                             else
+                            {
                                 p.IdleTime--;
+                                if (!p.Seeking && !p.Activated &&
+                                    p.Guidance == AmmoTrajectory.GuidanceType.DetectSmart ||
+                                    p.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo || p.Guidance == AmmoTrajectory.GuidanceType.DetectFixed)
+                                {
+                                    p.T.Cloaked = p.T.System.Values.Ammo.Trajectory.Mines.Cloak;
+                                    p.Seeking = true;
+                                }
+                            }
                         }
                         if (p.Ewar)
                         {
@@ -323,7 +331,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
 
-                    if (Hit(p, i, p.T.System.CollisionIsLine)) continue;
+                    if (Hit(p, i)) continue;
 
                     if (!p.EnableAv) continue;
 
@@ -490,7 +498,7 @@ namespace WeaponCore.Projectiles
             var dInfo = p.T.System.Values.Ammo.AreaEffect.Detonation;
             if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
             {
-                if (!Hit(p, poolId, false))
+                if (!Hit(p, poolId))
                     p.ProjectileClose(this, poolId);
             }
             else p.ProjectileClose(this, poolId);
