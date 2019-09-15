@@ -282,8 +282,9 @@ namespace WeaponCore.Support
     {
         [ProtoMember(1)] internal double DetectRadius;
         [ProtoMember(2)] internal double DeCloakRadius;
-        [ProtoMember(3)] internal bool Cloak;
-        [ProtoMember(4)] internal bool Persist;
+        [ProtoMember(3)] internal int FieldTime;
+        [ProtoMember(4)] internal bool Cloak;
+        [ProtoMember(5)] internal bool Persist;
     }
 
     [ProtoContract]

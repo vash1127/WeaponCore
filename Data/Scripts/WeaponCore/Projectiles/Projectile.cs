@@ -18,6 +18,10 @@ namespace WeaponCore.Projectiles
         internal const int EndSteps = 1;
         internal ProjectileState State;
         internal EntityState ModelState;
+        internal MyEntityQueryType PruneQuery;
+        internal AreaEffectType AreaEffect;
+        internal WeaponSystem.FiringSoundState FiringSoundState;
+        internal AmmoTrajectory.GuidanceType Guidance;
         internal Vector3D Direction;
         internal Vector3D OriginUp;
         internal Vector3D AccelDir;
@@ -39,6 +43,10 @@ namespace WeaponCore.Projectiles
         internal Vector3 GridVel;
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
+        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
+        internal BoundingSphereD ModelSphereCurrent;
+        internal BoundingSphereD ModelSphereLast;
+        internal BoundingSphereD PruneSphere;
         internal double AccelLength;
         internal double MaxTrajectorySqr;
         internal double DistanceToTravelSqr;
@@ -89,32 +97,26 @@ namespace WeaponCore.Projectiles
         internal bool FieldActive;
         internal bool FieldEffect;
         internal bool SelfDamage;
-        internal bool Seeking;
-        internal bool Activated;
-        internal WeaponSystem.FiringSoundState FiringSoundState;
-        internal AmmoTrajectory.GuidanceType Guidance;
-        internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
-        internal BoundingSphereD ModelSphereCurrent;
-        internal BoundingSphereD ModelSphereLast;
-        internal BoundingSphereD PruneSphere;
-        internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
+        internal bool IsMine;
+        internal bool MineSeeking;
+        internal bool MineActivated;
+        internal bool MineTriggered;
+        //internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal Trajectile T = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
-        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
-        internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
-        internal readonly List<GridAi> Watchers = new List<GridAi>();
-        internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
-        internal MyEntityQueryType PruneQuery;
-        internal AreaEffectType AreaEffect;
-        
+        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
+        internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
+        internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
+        internal readonly List<GridAi> Watchers = new List<GridAi>();
+
         internal void Start(bool noAv, int poolId)
         {
             PoolId = poolId;
@@ -149,14 +151,16 @@ namespace WeaponCore.Projectiles
             PositionChecked = false;
             EwarActive = false;
             FieldActive = false;
-            Seeking = false;
-            Activated = false;
+            MineSeeking = false;
+            MineActivated = false;
+            MineTriggered = false;
             T.Cloaked = false;
             EndStep = 0;
             T.PrevDistanceTraveled = 0;
             T.DistanceTraveled = 0;
 
             Guidance = !(T.System.Values.Ammo.Shrapnel.NoGuidance && T.IsShrapnel) ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
+            IsMine = Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None && Guidance != AmmoTrajectory.GuidanceType.TravelTo && !T.System.IsBeamWeapon && T.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
 
@@ -471,7 +475,7 @@ namespace WeaponCore.Projectiles
         internal void ActivateMine()
         {
             var ent = T.Target.Entity;
-            Activated = true;
+            MineActivated = true;
             var targetPos = ent.PositionComp.WorldAABB.Center;
             var deltaPos = targetPos - Position;
             var targetVel = ent.Physics?.LinearVelocity ?? Vector3.Zero;
@@ -482,6 +486,8 @@ namespace WeaponCore.Projectiles
             PrevTargetPos = predictedPos;
             PrevTargetVel = targetVel;
             LockedTarget = true;
+
+            Log.Line($"Activated Mine: Ewar{Ewar}");
             if (Guidance == AmmoTrajectory.GuidanceType.DetectFixed) return;
 
             Vector3D.DistanceSquared(ref Origin, ref predictedPos, out DistanceToTravelSqr);
@@ -526,6 +532,19 @@ namespace WeaponCore.Projectiles
             TravelMagnitude = Velocity * StepConst;
         }
 
+        internal void TriggerMine(bool startTimer)
+        {
+            DistanceToTravelSqr = double.MinValue;
+            if (Ewar)
+            {
+                T.Triggered = true;
+                if (startTimer) IdleTime = T.System.Values.Ammo.Trajectory.Mines.FieldTime;
+            }
+            else if (startTimer) IdleTime = 0;
+            MineTriggered = true;
+            Log.Line($"[Mine] Ewar:{Ewar} - Activated:{MineActivated} - active:{EwarActive} - Triggered:{T.Triggered} - IdleTime:{IdleTime}");
+        }
+
         internal void UpdateZombie(bool reset = false)
         {
             if (reset)
@@ -564,42 +583,42 @@ namespace WeaponCore.Projectiles
                 case AreaEffectType.JumpNullField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"jumpNullField Pulse");
+                        Log.Line($"jumpNullField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.AnchorField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"jumpAnchorFieldNullField Pulse");
+                        Log.Line($"jumpAnchorFieldNullField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.EnergySinkField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"EnergySinkField Pulse");
+                        Log.Line($"EnergySinkField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.EmpField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"EmpField Pulse");
+                        Log.Line($"EmpField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.OffenseField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"OffenseField Pulse");
+                        Log.Line($"OffenseField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.NavField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"NavField Pulse");
+                        Log.Line($"NavField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
 
@@ -607,7 +626,7 @@ namespace WeaponCore.Projectiles
                 case AreaEffectType.DotField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"DotField Pulse");
+                        Log.Line($"DotField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;

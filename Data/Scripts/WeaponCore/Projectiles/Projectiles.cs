@@ -145,7 +145,7 @@ namespace WeaponCore.Projectiles
                                     p.ForceNewTarget(!targetIsProjectile);
 
                                 var validTarget = targetIsProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
-                                if (newChase && p.EndChase() || validTarget || !p.Activated && p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
+                                if (newChase && p.EndChase() || validTarget || !p.IsMine && p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
                                 {
                                     if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
                                     var targetPos = Vector3D.Zero;
@@ -281,26 +281,21 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr)
                         {
-                            if (p.IdleTime == 0) Die(p, i);
+                            if (p.IdleTime <= 0) Die(p, i);
                             else
                             {
                                 p.IdleTime--;
-                                if (!p.Seeking && !p.Activated &&
-                                    p.Guidance == AmmoTrajectory.GuidanceType.DetectSmart ||
-                                    p.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo || p.Guidance == AmmoTrajectory.GuidanceType.DetectFixed)
+                                if (p.IsMine && !p.MineSeeking && !p.MineActivated)
                                 {
                                     p.T.Cloaked = p.T.System.Values.Ammo.Trajectory.Mines.Cloak;
-                                    p.Seeking = true;
+                                    p.MineSeeking = true;
                                 }
                             }
                         }
                         if (p.Ewar)
                         {
-                            if (p.VelocityLengthSqr <= 0 && !p.T.Triggered)
-                            {
-                                Log.Line($"trigger active - Age:{p.Age} - {p.VelocityLengthSqr}");
+                            if (p.VelocityLengthSqr <= 0 && !p.T.Triggered && !p.IsMine)
                                 p.T.Triggered = true;
-                            }
 
                             if (p.T.Triggered)
                             {
@@ -381,6 +376,12 @@ namespace WeaponCore.Projectiles
                     {
                         p.ModelSphereLast.Center = p.LastEntityPos;
                         p.ModelSphereCurrent.Center = p.Position;
+                        if (p.T.Triggered)
+                        {
+                            var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() : p.T.System.AreaEffectSize;
+                            p.ModelSphereLast.Radius = currentRadius;
+                            p.ModelSphereCurrent.Radius = currentRadius;
+                        }
                         if (camera.IsInFrustum(ref p.ModelSphereLast) || camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
                         {
                             p.T.OnScreen = true;

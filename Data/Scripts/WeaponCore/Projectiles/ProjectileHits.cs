@@ -19,8 +19,8 @@ namespace WeaponCore.Projectiles
         private bool Hit(Projectile p, int poolId)
         {
             var beam = new LineD(p.LastPosition, p.Position);
-            if (p.Seeking)
-                SeekEnemy(p, beam, poolId);
+            if (p.MineSeeking && !p.MineTriggered)
+                SeekEnemy(p, poolId);
             else if (p.T.System.CollisionIsLine)
             {
                 p.PruneSphere.Center = p.Position;
@@ -76,7 +76,7 @@ namespace WeaponCore.Projectiles
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
-                if (voxel != null && p.EwarActive) continue;
+                if (grid == null && p.EwarActive && p.AreaEffect != DotField && ent is IMyCharacter) continue;
                 if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
@@ -356,7 +356,7 @@ namespace WeaponCore.Projectiles
             return xDist.CompareTo(yDist);
         }
 
-        private void SeekEnemy(Projectile p, LineD beam, int poolId)
+        private void SeekEnemy(Projectile p, int poolId)
         {
             var mineInfo = p.T.System.Values.Ammo.Trajectory.Mines;
             var detectRadius = mineInfo.DetectRadius;
@@ -365,10 +365,10 @@ namespace WeaponCore.Projectiles
             var wakeRadius = detectRadius > deCloakRadius ? detectRadius : deCloakRadius;
             p.PruneSphere = new BoundingSphereD(p.Position, wakeRadius);
             var checkList = CheckPool[poolId].Get();
-            var mark = false;
+            var inRange = false;
             var activate = false;
             var minDist = double.MaxValue;
-            if (!p.Activated)
+            if (!p.MineActivated)
             {
                 MyEntity closestEnt = null;
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, MyEntityQueryType.Dynamic);
@@ -387,18 +387,12 @@ namespace WeaponCore.Projectiles
                         case MyRelationsBetweenPlayerAndBlock.FactionShare:
                             continue;
                     }
-                    var entCenter = ent.PositionComp.WorldAABB.Center;
-
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                    var lineTest = new LineD(p.Position, entCenter);
-                    var dist = obb.Intersects(ref lineTest) ?? 0;
+                    var entSphere = ent.PositionComp.WorldVolume;
+                    entSphere.Radius += p.T.System.CollisionSize;
+                    var dist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref p.Position, ref entSphere);
                     if (dist >= minDist) continue;
                     minDist = dist;
                     closestEnt = ent;
-                    if (p.T.Cloaked && minDist <= deCloakRadius) p.T.Cloaked = false;
-                    if (minDist <= detectRadius) mark = true;
-                    if (minDist <= p.T.System.CollisionSize) activate = true;
                 }
 
                 if (closestEnt != null)
@@ -407,34 +401,32 @@ namespace WeaponCore.Projectiles
                     p.T.Target.Entity = closestEnt;
                 }
             }
-            else
+            else if (p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose)
             {
-                if (p.T.Target.Entity == null || p.T.Target.Entity.MarkedForClose)
-                {
-                    p.DistanceToTravelSqr = (p.T.DistanceTraveled * p.T.DistanceTraveled) + 1;
-                    p.IdleTime = 0;
-                    return;
-                }
-                var ent = p.T.Target.Entity;
-                var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                var lineTest = new LineD(p.Position, ent.PositionComp.WorldAABB.Center);
-                minDist = obb.Intersects(ref lineTest) ?? 0;
-                if (p.T.Cloaked && minDist <= deCloakRadius) p.T.Cloaked = false;
-                if (minDist <= detectRadius) mark = true;
-                if (minDist <= p.T.System.CollisionSize) activate = true;
-                if (!mark)
-                {
-                    p.DistanceToTravelSqr = (p.T.DistanceTraveled * p.T.DistanceTraveled) + 1;
-                    p.IdleTime = 0;
-                    return;
-                }
+                var entSphere = p.T.Target.Entity.PositionComp.WorldVolume;
+                entSphere.Radius += p.T.System.CollisionSize;
+                minDist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref p.Position, ref entSphere);
             }
+            else
+                p.TriggerMine(true);
+
+            if (p.T.Cloaked && minDist <= deCloakRadius) p.T.Cloaked = false;
+            else if (!p.T.Cloaked && minDist > deCloakRadius) p.T.Cloaked = true;
+
+            if (minDist <= p.T.System.CollisionSize) activate = true;
+            if (minDist <= detectRadius) inRange = true;
+            if (p.MineActivated)
+            {
+                if (!inRange)
+                    p.TriggerMine(true);
+            }
+            else if (inRange) p.ActivateMine();
 
             if (activate)
+            {
+                p.TriggerMine(false);
                 p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = minDist, Element = p.T.Target.Entity });
-            else if (!p.Activated && mark)
-                p.ActivateMine();
+            }
 
             checkList.Clear();
             CheckPool[poolId].Return(checkList);
@@ -498,6 +490,7 @@ namespace WeaponCore.Projectiles
                 return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
             });
         }
+        /*
         private static void PrefetchVoxelPhysicsIfNeeded(Projectile p)
         {
             var ray = new LineD(p.Origin, p.Origin + p.Direction * p.MaxTrajectory, p.MaxTrajectory);
@@ -511,5 +504,6 @@ namespace WeaponCore.Projectiles
                     (segmentOverlapResult.Element as MyPlanet)?.PrefetchShapeOnRay(ref ray);
             }
         }
+        */
     }
 }
