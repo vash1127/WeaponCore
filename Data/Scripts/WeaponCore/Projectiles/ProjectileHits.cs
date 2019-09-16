@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
@@ -9,15 +10,18 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.HitEntity.Type;
+using static WeaponCore.Support.AreaDamage.AreaEffectType;
 
 namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-        private bool Hit(Projectile p, int poolId, bool lineCheck)
+        private bool Hit(Projectile p, int poolId)
         {
             var beam = new LineD(p.LastPosition, p.Position);
-            if (lineCheck)
+            if (p.MineSeeking && !p.MineTriggered)
+                SeekEnemy(p, poolId);
+            else if (p.T.System.CollisionIsLine)
             {
                 p.PruneSphere.Center = p.Position;
                 p.PruneSphere.Radius = p.T.System.CollisionSize;
@@ -37,8 +41,7 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.T.System.CollisionSize;
                 }
-
-                if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(p.Origin) != ContainmentType.Disjoint) return false;
+                if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Origin, 5f)) != ContainmentType.Disjoint) return false;
 
                 var checkList = CheckPool[poolId].Get();
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
@@ -48,9 +51,10 @@ namespace WeaponCore.Projectiles
                 checkList.Clear();
                 CheckPool[poolId].Return(checkList);
             }
+
             if (p.SegmentList.Count > 0)
             {
-                var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId, lineCheck);
+                var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId);
                 if (nearestHitEnt != null && Intersected(p, DrawProjectiles[poolId], nearestHitEnt)) return true;
                 p.T.HitList.Clear();
             }
@@ -58,11 +62,12 @@ namespace WeaponCore.Projectiles
             return false;
         }
 
-        internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, int poolId, bool lineCheck)
+        internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, int poolId)
         {
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var ai = p.T.Ai;
             var found = false;
+            var lineCheck = p.T.System.CollisionIsLine;
             //Log.Line($"get all entities in line: LineCheck:{lineCheck} - ewarActive:{eWarActive} - ewarInactive:{eWarInactive} - jump:{jumpNullField} - Vel:{p.VelocityLengthSqr}");
 
             for (int i = 0; i < p.SegmentList.Count; i++)
@@ -70,6 +75,8 @@ namespace WeaponCore.Projectiles
                 var ent = p.SegmentList[i].Element;
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
+                var voxel = ent as MyVoxelBase;
+                if (grid == null && p.EwarActive && p.AreaEffect != DotField && ent is IMyCharacter) continue;
                 if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
@@ -80,6 +87,7 @@ namespace WeaponCore.Projectiles
                         {
                             var hitEntity = HitEntityPool[poolId].Get();
                             hitEntity.Clean();
+                            hitEntity.System = p.T.System;
                             hitEntity.PoolId = poolId;
                             hitEntity.Entity = (MyEntity)shieldBlock;
                             hitEntity.Beam = beam;
@@ -93,7 +101,6 @@ namespace WeaponCore.Projectiles
                         else continue;
                     }
                 }
-                var voxel = ent as MyVoxelBase;
                 if ((ent == ai.MyPlanet && (p.CheckPlanet || p.DynamicGuidance)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
                 {
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
@@ -129,6 +136,7 @@ namespace WeaponCore.Projectiles
                     }
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
+                    hitEntity.System = p.T.System;
                     hitEntity.PoolId = poolId;
                     hitEntity.Entity = ent;
                     hitEntity.Beam = beam;
@@ -140,6 +148,7 @@ namespace WeaponCore.Projectiles
                     if (grid != null)
                     {
                         hitEntity.EventType = !(p.EwarActive && p.FieldEffect) ? Grid : Field;
+                        if (p.AreaEffect == DotField) hitEntity.DamageOverTime = true;
                     }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;
@@ -160,6 +169,7 @@ namespace WeaponCore.Projectiles
                 {
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
+                    hitEntity.System = p.T.System;
                     hitEntity.PoolId = poolId;
                     hitEntity.EventType = HitEntity.Type.Projectile;
                     hitEntity.Hit = true;
@@ -221,7 +231,6 @@ namespace WeaponCore.Projectiles
             var xDist = double.MaxValue;
             var yDist = double.MaxValue;
             var beam = x.Beam;
-
             var count = y != null ? 2 : 1;
             for (int i = 0; i < count; i++)
             {
@@ -271,18 +280,7 @@ namespace WeaponCore.Projectiles
                             hitEnt.HitPos = hitPos;
 
                             if (!fieldActive)
-                            {
-                                var hashSet = HitEntity.CastOrGetHashSet(hitEnt, ((MyCubeGrid)null)?.CubeBlocks);
-                                grid.GetBlocksInsideSphere(ref hitEnt.PruneSphere, hashSet, false);
-
-                                hitEnt.Blocks.AddRange(hashSet);
-                                hitEnt.Blocks.Sort((a, b) =>
-                                {
-                                    var aPos = grid.GridIntegerToWorld(a.Position);
-                                    var bPos = grid.GridIntegerToWorld(b.Position);
-                                    return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
-                                });
-                            }
+                                GetAndSortBlocksInSphere(hitEnt, grid, hitPos, false);
                         }
                         else
                         {
@@ -323,13 +321,31 @@ namespace WeaponCore.Projectiles
                 }
                 else if (ent is IMyDestroyableObject)
                 {
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                    dist = obb.Intersects(ref beam) ?? double.MaxValue;
-                    if (dist < double.MaxValue)
+                    if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Beam.From, hitEnt.HitPos.Value);
+                    else
                     {
-                        hitEnt.Hit = true;
-                        hitEnt.HitPos = beam.From + (beam.Direction * dist);
+                        if (hitEnt.SphereCheck)
+                        {
+                            var fieldActive = hitEnt.EventType == Field;
+
+                            dist = 0;
+                            hitEnt.Hit = true;
+                            var hitPos = !fieldActive
+                                ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius)
+                                : hitEnt.PruneSphere.Center;
+                            hitEnt.HitPos = hitPos;
+                        }
+                        else
+                        {
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.PositionComp.WorldMatrix);
+                            var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                            dist = obb.Intersects(ref beam) ?? double.MaxValue;
+                            if (dist < double.MaxValue)
+                            {
+                                hitEnt.Hit = true;
+                                hitEnt.HitPos = beam.From + (beam.Direction * dist);
+                            }
+                        }
                     }
                 }
 
@@ -340,6 +356,141 @@ namespace WeaponCore.Projectiles
             return xDist.CompareTo(yDist);
         }
 
+        private void SeekEnemy(Projectile p, int poolId)
+        {
+            var mineInfo = p.T.System.Values.Ammo.Trajectory.Mines;
+            var detectRadius = mineInfo.DetectRadius;
+            var deCloakRadius = mineInfo.DeCloakRadius;
+
+            var wakeRadius = detectRadius > deCloakRadius ? detectRadius : deCloakRadius;
+            p.PruneSphere = new BoundingSphereD(p.Position, wakeRadius);
+            var checkList = CheckPool[poolId].Get();
+            var inRange = false;
+            var activate = false;
+            var minDist = double.MaxValue;
+            if (!p.MineActivated)
+            {
+                MyEntity closestEnt = null;
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, MyEntityQueryType.Dynamic);
+                for (int i = 0; i < checkList.Count; i++)
+                {
+                    var ent = checkList[i];
+                    var grid = ent as MyCubeGrid;
+                    var character = ent as IMyCharacter;
+                    if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
+                    Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
+                    if (!GridAi.CreateEntInfo(ent, p.T.Ai.MyOwner, out entInfo)) continue;
+                    switch (entInfo.Relationship)
+                    {
+                        case MyRelationsBetweenPlayerAndBlock.Owner:
+                            continue;
+                        case MyRelationsBetweenPlayerAndBlock.FactionShare:
+                            continue;
+                    }
+                    var entSphere = ent.PositionComp.WorldVolume;
+                    entSphere.Radius += p.T.System.CollisionSize;
+                    var dist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref p.Position, ref entSphere);
+                    if (dist >= minDist) continue;
+                    minDist = dist;
+                    closestEnt = ent;
+                }
+
+                if (closestEnt != null)
+                {
+                    p.ForceNewTarget(false);
+                    p.T.Target.Entity = closestEnt;
+                }
+            }
+            else if (p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose)
+            {
+                var entSphere = p.T.Target.Entity.PositionComp.WorldVolume;
+                entSphere.Radius += p.T.System.CollisionSize;
+                minDist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref p.Position, ref entSphere);
+            }
+            else
+                p.TriggerMine(true);
+
+            if (p.T.Cloaked && minDist <= deCloakRadius) p.T.Cloaked = false;
+            else if (!p.T.Cloaked && minDist > deCloakRadius) p.T.Cloaked = true;
+
+            if (minDist <= p.T.System.CollisionSize) activate = true;
+            if (minDist <= detectRadius) inRange = true;
+            if (p.MineActivated)
+            {
+                if (!inRange)
+                    p.TriggerMine(true);
+            }
+            else if (inRange) p.ActivateMine();
+
+            if (activate)
+            {
+                p.TriggerMine(false);
+                p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = minDist, Element = p.T.Target.Entity });
+            }
+
+            checkList.Clear();
+            CheckPool[poolId].Return(checkList);
+        }
+
+        internal static void GetAndSortBlocksInSphere(HitEntity hitEnt, MyCubeGrid grid, Vector3D hitPos, bool fatOnly)
+        {
+            var sphere = hitEnt.PruneSphere;
+            var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
+            Vector3D result;
+            Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
+            var localSphere = new BoundingSphere(result, (float)sphere.Radius);
+            var fieldType = hitEnt.System.Values.Ammo.AreaEffect.AreaEffect;
+            if (fatOnly)
+            {
+                foreach (var cube in grid.GetFatBlocks())
+                {
+                    switch (fieldType)
+                    {
+                        case JumpNullField:
+                            if (!(cube is MyJumpDrive)) continue;
+                            break;
+                        case EnergySinkField:
+                            if (!(cube is IMyPowerProducer)) continue;
+                            break;
+                        case AnchorField:
+                            if (!(cube is MyThrust)) continue;
+                            break;
+                        case NavField:
+                            if (!(cube is MyGyro)) continue;
+                            break;
+                        case OffenseField:
+                            if (!(cube is IMyGunBaseUser)) continue;
+                            break;
+                        case EmpField:
+                        case DotField:
+                            break;
+                        default: continue;
+                    }
+                    var block = cube.SlimBlock as IMySlimBlock;
+                    if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                        continue;
+                    hitEnt.Blocks.Add(block);
+                }
+            }
+            else
+            {
+                foreach (IMySlimBlock block in grid.GetBlocks())
+                {
+                    if (block.IsDestroyed) continue;
+                    if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
+                        continue;
+                    hitEnt.Blocks.Add(block);
+                }
+            }
+
+            hitEnt.Blocks.Sort((a, b) =>
+            {
+                var aPos = grid.GridIntegerToWorld(a.Position);
+                var bPos = grid.GridIntegerToWorld(b.Position);
+                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
+            });
+        }
+        /*
         private static void PrefetchVoxelPhysicsIfNeeded(Projectile p)
         {
             var ray = new LineD(p.Origin, p.Origin + p.Direction * p.MaxTrajectory, p.MaxTrajectory);
@@ -353,5 +504,6 @@ namespace WeaponCore.Projectiles
                     (segmentOverlapResult.Element as MyPlanet)?.PrefetchShapeOnRay(ref ray);
             }
         }
+        */
     }
 }

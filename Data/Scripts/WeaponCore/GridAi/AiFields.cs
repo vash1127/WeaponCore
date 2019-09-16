@@ -25,7 +25,6 @@ namespace WeaponCore.Support
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
         internal readonly Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>> ValidGrids = new Dictionary<MyEntity, Dictionary<BlockTypes, List<MyCubeBlock>>>();
-
         internal readonly HashSet<MyResourceSourceComponent> Sources = new HashSet<MyResourceSourceComponent>();
         internal readonly List<MyCubeGrid> SubGridsTmp = new List<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
@@ -81,6 +80,7 @@ namespace WeaponCore.Support
         internal bool ReturnHome;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
+        internal double GridRadius;
         internal float GridMaxPower;
         internal float WeaponCleanPower;
         internal float GridCurrentPower;
@@ -92,6 +92,7 @@ namespace WeaponCore.Support
         internal float MinSinkPower;
         internal float CurrentWeaponsDraw;
         internal float LastAvailablePower;
+        internal Vector3D GridCenter;
         internal Vector3 GridVel;
         internal enum TargetType
         {

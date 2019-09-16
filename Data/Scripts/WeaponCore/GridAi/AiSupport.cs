@@ -17,6 +17,8 @@ namespace WeaponCore.Support
         internal void RequestDbUpdate()
         {
             if (!UpdateOwner() || Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
+            GridCenter = MyGrid.PositionComp.WorldAABB.Center;
+            GridRadius = MyGrid.PositionComp.LocalVolume.Radius;
             Session.Instance.DbsToUpdate.Add(this);
             TargetsUpdatedTick = Session.Instance.Tick;
         }
@@ -122,7 +124,7 @@ namespace WeaponCore.Support
             return deck;
         }
 
-        internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
+        internal static bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
         {
             if (entity == null)
             {
@@ -250,21 +252,51 @@ namespace WeaponCore.Support
             internal int Max;
         }
 
+        internal struct ShieldInfo
+        {
+            internal IMyTerminalBlock ShieldBlock;
+            internal bool WasOnline;
+            internal MyCubeGrid AttachedGrid;
+            internal MyOrientedBoundingBoxD ShieldObb;
+
+            internal MyOrientedBoundingBoxD GetObb()
+            {
+                var rotMatrix = Quaternion.CreateFromRotationMatrix(AttachedGrid.PositionComp.WorldMatrix);
+                ShieldObb = new MyOrientedBoundingBoxD(AttachedGrid.PositionComp.WorldAABB.Center, AttachedGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                return ShieldObb;
+            }
+        }
+
         internal struct TargetInfo
         {
             internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
             internal readonly MyEntity Target;
             internal readonly bool IsGrid;
+            internal readonly bool Shielded;
             internal readonly int PartCount;
             internal readonly MyCubeGrid MyGrid;
             internal readonly GridAi Ai;
             internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
+            internal ShieldInfo ShieldInfo;
 
-            internal TargetInfo(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
+            internal TargetInfo(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, bool shielded, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
             {
                 EntInfo = entInfo;
                 Target = target;
                 IsGrid = isGrid;
+                Shielded = shielded;
+                if (Shielded)
+                {
+                    var shieldBlock = Session.Instance.SApi.GetShieldBlock(Target);
+                    ShieldInfo = new ShieldInfo
+                    {
+                        ShieldBlock = shieldBlock,
+                        AttachedGrid = (MyCubeGrid) shieldBlock.CubeGrid,
+                        WasOnline = Session.Instance.SApi.IsShieldUp(shieldBlock),
+                    };
+                }
+                else ShieldInfo = new ShieldInfo();
+
                 PartCount = partCount;
                 MyGrid = myGrid;
                 Ai = ai;

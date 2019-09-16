@@ -38,27 +38,30 @@ namespace WeaponCore.Support
         internal WeaponFrameCache WeaponCache;
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
-        internal Vector3D PrevPosition;
         internal Vector3D Position;
         internal Vector3D Direction;
+        internal Vector3D LineStart;
         internal Vector4 Color;
         internal int WeaponId;
         internal int MuzzleId;
         internal int TriggerGrowthSteps;
         internal int ObjectsHit;
         internal double Length;
+        internal double GrowDistance;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
+        internal double ProjectileDisplacement;
         internal float LineWidth;
         internal float BaseDamagePool;
         internal float AreaEffectDamage;
         internal float DetonationDamage;
         internal float BaseHealthPool;
-        internal ReSize ReSizing;
         internal bool OnScreen;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool Triggered;
+        internal bool Cloaked;
+        internal ReSize ReSizing;
         internal DrawState Draw;
 
         internal void Complete(HitEntity hitEntity, DrawState draw)
@@ -100,26 +103,25 @@ namespace WeaponCore.Support
             WeaponId = weaponId;
             MuzzleId = muzzleId;
             Position = origin;
-            PrevPosition = origin;
             Direction = direction;
         }
 
-        internal void UpdateVrShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length, ReSize resizing)
+        internal void UpdateVrShape(Vector3D position, Vector3D direction, double length, ReSize resizing)
         {
-            PrevPosition = prevPosition;
             Position = position;
             Direction = direction;
             Length = length;
             ReSizing = resizing;
+            LineStart = position + -(direction * length);
         }
 
-        internal void UpdateShape(Vector3D prevPosition, Vector3D position, Vector3D direction, double length, ReSize resizing)
+        internal void UpdateShape(Vector3D position, Vector3D direction, double length, ReSize resizing)
         {
-            PrevPosition = prevPosition;
             Position = position;
             Direction = direction;
             Length = length;
             ReSizing = resizing;
+            LineStart = position + -(direction * length);
         }
 
         internal void Clean()
@@ -134,6 +136,8 @@ namespace WeaponCore.Support
             WeaponCache = null;
             Triggered = false;
             TriggerGrowthSteps = 0;
+            ProjectileDisplacement = 0;
+            GrowDistance = 0;
             ReSizing = ReSize.None;
         }
     }
@@ -154,10 +158,12 @@ namespace WeaponCore.Support
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();
         public MyEntity Entity;
+        public WeaponSystem System;
         internal Projectile Projectile;
         public LineD Beam;
         public bool Hit;
         public bool SphereCheck;
+        public bool DamageOverTime;
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public Type EventType;
@@ -237,6 +243,7 @@ namespace WeaponCore.Support
             EventType = Stale;
             PruneSphere = new BoundingSphereD();
             SphereCheck = false;
+            DamageOverTime = false;
         }
     }
 
@@ -425,7 +432,6 @@ namespace WeaponCore.Support
     {
         internal WeaponSystem System;
         internal Vector3D HitPos;
-        internal Vector3D PrevPosition;
         internal Vector3D BackOfTracer;
         internal Vector3D Direction;
         internal double ResizeLen;
@@ -438,11 +444,10 @@ namespace WeaponCore.Support
             Thickness = thickness;
             System = trajectile.System;
             HitPos = trajectile.Position;
-            PrevPosition = trajectile.PrevPosition;
             Direction = trajectile.Direction;
             ResizeLen = trajectile.DistanceTraveled - trajectile.PrevDistanceTraveled;
             TracerSteps = trajectile.System.Values.Graphics.Line.Tracer.Length / ResizeLen;
-            var frontOfTracer = (PrevPosition + (Direction * ResizeLen));
+            var frontOfTracer = (trajectile.LineStart + (Direction * ResizeLen));
             var tracerLength = trajectile.System.Values.Graphics.Line.Tracer.Length;
             BackOfTracer = frontOfTracer + (-Direction * (tracerLength + ResizeLen));
         }
@@ -466,14 +471,14 @@ namespace WeaponCore.Support
     internal struct Shrunk
     {
         internal readonly Vector3D PrevPosition;
-        internal readonly Vector3D BackOfGlow;
+        internal readonly Vector3D BackOfTail;
         internal readonly double Reduced;
         internal readonly double StepLength;
 
-        internal Shrunk(ref Vector3D prevPosition, ref Vector3D backOfGlow, double reduced, double stepLength)
+        internal Shrunk(ref Vector3D prevPosition, ref Vector3D backOfTail, double reduced, double stepLength)
         {
             PrevPosition = prevPosition;
-            BackOfGlow = backOfGlow;
+            BackOfTail = backOfTail;
             Reduced = reduced;
             StepLength = stepLength;
         }
