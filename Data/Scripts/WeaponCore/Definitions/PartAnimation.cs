@@ -7,9 +7,8 @@ namespace WeaponCore.Support {
     public class PartAnimation
     {
         internal readonly string AnimationId;
-        internal readonly Vector3?[] MoveSet;
-        internal readonly MatrixD?[] RotationSet;
-        internal readonly MatrixD?[] RotCenterSet;
+        internal readonly Matrix?[] RotationSet;
+        internal readonly Matrix?[] RotCenterSet;
         internal readonly Session.AnimationType[] TypeSet;
         internal readonly int[] CurrentEmissivePart;
         internal readonly int[][] MoveToSetIndexer;
@@ -57,9 +56,8 @@ namespace WeaponCore.Support {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(string animationId, Vector3?[] moveSet, MatrixD?[] rotationSet, MatrixD?[] rotCeterSet, Session.AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false)
+        internal PartAnimation(string animationId, Matrix?[] rotationSet, Matrix?[] rotCeterSet, Session.AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false)
         {
-            MoveSet = moveSet;
             RotationSet = rotationSet;
             RotCenterSet = rotCeterSet;
             CurrentEmissivePart = currentEmissivePart;
@@ -87,15 +85,12 @@ namespace WeaponCore.Support {
         internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out MatrixD? rotAroundCenter, out Session.AnimationType type, out EmissiveState? emissiveState)
         {
             type = TypeSet[MoveToSetIndexer[_currentMove][(int)indexer.TypeIndex]];
-            
+            var moveSet = System.WeaponLinearMoveSet[AnimationId];
 
             if (type == Session.AnimationType.Movement)
             {
-                if (MoveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]] != null)
-                {
-                    var move = MatrixD.CreateTranslation((Vector3) MoveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]]);
-                    translation = move.Translation;
-                }
+                if (moveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]] != null)
+                    translation = moveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]].Value.Translation;
                 else
                     translation = Vector3D.Zero;
 

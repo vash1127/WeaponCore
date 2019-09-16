@@ -25,6 +25,7 @@ namespace WeaponCore.Support
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
         public readonly Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> WeaponEmissiveSet;
+        public readonly Dictionary<string, Matrix?[]> WeaponLinearMoveSet;
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly int ReloadTime;
@@ -197,7 +198,7 @@ namespace WeaponCore.Support
 
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
-            Session.Instance.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet);
+            Session.Instance.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet);
         }
 
         private void SetWeaponAnimations( )

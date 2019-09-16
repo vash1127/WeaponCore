@@ -12,13 +12,17 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> weaponEmissivesSet)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> weaponEmissivesSet, out Dictionary<string,Matrix?[]> weaponLinearMoveSet)
         {
 
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
             var allEmissivesSet = new Dictionary<string, MyTuple<string[], Color, bool, bool, float>?>();
+
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
+
+            weaponLinearMoveSet = new Dictionary<string,Matrix?[]>();
+
             var emissiveLookup = new Dictionary<string, WeaponEmissive>();
 
             if (wepEmissivesSet != null)
@@ -40,11 +44,13 @@ namespace WeaponCore
                     foreach (var moves in animationSet.EventMoveSets)
                     {
                         if (!allAnimationSet.ContainsKey(moves.Key))
+                        {
                             allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
+                        }
 
-                        List<Vector3?> moveSet = new List<Vector3?>();
-                        List<MatrixD?> rotationSet = new List<MatrixD?>();
-                        List<MatrixD?> rotCenterSet = new List<MatrixD?>();
+                        List<Matrix?> moveSet = new List<Matrix?>();
+                        List<Matrix?> rotationSet = new List<Matrix?>();
+                        List<Matrix?> rotCenterSet = new List<Matrix?>();
                         List<string> rotCenterNameSet = new List<string>();
                         var id = $"{(int)moves.Key}{animationSet.SubpartId[t]}";
                         AnimationType[] typeSet = new[]
@@ -198,7 +204,9 @@ namespace WeaponCore
                                                 tmpDirVec[vectorCount][2] * changed,
                                                 tmpDirVec[vectorCount][3] * changed);
 
-                                            moveSet.Add(vector);
+                                            var matrix = Matrix.CreateTranslation(vector);
+
+                                            moveSet.Add(matrix);
 
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
@@ -264,7 +272,9 @@ namespace WeaponCore
                                                 tmpDirVec[vectorCount][2] * changed,
                                                 tmpDirVec[vectorCount][3] * changed);
 
-                                            moveSet.Add(vector);
+                                            var matrix = Matrix.CreateTranslation(vector);
+
+                                            moveSet.Add(matrix);
 
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
@@ -311,7 +321,9 @@ namespace WeaponCore
                                                 tmpDirVec[vectorCount][2] * changed,
                                                 tmpDirVec[vectorCount][3] * changed);
 
-                                            moveSet.Add(vector);
+                                            var matrix = Matrix.CreateTranslation(vector);
+
+                                            moveSet.Add(matrix);
 
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
@@ -387,9 +399,11 @@ namespace WeaponCore
                         if (animationSet.Reverse != null && animationSet.Reverse.Contains(moves.Key))
                             reverse = true;
 
-                        var partAnim = new PartAnimation(id, moveSet.ToArray(), rotationSet.ToArray(),
+                        var partAnim = new PartAnimation(id, rotationSet.ToArray(),
                             rotCenterSet.ToArray(), typeSet, currentEmissivePart.ToArray(), moveIndexer.ToArray(), animationSet.SubpartId[t], null, null,
                             animationSet.BarrelId, animationSet.StartupFireDelay, animationSet.AnimationDelays[moves.Key], system, loop, reverse);
+
+                        weaponLinearMoveSet.Add(id, moveSet.ToArray());
 
                         partAnim.RotCenterNameSet = rotCenterNameSet.ToArray();
                         allAnimationSet[moves.Key].Add(partAnim);
@@ -399,7 +413,7 @@ namespace WeaponCore
 
             weaponAnimationSets = allAnimationSet;
             weaponEmissivesSet = allEmissivesSet;
-
+            
         }
 
         internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateWeaponAnimationSet(Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> systemAnimations, RecursiveSubparts parts)
@@ -419,8 +433,8 @@ namespace WeaponCore
                     var subpart = part as MyEntitySubpart;
                     if (subpart == null) continue;
 
-                    var rotations = new MatrixD?[animation.RotationSet.Length];
-                    var rotCenters = new MatrixD?[animation.RotCenterSet.Length];
+                    var rotations = new Matrix?[animation.RotationSet.Length];
+                    var rotCenters = new Matrix?[animation.RotCenterSet.Length];
                     animation.RotationSet.CopyTo(rotations, 0);
                     animation.RotCenterSet.CopyTo(rotCenters, 0);
 
@@ -455,21 +469,28 @@ namespace WeaponCore
                         }
                     }
 
-                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.AnimationId, animation.MoveSet, rotations, rotCenters,
+                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.AnimationId,rotations, rotCenters,
                         animation.TypeSet, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
                         animation.Muzzle, animation.FireDelay, animation.MotionDelay, system, animation.DoesLoop,
                         animation.DoesReverse));
                 }
             }
 
-            foreach (var emissive in system.WeaponEmissiveSet)
+            try
             {
-                if(emissive.Value == null)continue;
-
-                foreach (var part in emissive.Value.Value.Item1)
+                foreach (var emissive in system.WeaponEmissiveSet)
                 {
-                    parts.SetEmissiveParts(part, Color.Transparent, 0);
+                    if (emissive.Value == null) continue;
+
+                    foreach (var part in emissive.Value.Value.Item1)
+                    {
+                        parts.SetEmissiveParts(part, Color.Transparent, 0);
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                //cant check for emissives so may be null ref
             }
 
             return allAnimationSet;
@@ -545,6 +566,7 @@ namespace WeaponCore
             PartAnimation animation;
             while (animationsToProcess.TryDequeue(out animation))
             {
+
                 //var data = new AnimationParallelData(ref animation);
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null)
                 {
@@ -559,14 +581,13 @@ namespace WeaponCore
                         animation.StartTick = Tick + animation.MotionDelay;
                         animationsToQueue.Enqueue(animation);
                     }
-                    else if(animation.Looping)
+                    else
                     {
                         animationsToQueue.Enqueue(animation);
                     }
 
                 }
             }
-
         }
 
         internal void ProcessAnimationQueue()
