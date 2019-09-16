@@ -1,15 +1,17 @@
-﻿using System.Runtime.InteropServices;
-using VRage.Game;
+﻿using System;
+using VRage;
 using VRage.Game.Entity;
 using VRageMath;
 
 namespace WeaponCore.Support { 
     public class PartAnimation
     {
+        internal readonly string AnimationId;
         internal readonly Vector3?[] MoveSet;
         internal readonly MatrixD?[] RotationSet;
         internal readonly MatrixD?[] RotCenterSet;
         internal readonly Session.AnimationType[] TypeSet;
+        internal readonly int[] CurrentEmissivePart;
         internal readonly int[][] MoveToSetIndexer;
         internal readonly int NumberOfMoves;
         internal readonly uint FireDelay;
@@ -19,8 +21,27 @@ namespace WeaponCore.Support {
         internal readonly bool DoesReverse;
         internal readonly string Muzzle;
         internal readonly string SubpartId;
-        
 
+        internal enum indexer
+        {
+            MoveIndex,
+            RotationIndex,
+            RotCenterIndex,
+            TypeIndex,
+            EmissiveIndex,
+        }
+
+        internal struct EmissiveState
+        {
+            internal string[] EmissiveParts;
+            internal int CurrentPart;
+            internal Color CurrentColor;
+            internal float CurrentIntensity;
+            internal bool CycleParts;
+            internal bool LeavePreviousOn;
+        }
+
+        internal WeaponSystem System;
         internal MyEntitySubpart Part;
         internal string[] RotCenterNameSet;
         internal bool Reverse;
@@ -29,23 +50,28 @@ namespace WeaponCore.Support {
         internal uint StartTick;
 
         private int _currentMove;
+        private EmissiveState? LastEmissive;
 
         internal int CurrentMove
         {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(Vector3?[] moveSet, MatrixD?[] rotationSet, MatrixD?[] rotCeterSet, Session.AnimationType[] typeSet, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, bool loop = false, bool reverse = false)
+        internal PartAnimation(string animationId, Vector3?[] moveSet, MatrixD?[] rotationSet, MatrixD?[] rotCeterSet, Session.AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false)
         {
             MoveSet = moveSet;
             RotationSet = rotationSet;
             RotCenterSet = rotCeterSet;
+            CurrentEmissivePart = currentEmissivePart;
+            AnimationId = animationId;
+
             TypeSet = typeSet;
             Muzzle = muzzle;
             MoveToSetIndexer = moveToSetIndexer;
             NumberOfMoves = MoveToSetIndexer.Length;
             Part = part;
             SubpartId = subpartId;
+            System = system;
 
             MotionDelay = motionDelay;
             FireDelay = fireDelay;
@@ -54,24 +80,50 @@ namespace WeaponCore.Support {
             DoesLoop = loop;
             DoesReverse = reverse;
             _currentMove = 0;
+
         }
 
         
-        internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out MatrixD? rotAroundCenter, out Session.AnimationType type)
+        internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out MatrixD? rotAroundCenter, out Session.AnimationType type, out EmissiveState? emissiveState)
         {
-            type = TypeSet[MoveToSetIndexer[CurrentMove][3]];
+            type = TypeSet[MoveToSetIndexer[_currentMove][(int)indexer.TypeIndex]];
+            
+
             if (type == Session.AnimationType.Movement)
             {
-                if (MoveSet[MoveToSetIndexer[_currentMove][0]] != null)
+                if (MoveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]] != null)
                 {
-                    var move = MatrixD.CreateTranslation((Vector3) MoveSet[MoveToSetIndexer[_currentMove][0]]);
+                    var move = MatrixD.CreateTranslation((Vector3) MoveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]]);
                     translation = move.Translation;
                 }
                 else
                     translation = Vector3D.Zero;
 
-                rotation = RotationSet[MoveToSetIndexer[_currentMove][1]];
-                rotAroundCenter = RotCenterSet[MoveToSetIndexer[_currentMove][2]];
+                rotation = RotationSet[MoveToSetIndexer[_currentMove][(int)indexer.RotationIndex]];
+                rotAroundCenter = RotCenterSet[MoveToSetIndexer[_currentMove][(int)indexer.RotCenterIndex]];
+                emissiveState = null;
+
+                MyTuple<string[], Color, bool, bool, float>? emissive;
+                System.WeaponEmissiveSet.TryGetValue(AnimationId + _currentMove, out emissive);
+
+                if (emissive == null || emissive != null && LastEmissive != null && 
+                    emissive.Value.Item1[CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]]] ==
+                    LastEmissive.Value.EmissiveParts[LastEmissive.Value.CurrentPart] &&
+                    emissive.Value.Item2 == LastEmissive.Value.CurrentColor &&
+                    emissive.Value.Item5 == LastEmissive.Value.CurrentIntensity)
+                    emissiveState = null;
+                else
+                {
+                    emissiveState = LastEmissive = new EmissiveState()
+                    {
+                        EmissiveParts = emissive.Value.Item1,
+                        CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]],
+                        CurrentColor = emissive.Value.Item2,
+                        CurrentIntensity = emissive.Value.Item5,
+                        CycleParts = emissive.Value.Item3,
+                        LeavePreviousOn = emissive.Value.Item4
+                    };
+                }
 
             }
             else
@@ -79,6 +131,29 @@ namespace WeaponCore.Support {
                 translation = Vector3D.Zero;
                 rotation = null;
                 rotAroundCenter = null;
+
+                MyTuple<string[], Color, bool, bool, float>? emissive;
+                var key = AnimationId + _currentMove;
+                System.WeaponEmissiveSet.TryGetValue(key, out emissive);
+
+                if (emissive == null || emissive != null && LastEmissive != null &&
+                    emissive.Value.Item1[CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]]] ==
+                    LastEmissive.Value.EmissiveParts[LastEmissive.Value.CurrentPart] &&
+                    emissive.Value.Item2 == LastEmissive.Value.CurrentColor &&
+                    emissive.Value.Item5 == LastEmissive.Value.CurrentIntensity)
+                    emissiveState = null;
+                else
+                {
+                    emissiveState = LastEmissive = new EmissiveState()
+                    {
+                        EmissiveParts = emissive.Value.Item1,
+                        CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]],
+                        CurrentColor = emissive.Value.Item2,
+                        CurrentIntensity = emissive.Value.Item5,
+                        CycleParts = emissive.Value.Item3,
+                        LeavePreviousOn = emissive.Value.Item4
+                    };
+                }
             }
 
         }
@@ -107,7 +182,7 @@ namespace WeaponCore.Support {
 
         protected bool Equals(PartAnimation other)
         {
-            return Equals(Part, other.Part) && Equals(SubpartId, other.SubpartId);
+            return Equals(Part, other.Part) && Equals(AnimationId, other.AnimationId);
         }
 
         public override bool Equals(object obj)

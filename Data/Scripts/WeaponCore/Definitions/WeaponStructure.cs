@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Definitions;
 using VRage;
 using VRage.Game;
@@ -23,6 +24,7 @@ namespace WeaponCore.Support
 
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
+        public readonly Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> WeaponEmissiveSet;
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly int ReloadTime;
@@ -41,10 +43,6 @@ namespace WeaponCore.Support
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
-        public readonly bool HeatingEmissive;
-        public readonly bool FiringEmissive;
-        public readonly bool TrackingEmissive;
-        public readonly bool ReloadingEmissive;
         public readonly bool BarrelAxisRotation;
         public readonly bool AmmoAreaEffect;
         public readonly bool AmmoSkipAccel;
@@ -191,7 +189,6 @@ namespace WeaponCore.Support
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
             CollisionShape(out CollisionIsLine, out CollisionSize);
             Models(out PrimeModelId, out TriggerModelId);
-            Emissives(out TrackingEmissive, out FiringEmissive, out HeatingEmissive, out ReloadingEmissive);
             Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
             SubSystems(out TargetSubSystems, out OnlySubSystems);
@@ -200,7 +197,7 @@ namespace WeaponCore.Support
 
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
-            WeaponAnimationSet = Session.Instance.CreateAnimationSets(Values.Animations.WeaponAnimationSets);
+            Session.Instance.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet);
         }
 
         private void SetWeaponAnimations( )
@@ -305,13 +302,6 @@ namespace WeaponCore.Support
             else primeModelId = -1;
         }
 
-        private void Emissives(out bool tracking, out bool firing, out bool heating, out bool reloading)
-        {
-            tracking = Values.Graphics.Emissive.Tracking.Enable;
-            firing = Values.Graphics.Emissive.Firing.Enable;
-            heating = Values.Graphics.Emissive.Heating.Enable;
-            reloading = Values.Graphics.Emissive.Reloading.Enable;
-        }
 
         private void Beams(out bool isBeamWeapon, out bool virtualBeams, out bool rotateRealBeam, out bool convergeBeams, out bool oneHitParticle, out bool offsetEffect)
         {

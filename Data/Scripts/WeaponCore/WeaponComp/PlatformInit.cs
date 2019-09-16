@@ -82,10 +82,9 @@ namespace WeaponCore.Platform
                 if (Parts.NameToEntity.TryGetValue(m.Key.String, out aimPart))
                 {
                     var muzzlePartName = m.Value.MuzzlePartName.String;
-                    var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" ||
-                                       muzzlePartName == string.Empty;
-                    var muzzlePart = (noMuzzlePart ? null : Parts.NameToEntity[m.Value.MuzzlePartName.String]) ??
-                                     comp.MyCube;
+                    var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" || muzzlePartName == string.Empty;
+                    var muzzlePart = (noMuzzlePart ? null : Parts.NameToEntity[m.Value.MuzzlePartName.String]) ?? comp.MyCube;
+                    
                     var barrelCount = m.Value.Barrels.Length;
                     if (reset)
                     {
