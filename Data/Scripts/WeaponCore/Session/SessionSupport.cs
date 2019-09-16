@@ -3,14 +3,12 @@ using System.Threading;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
-using Sandbox.Game.Screens.Helpers;
 using WeaponCore.Support;
-using Sandbox.ModAPI.Interfaces.Terminal;
-using System.Collections.Generic;
-using IMyControllableEntity = VRage.Game.ModAPI.Interfaces.IMyControllableEntity;
+using VRage.Utils;
 
 namespace WeaponCore
 {
@@ -63,11 +61,11 @@ namespace WeaponCore
                     var dictTypes = detectInfo.DictTypes;
                     var grid = ent as MyCubeGrid;
                     GridAi.TargetInfo targetInfo;
-
+                    var protectedByShield = ShieldApiLoaded && SApi.ProtectedByShield(ent);
                     if (grid == null)
-                        targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
+                        targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, ent, false, protectedByShield, null, 1, db.MyGrid, db);
                     else
-                        targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, grid, true, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db) { TypeDict = dictTypes };
+                        targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, grid, true, protectedByShield, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db) { TypeDict = dictTypes };
 
                     db.SortedTargets.Add(targetInfo);
                 }
@@ -179,6 +177,7 @@ namespace WeaponCore
             TrackingAi = ai;
 
             GridAi gridAi;
+            TargetArmed = false;
             if (GridTargetingAIs.TryGetValue((MyCubeGrid)entity, out gridAi))
             {
                 TargetArmed = true;
@@ -194,17 +193,29 @@ namespace WeaponCore
             }
         }
 
-        internal void GetTargetInfo(GridAi ai, out double speed, out string armedStr, out string interceptStr)
+        internal void GetTargetInfo(GridAi ai, out double speed, out string armedStr, out string interceptStr, out string shieldedStr, out string threatStr)
         {
-            var targetDir = Vector3D.Normalize(Target.Physics?.LinearVelocity ?? Vector3.Zero);
+            var targetVel = Target.Physics?.LinearVelocity ?? Vector3.Zero;
+            if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
+            var targetDir = Vector3D.Normalize(targetVel);
             var targetPos = Target.PositionComp.WorldAABB.Center;
             var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
             var myHeading = Vector3D.Normalize(myPos - targetPos);
             var degrees = Math.Cos(MathHelper.ToRadians(25));
             var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
-
-            armedStr = TargetArmed ? "Yes" : "No";
-            interceptStr = intercept ? "Yes" : "No";
+            var shielded = ShieldApiLoaded && SApi.ProtectedByShield(Target);
+            var grid = Target as MyCubeGrid;
+            var friend = false;
+            if (grid != null && grid.BigOwners.Count != 0)
+            {
+                var relation = MyIDModule.GetRelationPlayerBlock(ai.MyOwner, grid.BigOwners[0], MyOwnershipShareModeEnum.Faction);
+                if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
+            }
+            var threat = friend ? 0 : 1;
+            shieldedStr = shielded ? "S" : "_";
+            armedStr = TargetArmed ? "A" : "_";
+            interceptStr = intercept ? "I" : "_";
+            threatStr = threat > 0 ? "T" + threat.ToString() : "__";
             speed = Math.Round(Target.Physics?.Speed ?? 0, 2);
         }
 

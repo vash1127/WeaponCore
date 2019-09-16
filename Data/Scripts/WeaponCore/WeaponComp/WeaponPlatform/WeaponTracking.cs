@@ -152,8 +152,8 @@ namespace WeaponCore.Platform
             {
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
-                weapon.Azimuth = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                weapon.Elevation = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                weapon.Azimuth += MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
+                weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                 weapon.DesiredAzimuth = desiredAzimuth;
                 weapon.DesiredElevation = desiredElevation;
                 var azDiff = oldAz - weapon.Azimuth;
@@ -189,10 +189,8 @@ namespace WeaponCore.Platform
             var alignedChange = wasAligned != isAligned;
             if (alignedChange && isAligned) weapon.StartShooting();
             else if (alignedChange && !weapon.DelayCeaseFire)
-            {
-                //Log.Line($"{weapon.System.WeaponName} - align change NoDelayCeaseFire - inRange:{inRange} - isAligned:{isAligned} - wasAligned:{wasAligned} - marked:{target.Entity.MarkedForClose} - controller:{weapon.System.Values.HardPoint.TurretController} - isTrackingWeapon:{weapon == weapon.Comp.TrackingWeapon}");
                 weapon.StopShooting();
-            }
+
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
             return weapon.IsTracking;
         }

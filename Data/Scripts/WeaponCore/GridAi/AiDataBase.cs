@@ -6,6 +6,7 @@ using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using VRageMath;
 using static WeaponCore.Support.TargetingDefinition;
 
@@ -95,20 +96,29 @@ namespace WeaponCore.Support
 
         internal void FinalizeTargetDb()
         {
-            MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(MyGrid.PositionComp.WorldAABB.Center);
-            var gridScanRadius = MaxTargetingRange + MyGrid.PositionComp.LocalVolume.Radius;
-            var sphere = new BoundingSphereD(MyGrid.PositionComp.WorldAABB.Center, gridScanRadius);
+            MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(GridCenter);
+            var gridScanRadius = MaxTargetingRange + GridRadius;
+            var sphere = new BoundingSphereD(GridCenter, gridScanRadius);
             EntitiesInRange.Clear();
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, EntitiesInRange);
             for (int i = 0; i < EntitiesInRange.Count; i++)
             {
                 var ent = EntitiesInRange[i];
                 var hasPhysics = ent.Physics != null;
-                if (!hasPhysics && !ent.IsPreview)
+                if (Session.Instance.ShieldApiLoaded && !hasPhysics && !ent.IsPreview && !ent.Render.CastShadows)
                 {
                     long testId;
                     long.TryParse(ent.Name, out testId);
-                    if (testId != 0 && testId == MyGrid.EntityId) MyShieldTmp = ent; 
+                    if (testId != 0)
+                    {
+                        MyEntity shieldEnt;
+                        if (testId == MyGrid.EntityId) MyShieldTmp = ent;
+                        else if (MyEntities.TryGetEntityById(testId, out shieldEnt))
+                        {
+                            var shieldGrid = shieldEnt as MyCubeGrid;
+                            if (shieldGrid != null && MyGrid.IsSameConstructAs(shieldGrid)) MyShieldTmp = ent;
+                        }
+                    } 
                 }
                 var voxel = ent as MyVoxelBase;
                 var grid = ent as MyCubeGrid;

@@ -97,8 +97,10 @@ namespace WeaponCore
             double speed;
             string armedStr;
             string interceptStr;
-            Session.Instance.GetTargetInfo(ai, out speed, out armedStr, out interceptStr);
-            var gpsName = $"Speed: {speed} m/s - Armed: {armedStr}    Threat:  High - Intercept: {interceptStr}";
+            string shieldedStr;
+            string threatStr;
+            Session.Instance.GetTargetInfo(ai, out speed, out armedStr, out interceptStr, out shieldedStr, out threatStr);
+            var gpsName = $"Status[ {armedStr}, {shieldedStr}, {interceptStr}, {threatStr} ]             Speed[ {speed} m/s ]";
             var distance = Vector3D.Distance(Session.Instance.Target.PositionComp.WorldAABB.Center, Session.Instance.ActiveCockPit.PositionComp.WorldAABB.Center);
             Session.Instance.SetGpsInfo(offetPosition, gpsName, distance);
         }
