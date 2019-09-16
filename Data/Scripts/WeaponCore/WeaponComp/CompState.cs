@@ -40,14 +40,19 @@ namespace WeaponCore.Support
 
         internal void SubpartClosed(MyEntity ent)
         {
-            ReInit();
+            if (!MyCube.MarkedForClose)
+            {
+                ReInit();
+            }
         }
 
         private bool ReInit()
         {
+            
             Platform.ResetParts(this);
             Status = Start.Started;
             return true;
+            
         }
 
         internal void UpdateSettings(LogicSettingsValues newSettings)
