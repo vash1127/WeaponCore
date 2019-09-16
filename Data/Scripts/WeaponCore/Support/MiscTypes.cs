@@ -345,6 +345,7 @@ namespace WeaponCore.Support
                 frag.Target = p.T.Target.Entity;
                 frag.WeaponId = p.T.WeaponId;
                 frag.MuzzleId = p.T.MuzzleId;
+                frag.FiringCube = p.T.Target.FiringCube;
 
                 frag.Origin = p.Position;
                 frag.OriginUp = p.OriginUp;
@@ -395,6 +396,7 @@ namespace WeaponCore.Support
                 p.T.System = frag.System;
                 p.T.Ai = frag.Ai;
                 p.T.Target.Entity = frag.Target;
+                p.T.Target.FiringCube = frag.FiringCube;
                 p.T.IsShrapnel = true;
 
                 p.T.WeaponId = frag.WeaponId;
@@ -419,6 +421,7 @@ namespace WeaponCore.Support
         public WeaponSystem System;
         public GridAi Ai;
         public MyEntity Target;
+        public MyCubeBlock FiringCube;
         public Vector3D Origin;
         public Vector3D OriginUp;
         public Vector3D Direction;

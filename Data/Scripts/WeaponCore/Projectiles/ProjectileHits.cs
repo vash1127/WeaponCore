@@ -18,6 +18,7 @@ namespace WeaponCore.Projectiles
     {
         private bool Hit(Projectile p, int poolId)
         {
+
             var beam = new LineD(p.LastPosition, p.Position);
             if (p.MineSeeking && !p.MineTriggered)
                 SeekEnemy(p, poolId);
@@ -30,7 +31,9 @@ namespace WeaponCore.Projectiles
             else
             {
                 p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() : p.T.System.AreaEffectSize;
+                var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize
+                    ? p.T.TriggerMatrix.Scale.AbsMax()
+                    : p.T.System.AreaEffectSize;
                 if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
                 {
                     p.PruneSphere.Center = p.Position;
@@ -41,12 +44,15 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.T.System.CollisionSize;
                 }
-                if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Origin, 5f)) != ContainmentType.Disjoint) return false;
+
+                if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Origin, 5f)) !=
+                    ContainmentType.Disjoint) return false;
 
                 var checkList = CheckPool[poolId].Get();
                 MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
                 for (int i = 0; i < checkList.Count; i++)
-                    p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
+                    p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
+                    { Distance = 0, Element = checkList[i] });
 
                 checkList.Clear();
                 CheckPool[poolId].Return(checkList);
