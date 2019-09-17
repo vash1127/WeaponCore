@@ -69,6 +69,8 @@ namespace WeaponCore
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
 
+            HeatEmissives = CreateHeatEmissive();
+
             foreach (var x in _weaponDefinitions)
             {
                 var ae = x.Ammo.AreaEffect;

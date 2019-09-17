@@ -98,6 +98,7 @@ namespace WeaponCore
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
         internal readonly Wheel Ui = new Wheel();
         internal readonly Pointer Pointer = new Pointer();
+        internal Color[] HeatEmissives;
 
         internal uint Tick;
         internal int PlayerEventId;

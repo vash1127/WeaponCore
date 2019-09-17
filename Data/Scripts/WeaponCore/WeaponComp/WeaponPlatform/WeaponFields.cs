@@ -38,6 +38,7 @@ namespace WeaponCore.Platform
         //private bool _firstRun = true;
 
         internal MyEntity EntityPart;
+        internal MyEntity BarrelPart;
         internal WeaponSystem System;
         internal Dummy[] Dummies;
         internal Muzzle[] Muzzles;
@@ -67,6 +68,7 @@ namespace WeaponCore.Platform
         internal float DPS;
         internal float areaEffectDmg;
         internal float detonateDmg;
+        internal float LastHeat = -1;
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;

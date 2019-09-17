@@ -145,6 +145,32 @@ namespace WeaponCore
                             }
                         }
 
+                        //todo client side only
+                        if (Tick20)
+                        {
+                            var currentHeat = comp.State.Value.Weapons[w.WeaponId].Heat;
+                            currentHeat = currentHeat - (w.HsRate / 3);
+                            var heatPercent = currentHeat / w.System.MaxHeat;
+
+                            if (w.LastHeat != currentHeat && heatPercent > .33)
+                            {
+                                w.LastHeat = currentHeat;
+                                if (heatPercent > 1) heatPercent = 1;
+
+                                heatPercent -= .33f;
+
+                                var intensity = .7f * heatPercent;
+
+                                var color = HeatEmissives[(int) (heatPercent * 100)];
+
+                                w.BarrelPart.SetEmissiveParts("Heating", color, intensity);
+                            }
+                            else if (w.LastHeat != currentHeat)
+                            {
+                                w.BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
+                            }
+                        }
+
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated) || (!gridAi.Ready && !w.Reloading))
                         {
                             if (w.ReturnHome)
