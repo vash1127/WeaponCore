@@ -152,11 +152,10 @@ namespace WeaponCore
                             currentHeat = currentHeat - ((float)w.HsRate / 3) > 0 ? currentHeat - ((float)w.HsRate / 3) : 0;
                             var heatPercent = currentHeat / w.System.MaxHeat;
 
-                            var set = currentHeat - w.LastHeat < 0.001 || (currentHeat - w.LastHeat) * -1 < 0.001;
+                            var set = currentHeat - w.LastHeat > 0.001 || (currentHeat - w.LastHeat) * -1 > 0.001;
 
                             if (set && heatPercent > .33)
                             {
-                                w.LastHeat = currentHeat;
                                 if (heatPercent > 1) heatPercent = 1;
 
                                 heatPercent -= .33f;
@@ -168,9 +167,9 @@ namespace WeaponCore
                                 w.BarrelPart.SetEmissiveParts("Heating", color, intensity);
                             }
                             else if (set)
-                            {
                                 w.BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
-                            }
+
+                            w.LastHeat = currentHeat;
                         }
 
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated) || (!gridAi.Ready && !w.Reloading))
