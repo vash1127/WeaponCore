@@ -68,7 +68,7 @@ namespace WeaponCore.Platform
         internal float DPS;
         internal float areaEffectDmg;
         internal float detonateDmg;
-        internal float LastHeat = -1;
+        internal float LastHeat;
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;

@@ -149,10 +149,12 @@ namespace WeaponCore
                         if (Tick20)
                         {
                             var currentHeat = comp.State.Value.Weapons[w.WeaponId].Heat;
-                            currentHeat = currentHeat - (w.HsRate / 3);
+                            currentHeat = currentHeat - ((float)w.HsRate / 3) > 0 ? currentHeat - ((float)w.HsRate / 3) : 0;
                             var heatPercent = currentHeat / w.System.MaxHeat;
 
-                            if (w.LastHeat != currentHeat && heatPercent > .33)
+                            var set = currentHeat - w.LastHeat < 0.001 || (currentHeat - w.LastHeat) * -1 < 0.001;
+
+                            if (set && heatPercent > .33)
                             {
                                 w.LastHeat = currentHeat;
                                 if (heatPercent > 1) heatPercent = 1;
@@ -165,7 +167,7 @@ namespace WeaponCore
 
                                 w.BarrelPart.SetEmissiveParts("Heating", color, intensity);
                             }
-                            else if (w.LastHeat != currentHeat)
+                            else if (set)
                             {
                                 w.BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
                             }
