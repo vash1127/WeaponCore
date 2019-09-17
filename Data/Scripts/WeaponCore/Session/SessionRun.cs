@@ -33,6 +33,7 @@ namespace WeaponCore
             try
             {
                 Timings();
+                _futureEvents.Tick(Tick);
                 Ui.UpdateInput();
                 if (!Hits.IsEmpty) ProcessHits();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
@@ -51,6 +52,7 @@ namespace WeaponCore
                     ProcessAnimationQueue();
                 }
                 AiLoop();
+                
                 UpdateWeaponPlatforms();
                 Projectiles.Update();
 

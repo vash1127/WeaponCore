@@ -3,12 +3,14 @@ using System.Threading;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
 using VRage.Utils;
+using WeaponCore.Platform;
 
 namespace WeaponCore
 {
@@ -411,7 +413,69 @@ namespace WeaponCore
             var modPath = ModContext.ModPath;
             return modPath;
         }
-        #endregion
 
+      
+        internal void updateWeaponHeat(object heatTracker)
+        {
+            //todo client side only
+            var ht = heatTracker as MyTuple<Weapon,int, bool>?;
+            var w = ht.Value.Item1;
+            var currentHeat = w.Comp.State.Value.Weapons[w.WeaponId].Heat;
+            currentHeat = currentHeat - ((float)w.HsRate / 3) > 0 ? currentHeat - ((float)w.HsRate / 3) : 0;
+            var heatPercent = currentHeat / w.System.MaxHeat;
+
+            var set = currentHeat - w.LastHeat > 0.001 || (currentHeat - w.LastHeat) * -1 > 0.001;
+
+            if (set && heatPercent > .33)
+            {
+                if (heatPercent > 1) heatPercent = 1;
+
+                heatPercent -= .33f;
+
+                var intensity = .7f * heatPercent;
+
+                var color = HeatEmissives[(int)(heatPercent * 100)];
+
+                w.BarrelPart.SetEmissiveParts("Heating", color, intensity);
+            }
+            else if (set)
+                w.BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
+
+            w.LastHeat = currentHeat;
+            //end client side code
+
+            bool resetFakeTick = false;
+
+            if (ht.Value.Item2 * 30 == 60)
+            {
+                var weaponValue = w.Comp.State.Value.Weapons[w.WeaponId];
+                w.Comp.CurrentHeat = w.Comp.CurrentHeat >= w.HsRate ? w.Comp.CurrentHeat - w.HsRate : 0;
+                weaponValue.Heat = weaponValue.Heat >= w.HsRate ? weaponValue.Heat - w.HsRate : 0;
+
+                w.Comp.TerminalRefresh();
+                if (w.Comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
+                {
+                    w.EventTriggerStateChanged(Weapon.EventTriggers.Overheated, false);
+                    w.Comp.Overheated = false;
+                }
+
+                resetFakeTick = true;
+            }
+
+
+
+            if (w.Comp.State.Value.Weapons[w.WeaponId].Heat > 0 || ht.Value.Item3)
+            {
+                int FakeTick;
+                if (resetFakeTick)
+                    FakeTick = 0;
+                else
+                    FakeTick = ht.Value.Item2 + 1;
+
+                _futureEvents.Schedule(updateWeaponHeat, MyTuple.Create(w,FakeTick, false), 20);
+            }
+                
+        }
+        #endregion
     }
 }

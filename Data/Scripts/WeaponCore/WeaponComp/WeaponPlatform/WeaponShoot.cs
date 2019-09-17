@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using VRage;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -241,6 +242,9 @@ namespace WeaponCore.Platform
                     }
 
                     EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzle: MuzzleIDToName[current]);
+
+                    if(Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
+                        Session.Instance.updateWeaponHeat(MyTuple.Create(this, 0, true));
 
                     var heat = Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;

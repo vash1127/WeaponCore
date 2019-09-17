@@ -7,7 +7,6 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {
@@ -126,15 +125,6 @@ namespace WeaponCore.Platform
             ShootOnce,
             ShootClick,
         }
-        internal readonly List<string> FiringStrings = new List<string>()
-        {
-            "Firing0",
-            "Firing1",
-            "Firing2",
-            "Firing3",
-            "Firing4",
-            "Firing5",
-        };
 
         internal bool LoadAmmoMag
         {
