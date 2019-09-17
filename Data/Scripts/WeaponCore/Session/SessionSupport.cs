@@ -128,9 +128,21 @@ namespace WeaponCore
             if (TargetGps == null)
             {
                 Log.Line("resetgps");
-                TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
+                MyVisualScriptLogicProvider.AddGPS("WEAPONCORE", "", Vector3D.Zero, Color.Red);
+                var gpsList = MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId);
+                foreach (var t in gpsList)
+                {
+                    if (t.Name == "WEAPONCORE")
+                    {
+                        TargetGps = t;
+                        break;
+                    }
+                }
+                //TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
                 MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
-                MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
+                MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, Color.Yellow);
+
+
             }
         }
 
@@ -215,8 +227,8 @@ namespace WeaponCore
             shieldedStr = shielded ? "S" : "_";
             armedStr = TargetArmed ? "A" : "_";
             interceptStr = intercept ? "I" : "_";
-            threatStr = threat > 0 ? "T" + threat.ToString() : "__";
-            speed = Math.Round(Target.Physics?.Speed ?? 0, 2);
+            threatStr = threat > 0 ? "T" + threat : "__";
+            speed = Math.Round(Target.Physics?.Speed ?? 0, 1);
         }
 
         internal static double ModRadius(double radius, bool largeBlock)

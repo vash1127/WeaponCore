@@ -177,7 +177,7 @@ namespace WeaponCore
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
                 var degrees = Math.Cos(MathHelper.ToRadians(25));
                 var name = Session.Instance.Target.DisplayName;
-                var speed = Math.Round(Session.Instance.Target.Physics?.Speed ?? 0, 2);
+                var speed = Math.Round(Session.Instance.Target.Physics?.Speed ?? 0, 1);
                 var nameLen = 30;
                 var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Session.Instance.Target);
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);

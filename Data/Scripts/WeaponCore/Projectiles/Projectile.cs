@@ -210,6 +210,10 @@ namespace WeaponCore.Projectiles
             {
                 var shrapnel = T.System.Values.Ammo.Shrapnel;
                 T.BaseDamagePool = shrapnel.BaseDamage;
+                T.DetonationDamage = T.System.Values.Ammo.AreaEffect.Detonation.DetonationDamage;
+                T.AreaEffectDamage = T.System.Values.Ammo.AreaEffect.AreaEffectDamage;
+
+                SelfDamage = T.System.SelfDamage;
                 MaxTrajectory = shrapnel.MaxTrajectory;
                 TracerLength = TracerLength / shrapnel.Fragments >= 1 ? TracerLength / shrapnel.Fragments : 1;
             }
