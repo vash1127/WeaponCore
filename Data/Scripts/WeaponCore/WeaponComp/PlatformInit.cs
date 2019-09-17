@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using System;
 using VRage.Game.Entity;
+using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
 namespace WeaponCore.Platform
@@ -85,6 +86,7 @@ namespace WeaponCore.Platform
                     
                     var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" || muzzlePartName == string.Empty;
                     Weapons[c].BarrelPart = (noMuzzlePart ? comp.MyCube : Parts.NameToEntity[m.Value.MuzzlePartName.String]);
+                    Weapons[c].BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
 
                     var barrelCount = m.Value.Barrels.Length;
                     if (reset)
