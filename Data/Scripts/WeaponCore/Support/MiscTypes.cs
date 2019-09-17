@@ -346,7 +346,7 @@ namespace WeaponCore.Support
                 frag.WeaponId = p.T.WeaponId;
                 frag.MuzzleId = p.T.MuzzleId;
                 frag.FiringCube = p.T.Target.FiringCube;
-
+                frag.Guidance = p.T.EnableGuidance;
                 frag.Origin = p.Position;
                 frag.OriginUp = p.OriginUp;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
@@ -398,10 +398,9 @@ namespace WeaponCore.Support
                 p.T.Target.Entity = frag.Target;
                 p.T.Target.FiringCube = frag.FiringCube;
                 p.T.IsShrapnel = true;
-
+                p.T.EnableGuidance = frag.Guidance;
                 p.T.WeaponId = frag.WeaponId;
                 p.T.MuzzleId = frag.MuzzleId;
-
                 p.Origin = frag.Origin;
                 p.OriginUp = frag.OriginUp;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
@@ -429,6 +428,7 @@ namespace WeaponCore.Support
         public Vector3D PredictedTargetPos;
         public int WeaponId;
         public int MuzzleId;
+        internal bool Guidance;
     }
 
     public class Shrinking
