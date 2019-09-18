@@ -107,7 +107,7 @@ namespace WeaponCore
                         }
                     }
                 }
-                if(!DedicatedServer)
+                if(!DedicatedServer)//todo client side only
                     ProcessAnimations();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }

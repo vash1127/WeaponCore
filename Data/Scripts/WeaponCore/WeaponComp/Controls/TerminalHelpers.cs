@@ -7,12 +7,11 @@ using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
-using WeaponCore;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 using SpaceEngineers.Game.ModAPI;
 
-namespace WepaonCore.Control
+namespace WeaponCore.Control
 {
     public static class TerminalHelpers
     {
