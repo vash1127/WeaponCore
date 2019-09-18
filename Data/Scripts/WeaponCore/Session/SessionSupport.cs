@@ -451,19 +451,19 @@ namespace WeaponCore
             if (set && w.System.DegRof && w.Comp.State.Value.Weapons[w.WeaponId].Heat >= (w.System.MaxHeat * .8))
             {
                 var systemRate = w.System.RateOfFire * w.Comp.Set.Value.ROFModifier;
-                var newRate = (int)MathHelper.Lerp(systemRate, systemRate/3, w.Comp.State.Value.Weapons[w.WeaponId].Heat/ w.System.MaxHeat);
+                var newRate = (int)MathHelper.Lerp(systemRate, systemRate/4, w.Comp.State.Value.Weapons[w.WeaponId].Heat/ w.System.MaxHeat);
 
                 if (newRate < 1)
                     newRate = 1;
 
                 w.RateOfFire = newRate;
-                w.TicksPerShot = (uint) ((3600 / w.RateOfFire));
+                w.TicksPerShot = (uint) Math.Round(3600f / w.RateOfFire, MidpointRounding.AwayFromZero);
                 w.UpdateBarrelRotation();
             }
             else if (set)
             {
                 w.RateOfFire = (int)(w.System.RateOfFire * w.Comp.Set.Value.ROFModifier);
-                w.TicksPerShot = (uint) ((3600 / w.RateOfFire));
+                w.TicksPerShot = (uint)Math.Round(3600f / w.RateOfFire, MidpointRounding.AwayFromZero);
                 w.UpdateBarrelRotation();
             }
 

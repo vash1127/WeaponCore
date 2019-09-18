@@ -246,8 +246,9 @@ namespace WeaponCore.Platform
 
         internal void UpdateBarrelRotation()
         {
-            var visualFix = TicksPerShot > 3 ? TicksPerShot : 3;
-            var angle = MathHelper.ToRadians((360f / System.Barrels.Length) / visualFix);
+            var rof = RateOfFire < 3599 ? RateOfFire : 3599;
+
+            var angle = MathHelper.ToRadians((360f / System.Barrels.Length) / (3600f / rof));
 
 
             var axis = System.Values.HardPoint.RotateBarrelAxis;

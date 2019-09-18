@@ -76,7 +76,7 @@ namespace WeaponCore
                 w.RequiredPower = w.RequiredPower * mulitplier;
                 comp.MaxRequiredPower += w.RequiredPower;
 
-                w.TicksPerShot = (uint)(3600 / w.RateOfFire);
+                w.TicksPerShot = (uint)Math.Round(3600f / w.RateOfFire, MidpointRounding.AwayFromZero);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
                 var oldDps = w.DPS;
@@ -145,7 +145,7 @@ namespace WeaponCore
                 w.UpdateRequiredPower();
 
 
-                w.TicksPerShot = (uint)(3600 / w.RateOfFire);
+                w.TicksPerShot = (uint)Math.Round(3600f / w.RateOfFire, MidpointRounding.AwayFromZero);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
                 w.UpdateBarrelRotation();
