@@ -459,9 +459,11 @@ namespace WeaponCore
                 w.RateOfFire = newRate;
                 w.TicksPerShot = (uint) Math.Round(3600f / w.RateOfFire, MidpointRounding.AwayFromZero);
                 w.UpdateBarrelRotation();
+                w.CurrentlyDegrading = true;
             }
-            else if (set)
+            else if (set && w.CurrentlyDegrading)
             {
+                w.CurrentlyDegrading = false;
                 w.RateOfFire = (int)(w.System.RateOfFire * w.Comp.Set.Value.ROFModifier);
                 w.TicksPerShot = (uint)Math.Round(3600f / w.RateOfFire, MidpointRounding.AwayFromZero);
                 w.UpdateBarrelRotation();

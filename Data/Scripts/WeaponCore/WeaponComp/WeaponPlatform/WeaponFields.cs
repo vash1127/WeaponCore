@@ -116,6 +116,7 @@ namespace WeaponCore.Platform
         internal bool Reloading;
         internal bool FirstLoad = true;
         internal bool ReturnHome;
+        internal bool CurrentlyDegrading;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 
