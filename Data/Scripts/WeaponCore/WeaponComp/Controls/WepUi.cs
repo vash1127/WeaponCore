@@ -148,6 +148,8 @@ namespace WeaponCore
                 w.TicksPerShot = (uint)(3600 / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
+                w.UpdateBarrelRotation();
+
                 var oldDps = w.DPS;
                 w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 

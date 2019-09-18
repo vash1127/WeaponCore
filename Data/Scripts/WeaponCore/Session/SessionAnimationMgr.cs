@@ -591,10 +591,7 @@ namespace WeaponCore
 
             IMyModelDummy dummy;
             if (dummyList.TryGetValue(partName, out dummy))
-            {
                 return dummy.Matrix.Translation;
-
-            }
 
             return null;
         }

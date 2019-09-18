@@ -50,6 +50,7 @@ namespace WeaponCore.Platform
         internal Target NewTarget;
         internal Vector3D TargetPos;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
+        internal Matrix BarrelRotationPerShot;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
@@ -241,6 +242,38 @@ namespace WeaponCore.Platform
         internal void UpdateShotEnergy()
         {
             ShotEnergyCost = System.Values.HardPoint.EnergyCost * BaseDamage;
+        }
+
+        internal void UpdateBarrelRotation()
+        {
+            var angle = MathHelper.ToRadians((360f / System.Barrels.Length) / (TicksPerShot * System.Barrels.Length));
+
+
+            var axis = System.Values.HardPoint.RotateBarrelAxis;
+            if (axis != 0 && BarrelPart != Comp.MyCube)
+            {
+                var partPos = (Vector3)Session.Instance.GetPartLocation("subpart_" + System.MuzzlePartName.String,
+                    ((MyEntitySubpart)BarrelPart).Parent.Model);
+
+                var to = Matrix.CreateTranslation(-partPos);
+                var from = Matrix.CreateTranslation(partPos);
+
+                Matrix rotationMatrix = Matrix.Zero;
+                switch (axis)
+                {
+                    case 1:
+                        rotationMatrix = to * Matrix.CreateRotationX(angle) * from;
+                        break;
+                    case 2:
+                        rotationMatrix = to * Matrix.CreateRotationY(angle) * from;
+                        break;
+                    case 3:
+                        rotationMatrix = to * Matrix.CreateRotationZ(angle) * from;
+                        break;
+                }
+
+                BarrelRotationPerShot = rotationMatrix;
+            }
         }
     }
 }

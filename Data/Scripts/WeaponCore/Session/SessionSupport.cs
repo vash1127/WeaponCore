@@ -417,9 +417,11 @@ namespace WeaponCore
       
         internal void updateWeaponHeat(object heatTracker)
         {
-            //todo client side only
-            var ht = heatTracker as MyTuple<Weapon,int, bool>?;
+
+            var ht = heatTracker as MyTuple<Weapon, int, bool>?;
             var w = ht.Value.Item1;
+
+            //todo client side only
             var currentHeat = w.Comp.State.Value.Weapons[w.WeaponId].Heat;
             currentHeat = currentHeat - ((float)w.HsRate / 3) > 0 ? currentHeat - ((float)w.HsRate / 3) : 0;
             var heatPercent = currentHeat / w.System.MaxHeat;
@@ -443,6 +445,27 @@ namespace WeaponCore
 
             w.LastHeat = currentHeat;
             //end client side code
+
+
+            var degradeAmt = 0f;
+            if (set && w.System.DegRof && w.Comp.State.Value.Weapons[w.WeaponId].Heat >= (w.System.MaxHeat * .8))
+            {
+                var systemRate = w.System.RateOfFire * w.Comp.Set.Value.ROFModifier;
+                var newRate = (int)MathHelper.Lerp(systemRate, systemRate/3, w.Comp.State.Value.Weapons[w.WeaponId].Heat/ w.System.MaxHeat);
+
+                if (newRate < 1)
+                    newRate = 1;
+
+                w.RateOfFire = newRate;
+                w.TicksPerShot = (uint) ((3600 / w.RateOfFire));
+                w.UpdateBarrelRotation();
+            }
+            else if (set)
+            {
+                w.RateOfFire = (int)(w.System.RateOfFire * w.Comp.Set.Value.ROFModifier);
+                w.TicksPerShot = (uint) ((3600 / w.RateOfFire));
+                w.UpdateBarrelRotation();
+            }
 
             bool resetFakeTick = false;
 

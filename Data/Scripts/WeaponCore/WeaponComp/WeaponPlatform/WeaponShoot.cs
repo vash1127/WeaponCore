@@ -43,7 +43,7 @@ namespace WeaponCore.Platform
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointAvMaxDistSqr;
 
 
-            if (System.BarrelAxisRotation) MovePart(-1 * bps);
+            if (System.BarrelAxisRotation) MovePart();
 
             if (ShotCounter == 0 && _newCycle)
             {
@@ -246,9 +246,9 @@ namespace WeaponCore.Platform
                     if(Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
                         Session.Instance.updateWeaponHeat(MyTuple.Create(this, 0, true));
 
-                    var heat = Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
+                    Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;
-                    if (heat > System.MaxHeat)
+                    if (Comp.State.Value.Weapons[WeaponId].Heat > System.MaxHeat)
                     {
                         EventTriggerStateChanged(EventTriggers.Overheated, true);
                         Comp.Overheated = true;
@@ -424,8 +424,14 @@ namespace WeaponCore.Platform
             }
         }
 
-        public void MovePart(int time)
+        public void MovePart()
         {
+            BarrelPart.PositionComp.LocalMatrix *= BarrelRotationPerShot;
+
+            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
+                StartRotateSound();
+            
+            /*
             BarrelMove = true;
             double radiansPerShot;
             var heat = Comp.State.Value.Weapons[WeaponId].Heat;
@@ -441,11 +447,7 @@ namespace WeaponCore.Platform
             else return;
 
             _rotationTime += time;
-            rotationMatrix.Translation = _localTranslation;
-            EntityPart.PositionComp.LocalMatrix = rotationMatrix;
-            BarrelMove = false;
-            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-                StartRotateSound();
+            rotationMatrix.Translation = _localTranslation;*/
         }
     }
 }

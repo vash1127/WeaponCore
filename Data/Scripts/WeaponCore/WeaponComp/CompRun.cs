@@ -3,7 +3,9 @@ using System.Linq;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -129,8 +131,6 @@ namespace WeaponCore.Support
                 weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
-                Log.Line($"weapon.TicksPerShot: {weapon.TicksPerShot} weapon.BaseDamage:{weapon.BaseDamage} weapon.System.BarrelsPerShot: {weapon.System.BarrelsPerShot}");
-
                 weapon.DPS = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
 
                 if (weapon.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
@@ -153,11 +153,15 @@ namespace WeaponCore.Support
                 
 
                 HeatSinkRate += weapon.HsRate;
+
+                weapon.UpdateBarrelRotation();
+
                 if (weapon.CurrentMags == 0)
                 {
                     weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
                     weapon.FirstLoad = false;
                 }
+
             }
 
             var gun = Gun.GunBase;
