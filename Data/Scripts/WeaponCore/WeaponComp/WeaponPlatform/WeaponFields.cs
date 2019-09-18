@@ -246,35 +246,38 @@ namespace WeaponCore.Platform
 
         internal void UpdateBarrelRotation()
         {
-            var rof = RateOfFire < 3599 ? RateOfFire : 3599;
-
-            var angle = MathHelper.ToRadians((360f / System.Barrels.Length) / (3600f / rof));
-
-
-            var axis = System.Values.HardPoint.RotateBarrelAxis;
-            if (axis != 0 && BarrelPart != Comp.MyCube)
+            if (!Comp.MyCube.MarkedForClose && Comp.MyCube != null)
             {
-                var partPos = (Vector3)Session.Instance.GetPartLocation("subpart_" + System.MuzzlePartName.String,
-                    ((MyEntitySubpart)BarrelPart).Parent.Model);
+                var rof = RateOfFire < 3599 ? RateOfFire : 3599;
 
-                var to = Matrix.CreateTranslation(-partPos);
-                var from = Matrix.CreateTranslation(partPos);
+                var angle = MathHelper.ToRadians((360f / System.Barrels.Length) / (3600f / rof));
 
-                Matrix rotationMatrix = Matrix.Zero;
-                switch (axis)
+
+                var axis = System.Values.HardPoint.RotateBarrelAxis;
+                if (axis != 0 && BarrelPart != Comp.MyCube)
                 {
-                    case 1:
-                        rotationMatrix = to * Matrix.CreateRotationX(angle) * from;
-                        break;
-                    case 2:
-                        rotationMatrix = to * Matrix.CreateRotationY(angle) * from;
-                        break;
-                    case 3:
-                        rotationMatrix = to * Matrix.CreateRotationZ(angle) * from;
-                        break;
-                }
+                    var partPos = (Vector3) Session.Instance.GetPartLocation("subpart_" + System.MuzzlePartName.String,
+                        ((MyEntitySubpart) BarrelPart).Parent.Model);
 
-                BarrelRotationPerShot = rotationMatrix;
+                    var to = Matrix.CreateTranslation(-partPos);
+                    var from = Matrix.CreateTranslation(partPos);
+
+                    Matrix rotationMatrix = Matrix.Zero;
+                    switch (axis)
+                    {
+                        case 1:
+                            rotationMatrix = to * Matrix.CreateRotationX(angle) * from;
+                            break;
+                        case 2:
+                            rotationMatrix = to * Matrix.CreateRotationY(angle) * from;
+                            break;
+                        case 3:
+                            rotationMatrix = to * Matrix.CreateRotationZ(angle) * from;
+                            break;
+                    }
+
+                    BarrelRotationPerShot = rotationMatrix;
+                }
             }
         }
     }

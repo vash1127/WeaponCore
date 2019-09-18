@@ -127,7 +127,6 @@ namespace WeaponCore.Support
                 weapon.RequiredPower = weapon.RequiredPower *mulitplier;
                 MaxRequiredPower += weapon.RequiredPower;
 
-                Log.Line($"Math.Round(3600f / weapon.RateOfFire, MidpointRounding.AwayFromZero): {Math.Round(3600f / weapon.RateOfFire, MidpointRounding.AwayFromZero)}");
 
                 weapon.TicksPerShot = (uint)Math.Round(3600f / weapon.RateOfFire, MidpointRounding.AwayFromZero);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);

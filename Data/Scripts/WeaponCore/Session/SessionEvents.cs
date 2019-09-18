@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Linq;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -42,6 +45,23 @@ namespace WeaponCore
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
+        }
+
+
+        private void OnEntityAdded(MyEntity obj)
+        {
+            var grid = obj as MyCubeGrid;
+
+            if (grid == null) return;
+
+            foreach (var block in grid.GetFatBlocks())
+            {
+                if (WeaponPlatforms.ContainsKey(block.BlockDefinition.Id.SubtypeId))
+                {
+                    PastedBlocksToInit.Enqueue(block);
+                }
+            }
+
         }
     }
 }

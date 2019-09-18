@@ -5,9 +5,13 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI;
+using VRage.Game.ObjectBuilders.Definitions;
+using VRage.ModAPI;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -109,6 +113,35 @@ namespace WeaponCore
                 }
                 if(!DedicatedServer)//todo client side only
                     ProcessAnimations();
+
+
+                if (!PastedBlocksToInit.IsEmpty)
+                {
+                    MyCubeBlock block;
+                    while (PastedBlocksToInit.TryDequeue(out block))
+                    {
+                        var weaponBase = block as IMyLargeMissileTurret;
+                        if(weaponBase == null)continue;
+                        WeaponComponent comp;
+                        if (block.Components.TryGet(out comp) && comp.MyGrid.EntityId != block.CubeGrid.EntityId)
+                        {
+                            if (block.MarkedForClose) continue;
+                            GridAi gridAi;
+                            if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi))
+                            {
+                                gridAi = new GridAi(block.CubeGrid);
+                                GridTargetingAIs.TryAdd(block.CubeGrid, gridAi);
+                            }
+                            var weaponComp = new WeaponComponent(gridAi, block, weaponBase);
+                            if (gridAi != null && gridAi.WeaponBase.TryAdd(block, weaponComp))
+                            {
+                                CompsToRemove.Enqueue(comp);
+                                gridAi.WeaponCounter.TryAdd(block.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
+                                CompsToStart.Enqueue(weaponComp);
+                            }
+                        }
+                    }
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -168,6 +201,7 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
+                MyEntities.OnEntityAdd += OnEntityAdded;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
