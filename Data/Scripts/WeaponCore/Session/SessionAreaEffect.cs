@@ -296,11 +296,6 @@ namespace WeaponCore
             if (_effectedCubes.Count > 0) _effectActive = true;
         }
 
-        private void ApplyDamage()
-        {
-
-        }
-
         private void ApplyEffect()
         {
             var tick = Tick;

@@ -39,12 +39,16 @@ namespace WeaponCore.Platform
             for (int i = 0; i < partCount; i++)
             {
                 var barrelCount = Structure.WeaponSystems[Structure.AimPartNames[i]].Barrels.Length;
-                MyEntity aimPartEntity;
 
                 var wepAnimationSet =
                     Session.Instance.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.AimPartNames[i]].WeaponAnimationSet, Parts);
 
-                Parts.NameToEntity.TryGetValue(Structure.AimPartNames[i].String, out aimPartEntity);
+                MyEntity aimPartEntity;
+                if (!Parts.NameToEntity.TryGetValue(Structure.AimPartNames[i].String, out aimPartEntity))
+                {
+                    Log.Line($"Invalid Aimpart!!!!!!!!!!!!!!!!!");
+                    return;
+                }
                 foreach (var part in Parts.NameToEntity)
                 {
                     part.Value.OnClose += comp.SubpartClosed;
@@ -89,7 +93,7 @@ namespace WeaponCore.Platform
                     if (reset)
                     {
                         Weapons[c].EntityPart = aimPart;
-                        var Registered = false;
+                        var registered = false;
                         try
                         {
                             foreach (var animationSet in Weapons[c].AnimationsSet)
@@ -100,10 +104,10 @@ namespace WeaponCore.Platform
                                     if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
                                     {
                                         animation.Part = (MyEntitySubpart) part;
-                                        if (!Registered)
+                                        if (!registered)
                                         {
                                             animation.Part.OnClose += comp.SubpartClosed;
-                                            Registered = true;
+                                            registered = true;
                                         }
                                     }
                                 }
