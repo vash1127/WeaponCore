@@ -128,7 +128,7 @@ namespace WeaponCore.Support
                 MaxRequiredPower += weapon.RequiredPower;
 
 
-                weapon.TicksPerShot = (uint)Math.Round(3600f / weapon.RateOfFire, MidpointRounding.AwayFromZero);
+                weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
                 weapon.DPS = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
