@@ -164,6 +164,7 @@ namespace WeaponCore.Platform
 
                             t.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                             vProjectile.VrTrajectiles.Add(t);
+
                             if (System.RotateRealBeam && i == _nextVirtual)
                             {
                                 vProjectile.Origin = muzzle.Position;
@@ -292,7 +293,6 @@ namespace WeaponCore.Platform
             p.PredictedTargetPos = TargetPos;
             p.Direction = Comp.MyPivotDir;
             p.State = Projectile.ProjectileState.Start;
-
             return p;
         }
 

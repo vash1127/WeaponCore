@@ -39,6 +39,7 @@ namespace WeaponCore.Support
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
         internal Vector3D Position;
+        internal Vector3D Origin;
         internal Vector3D Direction;
         internal Vector3D LineStart;
         internal Vector4 Color;
@@ -102,8 +103,9 @@ namespace WeaponCore.Support
             Target.FiringCube = target.FiringCube;
             WeaponId = weaponId;
             MuzzleId = muzzleId;
-            Position = origin;
             Direction = direction;
+            Origin = origin;
+            Position = origin;
         }
 
         internal void UpdateVrShape(Vector3D position, Vector3D direction, double length, ReSize resizing)

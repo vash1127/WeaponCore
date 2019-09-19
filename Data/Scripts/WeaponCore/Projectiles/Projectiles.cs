@@ -109,6 +109,7 @@ namespace WeaponCore.Projectiles
                 {
                     p.Age++;
                     p.T.OnScreen = false;
+
                     switch (p.State)
                     {
                         case ProjectileState.Dead:
@@ -131,6 +132,7 @@ namespace WeaponCore.Projectiles
                             }
                             continue;
                     }
+
                     if (p.AccelLength > 0)
                     {
                         if (p.SmartsOn)
@@ -471,7 +473,7 @@ namespace WeaponCore.Projectiles
                 vt.OnScreen = p.T.OnScreen;
                 if (vt.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vt.LineStart, hitEntity.HitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
+                    var beam = !miss ? new LineD(vt.Origin, hitEntity.HitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
                     vt.UpdateVrShape(beam.To, beam.Direction, beam.Length, ReSize.None);
                 }
                 else
@@ -479,14 +481,13 @@ namespace WeaponCore.Projectiles
                     Vector3D beamEnd;
                     var hit = !miss && hitEntity.HitPos.HasValue;
                     if (!hit)
-                        beamEnd = vt.LineStart + (vt.Direction * p.MaxTrajectory);
+                        beamEnd = vt.Origin + (vt.Direction * p.MaxTrajectory);
                     else
-                        beamEnd = vt.LineStart + (vt.Direction * p.T.WeaponCache.HitDistance);
-
-                    var line = new LineD(vt.LineStart, beamEnd);
+                        beamEnd = vt.Origin + (vt.Direction * p.T.WeaponCache.HitDistance);
+                    var line = new LineD(vt.Origin, beamEnd);
                     //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
                     if (!miss && hitEntity.HitPos.HasValue)
-                        vt.UpdateVrShape(hitEntity.HitPos.Value, line.Direction, line.Length, ReSize.None);
+                        vt.UpdateVrShape(beamEnd, line.Direction, line.Length, ReSize.None);
                     else vt.UpdateVrShape(line.To, line.Direction, line.Length, ReSize.None);
                 }
                 vt.Complete(hitEntity, DrawState.Hit);
