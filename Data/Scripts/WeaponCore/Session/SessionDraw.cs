@@ -49,16 +49,14 @@ namespace WeaponCore
                 }
 
                 var thickness = t.LineWidth;
-                var hitPos = t.Position + (t.Direction * t.Length);
+                var hitPos = t.Position + (-t.Direction * t.Length);
                 var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.Position, ref hitPos, ref CameraPos)));
                 if (distanceFromPointSqr < 100) thickness *= 0.25f;
                 else if (distanceFromPointSqr < 400) thickness *= 0.5f;
                 else if (distanceFromPointSqr > 160000) thickness *= 8f;
                 else if (distanceFromPointSqr > 40000) thickness *= 4f;
                 else if (distanceFromPointSqr > 10000) thickness *= 2f;
-
                 var color = t.Color;
-
                 if (t.System.IsBeamWeapon)
                 {
                     var changeValue = 0.01f;
