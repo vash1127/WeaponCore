@@ -20,6 +20,7 @@ namespace WeaponCore.Platform
 
         private readonly Vector3 _localTranslation;
         private readonly int _numOfBarrels;
+        private HashSet<string> _muzzlesToFire = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIDToName = new Dictionary<int, string>();
 
         private int _shotsInCycle;

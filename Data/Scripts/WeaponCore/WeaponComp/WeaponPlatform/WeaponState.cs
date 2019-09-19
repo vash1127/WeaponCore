@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
@@ -55,7 +56,7 @@ namespace WeaponCore.Platform
         }
 
         //todo client side only
-        internal void EventTriggerStateChanged(EventTriggers state, bool active, bool pause = false, string muzzle = "Any")
+        internal void EventTriggerStateChanged(EventTriggers state, bool active, bool pause = false, HashSet<string> muzzles = null)
         {
             switch (state)
             {
@@ -66,7 +67,7 @@ namespace WeaponCore.Platform
                         {
                             if (active && animation.Looping != true && !pause)
                             {
-                                if (!Session.Instance.animationsToProcess.Contains(animation) && (animation.Muzzle == "Any" || animation.Muzzle == muzzle))
+                                if (!Session.Instance.animationsToProcess.Contains(animation) && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
                                 {
                                     Session.Instance.animationsToProcess.Enqueue(animation);
                                     if (animation.DoesLoop)

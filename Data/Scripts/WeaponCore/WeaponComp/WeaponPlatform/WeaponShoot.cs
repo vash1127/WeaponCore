@@ -90,6 +90,7 @@ namespace WeaponCore.Platform
                 var targetable = System.Values.Ammo.Health > 0;
                 if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
                 var isStatic = Comp.Physics.IsStatic;
+
                 for (int i = 0; i < bps; i++)
                 {
                     var current = NextMuzzle;
@@ -237,10 +238,10 @@ namespace WeaponCore.Platform
                             }
                         }
                     }
+                    
+                    _muzzlesToFire.Add(MuzzleIDToName[current]);
 
-                    EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzle: MuzzleIDToName[current]);
-
-                    if(Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
+                    if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
                         Session.Instance.updateWeaponHeat(MyTuple.Create(this, 0, true));
 
                     Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
@@ -256,6 +257,10 @@ namespace WeaponCore.Platform
 
                     NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
                 }
+
+                EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+                _muzzlesToFire.Clear();
+
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
                 if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
             }
