@@ -52,8 +52,8 @@ namespace WeaponCore
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
-        internal MyConcurrentQueue<PartAnimation> animationsToProcess = new MyConcurrentQueue<PartAnimation>();
-        internal MyConcurrentQueue<PartAnimation> animationsToQueue = new MyConcurrentQueue<PartAnimation>();
+        internal Queue<PartAnimation> animationsToProcess = new Queue<PartAnimation>();
+        internal Queue<PartAnimation> animationsToQueue = new Queue<PartAnimation>();
 
         internal IMyPhysics Physics;
         internal IMyCamera Camera;
