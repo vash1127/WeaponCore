@@ -145,7 +145,7 @@ namespace WeaponCore
                             }
                         }
 
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || (!Tick60 && comp.Overheated) || (!gridAi.Ready && !w.Reloading))
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || (!gridAi.Ready && !w.Reloading))
                         {
                             if (w.ReturnHome)
                                 w.ReturnHome = w.TurretHomePosition();
@@ -157,19 +157,6 @@ namespace WeaponCore
                             }
 
                             continue;
-                        }
-                        if (Tick60)
-                        {
-                            var weaponValue = comp.State.Value.Weapons[w.WeaponId];
-                            comp.CurrentHeat = comp.CurrentHeat >= w.HsRate ? comp.CurrentHeat - w.HsRate : 0;
-                            weaponValue.Heat = weaponValue.Heat >= w.HsRate ? weaponValue.Heat - w.HsRate : 0;
-                            
-                            comp.TerminalRefresh();
-                            if (comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
-                            {
-                                w.EventTriggerStateChanged(Weapon.EventTriggers.Overheated, false);
-                                comp.Overheated = false;
-                            }
                         }
 
                         var energyAmmo = w.System.EnergyAmmo;
@@ -199,7 +186,7 @@ namespace WeaponCore
                         }
                         else comp.Charging = false;
                         
-                        if (comp.Overheated || comp.Charging) continue;
+                        if (comp.Charging) continue;
 
                         if (ammoCheck)
                         {

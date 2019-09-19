@@ -30,18 +30,23 @@ namespace WeaponCore.Support
             lock (_callbacks)
             {
                 //Log.Line($"BeforeEvent offset:{_offset} - delay:{delay}");
+                //Log.Line($"(_offset + delay) % _maxDelay: {(_offset + delay) % _maxDelay}");
                 _callbacks[(_offset + delay) % _maxDelay].Add(new FutureAction(callback, arg1));
             }
         }
 
         internal void Tick(uint tick)
         {
-            lock (_callbacks)
+            if (_callbacks.Length > 0)
             {
-                if (_callbacks[tick].Count > 0) Log.Line($"Tick oldOffSet:{_offset} - Tick:{tick}");
-                foreach (var e in _callbacks[tick]) e.Callback(e.Arg1);
-                _callbacks[tick].Clear();
-                _offset = tick + 1;
+                lock (_callbacks)
+                {
+                    var index = tick % _maxDelay;
+                    //if (_callbacks[index].Count > 0) Log.Line($"Tick oldOffSet:{_offset} - Tick:{tick}");
+                    foreach (var e in _callbacks[index]) e.Callback(e.Arg1);
+                    _callbacks[index].Clear();
+                    _offset = tick + 1;
+                }
             }
         }
     }

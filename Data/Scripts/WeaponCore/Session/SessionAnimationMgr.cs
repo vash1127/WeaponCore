@@ -546,6 +546,44 @@ namespace WeaponCore
             currentEmissivePart.Add(currPart);
         }
 
+        internal static Color[] CreateHeatEmissive()
+        {
+            var colors = new []
+            {
+                new Color(10, 0, 0, 150),
+                new Color(30, 0, 0, 150),
+                new Color(250, .01f, 0, 180),
+                new Color(240, .02f, 0, 200f),
+                new Color(240, .03f, 0, 210f),
+                new Color(220, .04f, 0, 230f),
+                new Color(210, .05f, .01f, 240f),
+                new Color(210, .05f, .02f, 255f),
+                new Color(210, .05f, .03f, 255f),
+                new Color(210, .04f, .04f, 255f),
+                new Color(210, .03f, .05f, 255f)
+            };
+
+            var setColors = new Color[68];
+
+            for (int i = 0; i <= 67; i++)
+            {
+                var progress = (float)i / 67;
+
+                if (progress < 1)
+                {
+                    float scaledTime = progress * (colors.Length - 1);
+                    Color lastColor = colors[(int)scaledTime];
+                    Color nextColor = colors[(int)(scaledTime + 1f)];
+                    float scaledProgress = scaledTime * progress;
+                    setColors[i] = Color.Lerp(lastColor, nextColor, scaledProgress);
+                }
+                else
+                    setColors[i] = colors[colors.Length - 1];
+            }
+            
+            return setColors;
+        }
+
         internal Vector3? GetPartLocation(string partName, IMyModel model)
         {
             Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
@@ -553,14 +591,12 @@ namespace WeaponCore
 
             IMyModelDummy dummy;
             if (dummyList.TryGetValue(partName, out dummy))
-            {
                 return dummy.Matrix.Translation;
-
-            }
 
             return null;
         }
 
+        //todo client side only
         internal void ProcessAnimations()
         {
             PartAnimation animation;

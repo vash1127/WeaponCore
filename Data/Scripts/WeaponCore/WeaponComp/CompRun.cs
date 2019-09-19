@@ -3,7 +3,9 @@ using System.Linq;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -126,26 +128,40 @@ namespace WeaponCore.Support
                 MaxRequiredPower += weapon.RequiredPower;
 
 
-                weapon.TicksPerShot =  (uint)(3600 / weapon.RateOfFire);
+                weapon.TicksPerShot = (uint)Math.Round(3600f / weapon.RateOfFire, MidpointRounding.AwayFromZero);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
                 weapon.DPS = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
 
-                if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                    weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? weapon.System.Values.Ammo.Trajectory.AccelPerSec / weapon.System.Values.Ammo.Trajectory.DesiredSpeed : 1);
-                else
-                    weapon.DPS += (weapon.areaEffectDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? weapon.System.Values.Ammo.Trajectory.AccelPerSec / weapon.System.Values.Ammo.Trajectory.DesiredSpeed : 1);
+                if (weapon.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
+                {
+                    if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
+                        weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                                          ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
+                                            weapon.System.Values.Ammo.Trajectory.DesiredSpeed
+                                          : 1);
+                    else
+                        weapon.DPS += (weapon.areaEffectDmg / 2) *
+                                      (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                                          ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
+                                            weapon.System.Values.Ammo.Trajectory.DesiredSpeed
+                                          : 1);
+                }
 
                 HeatPerSecond += (60 / (float)weapon.TicksPerShot) *  weapon.HeatPShot * weapon.System.BarrelsPerShot;
                 OptimalDPS += weapon.DPS;
                 
 
                 HeatSinkRate += weapon.HsRate;
+
+                weapon.UpdateBarrelRotation();
+
                 if (weapon.CurrentMags == 0)
                 {
                     weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
                     weapon.FirstLoad = false;
                 }
+
             }
 
             var gun = Gun.GunBase;

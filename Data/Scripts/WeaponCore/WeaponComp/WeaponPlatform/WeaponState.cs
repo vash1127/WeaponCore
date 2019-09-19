@@ -54,6 +54,7 @@ namespace WeaponCore.Platform
             public int MuzzleId;
         }
 
+        //todo client side only
         internal void EventTriggerStateChanged(EventTriggers state, bool active, bool pause = false, string muzzle = "Any")
         {
             switch (state)

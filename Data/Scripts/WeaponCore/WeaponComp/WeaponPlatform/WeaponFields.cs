@@ -7,7 +7,6 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
-using static WeaponCore.Support.PartAnimationSetDef;
 
 namespace WeaponCore.Platform
 {
@@ -38,6 +37,7 @@ namespace WeaponCore.Platform
         //private bool _firstRun = true;
 
         internal MyEntity EntityPart;
+        internal MyEntity BarrelPart;
         internal WeaponSystem System;
         internal Dummy[] Dummies;
         internal Muzzle[] Muzzles;
@@ -50,6 +50,7 @@ namespace WeaponCore.Platform
         internal Target NewTarget;
         internal Vector3D TargetPos;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
+        internal Matrix BarrelRotationPerShot;
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
@@ -67,6 +68,7 @@ namespace WeaponCore.Platform
         internal float DPS;
         internal float areaEffectDmg;
         internal float detonateDmg;
+        internal float LastHeat;
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
@@ -114,6 +116,7 @@ namespace WeaponCore.Platform
         internal bool Reloading;
         internal bool FirstLoad = true;
         internal bool ReturnHome;
+        internal bool CurrentlyDegrading;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 
@@ -124,15 +127,6 @@ namespace WeaponCore.Platform
             ShootOnce,
             ShootClick,
         }
-        internal readonly List<string> FiringStrings = new List<string>()
-        {
-            "Firing0",
-            "Firing1",
-            "Firing2",
-            "Firing3",
-            "Firing4",
-            "Firing5",
-        };
 
         internal bool LoadAmmoMag
         {
@@ -249,6 +243,43 @@ namespace WeaponCore.Platform
         internal void UpdateShotEnergy()
         {
             ShotEnergyCost = System.Values.HardPoint.EnergyCost * BaseDamage;
+        }
+
+        internal void UpdateBarrelRotation()
+        {
+            if (!Comp.MyCube.MarkedForClose && Comp.MyCube != null)
+            {
+                var rof = RateOfFire < 3599 ? RateOfFire : 3599;
+
+                var angle = MathHelper.ToRadians((360f / System.Barrels.Length) / (3600f / rof));
+
+
+                var axis = System.Values.HardPoint.RotateBarrelAxis;
+                if (axis != 0 && BarrelPart != Comp.MyCube)
+                {
+                    var partPos = (Vector3) Session.Instance.GetPartLocation("subpart_" + System.MuzzlePartName.String,
+                        ((MyEntitySubpart) BarrelPart).Parent.Model);
+
+                    var to = Matrix.CreateTranslation(-partPos);
+                    var from = Matrix.CreateTranslation(partPos);
+
+                    Matrix rotationMatrix = Matrix.Zero;
+                    switch (axis)
+                    {
+                        case 1:
+                            rotationMatrix = to * Matrix.CreateRotationX(angle) * from;
+                            break;
+                        case 2:
+                            rotationMatrix = to * Matrix.CreateRotationY(angle) * from;
+                            break;
+                        case 3:
+                            rotationMatrix = to * Matrix.CreateRotationZ(angle) * from;
+                            break;
+                    }
+
+                    BarrelRotationPerShot = rotationMatrix;
+                }
+            }
         }
     }
 }

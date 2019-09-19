@@ -1,5 +1,4 @@
-﻿using WepaonCore.Control;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text;
 using Sandbox.ModAPI;
@@ -8,6 +7,7 @@ using WeaponCore.Support;
 using VRage.Utils;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 using Sandbox.Game.Entities;
+using WeaponCore.Control;
 
 namespace WeaponCore
 {

@@ -76,17 +76,26 @@ namespace WeaponCore
                 w.RequiredPower = w.RequiredPower * mulitplier;
                 comp.MaxRequiredPower += w.RequiredPower;
 
-                w.TicksPerShot = (uint)(3600 / w.RateOfFire);
+                w.TicksPerShot = (uint)Math.Round(3600f / w.RateOfFire, MidpointRounding.AwayFromZero);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
                 var oldDps = w.DPS;
                 w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
-                if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                    w.DPS += (w.detonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? w.System.Values.Ammo.Trajectory.AccelPerSec / w.System.Values.Ammo.Trajectory.DesiredSpeed : 1);
-                else
-                    w.DPS += (w.areaEffectDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0 ? w.System.Values.Ammo.Trajectory.AccelPerSec / w.System.Values.Ammo.Trajectory.DesiredSpeed : 1);
-
+                if (w.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
+                {
+                    if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
+                        w.DPS += (w.detonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                                          ? w.System.Values.Ammo.Trajectory.AccelPerSec /
+                                            w.System.Values.Ammo.Trajectory.DesiredSpeed
+                                          : 1);
+                    else
+                        w.DPS += (w.areaEffectDmg / 2) *
+                                      (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                                          ? w.System.Values.Ammo.Trajectory.AccelPerSec /
+                                            w.System.Values.Ammo.Trajectory.DesiredSpeed
+                                          : 1);
+                }
                 comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                 comp.OptimalDPS += w.DPS;
 
@@ -136,11 +145,28 @@ namespace WeaponCore
                 w.UpdateRequiredPower();
 
 
-                w.TicksPerShot = (uint)(3600 / w.RateOfFire);
+                w.TicksPerShot = (uint)Math.Round(3600f / w.RateOfFire, MidpointRounding.AwayFromZero);
                 w.TimePerShot = (3600d / w.RateOfFire);
+
+                w.UpdateBarrelRotation();
 
                 var oldDps = w.DPS;
                 w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
+
+                if (w.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
+                {
+                    if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
+                        w.DPS += (w.detonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                                          ? w.System.Values.Ammo.Trajectory.AccelPerSec /
+                                            w.System.Values.Ammo.Trajectory.DesiredSpeed
+                                          : 1);
+                    else
+                        w.DPS += (w.areaEffectDmg / 2) *
+                                      (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                                          ? w.System.Values.Ammo.Trajectory.AccelPerSec /
+                                            w.System.Values.Ammo.Trajectory.DesiredSpeed
+                                          : 1);
+                }
 
                 comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                 comp.OptimalDPS += w.DPS;

@@ -91,6 +91,7 @@ namespace WeaponCore
 
         internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
         internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
+        internal readonly ConcurrentQueue<MyCubeBlock> PastedBlocksToInit = new ConcurrentQueue<MyCubeBlock>();
 
         internal DSUtils DsUtil { get; set; } = new DSUtils();
 
@@ -98,6 +99,7 @@ namespace WeaponCore
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
         internal readonly Wheel Ui = new Wheel();
         internal readonly Pointer Pointer = new Pointer();
+        internal Color[] HeatEmissives;
 
         internal uint Tick;
         internal int PlayerEventId;
@@ -166,7 +168,7 @@ namespace WeaponCore
         internal readonly Guid LogicettingsGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811501");
 
         internal ShieldApi SApi = new ShieldApi();
-        internal FutureEvents FutureEvents = new FutureEvents();
+        private FutureEvents _futureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
 
     }
