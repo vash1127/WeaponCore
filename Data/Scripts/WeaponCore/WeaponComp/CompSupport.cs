@@ -65,7 +65,6 @@ namespace WeaponCore.Support
             var weaponPComp = weapon.EntityPart.PositionComp;
             var weaponCenter = weaponPComp.WorldMatrix.Translation;
             var weaponForward = weaponPComp.WorldMatrix.Forward;
-            //var weaponBackward = weaponPComp.WorldMatrix.Backward;
             var weaponUp = weaponPComp.WorldMatrix.Up;
 
             var blockCenter = MyCube.PositionComp.WorldAABB.Center;
@@ -73,6 +72,8 @@ namespace WeaponCore.Support
             MyPivotDir = weaponForward;
             MyPivotUp = weaponUp;
             MyPivotPos = UtilsStatic.GetClosestPointOnLine1(blockCenter, blockUp, weaponCenter, weaponForward);
+            //var weaponBackward = weaponPComp.WorldMatrix.Backward;
+
             //MyPivotTestLine = new LineD(blockCenter, MyPivotPos);
             //MyBarrelTestLine = new LineD(weaponCenter + (weaponBackward * 5), weaponCenter + (weaponForward * 5));
 
