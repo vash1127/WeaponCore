@@ -46,10 +46,7 @@ namespace WeaponCore.Platform
             if (System.BarrelAxisRotation) MovePart();
 
             if (ShotCounter == 0 && _newCycle)
-            {
                 _newCycle = false;
-                _rotationTime = 0;
-            }
 
             if (ShotCounter++ >= TicksPerShot - 1) ShotCounter = 0;
 

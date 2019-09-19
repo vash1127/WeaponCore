@@ -22,7 +22,6 @@ namespace WeaponCore.Platform
         private readonly int _numOfBarrels;
         internal readonly Dictionary<int, string> MuzzleIDToName = new Dictionary<int, string>();
 
-        private int _rotationTime;
         private int _shotsInCycle;
         private int _shots = 1;
         private int _nextVirtual;
