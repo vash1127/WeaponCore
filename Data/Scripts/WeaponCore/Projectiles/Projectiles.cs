@@ -522,8 +522,8 @@ namespace WeaponCore.Projectiles
                 if (p.DynamicGuidance)
                     DynTrees.UnregisterProjectile(p);
                 p.PruningProxyId = -1;
-                p.State = ProjectileState.Dead;
             }
+            cleanUp.Clear();
         }
 
         private void CameraCheck(Projectile p)
