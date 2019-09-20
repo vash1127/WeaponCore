@@ -255,7 +255,7 @@ namespace WeaponCore.Support
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
         internal Projectile Projectile;
-        internal bool IsProjectile;
+        internal volatile bool IsProjectile;
         internal int[] Deck = new int[0];
         internal int PrevDeckLength;
         internal TargetingDefinition.BlockTypes LastBlockType;

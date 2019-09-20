@@ -403,7 +403,7 @@ namespace WeaponCore.Projectiles
                 if (DynamicGuidance)
                     DynTrees.UnregisterProjectile(this);
                 PruningProxyId = -1;
-
+                T.Target.IsProjectile = false;
                 State = ProjectileState.Dead;
             }
             else State = ProjectileState.Ending;
@@ -430,6 +430,7 @@ namespace WeaponCore.Projectiles
                 manager.ProjectilePool[poolId].MarkForDeallocate(this);
                 PruningProxyId = -1;
                 State = ProjectileState.Dead;
+                T.Target.IsProjectile = false;
             }
         }
 
@@ -460,20 +461,10 @@ namespace WeaponCore.Projectiles
             return reaquire;
         }
 
-        internal void ForceNewTarget(bool projectile)
+        internal void ForceNewTarget()
         {
             ChaseAge = Age;
             PickTarget = false;
-            if (projectile)
-            {
-                T.Target.IsProjectile = true;
-                T.Target.Entity = null;
-            }
-            else
-            {
-                T.Target.IsProjectile = false;
-                T.Target.Projectile = null;
-            }
         }
 
         internal void ActivateMine()

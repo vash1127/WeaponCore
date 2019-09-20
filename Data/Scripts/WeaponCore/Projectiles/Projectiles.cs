@@ -142,11 +142,8 @@ namespace WeaponCore.Projectiles
                             {
                                 var giveUpChase = p.Age - p.ChaseAge > p.MaxChaseAge;
                                 var newChase = (giveUpChase || p.PickTarget);
-                                var targetIsProjectile = p.T.Target.IsProjectile;
-                                if (!targetIsProjectile && p.T.Target.Projectile != null)
-                                    p.ForceNewTarget(!targetIsProjectile);
 
-                                var validTarget = targetIsProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
+                                var validTarget = p.T.Target.IsProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
                                 if (newChase && p.EndChase() || validTarget || !p.IsMine && p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
                                 {
                                     if (p.ZombieLifeTime > 0) p.UpdateZombie(true);

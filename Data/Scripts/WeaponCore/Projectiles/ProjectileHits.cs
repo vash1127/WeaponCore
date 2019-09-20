@@ -397,7 +397,7 @@ namespace WeaponCore.Projectiles
 
                 if (closestEnt != null)
                 {
-                    p.ForceNewTarget(false);
+                    p.ForceNewTarget();
                     p.T.Target.Entity = closestEnt;
                 }
             }
