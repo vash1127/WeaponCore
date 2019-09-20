@@ -99,7 +99,6 @@ namespace WeaponCore.Projectiles
                 var pool = ProjectilePool[i];
                 var entPool = EntityPool[i];
                 var drawList = DrawProjectiles[i];
-                var cleanUp = CleanUp[i];
                 var vtPool = TrajectilePool[i];
                 var spawnShrapnel = ShrapnelToSpawn[i];
 

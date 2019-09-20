@@ -394,7 +394,10 @@ namespace WeaponCore.Projectiles
             }
 
             if (!EnableAv && PrimeModelId == -1 && TriggerModelId == -1)
+            {
+                State = ProjectileState.Dead;
                 manager.CleanUp[poolId].Add(this);
+            }
             else State = ProjectileState.Ending;
         }
 
@@ -408,6 +411,7 @@ namespace WeaponCore.Projectiles
                     HitEffects();
                     if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
+                State = ProjectileState.Dead;
                 manager.CleanUp[poolId].Add(this);
             }
         }
