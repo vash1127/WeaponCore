@@ -22,8 +22,11 @@ namespace WeaponCore.Support
             w.AimCone.ConeDir = w.Comp.MyPivotDir;
             w.AimCone.ConeTip = w.Comp.MyPivotPos;
 
-            if (pCount > 0 && w.System.TrackProjectile) AcquireProjectile(w, out targetType);
-            if (targetType == TargetType.None && w.System.TrackOther) AcquireOther(w, out targetType);
+            var shootProjectile = pCount > 0 && w.System.TrackProjectile;
+            var projectilesFirst = shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
+            if (!projectilesFirst && targetType == TargetType.None && w.System.TrackOther) AcquireOther(w, out targetType);
+            else if (shootProjectile) AcquireProjectile(w, out targetType);
+
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset();
