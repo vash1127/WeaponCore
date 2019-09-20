@@ -454,7 +454,6 @@ namespace WeaponCore.Projectiles
             if (!reaquire)
             {
                 T.Target.Entity = null;
-                T.Target.Projectile = null;
                 T.Target.IsProjectile = false;
             }
 

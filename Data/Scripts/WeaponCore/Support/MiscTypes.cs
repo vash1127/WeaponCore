@@ -274,7 +274,7 @@ namespace WeaponCore.Support
         {
             target.Entity = Entity;
             target.Projectile = Projectile;
-            target.IsProjectile = IsProjectile;
+            target.IsProjectile = target.Projectile != null;
             target.HitPos = HitPos;
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
