@@ -86,13 +86,14 @@ namespace WeaponCore.Projectiles
             //MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
             for (int i = 0; i < Wait.Length; i++)
             {
-                Process(i);
-                Av(i);
+                UpdateState(i);
+                CheckHits(i);
+                UpdateAv(i);
             }
             for (int i = 0; i < Wait.Length; i++) Clean(i);
         }
 
-        private void Process(int i)
+        private void UpdateState(int i)
         {
             var noAv = Session.Instance.DedicatedServer;
             lock (Wait[i])
@@ -111,7 +112,7 @@ namespace WeaponCore.Projectiles
                 {
                     p.Age++;
                     p.T.OnScreen = false;
-                    p.Miss = false;
+                    p.Active = false;
                     switch (p.State)
                     {
                         case ProjectileState.Dead:
@@ -232,14 +233,26 @@ namespace WeaponCore.Projectiles
                         if (p.Ewar)
                             p.RunEwar();
                     }
+                    p.Active = true;
+                }
+            }
+        }
 
-                    if (Hit(p, i)) continue;
+        private void CheckHits(int poolId)
+        {
+            lock (Wait[poolId])
+            {
+                var pool = ProjectilePool[poolId];
+                foreach (var p in pool.Active)
+                {
+                    p.Miss = false;
+                    if (!p.Active || Hit(p, poolId)) continue;
                     p.Miss = true;
                 }
             }
         }
 
-        private void Av(int poolId)
+        private void UpdateAv(int poolId)
         {
             var drawList = DrawProjectiles[poolId];
             var camera = Session.Instance.Camera;

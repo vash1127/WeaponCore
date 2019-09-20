@@ -102,6 +102,7 @@ namespace WeaponCore.Projectiles
         internal bool MineActivated;
         internal bool MineTriggered;
         internal bool Miss;
+        internal bool Active;
         //internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal Trajectile T = new Trajectile();
