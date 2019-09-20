@@ -29,6 +29,8 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
         internal readonly ObjectsPool<Trajectile>[] TrajectilePool = new ObjectsPool<Trajectile>[PoolCount];
         internal readonly List<Trajectile>[] DrawProjectiles = new List<Trajectile>[PoolCount];
+        internal readonly List<Projectile>[] CleanUp = new List<Projectile>[PoolCount];
+
         internal readonly MyConcurrentPool<object>[] GenericListPool = new MyConcurrentPool<object>[PoolCount];
         internal readonly MyConcurrentPool<object>[] GenericHashSetPool = new MyConcurrentPool<object>[PoolCount];
 
@@ -59,6 +61,7 @@ namespace WeaponCore.Projectiles
                 ProjectilePool[i] = new ObjectsPool<Projectile>(100);
                 HitEntityPool[i] = new MyConcurrentPool<HitEntity>(50);
                 DrawProjectiles[i] = new List<Trajectile>(100);
+                CleanUp[i] = new List<Projectile>(100);
                 TrajectilePool[i] = new ObjectsPool<Trajectile>(100);
             }
         }
@@ -96,6 +99,7 @@ namespace WeaponCore.Projectiles
                 var pool = ProjectilePool[i];
                 var entPool = EntityPool[i];
                 var drawList = DrawProjectiles[i];
+                var cleanUp = CleanUp[i];
                 var vtPool = TrajectilePool[i];
                 var spawnShrapnel = ShrapnelToSpawn[i];
 
@@ -421,6 +425,7 @@ namespace WeaponCore.Projectiles
 
                 vtPool.DeallocateAllMarked();
                 pool.DeallocateAllMarked();
+                Clean(i);
             }
         }
 
@@ -501,6 +506,25 @@ namespace WeaponCore.Projectiles
                     p.ProjectileClose(this, poolId);
             }
             else p.ProjectileClose(this, poolId);
+        }
+
+        private void Clean(int poolId)
+        {
+            var cleanUp = CleanUp[poolId];
+            for (int j = 0; j < cleanUp.Count; j++)
+            {
+                var p = cleanUp[j];
+                for (int i = 0; i < p.VrTrajectiles.Count; i++)
+                    TrajectilePool[poolId].MarkForDeallocate(p.VrTrajectiles[i]);
+                p.VrTrajectiles.Clear();
+                p.T.Clean();
+                ProjectilePool[poolId].MarkForDeallocate(p);
+
+                if (p.DynamicGuidance)
+                    DynTrees.UnregisterProjectile(p);
+                p.PruningProxyId = -1;
+                p.State = ProjectileState.Dead;
+            }
         }
 
         private void CameraCheck(Projectile p)

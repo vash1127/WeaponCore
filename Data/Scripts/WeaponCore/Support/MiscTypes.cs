@@ -298,6 +298,7 @@ namespace WeaponCore.Support
         internal void Reset()
         {
             Entity = null;
+            Projectile = null;
             IsProjectile = false;
             HitPos = Vector3D.Zero;
             HitShortDist = 0;

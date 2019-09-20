@@ -394,18 +394,7 @@ namespace WeaponCore.Projectiles
             }
 
             if (!EnableAv && PrimeModelId == -1 && TriggerModelId == -1)
-            {
-                for (int i = 0; i < VrTrajectiles.Count; i++)
-                    manager.TrajectilePool[poolId].MarkForDeallocate(VrTrajectiles[i]);
-                VrTrajectiles.Clear();
-                T.Clean();
-                manager.ProjectilePool[poolId].MarkForDeallocate(this);
-                if (DynamicGuidance)
-                    DynTrees.UnregisterProjectile(this);
-                PruningProxyId = -1;
-                T.Target.IsProjectile = false;
-                State = ProjectileState.Dead;
-            }
+                manager.CleanUp[poolId].Add(this);
             else State = ProjectileState.Ending;
         }
 
@@ -419,18 +408,7 @@ namespace WeaponCore.Projectiles
                     HitEffects();
                     if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
-                for (int i = 0; i < VrTrajectiles.Count; i++)
-                    manager.TrajectilePool[poolId].MarkForDeallocate(VrTrajectiles[i]);
-
-                if (DynamicGuidance)
-                    DynTrees.UnregisterProjectile(this);
-
-                VrTrajectiles.Clear();
-                T.Clean();
-                manager.ProjectilePool[poolId].MarkForDeallocate(this);
-                PruningProxyId = -1;
-                State = ProjectileState.Dead;
-                T.Target.IsProjectile = false;
+                manager.CleanUp[poolId].Add(this);
             }
         }
 
