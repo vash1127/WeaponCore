@@ -24,8 +24,10 @@ namespace WeaponCore.Support
 
             var shootProjectile = pCount > 0 && w.System.TrackProjectile;
             var projectilesFirst = shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
-            if (!projectilesFirst && targetType == TargetType.None && w.System.TrackOther) AcquireOther(w, out targetType);
-            else if (shootProjectile) AcquireProjectile(w, out targetType);
+            if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType);
+            else if (targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
+
+            if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType);
 
             if (targetType == TargetType.None)
             {
