@@ -101,6 +101,7 @@ namespace WeaponCore.Projectiles
         internal bool MineSeeking;
         internal bool MineActivated;
         internal bool MineTriggered;
+        internal bool Miss;
         //internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
         internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
         internal Trajectile T = new Trajectile();
@@ -175,7 +176,11 @@ namespace WeaponCore.Projectiles
                 SmartsOn = false;
             }
 
-            if (T.Target.IsProjectile) OriginTargetPos = T.Target.Projectile.Position;
+            if (T.Target.IsProjectile)
+            {
+                OriginTargetPos = T.Target.Projectile.Position;
+                T.Target.IsProjectile = T.Target.Projectile.T.BaseHealthPool > 0;
+            }
             else if (T.Target.Entity != null) OriginTargetPos = T.Target.Entity.PositionComp.WorldAABB.Center;
             else OriginTargetPos = Vector3D.Zero;
             LockedTarget = OriginTargetPos != Vector3D.Zero;
@@ -521,6 +526,59 @@ namespace WeaponCore.Projectiles
             Log.Line($"[Mine] Ewar:{Ewar} - Activated:{MineActivated} - active:{EwarActive} - Triggered:{T.Triggered} - IdleTime:{IdleTime}");
         }
 
+        internal void RunSmart()
+        {
+            Vector3D newVel;
+            if ((AccelLength <= 0 || Vector3D.DistanceSquared(Origin, Position) >= SmartsDelayDistSqr))
+            {
+                var giveUpChase = Age - ChaseAge > MaxChaseAge;
+                var newChase = (giveUpChase || PickTarget);
+
+                var validTarget = T.Target.IsProjectile || T.Target.Entity != null && !T.Target.Entity.MarkedForClose;
+                if (newChase && EndChase() || validTarget || !IsMine && ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(this))
+                {
+                    if (ZombieLifeTime > 0) UpdateZombie(true);
+                    var targetPos = Vector3D.Zero;
+                    if (T.Target.IsProjectile) targetPos = T.Target.Projectile.Position;
+                    else if (T.Target.Entity != null) targetPos = T.Target.Entity.PositionComp.WorldAABB.Center;
+
+                    if (T.System.TargetOffSet)
+                    {
+                        if (Age - LastOffsetTime > 300)
+                        {
+                            double dist;
+                            Vector3D.DistanceSquared(ref Position, ref targetPos, out dist);
+                            if (dist < OffsetSqr && Vector3.Dot(Direction, Position - targetPos) > 0)
+                                OffSetTarget(out TargetOffSet);
+                        }
+                        targetPos += TargetOffSet;
+                    }
+
+                    var physics = T.Target.Entity?.Physics ?? T.Target.Entity?.Parent?.Physics;
+
+                    if (!T.Target.IsProjectile && (physics == null || targetPos == Vector3D.Zero))
+                        PrevTargetPos = PredictedTargetPos;
+                    else PrevTargetPos = targetPos;
+
+                    var tVel = Vector3.Zero;
+                    if (T.Target.IsProjectile) tVel = T.Target.Projectile.Velocity;
+                    else if (physics != null) tVel = physics.LinearVelocity;
+
+                    PrevTargetVel = tVel;
+                }
+                else UpdateZombie();
+                var commandedAccel = MathFuncs.CalculateMissileIntercept(PrevTargetPos, PrevTargetVel, Position, Velocity, AccelPerSec, T.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, T.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
+                newVel = Velocity + (commandedAccel * StepConst);
+                AccelDir = commandedAccel / AccelPerSec;
+                Vector3D.Normalize(ref Velocity, out Direction);
+            }
+            else newVel = Velocity += (Direction * AccelLength);
+            VelocityLengthSqr = newVel.LengthSquared();
+
+            if (VelocityLengthSqr > MaxSpeedSqr) newVel = Direction * MaxSpeed;
+            Velocity = newVel;
+        }
+
         internal void UpdateZombie(bool reset = false)
         {
             if (reset)
@@ -535,7 +593,40 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal void ElectronicWarfare()
+        internal void RunEwar()
+        {
+            if (VelocityLengthSqr <= 0 && !T.Triggered && !IsMine)
+                T.Triggered = true;
+
+            if (T.Triggered)
+            {
+                var areaSize = T.System.AreaEffectSize;
+                if (T.TriggerGrowthSteps < areaSize)
+                {
+                    const int expansionPerTick = 100 / 60;
+                    var nextSize = (double)++T.TriggerGrowthSteps * expansionPerTick;
+                    if (nextSize <= areaSize)
+                    {
+                        var nextRound = nextSize + 1;
+                        if (nextRound > areaSize)
+                        {
+                            if (nextSize < areaSize)
+                            {
+                                nextSize = areaSize;
+                                ++T.TriggerGrowthSteps;
+                            }
+                        }
+                        MatrixD.Rescale(ref T.TriggerMatrix, nextSize);
+                    }
+                }
+            }
+
+            if (Age % PulseInterval == 0)
+                PulseField();
+            else EwarActive = false;
+        }
+
+        internal void PulseField()
         {
             switch (AreaEffect)
             {

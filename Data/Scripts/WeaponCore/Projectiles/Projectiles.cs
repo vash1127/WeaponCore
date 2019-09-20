@@ -30,6 +30,7 @@ namespace WeaponCore.Projectiles
         internal readonly ObjectsPool<Trajectile>[] TrajectilePool = new ObjectsPool<Trajectile>[PoolCount];
         internal readonly List<Trajectile>[] DrawProjectiles = new List<Trajectile>[PoolCount];
         internal readonly List<Projectile>[] CleanUp = new List<Projectile>[PoolCount];
+        internal readonly bool[] ModelClosed = new bool[PoolCount];
 
         internal readonly MyConcurrentPool<object>[] GenericListPool = new MyConcurrentPool<object>[PoolCount];
         internal readonly MyConcurrentPool<object>[] GenericHashSetPool = new MyConcurrentPool<object>[PoolCount];
@@ -82,24 +83,22 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            //Session.Instance.DsUtil.Start("");
             //MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
-            for (int i = 0; i < Wait.Length; i++) Process(i);
-            //Session.Instance.DsUtil.Complete();
+            for (int i = 0; i < Wait.Length; i++)
+            {
+                Process(i);
+                Av(i);
+            }
+            for (int i = 0; i < Wait.Length; i++) Clean(i);
         }
 
         private void Process(int i)
         {
             var noAv = Session.Instance.DedicatedServer;
-            var camera = Session.Instance.Camera;
-            var cameraPos = Session.Instance.CameraPos;
             lock (Wait[i])
             {
-                var modelClose = false;
+                ModelClosed[i] = false;
                 var pool = ProjectilePool[i];
-                var entPool = EntityPool[i];
-                var drawList = DrawProjectiles[i];
-                var vtPool = TrajectilePool[i];
                 var spawnShrapnel = ShrapnelToSpawn[i];
 
                 if (spawnShrapnel.Count > 0) {
@@ -112,7 +111,7 @@ namespace WeaponCore.Projectiles
                 {
                     p.Age++;
                     p.T.OnScreen = false;
-
+                    p.Miss = false;
                     switch (p.State)
                     {
                         case ProjectileState.Dead:
@@ -120,7 +119,7 @@ namespace WeaponCore.Projectiles
                         case ProjectileState.Start:
                             p.Start(noAv, i);
                             if (p.ModelState == EntityState.NoDraw)
-                                modelClose = p.CloseModel(this, i);
+                                ModelClosed[i] = p.CloseModel(this, i);
                             break;
                         case ProjectileState.Ending:
                         case ProjectileState.OneAndDone:
@@ -130,81 +129,18 @@ namespace WeaponCore.Projectiles
                             if (p.ModelState != EntityState.Exists) p.Stop(this, i);
                             else
                             {
-                                modelClose = p.CloseModel(this, i);
+                                ModelClosed[i] = p.CloseModel(this, i);
                                 p.Stop(this, i);
                             }
                             continue;
+                        case ProjectileState.Alive:
+                            p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
+                            break;
                     }
 
                     if (p.AccelLength > 0)
                     {
-                        if (p.SmartsOn)
-                        {
-                            Vector3D newVel;
-                            if ((p.AccelLength <= 0 || Vector3D.DistanceSquared(p.Origin, p.Position) >= p.SmartsDelayDistSqr))
-                            {
-                                var giveUpChase = p.Age - p.ChaseAge > p.MaxChaseAge;
-                                var newChase = (giveUpChase || p.PickTarget);
-
-                                var validTarget = p.T.Target.IsProjectile || p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose;
-                                if (newChase && p.EndChase() || validTarget || !p.IsMine && p.ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(p))
-                                {
-                                    if (p.ZombieLifeTime > 0) p.UpdateZombie(true);
-                                    var targetPos = Vector3D.Zero;
-                                    if (p.T.Target.IsProjectile) targetPos = p.T.Target.Projectile.Position;
-                                    else if (p.T.Target.Entity != null) targetPos = p.T.Target.Entity.PositionComp.WorldAABB.Center;
-
-                                    if (p.T.System.TargetOffSet)
-                                    {
-                                        if (p.Age - p.LastOffsetTime > 300)
-                                        {
-                                            double dist;
-                                            Vector3D.DistanceSquared(ref p.Position, ref targetPos, out dist);
-                                            if (dist < p.OffsetSqr && Vector3.Dot(p.Direction, p.Position - targetPos) > 0)
-                                                p.OffSetTarget(out p.TargetOffSet);
-                                        }
-                                        targetPos += p.TargetOffSet;
-                                    }
-
-                                    var physics = p.T.Target.Entity?.Physics ?? p.T.Target.Entity?.Parent?.Physics;
-
-                                    if (!p.T.Target.IsProjectile && (physics == null || targetPos == Vector3D.Zero))
-                                        p.PrevTargetPos = p.PredictedTargetPos;
-                                    else p.PrevTargetPos = targetPos;
-
-                                    var tVel = Vector3.Zero;
-                                    if (p.T.Target.IsProjectile) tVel = p.T.Target.Projectile.Velocity;
-                                    else if (physics != null) tVel = physics.LinearVelocity;
-
-                                    p.PrevTargetVel = tVel;
-                                }
-                                else p.UpdateZombie();
-                                var commandedAccel = MathFuncs.CalculateMissileIntercept(p.PrevTargetPos, p.PrevTargetVel, p.Position, p.Velocity, p.AccelPerSec, p.T.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, p.T.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
-                                newVel = p.Velocity + (commandedAccel * StepConst);
-                                p.AccelDir = commandedAccel / p.AccelPerSec;
-                                Vector3D.Normalize(ref p.Velocity, out p.Direction);
-                            }
-                            else newVel = p.Velocity += (p.Direction * p.AccelLength);
-                            p.VelocityLengthSqr = newVel.LengthSquared();
-                            
-                            if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
-                            p.Velocity = newVel;
-
-                            if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
-                            {
-                                p.VisualStep += 0.0025;
-                                if (p.VisualStep > 1) p.VisualStep = 1;
-
-                                Vector3D lerpDir;
-                                Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
-                                Vector3D.Normalize(ref lerpDir, out p.VisualDir);
-                            }
-                            else if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
-                            {
-                                p.VisualDir = p.AccelDir;
-                                p.VisualStep = 0;
-                            }
-                        }
+                        if (p.SmartsOn) p.RunSmart();
                         else
                         {
                             var accel = true;
@@ -226,7 +162,6 @@ namespace WeaponCore.Projectiles
                                     newVel = Vector3D.Zero;
                                     p.VelocityLengthSqr = 0;
                                 }
-                                //Log.Line($"distToMax:{distToMax} - stopDist:{stopDist} - maxDist:{p.MaxTrajectory}({p.DistanceTraveled}) - Speed:{newVel.Length()}({p.VelocityLengthSqr}) - accel:{accel}");
                             }
                             else
                             {
@@ -234,9 +169,7 @@ namespace WeaponCore.Projectiles
                                 p.VelocityLengthSqr = newVel.LengthSquared();
                                 if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
                             }
-
                             p.Velocity = newVel;
-                            //Log.Line($"accel:{accel} - Velocity:{p.Velocity.Length()}");
                         }
                     }
                     
@@ -255,8 +188,10 @@ namespace WeaponCore.Projectiles
                         p.TravelMagnitude = p.Velocity * StepConst;
                         p.Position += p.TravelMagnitude;
                     }
+
                     p.T.PrevDistanceTraveled = p.T.DistanceTraveled;
                     p.T.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Direction, p.Velocity * StepConst));
+
                     if (p.ModelState == EntityState.Exists)
                     {
                         var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
@@ -295,42 +230,45 @@ namespace WeaponCore.Projectiles
                             }
                         }
                         if (p.Ewar)
-                        {
-                            if (p.VelocityLengthSqr <= 0 && !p.T.Triggered && !p.IsMine)
-                                p.T.Triggered = true;
-
-                            if (p.T.Triggered)
-                            {
-                                var areaSize = p.T.System.AreaEffectSize;
-                                if (p.T.TriggerGrowthSteps < areaSize)
-                                {
-                                    const int expansionPerTick = 100 / 60;
-                                    var nextSize = (double)++p.T.TriggerGrowthSteps * expansionPerTick;
-                                    if (nextSize <= areaSize)
-                                    {
-                                        var nextRound = nextSize + 1;
-                                        if (nextRound > areaSize)
-                                        {
-                                            if (nextSize < areaSize)
-                                            {
-                                                nextSize = areaSize;
-                                                ++p.T.TriggerGrowthSteps;
-                                            }
-                                        }
-                                        MatrixD.Rescale(ref p.T.TriggerMatrix, nextSize);
-                                    }
-                                }
-                            }
-
-                            if (p.Age % p.PulseInterval == 0)
-                                p.ElectronicWarfare();
-                            else p.EwarActive = false;
-                        }
+                            p.RunEwar();
                     }
 
                     if (Hit(p, i)) continue;
+                    p.Miss = true;
+                }
+            }
+        }
 
-                    if (!p.EnableAv) continue;
+        private void Av(int poolId)
+        {
+            var drawList = DrawProjectiles[poolId];
+            var camera = Session.Instance.Camera;
+            var cameraPos = Session.Instance.CameraPos;
+
+            lock (Wait[poolId])
+            {
+                var pool = ProjectilePool[poolId];
+                foreach (var p in pool.Active)
+                {
+                    if (!p.EnableAv || !p.Miss) continue;
+
+                    if (p.SmartsOn)
+                    {
+                        if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
+                        {
+                            p.VisualStep += 0.0025;
+                            if (p.VisualStep > 1) p.VisualStep = 1;
+
+                            Vector3D lerpDir;
+                            Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
+                            Vector3D.Normalize(ref lerpDir, out p.VisualDir);
+                        }
+                        else if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
+                        {
+                            p.VisualDir = p.AccelDir;
+                            p.VisualStep = 0;
+                        }
+                    }
 
                     if (p.T.System.AmmoParticle)
                     {
@@ -341,7 +279,7 @@ namespace WeaponCore.Projectiles
                                 p.PlayAmmoParticle();
                         }
                         else if (!p.ParticleStopped && p.AmmoEffect != null)
-                            p.DisposeAmmoEffect(false,true);
+                            p.DisposeAmmoEffect(false, true);
                     }
 
                     if (p.HasTravelSound)
@@ -359,7 +297,7 @@ namespace WeaponCore.Projectiles
                     {
                         if (p.State == ProjectileState.OneAndDone)
                             p.T.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
-                        else 
+                        else
                         {
                             p.T.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Direction, (p.Velocity - p.StartSpeed) * StepConst));
                             if (p.T.ProjectileDisplacement < p.TracerLength)
@@ -417,14 +355,34 @@ namespace WeaponCore.Projectiles
                         drawList.Add(p.T);
                     }
                 }
+            }
+        }
 
-                if (modelClose)
-                    foreach (var e in entPool)
+        private void Clean(int poolId)
+        {
+            lock (Wait[poolId])
+            {
+                var cleanUp = CleanUp[poolId];
+                for (int j = 0; j < cleanUp.Count; j++)
+                {
+                    var p = cleanUp[j];
+                    for (int i = 0; i < p.VrTrajectiles.Count; i++)
+                        TrajectilePool[poolId].MarkForDeallocate(p.VrTrajectiles[i]);
+                    p.VrTrajectiles.Clear();
+                    p.T.Clean();
+                    ProjectilePool[poolId].MarkForDeallocate(p);
+
+                    if (p.DynamicGuidance)
+                        DynTrees.UnregisterProjectile(p);
+                    p.PruningProxyId = -1;
+                }
+                cleanUp.Clear();
+                if (ModelClosed[poolId])
+                    foreach (var e in EntityPool[poolId])
                         e.DeallocateAllMarked();
 
-                vtPool.DeallocateAllMarked();
-                pool.DeallocateAllMarked();
-                Clean(i);
+                TrajectilePool[poolId].DeallocateAllMarked();
+                ProjectilePool[poolId].DeallocateAllMarked();
             }
         }
 
@@ -505,25 +463,6 @@ namespace WeaponCore.Projectiles
                     p.ProjectileClose(this, poolId);
             }
             else p.ProjectileClose(this, poolId);
-        }
-
-        private void Clean(int poolId)
-        {
-            var cleanUp = CleanUp[poolId];
-            for (int j = 0; j < cleanUp.Count; j++)
-            {
-                var p = cleanUp[j];
-                for (int i = 0; i < p.VrTrajectiles.Count; i++)
-                    TrajectilePool[poolId].MarkForDeallocate(p.VrTrajectiles[i]);
-                p.VrTrajectiles.Clear();
-                p.T.Clean();
-                ProjectilePool[poolId].MarkForDeallocate(p);
-
-                if (p.DynamicGuidance)
-                    DynTrees.UnregisterProjectile(p);
-                p.PruningProxyId = -1;
-            }
-            cleanUp.Clear();
         }
 
         private void CameraCheck(Projectile p)
