@@ -84,171 +84,170 @@ namespace WeaponCore.Projectiles
         internal void Update()
         {
             //MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
+            Session.Instance.DsUtil.Start("");
             for (int i = 0; i < Wait.Length; i++)
             {
-                UpdateState(i);
-                CheckHits(i);
-                UpdateAv(i);
+                lock (Wait[i])
+                {
+                    UpdateState(i);
+                    CheckHits(i);
+                    UpdateAv(i);
+                }
             }
+            Session.Instance.DsUtil.Complete();
             for (int i = 0; i < Wait.Length; i++) Clean(i);
         }
 
         private void UpdateState(int i)
         {
             var noAv = Session.Instance.DedicatedServer;
-            lock (Wait[i])
+            ModelClosed[i] = false;
+            var pool = ProjectilePool[i];
+            var spawnShrapnel = ShrapnelToSpawn[i];
+
+            if (spawnShrapnel.Count > 0) {
+                for (int j = 0; j < spawnShrapnel.Count; j++)
+                    spawnShrapnel[j].Spawn(i);
+                spawnShrapnel.Clear();
+            }
+
+            foreach (var p in pool.Active)
             {
-                ModelClosed[i] = false;
-                var pool = ProjectilePool[i];
-                var spawnShrapnel = ShrapnelToSpawn[i];
-
-                if (spawnShrapnel.Count > 0) {
-                    for (int j = 0; j < spawnShrapnel.Count; j++)
-                        spawnShrapnel[j].Spawn(i);
-                    spawnShrapnel.Clear();
-                }
-
-                foreach (var p in pool.Active)
+                p.Age++;
+                p.T.OnScreen = false;
+                p.Active = false;
+                switch (p.State)
                 {
-                    p.Age++;
-                    p.T.OnScreen = false;
-                    p.Active = false;
-                    switch (p.State)
-                    {
-                        case ProjectileState.Dead:
-                            continue;
-                        case ProjectileState.Start:
-                            p.Start(noAv, i);
-                            if (p.ModelState == EntityState.NoDraw)
-                                ModelClosed[i] = p.CloseModel(this, i);
-                            break;
-                        case ProjectileState.Ending:
-                        case ProjectileState.OneAndDone:
-                        case ProjectileState.Depleted:
-                            if (p.State == ProjectileState.Depleted)
-                                p.ProjectileClose(this, i);
-                            if (p.ModelState != EntityState.Exists) p.Stop(this, i);
-                            else
-                            {
-                                ModelClosed[i] = p.CloseModel(this, i);
-                                p.Stop(this, i);
-                            }
-                            continue;
-                        case ProjectileState.Alive:
-                            p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
-                            break;
-                    }
-
-                    if (p.AccelLength > 0)
-                    {
-                        if (p.SmartsOn) p.RunSmart();
+                    case ProjectileState.Dead:
+                        continue;
+                    case ProjectileState.Start:
+                        p.Start(noAv, i);
+                        if (p.ModelState == EntityState.NoDraw)
+                            ModelClosed[i] = p.CloseModel(this, i);
+                        break;
+                    case ProjectileState.Ending:
+                    case ProjectileState.OneAndDone:
+                    case ProjectileState.Depleted:
+                        if (p.State == ProjectileState.Depleted)
+                            p.ProjectileClose(this, i);
+                        if (p.ModelState != EntityState.Exists) p.Stop(this, i);
                         else
                         {
-                            var accel = true;
-                            Vector3D newVel;
-                            if (p.IdleTime > 0)
-                            {
-                                var distToMax = p.MaxTrajectory - p.T.DistanceTraveled;
-
-                                var stopDist = p.VelocityLengthSqr / 2 / (p.AccelPerSec);
-                                if (distToMax <= stopDist)
-                                    accel = false;
-
-                                newVel = accel ? p.Velocity + p.AccelVelocity : p.Velocity - p.AccelVelocity;
-                                p.VelocityLengthSqr = newVel.LengthSquared();
-
-                                if (accel && p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
-                                else if (!accel && distToMax < 0)
-                                {
-                                    newVel = Vector3D.Zero;
-                                    p.VelocityLengthSqr = 0;
-                                }
-                            }
-                            else
-                            {
-                                newVel = p.Velocity + p.AccelVelocity;
-                                p.VelocityLengthSqr = newVel.LengthSquared();
-                                if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
-                            }
-                            p.Velocity = newVel;
+                            ModelClosed[i] = p.CloseModel(this, i);
+                            p.Stop(this, i);
                         }
-                    }
-                    
-                    if (p.State == ProjectileState.OneAndDone)
-                    {
-                        p.LastPosition = p.Position;
-                        var beamEnd = p.Position + (p.Direction * p.MaxTrajectory);
-                        p.TravelMagnitude = p.Position - beamEnd;
-                        p.Position = beamEnd;
-                    }
+                        continue;
+                    case ProjectileState.Alive:
+                        p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
+                        break;
+                }
+
+                if (p.AccelLength > 0)
+                {
+                    if (p.SmartsOn) p.RunSmart();
                     else
                     {
-                        if (p.ConstantSpeed || p.VelocityLengthSqr > 0)
-                            p.LastPosition = p.Position;
-
-                        p.TravelMagnitude = p.Velocity * StepConst;
-                        p.Position += p.TravelMagnitude;
-                    }
-
-                    p.T.PrevDistanceTraveled = p.T.DistanceTraveled;
-                    p.T.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Direction, p.Velocity * StepConst));
-
-                    if (p.ModelState == EntityState.Exists)
-                    {
-                        var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
-
-                        if (p.PrimeModelId != -1)
-                            p.T.PrimeMatrix = matrix;
-                        if (p.TriggerModelId != -1 && p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize)
-                            p.T.TriggerMatrix = matrix;
-
-                        if (p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle && p.PrimeModelId != -1)
+                        var accel = true;
+                        Vector3D newVel;
+                        if (p.IdleTime > 0)
                         {
-                            var offVec = p.Position + Vector3D.Rotate(p.T.System.Values.Graphics.Particles.Ammo.Offset, p.T.PrimeMatrix);
-                            p.AmmoEffect.WorldMatrix = p.T.PrimeMatrix;
-                            p.AmmoEffect.SetTranslation(offVec);
-                        }
-                    }
-                    else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle)
-                        p.AmmoEffect.Velocity = p.Velocity;
+                            var distToMax = p.MaxTrajectory - p.T.DistanceTraveled;
 
-                    if (p.DynamicGuidance)
-                        DynTrees.OnProjectileMoved(p, ref p.Velocity);
+                            var stopDist = p.VelocityLengthSqr / 2 / (p.AccelPerSec);
+                            if (distToMax <= stopDist)
+                                accel = false;
 
-                    if (p.State != ProjectileState.OneAndDone)
-                    {
-                        if (p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr)
-                        {
-                            if (p.IdleTime <= 0) Die(p, i);
-                            else
+                            newVel = accel ? p.Velocity + p.AccelVelocity : p.Velocity - p.AccelVelocity;
+                            p.VelocityLengthSqr = newVel.LengthSquared();
+
+                            if (accel && p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
+                            else if (!accel && distToMax < 0)
                             {
-                                p.IdleTime--;
-                                if (p.IsMine && !p.MineSeeking && !p.MineActivated)
-                                {
-                                    p.T.Cloaked = p.T.System.Values.Ammo.Trajectory.Mines.Cloak;
-                                    p.MineSeeking = true;
-                                }
+                                newVel = Vector3D.Zero;
+                                p.VelocityLengthSqr = 0;
                             }
                         }
-                        if (p.Ewar)
-                            p.RunEwar();
+                        else
+                        {
+                            newVel = p.Velocity + p.AccelVelocity;
+                            p.VelocityLengthSqr = newVel.LengthSquared();
+                            if (p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
+                        }
+                        p.Velocity = newVel;
                     }
-                    p.Active = true;
                 }
+                
+                if (p.State == ProjectileState.OneAndDone)
+                {
+                    p.LastPosition = p.Position;
+                    var beamEnd = p.Position + (p.Direction * p.MaxTrajectory);
+                    p.TravelMagnitude = p.Position - beamEnd;
+                    p.Position = beamEnd;
+                }
+                else
+                {
+                    if (p.ConstantSpeed || p.VelocityLengthSqr > 0)
+                        p.LastPosition = p.Position;
+
+                    p.TravelMagnitude = p.Velocity * StepConst;
+                    p.Position += p.TravelMagnitude;
+                }
+
+                p.T.PrevDistanceTraveled = p.T.DistanceTraveled;
+                p.T.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Direction, p.Velocity * StepConst));
+
+                if (p.ModelState == EntityState.Exists)
+                {
+                    var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
+
+                    if (p.PrimeModelId != -1)
+                        p.T.PrimeMatrix = matrix;
+                    if (p.TriggerModelId != -1 && p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize)
+                        p.T.TriggerMatrix = matrix;
+
+                    if (p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle && p.PrimeModelId != -1)
+                    {
+                        var offVec = p.Position + Vector3D.Rotate(p.T.System.Values.Graphics.Particles.Ammo.Offset, p.T.PrimeMatrix);
+                        p.AmmoEffect.WorldMatrix = p.T.PrimeMatrix;
+                        p.AmmoEffect.SetTranslation(offVec);
+                    }
+                }
+                else if (!p.ConstantSpeed && p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle)
+                    p.AmmoEffect.Velocity = p.Velocity;
+
+                if (p.DynamicGuidance)
+                    DynTrees.OnProjectileMoved(p, ref p.Velocity);
+
+                if (p.State != ProjectileState.OneAndDone)
+                {
+                    if (p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr)
+                    {
+                        if (p.IdleTime <= 0) Die(p, i);
+                        else
+                        {
+                            p.IdleTime--;
+                            if (p.IsMine && !p.MineSeeking && !p.MineActivated)
+                            {
+                                p.T.Cloaked = p.T.System.Values.Ammo.Trajectory.Mines.Cloak;
+                                p.MineSeeking = true;
+                            }
+                        }
+                    }
+                    if (p.Ewar)
+                        p.RunEwar();
+                }
+                p.Active = true;
             }
         }
 
         private void CheckHits(int poolId)
         {
-            lock (Wait[poolId])
+            var pool = ProjectilePool[poolId];
+            foreach (var p in pool.Active)
             {
-                var pool = ProjectilePool[poolId];
-                foreach (var p in pool.Active)
-                {
-                    p.Miss = false;
-                    if (!p.Active || Hit(p, poolId)) continue;
-                    p.Miss = true;
-                }
+                p.Miss = false;
+                if (!p.Active || Hit(p, poolId)) continue;
+                p.Miss = true;
             }
         }
 
@@ -258,115 +257,112 @@ namespace WeaponCore.Projectiles
             var camera = Session.Instance.Camera;
             var cameraPos = Session.Instance.CameraPos;
 
-            lock (Wait[poolId])
+            var pool = ProjectilePool[poolId];
+            foreach (var p in pool.Active)
             {
-                var pool = ProjectilePool[poolId];
-                foreach (var p in pool.Active)
+                if (!p.EnableAv || !p.Miss) continue;
+
+                if (p.SmartsOn)
                 {
-                    if (!p.EnableAv || !p.Miss) continue;
-
-                    if (p.SmartsOn)
+                    if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
                     {
-                        if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
-                        {
-                            p.VisualStep += 0.0025;
-                            if (p.VisualStep > 1) p.VisualStep = 1;
+                        p.VisualStep += 0.0025;
+                        if (p.VisualStep > 1) p.VisualStep = 1;
 
-                            Vector3D lerpDir;
-                            Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
-                            Vector3D.Normalize(ref lerpDir, out p.VisualDir);
-                        }
-                        else if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
-                        {
-                            p.VisualDir = p.AccelDir;
-                            p.VisualStep = 0;
-                        }
+                        Vector3D lerpDir;
+                        Vector3D.Lerp(ref p.VisualDir, ref p.AccelDir, p.VisualStep, out lerpDir);
+                        Vector3D.Normalize(ref lerpDir, out p.VisualDir);
                     }
-
-                    if (p.T.System.AmmoParticle)
+                    else if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) >= Session.VisDirToleranceCosine)
                     {
-                        p.TestSphere.Center = p.Position;
-                        if (camera.IsInFrustum(ref p.TestSphere))
-                        {
-                            if ((p.ParticleStopped || p.ParticleLateStart))
-                                p.PlayAmmoParticle();
-                        }
-                        else if (!p.ParticleStopped && p.AmmoEffect != null)
-                            p.DisposeAmmoEffect(false, true);
+                        p.VisualDir = p.AccelDir;
+                        p.VisualStep = 0;
                     }
+                }
 
-                    if (p.HasTravelSound)
+                if (p.T.System.AmmoParticle)
+                {
+                    p.TestSphere.Center = p.Position;
+                    if (camera.IsInFrustum(ref p.TestSphere))
                     {
-                        if (!p.AmmoSound)
-                        {
-                            double dist;
-                            Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
-                            if (dist <= p.AmmoTravelSoundRangeSqr) p.AmmoSoundStart();
-                        }
-                        else p.TravelEmitter.SetPosition(p.Position);
+                        if ((p.ParticleStopped || p.ParticleLateStart))
+                            p.PlayAmmoParticle();
                     }
+                    else if (!p.ParticleStopped && p.AmmoEffect != null)
+                        p.DisposeAmmoEffect(false, true);
+                }
 
-                    if (p.DrawLine)
+                if (p.HasTravelSound)
+                {
+                    if (!p.AmmoSound)
                     {
-                        if (p.State == ProjectileState.OneAndDone)
-                            p.T.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
-                        else
-                        {
-                            p.T.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Direction, (p.Velocity - p.StartSpeed) * StepConst));
-                            if (p.T.ProjectileDisplacement < p.TracerLength)
-                            {
-                                p.T.UpdateShape(p.Position, p.Direction, p.T.ProjectileDisplacement, ReSize.Grow);
-                            }
-                            else
-                            {
-                                var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
-                                var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;
-                                p.T.UpdateShape(drawStartPos, pointDir, p.TracerLength, ReSize.None);
-                            }
-                        }
+                        double dist;
+                        Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
+                        if (dist <= p.AmmoTravelSoundRangeSqr) p.AmmoSoundStart();
                     }
-                    if (p.ModelState == EntityState.Exists)
-                    {
-                        p.ModelSphereLast.Center = p.LastEntityPos;
-                        p.ModelSphereCurrent.Center = p.Position;
-                        if (p.T.Triggered)
-                        {
-                            var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() : p.T.System.AreaEffectSize;
-                            p.ModelSphereLast.Radius = currentRadius;
-                            p.ModelSphereCurrent.Radius = currentRadius;
-                        }
-                        if (camera.IsInFrustum(ref p.ModelSphereLast) || camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
-                        {
-                            p.T.OnScreen = true;
-                            p.FirstOffScreen = false;
-                            p.LastEntityPos = p.Position;
-                        }
-                    }
+                    else p.TravelEmitter.SetPosition(p.Position);
+                }
 
-                    if (!p.T.OnScreen && p.DrawLine)
+                if (p.DrawLine)
+                {
+                    if (p.State == ProjectileState.OneAndDone)
+                        p.T.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
+                    else
                     {
-                        if (p.T.System.Trail)
+                        p.T.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Direction, (p.Velocity - p.StartSpeed) * StepConst));
+                        if (p.T.ProjectileDisplacement < p.TracerLength)
                         {
-                            p.T.OnScreen = true;
+                            p.T.UpdateShape(p.Position, p.Direction, p.T.ProjectileDisplacement, ReSize.Grow);
                         }
                         else
                         {
-                            var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
-                            if (camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
+                            var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
+                            var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;
+                            p.T.UpdateShape(drawStartPos, pointDir, p.TracerLength, ReSize.None);
                         }
                     }
-
-                    if (p.T.MuzzleId == -1)
+                }
+                if (p.ModelState == EntityState.Exists)
+                {
+                    p.ModelSphereLast.Center = p.LastEntityPos;
+                    p.ModelSphereCurrent.Center = p.Position;
+                    if (p.T.Triggered)
                     {
-                        CreateFakeBeams(p, null, drawList, true);
-                        continue;
+                        var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() : p.T.System.AreaEffectSize;
+                        p.ModelSphereLast.Radius = currentRadius;
+                        p.ModelSphereCurrent.Radius = currentRadius;
                     }
-
-                    if (p.T.OnScreen)
+                    if (camera.IsInFrustum(ref p.ModelSphereLast) || camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
                     {
-                        p.T.Complete(null, DrawState.Default);
-                        drawList.Add(p.T);
+                        p.T.OnScreen = true;
+                        p.FirstOffScreen = false;
+                        p.LastEntityPos = p.Position;
                     }
+                }
+
+                if (!p.T.OnScreen && p.DrawLine)
+                {
+                    if (p.T.System.Trail)
+                    {
+                        p.T.OnScreen = true;
+                    }
+                    else
+                    {
+                        var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
+                        if (camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
+                    }
+                }
+
+                if (p.T.MuzzleId == -1)
+                {
+                    CreateFakeBeams(p, null, drawList, true);
+                    continue;
+                }
+
+                if (p.T.OnScreen)
+                {
+                    p.T.Complete(null, DrawState.Default);
+                    drawList.Add(p.T);
                 }
             }
         }
