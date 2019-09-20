@@ -85,13 +85,13 @@ namespace WeaponCore.Projectiles
         {
             if (Session.Instance.HighLoad)
             {
-                MyAPIGateway.Parallel.For(0, Wait.Length, x =>
+                MyAPIGateway.Parallel.For(0, Wait.Length, i =>
                 {
-                    lock (Wait[x])
+                    lock (Wait[i])
                     {
-                        UpdateState(x);
-                        CheckHits(x);
-                        UpdateAv(x);
+                        UpdateState(i);
+                        CheckHits(i);
+                        UpdateAv(i);
                     }
                 }, 1);
             }
@@ -99,19 +99,18 @@ namespace WeaponCore.Projectiles
             {
                 for (int i = 0; i < Wait.Length; i++)
                 {
-                    UpdateState(i);
-                    CheckHits(i);
-                    UpdateAv(i);
+                    lock (Wait[i])
+                    {
+                        UpdateState(i);
+                        CheckHits(i);
+                        UpdateAv(i);
+                    }
                 }
             }
 
             for (int i = 0; i < Wait.Length; i++)
-            {
                 lock (Wait[i])
-                {
                     Clean(i);
-                }
-            }
         }
 
         private void UpdateState(int i)
@@ -305,8 +304,9 @@ namespace WeaponCore.Projectiles
                     if (nearestHitEnt != null && Intersected(p, DrawProjectiles[poolId], nearestHitEnt))
                         hit = true;
                 }
+                if ((p.IdleTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
+                        Die(p, poolId, hit);
 
-                if (p.IdleTime <= 0) Die(p, poolId, hit);
                 if (hit) continue;
                 p.Miss = true;
                 p.T.HitList.Clear();
