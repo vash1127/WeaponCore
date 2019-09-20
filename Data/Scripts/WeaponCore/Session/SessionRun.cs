@@ -58,6 +58,12 @@ namespace WeaponCore
                 AiLoop();
                 
                 UpdateWeaponPlatforms();
+                if (Tick600)
+                {
+                    HighLoad = RecentShots > 2400;
+                    Log.Line($"RecentShots:{RecentShots}");
+                    RecentShots = 0;
+                }
                 Projectiles.Update();
 
                 if (_effectedCubes.Count > 0) ApplyEffect();

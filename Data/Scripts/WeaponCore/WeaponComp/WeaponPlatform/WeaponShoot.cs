@@ -264,6 +264,7 @@ namespace WeaponCore.Platform
 
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
                 if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
+                Session.Instance.RecentShots += System.IsBeamWeapon ? 0.1 : 1;
             }
         }
 

@@ -28,6 +28,7 @@ namespace WeaponCore
         internal volatile bool Inited;
         internal volatile bool Dispatched;
         internal bool DbsUpdating;
+        internal bool HighLoad;
         private bool _initLcdPanel1;
 
         private int _count = -1;
@@ -101,6 +102,7 @@ namespace WeaponCore
         internal readonly Pointer Pointer = new Pointer();
         internal Color[] HeatEmissives;
 
+        internal double RecentShots;
         internal uint Tick;
         internal int PlayerEventId;
         internal int ProCounter;

@@ -83,10 +83,21 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            //MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
-            for (int i = 0; i < Wait.Length; i++)
+            if (Session.Instance.HighLoad)
             {
-                lock (Wait[i])
+                MyAPIGateway.Parallel.For(0, Wait.Length, x =>
+                {
+                    lock (Wait[x])
+                    {
+                        UpdateState(x);
+                        CheckHits(x);
+                        UpdateAv(x);
+                    }
+                }, 1);
+            }
+            else
+            {
+                for (int i = 0; i < Wait.Length; i++)
                 {
                     UpdateState(i);
                     CheckHits(i);
