@@ -1,5 +1,4 @@
-﻿using System;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -75,7 +74,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
             var userControlled = Comp.Gunner || ManualShoot != TerminalActionState.ShootOff;
-            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 59 && Target != null ) ShootRayCheck();
+            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null ) ShootRayCheck();
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {

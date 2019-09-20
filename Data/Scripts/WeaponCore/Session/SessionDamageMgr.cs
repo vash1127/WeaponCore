@@ -356,7 +356,7 @@ namespace WeaponCore
                 t.BaseDamagePool = 0;
                 return;
             }
-            var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
+            var detonateOnEnd = system.AmmoAreaEffect && system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
 
             t.ObjectsHit++;
             float damageScale = 1;
