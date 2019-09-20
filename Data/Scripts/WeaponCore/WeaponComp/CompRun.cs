@@ -220,25 +220,7 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                if (Platform.Inited)
-                {
-                    Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;
-                    RegisterEvents(false);
-                    StopAllSounds();
-                    Platform.RemoveParts(this);
-                    
-
-                    WeaponComponent comp;
-                    Ai.WeaponBase.TryRemove(MyCube, out comp);
-                }
-
-                if (Ai.WeaponBase.Count == 0)
-                {
-                    GridAi gridAi;
-                    Session.Instance.GridTargetingAIs.TryRemove(MyGrid, out gridAi);
-                }
-                Ai = null;
-                MyGrid = null;
+                RemoveComp();
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }

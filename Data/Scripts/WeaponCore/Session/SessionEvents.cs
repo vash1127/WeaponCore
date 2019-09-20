@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Sandbox.Game.Entities;
+using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
@@ -47,13 +48,27 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
 
+        private void OnPrefabSpawn(long entityId, string prefabName)
+        {
+            var grid = MyEntities.GetEntityById(entityId) as MyCubeGrid;
+            if (grid == null) return;
+
+            foreach (var block in grid.GetFatBlocks())
+            {
+                if (WeaponPlatforms.ContainsKey(block.BlockDefinition.Id.SubtypeId))
+                {
+                    PastedBlocksToInit.Enqueue(block);
+                }
+            }
+        }
+
 
         private void OnEntityAdded(MyEntity obj)
         {
             var grid = obj as MyCubeGrid;
 
             if (grid == null) return;
-
+            
             foreach (var block in grid.GetFatBlocks())
             {
                 if (WeaponPlatforms.ContainsKey(block.BlockDefinition.Id.SubtypeId))

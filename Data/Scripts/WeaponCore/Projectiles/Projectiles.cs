@@ -104,7 +104,14 @@ namespace WeaponCore.Projectiles
                     UpdateAv(i);
                 }
             }
-            for (int i = 0; i < Wait.Length; i++) Clean(i);
+
+            for (int i = 0; i < Wait.Length; i++)
+            {
+                lock (Wait[i])
+                {
+                    Clean(i);
+                }
+            }
         }
 
         private void UpdateState(int i)

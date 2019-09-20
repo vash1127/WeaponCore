@@ -132,19 +132,8 @@ namespace WeaponCore
                         if (block.Components.TryGet(out comp) && comp.MyGrid.EntityId != block.CubeGrid.EntityId)
                         {
                             if (block.MarkedForClose) continue;
-                            GridAi gridAi;
-                            if (!GridTargetingAIs.TryGetValue(block.CubeGrid, out gridAi))
-                            {
-                                gridAi = new GridAi(block.CubeGrid);
-                                GridTargetingAIs.TryAdd(block.CubeGrid, gridAi);
-                            }
-                            var weaponComp = new WeaponComponent(gridAi, block, weaponBase);
-                            if (gridAi != null && gridAi.WeaponBase.TryAdd(block, weaponComp))
-                            {
-                                CompsToRemove.Enqueue(comp);
-                                gridAi.WeaponCounter.TryAdd(block.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
-                                CompsToStart.Enqueue(weaponComp);
-                            }
+                                comp.RemoveComp();
+                                OnEntityCreate(block);
                         }
                     }
                 }
@@ -208,6 +197,7 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyEntities.OnEntityAdd += OnEntityAdded;
+                MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -219,6 +209,7 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
 
+
         protected override void UnloadData()
         {
             PurgeAllEffects();
@@ -228,7 +219,8 @@ namespace WeaponCore
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
-
+            MyEntities.OnEntityAdd -= OnEntityAdded;
+            MyVisualScriptLogicProvider.PrefabSpawnedDetailed -= OnPrefabSpawn;
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
             ProjectileTree.Clear();
