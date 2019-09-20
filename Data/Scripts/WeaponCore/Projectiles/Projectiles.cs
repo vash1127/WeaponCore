@@ -84,17 +84,17 @@ namespace WeaponCore.Projectiles
         internal void Update()
         {
             //MyAPIGateway.Parallel.For(0, Wait.Length, x => Process(x), 1);
-            Session.Instance.DsUtil.Start("");
             for (int i = 0; i < Wait.Length; i++)
             {
                 lock (Wait[i])
                 {
+                    Session.Instance.DsUtil.Start("");
                     UpdateState(i);
                     CheckHits(i);
                     UpdateAv(i);
+                    Session.Instance.DsUtil.Complete();
                 }
             }
-            Session.Instance.DsUtil.Complete();
             for (int i = 0; i < Wait.Length; i++) Clean(i);
         }
 
@@ -222,8 +222,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr)
                     {
-                        if (p.IdleTime <= 0) Die(p, i);
-                        else
+                        if (p.IdleTime > 0) 
                         {
                             p.IdleTime--;
                             if (p.IsMine && !p.MineSeeking && !p.MineActivated)
@@ -246,8 +245,55 @@ namespace WeaponCore.Projectiles
             foreach (var p in pool.Active)
             {
                 p.Miss = false;
-                if (!p.Active || Hit(p, poolId)) continue;
+                if (!p.Active) continue;
+                var beam = new LineD(p.LastPosition, p.Position);
+                if (p.MineSeeking && !p.MineTriggered)
+                    SeekEnemy(p, poolId);
+                else if (p.T.System.CollisionIsLine)
+                {
+                    p.PruneSphere.Center = p.Position;
+                    p.PruneSphere.Radius = p.T.System.CollisionSize;
+                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
+                }
+                else
+                {
+                    p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
+                    var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() : p.T.System.AreaEffectSize;
+                    if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
+                    {
+                        p.PruneSphere.Center = p.Position;
+                        p.PruneSphere.Radius = currentRadius;
+                    }
+                    else if (p.PruneSphere.Radius < p.T.System.CollisionSize)
+                    {
+                        p.PruneSphere.Center = p.Position;
+                        p.PruneSphere.Radius = p.T.System.CollisionSize;
+                    }
+
+                    if (!(p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Origin, 5f)) != ContainmentType.Disjoint))
+                    {
+                        var checkList = CheckPool[poolId].Get();
+                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
+                        for (int i = 0; i < checkList.Count; i++)
+                            p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
+
+                        checkList.Clear();
+                        CheckPool[poolId].Return(checkList);
+                    }
+                }
+
+                var hit = false;
+                if (p.SegmentList.Count > 0)
+                {
+                    var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId);
+                    if (nearestHitEnt != null && Intersected(p, DrawProjectiles[poolId], nearestHitEnt))
+                        hit = true;
+                }
+
+                if (p.IdleTime <= 0) Die(p, poolId, hit);
+                if (hit) continue;
                 p.Miss = true;
+                p.T.HitList.Clear();
             }
         }
 
@@ -463,14 +509,11 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        private void Die(Projectile p, int poolId)
+        private void Die(Projectile p, int poolId, bool hit)
         {
             var dInfo = p.T.System.Values.Ammo.AreaEffect.Detonation;
             if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
-            {
-                if (!Hit(p, poolId))
-                    p.ProjectileClose(this, poolId);
-            }
+                if (!hit) p.ProjectileClose(this, poolId);
             else p.ProjectileClose(this, poolId);
         }
 

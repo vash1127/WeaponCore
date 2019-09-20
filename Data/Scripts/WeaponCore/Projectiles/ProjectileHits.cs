@@ -16,52 +16,6 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-        private bool Hit(Projectile p, int poolId)
-        {
-            var beam = new LineD(p.LastPosition, p.Position);
-            if (p.MineSeeking && !p.MineTriggered)
-                SeekEnemy(p, poolId);
-            else if (p.T.System.CollisionIsLine)
-            {
-                p.PruneSphere.Center = p.Position;
-                p.PruneSphere.Radius = p.T.System.CollisionSize;
-                MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
-            }
-            else
-            {
-                p.PruneSphere = new BoundingSphereD(p.Position, 0).Include(new BoundingSphereD(p.LastPosition, 0));
-                var currentRadius = p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize ? p.T.TriggerMatrix.Scale.AbsMax() : p.T.System.AreaEffectSize;
-                if (p.EwarActive && p.PruneSphere.Radius < currentRadius)
-                {
-                    p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = currentRadius;
-                }
-                else if (p.PruneSphere.Radius < p.T.System.CollisionSize)
-                {
-                    p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = p.T.System.CollisionSize;
-                }
-                if (p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Origin, 5f)) != ContainmentType.Disjoint) return false;
-
-                var checkList = CheckPool[poolId].Get();
-                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
-                for (int i = 0; i < checkList.Count; i++)
-                    p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
-
-                checkList.Clear();
-                CheckPool[poolId].Return(checkList);
-            }
-
-            if (p.SegmentList.Count > 0)
-            {
-                var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId);
-                if (nearestHitEnt != null && Intersected(p, DrawProjectiles[poolId], nearestHitEnt)) return true;
-                p.T.HitList.Clear();
-            }
-
-            return false;
-        }
-
         internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, int poolId)
         {
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
