@@ -88,11 +88,9 @@ namespace WeaponCore.Projectiles
             {
                 lock (Wait[i])
                 {
-                    Session.Instance.DsUtil.Start("");
                     UpdateState(i);
                     CheckHits(i);
                     UpdateAv(i);
-                    Session.Instance.DsUtil.Complete();
                 }
             }
             for (int i = 0; i < Wait.Length; i++) Clean(i);
