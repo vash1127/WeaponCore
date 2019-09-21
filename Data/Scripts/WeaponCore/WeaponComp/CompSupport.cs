@@ -1,4 +1,5 @@
 ﻿using Sandbox.ModAPI;
+using VRage.Game.VisualScripting;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -67,14 +68,13 @@ namespace WeaponCore.Support
             if (AimOffset != Vector3D.Zero)
             {
                 var startCenter = !FixedOffset ?  MyCube.PositionComp.WorldAABB.Center : weaponPComp.WorldAABB.Center;
-                center = startCenter + Vector3D.Rotate(TrackingWeapon.System.Values.HardPoint.Block.Offset, MyCube.WorldMatrix);
+                center = startCenter + Vector3D.Rotate(TrackingWeapon.System.Values.HardPoint.Block.Offset, MyCube.PositionComp.WorldMatrix);
             }
             else center = MyCube.PositionComp.WorldAABB.Center;
 
             var weaponCenter = weaponPComp.WorldMatrix.Translation;
             var weaponForward = weaponPComp.WorldMatrix.Forward;
             var weaponUp = weaponPComp.WorldMatrix.Up;
-
             var blockUp = MyCube.PositionComp.WorldMatrix.Up;
             MyPivotDir = weaponForward;
             MyPivotUp = weaponUp;
