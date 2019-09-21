@@ -66,8 +66,8 @@ namespace WeaponCore.Support
             Vector3D center;
             if (AimOffset != Vector3D.Zero)
             {
-                var aimPartCenter = !FixedOffset ?  MyCube.PositionComp.WorldAABB.Center : weaponPComp.WorldAABB.Center;
-                center = aimPartCenter + Vector3D.Rotate(TrackingWeapon.System.Values.HardPoint.Block.Offset, MyCube.CubeGrid.WorldMatrix);
+                var startCenter = !FixedOffset ?  MyCube.PositionComp.WorldAABB.Center : weaponPComp.WorldAABB.Center;
+                center = startCenter + Vector3D.Rotate(TrackingWeapon.System.Values.HardPoint.Block.Offset, MyCube.WorldMatrix);
             }
             else center = MyCube.PositionComp.WorldAABB.Center;
 

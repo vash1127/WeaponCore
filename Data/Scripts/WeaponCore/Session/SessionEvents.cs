@@ -64,14 +64,13 @@ namespace WeaponCore
         }
 
 
-        private void OnEntityAdded(MyEntity obj)
+        private void OnEntityAdded(MyEntity ent)
         {
-            var grid = obj as MyCubeGrid;
+            var grid = ent as MyCubeGrid;
 
-            if (grid == null || grid.Physics == null) return;
+            if (grid?.Physics == null) return;
             
             PastedBlocksToInit.Enqueue(grid);
-
         }
     }
 }
