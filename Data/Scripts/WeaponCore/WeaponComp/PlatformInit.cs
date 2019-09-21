@@ -68,6 +68,7 @@ namespace WeaponCore.Platform
                     weapon.TrackingAi = true;
                     comp.Debug = weapon.System.Values.HardPoint.Block.Debug;
                     comp.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
+                    comp.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
                     comp.TrackingWeapon = weapon;
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
                     {

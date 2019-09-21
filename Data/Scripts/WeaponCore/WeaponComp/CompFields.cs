@@ -112,6 +112,7 @@ namespace WeaponCore.Support
         internal bool MultiInventory;
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
+        internal bool FixedOffset;
         internal LogicSettings Set;
         internal LogicState State;
         //internal MyResourceSinkComponent Sink => MyCube.ResourceSink;

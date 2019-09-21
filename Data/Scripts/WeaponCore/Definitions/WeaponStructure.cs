@@ -80,7 +80,6 @@ namespace WeaponCore.Support
         public readonly bool SelfDamage;
         public readonly bool VoxelDamage;
         public readonly bool OffsetEffect;
-        public readonly bool OffsetAimPoint;
         public readonly bool Trail;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
@@ -183,8 +182,6 @@ namespace WeaponCore.Support
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
             MaxTargetSpeed = values.Targeting.StopTrackingSpeed > 0 ? values.Targeting.StopTrackingSpeed : double.MaxValue;
-
-            OffsetAimPoint = values.HardPoint.Block.Offset != Vector3D.Zero;
 
             ClosestFirst = values.Targeting.ClosestFirst;
 
