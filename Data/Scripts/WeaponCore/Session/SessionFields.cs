@@ -92,7 +92,7 @@ namespace WeaponCore
 
         internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
         internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
-        internal readonly ConcurrentQueue<MyCubeBlock> PastedBlocksToInit = new ConcurrentQueue<MyCubeBlock>();
+        internal readonly ConcurrentQueue<MyCubeGrid> PastedBlocksToInit = new ConcurrentQueue<MyCubeGrid>();
 
         internal DSUtils DsUtil { get; set; } = new DSUtils();
 

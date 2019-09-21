@@ -122,20 +122,35 @@ namespace WeaponCore
                     ProcessAnimations();
 
 
-                if (!PastedBlocksToInit.IsEmpty)
+                if (!PastedBlocksToInit.IsEmpty && Tick20)
                 {
-                    MyCubeBlock block;
-                    while (PastedBlocksToInit.TryDequeue(out block))
+                    MyCubeGrid grid;
+                    while (PastedBlocksToInit.TryDequeue(out grid))
                     {
-                        var weaponBase = block as IMyLargeMissileTurret;
-                        if(weaponBase == null)continue;
-                        WeaponComponent comp;
-                        if (block.Components.TryGet(out comp) && comp.MyGrid.EntityId != block.CubeGrid.EntityId)
+                        foreach (var block in grid.GetFatBlocks())
                         {
-                            if (block.MarkedForClose) continue;
+                            Log.Line($"Type ID: {block.BlockDefinition.Id.TypeId} SubtypeId: {block.BlockDefinition.Id.SubtypeId}");
+                            var weaponBase = block as IMyLargeMissileTurret;
+                            if (weaponBase == null) continue;
+
+                            if(!WeaponPlatforms.ContainsKey(block.BlockDefinition.Id.SubtypeId)) continue;
+
+                            WeaponComponent comp;
+                            if ((block.Components.TryGet(out comp) && comp.MyGrid.EntityId != block.CubeGrid.EntityId))
+                            {
+                                Log.Line("comp found");
+                                if (block.MarkedForClose) continue;
                                 comp.RemoveComp();
                                 OnEntityCreate(block);
+                            }
+                            else if (comp == null)
+                            {
+                                Log.Line("comp not found");
+
+                                OnEntityCreate(block);
+                            }
                         }
+                        
                     }
                 }
             }
@@ -198,7 +213,7 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyEntities.OnEntityAdd += OnEntityAdded;
-                MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
+                //MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -221,7 +236,7 @@ namespace WeaponCore
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyEntities.OnEntityAdd -= OnEntityAdded;
-            MyVisualScriptLogicProvider.PrefabSpawnedDetailed -= OnPrefabSpawn;
+            //MyVisualScriptLogicProvider.PrefabSpawnedDetailed -= OnPrefabSpawn;
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
             ProjectileTree.Clear();
