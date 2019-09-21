@@ -23,12 +23,10 @@ namespace WeaponCore.Projectiles
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal Vector3D Direction;
-        internal Vector3D OriginUp;
         internal Vector3D AccelDir;
         internal Vector3D VisualDir;
         internal Vector3D Position;
         internal Vector3D LastPosition;
-        internal Vector3D Origin;
         internal Vector3D StartSpeed;
         internal Vector3D Velocity;
         internal Vector3D AccelVelocity;
@@ -59,6 +57,7 @@ namespace WeaponCore.Projectiles
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double VisualStep;
+        internal double DeadZone;
         internal float DesiredSpeed;
         internal float AmmoTravelSoundRangeSqr;
         internal float MaxTrajectory;
@@ -124,11 +123,11 @@ namespace WeaponCore.Projectiles
         {
             PoolId = poolId;
             Manager = manager;
-            Position = Origin;
+            Position = T.Origin;
             AccelDir = Direction;
             VisualDir = Direction;
             var cameraStart = Session.Instance.CameraPos;
-            Vector3D.DistanceSquared(ref cameraStart, ref Origin, out DistanceFromCameraSqr);
+            Vector3D.DistanceSquared(ref cameraStart, ref T.Origin, out DistanceFromCameraSqr);
             GenerateShrapnel = T.System.Values.Ammo.Shrapnel.Fragments > 0;
             var noSAv = T.IsShrapnel && T.System.Values.Ammo.Shrapnel.NoAudioVisual;
             var probability = T.System.Values.Graphics.VisualProbability;
@@ -245,7 +244,7 @@ namespace WeaponCore.Projectiles
             if (MoveToAndActivate)
             {
                 var distancePos = PredictedTargetPos != Vector3D.Zero ? PredictedTargetPos : OriginTargetPos;
-                Vector3D.DistanceSquared(ref Origin, ref distancePos, out DistanceToTravelSqr);
+                Vector3D.DistanceSquared(ref T.Origin, ref distancePos, out DistanceToTravelSqr);
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
@@ -310,6 +309,7 @@ namespace WeaponCore.Projectiles
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelLength = T.System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
+            DeadZone = 3;
 
             if (ConstantSpeed)
             {
@@ -370,7 +370,7 @@ namespace WeaponCore.Projectiles
 
         internal void FireSoundStart()
         {
-            FireEmitter.SetPosition(Origin);
+            FireEmitter.SetPosition(T.Origin);
             FireEmitter.PlaySound(FireSound, true);
         }
 
@@ -386,6 +386,7 @@ namespace WeaponCore.Projectiles
         internal bool Intersected(Projectile p, List<Trajectile> drawList, HitEntity hitEntity)
         {
             if (hitEntity?.HitPos == null) return false;
+
             if (p.EnableAv && (p.DrawLine || p.PrimeModelId != -1 || p.TriggerModelId != -1))
             {
                 var hitPos = hitEntity.HitPos.Value;
@@ -522,7 +523,7 @@ namespace WeaponCore.Projectiles
             Log.Line($"Activated Mine: Ewar{Ewar}");
             if (Guidance == AmmoTrajectory.GuidanceType.DetectFixed) return;
 
-            Vector3D.DistanceSquared(ref Origin, ref predictedPos, out DistanceToTravelSqr);
+            Vector3D.DistanceSquared(ref T.Origin, ref predictedPos, out DistanceToTravelSqr);
             T.DistanceTraveled = 0;
             T.PrevDistanceTraveled = 0;
 
@@ -535,6 +536,7 @@ namespace WeaponCore.Projectiles
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelVelocity = (Direction * AccelLength);
+
 
             if (ConstantSpeed)
             {
@@ -580,7 +582,7 @@ namespace WeaponCore.Projectiles
         internal void RunSmart()
         {
             Vector3D newVel;
-            if ((AccelLength <= 0 || Vector3D.DistanceSquared(Origin, Position) >= SmartsDelayDistSqr))
+            if ((AccelLength <= 0 || Vector3D.DistanceSquared(T.Origin, Position) >= SmartsDelayDistSqr))
             {
                 var giveUpChase = Age - ChaseAge > MaxChaseAge;
                 var newChase = (giveUpChase || PickTarget);
@@ -802,7 +804,7 @@ namespace WeaponCore.Projectiles
             }
             else
             {
-                matrix = MatrixD.CreateWorld(Position, AccelDir, OriginUp);
+                matrix = MatrixD.CreateWorld(Position, AccelDir, T.OriginUp);
                 var offVec = Position + Vector3D.Rotate(T.System.Values.Graphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
             }

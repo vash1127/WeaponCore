@@ -81,6 +81,7 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
+            Session.Instance.DsUtil.Start("ProjectilePerf:");
             if (Session.Instance.HighLoad)
             {
                 MyAPIGateway.Parallel.For(0, Wait.Length, i =>
@@ -109,6 +110,7 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Wait.Length; i++)
                 lock (Wait[i])
                     Clean(i);
+            Session.Instance.DsUtil.Complete(Session.Instance.Tick600);
         }
 
         private void UpdateState(int i)
@@ -208,7 +210,6 @@ namespace WeaponCore.Projectiles
 
                 p.T.PrevDistanceTraveled = p.T.DistanceTraveled;
                 p.T.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Direction, p.Velocity * StepConst));
-
                 if (p.ModelState == EntityState.Exists)
                 {
                     var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
@@ -266,7 +267,8 @@ namespace WeaponCore.Projectiles
                 {
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.T.System.CollisionSize;
-                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
+                    if (p.PruneSphere.Contains(new BoundingSphereD(p.T.Origin, p.DeadZone)) == ContainmentType.Disjoint)
+                        MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
                 }
                 else
                 {
@@ -283,7 +285,7 @@ namespace WeaponCore.Projectiles
                         p.PruneSphere.Radius = p.T.System.CollisionSize;
                     }
 
-                    if (!(p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Origin, 5f)) != ContainmentType.Disjoint))
+                    if (!(p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.T.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
                         var checkList = CheckPool[poolId].Get();
                         MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);

@@ -427,7 +427,7 @@ namespace WeaponCore.Support
             Sw.Restart();
         }
 
-        public void Complete()
+        public void Complete(bool display = false)
         {
             Sw.Stop();
             var ticks = Sw.ElapsedTicks;
@@ -436,8 +436,8 @@ namespace WeaponCore.Support
             var s = ms / 1000;
             Sw.Reset();
             var message = $"{_message} ms:{(float) ms} last-ms:{(float) _last} s:{(int) s}";
-            if (_time) Log.Line(message);
-            else Log.CleanLine(message);
+            if (_time && display) Log.Line(message);
+            else if (display) Log.CleanLine(message);
             _last = ms;
         }
     }

@@ -102,7 +102,7 @@ namespace WeaponCore
         internal readonly Pointer Pointer = new Pointer();
         internal Color[] HeatEmissives;
 
-        internal double RecentShots;
+        internal double Load;
         internal uint Tick;
         internal int PlayerEventId;
         internal int ProCounter;

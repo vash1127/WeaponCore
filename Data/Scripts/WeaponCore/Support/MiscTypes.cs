@@ -40,6 +40,7 @@ namespace WeaponCore.Support
         internal MatrixD TriggerMatrix = MatrixD.Identity;
         internal Vector3D Position;
         internal Vector3D Origin;
+        internal Vector3D OriginUp;
         internal Vector3D Direction;
         internal Vector3D LineStart;
         internal Vector4 Color;
@@ -160,8 +161,8 @@ namespace WeaponCore.Support
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();
         public MyEntity Entity;
-        public WeaponSystem System;
         internal Projectile Projectile;
+        public Trajectile T;
         public LineD Beam;
         public bool Hit;
         public bool SphereCheck;
@@ -242,6 +243,7 @@ namespace WeaponCore.Support
             Blocks.Clear();
             Hit = false;
             HitPos = null;
+            T = null;
             EventType = Stale;
             PruneSphere = new BoundingSphereD();
             SphereCheck = false;
@@ -350,7 +352,7 @@ namespace WeaponCore.Support
                 frag.FiringCube = p.T.Target.FiringCube;
                 frag.Guidance = p.T.EnableGuidance;
                 frag.Origin = p.Position;
-                frag.OriginUp = p.OriginUp;
+                frag.OriginUp = p.T.OriginUp;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
                 var dirMatrix = Matrix.CreateFromDir(p.Direction);
@@ -403,8 +405,8 @@ namespace WeaponCore.Support
                 p.T.EnableGuidance = frag.Guidance;
                 p.T.WeaponId = frag.WeaponId;
                 p.T.MuzzleId = frag.MuzzleId;
-                p.Origin = frag.Origin;
-                p.OriginUp = frag.OriginUp;
+                p.T.Origin = frag.Origin;
+                p.T.OriginUp = frag.OriginUp;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Direction = frag.Direction;
                 p.State = Projectile.ProjectileState.Start;

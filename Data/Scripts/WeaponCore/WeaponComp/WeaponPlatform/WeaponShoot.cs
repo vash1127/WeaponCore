@@ -167,7 +167,7 @@ namespace WeaponCore.Platform
 
                             if (System.RotateRealBeam && i == _nextVirtual)
                             {
-                                vProjectile.Origin = muzzle.Position;
+                                vProjectile.T.Origin = muzzle.Position;
                                 vProjectile.Direction = muzzle.DeviatedDir;
                             }
                         }
@@ -190,8 +190,8 @@ namespace WeaponCore.Platform
 
                             p.SelfDamage = System.SelfDamage || Comp.Gunner;
                             p.GridVel = Comp.Ai.GridVel;
-                            p.Origin = muzzle.Position;
-                            p.OriginUp = Comp.MyPivotUp;
+                            p.T.Origin = muzzle.Position;
+                            p.T.OriginUp = Comp.MyPivotUp;
                             p.PredictedTargetPos = TargetPos;
                             p.Direction = muzzle.DeviatedDir;
                             p.State = Projectile.ProjectileState.Start;
@@ -262,8 +262,11 @@ namespace WeaponCore.Platform
                 _muzzlesToFire.Clear();
 
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
-                if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1) session.ProCounter = 0;
-                Session.Instance.RecentShots += System.IsBeamWeapon ? 0.1 : 1;
+                if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1)
+                {
+                    session.ProCounter = 0;
+                    session.Load += System.IsBeamWeapon ? 0.0625 : 1;
+                }
             }
         }
 
@@ -293,8 +296,8 @@ namespace WeaponCore.Platform
 
             p.SelfDamage = System.SelfDamage || Comp.Gunner;
             p.GridVel = Comp.Ai.GridVel;
-            p.Origin = Comp.MyPivotPos;
-            p.OriginUp = Comp.MyPivotUp;
+            p.T.Origin = Comp.MyPivotPos;
+            p.T.OriginUp = Comp.MyPivotUp;
             p.PredictedTargetPos = TargetPos;
             p.Direction = Comp.MyPivotDir;
             p.State = Projectile.ProjectileState.Start;
