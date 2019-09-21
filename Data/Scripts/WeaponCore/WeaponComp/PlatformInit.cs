@@ -66,6 +66,8 @@ namespace WeaponCore.Platform
                 if (weapon.System.Values.HardPoint.Block.TurretController && comp.TrackingWeapon == null)
                 {
                     weapon.TrackingAi = true;
+                    comp.Debug = weapon.System.Values.HardPoint.Block.Debug;
+                    comp.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
                     comp.TrackingWeapon = weapon;
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
                     {

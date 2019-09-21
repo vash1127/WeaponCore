@@ -128,6 +128,13 @@ namespace WeaponCore
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
                     if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || (!gridAi.Ready && !comp.ReturnHome)) continue;
+                    if (comp.Debug)
+                    {
+                        DsDebugDraw.DrawLine(comp.MyPivotTestLine, Color.Green, 0.05f);
+                        DsDebugDraw.DrawLine(comp.MyBarrelTestLine, Color.Red, 0.05f);
+                        DsDebugDraw.DrawLine(comp.MyCenterTestLine, Color.Blue, 0.05f);
+                        DsDebugDraw.DrawSingleVec(comp.MyPivotPos, 0.5f, Color.White);
+                    }
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
 

@@ -67,15 +67,26 @@ namespace WeaponCore.Support
             var weaponForward = weaponPComp.WorldMatrix.Forward;
             var weaponUp = weaponPComp.WorldMatrix.Up;
 
-            var blockCenter = MyCube.PositionComp.WorldAABB.Center;
+
+            Vector3D center;
+            if (AimOffset != Vector3D.Zero)
+            {
+                var blockCenter = MyCube.PositionComp.WorldAABB.Center;
+                center = blockCenter + Vector3D.Rotate(TrackingWeapon.System.Values.HardPoint.Block.Offset, MyCube.CubeGrid.WorldMatrix);
+            }
+            else center = MyCube.PositionComp.WorldAABB.Center;
+
             var blockUp = MyCube.PositionComp.WorldMatrix.Up;
             MyPivotDir = weaponForward;
             MyPivotUp = weaponUp;
-            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(blockCenter, blockUp, weaponCenter, weaponForward);
-            //var weaponBackward = weaponPComp.WorldMatrix.Backward;
-
-            //MyPivotTestLine = new LineD(blockCenter, MyPivotPos);
-            //MyBarrelTestLine = new LineD(weaponCenter + (weaponBackward * 5), weaponCenter + (weaponForward * 5));
+            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(center, blockUp, weaponCenter, weaponForward);
+            if (Debug)
+            {
+                var cubeleft = MyCube.PositionComp.WorldMatrix.Left;
+                MyCenterTestLine = new LineD(center, center + (blockUp * 10));
+                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 10));
+                MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 5), MyPivotPos - (cubeleft * 5));
+            }
 
             LastPivotUpdateTick = Session.Instance.Tick;
         }
