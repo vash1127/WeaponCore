@@ -265,7 +265,10 @@ namespace WeaponCore.Projectiles
                                     var hitDist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, center);
                                     var hitPos = beam.From + (beam.Direction * hitDist);
                                     if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
-                                        continue;
+                                    {
+                                        hitEnt.Blocks.Clear();
+                                        break;
+                                    }
 
                                     dist = hitDist;
                                     hitEnt.Hit = true;
