@@ -232,12 +232,15 @@ namespace WeaponCore.Projectiles
                             if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
                                 continue;
 
-                            dist = 0;
-                            hitEnt.Hit = true;
-                            hitEnt.HitPos = hitPos;
-
                             if (!fieldActive)
                                 GetAndSortBlocksInSphere(hitEnt, grid, hitPos, false);
+
+                            if (hitEnt.Blocks.Count > 0)
+                            {
+                                dist = 0;
+                                hitEnt.Hit = true;
+                                hitEnt.HitPos = hitPos;
+                            }
                         }
                         else
                         {
