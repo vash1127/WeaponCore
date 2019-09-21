@@ -23,6 +23,7 @@ namespace WeaponCore
                 if (placer != null && Placer == null) Placer = placer;
                 if (weaponBase != null)
                 {
+                    Log.Line($"create");
                     if (!Inited) lock (_configLock) Init();
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
@@ -57,7 +58,7 @@ namespace WeaponCore
             {
                 if (WeaponPlatforms.ContainsKey(block.BlockDefinition.Id.SubtypeId))
                 {
-                    PastedBlocksToInit.Enqueue(block);
+                    PastedBlocksToInit.Enqueue(grid);
                 }
             }
         }
@@ -67,15 +68,9 @@ namespace WeaponCore
         {
             var grid = obj as MyCubeGrid;
 
-            if (grid == null) return;
+            if (grid == null || grid.Physics == null) return;
             
-            foreach (var block in grid.GetFatBlocks())
-            {
-                if (WeaponPlatforms.ContainsKey(block.BlockDefinition.Id.SubtypeId))
-                {
-                    PastedBlocksToInit.Enqueue(block);
-                }
-            }
+            PastedBlocksToInit.Enqueue(grid);
 
         }
     }
