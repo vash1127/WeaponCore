@@ -76,12 +76,9 @@ namespace WeaponCore.Support
             UpdateSettings(Set.Value);
             if (isServer)
             {
-
                 foreach (var w in State.Value.Weapons) {
                     w.Heat = 0;
                 }
-                    
-                
             }
         }
     }

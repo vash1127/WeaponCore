@@ -5,9 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.ModAPI;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
@@ -17,7 +15,7 @@ namespace WeaponCore.Projectiles
     public partial class Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal const int PoolCount = 16;
+        internal const int PoolCount = 8;
 
         internal readonly MyConcurrentPool<Fragments>[] ShrapnelPool = new MyConcurrentPool<Fragments>[PoolCount];
         internal readonly MyConcurrentPool<Fragment>[] FragmentPool = new MyConcurrentPool<Fragment>[PoolCount];
@@ -83,6 +81,7 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
+            Session.Instance.DsUtil.Start("ProjectilePerf:");
             if (Session.Instance.HighLoad)
             {
                 MyAPIGateway.Parallel.For(0, Wait.Length, i =>
@@ -111,6 +110,7 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Wait.Length; i++)
                 lock (Wait[i])
                     Clean(i);
+            Session.Instance.DsUtil.Complete(Session.Instance.Tick600);
         }
 
         private void UpdateState(int i)
@@ -136,20 +136,20 @@ namespace WeaponCore.Projectiles
                     case ProjectileState.Dead:
                         continue;
                     case ProjectileState.Start:
-                        p.Start(noAv, i);
+                        p.Start(this, noAv, i);
                         if (p.ModelState == EntityState.NoDraw)
-                            ModelClosed[i] = p.CloseModel(this, i);
+                            ModelClosed[i] = p.CloseModel();
                         break;
                     case ProjectileState.Ending:
                     case ProjectileState.OneAndDone:
                     case ProjectileState.Depleted:
                         if (p.State == ProjectileState.Depleted)
-                            p.ProjectileClose(this, i);
-                        if (p.ModelState != EntityState.Exists) p.Stop(this, i);
+                            p.ProjectileClose();
+                        if (p.ModelState != EntityState.Exists) p.Stop();
                         else
                         {
-                            ModelClosed[i] = p.CloseModel(this, i);
-                            p.Stop(this, i);
+                            ModelClosed[i] = p.CloseModel();
+                            p.Stop();
                         }
                         continue;
                     case ProjectileState.Alive:
@@ -210,7 +210,6 @@ namespace WeaponCore.Projectiles
 
                 p.T.PrevDistanceTraveled = p.T.DistanceTraveled;
                 p.T.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Direction, p.Velocity * StepConst));
-
                 if (p.ModelState == EntityState.Exists)
                 {
                     var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
@@ -268,7 +267,8 @@ namespace WeaponCore.Projectiles
                 {
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.T.System.CollisionSize;
-                    MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
+                    if (p.PruneSphere.Contains(new BoundingSphereD(p.T.Origin, p.DeadZone)) == ContainmentType.Disjoint)
+                        MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
                 }
                 else
                 {
@@ -285,7 +285,7 @@ namespace WeaponCore.Projectiles
                         p.PruneSphere.Radius = p.T.System.CollisionSize;
                     }
 
-                    if (!(p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Origin, 5f)) != ContainmentType.Disjoint))
+                    if (!(p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.T.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
                         var checkList = CheckPool[poolId].Get();
                         MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
@@ -301,11 +301,12 @@ namespace WeaponCore.Projectiles
                 if (p.SegmentList.Count > 0)
                 {
                     var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId);
-                    if (nearestHitEnt != null && Intersected(p, DrawProjectiles[poolId], nearestHitEnt))
+                    if (nearestHitEnt != null && p.Intersected(p, DrawProjectiles[poolId], nearestHitEnt))
                         hit = true;
                 }
+
                 if ((p.IdleTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
-                        Die(p, poolId, hit);
+                        p.Die(hit);
 
                 if (hit) continue;
                 p.Miss = true;
@@ -417,7 +418,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.T.MuzzleId == -1)
                 {
-                    CreateFakeBeams(p, null, drawList, true);
+                    p.CreateFakeBeams(p, null, drawList, true);
                     continue;
                 }
 
@@ -457,106 +458,5 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        private bool Intersected(Projectile p,  List<Trajectile> drawList, HitEntity hitEntity)
-        {
-            if (hitEntity?.HitPos == null) return false;
-            if (p.EnableAv && (p.DrawLine || p.PrimeModelId != -1 || p.TriggerModelId != -1))
-            {
-                var hitPos = hitEntity.HitPos.Value;
-                p.TestSphere.Center = hitPos;
-                if (!p.T.OnScreen) CameraCheck(p);
-
-                if (p.T.MuzzleId != -1)
-                {
-                    var length = Vector3D.Distance(p.LastPosition, hitPos);
-                    var shrink = !p.T.System.IsBeamWeapon;
-                    var reSize = shrink ? ReSize.Shrink : ReSize.None;
-                    p.T.UpdateShape(hitPos, p.Direction, length, reSize);
-                    p.T.Complete(hitEntity, DrawState.Hit);
-                    drawList.Add(p.T);
-                }
-            }
-
-            p.Colliding = true;
-            if (!p.T.System.VirtualBeams) Session.Instance.Hits.Enqueue(p);
-            else
-            {
-                p.T.WeaponCache.VirtualHit = true;
-                p.T.WeaponCache.HitEntity.Entity = hitEntity.Entity;
-                p.T.WeaponCache.HitEntity.HitPos = hitEntity.HitPos;
-                p.T.WeaponCache.Hits = p.VrTrajectiles.Count;
-                p.T.WeaponCache.HitDistance = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
-
-                if (hitEntity.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = hitEntity.Blocks[0];
-                Session.Instance.Hits.Enqueue(p);
-                if (p.EnableAv && p.T.OnScreen) CreateFakeBeams(p, hitEntity, drawList);
-            }
-            if (p.EnableAv && p.T.OnScreen) p.HitEffects();
-            return true;
-        }
-
-        private void CreateFakeBeams(Projectile p, HitEntity hitEntity, List<Trajectile> drawList, bool miss = false)
-        {
-            for (int i = 0; i < p.VrTrajectiles.Count; i++)
-            {
-                var vt = p.VrTrajectiles[i];
-                vt.OnScreen = p.T.OnScreen;
-                if (vt.System.ConvergeBeams)
-                {
-                    var beam = !miss ? new LineD(vt.Origin, hitEntity.HitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
-                    vt.UpdateVrShape(beam.To, beam.Direction, beam.Length, ReSize.None);
-                }
-                else
-                {
-                    Vector3D beamEnd;
-                    var hit = !miss && hitEntity.HitPos.HasValue;
-                    if (!hit)
-                        beamEnd = vt.Origin + (vt.Direction * p.MaxTrajectory);
-                    else
-                        beamEnd = vt.Origin + (vt.Direction * p.T.WeaponCache.HitDistance);
-                    var line = new LineD(vt.Origin, beamEnd);
-                    //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
-                    if (!miss && hitEntity.HitPos.HasValue)
-                        vt.UpdateVrShape(beamEnd, line.Direction, line.Length, ReSize.None);
-                    else vt.UpdateVrShape(line.To, line.Direction, line.Length, ReSize.None);
-                }
-                vt.Complete(hitEntity, DrawState.Hit);
-                drawList.Add(vt);
-            }
-        }
-
-        private void Die(Projectile p, int poolId, bool hit)
-        {
-            var dInfo = p.T.System.Values.Ammo.AreaEffect.Detonation;
-            if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
-                if (!hit) p.ProjectileClose(this, poolId);
-            else p.ProjectileClose(this, poolId);
-        }
-
-        private void CameraCheck(Projectile p)
-        {
-            if (p.ModelState == EntityState.Exists)
-            {
-                p.ModelSphereLast.Center = p.LastEntityPos;
-                p.ModelSphereCurrent.Center = p.Position;
-                if (Session.Instance.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Instance.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
-                {
-                    p.T.OnScreen = true;
-                    p.FirstOffScreen = false;
-                    p.LastEntityPos = p.Position;
-                }
-            }
-
-            if (!p.T.OnScreen && p.DrawLine)
-            {
-                if (p.T.System.Trail)
-                {
-                    p.T.OnScreen = true;
-                    return;
-                }
-                var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
-                if (Session.Instance.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
-            }
-        }
     }
 }

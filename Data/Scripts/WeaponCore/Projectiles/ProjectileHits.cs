@@ -41,7 +41,7 @@ namespace WeaponCore.Projectiles
                         {
                             var hitEntity = HitEntityPool[poolId].Get();
                             hitEntity.Clean();
-                            hitEntity.System = p.T.System;
+                            hitEntity.T = p.T;
                             hitEntity.PoolId = poolId;
                             hitEntity.Entity = (MyEntity)shieldBlock;
                             hitEntity.Beam = beam;
@@ -90,7 +90,7 @@ namespace WeaponCore.Projectiles
                     }
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
-                    hitEntity.System = p.T.System;
+                    hitEntity.T = p.T;
                     hitEntity.PoolId = poolId;
                     hitEntity.Entity = ent;
                     hitEntity.Beam = beam;
@@ -123,7 +123,7 @@ namespace WeaponCore.Projectiles
                 {
                     var hitEntity = HitEntityPool[poolId].Get();
                     hitEntity.Clean();
-                    hitEntity.System = p.T.System;
+                    hitEntity.T = p.T;
                     hitEntity.PoolId = poolId;
                     hitEntity.EventType = HitEntity.Type.Projectile;
                     hitEntity.Hit = true;
@@ -228,13 +228,19 @@ namespace WeaponCore.Projectiles
                         {
                             var fieldActive = hitEnt.EventType == Field;
 
-                            dist = 0;
-                            hitEnt.Hit = true;
                             var hitPos = !fieldActive ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
-                            hitEnt.HitPos = hitPos;
+                            if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
+                                continue;
 
                             if (!fieldActive)
                                 GetAndSortBlocksInSphere(hitEnt, grid, hitPos, false);
+
+                            if (hitEnt.Blocks.Count > 0)
+                            {
+                                dist = 0;
+                                hitEnt.Hit = true;
+                                hitEnt.HitPos = hitPos;
+                            }
                         }
                         else
                         {
@@ -247,7 +253,6 @@ namespace WeaponCore.Projectiles
                                 {
                                     hitEnt.Blocks.Add(firstBlock);
                                     if (closestBlockFound) continue;
-                                    hitEnt.Hit = true;
                                     Vector3D center;
                                     firstBlock.ComputeWorldCenter(out center);
 
@@ -257,9 +262,17 @@ namespace WeaponCore.Projectiles
                                     var blockBox = new BoundingBoxD(-halfExt, halfExt);
                                     var rotMatrix = Quaternion.CreateFromRotationMatrix(firstBlock.CubeGrid.WorldMatrix);
                                     var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
-                                    dist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, center);
+                                    var hitDist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, center);
+                                    var hitPos = beam.From + (beam.Direction * hitDist);
+                                    if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
+                                    {
+                                        hitEnt.Blocks.Clear();
+                                        break;
+                                    }
 
-                                    hitEnt.HitPos = beam.From + (beam.Direction * dist);
+                                    dist = hitDist;
+                                    hitEnt.Hit = true;
+                                    hitEnt.HitPos = hitPos;
                                     closestBlockFound = true;
                                 }
                             }
@@ -393,7 +406,7 @@ namespace WeaponCore.Projectiles
             Vector3D result;
             Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
             var localSphere = new BoundingSphere(result, (float)sphere.Radius);
-            var fieldType = hitEnt.System.Values.Ammo.AreaEffect.AreaEffect;
+            var fieldType = hitEnt.T.System.Values.Ammo.AreaEffect.AreaEffect;
             if (fatOnly)
             {
                 foreach (var cube in grid.GetFatBlocks())

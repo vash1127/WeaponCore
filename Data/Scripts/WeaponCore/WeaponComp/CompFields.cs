@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -11,7 +10,6 @@ using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -77,7 +75,7 @@ namespace WeaponCore.Support
         internal bool Sync = true;
         internal bool Charging;
         internal bool ReturnHome;
-        
+        internal bool Debug;
         internal Start Status;
         internal enum Start
         {
@@ -99,8 +97,10 @@ namespace WeaponCore.Support
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
-        internal LineD MyPivotTestLine;
+        internal Vector3D AimOffset;
+        internal LineD MyCenterTestLine;
         internal LineD MyBarrelTestLine;
+        internal LineD MyPivotTestLine;
         internal double MyPivotOffset;
         internal IMyGunObject<MyGunBase> Gun;
         internal bool MainInit;

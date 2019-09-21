@@ -60,9 +60,10 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 if (Tick600)
                 {
-                    HighLoad = RecentShots > 2400;
-                    Log.Line($"RecentShots:{RecentShots}");
-                    RecentShots = 0;
+                    var threshold = Projectiles.Wait.Length * 10;
+                    HighLoad = Load > threshold;
+                    Log.Line($"TurretLoad:{Load} - HighLoad:{threshold} - MultiCore:{HighLoad}");
+                    Load = 0d;
                 }
                 Projectiles.Update();
 

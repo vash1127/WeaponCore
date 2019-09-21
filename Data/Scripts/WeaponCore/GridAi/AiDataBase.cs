@@ -5,8 +5,6 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
-using VRage.ModAPI;
 using VRageMath;
 using static WeaponCore.Support.TargetingDefinition;
 

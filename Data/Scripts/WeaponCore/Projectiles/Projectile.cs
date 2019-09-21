@@ -23,12 +23,10 @@ namespace WeaponCore.Projectiles
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal Vector3D Direction;
-        internal Vector3D OriginUp;
         internal Vector3D AccelDir;
         internal Vector3D VisualDir;
         internal Vector3D Position;
         internal Vector3D LastPosition;
-        internal Vector3D Origin;
         internal Vector3D StartSpeed;
         internal Vector3D Velocity;
         internal Vector3D AccelVelocity;
@@ -59,6 +57,7 @@ namespace WeaponCore.Projectiles
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double VisualStep;
+        internal double DeadZone;
         internal float DesiredSpeed;
         internal float AmmoTravelSoundRangeSqr;
         internal float MaxTrajectory;
@@ -111,6 +110,7 @@ namespace WeaponCore.Projectiles
         internal MySoundPair FireSound = new MySoundPair();
         internal MySoundPair TravelSound = new MySoundPair();
         internal MySoundPair HitSound = new MySoundPair();
+        internal Projectiles Manager;
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
@@ -119,15 +119,15 @@ namespace WeaponCore.Projectiles
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
 
-        internal void Start(bool noAv, int poolId)
+        internal void Start(Projectiles manager, bool noAv, int poolId)
         {
             PoolId = poolId;
-
-            Position = Origin;
+            Manager = manager;
+            Position = T.Origin;
             AccelDir = Direction;
             VisualDir = Direction;
             var cameraStart = Session.Instance.CameraPos;
-            Vector3D.DistanceSquared(ref cameraStart, ref Origin, out DistanceFromCameraSqr);
+            Vector3D.DistanceSquared(ref cameraStart, ref T.Origin, out DistanceFromCameraSqr);
             GenerateShrapnel = T.System.Values.Ammo.Shrapnel.Fragments > 0;
             var noSAv = T.IsShrapnel && T.System.Values.Ammo.Shrapnel.NoAudioVisual;
             var probability = T.System.Values.Graphics.VisualProbability;
@@ -244,7 +244,7 @@ namespace WeaponCore.Projectiles
             if (MoveToAndActivate)
             {
                 var distancePos = PredictedTargetPos != Vector3D.Zero ? PredictedTargetPos : OriginTargetPos;
-                Vector3D.DistanceSquared(ref Origin, ref distancePos, out DistanceToTravelSqr);
+                Vector3D.DistanceSquared(ref T.Origin, ref distancePos, out DistanceToTravelSqr);
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
@@ -309,6 +309,7 @@ namespace WeaponCore.Projectiles
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelLength = T.System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
+            DeadZone = 3;
 
             if (ConstantSpeed)
             {
@@ -369,7 +370,7 @@ namespace WeaponCore.Projectiles
 
         internal void FireSoundStart()
         {
-            FireEmitter.SetPosition(Origin);
+            FireEmitter.SetPosition(T.Origin);
             FireEmitter.PlaySound(FireSound, true);
         }
 
@@ -381,57 +382,107 @@ namespace WeaponCore.Projectiles
             AmmoSound = true;
         }
 
+
+        internal bool Intersected(Projectile p, List<Trajectile> drawList, HitEntity hitEntity)
+        {
+            if (hitEntity?.HitPos == null) return false;
+
+            if (p.EnableAv && (p.DrawLine || p.PrimeModelId != -1 || p.TriggerModelId != -1))
+            {
+                var hitPos = hitEntity.HitPos.Value;
+                p.TestSphere.Center = hitPos;
+                if (!p.T.OnScreen) CameraCheck(p);
+
+                if (p.T.MuzzleId != -1)
+                {
+                    var length = Vector3D.Distance(p.LastPosition, hitPos);
+                    var shrink = !p.T.System.IsBeamWeapon;
+                    var reSize = shrink ? ReSize.Shrink : ReSize.None;
+                    p.T.UpdateShape(hitPos, p.Direction, length, reSize);
+                    p.T.Complete(hitEntity, DrawState.Hit);
+                    drawList.Add(p.T);
+                }
+            }
+
+            p.Colliding = true;
+            if (!p.T.System.VirtualBeams) Session.Instance.Hits.Enqueue(p);
+            else
+            {
+                p.T.WeaponCache.VirtualHit = true;
+                p.T.WeaponCache.HitEntity.Entity = hitEntity.Entity;
+                p.T.WeaponCache.HitEntity.HitPos = hitEntity.HitPos;
+                p.T.WeaponCache.Hits = p.VrTrajectiles.Count;
+                p.T.WeaponCache.HitDistance = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
+
+                if (hitEntity.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = hitEntity.Blocks[0];
+                Session.Instance.Hits.Enqueue(p);
+                if (p.EnableAv && p.T.OnScreen) CreateFakeBeams(p, hitEntity, drawList);
+            }
+            if (p.EnableAv && p.T.OnScreen) p.HitEffects();
+            return true;
+        }
+
+        internal void CreateFakeBeams(Projectile p, HitEntity hitEntity, List<Trajectile> drawList, bool miss = false)
+        {
+            for (int i = 0; i < p.VrTrajectiles.Count; i++)
+            {
+                var vt = p.VrTrajectiles[i];
+                vt.OnScreen = p.T.OnScreen;
+                if (vt.System.ConvergeBeams)
+                {
+                    var beam = !miss ? new LineD(vt.Origin, hitEntity.HitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
+                    vt.UpdateVrShape(beam.To, beam.Direction, beam.Length, ReSize.None);
+                }
+                else
+                {
+                    Vector3D beamEnd;
+                    var hit = !miss && hitEntity.HitPos.HasValue;
+                    if (!hit)
+                        beamEnd = vt.Origin + (vt.Direction * p.MaxTrajectory);
+                    else
+                        beamEnd = vt.Origin + (vt.Direction * p.T.WeaponCache.HitDistance);
+                    var line = new LineD(vt.Origin, beamEnd);
+                    //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
+                    if (!miss && hitEntity.HitPos.HasValue)
+                        vt.UpdateVrShape(beamEnd, line.Direction, line.Length, ReSize.None);
+                    else vt.UpdateVrShape(line.To, line.Direction, line.Length, ReSize.None);
+                }
+                vt.Complete(hitEntity, DrawState.Hit);
+                drawList.Add(vt);
+            }
+        }
+
+        private void CameraCheck(Projectile p)
+        {
+            if (p.ModelState == EntityState.Exists)
+            {
+                p.ModelSphereLast.Center = p.LastEntityPos;
+                p.ModelSphereCurrent.Center = p.Position;
+                if (Session.Instance.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Instance.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
+                {
+                    p.T.OnScreen = true;
+                    p.FirstOffScreen = false;
+                    p.LastEntityPos = p.Position;
+                }
+            }
+
+            if (!p.T.OnScreen && p.DrawLine)
+            {
+                if (p.T.System.Trail)
+                {
+                    p.T.OnScreen = true;
+                    return;
+                }
+                var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
+                if (Session.Instance.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
+            }
+        }
+
         private void SpawnShrapnel()
         {
             var shrapnel = Session.Instance.Projectiles.ShrapnelPool[PoolId].Get();
             shrapnel.Init(this, Session.Instance.Projectiles.FragmentPool[PoolId]);
             Session.Instance.Projectiles.ShrapnelToSpawn[PoolId].Add(shrapnel);
-        }
-
-        internal void ProjectileClose(Projectiles manager, int poolId)
-        {
-            if (!T.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
-            else T.IsShrapnel = false;
-
-            if (Watchers.Count > 0 && !(State == ProjectileState.Ending || State == ProjectileState.Ending))
-            {
-                for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Enqueue(this);
-                Watchers.Clear();
-            }
-
-            if (!EnableAv && PrimeModelId == -1 && TriggerModelId == -1)
-            {
-                State = ProjectileState.Dead;
-                manager.CleanUp[poolId].Add(this);
-            }
-            else State = ProjectileState.Ending;
-        }
-
-        internal void Stop(Projectiles manager, int poolId)
-        {
-            if (EndStep++ >= EndSteps)
-            {
-                if (EnableAv)
-                {
-                    if (T.System.AmmoParticle) DisposeAmmoEffect(false, false);
-                    HitEffects();
-                    if (AmmoSound) TravelEmitter.StopSound(false, true);
-                }
-                State = ProjectileState.Dead;
-                manager.CleanUp[poolId].Add(this);
-            }
-        }
-
-        internal bool CloseModel(Projectiles manager, int poolId)
-        {
-            T.PrimeMatrix = MatrixD.Identity;
-            T.TriggerMatrix = MatrixD.Identity;
-            T.Complete(null, DrawState.Last);
-            manager.DrawProjectiles[poolId].Add(T);
-            if (PrimeModelId != -1) manager.EntityPool[poolId][PrimeModelId].MarkForDeallocate(T.PrimeEntity);
-            if (TriggerModelId != -1) manager.EntityPool[poolId][TriggerModelId].MarkForDeallocate(T.TriggerEntity);
-            ModelState = EntityState.None;
-            return true;
         }
 
         internal bool EndChase()
@@ -472,7 +523,7 @@ namespace WeaponCore.Projectiles
             Log.Line($"Activated Mine: Ewar{Ewar}");
             if (Guidance == AmmoTrajectory.GuidanceType.DetectFixed) return;
 
-            Vector3D.DistanceSquared(ref Origin, ref predictedPos, out DistanceToTravelSqr);
+            Vector3D.DistanceSquared(ref T.Origin, ref predictedPos, out DistanceToTravelSqr);
             T.DistanceTraveled = 0;
             T.PrevDistanceTraveled = 0;
 
@@ -485,6 +536,7 @@ namespace WeaponCore.Projectiles
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelVelocity = (Direction * AccelLength);
+
 
             if (ConstantSpeed)
             {
@@ -530,7 +582,7 @@ namespace WeaponCore.Projectiles
         internal void RunSmart()
         {
             Vector3D newVel;
-            if ((AccelLength <= 0 || Vector3D.DistanceSquared(Origin, Position) >= SmartsDelayDistSqr))
+            if ((AccelLength <= 0 || Vector3D.DistanceSquared(T.Origin, Position) >= SmartsDelayDistSqr))
             {
                 var giveUpChase = Age - ChaseAge > MaxChaseAge;
                 var newChase = (giveUpChase || PickTarget);
@@ -752,7 +804,7 @@ namespace WeaponCore.Projectiles
             }
             else
             {
-                matrix = MatrixD.CreateWorld(Position, AccelDir, OriginUp);
+                matrix = MatrixD.CreateWorld(Position, AccelDir, T.OriginUp);
                 var offVec = Position + Vector3D.Rotate(T.System.Values.Graphics.Particles.Ammo.Offset, matrix);
                 matrix.Translation = offVec;
             }
@@ -820,6 +872,61 @@ namespace WeaponCore.Projectiles
         {
             DisposeAmmoEffect(true, true);
             DisposeHitEffect(true);
+        }
+
+        internal void Die(bool hit)
+        {
+            var dInfo = T.System.Values.Ammo.AreaEffect.Detonation;
+            if (MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || T.ObjectsHit > 0))
+                if (!hit) ProjectileClose();
+                else ProjectileClose();
+        }
+
+
+        internal void ProjectileClose()
+        {
+            if (!T.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
+            else T.IsShrapnel = false;
+
+            if (Watchers.Count > 0 && !(State == ProjectileState.Ending || State == ProjectileState.Ending))
+            {
+                for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Enqueue(this);
+                Watchers.Clear();
+            }
+
+            if (!EnableAv && PrimeModelId == -1 && TriggerModelId == -1)
+            {
+                State = ProjectileState.Dead;
+                Manager.CleanUp[PoolId].Add(this);
+            }
+            else State = ProjectileState.Ending;
+        }
+
+        internal void Stop()
+        {
+            if (EndStep++ >= EndSteps)
+            {
+                if (EnableAv)
+                {
+                    if (T.System.AmmoParticle) DisposeAmmoEffect(false, false);
+                    HitEffects();
+                    if (AmmoSound) TravelEmitter.StopSound(false, true);
+                }
+                State = ProjectileState.Dead;
+                Manager.CleanUp[PoolId].Add(this);
+            }
+        }
+
+        internal bool CloseModel()
+        {
+            T.PrimeMatrix = MatrixD.Identity;
+            T.TriggerMatrix = MatrixD.Identity;
+            T.Complete(null, DrawState.Last);
+            Manager.DrawProjectiles[PoolId].Add(T);
+            if (PrimeModelId != -1) Manager.EntityPool[PoolId][PrimeModelId].MarkForDeallocate(T.PrimeEntity);
+            if (TriggerModelId != -1) Manager.EntityPool[PoolId][TriggerModelId].MarkForDeallocate(T.TriggerEntity);
+            ModelState = EntityState.None;
+            return true;
         }
 
         internal enum ProjectileState
