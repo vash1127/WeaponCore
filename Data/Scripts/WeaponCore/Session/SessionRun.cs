@@ -129,7 +129,7 @@ namespace WeaponCore
                     {
                         foreach (var block in grid.GetFatBlocks())
                         {
-                            Log.Line($"Type ID: {block.BlockDefinition.Id.TypeId} SubtypeId: {block.BlockDefinition.Id.SubtypeId}");
+                            //Log.Line($"Type ID: {block.BlockDefinition.Id.TypeId} SubtypeId: {block.BlockDefinition.Id.SubtypeId}");
                             var weaponBase = block as IMyLargeMissileTurret;
                             if (weaponBase == null) continue;
 

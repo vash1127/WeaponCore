@@ -99,6 +99,7 @@ namespace WeaponCore.Support
             var sphere = new BoundingSphereD(GridCenter, gridScanRadius);
             EntitiesInRange.Clear();
             MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, EntitiesInRange);
+            ShieldNearTmp = false;
             for (int i = 0; i < EntitiesInRange.Count; i++)
             {
                 var ent = EntitiesInRange[i];
@@ -116,6 +117,7 @@ namespace WeaponCore.Support
                             var shieldGrid = shieldEnt as MyCubeGrid;
                             if (shieldGrid != null && MyGrid.IsSameConstructAs(shieldGrid)) MyShieldTmp = ent;
                         }
+                        else if (!ShieldNearTmp) ShieldNearTmp = true;
                     } 
                 }
                 var voxel = ent as MyVoxelBase;

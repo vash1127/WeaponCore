@@ -78,6 +78,8 @@ namespace WeaponCore.Support
         internal bool turnWeaponShootOff;
         internal bool Reloading;
         internal bool ReturnHome;
+        internal bool ShieldNearTmp;
+        internal bool ShieldNear;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double GridRadius;

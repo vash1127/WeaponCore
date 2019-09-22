@@ -257,8 +257,9 @@ namespace WeaponCore.Projectiles
             PulseInterval = T.System.Values.Ammo.AreaEffect.Pulse.Interval;
             PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
 
-            PruneQuery = DynamicGuidance ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
-            if (T.Ai.StaticEntitiesInRange && !DynamicGuidance) StaticEntCheck();
+            PruneQuery = DynamicGuidance || T.Ai.ShieldNear ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            if (T.Ai.StaticEntitiesInRange && !DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic)
+                StaticEntCheck();
             else CheckPlanet = false;
 
             if (EnableAv)
