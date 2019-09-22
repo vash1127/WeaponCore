@@ -261,7 +261,28 @@ namespace WeaponCore.Projectiles
                 p.Miss = false;
                 if (!p.Active) continue;
                 var beam = new LineD(p.LastPosition, p.Position);
-                if (p.MineSeeking && !p.MineTriggered)
+
+                if ((p.IdleTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
+                {
+                    p.T.End = true;
+                    var dInfo = p.T.System.Values.Ammo.AreaEffect.Detonation;
+
+                    p.PruneSphere.Center = p.Position;
+                    p.PruneSphere.Radius = dInfo.DetonationRadius;
+                    if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
+                    {
+                        var checkList = CheckPool[poolId].Get();
+                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
+                        for (int i = 0; i < checkList.Count; i++)
+                            p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
+
+                        checkList.Clear();
+                        CheckPool[poolId].Return(checkList);
+                        //UtilsStatic.CreateFakeExplosion(dInfo.DetonationRadius, p.Position, p.T.System);
+                        p.HitEffects(true);
+                    }
+                }
+                else if (p.MineSeeking && !p.MineTriggered)
                     SeekEnemy(p, poolId);
                 else if (p.T.System.CollisionIsLine)
                 {
@@ -297,18 +318,15 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                var hit = false;
                 if (p.SegmentList.Count > 0)
                 {
                     var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId);
                     if (nearestHitEnt != null && p.Intersected(p, DrawProjectiles[poolId], nearestHitEnt))
-                        hit = true;
+                        continue;
                 }
+                if (p.T.End) p.ProjectileClose();
 
-                if ((p.IdleTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
-                        p.Die(hit);
 
-                if (hit) continue;
                 p.Miss = true;
                 p.T.HitList.Clear();
             }

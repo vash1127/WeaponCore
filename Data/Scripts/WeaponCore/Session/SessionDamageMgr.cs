@@ -60,7 +60,7 @@ namespace WeaponCore
                     Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
                 }
 
-                if (t.BaseDamagePool <= 0)
+                if (t.BaseDamagePool <= 0 || t.End)
                     p.State = Projectile.ProjectileState.Depleted;
 
                 t.HitList.Clear();
