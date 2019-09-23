@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -124,12 +125,15 @@ namespace WeaponCore
                             var weaponBase = block as IMyLargeTurretBase;
                             if (weaponBase == null) continue;
 
-                            Log.Line($"TypeID: {weaponBase.BlockDefinition.TypeId} SubTypeID: {weaponBase.BlockDefinition.SubtypeId}");
+                            //Log.Line($"TypeID: {weaponBase.BlockDefinition.TypeId} SubTypeID: {weaponBase.BlockDefinition.SubtypeId}");
                             WeaponComponent comp;
                             if ((block.Components.TryGet(out comp) && comp.MyGrid.EntityId != block.CubeGrid.EntityId))
                             {
                                 Log.Line("comp found");
-                                comp.RemoveComp();
+
+                                if (!CompsToRemove.Contains(comp))
+                                    CompsToRemove.Enqueue(comp);
+
                                 OnEntityCreate(block);
                             }
                             else if (comp == null)
@@ -141,6 +145,13 @@ namespace WeaponCore
                         }
                         
                     }
+                }
+
+                if (!CompsToRemove.IsEmpty)
+                {
+                    WeaponComponent weaponComp;
+                    while (CompsToStart.TryDequeue(out weaponComp))
+                        weaponComp.RemoveComp();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
