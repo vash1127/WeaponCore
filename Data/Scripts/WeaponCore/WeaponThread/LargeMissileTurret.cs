@@ -26,7 +26,7 @@ namespace WeaponThread
             {
                 WeaponId = "LargeMissileTurret", // name of weapon in terminal
                 AmmoMagazineId = "Missile200mm",
-                Block = AimControl(trackTargets: true, turretAttached: true, turretController: true, rotateRate: 0.02f, elevateRate: 0.02f, offset: Vector(x: 0, y: 0, z: 0), debug: true),
+                Block = AimControl(trackTargets: true, turretAttached: true, turretController: true, rotateRate: 0.02f, elevateRate: 0.02f, offset: Vector(x: 0, y: 0, z: 0), debug: false),
                 DeviateShotAngle = 0.1f,
                 AimingTolerance = 4f, // 0 - 180 firing angle
                 EnergyCost = 0.00000001f, //(((EnergyCost * DefaultDamage) * ShotsPerSecond) * BarrelsPerShot) * ShotsPerBarrel

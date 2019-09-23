@@ -26,7 +26,7 @@ namespace WeaponThread
             {
                 WeaponId = "SmallGatlingGun", // name of weapon in terminal
                 AmmoMagazineId = "NATO_25x184mm",
-                Block = AimControl(trackTargets: true, turretAttached: false, turretController: false, rotateRate: 0.1f, elevateRate: 0.1f, offset: Vector(x: 0, y: 0, z: 0), debug: true),
+                Block = AimControl(trackTargets: true, turretAttached: false, turretController: false, rotateRate: 0.1f, elevateRate: 0.1f, offset: Vector(x: 0, y: 0, z: 0), debug: false),
                 DeviateShotAngle = 0.4f,
                 AimingTolerance = 4f, // 0 - 180 firing angle
                 EnergyCost = 0.00000001f, //(((EnergyCost * DefaultDamage) * ShotsPerSecond) * BarrelsPerShot) * ShotsPerBarrel
