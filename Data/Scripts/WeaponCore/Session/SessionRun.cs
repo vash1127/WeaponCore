@@ -131,8 +131,7 @@ namespace WeaponCore
                             {
                                 Log.Line("comp found");
 
-                                if (!CompsToRemove.Contains(comp))
-                                    CompsToRemove.Enqueue(comp);
+                                CompsToRemove.Enqueue(comp);
 
                                 OnEntityCreate(block);
                             }
@@ -150,7 +149,7 @@ namespace WeaponCore
                 if (!CompsToRemove.IsEmpty)
                 {
                     WeaponComponent weaponComp;
-                    while (CompsToStart.TryDequeue(out weaponComp))
+                    while (CompsToRemove.TryDequeue(out weaponComp))
                         weaponComp.RemoveComp();
                 }
             }
