@@ -4,18 +4,87 @@
     <Weapon>
       <Id>
         <TypeId>WeaponDefinition</TypeId>
-        <SubtypeId>LargeGatlingTurret</SubtypeId>
+        <SubtypeId>SmallMissileLauncher</SubtypeId>
       </Id>
-      <ProjectileAmmoData RateOfFire="1" ShootSoundName="WepShipGatlingShot" ShotsInBurst="1" />
-      <ReleaseTimeAfterFire>100</ReleaseTimeAfterFire>
-      <DeviateShotAngle>0</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
+      <MissileAmmoData RateOfFire="60" ShootSoundName="WepShipSmallMissileShot" ShotsInBurst="0" />
+      <DeviateShotAngle>0.1</DeviateShotAngle>
+      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
+      <AmmoMagazines>
+        <AmmoMagazine Subtype="Missile200mm" />
+      </AmmoMagazines>
+      <ReloadTime>2000</ReloadTime>
+    </Weapon>
+
+    <Weapon>
+      <Id>
+        <TypeId>WeaponDefinition</TypeId>
+        <SubtypeId>LargeMissileLauncher</SubtypeId>
+      </Id>
+      <MissileAmmoData RateOfFire="120" ShootSoundName="WepShipSmallMissileShot" ShotsInBurst="19" />
+      <DeviateShotAngle>0.1</DeviateShotAngle>
+      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
+      <AmmoMagazines>
+        <AmmoMagazine Subtype="Missile200mm" />
+      </AmmoMagazines>
+      <ReloadTime>4000</ReloadTime>
+    </Weapon>
+
+    <Weapon>
+      <Id>
+        <TypeId>WeaponDefinition</TypeId>
+        <SubtypeId>LargeMissileTurret</SubtypeId>
+      </Id>
+      <MissileAmmoData RateOfFire="90" ShootSoundName="WepTurretMissileShot" ShotsInBurst="6" />
+      <DeviateShotAngle>0.5</DeviateShotAngle>
+      <AmmoMagazines>
+        <AmmoMagazine Subtype="Missile200mm" />
+      </AmmoMagazines>
+      <ReloadTime>4000</ReloadTime>
+    </Weapon>
+
+    <Weapon>
+      <Id>
+        <TypeId>WeaponDefinition</TypeId>
+        <SubtypeId>SmallMissileTurret</SubtypeId>
+      </Id>
+      <MissileAmmoData RateOfFire="90" ShootSoundName="WepTurretMissileShot" ShotsInBurst="2" />
+      <DeviateShotAngle>0.5</DeviateShotAngle>
+      <AmmoMagazines>
+        <AmmoMagazine Subtype="Missile200mm" />
+      </AmmoMagazines>
+      <ReloadTime>6000</ReloadTime>
+    </Weapon>
+
+    <Weapon>
+      <Id>
+        <TypeId>WeaponDefinition</TypeId>
+        <SubtypeId>GatlingGun</SubtypeId>
+      </Id>
+      <ProjectileAmmoData RateOfFire="700" ShootSoundName="WepShipGatlingShot" ShotsInBurst="180" />
+      <ReleaseTimeAfterFire>204</ReleaseTimeAfterFire>
+      <DeviateShotAngle>0.4</DeviateShotAngle>
+      <MuzzleFlashLifeSpan>40</MuzzleFlashLifeSpan>
       <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
       <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
       <AmmoMagazines>
         <AmmoMagazine Subtype="NATO_25x184mm" />
       </AmmoMagazines>
-      <ReloadTime>0</ReloadTime>
+      <ReloadTime>4000</ReloadTime>
+    </Weapon>
+
+    <Weapon>
+      <Id>
+        <TypeId>WeaponDefinition</TypeId>
+        <SubtypeId>LargeGatlingTurret</SubtypeId>
+      </Id>
+      <ProjectileAmmoData RateOfFire="600" ShootSoundName="WepGatlingTurretShot" ShotsInBurst="180" />
+      <ReleaseTimeAfterFire>204</ReleaseTimeAfterFire>
+      <DeviateShotAngle>0.4</DeviateShotAngle>
+      <MuzzleFlashLifeSpan>40</MuzzleFlashLifeSpan>
+      <AmmoMagazines>
+        <AmmoMagazine Subtype="NATO_25x184mm" />
+      </AmmoMagazines>
+      <ReloadTime>6000</ReloadTime>
     </Weapon>
 
     <Weapon>
@@ -23,97 +92,27 @@
         <TypeId>WeaponDefinition</TypeId>
         <SubtypeId>SmallGatlingTurret</SubtypeId>
       </Id>
-      <ProjectileAmmoData RateOfFire="1" ShootSoundName="WepShipGatlingShot" ShotsInBurst="1" />
-      <ReleaseTimeAfterFire>100</ReleaseTimeAfterFire>
-      <DeviateShotAngle>0</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
-      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
-      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
+      <ProjectileAmmoData RateOfFire="300" ShootSoundName="WepGatlingTurretShot" ShotsInBurst="180" />
+      <ReleaseTimeAfterFire>204</ReleaseTimeAfterFire>
+      <DeviateShotAngle>0.4</DeviateShotAngle>
+      <MuzzleFlashLifeSpan>40</MuzzleFlashLifeSpan>
+      <AmmoMagazines>
+        <AmmoMagazine Subtype="NATO_25x184mm" />
+      </AmmoMagazines>
+      <ReloadTime>3000</ReloadTime>
+    </Weapon>
+
+    <Weapon>
+      <Id>
+        <TypeId>WeaponDefinition</TypeId>
+        <SubtypeId>LargeInteriorTurret</SubtypeId>
+      </Id>
+      <ProjectileAmmoData RateOfFire="600" ShootSoundName="WepTurretInteriorFire" />
+      <DeviateShotAngle>0.3</DeviateShotAngle>
+      <MuzzleFlashLifeSpan>30</MuzzleFlashLifeSpan>
       <AmmoMagazines>
         <AmmoMagazine Subtype="NATO_5p56x45mm" />
       </AmmoMagazines>
-      <ReloadTime>0</ReloadTime>
-    </Weapon>
-	
-	<Weapon>
-      <Id>
-        <TypeId>WeaponDefinition</TypeId>
-        <SubtypeId>MissileWeapon</SubtypeId>
-      </Id>
-      <ProjectileAmmoData RateOfFire="1" ShootSoundName="WepShipGatlingShot" ShotsInBurst="1" />
-      <ReleaseTimeAfterFire>100</ReleaseTimeAfterFire>
-      <DeviateShotAngle>0</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
-      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
-      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
-      <AmmoMagazines>
-        <AmmoMagazine Subtype="Missile200mm_Framework" />
-      </AmmoMagazines>
-      <ReloadTime>0</ReloadTime>
-    </Weapon>
-    <Weapon>
-      <Id>
-        <TypeId>WeaponDefinition</TypeId>
-        <SubtypeId>SmallMissileTurret</SubtypeId>
-      </Id>
-      <ProjectileAmmoData RateOfFire="1" ShootSoundName="WepShipGatlingShot" ShotsInBurst="1" />
-      <ReleaseTimeAfterFire>100</ReleaseTimeAfterFire>
-      <DeviateShotAngle>0</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
-      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
-      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
-      <AmmoMagazines>
-        <AmmoMagazine Subtype="Missile200mm_Framework" />
-      </AmmoMagazines>
-      <ReloadTime>0</ReloadTime>
-    </Weapon>
-    <Weapon>
-      <Id>
-        <TypeId>WeaponDefinition</TypeId>
-        <SubtypeId>SmallMissileLauncher</SubtypeId>
-      </Id>
-      <ProjectileAmmoData RateOfFire="1" ShootSoundName="WepShipGatlingShot" ShotsInBurst="1" />
-      <ReleaseTimeAfterFire>100</ReleaseTimeAfterFire>
-      <DeviateShotAngle>0</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
-      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
-      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
-      <AmmoMagazines>
-        <AmmoMagazine Subtype="Missile200mm_Framework" />
-      </AmmoMagazines>
-      <ReloadTime>0</ReloadTime>
-    </Weapon>
-    <Weapon>
-      <Id>
-        <TypeId>WeaponDefinition</TypeId>
-        <SubtypeId>LargeMissileLauncher</SubtypeId>
-      </Id>
-      <ProjectileAmmoData RateOfFire="1" ShootSoundName="WepShipGatlingShot" ShotsInBurst="1" />
-      <ReleaseTimeAfterFire>100</ReleaseTimeAfterFire>
-      <DeviateShotAngle>0</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
-      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
-      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
-      <AmmoMagazines>
-        <AmmoMagazine Subtype="Missile200mm_Framework" />
-      </AmmoMagazines>
-      <ReloadTime>0</ReloadTime>
-    </Weapon>
-    <Weapon>
-      <Id>
-        <TypeId>WeaponDefinition</TypeId>
-        <SubtypeId>LargeMissileTurret</SubtypeId>
-      </Id>
-      <ProjectileAmmoData RateOfFire="1" ShootSoundName="WepShipGatlingShot" ShotsInBurst="1" />
-      <ReleaseTimeAfterFire>100</ReleaseTimeAfterFire>
-      <DeviateShotAngle>0</DeviateShotAngle>
-      <MuzzleFlashLifeSpan>0</MuzzleFlashLifeSpan>
-      <NoAmmoSoundName>WepShipGatlingNoAmmo</NoAmmoSoundName>
-      <SecondarySoundName>WepShipGatlingRotation</SecondarySoundName>
-      <AmmoMagazines>
-        <AmmoMagazine Subtype="Missile200mm_Framework" />
-      </AmmoMagazines>
-      <ReloadTime>0</ReloadTime>
     </Weapon>
 	
   </Weapons>

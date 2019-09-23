@@ -47,7 +47,7 @@
 	
 	
 	-->
-	<AmmoMagazine>
+    <!--AmmoMagazine>
       <Id>
         <TypeId>AmmoMagazine</TypeId>
         <SubtypeId>Missile200mm_Framework</SubtypeId>
@@ -64,7 +64,7 @@
       <Model>Models\Weapons\Projectile_Missile.mwm</Model>
       <Capacity>6</Capacity>
       <AmmoDefinitionId Subtype="Blank" />
-    </AmmoMagazine>
+    </AmmoMagazine-->
 	
 	
 	

@@ -2,7 +2,7 @@
 <Definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Blueprints>
     
-    <Blueprint>
+    <!--Blueprint>
       <Id>
         <TypeId>BlueprintDefinition</TypeId>
         <SubtypeId>Missile200mm</SubtypeId>
@@ -19,7 +19,7 @@
       </Prerequisites>
       <Result Amount="1" TypeId="AmmoMagazine" SubtypeId="Missile200mm_Framework" />
       <BaseProductionTimeInSeconds>10</BaseProductionTimeInSeconds>
-    </Blueprint>
+    </Blueprint-->
     
   </Blueprints>
 </Definitions>

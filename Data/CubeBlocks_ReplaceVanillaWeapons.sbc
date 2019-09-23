@@ -54,7 +54,7 @@
       <EdgeType>Light</EdgeType>
       <BuildTimeSeconds>40</BuildTimeSeconds>
       <OverlayTexture>Textures\GUI\Screens\turret_overlay.dds</OverlayTexture>
-      <WeaponDefinitionId Subtype="MissileWeapon" />
+      <WeaponDefinitionId Subtype="LargeMissileTurret" />
       <InventoryMaxVolume>0.384</InventoryMaxVolume>
       <DamageEffectName>Damage_WeapExpl_Damaged</DamageEffectName>
       <DamagedSound>ParticleWeapExpl</DamagedSound>
@@ -65,8 +65,8 @@
       <MaxAzimuthDegrees>180</MaxAzimuthDegrees>
       <IdleRotation>false</IdleRotation>
       <MaxRangeMeters>800</MaxRangeMeters>
-      <RotationSpeed>0.00</RotationSpeed>
-      <ElevationSpeed>0.00 </ElevationSpeed>
+      <RotationSpeed>0.01</RotationSpeed>
+      <ElevationSpeed>0.01</ElevationSpeed>
       <EmissiveColorPreset>Default</EmissiveColorPreset>
       <MinFov>0.1</MinFov>
       <MaxFov>1.04719755</MaxFov>
@@ -140,8 +140,8 @@
       <MaxElevationDegrees>90</MaxElevationDegrees>
       <MinAzimuthDegrees>-180</MinAzimuthDegrees>
       <MaxAzimuthDegrees>180</MaxAzimuthDegrees>
-      <RotationSpeed>0.00</RotationSpeed>
-      <ElevationSpeed>0.00 </ElevationSpeed>
+      <RotationSpeed>0.01</RotationSpeed>
+      <ElevationSpeed>0.01</ElevationSpeed>
       <IdleRotation>false</IdleRotation>
       <MaxRangeMeters>800</MaxRangeMeters>
       <MinFov>0.1</MinFov>
@@ -221,8 +221,8 @@
       <MaxElevationDegrees>180</MaxElevationDegrees>
       <MinAzimuthDegrees>-180</MinAzimuthDegrees>
       <MaxAzimuthDegrees>180</MaxAzimuthDegrees>
-      <RotationSpeed>0.00</RotationSpeed>
-      <ElevationSpeed>0.00 </ElevationSpeed>
+      <RotationSpeed>0.01</RotationSpeed>
+      <ElevationSpeed>0.01</ElevationSpeed>
       <IdleRotation>false</IdleRotation>
       <MaxRangeMeters>600</MaxRangeMeters>
       <MinFov>0.1</MinFov>
@@ -290,7 +290,7 @@
       <EdgeType>Light</EdgeType>
       <BuildTimeSeconds>25</BuildTimeSeconds>
       <OverlayTexture>Textures\GUI\Screens\turret_overlay.dds</OverlayTexture>
-      <WeaponDefinitionId Subtype="MissileWeapon" />
+      <WeaponDefinitionId Subtype="SmallMissileTurret" />
       <InventoryMaxVolume>0.12</InventoryMaxVolume>
       <DamageEffectName>Damage_WeapExpl_Damaged</DamageEffectName>
       <DamagedSound>ParticleWeapExpl</DamagedSound>
@@ -301,8 +301,8 @@
       <MaxAzimuthDegrees>180</MaxAzimuthDegrees>
       <IdleRotation>false</IdleRotation>
       <MaxRangeMeters>600</MaxRangeMeters>
-      <RotationSpeed>0.000</RotationSpeed>
-      <ElevationSpeed>0.000 </ElevationSpeed>
+      <RotationSpeed>0.01</RotationSpeed>
+      <ElevationSpeed>0.01</ElevationSpeed>
       <EmissiveColorPreset>Default</EmissiveColorPreset>
       <MinFov>0.1</MinFov>
       <MaxFov>1.04719755</MaxFov>
@@ -375,8 +375,8 @@
       <MaxAzimuthDegrees>180</MaxAzimuthDegrees>
       <IdleRotation>false</IdleRotation>
       <MaxRangeMeters>800</MaxRangeMeters>
-      <RotationSpeed>0.00</RotationSpeed>
-      <ElevationSpeed>0.00</ElevationSpeed>
+      <RotationSpeed>0.01</RotationSpeed>
+      <ElevationSpeed>0.01</ElevationSpeed>
       <EmissiveColorPreset>Default</EmissiveColorPreset>
       <MinFov>0.1</MinFov>
       <MaxFov>1.04719755</MaxFov>
@@ -426,7 +426,7 @@
       <Center x="0" y="0" z="3" />
       <BuildTimeSeconds>15</BuildTimeSeconds>
       <EdgeType>Light</EdgeType>
-      <WeaponDefinitionId Subtype="MissileWeapon" />
+      <WeaponDefinitionId Subtype="SmallMissileLauncher" />
       <ResourceSinkGroup>Defense</ResourceSinkGroup>
       <InventoryMaxVolume>0.24</InventoryMaxVolume>
       <DamageEffectName>Damage_WeapExpl_Damaged</DamageEffectName>
@@ -478,7 +478,7 @@
       <Center x="0" y="0" z="1" />
       <BuildTimeSeconds>30</BuildTimeSeconds>
       <EdgeType>Light</EdgeType>
-      <WeaponDefinitionId Subtype="MissileWeapon" />
+      <WeaponDefinitionId Subtype="LargeMissileLauncher" />
       <ResourceSinkGroup>Defense</ResourceSinkGroup>
       <InventoryMaxVolume>1.14</InventoryMaxVolume>
       <DamageEffectName>Damage_WeapExpl_Damaged</DamageEffectName>
@@ -531,7 +531,7 @@
       <BuildTimeSeconds>15</BuildTimeSeconds>
       <InventoryMaxVolume>0.24</InventoryMaxVolume>
       <ResourceSinkGroup>Defense</ResourceSinkGroup>
-      <WeaponDefinitionId Subtype="MissileWeapon" />
+      <WeaponDefinitionId Subtype="LargeMissileLauncher" />
       <DamageEffectName>Damage_WeapExpl_Damaged</DamageEffectName>
       <DamagedSound>ParticleWeapExpl</DamagedSound>
       <DestroyEffect>BlockDestroyedExplosion_Small</DestroyEffect>
@@ -605,8 +605,8 @@
       <MaxElevationDegrees>30</MaxElevationDegrees>
       <MinAzimuthDegrees>-30</MinAzimuthDegrees>
       <MaxAzimuthDegrees>30</MaxAzimuthDegrees>
-      <RotationSpeed>0.00</RotationSpeed>
-      <ElevationSpeed>0.00</ElevationSpeed>
+      <RotationSpeed>0.01</RotationSpeed>
+      <ElevationSpeed>0.01</ElevationSpeed>
       <IdleRotation>false</IdleRotation>
       <MaxRangeMeters>800</MaxRangeMeters>
       <MinFov>0.1</MinFov>

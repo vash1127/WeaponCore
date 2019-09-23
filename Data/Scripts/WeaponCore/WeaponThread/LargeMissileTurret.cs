@@ -25,7 +25,7 @@ namespace WeaponThread
             HardPoint = new HardPointDefinition
             {
                 WeaponId = "LargeMissileTurret", // name of weapon in terminal
-                AmmoMagazineId = "Missile200mm_Framework",
+                AmmoMagazineId = "Missile200mm",
                 Block = AimControl(trackTargets: true, turretAttached: true, turretController: true, rotateRate: 0.02f, elevateRate: 0.02f, offset: Vector(x: 0, y: 0, z: 0), debug: true),
                 DeviateShotAngle = 0.1f,
                 AimingTolerance = 4f, // 0 - 180 firing angle

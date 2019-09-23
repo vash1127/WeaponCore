@@ -21,5 +21,6 @@
         <ProjectileTrailProbability>0</ProjectileTrailProbability>
       </ProjectileProperties>
     </Ammo>
+    
   </Ammos>
 </Definitions>
