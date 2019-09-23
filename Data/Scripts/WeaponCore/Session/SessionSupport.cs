@@ -506,6 +506,7 @@ namespace WeaponCore
         internal void FixPrefabs()
         {
             var sMissileBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "SmallMissileLauncher"));
+            var rMissileBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "SmallRocketLauncherReload"));
             var sGatBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "SmallGatlingGun"));
             var gatBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "LargeGatlingTurret"));
             var lSGatBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "SmallGatlingTurret"));
@@ -528,6 +529,20 @@ namespace WeaponCore
                                     {
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newSMissileOB = (MyObjectBuilder_CubeBlock)sMissileBuilder.Clone();
+                                        newSMissileOB.EntityId = 0;
+                                        newSMissileOB.BlockOrientation = origOB.BlockOrientation;
+                                        newSMissileOB.Min = origOB.Min;
+                                        newSMissileOB.ColorMaskHSV = origOB.ColorMaskHSV;
+                                        newSMissileOB.Owner = origOB.Owner;
+
+                                        definition.Value.CubeGrids[j].CubeBlocks[i] = newSMissileOB;
+                                    }
+
+                                    else if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
+                                        .String == "LargeMissileLauncher")
+                                    {
+                                        var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
+                                        var newSMissileOB = (MyObjectBuilder_CubeBlock)rMissileBuilder.Clone();
                                         newSMissileOB.EntityId = 0;
                                         newSMissileOB.BlockOrientation = origOB.BlockOrientation;
                                         newSMissileOB.Min = origOB.Min;
