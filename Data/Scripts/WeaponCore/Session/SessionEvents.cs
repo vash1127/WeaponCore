@@ -23,8 +23,9 @@ namespace WeaponCore
                 if (placer != null && Placer == null) Placer = placer;
                 if (weaponBase != null)
                 {
-                    Log.Line($"create");
+                    if (weaponBase.CubeGrid.Physics == null) return;
                     if (!Inited) lock (_configLock) Init();
+
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 

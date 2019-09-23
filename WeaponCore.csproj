@@ -108,6 +108,17 @@
     <Compile Include="Data\Scripts\WeaponCore\Ui\Menu.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\WheelFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\InteriorTurret.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\LargeGatlingTurret.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\LargeMissileLauncher.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\LargeMissileTurret.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\MasterConfig.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\ReloadableRocketLauncher.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\script\WeaponCompile.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\SmallGatlingGun.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\SmallGatlingTurret.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\SmallMissileLauncher.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\SmallMissileTurret.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="HavokWrapper">

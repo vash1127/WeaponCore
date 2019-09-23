@@ -1,20 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Eventing.Reader;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Components;
-using VRage.Game.Entity;
-using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI;
-using VRage.Game.ObjectBuilders.Definitions;
-using VRage.ModAPI;
-using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
+using WeaponThread;
 using static Sandbox.Definitions.MyDefinitionManager;
 
 namespace WeaponCore
@@ -121,25 +114,21 @@ namespace WeaponCore
                 if(!DedicatedServer)//todo client side only
                     ProcessAnimations();
 
-
-                if (!PastedBlocksToInit.IsEmpty && Tick20)
+                if (!PastedBlocksToInit.IsEmpty)
                 {
                     MyCubeGrid grid;
                     while (PastedBlocksToInit.TryDequeue(out grid))
                     {
                         foreach (var block in grid.GetFatBlocks())
                         {
-                            Log.Line($"Type ID: {block.BlockDefinition.Id.TypeId} SubtypeId: {block.BlockDefinition.Id.SubtypeId}");
-                            var weaponBase = block as IMyLargeMissileTurret;
+                            var weaponBase = block as IMyLargeTurretBase;
                             if (weaponBase == null) continue;
 
-                            if(!WeaponPlatforms.ContainsKey(block.BlockDefinition.Id.SubtypeId)) continue;
-
+                            Log.Line($"TypeID: {weaponBase.BlockDefinition.TypeId} SubTypeID: {weaponBase.BlockDefinition.SubtypeId}");
                             WeaponComponent comp;
                             if ((block.Components.TryGet(out comp) && comp.MyGrid.EntityId != block.CubeGrid.EntityId))
                             {
                                 Log.Line("comp found");
-                                if (block.MarkedForClose) continue;
                                 comp.RemoveComp();
                                 OnEntityCreate(block);
                             }
@@ -219,8 +208,18 @@ namespace WeaponCore
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
 
+                var weapons = new Weapons();
+                var WeaponDefinitions = weapons.ReturnDefs();
+                for (int i = 0; i < WeaponDefinitions.Length; i++)
+                {
+                    WeaponDefinitions[i].ModPath = ModContext.ModPath;
+                    _weaponDefinitions.Add(WeaponDefinitions[i]);
+                }
+
                 ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm");
                 ModelCount++;
+
+                FixPrefabs();
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }

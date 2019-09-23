@@ -11,6 +11,9 @@ using VRageMath;
 using WeaponCore.Support;
 using VRage.Utils;
 using WeaponCore.Platform;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Definitions;
+using VRage.ObjectBuilders;
 
 namespace WeaponCore
 {
@@ -300,13 +303,10 @@ namespace WeaponCore
             {
                 WeaponComponent weaponComp;
                 CompsToStart.TryDequeue(out weaponComp);
-                if (weaponComp.MyCube.CubeGrid.Physics != null)
-                {
-                    weaponComp.MyCube.Components.Add(weaponComp);
-                    weaponComp.OnAddedToScene();
-                    weaponComp.Ai.FirstRun = true;
-                    Log.Line($"added to comp");
-                }
+                weaponComp.MyCube.Components.Add(weaponComp);
+                weaponComp.OnAddedToScene();
+                weaponComp.Ai.FirstRun = true;
+                Log.Line($"added to comp");
             }
         }
 
@@ -501,6 +501,145 @@ namespace WeaponCore
             }
                 
         }
+
+        internal void FixPrefabs()
+        {
+            var sMissileBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "SmallMissileLauncher"));
+            var sGatBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "SmallGatlingGun"));
+            var gatBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "LargeGatlingTurret"));
+            var lSGatBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "SmallGatlingTurret"));
+            var missileBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "LargeMissileTurret"));
+            var interBuilder = (MyObjectBuilder_LargeMissileTurret)MyObjectBuilderSerializer.CreateNewObject(new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "LargeInteriorTurret"));
+
+            foreach (var definition in MyDefinitionManager.Static.GetPrefabDefinitions())
+            {
+                for (int j = 0; j < definition.Value.CubeGrids.Length; j++)
+                {
+                    for (int i = 0; i < definition.Value.CubeGrids[j].CubeBlocks.Count; i++)
+                    {
+                        try
+                        {
+                            switch (definition.Value.CubeGrids[j].CubeBlocks[i].TypeId.ToString())
+                            {
+                                case "MyObjectBuilder_SmallMissileLauncher":
+                                    if (string.IsNullOrEmpty(definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
+                                        .String))
+                                    {
+                                        var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
+                                        var newSMissileOB = (MyObjectBuilder_CubeBlock)sMissileBuilder.Clone();
+                                        newSMissileOB.EntityId = 0;
+                                        newSMissileOB.BlockOrientation = origOB.BlockOrientation;
+                                        newSMissileOB.Min = origOB.Min;
+                                        newSMissileOB.ColorMaskHSV = origOB.ColorMaskHSV;
+                                        newSMissileOB.Owner = origOB.Owner;
+
+                                        definition.Value.CubeGrids[j].CubeBlocks[i] = newSMissileOB;
+                                    }
+
+                                    break;
+
+                                case "MyObjectBuilder_SmallGatlingGun":
+                                    if (string.IsNullOrEmpty(definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
+                                        .String))
+                                    {
+                                        var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
+                                        var newSGatOB = (MyObjectBuilder_CubeBlock)sGatBuilder.Clone();
+                                        newSGatOB.EntityId = 0;
+                                        newSGatOB.BlockOrientation = origOB.BlockOrientation;
+                                        newSGatOB.Min = origOB.Min;
+                                        newSGatOB.ColorMaskHSV = origOB.ColorMaskHSV;
+                                        newSGatOB.Owner = origOB.Owner;
+
+                                        definition.Value.CubeGrids[j].CubeBlocks[i] = newSGatOB;
+                                    }
+
+                                    break;
+
+                                case "MyObjectBuilder_LargeGatlingTurret":
+                                    if (string.IsNullOrEmpty(definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
+                                        .String))
+                                    {
+                                        var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
+                                        var newGatOB = (MyObjectBuilder_CubeBlock)gatBuilder.Clone();
+                                        newGatOB.EntityId = 0;
+                                        newGatOB.BlockOrientation = origOB.BlockOrientation;
+                                        newGatOB.Min = origOB.Min;
+                                        newGatOB.ColorMaskHSV = origOB.ColorMaskHSV;
+                                        newGatOB.Owner = origOB.Owner;
+
+                                        definition.Value.CubeGrids[j].CubeBlocks[i] = newGatOB;
+                                    }
+                                    else if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId.String ==
+                                             "SmallGatlingTurret")
+                                    {
+                                        var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
+                                        var newGatOB = (MyObjectBuilder_CubeBlock)lSGatBuilder.Clone();
+                                        newGatOB.EntityId = 0;
+                                        newGatOB.BlockOrientation = origOB.BlockOrientation;
+                                        newGatOB.Min = origOB.Min;
+                                        newGatOB.ColorMaskHSV = origOB.ColorMaskHSV;
+                                        newGatOB.Owner = origOB.Owner;
+
+                                        definition.Value.CubeGrids[j].CubeBlocks[i] = newGatOB;
+                                    }
+
+                                    break;
+
+                                case "MyObjectBuilder_LargeMissileTurret":
+                                    if (string.IsNullOrEmpty(definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
+                                        .String))
+                                    {
+                                        var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
+                                        var newMissileOB = (MyObjectBuilder_CubeBlock)missileBuilder.Clone();
+                                        newMissileOB.EntityId = 0;
+                                        newMissileOB.BlockOrientation = origOB.BlockOrientation;
+                                        newMissileOB.Min = origOB.Min;
+                                        newMissileOB.ColorMaskHSV = origOB.ColorMaskHSV;
+                                        newMissileOB.Owner = origOB.Owner;
+
+                                        definition.Value.CubeGrids[j].CubeBlocks[i] = newMissileOB;
+                                    }
+
+                                    break;
+
+                                case "MyObjectBuilder_InteriorTurret":
+                                    if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId.String ==
+                                        "LargeInteriorTurret")
+                                    {
+                                        var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
+                                        var newInteriorOB = (MyObjectBuilder_CubeBlock)interBuilder.Clone();
+                                        newInteriorOB.EntityId = 0;
+                                        newInteriorOB.BlockOrientation = origOB.BlockOrientation;
+                                        newInteriorOB.Min = origOB.Min;
+                                        newInteriorOB.ColorMaskHSV = origOB.ColorMaskHSV;
+                                        newInteriorOB.Owner = origOB.Owner;
+
+                                        definition.Value.CubeGrids[j].CubeBlocks[i] = newInteriorOB;
+                                    }
+
+                                    break;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            //bad prefab xml
+                        }
+                    }
+                }
+            }
+            foreach (var definition in MyDefinitionManager.Static.GetSpawnGroupDefinitions())
+            {
+                try
+                {
+                    definition.ReloadPrefabs();
+                }
+                catch (Exception e)
+                {
+                    //bad prefab xml
+                }
+            }
+        }
+
         #endregion
     }
 }
