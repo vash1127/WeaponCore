@@ -257,8 +257,9 @@ namespace WeaponCore.Projectiles
             PulseInterval = T.System.Values.Ammo.AreaEffect.Pulse.Interval;
             PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
 
-            PruneQuery = DynamicGuidance ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
-            if (T.Ai.StaticEntitiesInRange && !DynamicGuidance) StaticEntCheck();
+            PruneQuery = DynamicGuidance || T.Ai.ShieldNear ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            if (T.Ai.StaticEntitiesInRange && !DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic)
+                StaticEntCheck();
             else CheckPlanet = false;
 
             if (EnableAv)
@@ -765,10 +766,11 @@ namespace WeaponCore.Projectiles
             if (Age != 0) LastOffsetTime = Age;
         }
 
-        internal void HitEffects()
+        internal void HitEffects(bool force = false)
         {
-            if (Colliding)
+            if (Colliding || force)
             {
+                if (force) LastHitPos = Position;
                 if (T.System.HitParticle && !T.System.IsBeamWeapon) PlayHitParticle();
                 if (T.System.HitSound)
                 {
@@ -776,7 +778,6 @@ namespace WeaponCore.Projectiles
                     HitEmitter.CanPlayLoopSounds = false;
                     //HitEmitter.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
                     HitEmitter.PlaySound(HitSound, true);
-
                 }
             }
             Colliding = false;
@@ -823,7 +824,7 @@ namespace WeaponCore.Projectiles
             ParticleLateStart = false;
         }
 
-        private void PlayHitParticle()
+        internal void PlayHitParticle()
         {
             if (HitEffect != null) DisposeHitEffect(false);
             if (LastHitPos.HasValue)
@@ -872,14 +873,6 @@ namespace WeaponCore.Projectiles
         {
             DisposeAmmoEffect(true, true);
             DisposeHitEffect(true);
-        }
-
-        internal void Die(bool hit)
-        {
-            var dInfo = T.System.Values.Ammo.AreaEffect.Detonation;
-            if (MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || T.ObjectsHit > 0))
-                if (!hit) ProjectileClose();
-                else ProjectileClose();
         }
 
 

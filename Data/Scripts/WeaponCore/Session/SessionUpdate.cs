@@ -137,7 +137,6 @@ namespace WeaponCore
                     }
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
-
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];

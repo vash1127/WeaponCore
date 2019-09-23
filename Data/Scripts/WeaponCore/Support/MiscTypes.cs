@@ -63,6 +63,7 @@ namespace WeaponCore.Support
         internal bool EnableGuidance = true;
         internal bool Triggered;
         internal bool Cloaked;
+        internal bool End;
         internal ReSize ReSizing;
         internal DrawState Draw;
 
@@ -138,6 +139,7 @@ namespace WeaponCore.Support
             HitEntity = null;
             WeaponCache = null;
             Triggered = false;
+            End = false;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
             GrowDistance = 0;
@@ -167,6 +169,7 @@ namespace WeaponCore.Support
         public bool Hit;
         public bool SphereCheck;
         public bool DamageOverTime;
+        public bool End;
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public Type EventType;

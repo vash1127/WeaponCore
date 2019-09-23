@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Linq;
 using Sandbox.Game.Entities;
-using Sandbox.Game.World;
-using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
-using VRage.ModAPI;
 using WeaponCore.Support;
 
 namespace WeaponCore

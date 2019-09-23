@@ -1,4 +1,5 @@
 ﻿using Sandbox.ModAPI;
+using VRage.Game.VisualScripting;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -63,29 +64,27 @@ namespace WeaponCore.Support
         internal void UpdatePivotPos(Weapon weapon)
         {
             var weaponPComp = weapon.EntityPart.PositionComp;
-            var weaponCenter = weaponPComp.WorldMatrix.Translation;
-            var weaponForward = weaponPComp.WorldMatrix.Forward;
-            var weaponUp = weaponPComp.WorldMatrix.Up;
-
-
             Vector3D center;
             if (AimOffset != Vector3D.Zero)
             {
-                var blockCenter = MyCube.PositionComp.WorldAABB.Center;
-                center = blockCenter + Vector3D.Rotate(TrackingWeapon.System.Values.HardPoint.Block.Offset, MyCube.CubeGrid.WorldMatrix);
+                var startCenter = !FixedOffset ?  MyCube.PositionComp.WorldAABB.Center : weaponPComp.WorldAABB.Center;
+                center = startCenter + Vector3D.Rotate(TrackingWeapon.System.Values.HardPoint.Block.Offset, MyCube.PositionComp.WorldMatrix);
             }
             else center = MyCube.PositionComp.WorldAABB.Center;
 
+            var weaponCenter = weaponPComp.WorldMatrix.Translation;
+            var weaponForward = weaponPComp.WorldMatrix.Forward;
+            var weaponUp = weaponPComp.WorldMatrix.Up;
             var blockUp = MyCube.PositionComp.WorldMatrix.Up;
             MyPivotDir = weaponForward;
             MyPivotUp = weaponUp;
-            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(center, blockUp, weaponCenter, weaponForward);
+            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, blockUp, weaponCenter, weaponForward) : center;
             if (Debug)
             {
                 var cubeleft = MyCube.PositionComp.WorldMatrix.Left;
-                MyCenterTestLine = new LineD(center, center + (blockUp * 10));
-                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 10));
-                MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 5), MyPivotPos - (cubeleft * 5));
+                MyCenterTestLine = new LineD(center, center + (blockUp * 20));
+                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 20));
+                MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 10), MyPivotPos - (cubeleft * 10));
             }
 
             LastPivotUpdateTick = Session.Instance.Tick;

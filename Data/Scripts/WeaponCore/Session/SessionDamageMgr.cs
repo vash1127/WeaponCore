@@ -60,7 +60,7 @@ namespace WeaponCore
                     Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
                 }
 
-                if (t.BaseDamagePool <= 0)
+                if (t.BaseDamagePool <= 0 || t.End)
                     p.State = Projectile.ProjectileState.Depleted;
 
                 t.HitList.Clear();
@@ -171,7 +171,7 @@ namespace WeaponCore
                 if (radiate)
                 {
                     if (nova) GetBlockSphereDb(grid, detonateRadius, out radiatedBlocks);
-                    ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
+                    if (radiatedBlocks != null) ShiftAndPruneBlockSphere(grid, rootBlock.Position, radiatedBlocks, _slimsSortedList);
 
                     done = nova;
                     dmgCount = _slimsSortedList.Count;

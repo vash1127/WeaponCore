@@ -31,13 +31,13 @@ namespace WeaponCore.Projectiles
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
                 if (grid == null && p.EwarActive && p.AreaEffect != DotField && ent is IMyCharacter) continue;
-                if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
+                if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) {continue;}
                 if (!shieldByPass && !p.EwarActive)
                 {
                     var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
                     if (shieldBlock != null)
                     {
-                        if (ent.Physics == null && shieldBlock.CubeGrid != p.T.Ai.MyGrid)
+                        if (ent.Physics == null && !p.T.Ai.MyGrid.IsSameConstructAs(shieldBlock.CubeGrid))
                         {
                             var hitEntity = HitEntityPool[poolId].Get();
                             hitEntity.Clean();
@@ -246,6 +246,7 @@ namespace WeaponCore.Projectiles
                         {
                             grid.RayCastCells(beam.From, beam.To, slims, null, true, true);
                             var closestBlockFound = false;
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(grid.PositionComp.WorldMatrix);
                             for (int j = 0; j < slims.Count; j++)
                             {
                                 var firstBlock = grid.GetCubeBlock(slims[j]) as IMySlimBlock;
@@ -253,16 +254,21 @@ namespace WeaponCore.Projectiles
                                 {
                                     hitEnt.Blocks.Add(firstBlock);
                                     if (closestBlockFound) continue;
-                                    Vector3D center;
-                                    firstBlock.ComputeWorldCenter(out center);
+                                    MyOrientedBoundingBoxD obb;
+                                    var fat = firstBlock.FatBlock;
+                                    if (fat != null)
+                                        obb = new MyOrientedBoundingBoxD(fat.Model.BoundingBox, fat.PositionComp.WorldMatrix);
+                                    else
+                                    {
+                                        Vector3D center;
+                                        firstBlock.ComputeWorldCenter(out center);
+                                        Vector3 halfExt;
+                                        firstBlock.ComputeScaledHalfExtents(out halfExt);
+                                        var blockBox = new BoundingBoxD(-halfExt, halfExt);
+                                        obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
+                                    }
 
-                                    Vector3 halfExt;
-                                    firstBlock.ComputeScaledHalfExtents(out halfExt);
-
-                                    var blockBox = new BoundingBoxD(-halfExt, halfExt);
-                                    var rotMatrix = Quaternion.CreateFromRotationMatrix(firstBlock.CubeGrid.WorldMatrix);
-                                    var obb = new MyOrientedBoundingBoxD(center, blockBox.HalfExtents, rotMatrix);
-                                    var hitDist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, center);
+                                    var hitDist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, obb.Center);
                                     var hitPos = beam.From + (beam.Direction * hitDist);
                                     if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
                                     {
