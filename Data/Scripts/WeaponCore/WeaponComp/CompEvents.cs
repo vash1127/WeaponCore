@@ -44,6 +44,7 @@ namespace WeaponCore.Support
         {
             if (Platform.Inited)
             {
+                Log.Line($"Removed Comp");
                 Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;
                 RegisterEvents(false);
                 StopAllSounds();

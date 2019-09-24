@@ -220,7 +220,7 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                RemoveComp();
+                Session.Instance.CompsToRemove.Enqueue(this);
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
