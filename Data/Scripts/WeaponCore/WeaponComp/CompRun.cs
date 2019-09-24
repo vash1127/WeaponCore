@@ -97,7 +97,7 @@ namespace WeaponCore.Support
                 weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.ROFModifier);
 
                 if (weapon.System.EnergyAmmo)
-                    weapon.BaseDamage = (int)Math.Ceiling(weapon.System.BaseDamage * Set.Value.DPSModifier);
+                    weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DPSModifier;
                 else
                     weapon.BaseDamage = weapon.System.BaseDamage;
 
