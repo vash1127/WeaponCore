@@ -84,7 +84,6 @@ namespace WeaponCore
             var areaEffect = t.System.Values.Ammo.AreaEffect;
 
             var scaledDamage = ((t.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier;
-
             var objHp = SApi.GetCharge(shield) * 100;
 
             if (scaledDamage < objHp) t.BaseDamagePool = 0;
@@ -226,7 +225,7 @@ namespace WeaponCore
                     if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects) break;
 
                     var scaledDamage = damagePool * damageScale;
-
+                    //Log.Line($"{scaledDamage} - {damagePool} - {damageScale}");
                     if (primaryDamage)
                     {
                         if (countBlocksAsObjects) objectsHit++;
