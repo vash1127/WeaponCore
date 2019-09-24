@@ -54,7 +54,10 @@ namespace WeaponCore
                             DamageProjectile(hitEnt, t);
                             continue;
                         case HitEntity.Type.Field:
-                            ComputeField(hitEnt, t);
+                            UpdateField(hitEnt, t);
+                            continue;
+                        case HitEntity.Type.BeamEffect:
+                            UpdateBeam(hitEnt, t);
                             continue;
                     }
                     Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);

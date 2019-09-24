@@ -2,193 +2,141 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
-using static WeaponCore.Support.HitEntity;
 using static WeaponCore.Support.AreaDamage.AreaEffectType;
+using static WeaponCore.Projectiles.Projectiles;
+
 namespace WeaponCore
 {
     public partial class Session
     {
-        internal readonly Queue<Effect> EffectStore = new Queue<Effect>();
-        private readonly List<MyCubeBlock> _effectedCubeHits = new List<MyCubeBlock>();
-        private readonly List<MyCubeGrid> _effectedGridHits = new List<MyCubeGrid>();
-        private readonly List<MyEntity> _pruneGrids = new List<MyEntity>();
-        private readonly Dictionary<MyCubeGrid, EffectHit> _effectedGridShapes = new Dictionary<MyCubeGrid, EffectHit>();
         private readonly Dictionary<long, BlockState> _effectedCubes = new Dictionary<long, BlockState>();
+        private readonly Dictionary<MyCubeGrid, Dictionary<AreaDamage.AreaEffectType, GridEffect>> _gridEffects = new Dictionary<MyCubeGrid, Dictionary<AreaDamage.AreaEffectType, GridEffect>>();
+        internal readonly MyConcurrentPool<Dictionary<AreaDamage.AreaEffectType, GridEffect>> GridEffectsPool = new MyConcurrentPool<Dictionary<AreaDamage.AreaEffectType, GridEffect>>();
+        internal readonly MyConcurrentPool<GridEffect> GridEffectPool = new MyConcurrentPool<GridEffect>();
+
         private readonly Queue<long> _effectPurge = new Queue<long>();
         internal readonly HashSet<MyCubeGrid> RemoveEffectsFromGrid = new HashSet<MyCubeGrid>();
-
-
         private bool _effectActive;
-        internal readonly EffectWork EffectWork = new EffectWork();
-        internal volatile bool EffectDispatched;
-        internal volatile bool EffectLoaded;
 
-
-        private void PrepBlastEffect()
-        {
-            var stackCount = 0;
-            var warHeadSize = 0;
-            var warHeadYield = 0d;
-            var epiCenter = Vector3D.Zero;
-
-            Effect effectChild;
-            while (EffectStore.TryDequeue(out effectChild))
-            {
-                if (effectChild.CustomData.Contains("@EMP"))
-                {
-                    stackCount++;
-                    warHeadSize = effectChild.Size;
-                    warHeadYield = effectChild.Yield;
-                    epiCenter += effectChild.Position;
-                }
-            }
-
-            if (stackCount == 0)
-            {
-                EffectWork.EventComplete();
-                return;
-            }
-            epiCenter /= stackCount;
-            var rangeCap = MathHelper.Clamp(stackCount * warHeadYield, warHeadYield, SyncDist);
-
-            _effectedGridHits.Clear();
-            _pruneGrids.Clear();
-
-            var sphere = new BoundingSphereD(epiCenter, rangeCap);
-            MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref sphere, _pruneGrids);
-
-            foreach (var ent in _pruneGrids)
-            {
-                var grid = ent as MyCubeGrid;
-                if (grid != null)
-                {
-                    var gridCenter = grid.PositionComp.WorldVolume.Center;
-                    var testDir = Vector3D.Normalize(gridCenter - epiCenter);
-                    var impactPos = gridCenter + (testDir * -grid.PositionComp.WorldVolume.Radius);
-
-                    IHitInfo hitInfo;
-                    MyAPIGateway.Physics.CastRay(epiCenter, impactPos, out hitInfo, CollisionLayers.DefaultCollisionLayer);
-                    if (hitInfo?.HitEntity == null) _effectedGridHits.Add(grid);
-                }
-            }
-
-            EffectWork.StoreEmpBlast(epiCenter, warHeadSize, warHeadYield, stackCount, rangeCap);
-        }
-
-        private void ComputeBlast()
-        {
-            var epiCenter = EffectWork.EpiCenter;
-            var rangeCap = EffectWork.RangeCap;
-            var dirYield = EffectWork.DirYield;
-            const double BlockInflate = 1.25;
-
-            GetBlastFilteredItems(epiCenter, rangeCap, dirYield);
-
-            foreach (var cube in _effectedCubeHits)
-            {
-                EffectHit effectHit;
-                var foundSphere = _effectedGridShapes.TryGetValue(cube.CubeGrid, out effectHit);
-                if (foundSphere && effectHit.Sphere.Contains(cube.PositionComp.WorldAABB.Center) != ContainmentType.Disjoint)
-                {
-                    var clearance = cube.CubeGrid.GridSize * BlockInflate;
-                    var testDir = Vector3D.Normalize(epiCenter - cube.PositionComp.WorldAABB.Center);
-                    var testPos = cube.PositionComp.WorldAABB.Center + (testDir * clearance);
-                    var hit = cube.CubeGrid.RayCastBlocks(epiCenter, testPos);
-
-                    if (hit == null)
-                    {
-                        BlockState blockState;
-                        uint endTick;
-
-                        var cubeId = cube.EntityId;
-                        var oldState = _effectedCubes.TryGetValue(cubeId, out blockState);
-
-                        if (oldState) endTick = blockState.Endtick + (Tick + (effectHit.Duration + 1));
-                        else endTick = Tick + (effectHit.Duration + 1);
-                        var startTick = (((Tick + 1) / 20) * 20) + 20;
-
-                        //_effectedCubes[cube.EntityId] = new BlockState(cube, startTick, endTick);
-                    }
-                    else if (cube.SlimBlock == cube.CubeGrid.GetCubeBlock(hit.Value))
-                    {
-                        BlockState blockState;
-                        uint endTick;
-
-                        var cubeId = cube.EntityId;
-                        var oldState = _effectedCubes.TryGetValue(cubeId, out blockState);
-
-                        if (oldState) endTick = blockState.Endtick + (Tick + (effectHit.Duration + 1));
-                        else endTick = Tick + (effectHit.Duration + 1);
-                        var startTick = (((Tick + 1) / 20) * 20) + 20;
-
-                        //_effectedCubes[cube.EntityId] = new BlockState(cube, startTick, endTick);
-                    }
-                }
-            }
-            EffectWork.ComputeComplete();
-        }
-
-        private void GetBlastFilteredItems(Vector3D epiCenter, double rangeCap, double dirYield)
-        {
-            _effectedCubeHits.Clear();
-            _effectedGridShapes.Clear();
-            var myCubeList = new List<MyEntity>();
-            foreach (var grid in _effectedGridHits)
-            {
-                var invSqrDist = UtilsStatic.InverseSqrDist(epiCenter, grid.PositionComp.WorldAABB.Center, rangeCap);
-                var damage = (uint)(dirYield * invSqrDist) * 5;
-                var gridAabb = grid.PositionComp.WorldAABB;
-                var sphere = NewObbClosestTriCorners(grid, epiCenter);
-
-                grid.Hierarchy.QueryAABB(ref gridAabb, myCubeList);
-                _effectedGridShapes.Add(grid, new EffectHit(sphere, damage));
-            }
-
-            for (int i = 0; i < myCubeList.Count; i++)
-            {
-                var myEntity = myCubeList[i];
-                var myCube = myEntity as MyCubeBlock;
-
-                if (myCube == null || myCube.MarkedForClose) continue;
-                if ((myCube is IMyThrust || myCube is IMyUserControllableGun || myCube is IMyUpgradeModule) && myCube.IsFunctional && myCube.IsWorking)
-                {
-                    _effectedCubeHits.Add(myCube);
-                }
-            }
-        }
-
-        private void ComputeField(HitEntity hitEnt, Trajectile t)
+        private void UpdateField(HitEntity hitEnt, Trajectile t)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
-            var system = t.System;
-            var eWarInfo = system.Values.Ammo.AreaEffect.EwarFields;
-            var depletable = eWarInfo.Depletable;
-            var healthPool = !depletable ? t.BaseHealthPool : float.MaxValue;
-            var pruneSphere = hitEnt.PruneSphere;
+            var depletable = t.System.Values.Ammo.AreaEffect.EwarFields.Depletable;
+            var healthPool = depletable ? t.BaseHealthPool : float.MaxValue;
+
             if (grid == null || grid.MarkedForClose || healthPool <= 0) return;
-            var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
+            var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
+
+            GetAndSortBlocksInSphere(t.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
+            ComputeEffects(t.System, grid, t.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
+
+            if (depletable) t.BaseHealthPool -= healthPool;
+        }
+
+        private void UpdateBeam(HitEntity hitEnt, Trajectile t)
+        {
+            var grid = hitEnt.Entity as MyCubeGrid;
+
+            if (grid == null || grid.MarkedForClose ) return;
+            var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
+            Dictionary<AreaDamage.AreaEffectType, GridEffect> effects;
+            var found = false;
+            if (_gridEffects.TryGetValue(grid, out effects))
+            {
+                GridEffect gridEffect;
+                if (effects.TryGetValue(t.System.Values.Ammo.AreaEffect.AreaEffect, out gridEffect))
+                {
+                    found = true;
+                    gridEffect.Damage += t.AreaEffectDamage;
+                    gridEffect.AttackerId = attackerId;
+                    gridEffect.Hits++;
+                    if (hitEnt.HitPos != null) gridEffect.HitPos = hitEnt.HitPos.Value / gridEffect.Hits;
+                }
+            }
+
+            if (!found)
+            {
+                if (effects == null) effects = GridEffectsPool.Get();
+                GridEffect gridEffect;
+                if (effects.TryGetValue(t.System.Values.Ammo.AreaEffect.AreaEffect, out gridEffect))
+                {
+                    gridEffect.Damage += t.AreaEffectDamage;
+                    gridEffect.AttackerId = attackerId;
+                    gridEffect.Hits++;
+                    if (hitEnt.HitPos != null) gridEffect.HitPos += hitEnt.HitPos.Value / gridEffect.Hits;
+                }
+                else
+                {
+                    gridEffect = GridEffectPool.Get();
+                    gridEffect.Damage = t.AreaEffectDamage;
+                    gridEffect.AttackerId = attackerId;
+                    gridEffect.Hits++;
+                    if (hitEnt.HitPos != null) gridEffect.HitPos = hitEnt.HitPos.Value;
+                    effects.Add(t.System.Values.Ammo.AreaEffect.AreaEffect, gridEffect);
+                }
+                _gridEffects.Add(grid, effects);
+            }
+            t.BaseHealthPool = 0;
+            t.BaseDamagePool = 0;
+        }
+
+        internal static void GetCubesForEffect(MyCubeGrid grid, Vector3D hitPos, AreaDamage.AreaEffectType effectType, List<MyCubeBlock> cubes)
+        {
+            foreach (var cube in grid.GetFatBlocks())
+            {
+                switch (effectType)
+                {
+                    case JumpNullField:
+                        if (!(cube is MyJumpDrive)) continue;
+                        break;
+                    case EnergySinkField:
+                        if (!(cube is IMyPowerProducer)) continue;
+                        break;
+                    case AnchorField:
+                        if (!(cube is MyThrust)) continue;
+                        break;
+                    case NavField:
+                        if (!(cube is MyGyro)) continue;
+                        break;
+                    case OffenseField:
+                        if (!(cube is IMyGunBaseUser)) continue;
+                        break;
+                    case EmpField:
+                    case DotField:
+                        break;
+                    default: continue;
+                }
+                cubes.Add(cube);
+            }
+
+            cubes.Sort((a, b) =>
+            {
+                var aPos = grid.GridIntegerToWorld(a.Position);
+                var bPos = grid.GridIntegerToWorld(b.Position);
+                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
+            });
+        }
+
+        private void ComputeEffects(WeaponSystem system, MyCubeGrid grid, float damagePool, float healthPool, long attackerId, List<IMySlimBlock> blocks)
+        {
+            var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
+            var eWarInfo = system.Values.Ammo.AreaEffect.EwarFields;
             var duration = (uint)eWarInfo.Duration;
             var stack = eWarInfo.StackDuration;
             var nextTick = Tick + 1;
+            var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
 
-            var damagePool = t.AreaEffectDamage;
-            var objectsHit = t.ObjectsHit;
-            var countBlocksAsObjects = system.Values.Ammo.ObjectsHit.CountBlocks;
-            var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-            var maxObjects = t.System.MaxObjectsHit;
-            var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
-            var attackerId = shieldByPass ? grid.EntityId : t.Target.FiringCube.EntityId;
-            WeaponCore.Projectiles.Projectiles.GetAndSortBlocksInSphere(hitEnt, grid, hitEnt.PruneSphere.Center, !hitEnt.DamageOverTime);
-            foreach (var block in hitEnt.Blocks)
+            foreach (var block in blocks)
             {
                 var cube = block.FatBlock as MyCubeBlock;
-                if (damagePool <= 0 || objectsHit >= maxObjects || healthPool <= 0) break;
+                if (damagePool <= 0 || healthPool <= 0) break;
 
                 if (fieldType != DotField)
                 {
@@ -233,8 +181,6 @@ namespace WeaponCore
                 }
 
                 var scaledDamage = tmpDamagePool * damageScale;
-
-                if (countBlocksAsObjects) objectsHit++;
 
                 var blockDisabled = false;
                 if (scaledDamage <= blockHp)
@@ -286,14 +232,6 @@ namespace WeaponCore
                 }
                 _effectedCubes[cube.EntityId] = blockState;
             }
-
-            if (depletable) t.BaseHealthPool -= healthPool;
-        }
-
-        private void EffectCallBack()
-        {
-            EffectDispatched = false;
-            if (_effectedCubes.Count > 0) _effectActive = true;
         }
 
         private void ApplyEffect()
@@ -389,164 +327,6 @@ namespace WeaponCore
         {
             ((IMyFunctionalBlock)myTerminalBlock).Enabled = false;
         }
-
-        public static BoundingSphereD NewObbClosestTriCorners(MyEntity ent, Vector3D pos)
-        {
-            var entCorners = new Vector3D[8];
-
-            var quaternion = Quaternion.CreateFromRotationMatrix(ent.PositionComp.GetOrientation());
-            var halfExtents = ent.PositionComp.LocalAABB.HalfExtents;
-            var gridCenter = ent.PositionComp.WorldAABB.Center;
-            var obb = new MyOrientedBoundingBoxD(gridCenter, halfExtents, quaternion);
-
-            var minValue = double.MaxValue;
-            var minValue0 = double.MaxValue;
-            var minValue1 = double.MaxValue;
-            var minValue2 = double.MaxValue;
-            var minValue3 = double.MaxValue;
-
-            var minNum = -2;
-            var minNum0 = -2;
-            var minNum1 = -2;
-            var minNum2 = -2;
-            var minNum3 = -2;
-
-            obb.GetCorners(entCorners, 0);
-            for (int i = 0; i < entCorners.Length; i++)
-            {
-                var gridCorner = entCorners[i];
-                var range = gridCorner - pos;
-                var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
-                if (test < minValue3)
-                {
-                    if (test < minValue)
-                    {
-                        minValue3 = minValue2;
-                        minNum3 = minNum2;
-                        minValue2 = minValue1;
-                        minNum2 = minNum1;
-                        minValue1 = minValue0;
-                        minNum1 = minNum0;
-                        minValue0 = minValue;
-                        minNum0 = minNum;
-                        minValue = test;
-                        minNum = i;
-                    }
-                    else if (test < minValue0)
-                    {
-                        minValue3 = minValue2;
-                        minNum3 = minNum2;
-                        minValue2 = minValue1;
-                        minNum2 = minNum1;
-                        minValue1 = minValue0;
-                        minNum1 = minNum0;
-                        minValue0 = test;
-                        minNum0 = i;
-                    }
-                    else if (test < minValue1)
-                    {
-                        minValue3 = minValue2;
-                        minNum3 = minNum2;
-                        minValue2 = minValue1;
-                        minNum2 = minNum1;
-                        minValue1 = test;
-                        minNum1 = i;
-                    }
-                    else if (test < minValue2)
-                    {
-                        minValue3 = minValue2;
-                        minNum3 = minNum2;
-                        minValue2 = test;
-                        minNum2 = i;
-                    }
-                    else
-                    {
-                        minValue3 = test;
-                        minNum3 = i;
-                    }
-                }
-            }
-            var corner = entCorners[minNum];
-            var corner0 = entCorners[minNum0];
-            var corner1 = entCorners[minNum1];
-            var corner2 = entCorners[minNum2];
-            var corner3 = gridCenter;
-            Vector3D[] closestCorners = { corner, corner0, corner3 };
-
-            var sphere = BoundingSphereD.CreateFromPoints(closestCorners);
-            //var subObb = MyOrientedBoundingBoxD.CreateFromBoundingBox(box);
-            return sphere;
-        }
-    }
-
-    internal class EffectWork
-    {
-        internal MyCubeGrid Grid;
-        internal Vector3D EpiCenter;
-        internal int WarHeadSize;
-        internal double WarHeadYield;
-        internal double DirYield;
-        internal int StackCount;
-        internal double RangeCap;
-        internal double RangeCapSqr;
-        internal bool Stored;
-        internal bool Computed;
-        internal bool Drawed;
-        internal bool EventRunning;
-
-        internal void StoreEmpBlast(Vector3D epicCenter, int warHeadSize, double warHeadYield, int stackCount, double rangeCap)
-        {
-            EpiCenter = epicCenter;
-            WarHeadSize = warHeadSize;
-            WarHeadYield = warHeadYield;
-            StackCount = stackCount;
-            RangeCap = rangeCap;
-            RangeCapSqr = rangeCap * rangeCap;
-            DirYield = (warHeadYield * stackCount) * 0.5;
-            Stored = true;
-            EventRunning = true;
-        }
-
-        internal void ComputeComplete()
-        {
-            Computed = true;
-        }
-
-        internal void EventComplete()
-        {
-            Computed = false;
-            Drawed = false;
-            Stored = false;
-            EventRunning = false;
-        }
-    }
-
-    public struct Effect
-    {
-        public readonly int Size;
-        public readonly double Yield;
-        public readonly Vector3D Position;
-        public readonly string CustomData;
-
-        public Effect(int size, Vector3D position, string customData)
-        {
-            Size = size;
-            Yield = Size * 50;
-            Position = position;
-            CustomData = customData;
-        }
-    }
-
-    public struct EffectHit
-    {
-        public readonly uint Duration;
-        public BoundingSphereD Sphere;
-
-        public EffectHit(BoundingSphereD sphere, uint duration)
-        {
-            Sphere = sphere;
-            Duration = duration;
-        }
     }
 
     public struct BlockState
@@ -558,5 +338,21 @@ namespace WeaponCore
         public uint NextTick;
         public uint Endtick;
         public float Health;
+    }
+
+    public class GridEffect
+    {
+        public Vector3D HitPos;
+        public long AttackerId;
+        public float Damage;
+        public int Hits;
+
+        public void Clean()
+        {
+            HitPos = Vector3D.Zero;
+            AttackerId = 0;
+            Damage = 0;
+            Hits = 0;
+        }
     }
 }

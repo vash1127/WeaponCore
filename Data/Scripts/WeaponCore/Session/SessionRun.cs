@@ -63,6 +63,16 @@ namespace WeaponCore
                 Projectiles.Update();
 
                 if (_effectedCubes.Count > 0) ApplyEffect();
+                if (_gridEffects.Count > 0)
+                {
+                    foreach (var ge in _gridEffects)
+                    {
+                        foreach (var v in ge.Value)
+                        {
+                            Log.Line($"Effect:{v.Value} - hits:{v.Value.Hits} - {v.Value.Damage}");
+                        }
+                    }
+                }
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
