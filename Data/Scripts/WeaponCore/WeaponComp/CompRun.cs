@@ -104,8 +104,8 @@ namespace WeaponCore.Support
                 if (weapon.System.IsBeamWeapon)
                     weapon.BaseDamage *= Set.Value.Overload;
 
-                if (weapon.BaseDamage < 1)
-                    weapon.BaseDamage = 1;
+                if (weapon.BaseDamage < 0)
+                    weapon.BaseDamage = 0;
 
                 if (weapon.RateOfFire < 1)
                     weapon.RateOfFire = 1;

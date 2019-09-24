@@ -26,15 +26,54 @@ namespace WeaponCore.Control
                 if (c.Id != "Control" && !c.Id.Contains("OnOff") && !c.Id.Equals("Shoot") && !c.Id.Equals("ShootOnce"))
                     c.Enabled = b => !WepUi.CoreWeaponEnableCheck(b, 0);
 
-                if (c.Id.Equals("Shoot") || c.Id.Equals("ShootOnce"))
+                if (c.Id.Equals("ShootOnce"))
                 {
                     c.Action = blk =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
                         if (comp == null) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                        {
                             comp.Platform.Weapons[j].ManualShoot = ShootOnce;
+                            comp.Ai.ManualComps++;
+                        }
 
+                    };
+                }
+                else if (c.Id.Equals("Shoot"))
+                {
+                    c.Action = blk =>
+                    {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null) return;
+                        for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                        {
+                            var w = comp.Platform.Weapons[j];
+                            if (w.ManualShoot == ShootOn)
+                            {
+                                w.ManualShoot = ShootOff;
+                                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                                comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
+                            }
+                            else if (w.ManualShoot != ShootOff)
+                                w.ManualShoot = ShootOn;
+                            else
+                            {
+                                w.ManualShoot = ShootOn;
+                                comp.Ai.ManualComps++;
+                                comp.Shooting++;
+                            }
+                        }
+                    };
+
+                    c.Writer = (b, v) =>
+                    {
+                        var comp = b?.Components?.Get<WeaponComponent>();
+                        if (comp == null) return;
+                        if (comp.Shooting > 0)
+                            v.Append("On");
+                        else
+                            v.Append("Off");
                     };
                 }
             }

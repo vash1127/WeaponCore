@@ -75,7 +75,6 @@ namespace WeaponCore.Support
         internal bool AvailablePowerIncrease;
         internal bool RecalcDone;
         internal bool StaticEntitiesInRange;
-        internal bool turnWeaponShootOff;
         internal bool Reloading;
         internal bool ReturnHome;
         internal bool ShieldNearTmp;

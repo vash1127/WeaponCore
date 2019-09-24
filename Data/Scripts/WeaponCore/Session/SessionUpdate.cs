@@ -141,15 +141,6 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
 
-                        if (gridAi.turnWeaponShootOff)
-                        {
-                            if (w.ManualShoot == ShootClick)
-                            {
-                                w.ManualShoot = ShootOff;
-                                gridAi.ManualComps--;
-                            }
-                        }
-
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || (!gridAi.Ready && !w.Reloading))
                         {
                             if (w.ReturnHome)
@@ -269,7 +260,7 @@ namespace WeaponCore
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {
                                 w.ManualShoot = ShootOff;
-                                gridAi.ManualComps--;
+                                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                             }
                         }
                         else if (w.IsShooting)
@@ -283,7 +274,6 @@ namespace WeaponCore
                 gridAi.Ready = false;
                 gridAi.AvailablePowerIncrease = false;
                 gridAi.RecalcPowerPercent = false;
-                gridAi.turnWeaponShootOff = false;
 
                 if (gridAi.RecalcDone)
                 {

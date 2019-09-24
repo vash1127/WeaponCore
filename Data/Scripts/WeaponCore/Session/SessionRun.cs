@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -45,7 +45,8 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
-                    ControlledEntity = MyAPIGateway.Session.CameraController.Entity;
+                    ControlledEntity = (MyEntity)MyAPIGateway.Session.ControlledObject;
+                    
                     CameraPos = Session.Camera.Position;
                     ProcessAnimationQueue();
                 }
@@ -222,7 +223,7 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyEntities.OnEntityAdd += OnEntityAdded;
-                //MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
+                MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -244,7 +245,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
 
-
         protected override void UnloadData()
         {
             PurgeAllEffects();
@@ -255,7 +255,7 @@ namespace WeaponCore
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyEntities.OnEntityAdd -= OnEntityAdded;
-            //MyVisualScriptLogicProvider.PrefabSpawnedDetailed -= OnPrefabSpawn;
+            MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
             ProjectileTree.Clear();

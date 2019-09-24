@@ -45,20 +45,17 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
         }
 
-        private void OnPrefabSpawn(long entityId, string prefabName)
+        private void MenuOpened(object obj)
         {
-            var grid = MyEntities.GetEntityById(entityId) as MyCubeGrid;
-            if (grid == null) return;
+            var cockpit = ControlledEntity as MyCockpit;
+            var remote = ControlledEntity as MyRemoteControl;
 
-            foreach (var block in grid.GetFatBlocks())
-            {
-                if (WeaponPlatforms.ContainsKey(block.BlockDefinition.Id.SubtypeId))
-                {
-                    PastedBlocksToInit.Enqueue(grid);
-                }
-            }
+            if (cockpit != null && UpdateLocalAiAndCockpit())
+                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
+
+            if (remote != null)
+                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
         }
-
 
         private void OnEntityAdded(MyEntity obj)
         {

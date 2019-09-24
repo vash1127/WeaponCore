@@ -53,8 +53,8 @@ namespace WeaponCore
                     newBase *= comp.Set.Value.Overload;
 
 
-                if (newBase < 1)
-                    newBase = 1;
+                if (newBase < 0)
+                    newBase = 0;
 
                 w.BaseDamage = newBase;
 
