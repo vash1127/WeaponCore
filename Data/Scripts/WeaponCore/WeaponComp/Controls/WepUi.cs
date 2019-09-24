@@ -47,7 +47,7 @@ namespace WeaponCore
                     comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                     continue;
                 }
-                var newBase = (int)Math.Ceiling(w.System.BaseDamage * newValue);
+                var newBase = w.System.BaseDamage * newValue;
 
                 if (w.System.IsBeamWeapon)
                     newBase *= comp.Set.Value.Overload;
