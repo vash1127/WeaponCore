@@ -672,12 +672,12 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (Age % PulseInterval == 0)
-                PulseField();
+            if (Age % PulseInterval == 0 || State == ProjectileState.OneAndDone)
+                PulseEffect();
             else EwarActive = false;
         }
 
-        internal void PulseField()
+        internal void PulseEffect()
         {
             switch (AreaEffect)
             {
