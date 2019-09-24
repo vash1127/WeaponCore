@@ -9,6 +9,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+WeaponCore.csproj
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

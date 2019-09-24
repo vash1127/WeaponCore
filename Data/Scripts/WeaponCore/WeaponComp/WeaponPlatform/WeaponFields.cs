@@ -242,7 +242,8 @@ namespace WeaponCore.Platform
 
         internal void UpdateShotEnergy()
         {
-            ShotEnergyCost = System.Values.HardPoint.EnergyCost * BaseDamage;
+            var ewar = (int)System.Values.Ammo.AreaEffect.AreaEffect > 3;
+            ShotEnergyCost = ewar ? System.Values.HardPoint.EnergyCost * areaEffectDmg : System.Values.HardPoint.EnergyCost * BaseDamage;
         }
 
         internal void UpdateBarrelRotation()
