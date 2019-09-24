@@ -246,9 +246,11 @@ namespace WeaponCore.Projectiles
                             }
                         }
                     }
-                    if (p.Ewar)
-                        p.RunEwar();
                 }
+
+                if (p.Ewar)
+                    p.RunEwar();
+
                 p.Active = true;
             }
         }

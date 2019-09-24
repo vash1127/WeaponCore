@@ -69,7 +69,7 @@ namespace WeaponCore
                     {
                         foreach (var v in ge.Value)
                         {
-                            Log.Line($"Effect:{v.Value} - hits:{v.Value.Hits} - {v.Value.Damage}");
+                            Log.Line($"Effect:{v.Key} - hits:{v.Value.Hits} - {v.Value.Damage}");
                         }
                     }
                 }

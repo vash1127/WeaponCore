@@ -225,7 +225,6 @@ namespace WeaponCore
                     if (damagePool <= 0 && primaryDamage || objectsHit >= maxObjects) break;
 
                     var scaledDamage = damagePool * damageScale;
-                    //Log.Line($"{scaledDamage} - {damagePool} - {damageScale}");
                     if (primaryDamage)
                     {
                         if (countBlocksAsObjects) objectsHit++;
