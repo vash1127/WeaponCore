@@ -233,7 +233,7 @@ namespace WeaponCore.Projectiles
                                 continue;
 
                             if (!fieldActive)
-                                GetAndSortBlocksInSphere(hitEnt, grid, hitPos, false);
+                                GetAndSortBlocksInSphere(hitEnt.T.System, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
 
                             if (hitEnt.Blocks.Count > 0)
                             {
@@ -405,14 +405,14 @@ namespace WeaponCore.Projectiles
             CheckPool[poolId].Return(checkList);
         }
 
-        internal static void GetAndSortBlocksInSphere(HitEntity hitEnt, MyCubeGrid grid, Vector3D hitPos, bool fatOnly)
+        internal static void GetAndSortBlocksInSphere(WeaponSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
         {
-            var sphere = hitEnt.PruneSphere;
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
             Vector3D result;
             Vector3D.Transform(ref sphere.Center, ref matrixNormalizedInv, out result);
             var localSphere = new BoundingSphere(result, (float)sphere.Radius);
-            var fieldType = hitEnt.T.System.Values.Ammo.AreaEffect.AreaEffect;
+            var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
+            var hitPos = sphere.Center;
             if (fatOnly)
             {
                 foreach (var cube in grid.GetFatBlocks())
@@ -442,7 +442,7 @@ namespace WeaponCore.Projectiles
                     var block = cube.SlimBlock as IMySlimBlock;
                     if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                         continue;
-                    hitEnt.Blocks.Add(block);
+                    blocks.Add(block);
                 }
             }
             else
@@ -452,11 +452,11 @@ namespace WeaponCore.Projectiles
                     if (block.IsDestroyed) continue;
                     if (!new BoundingBox(block.Min * grid.GridSize - grid.GridSizeHalf, block.Max * grid.GridSize + grid.GridSizeHalf).Intersects(localSphere))
                         continue;
-                    hitEnt.Blocks.Add(block);
+                    blocks.Add(block);
                 }
             }
 
-            hitEnt.Blocks.Sort((a, b) =>
+            blocks.Sort((a, b) =>
             {
                 var aPos = grid.GridIntegerToWorld(a.Position);
                 var bPos = grid.GridIntegerToWorld(b.Position);
