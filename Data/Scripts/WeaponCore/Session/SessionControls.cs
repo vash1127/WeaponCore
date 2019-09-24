@@ -79,7 +79,21 @@ namespace WeaponCore
                     if (comp == null) return;
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
-                        comp.Platform.Weapons[i].ManualShoot = comp.Platform.Weapons[i].ManualShoot != ShootClick ? ShootClick : ShootOff;
+                        var w = comp.Platform.Weapons[i];
+                        if (w.ManualShoot == ShootClick)
+                        {
+                            w.ManualShoot = ShootOff;
+                            comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                            comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
+                        }
+                        else if(w.ManualShoot != ShootOff)
+                            w.ManualShoot = ShootClick;
+                        else
+                        {
+                            w.ManualShoot = ShootClick;
+                            comp.Ai.ManualComps++;
+                            comp.Shooting++;
+                        }
                     }
                 };
                 action.Writer = (b, t) => t.Append("");
@@ -116,15 +130,20 @@ namespace WeaponCore
                 {
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
                     {
-                        if (comp.Platform.Weapons[i].ManualShoot != ShootOn)
+                        var w = comp.Platform.Weapons[i];
+                        if (w.ManualShoot == ShootOn)
                         {
-                            comp.Platform.Weapons[i].ManualShoot = ShootOn;
-                            comp.Ai.ManualComps++;
+                            w.ManualShoot = ShootOff;
+                            comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                            comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                         }
+                        else if (w.ManualShoot != ShootOff)
+                            w.ManualShoot = ShootOn;
                         else
                         {
-                            comp.Platform.Weapons[i].ManualShoot = ShootOff;
-                            comp.Ai.ManualComps--;
+                            w.ManualShoot = ShootOn;
+                            comp.Ai.ManualComps++;
+                            comp.Shooting++;
                         }
                     }
                 }
@@ -144,7 +163,17 @@ namespace WeaponCore
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
-                        comp.Platform.Weapons[i].ManualShoot = ShootOn;
+                    {
+                        var w = comp.Platform.Weapons[i];
+                        if(w.ManualShoot != ShootOff)
+                            w.ManualShoot = ShootOn;
+                        else
+                        {
+                            w.ManualShoot = ShootOn;
+                            comp.Ai.ManualComps++;
+                            comp.Shooting++;
+                        }
+                    }
                 }
             };
             action.Writer = (b, t) => t.Append("On");
@@ -162,7 +191,16 @@ namespace WeaponCore
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
-                        comp.Platform.Weapons[i].ManualShoot = ShootOff;
+                    {
+                        var w = comp.Platform.Weapons[i];
+                        if (w.ManualShoot != ShootOff)
+                        {
+                            w.ManualShoot = ShootOff;
+                            comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                            comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
+                        }
+                    }
+                        
                 }
             };
             action.Writer = (b, t) => t.Append("Off");
@@ -183,6 +221,7 @@ namespace WeaponCore
                     {
                         comp.Platform.Weapons[i].ManualShoot = ShootOnce;
                         comp.Ai.ManualComps++;
+                        comp.Shooting++;
                     }
                 }
             };
@@ -210,17 +249,11 @@ namespace WeaponCore
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
-            var cockpit = block as MyCockpit;
             var turret = block as IMyLargeTurretBase;
 
-            if (controls.Count == 0 || cockpit == null && turret == null) return;
+            if (controls.Count == 0 || turret == null) return;
 
-            if (ControlledEntity == cockpit && UpdateLocalAiAndCockpit())
-            {
-                var gridAi = GridTargetingAIs[cockpit.CubeGrid];
-                gridAi.turnWeaponShootOff = true;
-            }
-            else if (turret != null) {
+            if (turret != null) {
                 var comp = turret?.Components?.Get<WeaponComponent>();
                 if (comp != null)
                 {

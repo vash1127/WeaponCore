@@ -332,10 +332,10 @@ namespace WeaponCore
             var remote = ControlledEntity as MyRemoteControl;
 
             if (cockpit != null && UpdateLocalAiAndCockpit())
-                GridTargetingAIs[cockpit.CubeGrid].turnWeaponShootOff = true;
+                _futureEvents.Schedule(TurnWeaponShootOff,GridTargetingAIs[cockpit.CubeGrid], 1);
 
             if (remote != null)
-                GridTargetingAIs[remote.CubeGrid].turnWeaponShootOff = true;
+                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
 
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }
@@ -652,6 +652,26 @@ namespace WeaponCore
                 catch (Exception e)
                 {
                     //bad prefab xml
+                }
+            }
+        }
+
+        internal void TurnWeaponShootOff(Object ai)
+        {
+            var gridAi = ai as GridAi;
+            if(gridAi == null) return;
+
+            foreach (var basePair in gridAi.WeaponBase)
+            {
+                for (int i = 0; i < basePair.Value.Platform.Weapons.Length; i++)
+                {
+                    var w = basePair.Value.Platform.Weapons[i];
+                    if (w.ManualShoot == Weapon.TerminalActionState.ShootClick)
+                    {
+                        w.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                        gridAi.ManualComps--;
+                    }
+
                 }
             }
         }
