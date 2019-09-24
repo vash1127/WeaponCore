@@ -103,7 +103,11 @@ namespace WeaponCore.Projectiles
                     {
                         if (!(p.EwarActive && p.EwarEffect))
                             hitEntity.EventType = Grid;
-                        else if (p.T.System.IsBeamWeapon) hitEntity.EventType = BeamEffect;
+                        else if (p.T.System.IsBeamWeapon)
+                        {
+                            hitEntity.EventType = BeamEffect;
+                            if (p.EwarActive && p.T.BaseDamagePool <= 0) p.T.BaseDamagePool = 1;
+                        }
                         else hitEntity.EventType = Field;
                         if (p.AreaEffect == DotField) hitEntity.DamageOverTime = true;
                     }
