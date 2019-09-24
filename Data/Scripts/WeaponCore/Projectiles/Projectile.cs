@@ -93,8 +93,7 @@ namespace WeaponCore.Projectiles
         internal bool SmartsOn;
         internal bool Ewar;
         internal bool EwarActive;
-        internal bool FieldActive;
-        internal bool FieldEffect;
+        internal bool EwarEffect;
         internal bool SelfDamage;
         internal bool IsMine;
         internal bool MineSeeking;
@@ -152,7 +151,6 @@ namespace WeaponCore.Projectiles
             AmmoSound = false;
             PositionChecked = false;
             EwarActive = false;
-            FieldActive = false;
             MineSeeking = false;
             MineActivated = false;
             MineTriggered = false;
@@ -253,7 +251,7 @@ namespace WeaponCore.Projectiles
             AmmoTravelSoundRangeSqr = T.System.AmmoTravelSoundDistSqr;
             AreaEffect = T.System.Values.Ammo.AreaEffect.AreaEffect;
             Ewar = AreaEffect > (AreaEffectType) 2;
-            FieldEffect = AreaEffect > (AreaEffectType) 3;
+            EwarEffect = AreaEffect > (AreaEffectType) 3;
             PulseInterval = T.System.Values.Ammo.AreaEffect.Pulse.Interval;
             PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
 
@@ -521,7 +519,6 @@ namespace WeaponCore.Projectiles
             PrevTargetVel = targetVel;
             LockedTarget = true;
 
-            Log.Line($"Activated Mine: Ewar{Ewar}");
             if (Guidance == AmmoTrajectory.GuidanceType.DetectFixed) return;
 
             Vector3D.DistanceSquared(ref T.Origin, ref predictedPos, out DistanceToTravelSqr);

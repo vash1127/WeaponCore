@@ -28,22 +28,21 @@ namespace WeaponCore
         private void UpdateField(HitEntity hitEnt, Trajectile t)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
+            if (grid == null || grid.MarkedForClose) return;
             var depletable = t.System.Values.Ammo.AreaEffect.EwarFields.Depletable;
-            var healthPool = depletable ? t.BaseHealthPool : float.MaxValue;
+            var healthPool = depletable && t.BaseHealthPool > 0 ? t.BaseHealthPool : float.MaxValue;
+            if (healthPool <= 0) return;
 
-            if (grid == null || grid.MarkedForClose || healthPool <= 0) return;
             var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
-
             GetAndSortBlocksInSphere(t.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
             ComputeEffects(t.System, grid, t.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
-
             if (depletable) t.BaseHealthPool -= healthPool;
         }
 
         private void UpdateBeam(HitEntity hitEnt, Trajectile t)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
-
+            Log.Line("update beam");
             if (grid == null || grid.MarkedForClose ) return;
             var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
             Dictionary<AreaDamage.AreaEffectType, GridEffect> effects;
@@ -132,16 +131,14 @@ namespace WeaponCore
             var stack = eWarInfo.StackDuration;
             var nextTick = Tick + 1;
             var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
-
             foreach (var block in blocks)
             {
                 var cube = block.FatBlock as MyCubeBlock;
                 if (damagePool <= 0 || healthPool <= 0) break;
 
                 if (fieldType != DotField)
-                {
                     if (cube == null || cube.MarkedForClose || !cube.IsWorking && !_effectedCubes.ContainsKey(cube.EntityId)) continue;
-                }
+
                 var blockHp = block.Integrity;
                 float damageScale = 1;
                 var tmpDamagePool = damagePool;
@@ -197,40 +194,43 @@ namespace WeaponCore
                     continue;
                 }
 
-                BlockState blockState;
-                var cubeId = cube.EntityId;
-                if (stack && _effectedCubes.TryGetValue(cubeId, out blockState))
+                if (cube != null)
                 {
-                    if (blockState.Health > 0) damagePool = tmpDamagePool;
-                    if (!blockDisabled && blockState.Health - scaledDamage > 0)
+                    BlockState blockState;
+                    var cubeId = cube.EntityId;
+                    if (stack && _effectedCubes.TryGetValue(cubeId, out blockState))
                     {
-                        blockState.Health -= scaledDamage;
+                        if (blockState.Health > 0) damagePool = tmpDamagePool;
+                        if (!blockDisabled && blockState.Health - scaledDamage > 0)
+                        {
+                            blockState.Health -= scaledDamage;
+                            blockState.Endtick = Tick + (duration + 1);
+                        }
+                        else
+                        {
+                            blockState.Health = 0;
+                            healthPool -= 1;
+                            blockState.Endtick += (duration + 1);
+                        }
+                    }
+                    else
+                    {
+                        damagePool = tmpDamagePool;
+                        blockState.FunctBlock = ((IMyFunctionalBlock)cube);
+                        var originState = blockState.FunctBlock.Enabled;
+                        blockState.CubeBlock = cube;
+                        blockState.FirstTick = Tick + 1;
+                        blockState.FirstState = originState;
+                        blockState.NextTick = nextTick;
                         blockState.Endtick = Tick + (duration + 1);
+                        if (!blockDisabled) blockState.Health = blockHp - scaledDamage;
+                        else
+                        {
+                            blockState.Health = 0;
+                        }
                     }
-                    else
-                    {
-                        blockState.Health = 0;
-                        healthPool -= 1;
-                        blockState.Endtick += (duration + 1);
-                    }
+                    _effectedCubes[cube.EntityId] = blockState;
                 }
-                else
-                {
-                    damagePool = tmpDamagePool;
-                    blockState.FunctBlock = ((IMyFunctionalBlock)cube);
-                    var originState = blockState.FunctBlock.Enabled;
-                    blockState.CubeBlock = cube;
-                    blockState.FirstTick = Tick + 1;
-                    blockState.FirstState = originState;
-                    blockState.NextTick = nextTick;
-                    blockState.Endtick = Tick + (duration + 1);
-                    if (!blockDisabled) blockState.Health = blockHp - scaledDamage;
-                    else
-                    {
-                        blockState.Health = 0;
-                    }
-                }
-                _effectedCubes[cube.EntityId] = blockState;
             }
         }
 

@@ -101,7 +101,10 @@ namespace WeaponCore.Projectiles
 
                     if (grid != null)
                     {
-                        hitEntity.EventType = !(p.EwarActive && p.FieldEffect) ? Grid : Field;
+                        if (!(p.EwarActive && p.EwarEffect))
+                            hitEntity.EventType = Grid;
+                        else if (p.T.System.IsBeamWeapon) hitEntity.EventType = BeamEffect;
+                        else hitEntity.EventType = Field;
                         if (p.AreaEffect == DotField) hitEntity.DamageOverTime = true;
                     }
                     else if (destroyable != null)
@@ -113,7 +116,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (p.T.Target.IsProjectile && !p.FieldEffect)
+            if (p.T.Target.IsProjectile && !p.EwarEffect)
             {
                 var targetPos = p.T.Target.Projectile.Position;
                 var sphere = new BoundingSphereD(targetPos, p.T.Target.Projectile.T.System.CollisionSize);
@@ -226,16 +229,16 @@ namespace WeaponCore.Projectiles
                     {
                         if (hitEnt.SphereCheck)
                         {
-                            var fieldActive = hitEnt.EventType == Field;
+                            var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == BeamEffect;
 
-                            var hitPos = !fieldActive ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
+                            var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
                             if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
                                 continue;
 
-                            if (!fieldActive)
+                            if (!ewarActive)
                                 GetAndSortBlocksInSphere(hitEnt.T.System, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
 
-                            if (hitEnt.Blocks.Count > 0)
+                            if (hitEnt.Blocks.Count > 0 || ewarActive)
                             {
                                 dist = 0;
                                 hitEnt.Hit = true;
@@ -299,11 +302,11 @@ namespace WeaponCore.Projectiles
                     {
                         if (hitEnt.SphereCheck)
                         {
-                            var fieldActive = hitEnt.EventType == Field;
+                            var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == BeamEffect;
 
                             dist = 0;
                             hitEnt.Hit = true;
-                            var hitPos = !fieldActive
+                            var hitPos = !ewarActive
                                 ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius)
                                 : hitEnt.PruneSphere.Center;
                             hitEnt.HitPos = hitPos;
