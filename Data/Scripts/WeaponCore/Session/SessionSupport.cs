@@ -537,9 +537,10 @@ namespace WeaponCore
 
                                         definition.Value.CubeGrids[j].CubeBlocks[i] = newSMissileOB;
                                     }
+                                    break;
 
-                                    else if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
-                                        .String == "LargeMissileLauncher")
+                                case "MyObjectBuilder_SmallMissileLauncherReload":
+                                    if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId.String == "SmallRocketLauncherReload")
                                     {
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newSMissileOB = (MyObjectBuilder_CubeBlock)rMissileBuilder.Clone();
@@ -551,7 +552,6 @@ namespace WeaponCore
 
                                         definition.Value.CubeGrids[j].CubeBlocks[i] = newSMissileOB;
                                     }
-
                                     break;
 
                                 case "MyObjectBuilder_SmallGatlingGun":
