@@ -93,7 +93,7 @@ namespace WeaponCore
                             if (w.LastTargetLock > 0)
                                 comp.ReturnHome = gridAi.ReturnHome = true;
 
-                            w.ReturnHome = (w.LastTargetLock + 240 < Tick && w.LastTargetLock > 0 || w.ReturnHome) && w.ManualShoot == ShootOff;
+                            w.ReturnHome = (w.LastTargetLock + 240 < Tick && w.LastTargetLock > 0 || w.ReturnHome) && w.ManualShoot == ShootOff && !comp.Gunner;
                         }
 
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
@@ -122,7 +122,7 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-                    var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
+                    var ammoCheck = !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;

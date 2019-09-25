@@ -140,9 +140,9 @@ namespace WeaponCore.Platform
                     break;
                 case EventTriggers.Tracking:
 
-                    if (AnimationsSet.ContainsKey(Weapon.EventTriggers.Tracking))
+                    if (AnimationsSet.ContainsKey(EventTriggers.Tracking))
                     {
-                        foreach (var animation in AnimationsSet[Weapon.EventTriggers.Tracking])
+                        foreach (var animation in AnimationsSet[EventTriggers.Tracking])
                         {
                             if (active)
                             {
@@ -183,13 +183,13 @@ namespace WeaponCore.Platform
 
                 case EventTriggers.TurnOn:
                     Session.ComputeStorage(this);
-                    if (active && AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn))
+                    if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                     {
                         var OnAnimations = true;
 
-                        if (AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))
+                        if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                         {
-                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOff])
+                            foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
                             {
                                 if (Session.Instance.animationsToProcess.Contains(animation))
                                 {
@@ -201,7 +201,7 @@ namespace WeaponCore.Platform
 
                         if(OnAnimations)
                         {
-                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOn])
+                            foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
                             {
                                 Session.Instance.animationsToProcess.Enqueue(animation);
                                 if (animation.DoesLoop)
@@ -213,14 +213,14 @@ namespace WeaponCore.Platform
                     break;
 
                 case EventTriggers.TurnOff:
-                    if (active && AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOff))
+                    if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                     {
                         var OffAnimations = true;
 
-                        if (AnimationsSet.ContainsKey(Weapon.EventTriggers.TurnOn))
+                        if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         {
                             
-                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOn])
+                            foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
                             {
                                 if (Session.Instance.animationsToProcess.Contains(animation))
                                 {
@@ -232,7 +232,7 @@ namespace WeaponCore.Platform
                         if(OffAnimations)
                         {
 
-                            foreach (var animation in AnimationsSet[Weapon.EventTriggers.TurnOff])
+                            foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
                             {
                                 animation.StartTick = OffDelay > 0
                                     ? Session.Instance.Tick + animation.MotionDelay + OffDelay
@@ -367,7 +367,7 @@ namespace WeaponCore.Platform
                         }
                         else if (BarrelEffects1[id] != null)
                         {
-                            BarrelEffects1[id].Stop(true);
+                            BarrelEffects1[id].Stop();
                             BarrelEffects1[id] = null;
                         }
                     }
@@ -400,7 +400,7 @@ namespace WeaponCore.Platform
                         }
                         else if (BarrelEffects2[id] != null)
                         {
-                            BarrelEffects2[id].Stop(true);
+                            BarrelEffects2[id].Stop();
                             BarrelEffects2[id] = null;
                         }
                     }
@@ -452,12 +452,12 @@ namespace WeaponCore.Platform
 
         public void StartFiringSound()
         {
-            FiringEmitter?.PlaySound(FiringSound, false);
+            FiringEmitter?.PlaySound(FiringSound);
         }
 
         public void StopFiringSound(bool force)
         {
-            FiringEmitter?.StopSound(force, true);
+            FiringEmitter?.StopSound(force);
         }
 
         public void StartReloadSound()
@@ -468,7 +468,7 @@ namespace WeaponCore.Platform
 
         public void StopReloadSound()
         {
-            ReloadEmitter?.StopSound(true, true);
+            ReloadEmitter?.StopSound(true);
         }
 
         public void StartRotateSound()
@@ -478,7 +478,7 @@ namespace WeaponCore.Platform
 
         public void StopRotateSound()
         {
-            RotateEmitter?.StopSound(true, true);
+            RotateEmitter?.StopSound(true);
         }
     }
 }

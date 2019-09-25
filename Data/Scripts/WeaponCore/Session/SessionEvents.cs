@@ -13,13 +13,15 @@ namespace WeaponCore
         {
             try
             {
+                if (!Inited) lock (_configLock) Init();
+
                 var weaponBase = myEntity as IMyLargeMissileTurret;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
                 if (weaponBase != null)
                 {
                     if (weaponBase.CubeGrid.Physics == null) return;
-                    if (!Inited) lock (_configLock) Init();
+                    
 
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
