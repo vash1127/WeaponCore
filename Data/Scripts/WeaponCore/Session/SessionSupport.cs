@@ -537,9 +537,10 @@ namespace WeaponCore
 
                                         definition.Value.CubeGrids[j].CubeBlocks[i] = newSMissileOB;
                                     }
+                                    break;
 
-                                    else if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
-                                        .String == "LargeMissileLauncher")
+                                case "MyObjectBuilder_SmallMissileLauncherReload":
+                                    if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId.String == "SmallRocketLauncherReload")
                                     {
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newSMissileOB = (MyObjectBuilder_CubeBlock)rMissileBuilder.Clone();
@@ -551,7 +552,6 @@ namespace WeaponCore
 
                                         definition.Value.CubeGrids[j].CubeBlocks[i] = newSMissileOB;
                                     }
-
                                     break;
 
                                 case "MyObjectBuilder_SmallGatlingGun":
@@ -665,11 +665,13 @@ namespace WeaponCore
             {
                 for (int i = 0; i < basePair.Value.Platform.Weapons.Length; i++)
                 {
+                    var comp = basePair.Value;
                     var w = basePair.Value.Platform.Weapons[i];
                     if (w.ManualShoot == Weapon.TerminalActionState.ShootClick)
                     {
                         w.ManualShoot = Weapon.TerminalActionState.ShootOff;
-                        gridAi.ManualComps--;
+                        gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
+                        comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                     }
 
                 }

@@ -161,7 +161,6 @@ namespace WeaponCore
 
         internal Vector3D CameraPos;
         internal MyEntity ControlledEntity;
-        internal MyEntity OtherControlledEntity;
         internal MyCockpit ActiveCockPit;
 
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");

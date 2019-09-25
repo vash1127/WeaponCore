@@ -145,7 +145,6 @@ namespace WeaponCore
                             var weaponBase = block as IMyLargeTurretBase;
                             if (weaponBase == null) continue;
 
-                            //Log.Line($"TypeID: {weaponBase.BlockDefinition.TypeId} SubTypeID: {weaponBase.BlockDefinition.SubtypeId}");
                             WeaponComponent comp;
                             if ((block.Components.TryGet(out comp) && comp.MyGrid.EntityId != block.CubeGrid.EntityId))
                             {

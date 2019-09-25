@@ -123,7 +123,7 @@ namespace WeaponCore.Support
             WhenDone
         }
 
-        public WeaponSystem(MyStringHash aimPartName, MyStringHash muzzlePartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId, int weaponId)
+        public WeaponSystem(MyStringHash aimPartName, MyStringHash muzzlePartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
         {
             AimPartName = aimPartName;
             MuzzlePartName = muzzlePartName;
@@ -131,7 +131,7 @@ namespace WeaponCore.Support
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
-            WeaponId = weaponId;
+            WeaponId = (weaponName + aimPartName + muzzlePartName).GetHashCode();
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);
@@ -411,7 +411,6 @@ namespace WeaponCore.Support
 
     public class WeaponStructure
     {
-        private static int _weaponCount;
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
         public readonly MyStringHash[] AimPartNames;
@@ -457,8 +456,7 @@ namespace WeaponCore.Support
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
   
-                WeaponSystems.Add(myAimNameHash, new WeaponSystem(myAimNameHash, myMuzzleNameHash, weaponDef, typeName, ammoDefId, _weaponCount));
-                _weaponCount++;
+                WeaponSystems.Add(myAimNameHash, new WeaponSystem(myAimNameHash, myMuzzleNameHash, weaponDef, typeName, ammoDefId));
                 if (!ammoBlank)
                 {
                     if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();
