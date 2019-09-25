@@ -104,10 +104,7 @@ namespace WeaponCore.Projectiles
                         if (!(p.EwarActive && p.EwarEffect))
                             hitEntity.EventType = Grid;
                         else if (p.T.System.IsBeamWeapon)
-                        {
-                            hitEntity.EventType = BeamEffect;
-                            if (p.EwarActive && p.T.BaseDamagePool <= 0) p.T.BaseDamagePool = 1;
-                        }
+                            hitEntity.EventType = Effect;
                         else hitEntity.EventType = Field;
                         if (p.AreaEffect == DotField) hitEntity.DamageOverTime = true;
                     }
@@ -233,7 +230,7 @@ namespace WeaponCore.Projectiles
                     {
                         if (hitEnt.SphereCheck)
                         {
-                            var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == BeamEffect;
+                            var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
                             var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
                             if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
@@ -306,7 +303,7 @@ namespace WeaponCore.Projectiles
                     {
                         if (hitEnt.SphereCheck)
                         {
-                            var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == BeamEffect;
+                            var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
                             dist = 0;
                             hitEnt.Hit = true;

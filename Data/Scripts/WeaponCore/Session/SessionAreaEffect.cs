@@ -39,10 +39,9 @@ namespace WeaponCore
             if (depletable) t.BaseHealthPool -= healthPool;
         }
 
-        private void UpdateBeam(HitEntity hitEnt, Trajectile t)
+        private void UpdateEffect(HitEntity hitEnt, Trajectile t)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
-            Log.Line("update beam");
             if (grid == null || grid.MarkedForClose ) return;
             var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
             Dictionary<AreaDamage.AreaEffectType, GridEffect> effects;
@@ -74,6 +73,7 @@ namespace WeaponCore
                 else
                 {
                     gridEffect = GridEffectPool.Get();
+                    gridEffect.System = t.System;
                     gridEffect.Damage = t.AreaEffectDamage;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
@@ -86,7 +86,8 @@ namespace WeaponCore
             t.BaseDamagePool = 0;
         }
 
-        internal static void GetCubesForEffect(MyCubeGrid grid, Vector3D hitPos, AreaDamage.AreaEffectType effectType, List<MyCubeBlock> cubes)
+        private readonly List<IMySlimBlock> _tmpEffectCubes = new List<IMySlimBlock>();
+        internal static void GetCubesForEffect(MyCubeGrid grid, Vector3D hitPos, AreaDamage.AreaEffectType effectType, List<IMySlimBlock> cubes)
         {
             foreach (var cube in grid.GetFatBlocks())
             {
@@ -112,7 +113,7 @@ namespace WeaponCore
                         break;
                     default: continue;
                 }
-                cubes.Add(cube);
+                cubes.Add(cube.SlimBlock);
             }
 
             cubes.Sort((a, b) =>
@@ -343,12 +344,14 @@ namespace WeaponCore
     public class GridEffect
     {
         public Vector3D HitPos;
+        public WeaponSystem System;
         public long AttackerId;
         public float Damage;
         public int Hits;
 
         public void Clean()
         {
+            System = null;
             HitPos = Vector3D.Zero;
             AttackerId = 0;
             Damage = 0;

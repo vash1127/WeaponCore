@@ -24,10 +24,11 @@ namespace WeaponCore
             {
                 var t = p.T;
                 var maxObjects = t.System.MaxObjectsHit;
+                var phantom = t.System.Values.Ammo.BaseDamage <= 0;
                 for (int i = 0; i < t.HitList.Count; i++)
                 {
                     var hitEnt = t.HitList[i];
-                    if (t.BaseDamagePool <= 0 || t.ObjectsHit >= maxObjects)
+                    if (t.ObjectsHit >= maxObjects || t.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect))
                     {
                         p.State = Projectile.ProjectileState.Depleted;
                         Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
@@ -56,8 +57,8 @@ namespace WeaponCore
                         case HitEntity.Type.Field:
                             UpdateField(hitEnt, t);
                             continue;
-                        case HitEntity.Type.BeamEffect:
-                            UpdateBeam(hitEnt, t);
+                        case HitEntity.Type.Effect:
+                            UpdateEffect(hitEnt, t);
                             continue;
                     }
                     Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);

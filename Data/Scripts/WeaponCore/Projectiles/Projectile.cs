@@ -701,42 +701,42 @@ namespace WeaponCore.Projectiles
                 case AreaEffectType.JumpNullField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"jumpNullField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
+                        //Log.Line($"jumpNullField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.AnchorField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"jumpAnchorFieldNullField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
+                        //Log.Line($"jumpAnchorFieldNullField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.EnergySinkField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"EnergySinkField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
+                        //Log.Line($"EnergySinkField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.EmpField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"EmpField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
+                        //Log.Line($"EmpField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.OffenseField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"OffenseField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
+                        //Log.Line($"OffenseField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.NavField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"NavField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
+                        //Log.Line($"NavField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
 
@@ -744,7 +744,7 @@ namespace WeaponCore.Projectiles
                 case AreaEffectType.DotField:
                     if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
                     {
-                        Log.Line($"DotField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
+                        //Log.Line($"DotField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;

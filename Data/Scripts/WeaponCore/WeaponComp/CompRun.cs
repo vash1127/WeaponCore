@@ -45,7 +45,6 @@ namespace WeaponCore.Support
                         Session.Instance.GridTargetingAIs.TryAdd(MyGrid, gridAi);
                     }
                     Ai = gridAi;
-                    if (Ai.MyGrid != MyCube.CubeGrid) Log.Line("grid mismatch");
                     MyGrid = MyCube.CubeGrid;
                     PowerInit();
                     RegisterEvents();
@@ -67,7 +66,6 @@ namespace WeaponCore.Support
             Platform = new MyWeaponPlatform(this);
             if (!Platform.Inited)
             {
-                Log.Line("removing");
                 WeaponComponent removed;
                 Ai.WeaponBase.TryRemove(MyCube, out removed);
                 return;

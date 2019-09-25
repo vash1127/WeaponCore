@@ -159,7 +159,7 @@ namespace WeaponCore.Support
             Stale,
             Projectile,
             Field,
-            BeamEffect,
+            Effect,
         }
 
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();
