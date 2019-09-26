@@ -81,6 +81,8 @@ namespace WeaponCore.Support
         public readonly bool VoxelDamage;
         public readonly bool OffsetEffect;
         public readonly bool Trail;
+        public readonly bool IsMine;
+        public readonly bool IsField;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -135,6 +137,9 @@ namespace WeaponCore.Support
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);
+
+            IsMine = Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
+            IsField = Values.Ammo.Trajectory.FieldTime > 0;
 
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
@@ -293,7 +298,7 @@ namespace WeaponCore.Support
 
         private void Models(out int primeModelId, out int triggerModelId)
         {
-            if (Values.Ammo.AreaEffect.AreaEffect > (AreaDamage.AreaEffectType)3) triggerModelId = 0;
+            if (Values.Ammo.AreaEffect.AreaEffect > (AreaDamage.AreaEffectType)3 && IsField) triggerModelId = 0;
             else triggerModelId  = -1;
             if (Values.Graphics.ModelName != string.Empty)
             {

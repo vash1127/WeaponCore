@@ -125,7 +125,6 @@ namespace WeaponCore.Projectiles
                     spawnShrapnel[j].Spawn(i);
                 spawnShrapnel.Clear();
             }
-
             foreach (var p in pool.Active)
             {
                 p.Age++;
@@ -156,7 +155,6 @@ namespace WeaponCore.Projectiles
                         p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
                         break;
                 }
-
                 if (p.AccelLength > 0)
                 {
                     if (p.SmartsOn) p.RunSmart();
@@ -164,7 +162,7 @@ namespace WeaponCore.Projectiles
                     {
                         var accel = true;
                         Vector3D newVel;
-                        if (p.IdleTime > 0)
+                        if (p.FieldTime > 0)
                         {
                             var distToMax = p.MaxTrajectory - p.T.DistanceTraveled;
 
@@ -214,12 +212,12 @@ namespace WeaponCore.Projectiles
                 {
                     var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
 
-                    if (p.PrimeModelId != -1)
+                    if (p.T.System.PrimeModelId != -1)
                         p.T.PrimeMatrix = matrix;
-                    if (p.TriggerModelId != -1 && p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize)
+                    if (p.T.System.TriggerModelId != -1 && p.T.TriggerGrowthSteps < p.T.System.AreaEffectSize)
                         p.T.TriggerMatrix = matrix;
 
-                    if (p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle && p.PrimeModelId != -1)
+                    if (p.EnableAv && p.AmmoEffect != null && p.T.System.AmmoParticle && p.T.System.PrimeModelId != -1)
                     {
                         var offVec = p.Position + Vector3D.Rotate(p.T.System.Values.Graphics.Particles.Ammo.Offset, p.T.PrimeMatrix);
                         p.AmmoEffect.WorldMatrix = p.T.PrimeMatrix;
@@ -236,10 +234,10 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr)
                     {
-                        if (p.IdleTime > 0) 
+                        if (p.FieldTime > 0) 
                         {
-                            p.IdleTime--;
-                            if (p.IsMine && !p.MineSeeking && !p.MineActivated)
+                            p.FieldTime--;
+                            if (p.T.System.IsMine && !p.MineSeeking && !p.MineActivated)
                             {
                                 p.T.Cloaked = p.T.System.Values.Ammo.Trajectory.Mines.Cloak;
                                 p.MineSeeking = true;
@@ -250,7 +248,6 @@ namespace WeaponCore.Projectiles
 
                 if (p.Ewar)
                     p.RunEwar();
-
                 p.Active = true;
             }
         }
@@ -264,7 +261,7 @@ namespace WeaponCore.Projectiles
                 if (!p.Active) continue;
                 var beam = new LineD(p.LastPosition, p.Position);
 
-                if ((p.IdleTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
+                if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
                     p.T.End = true;
                     var dInfo = p.T.System.Values.Ammo.AreaEffect.Detonation;
@@ -327,7 +324,6 @@ namespace WeaponCore.Projectiles
                         continue;
                 }
                 if (p.T.End) p.ProjectileClose();
-
 
                 p.Miss = true;
                 p.T.HitList.Clear();

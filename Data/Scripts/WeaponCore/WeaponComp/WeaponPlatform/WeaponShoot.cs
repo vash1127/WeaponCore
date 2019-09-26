@@ -207,7 +207,6 @@ namespace WeaponCore.Platform
                                 }
                                 p.T.PrimeEntity = ent;
                             }
-
                             if (System.TriggerModelId != -1)
                             {
                                 MyEntity ent;
@@ -216,7 +215,6 @@ namespace WeaponCore.Platform
                                 ent.Render.RemoveRenderObjects();
                                 p.T.TriggerEntity = ent;
                             }
-
                             if (targetable)
                             {
                                 for (int t = 0; t < targetAiCnt; t++)

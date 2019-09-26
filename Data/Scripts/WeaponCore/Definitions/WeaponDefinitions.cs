@@ -261,7 +261,7 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal float DesiredSpeed;
         [ProtoMember(4)] internal float TargetLossDegree;
         [ProtoMember(5)] internal int TargetLossTime;
-        [ProtoMember(6)] internal int RestTime;
+        [ProtoMember(6)] internal int FieldTime;
         [ProtoMember(7)] internal Randomize SpeedVariance;
         [ProtoMember(8)] internal Randomize RangeVariance;
         [ProtoMember(9)] internal GuidanceType Guidance;

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage;
 using VRage.Collections;
@@ -43,6 +44,7 @@ namespace WeaponCore.Support
         internal Vector3D OriginUp;
         internal Vector3D Direction;
         internal Vector3D LineStart;
+        internal Vector3D ClosestPointOnLine;
         internal Vector4 Color;
         internal int WeaponId;
         internal int MuzzleId;
@@ -53,6 +55,8 @@ namespace WeaponCore.Support
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
         internal double ProjectileDisplacement;
+        internal float DistanceToLine;
+        internal float ScaleFov;
         internal float LineWidth;
         internal float BaseDamagePool;
         internal float AreaEffectDamage;
@@ -83,6 +87,7 @@ namespace WeaponCore.Support
             }
 
             var width = System.Values.Graphics.Line.Tracer.Width;
+
             if (System.LineWidthVariance)
             {
                 var wv = System.Values.Graphics.Line.WidthVariance;
@@ -90,7 +95,13 @@ namespace WeaponCore.Support
                 width += randomValue;
             }
 
-            LineWidth = width;
+            var target = Position + (-Direction * Length);
+
+            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Session.Instance.CameraPos);
+            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Session.Instance.Camera.WorldMatrix.Translation);
+            ScaleFov = (float)Math.Tan(Session.Instance.Camera.FovWithZoom * 0.5);
+
+            LineWidth = Math.Max(width, width * ScaleFov * (DistanceToLine / 100));
             Color = color;
         }
 

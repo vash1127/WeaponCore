@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
@@ -49,13 +50,16 @@ namespace WeaponCore
                 }
 
                 var thickness = t.LineWidth;
-                var hitPos = t.Position + (-t.Direction * t.Length);
-                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref t.Position, ref hitPos, ref CameraPos)));
-                if (distanceFromPointSqr < 100) thickness *= 0.25f;
-                else if (distanceFromPointSqr < 400) thickness *= 0.5f;
-                else if (distanceFromPointSqr > 160000) thickness *= 8f;
-                else if (distanceFromPointSqr > 40000) thickness *= 4f;
-                else if (distanceFromPointSqr > 10000) thickness *= 2f;
+                /*
+                const double MAX_VIEW_DIST = 3000;
+                const double FADE_VIEW_DIST = 2000;
+
+                float alpha = 1f;
+                if (distance > FADE_VIEW_DIST)
+                    alpha = 1f - (float)((distance - FADE_VIEW_DIST) / (MAX_VIEW_DIST - FADE_VIEW_DIST));
+
+                var color = Color.Red * alpha;
+                */
                 var color = t.Color;
                 if (t.System.IsBeamWeapon)
                 {
@@ -150,11 +154,16 @@ namespace WeaponCore
                                 effect.DistanceMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
                                 effect.DurationMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
                                 effect.UserColorMultiplier = t.System.Values.Graphics.Particles.Hit.Color;
-                                const int scaler = 1;
                                 effect.Loop = t.System.Values.Graphics.Particles.Hit.Extras.Loop;
-
-                                effect.UserRadiusMultiplier = t.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
-                                effect.UserEmitterScale = 1 * scaler;
+                                effect.UserRadiusMultiplier = t.System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
+                                float scale;
+                                var distSqr = Vector3D.DistanceSquared(hit, CameraPos);
+                                if (distSqr < 10000) scale = 1;
+                                else if (distSqr < 250000) scale = 0.75f;
+                                else if (distSqr < 1000000) scale = 0.65f;
+                                else if (distSqr < 4000000) scale = 0.5f;
+                                else scale = 0.3f;
+                                effect.UserEmitterScale = scale;
                             }
                             else if (effect.IsEmittingStopped)
                                 effect.Play();

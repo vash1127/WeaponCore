@@ -65,7 +65,6 @@ namespace WeaponCore
                 if (_effectedCubes.Count > 0) ApplyEffect();
                 if (Tick60)
                 {
-                    DsUtil.Start("");
                     foreach (var ge in _gridEffects)
                     {
                         foreach (var v in ge.Value)
@@ -80,7 +79,6 @@ namespace WeaponCore
                         GridEffectsPool.Return(ge.Value);
                     }
                     _gridEffects.Clear();
-                    DsUtil.Complete(true);
                 }
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())

@@ -64,11 +64,9 @@ namespace WeaponCore.Projectiles
         internal int PoolId;
         internal int Age;
         internal int ChaseAge;
-        internal int IdleTime;
+        internal int FieldTime;
         internal int MaxChaseAge;
         internal int EndStep;
-        internal int PrimeModelId;
-        internal int TriggerModelId;
         internal int ZombieLifeTime;
         internal int LastOffsetTime;
         internal int PruningProxyId = -1;
@@ -95,7 +93,6 @@ namespace WeaponCore.Projectiles
         internal bool EwarActive;
         internal bool EwarEffect;
         internal bool SelfDamage;
-        internal bool IsMine;
         internal bool MineSeeking;
         internal bool MineActivated;
         internal bool MineTriggered;
@@ -160,7 +157,6 @@ namespace WeaponCore.Projectiles
             T.DistanceTraveled = 0;
 
             Guidance = !(T.System.Values.Ammo.Shrapnel.NoGuidance && T.IsShrapnel) ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
-            IsMine = Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None && Guidance != AmmoTrajectory.GuidanceType.TravelTo && !T.System.IsBeamWeapon && T.EnableGuidance;
             if (DynamicGuidance) DynTrees.RegisterProjectile(this);
 
@@ -279,9 +275,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            PrimeModelId = T.System.PrimeModelId;
-            TriggerModelId = T.System.TriggerModelId;
-            if (PrimeModelId == -1 && TriggerModelId == -1 || T.System.IsBeamWeapon) ModelState = EntityState.None;
+            if (T.System.PrimeModelId == -1 && T.System.TriggerModelId == -1) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)
@@ -290,8 +284,8 @@ namespace WeaponCore.Projectiles
 
                     double triggerModelSize = 0;
                     double primeModelSize = 0;
-                    if (TriggerModelId != -1) triggerModelSize = T.TriggerEntity.PositionComp.WorldVolume.Radius;
-                    if (PrimeModelId != -1) primeModelSize = T.PrimeEntity.PositionComp.WorldVolume.Radius;
+                    if (T.System.TriggerModelId != -1) triggerModelSize = T.TriggerEntity.PositionComp.WorldVolume.Radius;
+                    if (T.System.PrimeModelId != -1) primeModelSize = T.PrimeEntity.PositionComp.WorldVolume.Radius;
                     var largestSize = triggerModelSize > primeModelSize ? triggerModelSize : primeModelSize;
 
                     ModelSphereCurrent.Radius = largestSize * 2;
@@ -319,7 +313,7 @@ namespace WeaponCore.Projectiles
 
             TravelMagnitude = Velocity * StepConst;
 
-            IdleTime = T.System.Values.Ammo.Trajectory.RestTime;
+            FieldTime = T.System.Values.Ammo.Trajectory.FieldTime;
 
             State = !T.System.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
 
@@ -381,12 +375,11 @@ namespace WeaponCore.Projectiles
             AmmoSound = true;
         }
 
-
         internal bool Intersected(Projectile p, List<Trajectile> drawList, HitEntity hitEntity)
         {
             if (hitEntity?.HitPos == null) return false;
 
-            if (p.EnableAv && (p.DrawLine || p.PrimeModelId != -1 || p.TriggerModelId != -1))
+            if (p.EnableAv && (p.DrawLine || p.T.System.PrimeModelId != -1 || p.T.System.TriggerModelId != -1))
             {
                 var hitPos = hitEntity.HitPos.Value;
                 p.TestSphere.Center = hitPos;
@@ -570,11 +563,11 @@ namespace WeaponCore.Projectiles
             if (Ewar)
             {
                 T.Triggered = true;
-                if (startTimer) IdleTime = T.System.Values.Ammo.Trajectory.Mines.FieldTime;
+                if (startTimer) FieldTime = T.System.Values.Ammo.Trajectory.Mines.FieldTime;
             }
-            else if (startTimer) IdleTime = 0;
+            else if (startTimer) FieldTime = 0;
             MineTriggered = true;
-            Log.Line($"[Mine] Ewar:{Ewar} - Activated:{MineActivated} - active:{EwarActive} - Triggered:{T.Triggered} - IdleTime:{IdleTime}");
+            Log.Line($"[Mine] Ewar:{Ewar} - Activated:{MineActivated} - active:{EwarActive} - Triggered:{T.Triggered} - IdleTime:{FieldTime}");
         }
 
         internal void RunSmart()
@@ -586,7 +579,7 @@ namespace WeaponCore.Projectiles
                 var newChase = (giveUpChase || PickTarget);
 
                 var validTarget = T.Target.IsProjectile || T.Target.Entity != null && !T.Target.Entity.MarkedForClose;
-                if (newChase && EndChase() || validTarget || !IsMine && ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(this))
+                if (newChase && EndChase() || validTarget || !T.System.IsMine && ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(this))
                 {
                     if (ZombieLifeTime > 0) UpdateZombie(true);
                     var targetPos = Vector3D.Zero;
@@ -646,7 +639,7 @@ namespace WeaponCore.Projectiles
 
         internal void RunEwar()
         {
-            if (VelocityLengthSqr <= 0 && !T.Triggered && !IsMine)
+            if (VelocityLengthSqr <= 0 && !T.Triggered && !T.System.IsMine)
                 T.Triggered = true;
 
             if (T.Triggered)
@@ -872,7 +865,6 @@ namespace WeaponCore.Projectiles
             DisposeHitEffect(true);
         }
 
-
         internal void ProjectileClose()
         {
             if (!T.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
@@ -884,7 +876,7 @@ namespace WeaponCore.Projectiles
                 Watchers.Clear();
             }
 
-            if (!EnableAv && PrimeModelId == -1 && TriggerModelId == -1)
+            if (!EnableAv && T.System.PrimeModelId == -1 && T.System.TriggerModelId == -1)
             {
                 State = ProjectileState.Dead;
                 Manager.CleanUp[PoolId].Add(this);
@@ -913,8 +905,8 @@ namespace WeaponCore.Projectiles
             T.TriggerMatrix = MatrixD.Identity;
             T.Complete(null, DrawState.Last);
             Manager.DrawProjectiles[PoolId].Add(T);
-            if (PrimeModelId != -1) Manager.EntityPool[PoolId][PrimeModelId].MarkForDeallocate(T.PrimeEntity);
-            if (TriggerModelId != -1) Manager.EntityPool[PoolId][TriggerModelId].MarkForDeallocate(T.TriggerEntity);
+            if (T.System.PrimeModelId != -1) Manager.EntityPool[PoolId][T.System.PrimeModelId].MarkForDeallocate(T.PrimeEntity);
+            if (T.System.TriggerModelId != -1) Manager.EntityPool[PoolId][T.System.TriggerModelId].MarkForDeallocate(T.TriggerEntity);
             ModelState = EntityState.None;
             return true;
         }
