@@ -100,10 +100,6 @@ namespace WeaponCore
         {
             try
             {
-                var playerSphere = MyAPIGateway.Session.Player.Character.WorldVolume;
-                playerSphere.Radius = 1;
-                var test = new List<Projectile>();
-                DynTrees.GetAllProjectilesInSphere(ref playerSphere, test);
                 if (Placer != null)
                 {
                     if (!Placer.Visible) Placer = null;
@@ -236,11 +232,11 @@ namespace WeaponCore
                 SoundDefinitions = Static.GetSoundDefinitions();
 
                 var weapons = new Weapons();
-                var WeaponDefinitions = weapons.ReturnDefs();
-                for (int i = 0; i < WeaponDefinitions.Length; i++)
+                var weaponDefinitions = weapons.ReturnDefs();
+                for (int i = 0; i < weaponDefinitions.Length; i++)
                 {
-                    WeaponDefinitions[i].ModPath = ModContext.ModPath;
-                    _weaponDefinitions.Add(WeaponDefinitions[i]);
+                    weaponDefinitions[i].ModPath = ModContext.ModPath;
+                    _weaponDefinitions.Add(weaponDefinitions[i]);
                 }
 
                 ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm");

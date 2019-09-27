@@ -240,7 +240,7 @@ namespace WeaponCore.Platform
                     _muzzlesToFire.Add(MuzzleIDToName[current]);
 
                     if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
-                        Session.Instance.updateWeaponHeat(MyTuple.Create(this, 0, true));
+                        Session.Instance.UpdateWeaponHeat(MyTuple.Create(this, 0, true));
 
                     Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;

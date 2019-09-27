@@ -416,91 +416,92 @@ namespace WeaponCore
         }
 
       
-        internal void updateWeaponHeat(object heatTracker)
+        internal void UpdateWeaponHeat(object heatTracker)
         {
 
             var ht = heatTracker as MyTuple<Weapon, int, bool>?;
-            var w = ht.Value.Item1;
-
-            //todo client side only
-            var currentHeat = w.Comp.State.Value.Weapons[w.WeaponId].Heat;
-            currentHeat = currentHeat - ((float)w.HsRate / 3) > 0 ? currentHeat - ((float)w.HsRate / 3) : 0;
-            var heatPercent = currentHeat / w.System.MaxHeat;
-
-            var set = currentHeat - w.LastHeat > 0.001 || (currentHeat - w.LastHeat) * -1 > 0.001;
-
-            if (set && heatPercent > .33)
+            if (ht != null)
             {
-                if (heatPercent > 1) heatPercent = 1;
+                var w = ht.Value.Item1;
 
-                heatPercent -= .33f;
+                //todo client side only
+                var currentHeat = w.Comp.State.Value.Weapons[w.WeaponId].Heat;
+                currentHeat = currentHeat - ((float)w.HsRate / 3) > 0 ? currentHeat - ((float)w.HsRate / 3) : 0;
+                var heatPercent = currentHeat / w.System.MaxHeat;
 
-                var intensity = .7f * heatPercent;
+                var set = currentHeat - w.LastHeat > 0.001 || (currentHeat - w.LastHeat) * -1 > 0.001;
 
-                var color = HeatEmissives[(int)(heatPercent * 100)];
-
-                w.BarrelPart.SetEmissiveParts("Heating", color, intensity);
-            }
-            else if (set)
-                w.BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
-
-            w.LastHeat = currentHeat;
-            //end client side code
-
-
-            var degradeAmt = 0f;
-            if (set && w.System.DegRof && w.Comp.State.Value.Weapons[w.WeaponId].Heat >= (w.System.MaxHeat * .8))
-            {
-                var systemRate = w.System.RateOfFire * w.Comp.Set.Value.ROFModifier;
-                var newRate = (int)MathHelper.Lerp(systemRate, systemRate/4, w.Comp.State.Value.Weapons[w.WeaponId].Heat/ w.System.MaxHeat);
-
-                if (newRate < 1)
-                    newRate = 1;
-
-                w.RateOfFire = newRate;
-                w.TicksPerShot = (uint)(3600f / w.RateOfFire);
-                w.UpdateBarrelRotation();
-                w.CurrentlyDegrading = true;
-            }
-            else if (set && w.CurrentlyDegrading)
-            {
-                w.CurrentlyDegrading = false;
-                w.RateOfFire = (int)(w.System.RateOfFire * w.Comp.Set.Value.ROFModifier);
-                w.TicksPerShot = (uint)(3600f / w.RateOfFire);
-                w.UpdateBarrelRotation();
-            }
-
-            bool resetFakeTick = false;
-
-            if (ht.Value.Item2 * 30 == 60)
-            {
-                var weaponValue = w.Comp.State.Value.Weapons[w.WeaponId];
-                w.Comp.CurrentHeat = w.Comp.CurrentHeat >= w.HsRate ? w.Comp.CurrentHeat - w.HsRate : 0;
-                weaponValue.Heat = weaponValue.Heat >= w.HsRate ? weaponValue.Heat - w.HsRate : 0;
-
-                w.Comp.TerminalRefresh();
-                if (w.Comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
+                if (set && heatPercent > .33)
                 {
-                    w.EventTriggerStateChanged(Weapon.EventTriggers.Overheated, false);
-                    w.Comp.Overheated = false;
+                    if (heatPercent > 1) heatPercent = 1;
+
+                    heatPercent -= .33f;
+
+                    var intensity = .7f * heatPercent;
+
+                    var color = HeatEmissives[(int)(heatPercent * 100)];
+
+                    w.BarrelPart.SetEmissiveParts("Heating", color, intensity);
+                }
+                else if (set)
+                    w.BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
+
+                w.LastHeat = currentHeat;
+                //end client side code
+
+
+                if (set && w.System.DegRof && w.Comp.State.Value.Weapons[w.WeaponId].Heat >= (w.System.MaxHeat * .8))
+                {
+                    var systemRate = w.System.RateOfFire * w.Comp.Set.Value.ROFModifier;
+                    var newRate = (int)MathHelper.Lerp(systemRate, systemRate/4, w.Comp.State.Value.Weapons[w.WeaponId].Heat/ w.System.MaxHeat);
+
+                    if (newRate < 1)
+                        newRate = 1;
+
+                    w.RateOfFire = newRate;
+                    w.TicksPerShot = (uint)(3600f / w.RateOfFire);
+                    w.UpdateBarrelRotation();
+                    w.CurrentlyDegrading = true;
+                }
+                else if (set && w.CurrentlyDegrading)
+                {
+                    w.CurrentlyDegrading = false;
+                    w.RateOfFire = (int)(w.System.RateOfFire * w.Comp.Set.Value.ROFModifier);
+                    w.TicksPerShot = (uint)(3600f / w.RateOfFire);
+                    w.UpdateBarrelRotation();
                 }
 
-                resetFakeTick = true;
+                var resetFakeTick = false;
+
+                if (ht.Value.Item2 * 30 == 60)
+                {
+                    var weaponValue = w.Comp.State.Value.Weapons[w.WeaponId];
+                    w.Comp.CurrentHeat = w.Comp.CurrentHeat >= w.HsRate ? w.Comp.CurrentHeat - w.HsRate : 0;
+                    weaponValue.Heat = weaponValue.Heat >= w.HsRate ? weaponValue.Heat - w.HsRate : 0;
+
+                    w.Comp.TerminalRefresh();
+                    if (w.Comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
+                    {
+                        w.EventTriggerStateChanged(Weapon.EventTriggers.Overheated, false);
+                        w.Comp.Overheated = false;
+                    }
+
+                    resetFakeTick = true;
+                }
+
+
+
+                if (w.Comp.State.Value.Weapons[w.WeaponId].Heat > 0 || ht.Value.Item3)
+                {
+                    int fakeTick;
+                    if (resetFakeTick)
+                        fakeTick = 0;
+                    else
+                        fakeTick = ht.Value.Item2 + 1;
+
+                    _futureEvents.Schedule(UpdateWeaponHeat, MyTuple.Create(w, fakeTick, false), 20);
+                }
             }
-
-
-
-            if (w.Comp.State.Value.Weapons[w.WeaponId].Heat > 0 || ht.Value.Item3)
-            {
-                int FakeTick;
-                if (resetFakeTick)
-                    FakeTick = 0;
-                else
-                    FakeTick = ht.Value.Item2 + 1;
-
-                _futureEvents.Schedule(updateWeaponHeat, MyTuple.Create(w,FakeTick, false), 20);
-            }
-                
         }
 
         internal void FixPrefabs()

@@ -245,7 +245,6 @@ namespace WeaponCore
                 var functBlock = blockInfo.FunctBlock;
                 var health = blockInfo.Health;
                 var cube = blockInfo.CubeBlock;
-
                 if (cube == null || cube.MarkedForClose)
                 {
                     _effectPurge.Enqueue(cubeid);
