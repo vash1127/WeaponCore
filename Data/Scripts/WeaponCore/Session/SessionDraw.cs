@@ -156,13 +156,7 @@ namespace WeaponCore
                                 effect.UserColorMultiplier = t.System.Values.Graphics.Particles.Hit.Color;
                                 effect.Loop = t.System.Values.Graphics.Particles.Hit.Extras.Loop;
                                 effect.UserRadiusMultiplier = t.System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
-                                float scale;
-                                var distSqr = Vector3D.DistanceSquared(hit, CameraPos);
-                                if (distSqr < 10000) scale = 1;
-                                else if (distSqr < 250000) scale = 0.75f;
-                                else if (distSqr < 1000000) scale = 0.65f;
-                                else if (distSqr < 4000000) scale = 0.5f;
-                                else scale = 0.3f;
+                                var scale = MathHelper.Lerp(1, 0, t.DistanceToLine / t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
                                 effect.UserEmitterScale = scale;
                             }
                             else if (effect.IsEmittingStopped)
