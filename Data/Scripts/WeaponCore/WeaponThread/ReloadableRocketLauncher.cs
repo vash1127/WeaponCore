@@ -20,7 +20,8 @@ namespace WeaponThread
                 {
                     MountPoint(subTypeId: "SmallRocketLauncherReload", aimPartId: "MissileTurretBarrels", muzzlePartId: "None"),
                 },
-                Barrels = Names("barrel_001", "barrel_002", "barrel_003", "barrel_004")
+                Barrels = Names("barrel_001", "barrel_002", "barrel_003", "barrel_004"),
+                EnableSubPartPhysics = false
             },
             HardPoint = new HardPointDefinition
             {

@@ -20,7 +20,8 @@ namespace WeaponThread
                 {
                     MountPoint(subTypeId: "LargeMissileTurret", aimPartId: "MissileTurretBarrels", muzzlePartId:"MissileTurretBarrels"),
                 },
-                Barrels = Names("muzzle_missile_001", "muzzle_missile_002", "muzzle_missile_003", "muzzle_missile_004", "muzzle_missile_005", "muzzle_missile_006")
+                Barrels = Names("muzzle_missile_001", "muzzle_missile_002", "muzzle_missile_003", "muzzle_missile_004", "muzzle_missile_005", "muzzle_missile_006"),
+                EnableSubPartPhysics = false
             },
             HardPoint = new HardPointDefinition
             {
