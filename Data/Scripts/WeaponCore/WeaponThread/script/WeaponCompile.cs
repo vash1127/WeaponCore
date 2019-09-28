@@ -198,12 +198,12 @@ namespace WeaponThread
         {
             return new WeaponEmissive()
             {
-                emissiveName = EmissiveName,
-                colors = Colors,
-                cycleEmissivesParts = CycleEmissiveParts,
-                leavePreviousOn = LeavePreviousOn,
-                emissivePartNames = EmissivePartNames,
-                intensityRange = new []{IntensityFrom,IntensityTo}
+                EmissiveName = EmissiveName,
+                Colors = Colors,
+                CycleEmissivesParts = CycleEmissiveParts,
+                LeavePreviousOn = LeavePreviousOn,
+                EmissivePartNames = EmissivePartNames,
+                IntensityRange = new []{IntensityFrom,IntensityTo}
             };
         }
 

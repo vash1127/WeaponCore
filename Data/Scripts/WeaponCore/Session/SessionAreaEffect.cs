@@ -43,8 +43,9 @@ namespace WeaponCore
         {
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose ) return;
-            var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
             Dictionary<AreaDamage.AreaEffectType, GridEffect> effects;
+            var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
+
             var found = false;
             if (_gridEffects.TryGetValue(grid, out effects))
             {
@@ -53,6 +54,7 @@ namespace WeaponCore
                 {
                     found = true;
                     gridEffect.Damage += t.AreaEffectDamage;
+                    gridEffect.Ai = t.Ai;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
                     if (hitEnt.HitPos != null) gridEffect.HitPos = hitEnt.HitPos.Value / gridEffect.Hits;
@@ -66,6 +68,7 @@ namespace WeaponCore
                 if (effects.TryGetValue(t.System.Values.Ammo.AreaEffect.AreaEffect, out gridEffect))
                 {
                     gridEffect.Damage += t.AreaEffectDamage;
+                    gridEffect.Ai = t.Ai;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
                     if (hitEnt.HitPos != null) gridEffect.HitPos += hitEnt.HitPos.Value / gridEffect.Hits;
@@ -75,6 +78,7 @@ namespace WeaponCore
                     gridEffect = GridEffectPool.Get();
                     gridEffect.System = t.System;
                     gridEffect.Damage = t.AreaEffectDamage;
+                    gridEffect.Ai = t.Ai;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
                     if (hitEnt.HitPos != null) gridEffect.HitPos = hitEnt.HitPos.Value;
@@ -86,43 +90,6 @@ namespace WeaponCore
             t.BaseDamagePool = 0;
         }
 
-        private readonly List<IMySlimBlock> _tmpEffectCubes = new List<IMySlimBlock>();
-        internal static void GetCubesForEffect(MyCubeGrid grid, Vector3D hitPos, AreaDamage.AreaEffectType effectType, List<IMySlimBlock> cubes)
-        {
-            foreach (var cube in grid.GetFatBlocks())
-            {
-                switch (effectType)
-                {
-                    case JumpNullField:
-                        if (!(cube is MyJumpDrive)) continue;
-                        break;
-                    case EnergySinkField:
-                        if (!(cube is IMyPowerProducer)) continue;
-                        break;
-                    case AnchorField:
-                        if (!(cube is MyThrust)) continue;
-                        break;
-                    case NavField:
-                        if (!(cube is MyGyro)) continue;
-                        break;
-                    case OffenseField:
-                        if (!(cube is IMyGunBaseUser)) continue;
-                        break;
-                    case EmpField:
-                    case DotField:
-                        break;
-                    default: continue;
-                }
-                cubes.Add(cube.SlimBlock);
-            }
-
-            cubes.Sort((a, b) =>
-            {
-                var aPos = grid.GridIntegerToWorld(a.Position);
-                var bPos = grid.GridIntegerToWorld(b.Position);
-                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
-            });
-        }
 
         private void ComputeEffects(WeaponSystem system, MyCubeGrid grid, float damagePool, float healthPool, long attackerId, List<IMySlimBlock> blocks)
         {
@@ -132,6 +99,7 @@ namespace WeaponCore
             var stack = eWarInfo.StackDuration;
             var nextTick = Tick + 1;
             var fieldType = system.Values.Ammo.AreaEffect.AreaEffect;
+
             foreach (var block in blocks)
             {
                 var cube = block.FatBlock as MyCubeBlock;
@@ -327,6 +295,78 @@ namespace WeaponCore
         {
             ((IMyFunctionalBlock)myTerminalBlock).Enabled = false;
         }
+
+
+        private readonly List<IMySlimBlock> _tmpEffectCubes = new List<IMySlimBlock>();
+        internal static void GetCubesForEffect(GridAi ai, MyCubeGrid grid, Vector3D hitPos, AreaDamage.AreaEffectType effectType, List<IMySlimBlock> cubes)
+        {
+            var fats = QueryBlockCaches(ai, grid, effectType);
+            if (fats == null) return;
+
+            for (int i = 0; i < fats.Count; i++) cubes.Add(fats[i].SlimBlock);
+
+            cubes.Sort((a, b) =>
+            {
+                var aPos = grid.GridIntegerToWorld(a.Position);
+                var bPos = grid.GridIntegerToWorld(b.Position);
+                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
+            });
+        }
+
+        private static List<MyCubeBlock> QueryBlockCaches(GridAi ai, MyCubeGrid targetGrid, AreaDamage.AreaEffectType effectType)
+        {
+            GridAi.TargetInfo targetInfo;
+            List<MyCubeBlock> cubes;
+
+            switch (effectType)
+            {
+                case JumpNullField:
+                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
+                    {
+                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Jumping, out cubes))
+                            return cubes;
+                    }
+                    break;
+                case EnergySinkField:
+                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
+                    {
+                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Power, out cubes))
+                            return cubes;
+                    }
+                    break;
+                case AnchorField:
+                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
+                    {
+                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Thrust, out cubes))
+                            return cubes;
+                    }
+                    break;
+                case NavField:
+                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
+                    {
+                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Steering, out cubes))
+                            return cubes;
+                    }
+                    break;
+                case OffenseField:
+                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
+                    {
+                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Weapons, out cubes))
+                            return cubes;
+                    }
+                    break;
+                case EmpField:
+                case DotField:
+                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
+                    {
+                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Any, out cubes))
+                            return cubes;
+                    }
+                    break;
+            }
+
+            return null;
+        }
     }
 
     public struct BlockState
@@ -344,6 +384,7 @@ namespace WeaponCore
     {
         public Vector3D HitPos;
         public WeaponSystem System;
+        public GridAi Ai;
         public long AttackerId;
         public float Damage;
         public int Hits;
@@ -352,6 +393,7 @@ namespace WeaponCore
         {
             System = null;
             HitPos = Vector3D.Zero;
+            Ai = null;
             AttackerId = 0;
             Damage = 0;
             Hits = 0;

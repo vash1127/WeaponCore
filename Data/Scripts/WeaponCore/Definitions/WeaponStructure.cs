@@ -160,7 +160,7 @@ namespace WeaponCore.Support
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
-            DegRof = values.HardPoint.Loading.DegradeROF;
+            DegRof = values.HardPoint.Loading.DegradeRof;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             WepCooldown = values.HardPoint.Loading.Cooldown;
             BarrelsPerShot = values.HardPoint.Loading.BarrelsPerShot;

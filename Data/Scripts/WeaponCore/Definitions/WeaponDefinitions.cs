@@ -20,6 +20,15 @@ namespace WeaponCore.Support
         [ProtoMember(9)] internal AnimationDefinition Animations;
     }
 
+    /*
+    [ProtoContract]
+    public struct UpgradeModuleDefinition
+    {
+
+        [ProtoMember(1)] internal HardPointDefinitionUpgrade HardPointMods;
+        [ProtoMember(2)] internal AmmoDefinition AmmoMods;
+    }*/
+
 
     [ProtoContract]
     public struct ModelAssignments
@@ -64,6 +73,25 @@ namespace WeaponCore.Support
         [ProtoMember(14)] internal UiDefinition Ui;
     }
 
+    /*
+    [ProtoContract]
+    public struct HardPointDefinitionUpgrade
+    {
+        public enum Prediction
+        {
+            Off,
+            Basic,
+            Accurate,
+            Advanced,
+        }
+
+        [ProtoMember(1)] internal float DeviateShotAngle;
+        [ProtoMember(2)] internal float EnergyCost;
+        [ProtoMember(3)] internal double AimingTolerance;
+        [ProtoMember(4)] internal Prediction AimLeadingPrediction;
+        [ProtoMember(5)] internal AmmoLoading Loading;
+    }*/
+
     [ProtoContract]
     public struct AimControlDefinition
     {
@@ -75,6 +103,14 @@ namespace WeaponCore.Support
         [ProtoMember(6)] internal Vector3D Offset;
         [ProtoMember(7)] internal bool FixedOffset;
         [ProtoMember(8)] internal bool Debug;
+    }
+
+    [ProtoContract]
+    public struct UpgradeBlockDefinition
+    {
+        [ProtoMember(1)] internal string DisplayName;
+        [ProtoMember(2)] internal string BlockSubTypeId;
+        [ProtoMember(3)] internal string RequiredModule;
     }
 
     [ProtoContract]
@@ -92,7 +128,7 @@ namespace WeaponCore.Support
         [ProtoMember(10)] internal int DelayUntilFire;
         [ProtoMember(11)] internal int ShotsInBurst;
         [ProtoMember(12)] internal int DelayAfterBurst;
-        [ProtoMember(13)] internal bool DegradeROF;
+        [ProtoMember(13)] internal bool DegradeRof;
     }
 
     [ProtoContract]
@@ -119,11 +155,13 @@ namespace WeaponCore.Support
         public enum BlockTypes
         {
             Any,
-            Offense,
-            Defense,
+            Weapons,
+            Utilities,
             Power,
             Production,
-            Navigation
+            Thrust,
+            Jumping,
+            Steering
         }
 
         [ProtoMember(1)] internal int TopTargets;
@@ -386,12 +424,12 @@ namespace WeaponCore.Support
     [ProtoContract]
     public struct WeaponEmissive
     {
-        [ProtoMember(1)] internal string emissiveName;
-        [ProtoMember(2)] internal string[] emissivePartNames;
-        [ProtoMember(3)] internal bool cycleEmissivesParts;
-        [ProtoMember(4)] internal bool leavePreviousOn;
-        [ProtoMember(5)] internal Vector4[] colors;
-        [ProtoMember(6)] internal float[] intensityRange;
+        [ProtoMember(1)] internal string EmissiveName;
+        [ProtoMember(2)] internal string[] EmissivePartNames;
+        [ProtoMember(3)] internal bool CycleEmissivesParts;
+        [ProtoMember(4)] internal bool LeavePreviousOn;
+        [ProtoMember(5)] internal Vector4[] Colors;
+        [ProtoMember(6)] internal float[] IntensityRange;
     }
 
     [ProtoContract]
@@ -474,6 +512,7 @@ namespace WeaponCore.Support
     {
         internal enum ShieldType
         {
+            Heal,
             Bypass,
             Emp,
             Energy,
@@ -484,54 +523,55 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal ShieldType Type;
     }
 
-[ProtoContract]
-        public struct AnimationDefinition
+    [ProtoContract]
+    public struct AnimationDefinition
+    {
+        [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
+        [ProtoMember(2)] internal WeaponEmissive[] Emissives;
+    }
+
+    [ProtoContract(IgnoreListHandling = true)]
+    public struct PartAnimationSetDef
+    {
+        [ProtoMember(1)] internal string[] SubpartId;
+        [ProtoMember(2)] internal string BarrelId;
+        [ProtoMember(3)] internal uint StartupFireDelay;
+        [ProtoMember(4)] internal Dictionary<EventTriggers, uint> AnimationDelays;
+        [ProtoMember(5)] internal EventTriggers[] Reverse;
+        [ProtoMember(6)] internal EventTriggers[] Loop;
+        [ProtoMember(7)] internal Dictionary<EventTriggers, RelMove[]> EventMoveSets;
+
+    }
+
+    [ProtoContract]
+    internal struct RelMove
+    {
+        public enum MoveType
         {
-            [ProtoMember(1)] internal PartAnimationSetDef[] WeaponAnimationSets;
-            [ProtoMember(2)] internal WeaponEmissive[] Emissives;
+            Linear,
+            ExpoDecay,
+            ExpoGrowth,
+            Delay,
+            Show, //instant or fade
+            Hide, //instant or fade
         }
 
-        [ProtoContract(IgnoreListHandling = true)]
-        public struct PartAnimationSetDef
-        {
-            [ProtoMember(1)] internal string[] SubpartId;
-            [ProtoMember(2)] internal string BarrelId;
-            [ProtoMember(3)] internal uint StartupFireDelay;
-            [ProtoMember(4)] internal Dictionary<EventTriggers, uint> AnimationDelays;
-            [ProtoMember(5)] internal EventTriggers[] Reverse;
-            [ProtoMember(6)] internal EventTriggers[] Loop;
-            [ProtoMember(7)] internal Dictionary<EventTriggers, RelMove[]> EventMoveSets;
+        [ProtoMember(1)] internal MoveType MovementType;
+        [ProtoMember(2)] internal XYZ[] LinearPoints;
+        [ProtoMember(3)] internal XYZ Rotation;
+        [ProtoMember(4)] internal XYZ RotAroundCenter;
+        [ProtoMember(5)] internal uint TicksToMove;
+        [ProtoMember(6)] internal string CenterEmpty;
+        [ProtoMember(7)] internal bool Fade;
+        [ProtoMember(8)] internal string EmissiveName;
+    }
 
-        }
+    [ProtoContract]
+    internal struct XYZ
+    {
+        [ProtoMember(1)] internal double x;
+        [ProtoMember(2)] internal double y;
+        [ProtoMember(3)] internal double z;
+    }
 
-        [ProtoContract]
-        internal struct RelMove
-        {
-            public enum MoveType
-            {
-                Linear,
-                ExpoDecay,
-                ExpoGrowth,
-                Delay,
-                Show, //instant or fade
-                Hide, //instant or fade
-            }
-
-            [ProtoMember(1)] internal MoveType MovementType;
-            [ProtoMember(2)] internal XYZ[] LinearPoints;
-            [ProtoMember(3)] internal XYZ Rotation;
-            [ProtoMember(4)] internal XYZ RotAroundCenter;
-            [ProtoMember(5)] internal uint TicksToMove;
-            [ProtoMember(6)] internal string CenterEmpty;
-            [ProtoMember(7)] internal bool Fade;
-            [ProtoMember(8)] internal string EmissiveName;
-        }
-
-        [ProtoContract]
-        internal struct XYZ
-        {
-            [ProtoMember(1)] internal double x;
-            [ProtoMember(2)] internal double y;
-            [ProtoMember(3)] internal double z;
-        }
 }
