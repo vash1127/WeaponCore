@@ -155,8 +155,8 @@ namespace WeaponCore.Support
         public enum BlockTypes
         {
             Any,
-            Weapons,
-            Utilities,
+            Offense,
+            Utility,
             Power,
             Production,
             Thrust,

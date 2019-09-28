@@ -351,7 +351,7 @@ namespace WeaponCore
                 case OffenseField:
                     if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
                     {
-                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Weapons, out cubes))
+                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Offense, out cubes))
                             return cubes;
                     }
                     break;
