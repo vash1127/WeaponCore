@@ -102,8 +102,6 @@ namespace WeaponCore.Support
             ScaleFov = (float)Math.Tan(Session.Instance.Camera.FovWithZoom * 0.5);
 
             LineWidth = Math.Max(width, 0.1f * ScaleFov * (DistanceToLine / 100));
-            //LineWidth = Math.Max(width, width * ScaleFov * (DistanceToLine / 100));
-            //Log.Line($"Hmm:{LineWidth} - {width} - {System.Values.Graphics.Line.Tracer.Width} - {DistanceToLine} - {DistanceToLine / 100}");
             Color = color;
         }
 
