@@ -33,9 +33,13 @@ namespace WeaponCore
             try
             {
                 Timings();
+                DsUtil.Start("");
                 _futureEvents.Tick(Tick);
+                _eventsPerf = DsUtil.Complete();
                 Ui.UpdateInput();
+                DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
+                _damagePerf = DsUtil.Complete();
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
@@ -52,16 +56,13 @@ namespace WeaponCore
                     CameraPos = Session.Camera.Position;
                     ProcessAnimationQueue();
                 }
+
+                DsUtil.Start("");
                 AiLoop();
-                
                 UpdateWeaponPlatforms();
-                if (Tick600)
-                {
-                    var threshold = Projectiles.Wait.Length * 10;
-                    HighLoad = Load > threshold;
-                    Log.Line($"TurretLoad:{Load} - HighLoad:{threshold} - MultiCore:{HighLoad}");
-                    Load = 0d;
-                }
+                _updatePerf = DsUtil.Complete();
+
+                DsUtil.Start("");
                 Projectiles.Update();
 
                 if (_effectedCubes.Count > 0) ApplyEffect();
@@ -81,6 +82,16 @@ namespace WeaponCore
                         GridEffectsPool.Return(ge.Value);
                     }
                     _gridEffects.Clear();
+                }
+                _projectilePerf = DsUtil.Complete();
+
+                if (Tick600)
+                {
+                    var threshold = Projectiles.Wait.Length * 10;
+                    HighLoad = Load > threshold;
+                    Log.Line($"TurretLoad:{Load} - HighLoad:{threshold} - MultiCore:{HighLoad}");
+                    Log.Line($"Events:{_eventsPerf} - Damage:{_damagePerf} - Update:{_updatePerf} - Projectiles:{_projectilePerf} - Dbs:{_dbUpdatePerf}");
+                        Load = 0d;
                 }
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
@@ -102,63 +113,13 @@ namespace WeaponCore
         {
             try
             {
-                if (Placer != null)
-                {
-                    if (!Placer.Visible) Placer = null;
-                    if (!MyCubeBuilder.Static.DynamicMode && MyCubeBuilder.Static.HitInfo.HasValue)
-                    {
-                        var hit = MyCubeBuilder.Static.HitInfo.Value as IHitInfo;
-                        var grid = hit.HitEntity as MyCubeGrid;
-                        GridAi gridAi;
-                        if (grid != null && GridTargetingAIs.TryGetValue(grid, out gridAi))
-                        {
-                            if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
-                            {
-                                var subtypeIdHash = MyCubeBuilder.Static.CurrentBlockDefinition.Id.SubtypeId;
-                                GridAi.WeaponCount weaponCount;
-                                if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
-                                {
-                                    if (weaponCount.Current >= weaponCount.Max && weaponCount.Max > 0)
-                                    {
-                                        MyCubeBuilder.Static.NotifyPlacementUnable();
-                                        MyCubeBuilder.Static.Deactivate();
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                if (Placer != null) UpdatePlacer();
                 if(!DedicatedServer)//todo client side only
                     ProcessAnimations();
 
-                if (!CompsToStart.IsEmpty)
-                {
-                    WeaponComponent weaponComp;
-                    CompsToStart.TryDequeue(out weaponComp);
-                    if (weaponComp.MyCube.CubeGrid.Physics == null) return;
-                    if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
-                    {
-                        Log.Line("comp found");
+                if (!CompsToStart.IsEmpty) StartComps();
 
-                        CompsToRemove.Enqueue(weaponComp);
-
-                        OnEntityCreate(weaponComp.MyCube);
-                    }
-                    else{
-
-                        weaponComp.MyCube.Components.Add(weaponComp);
-                        weaponComp.OnAddedToScene();
-                        weaponComp.Ai.FirstRun = true;
-                        Log.Line($"added to comp");
-                    }
-                }
-
-                if (!CompsToRemove.IsEmpty)
-                {
-                    WeaponComponent weaponComp;
-                    while (CompsToRemove.TryDequeue(out weaponComp))
-                        weaponComp.RemoveComp();
-                }
+                if (!CompsToRemove.IsEmpty) RemoveComps();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -169,30 +130,6 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
-                    /*
-                    if (LcdEntity1 != null)
-                    {
-                        var cameraMatrix = Camera.WorldMatrix;
-                        cameraMatrix.Translation += (Camera.WorldMatrix.Forward * 0.1f);
-                        //cameraMatrix.Translation += (Camera.WorldMatrix.Left * 0.075f);
-                        //cameraMatrix.Translation += (Camera.WorldMatrix.Up * 0.05f);
-
-                        LcdEntity1.WorldMatrix = cameraMatrix;
-                        if (LcdPanel1 != null && LcdPanel1.InScene)
-                        {
-                            if (!_initLcdPanel1)
-                            {
-                                if (LcdPanel1.IsFunctional && LcdPanel1.IsWorking)
-                                {
-                                    LcdPanel1.FontSize = 2;
-                                    _initLcdPanel1 = true;
-                                    LcdPanel1.ResourceSink.SetMaxRequiredInputByType(MyResourceDistributorComponent.ElectricityId, 0);
-                                    LcdPanel1.WriteText("test1");
-                                }
-                            }
-                        }
-                    }
-                    */
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                         Ui.DrawWheel();
 

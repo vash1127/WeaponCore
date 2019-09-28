@@ -9,8 +9,6 @@ using VRage.Game.Entity;
 
 namespace WeaponCore.Support
 {
-
-
     internal class BlockPriority : IComparer<BlockInfo>
     {
         public int Compare(BlockInfo x, BlockInfo y)
@@ -427,7 +425,7 @@ namespace WeaponCore.Support
             Sw.Restart();
         }
 
-        public void Complete(bool display = false)
+        public string Complete(bool display = false)
         {
             Sw.Stop();
             var ticks = Sw.ElapsedTicks;
@@ -435,10 +433,17 @@ namespace WeaponCore.Support
             var ms = ns / 1000000.0;
             var s = ms / 1000;
             Sw.Reset();
-            var message = $"{_message} ms:{(float) ms} last-ms:{(float) _last} s:{(int) s}";
+            string message;
+            if (display)
+            {
+                message = $"{_message} ms:{(float)ms} last-ms:{(float)_last} s:{(int)s}";
+                _last = ms;
+            }
+            else message = $"{ms}";
+
             if (_time && display) Log.Line(message);
             else if (display) Log.CleanLine(message);
-            _last = ms;
+            return message;
         }
     }
 

@@ -29,13 +29,16 @@ namespace WeaponCore
         internal volatile bool Dispatched;
         internal bool DbsUpdating;
         internal bool HighLoad;
-        private bool _initLcdPanel1;
 
         private int _count = -1;
         private int _lCount;
         private int _eCount;
         private double _syncDistSqr;
-
+        private string _dbUpdatePerf;
+        private string _eventsPerf;
+        private string _damagePerf;
+        private string _projectilePerf;
+        private string _updatePerf;
 
         private readonly object _configLock = new object();
 
@@ -93,7 +96,7 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
         internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
         internal readonly MyConcurrentHashSet<MyEntity> BlocksToInit = new MyConcurrentHashSet<MyEntity>();
-
+        internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(25));
         internal DSUtils DsUtil { get; set; } = new DSUtils();
 
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");

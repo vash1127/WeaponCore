@@ -44,6 +44,7 @@ namespace WeaponCore
 
         private void ProcessDbsCallBack()
         {
+            DsUtil.Start("");
             foreach (var db in DbsToUpdate)
             {
                 if (db.MyPlanetTmp != null)
@@ -59,19 +60,22 @@ namespace WeaponCore
                 for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
                 db.SortedTargets.Clear();
                 db.Targets.Clear();
-
                 for (int i = 0; i < db.NewEntities.Count; i++)
                 {
                     var detectInfo = db.NewEntities[i];
                     var ent = detectInfo.Parent;
+                    if (ent.Physics == null) continue;
                     var dictTypes = detectInfo.DictTypes;
                     var grid = ent as MyCubeGrid;
-                    GridAi.TargetInfo targetInfo;
+                    var targetInfo = db.TargetInfoPool.Get();
                     var protectedByShield = ShieldApiLoaded && SApi.ProtectedByShield(ent);
                     if (grid == null)
-                        targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, ent, false, protectedByShield, null, 1, db.MyGrid, db);
+                        targetInfo.Init(detectInfo.EntInfo, ent, false, protectedByShield, null, 1, db.MyGrid, db);
                     else
-                        targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, grid, true, protectedByShield, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db) { TypeDict = dictTypes };
+                    {
+                        targetInfo.Init(detectInfo.EntInfo, grid, true, protectedByShield, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db);
+                        targetInfo.TypeDict = dictTypes;
+                    }
 
                     db.SortedTargets.Add(targetInfo);
                     db.Targets.Add(ent, targetInfo);
@@ -106,10 +110,13 @@ namespace WeaponCore
                 //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.MyShield = db.MyShieldTmp;
                 db.ShieldNear = db.ShieldNearTmp;
+
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
+
             DbsToUpdate.Clear();
             DbsUpdating = false;
+            _dbUpdatePerf = DsUtil.Complete();
         }
 
         public void Handler(object o)
@@ -221,8 +228,7 @@ namespace WeaponCore
             var targetPos = Target.PositionComp.WorldAABB.Center;
             var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
             var myHeading = Vector3D.Normalize(myPos - targetPos);
-            var degrees = Math.Cos(MathHelper.ToRadians(25));
-            var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
+            var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
             var shielded = ShieldApiLoaded && SApi.ProtectedByShield(Target);
             var grid = Target as MyCubeGrid;
             var friend = false;
@@ -360,6 +366,63 @@ namespace WeaponCore
             for (int i = 0; i < Projectiles.Wait.Length; i++)
                 foreach (var p in Projectiles.ProjectilePool[i].Active)
                     p.PauseAv();
+        }
+
+        private void StartComps()
+        {
+            WeaponComponent weaponComp;
+            CompsToStart.TryDequeue(out weaponComp);
+            if (weaponComp.MyCube.CubeGrid.Physics == null) return;
+            if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
+            {
+                Log.Line("comp found");
+
+                CompsToRemove.Enqueue(weaponComp);
+
+                OnEntityCreate(weaponComp.MyCube);
+            }
+            else
+            {
+
+                weaponComp.MyCube.Components.Add(weaponComp);
+                weaponComp.OnAddedToScene();
+                weaponComp.Ai.FirstRun = true;
+                Log.Line($"added to comp");
+            }
+        }
+
+        private void RemoveComps()
+        {
+            WeaponComponent weaponComp;
+            while (CompsToRemove.TryDequeue(out weaponComp))
+                weaponComp.RemoveComp();
+        }
+
+        private void UpdatePlacer()
+        {
+            if (!Placer.Visible) Placer = null;
+            if (!MyCubeBuilder.Static.DynamicMode && MyCubeBuilder.Static.HitInfo.HasValue)
+            {
+                var hit = MyCubeBuilder.Static.HitInfo.Value as IHitInfo;
+                var grid = hit.HitEntity as MyCubeGrid;
+                GridAi gridAi;
+                if (grid != null && GridTargetingAIs.TryGetValue(grid, out gridAi))
+                {
+                    if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
+                    {
+                        var subtypeIdHash = MyCubeBuilder.Static.CurrentBlockDefinition.Id.SubtypeId;
+                        GridAi.WeaponCount weaponCount;
+                        if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
+                        {
+                            if (weaponCount.Current >= weaponCount.Max && weaponCount.Max > 0)
+                            {
+                                MyCubeBuilder.Static.NotifyPlacementUnable();
+                                MyCubeBuilder.Static.Deactivate();
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         #region Events
