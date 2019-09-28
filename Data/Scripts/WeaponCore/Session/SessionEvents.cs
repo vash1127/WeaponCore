@@ -18,7 +18,7 @@ namespace WeaponCore
                 if (placer != null && Placer == null) Placer = placer;
                 if (weaponBase != null)
                 {
-                    if (!Inited)
+                    if (!BeforeStarted)
                     {
                         BlocksToInit.Add(myEntity);
                         return;

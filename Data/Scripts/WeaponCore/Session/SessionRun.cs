@@ -18,7 +18,7 @@ namespace WeaponCore
         {
             try
             {
-                if (!Inited) lock (_configLock) Init();
+                Init();
                 foreach (var ent in BlocksToInit) {
                     OnEntityCreate(ent);
                 }
