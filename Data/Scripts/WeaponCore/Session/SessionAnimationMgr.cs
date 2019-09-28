@@ -28,7 +28,7 @@ namespace WeaponCore
             if (wepEmissivesSet != null)
             {
                 foreach (var emissive in wepEmissivesSet)
-                    emissiveLookup.Add(emissive.emissiveName, emissive);
+                    emissiveLookup.Add(emissive.EmissiveName, emissive);
             }
 
             if (wepAnimationSets == null)
@@ -521,28 +521,28 @@ namespace WeaponCore
 
         internal void createEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> allEmissivesSet, ref List<int> currentEmissivePart)
         {
-            var setColor = (Color)emissive.colors[0];
+            var setColor = (Color)emissive.Colors[0];
 
-            if (emissive.colors.Length > 1)
+            if (emissive.Colors.Length > 1)
             {
                 if (progress < 1)
                 {
-                    float scaledTime = progress * (float) (emissive.colors.Length - 1);
-                    Color lastColor = emissive.colors[(int) scaledTime];
-                    Color nextColor = emissive.colors[(int) (scaledTime + 1f)];
+                    float scaledTime = progress * (float) (emissive.Colors.Length - 1);
+                    Color lastColor = emissive.Colors[(int) scaledTime];
+                    Color nextColor = emissive.Colors[(int) (scaledTime + 1f)];
                     float scaledProgress = (float) (scaledTime * progress);
                     setColor = Color.Lerp(lastColor, nextColor, scaledProgress);
                 }
                 else
-                    setColor = emissive.colors[emissive.colors.Length - 1];
+                    setColor = emissive.Colors[emissive.Colors.Length - 1];
             }
 
-            var intensity = MathHelper.Lerp(emissive.intensityRange[0],
-                emissive.intensityRange[1], progress);
+            var intensity = MathHelper.Lerp(emissive.IntensityRange[0],
+                emissive.IntensityRange[1], progress);
 
-            var currPart =  (int)Math.Round(MathHelper.Lerp(0, emissive.emissivePartNames.Length - 1, progress));
+            var currPart =  (int)Math.Round(MathHelper.Lerp(0, emissive.EmissivePartNames.Length - 1, progress));
 
-            allEmissivesSet.Add(id, MyTuple.Create(emissive.emissivePartNames, setColor, emissive.cycleEmissivesParts, emissive.leavePreviousOn, intensity));
+            allEmissivesSet.Add(id, MyTuple.Create(emissive.EmissivePartNames, setColor, emissive.CycleEmissivesParts, emissive.LeavePreviousOn, intensity));
             currentEmissivePart.Add(currPart);
         }
 

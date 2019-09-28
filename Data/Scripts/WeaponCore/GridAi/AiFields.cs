@@ -44,6 +44,7 @@ namespace WeaponCore.Support
 
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal List<TargetInfo> SortedTargets = new List<TargetInfo>();
+        internal Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
 
         internal MyResourceDistributorComponent MyResourceDist;
         internal MyGridTargeting Targeting { get; set; }

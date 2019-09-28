@@ -324,9 +324,9 @@ namespace WeaponCore.Support
         {
             Dictionary<string, HashSet<IMyLargeTurretBase>> weaponGroups = new Dictionary<string, HashSet<IMyLargeTurretBase>>();
 
-            var TermSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
+            var termSys = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
             List<IMyBlockGroup> groups = new List<IMyBlockGroup>();
-            TermSys.GetBlockGroups(groups);
+            termSys.GetBlockGroups(groups);
 
             List<IMyLargeTurretBase> blocks = new List<IMyLargeTurretBase>();
 

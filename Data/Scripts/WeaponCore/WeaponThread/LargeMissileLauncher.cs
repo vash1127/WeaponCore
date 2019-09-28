@@ -52,7 +52,7 @@ namespace WeaponThread
                     MaxHeat = 1000000, //max heat before weapon enters cooldown (70% of max heat)
                     Cooldown = .95f, //percent of max heat to be under to start firing again after overheat accepts .2-.95
                     HeatSinkRate = 1000000, //amount of heat lost per second
-                    DegradeROF = false, // progressively lower rate of fire after 80% heat threshold (80% of max heat)
+                    DegradeRof = false, // progressively lower rate of fire after 80% heat threshold (80% of max heat)
                     ShotsInBurst = 0,
                     DelayAfterBurst = 0, // Measured in game ticks (6 = 100ms, 60 = 1 seconds, etc..).
                 },
@@ -60,7 +60,7 @@ namespace WeaponThread
             Targeting = new TargetingDefinition
             {
                 Threats = Valid(Characters, Projectiles, Grids),
-                SubSystems = Priority(Navigation, Defense, Offense, Power, Production, Any), //define block type targeting order
+                SubSystems = Priority(Thrust, Utilities, TargetingDefinition.BlockTypes.Weapons, Power, Production, Any), //define block type targeting order
                 ClosestFirst = false, // tries to pick closest targets first (blocks on grids, projectiles, etc...).
                 MinimumDiameter = 0, // 0 = unlimited, Minimum radius of threat to engage.
                 MaximumDiameter = 0, // 0 = unlimited, Maximum radius of threat to engage.

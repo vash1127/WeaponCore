@@ -58,6 +58,7 @@ namespace WeaponCore
 
                 for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
                 db.SortedTargets.Clear();
+                db.Targets.Clear();
 
                 for (int i = 0; i < db.NewEntities.Count; i++)
                 {
@@ -73,6 +74,7 @@ namespace WeaponCore
                         targetInfo = new GridAi.TargetInfo(detectInfo.EntInfo, grid, true, protectedByShield, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db) { TypeDict = dictTypes };
 
                     db.SortedTargets.Add(targetInfo);
+                    db.Targets.Add(ent, targetInfo);
                 }
                 db.NewEntities.Clear();
                 db.SortedTargets.Sort(db.TargetCompare1);
@@ -205,7 +207,7 @@ namespace WeaponCore
                 foreach (var info in ai.SortedTargets)
                 {
                     if (info.Target != entity) continue;
-                    TargetArmed = info.TypeDict[TargetingDefinition.BlockTypes.Offense].Count > 0;
+                    TargetArmed = info.TypeDict[TargetingDefinition.BlockTypes.Weapons].Count > 0;
                     break;
                 }
             }

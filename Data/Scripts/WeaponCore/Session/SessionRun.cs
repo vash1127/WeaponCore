@@ -71,7 +71,7 @@ namespace WeaponCore
                     {
                         foreach (var v in ge.Value)
                         {
-                            GetCubesForEffect(ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
+                            GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
                             ComputeEffects(v.Value.System, ge.Key, v.Value.Damage * v.Value.Hits, float.MaxValue, v.Value.AttackerId, _tmpEffectCubes);
                             _tmpEffectCubes.Clear();
                             v.Value.Clean();
