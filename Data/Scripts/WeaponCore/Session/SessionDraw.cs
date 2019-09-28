@@ -156,7 +156,7 @@ namespace WeaponCore
                                 effect.UserColorMultiplier = t.System.Values.Graphics.Particles.Hit.Color;
                                 effect.Loop = t.System.Values.Graphics.Particles.Hit.Extras.Loop;
                                 effect.UserRadiusMultiplier = t.System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
-                                var scale = MathHelper.Lerp(1, 0, (t.DistanceToLine * 8) / t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
+                                var scale = MathHelper.Lerp(1, 0, (t.DistanceToLine * 2) / t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
                                 effect.UserEmitterScale = scale;
                             }
                             else if (effect.IsEmittingStopped)
