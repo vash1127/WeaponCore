@@ -13,15 +13,17 @@ namespace WeaponCore
         {
             try
             {
-                if (!Inited) lock (_configLock) Init();
-
                 var weaponBase = myEntity as IMyLargeMissileTurret;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
                 if (weaponBase != null)
                 {
+                    if (!Inited)
+                    {
+                        BlocksToInit.Add(myEntity);
+                        return;
+                    }
                     if (weaponBase.CubeGrid.Physics == null) return;
-                    
 
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
@@ -57,16 +59,6 @@ namespace WeaponCore
 
             if (remote != null)
                 _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
-        }
-
-        private void OnEntityAdded(MyEntity obj)
-        {
-            var grid = obj as MyCubeGrid;
-
-            if (grid == null || grid.Physics == null) return;
-            
-            PastedBlocksToInit.Enqueue(grid);
-
         }
     }
 }

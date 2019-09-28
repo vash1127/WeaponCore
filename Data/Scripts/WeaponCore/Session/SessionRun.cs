@@ -18,6 +18,10 @@ namespace WeaponCore
         {
             try
             {
+                if (!Inited) lock (_configLock) Init();
+                foreach (var ent in BlocksToInit) {
+                    OnEntityCreate(ent);
+                }
                 BeforeStartInit();
             }
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
@@ -127,33 +131,25 @@ namespace WeaponCore
                 if(!DedicatedServer)//todo client side only
                     ProcessAnimations();
 
-                if (!PastedBlocksToInit.IsEmpty)
+                if (!CompsToStart.IsEmpty)
                 {
-                    MyCubeGrid grid;
-                    while (PastedBlocksToInit.TryDequeue(out grid))
+                    WeaponComponent weaponComp;
+                    CompsToStart.TryDequeue(out weaponComp);
+
+                    if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
                     {
-                        foreach (var block in grid.GetFatBlocks())
-                        {
-                            var weaponBase = block as IMyLargeTurretBase;
-                            if (weaponBase == null) continue;
+                        Log.Line("comp found");
 
-                            WeaponComponent comp;
-                            if ((block.Components.TryGet(out comp) && comp.MyGrid.EntityId != block.CubeGrid.EntityId))
-                            {
-                                Log.Line("comp found");
+                        CompsToRemove.Enqueue(weaponComp);
 
-                                CompsToRemove.Enqueue(comp);
+                        OnEntityCreate(weaponComp.MyCube);
+                    }
+                    else{
 
-                                OnEntityCreate(block);
-                            }
-                            else if (comp == null)
-                            {
-                                Log.Line("comp not found");
-
-                                OnEntityCreate(block);
-                            }
-                        }
-                        
+                        weaponComp.MyCube.Components.Add(weaponComp);
+                        weaponComp.OnAddedToScene();
+                        weaponComp.Ai.FirstRun = true;
+                        Log.Line($"added to comp");
                     }
                 }
 
@@ -222,7 +218,7 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
-                MyEntities.OnEntityAdd += OnEntityAdded;
+                //MyEntities.OnEntityAdd += OnEntityAdded;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
@@ -254,7 +250,7 @@ namespace WeaponCore
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
-            MyEntities.OnEntityAdd -= OnEntityAdded;
+            //MyEntities.OnEntityAdd -= OnEntityAdded;
             MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;

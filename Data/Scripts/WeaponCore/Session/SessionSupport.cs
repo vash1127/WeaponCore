@@ -301,16 +301,6 @@ namespace WeaponCore
 
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
                 ShieldApiLoaded = true;
-
-            if (!CompsToStart.IsEmpty)
-            {
-                WeaponComponent weaponComp;
-                CompsToStart.TryDequeue(out weaponComp);
-                weaponComp.MyCube.Components.Add(weaponComp);
-                weaponComp.OnAddedToScene();
-                weaponComp.Ai.FirstRun = true;
-                Log.Line($"added to comp");
-            }
         }
 
         internal bool UpdateLocalAiAndCockpit()
