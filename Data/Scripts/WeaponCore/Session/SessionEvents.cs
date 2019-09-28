@@ -23,7 +23,6 @@ namespace WeaponCore
                         BlocksToInit.Add(myEntity);
                         return;
                     }
-                    if (weaponBase.CubeGrid.Physics == null) return;
 
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;

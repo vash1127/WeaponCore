@@ -42,7 +42,7 @@ namespace WeaponCore.Support
 
         internal void RemoveComp()
         {
-            if (Platform.Inited)
+            if (Platform != null && Platform.Inited)
             {
                 Log.Line($"Removed Comp");
                 Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;

@@ -135,7 +135,7 @@ namespace WeaponCore
                 {
                     WeaponComponent weaponComp;
                     CompsToStart.TryDequeue(out weaponComp);
-
+                    if (weaponComp.MyCube.CubeGrid.Physics == null) return;
                     if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
                     {
                         Log.Line("comp found");
