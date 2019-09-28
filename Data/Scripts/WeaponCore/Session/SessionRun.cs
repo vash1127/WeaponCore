@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using WeaponThread;
 using static Sandbox.Definitions.MyDefinitionManager;

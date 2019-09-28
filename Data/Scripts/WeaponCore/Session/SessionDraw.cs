@@ -49,7 +49,6 @@ namespace WeaponCore
                     if (!t.System.Values.Graphics.Line.Tracer.Enable) continue;
                 }
 
-                var thickness = t.LineWidth;
                 /*
                 const double MAX_VIEW_DIST = 3000;
                 const double FADE_VIEW_DIST = 2000;
@@ -61,6 +60,7 @@ namespace WeaponCore
                 var color = Color.Red * alpha;
                 */
                 var color = t.Color;
+                var thickness = t.LineWidth;
                 if (t.System.IsBeamWeapon)
                 {
                     var changeValue = 0.01f;
