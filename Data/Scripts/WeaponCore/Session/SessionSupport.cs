@@ -207,7 +207,7 @@ namespace WeaponCore
                 foreach (var info in ai.SortedTargets)
                 {
                     if (info.Target != entity) continue;
-                    TargetArmed = info.TypeDict[TargetingDefinition.BlockTypes.Weapons].Count > 0;
+                    TargetArmed = info.TypeDict[TargetingDefinition.BlockTypes.Offense].Count > 0;
                     break;
                 }
             }

@@ -154,7 +154,7 @@ namespace WeaponCore
             {
                 if (target.IsGrid)
                 {
-                    var menuTarget = new MenuTarget { MyEntity = target.Target, OtherArms = target.TypeDict[Weapons].Count > 0, Projectile = null, Threat = "High"};
+                    var menuTarget = new MenuTarget { MyEntity = target.Target, OtherArms = target.TypeDict[Offense].Count > 0, Projectile = null, Threat = "High"};
                     Grids.Add(menuTarget);
                 }
                 else

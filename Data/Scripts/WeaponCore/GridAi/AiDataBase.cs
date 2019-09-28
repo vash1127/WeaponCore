@@ -44,8 +44,8 @@ namespace WeaponCore.Support
 
                         var typeDict = BlockTypePool.Get();
                         typeDict.Add(BlockTypes.Any, CubePool.Get());
-                        typeDict.Add(BlockTypes.Weapons, CubePool.Get());
-                        typeDict.Add(BlockTypes.Utilities, CubePool.Get());
+                        typeDict.Add(BlockTypes.Offense, CubePool.Get());
+                        typeDict.Add(BlockTypes.Utility, CubePool.Get());
                         typeDict.Add(BlockTypes.Thrust, CubePool.Get());
                         typeDict.Add(BlockTypes.Steering, CubePool.Get());
                         typeDict.Add(BlockTypes.Jumping, CubePool.Get());
@@ -85,8 +85,8 @@ namespace WeaponCore.Support
                             typeDict[BlockTypes.Any].Add(cube);
                             if (cube is IMyProductionBlock) typeDict[BlockTypes.Production].Add(cube);
                             else if (cube is IMyPowerProducer) typeDict[BlockTypes.Power].Add(cube);
-                            else if (cube is IMyGunBaseUser || cube is IMyWarhead) typeDict[BlockTypes.Weapons].Add(cube);
-                            else if (cube is IMyUpgradeModule || cube is IMyRadioAntenna) typeDict[BlockTypes.Utilities].Add(cube);
+                            else if (cube is IMyGunBaseUser || cube is IMyWarhead) typeDict[BlockTypes.Offense].Add(cube);
+                            else if (cube is IMyUpgradeModule || cube is IMyRadioAntenna) typeDict[BlockTypes.Utility].Add(cube);
                             else if (cube is MyThrust) typeDict[BlockTypes.Thrust].Add(cube);
                             else if (cube is MyGyro) typeDict[BlockTypes.Steering].Add(cube);
                             else if (cube is MyJumpDrive) typeDict[BlockTypes.Jumping].Add(cube);
