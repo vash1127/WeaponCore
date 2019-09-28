@@ -15,6 +15,11 @@ namespace WeaponCore
     {
         #region UI Config
 
+        public void AlterControlsActions()
+        {
+            
+        }
+
         public void CreateLogicElements()
         {
             try
@@ -27,12 +32,19 @@ namespace WeaponCore
                 if (WepControl) return;
                 TerminalHelpers.Separator<IMyLargeTurretBase>(0, "WC_sep0");
 
+                var wepIDs = new HashSet<int>();
+
                 foreach(KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
                 {
                     foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
                     {
                         var wepName = ws.Value.WeaponName;
                         var wepID = ws.Value.WeaponId;
+
+                        if (!wepIDs.Contains(wepID))
+                            wepIDs.Add(wepID);
+                        else
+                            continue;
 
                         TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
                             delegate (IMyTerminalBlock block)
