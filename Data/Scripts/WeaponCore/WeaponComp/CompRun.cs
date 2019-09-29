@@ -37,7 +37,6 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 if (MainInit)
                 {
-
                     MyGrid = MyCube.CubeGrid;
                     GridAi gridAi;
                     if (!Session.Instance.GridTargetingAIs.TryGetValue(MyGrid, out gridAi))
@@ -54,7 +53,6 @@ namespace WeaponCore.Support
 
                     return;
                 }
-                if (!Session.Instance.WasInited && Session.Instance.Inited) Session.Instance.CreateLogicElements(null);
                 _isServer = Session.Instance.IsServer;
                 _isDedicated = Session.Instance.DedicatedServer;
                 _mpActive = Session.Instance.MpActive;

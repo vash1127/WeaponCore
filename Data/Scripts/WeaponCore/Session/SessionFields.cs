@@ -25,8 +25,6 @@ namespace WeaponCore
         internal static readonly double VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
         internal static Session Instance { get; private set; }
 
-        internal volatile bool BeforeStarted;
-        internal volatile bool WasInited;
         internal volatile bool Inited;
         internal object InitObj = new object();
         internal volatile bool Dispatched;
