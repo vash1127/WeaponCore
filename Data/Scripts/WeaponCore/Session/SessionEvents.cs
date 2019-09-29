@@ -16,12 +16,13 @@ namespace WeaponCore
                 var weaponBase = myEntity as IMyLargeMissileTurret;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
+
                 if (weaponBase != null)
                 {
-                    if (!BeforeStarted)
+                    if (!Inited)
                     {
-                        BlocksToInit.Add(myEntity);
-                        return;
+                        lock (InitObj) Init();
+                        //_futureEvents.Schedule(CreateLogicElements, null, 1);
                     }
 
                     var cube = (MyCubeBlock)myEntity;
