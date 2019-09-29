@@ -170,19 +170,19 @@ namespace WeaponCore.Platform
                 }
             }
 
-            var isInView = false;
+            //var isInView = false;
             var isAligned = false;
 
             if (weapon.IsTracking)
             {
-                isInView = weapon.IsTargetInViewInLined(targetPos);
-                if (isInView)
-                    isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+                //isInView = weapon.IsTargetInViewInLined(targetPos);
+                //if (isInView)
+                isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             }
             else
                 weapon.SeekTarget = true;
 
-            weapon.IsInView = isInView;
+            //weapon.IsInView = isInView;
             var wasAligned = weapon.IsAligned;
             weapon.IsAligned = isAligned;
 
@@ -191,7 +191,8 @@ namespace WeaponCore.Platform
             else if (alignedChange && !weapon.DelayCeaseFire)
                 weapon.StopShooting();
 
-            weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
+            //weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
+            weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
             return weapon.IsTracking;
         }
 
@@ -331,11 +332,11 @@ namespace WeaponCore.Platform
             var interceptPoint = shooterPosition + (projectileForwardVelocity + normalVelocity) * timeToIntercept + 0.5 * targetAcceleration * timeToIntercept * timeToIntercept;
             return interceptPoint;
         }
+        /*
 
         private bool _gunIdleElevationAzimuthUnknown = true;
         private double _gunIdleElevation;
         private double _gunIdleAzimuth;
-
         internal bool IsTargetInViewInLined(Vector3D predPos)
         {
             var muzzleWorldPosition = Comp.MyPivotPos;
@@ -418,7 +419,7 @@ namespace WeaponCore.Platform
 
             return new Vector3D(elevation - _gunIdleElevation, angle, 0.0d);
         }
-
+        */
         internal void InitTracking()
         {
             RotationSpeed = Comp.Platform.BaseDefinition.RotationSpeed;

@@ -103,7 +103,7 @@ namespace WeaponCore.Platform
         internal bool SeekTarget;
         internal bool TrackingAi;
         internal bool IsTracking;
-        internal bool IsInView;
+        //internal bool IsInView;
         internal bool IsAligned;
         internal bool AmmoSuspend;
         internal bool AmmoFull;
