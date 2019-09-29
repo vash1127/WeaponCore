@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
@@ -20,10 +21,8 @@ namespace WeaponCore
                 if (weaponBase != null)
                 {
                     if (!Inited)
-                    {
                         lock (InitObj) Init();
-                        //_futureEvents.Schedule(CreateLogicElements, null, 1);
-                    }
+                    
 
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;

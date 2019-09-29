@@ -20,12 +20,10 @@ namespace WeaponCore
             
         }
 
-        public void CreateLogicElements(object o)
+        public void CreateLogicElements()
         {
             try
             {
-                Log.Line("init");
-                WasInited = true;
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
                 TerminalHelpers.AlterActions<IMyLargeTurretBase>();
