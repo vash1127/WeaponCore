@@ -18,12 +18,13 @@ namespace WeaponCore
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
-                if (!Inited)
-                    using (_configLock.Acquire())
-                        Init();
-
                 if (weaponBase != null)
                 {
+
+                    if (!Inited)
+                        using (_configLock.Acquire())
+                            Init();
+
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
