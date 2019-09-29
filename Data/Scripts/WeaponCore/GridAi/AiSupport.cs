@@ -300,7 +300,7 @@ namespace WeaponCore.Support
                 }
                 else Approaching = false;
 
-                OffenseRating = TypeDict.ContainsKey(BlockTypes.Offense) ? TypeDict[BlockTypes.Offense].Count : 0;
+                OffenseRating = TypeDict != null && TypeDict.ContainsKey(BlockTypes.Offense) ? TypeDict[BlockTypes.Offense].Count : 0;
                 Vector3D.DistanceSquared(ref TargetPos, ref Ai.GridCenter, out DistSqr);
             }
 

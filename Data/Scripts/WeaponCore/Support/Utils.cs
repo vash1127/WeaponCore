@@ -417,6 +417,7 @@ namespace WeaponCore.Support
         private string _message;
         private bool _time;
         private Stopwatch Sw { get; } = new Stopwatch();
+        private Dictionary<string, double> _timings = new Dictionary<string, double>();
 
         public void Start(string message, bool time = true)
         {
