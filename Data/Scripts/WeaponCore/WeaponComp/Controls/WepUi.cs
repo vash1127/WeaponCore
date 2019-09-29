@@ -7,14 +7,14 @@ namespace WeaponCore
 {
     internal static class WepUi
     {
-        internal static bool GetGuidance(IMyTerminalBlock block)
+        internal static bool GetGuidance(IMyTerminalBlock block, int wepID)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || !comp.Platform.Inited) return false;
             return comp.Set.Value.Guidance;
         }
 
-        internal static void SetGuidance(IMyTerminalBlock block, bool newValue)
+        internal static void SetGuidance(IMyTerminalBlock block, int wepID, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || !comp.Platform.Inited) return;

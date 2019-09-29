@@ -1,7 +1,9 @@
 using System;
+using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -18,6 +20,11 @@ namespace WeaponCore
         {
             try
             {
+                var sMissileID = new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), "SmallMissileLauncher");
+                var fakeForUI = MyEntities.CreateEntityAndAdd(sMissileID, false);
+                //fakeForUI.SyncFlag = true;
+                
+
                 Init();
                 foreach (var ent in BlocksToInit) {
                     OnEntityCreate(ent);

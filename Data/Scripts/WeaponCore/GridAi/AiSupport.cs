@@ -239,7 +239,7 @@ namespace WeaponCore.Support
                 if (yDist > 10000 && y.PartCount < 5) yDist = double.MaxValue;
 
                 var compareDist = xDist.CompareTo(yDist);
-                if (compareDist != 0 && (xDist < 360000 || yDist < 360000)) return compareDist;
+                if (compareDist != 0 && (xDist < 10000 || yDist < 10000)) return compareDist;
 
                 var compareParts = x.PartCount.CompareTo(y.PartCount);
                 return -compareParts;

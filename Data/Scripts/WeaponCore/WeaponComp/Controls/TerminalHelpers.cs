@@ -128,7 +128,7 @@ namespace WeaponCore.Control
             }
         }
 
-        internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, bool> VisibleGetter) where T : IMyTerminalBlock
+        internal static IMyTerminalControlOnOffSwitch AddWeaponOnOff<T>(int id, string name, string title, string tooltip, string onText, string offText, Func<IMyTerminalBlock, int, bool> getter, Action<IMyTerminalBlock, int, bool> setter, Func<IMyTerminalBlock, int, bool> VisibleGetter) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlOnOffSwitch, T>($"WC_{id}_Enable");
 
@@ -138,8 +138,8 @@ namespace WeaponCore.Control
             c.OffText = MyStringId.GetOrCompute(offText);
             c.Enabled = b => true;
             c.Visible = b => VisibleGetter(b, id);
-            c.Getter = getter;
-            c.Setter = setter;
+            c.Getter = b => getter(b, id);
+            c.Setter = (b, enabled) => setter(b, id, enabled);
             MyAPIGateway.TerminalControls.AddControl<T>(c);
 
             CreateOnOffActionSet<T>(c, name, id, VisibleGetter);

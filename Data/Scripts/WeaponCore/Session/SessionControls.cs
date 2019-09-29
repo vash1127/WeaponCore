@@ -46,38 +46,7 @@ namespace WeaponCore
                         else
                             continue;
 
-                        TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ",
-                            delegate (IMyTerminalBlock block)
-                            {
-                                var tmpComp = block?.Components?.Get<WeaponComponent>();
-                                if (tmpComp == null || !tmpComp.Platform.Inited) return false;
-
-                                var enabled = false;
-                                for(int i =0; i < tmpComp.Platform.Weapons.Length; i++)
-                                {
-                                    if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
-                                        enabled = tmpComp.Set.Value.Weapons[i].Enable;
-                                }
-                                return enabled;
-                            },
-                            delegate (IMyTerminalBlock block, bool enabled)
-                            {
-                                var tmpComp = block?.Components?.Get<WeaponComponent>();
-                                if (tmpComp != null && tmpComp.Platform.Inited)
-                                {
-                                    for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
-                                    {
-                                        if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
-                                        {
-                                            tmpComp.Set.Value.Weapons[i].Enable = enabled;
-                                            tmpComp.SettingsUpdated = true;
-                                            tmpComp.ClientUiUpdate = true;
-                                        }
-
-                                    }
-                                }
-                            },
-                            TerminalHelpers.WeaponFunctionEnabled);
+                        TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled);
 
                         CreateShootActionSet<IMyLargeTurretBase>(wepName, wepID);
                     }
@@ -128,6 +97,38 @@ namespace WeaponCore
                 WepControl = true;
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
+        }
+
+        internal bool WeaponEnabled(IMyTerminalBlock block, int wepID)
+        {
+            var tmpComp = block?.Components?.Get<WeaponComponent>();
+            if (tmpComp == null || !tmpComp.Platform.Inited) return false;
+
+            var enabled = false;
+            for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
+            {
+                if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
+                    enabled = tmpComp.Set.Value.Weapons[i].Enable;
+            }
+            return enabled;
+        }
+
+        internal void EnableWeapon(IMyTerminalBlock block, int wepID, bool enabled)
+        {
+            var tmpComp = block?.Components?.Get<WeaponComponent>();
+            if (tmpComp != null && tmpComp.Platform.Inited)
+            {
+                for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
+                {
+                    if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
+                    {
+                        tmpComp.Set.Value.Weapons[i].Enable = enabled;
+                        tmpComp.SettingsUpdated = true;
+                        tmpComp.ClientUiUpdate = true;
+                    }
+
+                }
+            }
         }
 
         internal static void CreateShootActionSet<T>(string name, int id) where T : IMyTerminalBlock
