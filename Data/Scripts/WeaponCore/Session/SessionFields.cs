@@ -34,11 +34,6 @@ namespace WeaponCore
         private int _lCount;
         private int _eCount;
         private double _syncDistSqr;
-        private string _dbUpdatePerf;
-        private string _eventsPerf;
-        private string _damagePerf;
-        private string _projectilePerf;
-        private string _updatePerf;
 
         private readonly object _configLock = new object();
 

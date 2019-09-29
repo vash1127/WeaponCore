@@ -45,8 +45,9 @@ namespace WeaponCore
         private void ProcessDbsCallBack()
         {
             DsUtil.Start("");
-            foreach (var db in DbsToUpdate)
+            for (int d = 0; d < DbsToUpdate.Count; d++)
             {
+                var db = DbsToUpdate[d];
                 if (db.MyPlanetTmp != null)
                 {
                     var gridBox = db.MyGrid.PositionComp.WorldAABB;
@@ -60,7 +61,10 @@ namespace WeaponCore
                 for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
                 db.SortedTargets.Clear();
                 db.Targets.Clear();
-                for (int i = 0; i < db.NewEntities.Count; i++)
+
+                var newEntCnt = db.NewEntities.Count;
+                db.SortedTargets.Capacity = newEntCnt;
+                for (int i = 0; i < newEntCnt; i++)
                 {
                     var detectInfo = db.NewEntities[i];
                     var ent = detectInfo.Parent;
@@ -84,23 +88,28 @@ namespace WeaponCore
                 db.SortedTargets.Sort(db.TargetCompare1);
 
                 db.Threats.Clear();
-                db.Threats.Capacity = db.ThreatsTmp.Count;
-                for (var i = 0; i < db.ThreatsTmp.Count; i++) db.Threats.Add(db.ThreatsTmp[i]);
+                var thrCnt = db.ThreatsTmp.Count;
+                db.Threats.Capacity = thrCnt;
+                for (var i = 0; i < thrCnt; i++) db.Threats.Add(db.ThreatsTmp[i]);
                 db.ThreatsTmp.Clear();
 
                 db.TargetAis.Clear();
-                db.TargetAis.Capacity = db.TargetAisTmp.Count;
-                for (var i = 0; i < db.TargetAisTmp.Count; i++) db.TargetAis.Add(db.TargetAisTmp[i]);
+                var tAiCnt = db.TargetAisTmp.Count;
+                db.TargetAis.Capacity = tAiCnt;
+                for (var i = 0; i < tAiCnt; i++) db.TargetAis.Add(db.TargetAisTmp[i]);
                 db.TargetAisTmp.Clear();
 
                 db.Obstructions.Clear();
-                for (int i = 0; i < db.ObstructionsTmp.Count; i++) db.Obstructions.Add(db.ObstructionsTmp[i]);
+                var obsCnt = db.ObstructionsTmp.Count;
+                db.Obstructions.Capacity = obsCnt;
+                for (int i = 0; i < obsCnt; i++) db.Obstructions.Add(db.ObstructionsTmp[i]);
                 db.ObstructionsTmp.Clear();
 
                 db.StaticsInRange.Clear();
                 if (db.PlanetSurfaceInRange) db.StaticsInRangeTmp.Add(db.MyPlanet);
                 var staticCount = db.StaticsInRangeTmp.Count;
 
+                db.StaticsInRange.Capacity = staticCount;
                 for (int i = 0; i < staticCount; i++) db.StaticsInRange.Add(db.StaticsInRangeTmp[i]);
                 db.StaticsInRangeTmp.Clear();
                 db.StaticEntitiesInRange = staticCount > 0;
@@ -113,10 +122,9 @@ namespace WeaponCore
 
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
-
             DbsToUpdate.Clear();
             DbsUpdating = false;
-            DsUtil.Complete("db", true, false);
+            DsUtil.Complete("db", true);
         }
 
         public void Handler(object o)
