@@ -88,15 +88,6 @@ namespace WeaponCore
                 }
                 if (Tick20) DsUtil.Complete("effects", true);
 
-                if (Tick60)
-                {
-                    var threshold = Projectiles.Wait.Length * 10;
-                    HighLoad = Load > threshold;
-                    Log.Line($"[Load:{Load}({threshold}) - Mp:{HighLoad}] [Projectiles:{DsUtil.GetValue("projectiles")}] [Update:{DsUtil.GetValue("update")}] [Damage:{DsUtil.GetValue("damage")}] [Draw:{DsUtil.GetValue("draw")}] [Dbs:{DsUtil.GetValue("db")}] [Effects:{DsUtil.GetValue("effects")}] [Events:{DsUtil.GetValue("events")}] [Anim:{DsUtil.GetValue("animations")}]");
-                    Load = 0d;
-                    DsUtil.Clean();
-                }
-
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
             }
@@ -153,6 +144,14 @@ namespace WeaponCore
                         AfterGlow();
                 }
                 if (Tick20) DsUtil.Complete("draw", true);
+                if (Tick300)
+                {
+                    var threshold = Projectiles.Wait.Length * 10;
+                    HighLoad = Load > threshold;
+                    Log.Line($"[Load:{Load:0.00}({threshold}) - Mp:{HighLoad}] [Projectiles:{DsUtil.GetValue("projectiles")}] [Update:{DsUtil.GetValue("update")}] [Damage:{DsUtil.GetValue("damage")}] [Draw:{DsUtil.GetValue("draw")}] [Dbs:{DsUtil.GetValue("db")}] [Effects:{DsUtil.GetValue("effects")}] [Events:{DsUtil.GetValue("events")}] [Anim:{DsUtil.GetValue("animations")}]");
+                    Load = 0d;
+                    DsUtil.Clean();
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
