@@ -52,13 +52,13 @@ namespace WeaponCore.Support
 
 
                 WeaponComponent comp;
-                Ai.WeaponBase.TryRemove(MyCube, out comp);
+                if(Ai.WeaponBase.TryRemove(MyCube, out comp));
             }
 
             if (Ai.WeaponBase.Count == 0)
             {
                 GridAi gridAi;
-                Session.Instance.GridTargetingAIs.TryRemove(MyGrid, out gridAi);
+                if(Session.Instance.GridTargetingAIs.TryRemove(MyGrid, out gridAi));
             }
             Ai = null;
             MyGrid = null;

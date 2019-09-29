@@ -38,6 +38,7 @@ namespace WeaponCore
 
             comp.MaxRequiredPower = 0;
             comp.HeatPerSecond = 0;
+            comp.Ai.OptimalDPS -= comp.OptimalDPS;
             comp.OptimalDPS = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                 var w = comp.Platform.Weapons[i];
@@ -107,6 +108,7 @@ namespace WeaponCore
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
             }
+            comp.Ai.OptimalDPS += comp.OptimalDPS;
             comp.TerminalRefresh();
             comp.Ai.RecalcPowerPercent = true;
             comp.Ai.UpdatePowerSources = true;
@@ -130,6 +132,7 @@ namespace WeaponCore
 
             comp.MaxRequiredPower = 0;
             comp.HeatPerSecond = 0;
+            comp.Ai.OptimalDPS -= comp.OptimalDPS;
             comp.OptimalDPS = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -181,6 +184,7 @@ namespace WeaponCore
 
 
             }
+            comp.Ai.OptimalDPS += comp.OptimalDPS;
             comp.TerminalRefresh();
             comp.Ai.RecalcPowerPercent = true;
             comp.Ai.UpdatePowerSources = true;

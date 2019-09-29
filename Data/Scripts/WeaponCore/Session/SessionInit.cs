@@ -131,9 +131,9 @@ namespace WeaponCore
             foreach (var tDef in _turretDefinitions)
             {
                 var subTypeIdHash = MyStringHash.GetOrCompute(tDef.Key);
-                SubTypeIdHashMap.Add(tDef.Key, subTypeIdHash);
+                SubTypeIdHashMap[tDef.Key] = subTypeIdHash;
 
-                WeaponPlatforms.Add(subTypeIdHash, new WeaponStructure(tDef, _subTypeIdToWeaponDefs[tDef.Key]));
+                WeaponPlatforms[subTypeIdHash] =  new WeaponStructure(tDef, _subTypeIdToWeaponDefs[tDef.Key]);
             }
             for (int i = 0; i < Projectiles.Wait.Length; i++)
             {

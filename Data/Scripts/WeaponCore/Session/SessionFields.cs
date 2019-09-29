@@ -9,6 +9,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Library.Threading;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -36,7 +37,7 @@ namespace WeaponCore
         private int _eCount;
         private double _syncDistSqr;
 
-        private readonly object _configLock = new object();
+        internal readonly SpinLockRef _configLock = new SpinLockRef();
 
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
@@ -157,6 +158,7 @@ namespace WeaponCore
         internal bool ShieldApiLoaded;
         internal bool TargetArmed;
         internal bool InGridAiCockPit;
+        internal bool ControlChanged;
 
         internal Vector3D CameraPos;
         internal MyEntity ControlledEntity;

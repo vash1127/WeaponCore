@@ -162,6 +162,8 @@ namespace WeaponCore.Support
 
             }
 
+            Ai.OptimalDPS += OptimalDPS;
+
             var gun = Gun.GunBase;
             var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id
                 : Platform.Structure.AmmoToWeaponIds.First().Key;
@@ -217,6 +219,8 @@ namespace WeaponCore.Support
         {
             try
             {
+                Ai.TotalSinkPower -= MaxRequiredPower;
+                Ai.OptimalDPS -= OptimalDPS;
                 base.OnRemovedFromScene();
                 Session.Instance.CompsToRemove.Enqueue(this);
             }

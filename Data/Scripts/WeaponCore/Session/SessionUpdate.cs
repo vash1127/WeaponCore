@@ -21,13 +21,14 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading) || !gridAi.MyGrid.InScene) continue;
+                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged) || !gridAi.MyGrid.InScene) continue;
                 gridAi.Reloading = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
                     var lastGunner = comp.Gunner;
                     var gunner = comp.Gunner = ControlledEntity == comp.MyCube;
+
                     if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || comp.Status != Started)
                     {
                         if (comp.Status != Started) comp.HealthCheck();
@@ -91,6 +92,17 @@ namespace WeaponCore
                                  (gunner != lastGunner && !gunner)))
                                 w.LastTargetLock = Tick;
 
+                            if (gunner != lastGunner && gunner)
+                            {
+                                gridAi.ManualComps++;
+                                comp.Shooting++;
+                            }
+                            else if(gunner != lastGunner && !gunner)
+                            {
+                                gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
+                                comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
+                            }
+
                             comp.ReturnHome = gridAi.ReturnHome = false;
 
                             if (w.LastTargetLock > 0)
@@ -125,7 +137,7 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-                    var ammoCheck = !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
+                    var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;

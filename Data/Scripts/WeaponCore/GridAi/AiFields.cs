@@ -95,6 +95,7 @@ namespace WeaponCore.Support
         internal float MinSinkPower;
         internal float CurrentWeaponsDraw;
         internal float LastAvailablePower;
+        internal float OptimalDPS;
         internal Vector3D GridCenter;
         internal Vector3 GridVel;
         internal enum TargetType

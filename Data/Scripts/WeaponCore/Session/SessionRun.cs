@@ -49,7 +49,10 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
+                    var lastControlledEnt = ControlledEntity;
                     ControlledEntity = (MyEntity)MyAPIGateway.Session.ControlledObject;
+                    WeaponComponent notNeeded;
+                    ControlChanged = lastControlledEnt != ControlledEntity && ControlledEntity.Components.TryGet(out notNeeded);
                     
                     CameraPos = Session.Camera.Position;
                     ProcessAnimationQueue();
@@ -85,7 +88,7 @@ namespace WeaponCore
                 }
                 if (Tick20) DsUtil.Complete("effects", true);
 
-                if (Tick180)
+                if (Tick60)
                 {
                     var threshold = Projectiles.Wait.Length * 10;
                     HighLoad = Load > threshold;
@@ -97,7 +100,7 @@ namespace WeaponCore
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
             }
-            catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
 
         public override void UpdatingStopped()
@@ -124,7 +127,7 @@ namespace WeaponCore
                 if (!CompsToRemove.IsEmpty) RemoveComps();
 
             }
-            catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }
 
         public override void Draw()
