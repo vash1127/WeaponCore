@@ -18,10 +18,6 @@ namespace WeaponCore
         {
             try
             {
-                Init();
-                foreach (var ent in BlocksToInit) {
-                    OnEntityCreate(ent);
-                }
                 BeforeStartInit();
             }
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
@@ -124,6 +120,7 @@ namespace WeaponCore
                 if (!CompsToStart.IsEmpty) StartComps();
 
                 if (!CompsToRemove.IsEmpty) RemoveComps();
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }

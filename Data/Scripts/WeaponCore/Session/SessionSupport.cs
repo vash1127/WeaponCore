@@ -119,7 +119,6 @@ namespace WeaponCore
                 //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.MyShield = db.MyShieldTmp;
                 db.ShieldNear = db.ShieldNearTmp;
-
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
             DbsToUpdate.Clear();
@@ -720,7 +719,7 @@ namespace WeaponCore
             }
         }
 
-        internal void TurnWeaponShootOff(Object ai)
+        internal void TurnWeaponShootOff(object ai)
         {
             var gridAi = ai as GridAi;
             if(gridAi == null) return;

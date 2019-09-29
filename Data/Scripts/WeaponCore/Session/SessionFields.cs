@@ -26,6 +26,9 @@ namespace WeaponCore
         internal static Session Instance { get; private set; }
 
         internal volatile bool BeforeStarted;
+        internal volatile bool WasInited;
+        internal volatile bool Inited;
+        internal object InitObj = new object();
         internal volatile bool Dispatched;
         internal bool DbsUpdating;
         internal bool HighLoad;
@@ -168,7 +171,7 @@ namespace WeaponCore
         internal readonly Guid LogicettingsGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811501");
 
         internal ShieldApi SApi = new ShieldApi();
-        private FutureEvents _futureEvents = new FutureEvents();
+        private readonly FutureEvents _futureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
 
     }

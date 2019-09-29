@@ -59,7 +59,7 @@ namespace WeaponCore
                 MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
                 MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
             }
-
+            if (!Inited) lock (InitObj) Init();
             //LcdEntity1 = Spawn.SpawnPrefab("HelmetHUD_ghostLCD", out LcdPanel1, true);
         }
 
@@ -67,7 +67,6 @@ namespace WeaponCore
         {
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
-
             HeatEmissives = CreateHeatEmissive();
 
             foreach (var x in _weaponDefinitions)
@@ -142,8 +141,7 @@ namespace WeaponCore
                 for (int j = 0; j < ModelCount; j++)
                     Projectiles.EntityPool[i][j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.EntityActivator);
             }
-
-            CreateLogicElements();
+            Inited = true;
             BeforeStarted = true;
         }
     }
