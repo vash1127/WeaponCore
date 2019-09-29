@@ -64,6 +64,7 @@ namespace WeaponCore
 
         internal void Init()
         {
+            if (Inited) return;
             Inited = true;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");

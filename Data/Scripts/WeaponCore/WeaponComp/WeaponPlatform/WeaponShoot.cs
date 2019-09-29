@@ -344,7 +344,7 @@ namespace WeaponCore.Platform
             {
                 if (DelayCeaseFire)
                 {
-                    Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - due to null DelayCeaseFire");
+                    //Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - due to null DelayCeaseFire");
                     return;
                 }
 
@@ -369,7 +369,7 @@ namespace WeaponCore.Platform
 
                 if (rootAsGrid == null && parentAsGrid == null)
                 {
-                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    //Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
 
@@ -393,7 +393,7 @@ namespace WeaponCore.Platform
                     Log.Line($"{System.WeaponName} - ShootRayCheck Success - sameLogicGroup: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
-                Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                //Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
                 return;
             }
             if (System.ClosestFirst)
