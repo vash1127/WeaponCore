@@ -35,11 +35,11 @@ namespace WeaponCore
                 Timings();
                 DsUtil.Start("");
                 _futureEvents.Tick(Tick);
-                _eventsPerf = DsUtil.Complete();
+                DsUtil.Complete("events", true, false);
                 Ui.UpdateInput();
                 DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
-                _damagePerf = DsUtil.Complete();
+                DsUtil.Complete("damage", true, false);
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
@@ -60,7 +60,7 @@ namespace WeaponCore
                 DsUtil.Start("");
                 AiLoop();
                 UpdateWeaponPlatforms();
-                _updatePerf = DsUtil.Complete();
+                DsUtil.Complete("update", true, false);
 
                 DsUtil.Start("");
                 Projectiles.Update();
@@ -83,15 +83,17 @@ namespace WeaponCore
                     }
                     _gridEffects.Clear();
                 }
-                _projectilePerf = DsUtil.Complete();
+                DsUtil.Complete("projectiles", true, false);
 
-                if (Tick600)
+                if (Tick60)
                 {
                     var threshold = Projectiles.Wait.Length * 10;
-                    HighLoad = Load > threshold;
+                    //HighLoad = Load > threshold;
+                    HighLoad = false;
                     Log.Line($"TurretLoad:{Load} - HighLoad:{threshold} - MultiCore:{HighLoad}");
-                    Log.Line($"Events:{_eventsPerf} - Damage:{_damagePerf} - Update:{_updatePerf} - Projectiles:{_projectilePerf} - Dbs:{_dbUpdatePerf}");
+                    Log.Line($"Events:{DsUtil.GetValue("events")} - Damage:{DsUtil.GetValue("damage")} - Update:{DsUtil.GetValue("update")} - Projectiles:{DsUtil.GetValue("projectiles")} - Dbs:{DsUtil.GetValue("db")}");
                         Load = 0d;
+                        DsUtil.Clear();
                 }
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())

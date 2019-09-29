@@ -116,7 +116,7 @@ namespace WeaponCore
 
             DbsToUpdate.Clear();
             DbsUpdating = false;
-            _dbUpdatePerf = DsUtil.Complete();
+            DsUtil.Complete("db", true, false);
         }
 
         public void Handler(object o)

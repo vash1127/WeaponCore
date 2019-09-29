@@ -417,34 +417,42 @@ namespace WeaponCore.Support
         private string _message;
         private bool _time;
         private Stopwatch Sw { get; } = new Stopwatch();
-        private Dictionary<string, double> _timings = new Dictionary<string, double>();
+        private readonly Dictionary<string, double> _timings = new Dictionary<string, double>();
 
-        public void Start(string message, bool time = true)
+        public void Start(string name, bool time = true)
         {
-            _message = message;
+            _message = name;
             _time = time;
             Sw.Restart();
         }
 
-        public string Complete(bool display = false)
+        public void Clear()
+        {
+            _timings.Clear();
+        }
+
+        public double GetValue(string name)
+        {
+            double value = -1;
+            _timings.TryGetValue(name, out value);
+            return value;
+        }
+
+        public void Complete(string name, bool store, bool display = false)
         {
             Sw.Stop();
             var ticks = Sw.ElapsedTicks;
             var ns = 1000000000.0 * ticks / Stopwatch.Frequency;
             var ms = ns / 1000000.0;
-            var s = ms / 1000;
+            if (store) _timings[name] = ms;
             Sw.Reset();
-            string message;
             if (display)
             {
-                message = $"{_message} ms:{(float)ms} last-ms:{(float)_last} s:{(int)s}";
+                var message = $"{_message} ms:{(float)ms} last-ms:{(float)_last}";
                 _last = ms;
+                if (_time) Log.Line(message);
+                else Log.CleanLine(message);
             }
-            else message = $"{ms}";
-
-            if (_time && display) Log.Line(message);
-            else if (display) Log.CleanLine(message);
-            return message;
         }
     }
 
