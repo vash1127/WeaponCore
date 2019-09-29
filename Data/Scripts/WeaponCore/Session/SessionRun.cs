@@ -31,13 +31,13 @@ namespace WeaponCore
             try
             {
                 Timings();
-                DsUtil.Start("");
+                if (Tick20) DsUtil.Start("");
                 _futureEvents.Tick(Tick);
-                DsUtil.Complete("events", Tick180);
+                if (Tick20) DsUtil.Complete("events", true);
                 Ui.UpdateInput();
-                DsUtil.Start("");
+                if (Tick20) DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
-                DsUtil.Complete("damage", Tick180);
+                if (Tick20) DsUtil.Complete("damage", true);
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
@@ -55,16 +55,16 @@ namespace WeaponCore
                     ProcessAnimationQueue();
                 }
 
-                DsUtil.Start("");
+                if (Tick20) DsUtil.Start("");
                 AiLoop();
                 UpdateWeaponPlatforms();
-                DsUtil.Complete("update", Tick180);
+                if (Tick20) DsUtil.Complete("update", true);
 
-                DsUtil.Start("");
+                if (Tick20) DsUtil.Start("");
                 Projectiles.Update();
-                DsUtil.Complete("projectiles", Tick180);
+                if (Tick20) DsUtil.Complete("projectiles", true);
 
-                DsUtil.Start("");
+                if (Tick20) DsUtil.Start("");
                 if (_effectedCubes.Count > 0) ApplyEffect();
                 if (Tick60)
                 {
@@ -83,15 +83,15 @@ namespace WeaponCore
                     }
                     _gridEffects.Clear();
                 }
-                DsUtil.Complete("effects", Tick180);
+                if (Tick20) DsUtil.Complete("effects", true);
 
                 if (Tick180)
                 {
                     var threshold = Projectiles.Wait.Length * 10;
                     HighLoad = Load > threshold;
-                    Log.Line($"TurretLoad:{Load} - HighLoad:{threshold} - MultiCore:{HighLoad}");
-                    Log.Line($"Events:{DsUtil.GetValue("events")} - Damage:{DsUtil.GetValue("damage")} - Update:{DsUtil.GetValue("update")} - Projectiles:{DsUtil.GetValue("projectiles")} - Dbs:{DsUtil.GetValue("db")} - Effects:{DsUtil.GetValue("effects")} - Draw:{DsUtil.GetValue("draw")} - Anim:{DsUtil.GetValue("animations")}");
+                    Log.Line($"[Load:{Load}({threshold}) - Mp:{HighLoad}] [Projectiles:{DsUtil.GetValue("projectiles")}] [Update:{DsUtil.GetValue("update")}] [Damage:{DsUtil.GetValue("damage")}] [Draw:{DsUtil.GetValue("draw")}] [Dbs:{DsUtil.GetValue("db")}] [Effects:{DsUtil.GetValue("effects")}] [Events:{DsUtil.GetValue("events")}] [Anim:{DsUtil.GetValue("animations")}]");
                     Load = 0d;
+                    DsUtil.Clean();
                 }
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
@@ -114,10 +114,10 @@ namespace WeaponCore
             try
             {
                 if (Placer != null) UpdatePlacer();
-                DsUtil.Start("");
+                if (Tick20) DsUtil.Start("");
                 if (!DedicatedServer)//todo client side only
                     ProcessAnimations();
-                DsUtil.Complete("animations", Tick180);
+                if (Tick20) DsUtil.Complete("animations", true);
 
                 if (!CompsToStart.IsEmpty) StartComps();
 
@@ -131,7 +131,7 @@ namespace WeaponCore
         {
             try
             {
-                DsUtil.Start("");
+                if (Tick20) DsUtil.Start("");
                 if (!DedicatedServer)
                 {
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
@@ -149,7 +149,7 @@ namespace WeaponCore
                     if (_afterGlow.Count > 0)
                         AfterGlow();
                 }
-                DsUtil.Complete("draw", Tick180);
+                if (Tick20) DsUtil.Complete("draw", true);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
@@ -160,7 +160,6 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
-                //MyEntities.OnEntityAdd += OnEntityAdded;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);

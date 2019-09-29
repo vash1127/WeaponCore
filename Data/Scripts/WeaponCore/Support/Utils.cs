@@ -413,15 +413,33 @@ namespace WeaponCore.Support
 
     internal class DSUtils
     {
+        internal class Timings
+        {
+            public double Max;
+            public double Min;
+            public double Total;
+            public double Average;
+            public int Events;
+            public string Report;
+
+            internal void Clean()
+            {
+                Max = 0;
+                Min = 0;
+                Total = 0;
+                Average = 0;
+                Events = 0;
+                Report = string.Empty;
+            }
+        }
+
         private double _last;
-        private string _message;
         private bool _time;
         private Stopwatch Sw { get; } = new Stopwatch();
-        private readonly Dictionary<string, double> _timings = new Dictionary<string, double>();
+        private readonly Dictionary<string, Timings> _timings = new Dictionary<string, Timings>();
 
         public void Start(string name, bool time = true)
         {
-            _message = name;
             _time = time;
             Sw.Restart();
         }
@@ -431,11 +449,21 @@ namespace WeaponCore.Support
             _timings.Clear();
         }
 
-        public double GetValue(string name)
+        public void Clean()
         {
-            double value = -1;
-            _timings.TryGetValue(name, out value);
-            return value;
+            foreach (var timing in _timings.Values)
+                timing.Clean();
+        }
+
+        public string GetValue(string name)
+        {
+            Timings times;
+            if (_timings.TryGetValue(name, out times))
+            {
+                times.Report = $"{Math.Round(times.Average, 4)}({Math.Round(times.Min, 4)}/{Math.Round(times.Max, 4)})";
+                return times.Report;
+            }
+            return string.Empty;
         }
 
         public void Complete(string name, bool store, bool display = false)
@@ -444,11 +472,32 @@ namespace WeaponCore.Support
             var ticks = Sw.ElapsedTicks;
             var ns = 1000000000.0 * ticks / Stopwatch.Frequency;
             var ms = ns / 1000000.0;
-            if (store) _timings[name] = ms;
+            if (store)
+            {
+                Timings timings;
+                if (_timings.TryGetValue(name, out timings))
+                {
+                    timings.Total += ms;
+                    timings.Events++;
+                    timings.Average = (timings.Total / timings.Events);
+                    if (ms > timings.Max) timings.Max = ms;
+                    else if (ms < timings.Min || timings.Min <= 0) timings.Min = ms;
+                }
+                else
+                {
+                    timings = new Timings();
+                    timings.Total += ms;
+                    timings.Events++;
+                    timings.Average = ms;
+                    timings.Max = ms;
+                    timings.Min = ms;
+                    _timings[name] = timings;
+                }
+            }
             Sw.Reset();
             if (display)
             {
-                var message = $"{_message} ms:{(float)ms} last-ms:{(float)_last}";
+                var message = $"ms:{(float)ms} last-ms:{(float)_last}";
                 _last = ms;
                 if (_time) Log.Line(message);
                 else Log.CleanLine(message);

@@ -22,7 +22,6 @@ namespace WeaponCore
                 {
                     if (!Inited)
                         lock (InitObj) Init();
-                    
 
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;

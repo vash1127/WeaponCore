@@ -131,8 +131,6 @@ namespace WeaponThread
                 },
             },
 
-           
-
             Graphics = new GraphicDefinition
             {
                 ModelName = "",
