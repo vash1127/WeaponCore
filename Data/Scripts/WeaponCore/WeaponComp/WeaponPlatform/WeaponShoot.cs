@@ -378,7 +378,7 @@ namespace WeaponCore.Platform
                 {
                     masterWeapon.Target.Expired = true;
                     if (masterWeapon != this) Target.Expired = true;
-                    Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
+                    //Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
                     return;
                 }
 

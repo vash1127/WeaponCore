@@ -761,7 +761,7 @@ namespace WeaponCore.Projectiles
             if (Colliding || force)
             {
                 if (force) LastHitPos = Position;
-                //if (T.System.HitParticle && !T.System.IsBeamWeapon) PlayHitParticle();
+                if (T.System.HitParticle && !T.System.IsBeamWeapon) PlayHitParticle();
                 if (T.System.HitSound)
                 {
                     HitEmitter.SetPosition(Position);
