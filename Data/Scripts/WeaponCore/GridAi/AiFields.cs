@@ -6,7 +6,6 @@ using Sandbox.Game.EntityComponents;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -21,6 +20,8 @@ namespace WeaponCore.Support
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(50);
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(50);
+        internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
+
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
@@ -111,7 +112,6 @@ namespace WeaponCore.Support
             MyGrid = grid;
             RegisterMyGridEvents(true, grid);
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
-
         }
     }
 }

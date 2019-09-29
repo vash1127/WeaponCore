@@ -81,7 +81,6 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            Session.Instance.DsUtil.Start("ProjectilePerf:");
             if (Session.Instance.HighLoad)
             {
                 MyAPIGateway.Parallel.For(0, Wait.Length, i =>
@@ -110,7 +109,6 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Wait.Length; i++)
                 lock (Wait[i])
                     Clean(i);
-            Session.Instance.DsUtil.Complete(Session.Instance.Tick600);
         }
 
         private void UpdateState(int i)

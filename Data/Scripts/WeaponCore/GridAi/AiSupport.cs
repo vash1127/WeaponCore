@@ -203,43 +203,20 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
-                var xNull = x.Target.Physics == null;
-                var yNull = y.Target.Physics == null;
-                var xandYNull = xNull && yNull;
-                var xVel = xNull ? (Vector3?) null : x.Target.Physics.LinearVelocity;
-                var yVel = yNull ? (Vector3?)null : y.Target.Physics.LinearVelocity;
-                var xTargetPos = x.Target.PositionComp.GetPosition();
-                var xMyPos = x.MyGrid.PositionComp.GetPosition();
-                var yTargetPos = y.Target.PositionComp.GetPosition();
-                var yMyPos = y.MyGrid.PositionComp.GetPosition();
+                var compareApproch = x.Approaching.CompareTo(y.Approaching);
+                if (compareApproch != 0 && (x.DistSqr < 640000 || y.DistSqr < 640000)) return -compareApproch;
 
-                double xDist;
-                double yDist;
-                Vector3D.DistanceSquared(ref xTargetPos, ref xMyPos, out xDist);
-                Vector3D.DistanceSquared(ref yTargetPos, ref yMyPos, out yDist);
-
-                var xVelLen = !xNull ? xVel.Value.LengthSquared() : 0;
-                var yVelLen = !yNull ? yVel.Value.LengthSquared() : 0;
-
-                if (!xNull) xVel.Value.LengthSquared();
-
-                var xApproching = xandYNull || !xNull && Vector3.Dot(xVel.Value, xTargetPos - xMyPos) < 0 && xVelLen > 25;
-                var yApproching = !xandYNull && !yNull && Vector3.Dot(yVel.Value, yTargetPos - yMyPos) < 0 && yVelLen > 25;
-
-                var compareApproch = xApproching.CompareTo(yApproching);
-                if (compareApproch != 0 && (xDist < 640000 || yDist < 640000)) return -compareApproch;
-
-                if (xDist < 1000000 || yDist < 1000000)
+                if (x.DistSqr < 1000000 || y.DistSqr < 1000000)
                 {
-                    var compareVelocity = xVelLen.CompareTo(yVelLen);
-                    if (compareVelocity != 0 && (xVelLen > 3600 || yVelLen > 3600)) return -compareVelocity;
+                    var compareVelocity = x.VelLenSqr.CompareTo(y.VelLenSqr);
+                    if (compareVelocity != 0 && (x.VelLenSqr > 3600 || y.VelLenSqr > 3600)) return -compareVelocity;
                 }
 
-                if (xDist > 10000 && x.PartCount < 5) xDist = double.MaxValue;
-                if (yDist > 10000 && y.PartCount < 5) yDist = double.MaxValue;
+                var xAdjDist = x.DistSqr > 10000 && x.PartCount < 5 ? double.MaxValue : x.DistSqr;
+                var yAdjDist = y.DistSqr > 10000 && y.PartCount < 5 ? double.MaxValue : y.DistSqr;
 
-                var compareDist = xDist.CompareTo(yDist);
-                if (compareDist != 0 && (xDist < 10000 || yDist < 10000)) return compareDist;
+                var compareDist = xAdjDist.CompareTo(yAdjDist);
+                if (compareDist != 0 && (xAdjDist < 360000 || yAdjDist < 360000)) return compareDist;
 
                 var compareParts = x.PartCount.CompareTo(y.PartCount);
                 return -compareParts;
@@ -258,6 +235,7 @@ namespace WeaponCore.Support
             internal bool WasOnline;
             internal MyCubeGrid AttachedGrid;
             internal MyOrientedBoundingBoxD ShieldObb;
+            internal float Charge;
 
             internal MyOrientedBoundingBoxD GetObb()
             {
@@ -267,19 +245,26 @@ namespace WeaponCore.Support
             }
         }
 
-        internal struct TargetInfo
+        internal class TargetInfo
         {
-            internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal readonly MyEntity Target;
-            internal readonly bool IsGrid;
-            internal readonly bool Shielded;
-            internal readonly int PartCount;
-            internal readonly MyCubeGrid MyGrid;
-            internal readonly GridAi Ai;
+            internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
+            internal MyEntity Target;
+            internal Vector3D TargetDir;
+            internal Vector3D TargetPos;
+            internal Vector3 Velocity;
+            internal double DistSqr;
+            internal float VelLenSqr;
+            internal bool IsGrid;
+            internal bool Shielded;
+            internal bool Approaching;
+            internal int PartCount;
+            internal int OffenseRating;
+            internal MyCubeGrid MyGrid;
+            internal GridAi Ai;
             internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
             internal ShieldInfo ShieldInfo;
 
-            internal TargetInfo(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, bool shielded, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
+            internal void Init(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, bool shielded, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
             {
                 EntInfo = entInfo;
                 Target = target;
@@ -293,6 +278,7 @@ namespace WeaponCore.Support
                         ShieldBlock = shieldBlock,
                         AttachedGrid = (MyCubeGrid) shieldBlock.CubeGrid,
                         WasOnline = Session.Instance.SApi.IsShieldUp(shieldBlock),
+                        Charge = Session.Instance.SApi.GetCharge(shieldBlock),
                     };
                 }
                 else ShieldInfo = new ShieldInfo();
@@ -301,6 +287,21 @@ namespace WeaponCore.Support
                 MyGrid = myGrid;
                 Ai = ai;
                 TypeDict = typeDict;
+                Velocity = target.Physics.LinearVelocity;
+                VelLenSqr = Velocity.LengthSquared();
+                TargetDir = Vector3D.Normalize(Velocity);
+                TargetPos = Target.PositionComp.WorldAABB.Center;
+                if (!MyUtils.IsZero(Velocity, 1E-02F))
+                {
+                    var refDir = Vector3D.Normalize(ai.GridCenter - TargetPos);
+                    var dot = Vector3D.Dot(TargetDir, refDir);
+                    var num = TargetDir.LengthSquared() * refDir.LengthSquared() * Session.Instance.ApproachDegrees * Math.Abs(Session.Instance.ApproachDegrees);
+                    Approaching = Math.Abs(dot) * dot > num;
+                }
+                else Approaching = false;
+
+                OffenseRating = TypeDict != null && TypeDict.ContainsKey(BlockTypes.Offense) ? TypeDict[BlockTypes.Offense].Count : 0;
+                Vector3D.DistanceSquared(ref TargetPos, ref Ai.GridCenter, out DistSqr);
             }
 
             internal bool Clean()
@@ -316,6 +317,7 @@ namespace WeaponCore.Support
                     Ai.BlockTypePool.Return(TypeDict);
                     TypeDict = null;
                 }
+                Ai.TargetInfoPool.Return(this);
                 return true;
             }
         }

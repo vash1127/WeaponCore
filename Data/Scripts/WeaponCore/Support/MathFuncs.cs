@@ -30,10 +30,10 @@ namespace WeaponCore.Support
             return true;
         }
 
-        internal static bool IsDotProductWithinTolerance(ref Vector3D a, ref Vector3D b, double tolerance)
+        internal static bool IsDotProductWithinTolerance(ref Vector3D targetDir, ref Vector3D refDir, double tolerance)
         {
-            double dot = Vector3D.Dot(a, b);
-            double num = a.LengthSquared() * b.LengthSquared() * tolerance * Math.Abs(tolerance);
+            double dot = Vector3D.Dot(targetDir, refDir);
+            double num = targetDir.LengthSquared() * refDir.LengthSquared() * tolerance * Math.Abs(tolerance);
             return Math.Abs(dot) * dot > num;
         }
 
