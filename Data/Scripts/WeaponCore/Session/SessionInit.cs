@@ -142,7 +142,6 @@ namespace WeaponCore
                 for (int j = 0; j < ModelCount; j++)
                     Projectiles.EntityPool[i][j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.EntityActivator);
             }
-            MyAPIGateway.Utilities.InvokeOnGameThread(CreateLogicElements);
         }
     }
 }

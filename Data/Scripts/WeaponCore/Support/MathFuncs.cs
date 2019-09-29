@@ -88,16 +88,6 @@ namespace WeaponCore.Support
                 pitch = AngleBetween(localTargetVector, flattenedTargetVector) * Math.Sign(localTargetVector.Y); //up is positive
         }
 
-        internal static double WrapAngle(double angle)
-        {
-            angle = Math.IEEERemainder(angle, MathHelperD.TwoPi);
-            if (angle <= -Math.PI)
-                angle += MathHelperD.TwoPi;
-            else if (angle > Math.PI)
-                angle -= MathHelperD.TwoPi;
-            return angle;
-        }
-
         internal static float NormalizeAngle(int angle)
         {
             int num = angle % 360;

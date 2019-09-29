@@ -170,19 +170,13 @@ namespace WeaponCore.Platform
                 }
             }
 
-            var isInView = false;
             var isAligned = false;
 
             if (weapon.IsTracking)
-            {
-                isInView = weapon.IsTargetInViewInLined(targetPos);
-                if (isInView)
-                    isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
-            }
+                isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             else
                 weapon.SeekTarget = true;
 
-            weapon.IsInView = isInView;
             var wasAligned = weapon.IsAligned;
             weapon.IsAligned = isAligned;
 
@@ -191,7 +185,7 @@ namespace WeaponCore.Platform
             else if (alignedChange && !weapon.DelayCeaseFire)
                 weapon.StopShooting();
 
-            weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsInView && weapon.IsAligned;
+            weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
             return weapon.IsTracking;
         }
 
@@ -330,93 +324,6 @@ namespace WeaponCore.Platform
 
             var interceptPoint = shooterPosition + (projectileForwardVelocity + normalVelocity) * timeToIntercept + 0.5 * targetAcceleration * timeToIntercept * timeToIntercept;
             return interceptPoint;
-        }
-
-        private bool _gunIdleElevationAzimuthUnknown = true;
-        private double _gunIdleElevation;
-        private double _gunIdleAzimuth;
-
-        internal bool IsTargetInViewInLined(Vector3D predPos)
-        {
-            var muzzleWorldPosition = Comp.MyPivotPos;
-            double azimuth;
-            double elevation;
-            Vector3D.GetAzimuthAndElevation(Vector3D.Normalize(Vector3D.TransformNormal(predPos - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
-
-            if (_gunIdleElevationAzimuthUnknown)
-            {
-                Vector3D.GetAzimuthAndElevation(Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
-                _gunIdleElevationAzimuthUnknown = false;
-            }
-
-            var angle = azimuth - _gunIdleAzimuth;
-            angle = Math.IEEERemainder(angle, MathHelperD.TwoPi);
-            if (angle <= -Math.PI)
-                angle += MathHelperD.TwoPi;
-            else if (angle > Math.PI)
-                angle -= MathHelperD.TwoPi;
-
-            var lookAtPositionEuler = new Vector3D(elevation - _gunIdleElevation, angle, 0.0d);
-
-            var y = lookAtPositionEuler.Y;
-            var x = lookAtPositionEuler.X;
-            bool inRange;
-            if (y > MinAzimuthRadians && y < MaxAzimuthRadians && x > MinElevationRadians) inRange = x < MaxElevationRadians;
-            else inRange = false;
-
-            return inRange;
-        }
-
-        internal static bool IsTargetInView(Weapon weapon, Vector3D predPos)
-        {
-            var lookAtPositionEuler = weapon.LookAt(predPos);
-            var inRange = weapon.IsInRange(ref lookAtPositionEuler);
-            return inRange;
-        }
-
-        private bool IsInRange(ref Vector3D lookAtPositionEuler)
-        {
-            double y = lookAtPositionEuler.Y;
-            double x = lookAtPositionEuler.X;
-            if (y > MinAzimuthRadians && y < MaxAzimuthRadians && x > MinElevationRadians)
-                return x < MaxElevationRadians;
-            return false;
-        }
-
-        private Vector3D LookAt(Vector3D target)
-        {
-            Vector3D muzzleWorldPosition = Comp.MyPivotPos;
-            double azimuth;
-            double elevation;
-            Vector3D.GetAzimuthAndElevation(Vector3D.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
-            if (_gunIdleElevationAzimuthUnknown)
-            {
-                Vector3D.GetAzimuthAndElevation(Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
-                _gunIdleElevationAzimuthUnknown = false;
-            }
-            return new Vector3(elevation - _gunIdleElevation, MathFuncs.WrapAngle(azimuth - _gunIdleAzimuth), 0.0d);
-        }
-
-        private Vector3D LookAtInLined(Vector3D target)
-        {
-            var muzzleWorldPosition = Comp.MyPivotPos;
-            double azimuth;
-            double elevation;
-            Vector3D.GetAzimuthAndElevation(Vector3D.Normalize(Vector3D.TransformNormal(target - muzzleWorldPosition, EntityPart.PositionComp.WorldMatrixInvScaled)), out azimuth, out elevation);
-            if (_gunIdleElevationAzimuthUnknown)
-            {
-                Vector3D.GetAzimuthAndElevation(Comp.Gun.GunBase.GetMuzzleLocalMatrix().Forward, out _gunIdleAzimuth, out _gunIdleElevation);
-                _gunIdleElevationAzimuthUnknown = false;
-            }
-
-            var angle = azimuth - _gunIdleAzimuth;
-            angle = Math.IEEERemainder(angle, MathHelperD.TwoPi);
-            if (angle <= -Math.PI)
-                angle += MathHelperD.TwoPi;
-            else if (angle > Math.PI)
-                angle -= MathHelperD.TwoPi;
-
-            return new Vector3D(elevation - _gunIdleElevation, angle, 0.0d);
         }
 
         internal void InitTracking()
