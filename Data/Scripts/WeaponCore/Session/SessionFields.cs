@@ -27,6 +27,7 @@ namespace WeaponCore
         internal static Session Instance { get; private set; }
 
         internal volatile bool Inited;
+        internal volatile bool Controls;
         internal object InitObj = new object();
         internal volatile bool Dispatched;
         internal bool DbsUpdating;

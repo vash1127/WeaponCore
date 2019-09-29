@@ -19,11 +19,15 @@ namespace WeaponCore
                 if (placer != null && Placer == null) Placer = placer;
 
                 if (!Inited)
-                    using (_configLock.Acquire())
+                    lock (InitObj)
                         Init();
 
                 if (weaponBase != null)
                 {
+                    if (!Controls)
+                        lock(InitObj)
+                            MyAPIGateway.Utilities.InvokeOnGameThread(CreateLogicElements);
+
                     var cube = (MyCubeBlock)myEntity;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
