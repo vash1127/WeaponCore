@@ -72,10 +72,10 @@ namespace WeaponCore.Platform
             double timeToIntercept;
             double rangeToTarget;
 
+            var topMostEnt = target.Entity.GetTopMostParent();
             if (target.Projectile != null)
                 targetLinVel = target.Projectile.Velocity;
-            else if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
-            else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
+            else if (topMostEnt?.Physics != null) targetLinVel = topMostEnt.Physics.LinearVelocity;
             if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3D.Zero;
 
             if (weapon.Prediction != Prediction.Off)
@@ -105,11 +105,10 @@ namespace WeaponCore.Platform
             var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
             double timeToIntercept;
             double rangeToTarget;
-
+            var topMostEnt = target.Entity.GetTopMostParent();
             if (target.Projectile != null)
                 targetLinVel = target.Projectile.Velocity;
-            else if (target.Entity.Physics != null) targetLinVel = target.Entity.Physics.LinearVelocity;
-            else if (target.Entity.GetTopMostParent()?.Physics != null) targetLinVel = target.Entity.GetTopMostParent().Physics.LinearVelocity;
+            else if (topMostEnt?.Physics != null) targetLinVel = topMostEnt.Physics.LinearVelocity;
             if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3D.Zero;
 
 
@@ -167,6 +166,7 @@ namespace WeaponCore.Platform
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
                     turret.Azimuth = (float) weapon.Azimuth;
                     turret.Elevation = (float) weapon.Elevation;
+                    turret.
                 }
             }
 
