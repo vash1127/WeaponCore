@@ -166,7 +166,6 @@ namespace WeaponCore.Platform
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
                     turret.Azimuth = (float) weapon.Azimuth;
                     turret.Elevation = (float) weapon.Elevation;
-                    turret.
                 }
             }
 
