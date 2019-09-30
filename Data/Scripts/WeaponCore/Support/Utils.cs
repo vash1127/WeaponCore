@@ -460,7 +460,7 @@ namespace WeaponCore.Support
             Timings times;
             if (_timings.TryGetValue(name, out times))
             {
-                times.Report = $"{Math.Round(times.Average, 4)}({Math.Round(times.Min, 4)}/{Math.Round(times.Max, 4)})";
+                times.Report = $"{times.Average:0.0000)}({times.Min:0.0000}/{times.Max:0.0000})";
                 return times.Report;
             }
             return string.Empty;
@@ -481,7 +481,7 @@ namespace WeaponCore.Support
                     timings.Events++;
                     timings.Average = (timings.Total / timings.Events);
                     if (ms > timings.Max) timings.Max = ms;
-                    else if (ms < timings.Min || timings.Min <= 0) timings.Min = ms;
+                    if (ms < timings.Min || timings.Min <= 0) timings.Min = ms;
                 }
                 else
                 {
