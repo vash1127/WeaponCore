@@ -41,10 +41,10 @@ namespace WeaponCore
                     var effects = DsUtil.GetValue("effects");
                     var events = DsUtil.GetValue("events");
                     var animations = DsUtil.GetValue("animations");
-                    var threshold = Projectiles.Wait.Length * 10;
-                    HighLoad = projectileTime.Median > threshold;
+                    var threshold = Projectiles.Wait.Length * 12;
+                    HighLoad = Load > threshold;
 
-                    Log.Line($"[Load:{Load:0.00}({threshold}) - Mp:{HighLoad}] [Projectiles:{projectileTime.Median}({projectileTime.Min}/{projectileTime.Max})] [Update:{updateTime.Median}({updateTime.Min}/{updateTime.Max}] [Damage:{damageTime.Median}({damageTime.Min}/{damageTime.Max}] [Draw:{drawTime.Median}({drawTime.Min}/{drawTime.Max}] [Dbs:{db.Median}({db.Min}/{db.Max}] [Effects:{effects.Median}({effects.Min}/{effects.Max}] [Events:{events.Median}({events.Min}/{events.Max}] [Anim:{animations.Median}({animations.Min}/{animations.Max}]");
+                    Log.Line($"[Load:{Load:0.00}({threshold}) - Mp:{HighLoad}] [Projectiles:{projectileTime.Median:0.0000}({projectileTime.Min:0.0000}/{projectileTime.Max:0.0000})] [Update:{updateTime.Median:0.0000}({updateTime.Min:0.0000}/{updateTime.Max:0.0000}] [Damage:{damageTime.Median:0.0000}({damageTime.Min:0.0000}/{damageTime.Max:0.0000}] [Draw:{drawTime.Median:0.0000}({drawTime.Min:0.0000}/{drawTime.Max:0.0000}] [Dbs:{db.Median:0.0000}({db.Min:0.0000}/{db.Max:0.0000}] [Effects:{effects.Median:0.0000}({effects.Min:0.0000}/{effects.Max:0.0000}] [Events:{events.Median:0.0000}({events.Min:0.0000}/{events.Max:0.0000}] [Anim:{animations.Median:0.0000}({animations.Min:0.0000}/{animations.Max:0.0000}]");
                     Load = 0d;
                     DsUtil.Clean();
                 }
