@@ -413,6 +413,13 @@ namespace WeaponCore.Support
 
     internal class DSUtils
     {
+        internal struct Results
+        {
+            public double Min;
+            public double Max;
+            public double Median;
+        }
+
         internal class Timings
         {
             public double Max;
@@ -420,7 +427,8 @@ namespace WeaponCore.Support
             public double Total;
             public double Average;
             public int Events;
-            public string Report;
+            public readonly List<int> Values = new List<int>();
+            public int[] TmpArray = new int[1];
 
             internal void Clean()
             {
@@ -429,7 +437,6 @@ namespace WeaponCore.Support
                 Total = 0;
                 Average = 0;
                 Events = 0;
-                Report = string.Empty;
             }
         }
 
@@ -437,7 +444,6 @@ namespace WeaponCore.Support
         private bool _time;
         private Stopwatch Sw { get; } = new Stopwatch();
         private readonly Dictionary<string, Timings> _timings = new Dictionary<string, Timings>();
-
         public void Start(string name, bool time = true)
         {
             _time = time;
@@ -455,15 +461,25 @@ namespace WeaponCore.Support
                 timing.Clean();
         }
 
-        public string GetValue(string name)
+        public Results GetValue(string name)
         {
             Timings times;
             if (_timings.TryGetValue(name, out times))
             {
-                times.Report = $"{times.Average:0.0000)}({times.Min:0.0000}/{times.Max:0.0000})";
-                return times.Report;
+                var itemCnt = times.Values.Count;
+                var tmpCnt = times.TmpArray.Length;
+                if (itemCnt != tmpCnt)
+                    Array.Resize(ref times.TmpArray, itemCnt);
+                for (int i = 0; i < itemCnt; i++)
+                    times.TmpArray[i] = times.Values[i];
+
+                times.Values.Clear();
+                var median = UtilsStatic.GetMedian(times.TmpArray);
+
+                return new Results { Median = median / 1000000.0, Min = times.Min, Max = times.Max };
             }
-            return string.Empty;
+
+            return new Results();
         }
 
         public void Complete(string name, bool store, bool display = false)
@@ -478,6 +494,7 @@ namespace WeaponCore.Support
                 if (_timings.TryGetValue(name, out timings))
                 {
                     timings.Total += ms;
+                    timings.Values.Add((int)ns);
                     timings.Events++;
                     timings.Average = (timings.Total / timings.Events);
                     if (ms > timings.Max) timings.Max = ms;
@@ -487,6 +504,7 @@ namespace WeaponCore.Support
                 {
                     timings = new Timings();
                     timings.Total += ms;
+                    timings.Values.Add((int)ns);
                     timings.Events++;
                     timings.Average = ms;
                     timings.Max = ms;
