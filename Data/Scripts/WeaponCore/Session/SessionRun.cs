@@ -31,13 +31,13 @@ namespace WeaponCore
             try
             {
                 Timings();
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 _futureEvents.Tick(Tick);
-                if (Tick20) DsUtil.Complete("events", true);
+                DsUtil.Complete("events", true);
                 Ui.UpdateInput();
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
-                if (Tick20) DsUtil.Complete("damage", true);
+                DsUtil.Complete("damage", true);
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
@@ -58,16 +58,16 @@ namespace WeaponCore
                     ProcessAnimationQueue();
                 }
 
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 AiLoop();
                 UpdateWeaponPlatforms();
-                if (Tick20) DsUtil.Complete("update", true);
+                DsUtil.Complete("update", true);
 
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 Projectiles.Update();
-                if (Tick20) DsUtil.Complete("projectiles", true);
+                DsUtil.Complete("projectiles", true);
 
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 if (_effectedCubes.Count > 0) ApplyEffect();
                 if (Tick60)
                 {
@@ -86,7 +86,7 @@ namespace WeaponCore
                     }
                     _gridEffects.Clear();
                 }
-                if (Tick20) DsUtil.Complete("effects", true);
+                DsUtil.Complete("effects", true);
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
@@ -108,10 +108,10 @@ namespace WeaponCore
             try
             {
                 if (Placer != null) UpdatePlacer();
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 if (!DedicatedServer)//todo client side only
                     ProcessAnimations();
-                if (Tick20) DsUtil.Complete("animations", true);
+                DsUtil.Complete("animations", true);
 
                 if (!CompsToStart.IsEmpty) StartComps();
 
@@ -125,7 +125,7 @@ namespace WeaponCore
         {
             try
             {
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 if (!DedicatedServer)
                 {
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
@@ -143,7 +143,7 @@ namespace WeaponCore
                     if (_afterGlow.Count > 0)
                         AfterGlow();
                 }
-                if (Tick20) DsUtil.Complete("draw", true);
+                DsUtil.Complete("draw", true);
                 if (Tick300)
                 {
                     var threshold = Projectiles.Wait.Length * 10;

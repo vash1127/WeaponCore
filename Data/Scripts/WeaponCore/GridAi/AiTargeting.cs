@@ -220,10 +220,8 @@ namespace WeaponCore.Support
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
-                if (hitInfo?.HitEntity == info.Target)
+                if (hitInfo != null && hitInfo.HitEntity == info.Target)
                 {
-                    Log.Line($"{w.System.WeaponName} - found something");
-
                     double rayDist;
                     Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
                     var shortDist = rayDist * (1 - hitInfo.Fraction);

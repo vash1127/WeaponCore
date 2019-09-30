@@ -1,4 +1,5 @@
-﻿using VRageMath;
+﻿using Sandbox.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -12,7 +13,7 @@ namespace WeaponCore
         private void AiLoop()
         {
             if (!GameLoaded) return;
-            foreach (var aiPair in GridTargetingAIs)
+            MyAPIGateway.Parallel.ForEach(GridTargetingAIs, aiPair =>
             {
                 var gridAi = aiPair.Value;
                 if (!gridAi.DeadProjectiles.IsEmpty)
@@ -21,7 +22,7 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged) || !gridAi.MyGrid.InScene) continue;
+                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged) || !gridAi.MyGrid.InScene) return;
                 gridAi.Reloading = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
@@ -82,7 +83,7 @@ namespace WeaponCore
                         else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
                         w.SeekTarget = w.Target.Expired && w.TrackTarget;
-                        
+
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
 
@@ -97,7 +98,7 @@ namespace WeaponCore
                                 gridAi.ManualComps++;
                                 comp.Shooting++;
                             }
-                            else if(gunner != lastGunner && !gunner)
+                            else if (gunner != lastGunner && !gunner)
                             {
                                 gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
                                 comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
@@ -117,7 +118,7 @@ namespace WeaponCore
                         if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading) gridAi.Ready = true;
                     }
                 }
-            }
+            });
         }
 
         private void UpdateWeaponPlatforms()
