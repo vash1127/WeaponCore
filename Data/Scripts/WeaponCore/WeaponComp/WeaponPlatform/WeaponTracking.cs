@@ -72,7 +72,7 @@ namespace WeaponCore.Platform
             double timeToIntercept;
             double rangeToTarget;
 
-            var topMostEnt = target.Entity.GetTopMostParent();
+            var topMostEnt = target.Entity?.GetTopMostParent();
             if (target.Projectile != null)
                 targetLinVel = target.Projectile.Velocity;
             else if (topMostEnt?.Physics != null) targetLinVel = topMostEnt.Physics.LinearVelocity;
@@ -105,7 +105,7 @@ namespace WeaponCore.Platform
             var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
             double timeToIntercept;
             double rangeToTarget;
-            var topMostEnt = target.Entity.GetTopMostParent();
+            var topMostEnt = target.Entity?.GetTopMostParent();
             if (target.Projectile != null)
                 targetLinVel = target.Projectile.Velocity;
             else if (topMostEnt?.Physics != null) targetLinVel = topMostEnt.Physics.LinearVelocity;
