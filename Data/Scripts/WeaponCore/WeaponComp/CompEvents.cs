@@ -45,23 +45,27 @@ namespace WeaponCore.Support
             if (Platform != null && Platform.Inited)
             {
                 Log.Line($"Removed Comp");
-                Ai.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current--;
+                Ai.TotalSinkPower -= MaxRequiredPower;
+                Ai.OptimalDPS -= OptimalDPS;
+                GridAi.WeaponCount wCount;
+                if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                    wCount.Current--;
+
                 RegisterEvents(false);
                 StopAllSounds();
                 Platform.RemoveParts(this);
 
-
                 WeaponComponent comp;
-                if(Ai.WeaponBase.TryRemove(MyCube, out comp));
+                Ai.WeaponBase.TryRemove(MyCube, out comp);
             }
 
             if (Ai.WeaponBase.Count == 0)
             {
                 GridAi gridAi;
-                if(Session.Instance.GridTargetingAIs.TryRemove(MyGrid, out gridAi));
+                Session.Instance.GridTargetingAIs.TryRemove(MyGrid, out gridAi);
+                //Ai = null;
+                //MyGrid = null;
             }
-            Ai = null;
-            MyGrid = null;
         }
 
         private void OnContentsChanged(MyInventoryBase obj)

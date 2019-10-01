@@ -13,7 +13,6 @@ namespace WeaponCore
         private void AiLoop()
         {
             if (!GameLoaded) return;
-            //MyAPIGateway.Parallel.ForEach(GridTargetingAIs, aiPair =>
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
@@ -119,7 +118,7 @@ namespace WeaponCore
                         if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading) gridAi.Ready = true;
                     }
                 }
-            }//);
+            }
         }
 
         private void UpdateWeaponPlatforms()

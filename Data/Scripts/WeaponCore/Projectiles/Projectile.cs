@@ -377,13 +377,13 @@ namespace WeaponCore.Projectiles
         internal void FireSoundStart()
         {
             FireEmitter.SetPosition(T.Origin);
-            FireEmitter.PlaySound(FireSound, true);
+            FireEmitter.PlaySound(FireSound, false);
         }
 
         internal void AmmoSoundStart()
         {
             TravelEmitter.SetPosition(Position);
-            TravelEmitter.PlaySound(TravelSound, true);
+            TravelEmitter.PlaySound(TravelSound, false);
 
             AmmoSound = true;
         }
@@ -781,7 +781,7 @@ namespace WeaponCore.Projectiles
                     {
                         HitEmitter.SetPosition(Position);
                         HitEmitter.CanPlayLoopSounds = false;
-                        HitEmitter.PlaySound(HitSound, true);
+                        HitEmitter.PlaySound(HitSound, false);
                     }
                 }
             }
@@ -910,7 +910,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (T.System.AmmoParticle) DisposeAmmoEffect(false, false);
                     HitEffects();
-                    if (AmmoSound) TravelEmitter.StopSound(false, true);
+                    if (AmmoSound) TravelEmitter.StopSound(false, false);
                 }
                 State = ProjectileState.Dead;
                 Manager.CleanUp[PoolId].Add(this);
