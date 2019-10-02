@@ -12,7 +12,7 @@ namespace WeaponCore.Platform
     {
         public void PositionChanged(MyPositionComponentBase pComp)
         {
-            if (Comp.LastPivotUpdateTick != Session.Instance.Tick && !Target.Expired)
+            if (Comp.LastPivotUpdateTick != Session.Instance.Tick)
                 Comp.UpdatePivotPos(this);
 
             _posChangedTick = Session.Instance.Tick;
@@ -58,264 +58,237 @@ namespace WeaponCore.Platform
         //todo client side only
         internal void EventTriggerStateChanged(EventTriggers state, bool active, bool pause = false, HashSet<string> muzzles = null)
         {
-            switch (state)
+            if (!Session.Instance.DedicatedServer)
             {
-                case EventTriggers.Firing:
-                    if (AnimationsSet.ContainsKey(EventTriggers.Firing))
-                    {
-                        foreach (var animation in AnimationsSet[EventTriggers.Firing])
+                switch (state)
+                {
+                    case EventTriggers.Firing:
+                        if (AnimationsSet.ContainsKey(EventTriggers.Firing))
                         {
-                            if (active && animation.Looping != true && !pause)
+                            foreach (var animation in AnimationsSet[EventTriggers.Firing])
                             {
-                                if (!Session.Instance.animationsToProcess.Contains(animation) && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
+                                if (active && animation.Looping != true && !pause)
+                                {
+                                    if (!Session.Instance.animationsToProcess.Contains(animation) && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
+                                    {
+                                        Session.Instance.animationsToProcess.Enqueue(animation);
+                                        if (animation.DoesLoop)
+                                            animation.Looping = true;
+                                    }
+                                }
+                                else if (active && animation.Looping && pause)
+                                    animation.PauseAnimation = true;
+
+                                else if (active && animation.Looping)
+                                    animation.PauseAnimation = false;
+
+                                else
+                                {
+                                    animation.PauseAnimation = false;
+                                    animation.Looping = false;
+                                }
+                            }
+                        }
+
+                        break;
+                    case EventTriggers.Reloading:
+                        var canReload = true;
+
+                        if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                        {
+                            foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
+                            {
+                                if (Session.Instance.animationsToProcess.Contains(animation) ||
+                                    Session.Instance.animationsToQueue.Contains(animation))
+                                    canReload = false;
+                            }
+                        }
+
+                        if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                        {
+                            foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
+                            {
+                                if (Session.Instance.animationsToProcess.Contains(animation) ||
+                                    Session.Instance.animationsToQueue.Contains(animation))
+                                    canReload = false;
+                            }
+                        }
+
+                        if (canReload && AnimationsSet.ContainsKey(EventTriggers.Reloading))
+                        {
+                            foreach (var animation in AnimationsSet[
+                                EventTriggers.Reloading])
+                            {
+                                if (active && animation.Looping != true && !pause && !Session.Instance.animationsToProcess.Contains(animation))
+                                {
+                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                                else if (active && animation.Looping && pause)
+                                    animation.PauseAnimation = true;
+
+                                else if (active && animation.Looping)
+                                    animation.PauseAnimation = false;
+
+                                else
+                                {
+                                    animation.PauseAnimation = false;
+                                    animation.Looping = false;
+                                }
+                            }
+                        }
+
+                        break;
+                    case EventTriggers.Tracking:
+
+                        if (AnimationsSet.ContainsKey(EventTriggers.Tracking))
+                        {
+                            foreach (var animation in AnimationsSet[EventTriggers.Tracking])
+                            {
+                                if (active)
+                                {
+                                    if (animation.CurrentMove == 0 && !animation.Looping)
+                                    {
+                                        if (!Session.Instance.animationsToProcess.Contains(animation))
+                                            Session.Instance.animationsToProcess.Enqueue(animation);
+                                        else
+                                            animation.Looping = true;
+                                    }
+
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                                else
+                                    animation.Looping = false;
+                            }
+                        }
+
+                        break;
+                    case EventTriggers.Overheated:
+                        if (AnimationsSet.ContainsKey(EventTriggers.Overheated))
+                        {
+                            foreach (var animation in AnimationsSet[EventTriggers.Overheated])
+                            {
+                                if (active && animation.Looping != true)
+                                {
+                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                                else if (!active)
+                                    animation.Looping = false;
+                            }
+                        }
+
+                        break;
+
+                    case EventTriggers.TurnOn:
+                        Session.ComputeStorage(this);
+                        if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                        {
+                            var OnAnimations = true;
+
+                            if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                            {
+                                foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
+                                {
+                                    if (Session.Instance.animationsToProcess.Contains(animation))
+                                    {
+                                        OnAnimations = false;
+                                        animation.Reverse = true;
+                                    }
+                                }
+                            }
+
+                            if (OnAnimations)
+                            {
+                                foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
                                 {
                                     Session.Instance.animationsToProcess.Enqueue(animation);
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
                                 }
                             }
-                            else if (active && animation.Looping && pause)
-                                animation.PauseAnimation = true;
-
-                            else if (active && animation.Looping)
-                                animation.PauseAnimation = false;
-
-                            else
-                            {
-                                animation.PauseAnimation = false;
-                                animation.Looping = false;
-                            }
                         }
-                    }
-                    
-                    break;
-                case EventTriggers.Reloading:
-                    var canReload = true;
 
-                    if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
-                    {
-                        foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
-                        {
-                            if (Session.Instance.animationsToProcess.Contains(animation) ||
-                                Session.Instance.animationsToQueue.Contains(animation))
-                                canReload = false;
-                        }
-                    }
+                        break;
 
-                    if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
-                    {
-                        foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
+                    case EventTriggers.TurnOff:
+                        if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                         {
-                            if (Session.Instance.animationsToProcess.Contains(animation) ||
-                                Session.Instance.animationsToQueue.Contains(animation))
-                                canReload = false;
-                        }
-                    }
+                            var OffAnimations = true;
 
-                    if (canReload && AnimationsSet.ContainsKey(EventTriggers.Reloading))
-                    {
-                        foreach (var animation in AnimationsSet[
-                            EventTriggers.Reloading])
-                        {
-                            if (active && animation.Looping != true && !pause && !Session.Instance.animationsToProcess.Contains(animation))
+                            if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                             {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                            else if (active && animation.Looping && pause)
-                                animation.PauseAnimation = true;
 
-                            else if (active && animation.Looping)
-                                animation.PauseAnimation = false;
-
-                            else
-                            {
-                                animation.PauseAnimation = false;
-                                animation.Looping = false;
-                            }
-                        }
-                    }
-
-                    break;
-                case EventTriggers.Tracking:
-
-                    if (AnimationsSet.ContainsKey(EventTriggers.Tracking))
-                    {
-                        foreach (var animation in AnimationsSet[EventTriggers.Tracking])
-                        {
-                            if (active)
-                            {
-                                if (animation.CurrentMove == 0 && !animation.Looping)
+                                foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
                                 {
-                                    if (!Session.Instance.animationsToProcess.Contains(animation))
-                                        Session.Instance.animationsToProcess.Enqueue(animation);
-                                    else
-                                        animation.Looping = true;
-                                }
-
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                            else
-                                animation.Looping = false;
-                        }
-                    }
-
-                    break;
-                case EventTriggers.Overheated:
-                    if (AnimationsSet.ContainsKey(EventTriggers.Overheated))
-                    {
-                        foreach (var animation in AnimationsSet[EventTriggers.Overheated])
-                        {
-                            if (active && animation.Looping != true)
-                            {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                            else if (!active)
-                                animation.Looping = false;
-                        }
-                    }
-
-                    break;
-
-                case EventTriggers.TurnOn:
-                    Session.ComputeStorage(this);
-                    if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
-                    {
-                        var OnAnimations = true;
-
-                        if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
-                        {
-                            foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
-                            {
-                                if (Session.Instance.animationsToProcess.Contains(animation))
-                                {
-                                    OnAnimations = false;
-                                    animation.Reverse = true;
-                                }
-                            }
-                        }
-
-                        if(OnAnimations)
-                        {
-                            foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
-                            {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
-                            }
-                        }
-                    }
-
-                    break;
-
-                case EventTriggers.TurnOff:
-                    if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
-                    {
-                        var OffAnimations = true;
-
-                        if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
-                        {
-                            
-                            foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
-                            {
-                                if (Session.Instance.animationsToProcess.Contains(animation))
-                                {
-                                    OffAnimations = false;
-                                    animation.Reverse = true;
-                                }
-                            }
-                        }
-                        if(OffAnimations)
-                        {
-
-                            foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
-                            {
-                                animation.StartTick = OffDelay > 0
-                                    ? Session.Instance.Tick + animation.MotionDelay + OffDelay
-                                    : 0;
-
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                foreach (var set in AnimationsSet)
-                                {
-                                    foreach (var anim in set.Value)
+                                    if (Session.Instance.animationsToProcess.Contains(animation))
                                     {
-                                        anim.PauseAnimation = false;
-                                        anim.Looping = false;
+                                        OffAnimations = false;
+                                        animation.Reverse = true;
+                                    }
+                                }
+                            }
+                            if (OffAnimations)
+                            {
+
+                                foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
+                                {
+                                    animation.StartTick = OffDelay > 0
+                                        ? Session.Instance.Tick + animation.MotionDelay + OffDelay
+                                        : 0;
+
+                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    foreach (var set in AnimationsSet)
+                                    {
+                                        foreach (var anim in set.Value)
+                                        {
+                                            anim.PauseAnimation = false;
+                                            anim.Looping = false;
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
 
-                    break;
+                        break;
 
-                case EventTriggers.EmptyOnGameLoad:
-                    if (AnimationsSet.ContainsKey(EventTriggers.EmptyOnGameLoad))
-                    {
-                        foreach (var animation in AnimationsSet[EventTriggers.EmptyOnGameLoad])
+                    case EventTriggers.EmptyOnGameLoad:
+                        if (AnimationsSet.ContainsKey(EventTriggers.EmptyOnGameLoad))
                         {
-                            if (active)
+                            foreach (var animation in AnimationsSet[EventTriggers.EmptyOnGameLoad])
                             {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (active)
+                                {
+                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                }
                             }
                         }
-                    }
 
-                    break;
-                
-                case EventTriggers.OutOfAmmo:
-                case EventTriggers.BurstReload:
-                case EventTriggers.PreFire:
-                    if (AnimationsSet.ContainsKey(state))
-                    {
-                        foreach (var animation in AnimationsSet[state])
+                        break;
+
+                    case EventTriggers.OutOfAmmo:
+                    case EventTriggers.BurstReload:
+                    case EventTriggers.PreFire:
+                        if (AnimationsSet.ContainsKey(state))
                         {
-                            if (active && animation.Looping != true)
+                            foreach (var animation in AnimationsSet[state])
                             {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
+                                if (active && animation.Looping != true)
+                                {
+                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                                else
+                                    animation.Looping = false;
                             }
-                            else
-                                animation.Looping = false;
                         }
-                    }
-                    break;
+                        break;
+                }
             }
-        }
-
-        public bool TurretHomePosition()
-        {
-            var turret = Comp.MyCube as IMyLargeMissileTurret;
-            if (turret == null) return false;
-            
-            var azStep = System.Values.HardPoint.Block.RotateRate;
-            var elStep = System.Values.HardPoint.Block.ElevateRate;
-
-            var az = turret.Azimuth;
-            var el = turret.Elevation;
-
-            if (az > 0)
-                turret.Azimuth = az - azStep > 0 ? az - azStep : 0;
-            else if (az < 0)
-                turret.Azimuth = az + azStep < 0 ? az + azStep : 0;
-
-            if (el > 0)
-                turret.Elevation = el - elStep > 0 ? el - elStep : 0;
-            else if (el < 0)
-                turret.Elevation = el + elStep < 0 ? el + elStep : 0;
-
-            Azimuth = turret.Azimuth;
-            Elevation = turret.Elevation;
-
-
-            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return true;
-
-            return false;
         }
 
         public void ShootGraphics()

@@ -14,6 +14,7 @@ namespace WeaponCore
         {
             try
             {
+                if (myEntity == null) return;
                 var weaponBase = myEntity as IMyLargeMissileTurret;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
@@ -60,10 +61,10 @@ namespace WeaponCore
             var remote = ControlledEntity as MyRemoteControl;
 
             if (cockpit != null && UpdateLocalAiAndCockpit())
-                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
+                FutureEventsManager.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
 
             if (remote != null)
-                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
+                FutureEventsManager.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
         }
     }
 }

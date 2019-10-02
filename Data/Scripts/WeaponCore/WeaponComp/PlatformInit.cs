@@ -1,6 +1,9 @@
 ﻿using Sandbox.Definitions;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
+using SpaceEngineers.Game.ModAPI;
 using System;
+using VRage;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
@@ -90,9 +93,33 @@ namespace WeaponCore.Platform
                 if (Parts.NameToEntity.TryGetValue(m.Key.String, out aimPart))
                 {
                     var muzzlePartName = m.Value.MuzzlePartName.String;
-                    
-                    var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" || muzzlePartName == string.Empty;
-                    Weapons[c].BarrelPart = (noMuzzlePart ? comp.MyCube : Parts.NameToEntity[m.Value.MuzzlePartName.String]);
+                    var azimuthPartName = string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String;
+                    var elevationPartName = string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String;
+
+                    //    GetPartLocation("subpart_" +
+                    var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" || string.IsNullOrEmpty(muzzlePartName);
+
+                    Weapons[c].BarrelPart = noMuzzlePart ? comp.MyCube : Parts.NameToEntity[muzzlePartName];
+
+                    var azimuthPart = Parts.NameToEntity[azimuthPartName];
+                    var elevationPart = Parts.NameToEntity[elevationPartName];
+
+                    var azimuthPartLocation = Session.Instance.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
+                    var elevationPartLocation = Session.Instance.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
+
+                    var cameraController = new CameraController();
+
+                    azimuthPart.Components.Add<MyEntityRespawnComponentBase>(cameraController);
+
+                    var fullStepAzRotation = Matrix.CreateTranslation(-azimuthPartLocation) * Matrix.CreateRotationY(-m.Value.AzStep) * Matrix.CreateTranslation(azimuthPartLocation);
+
+                    var fullStepElRotation = Matrix.CreateTranslation(-elevationPartLocation) * Matrix.CreateRotationX(-m.Value.ElStep) * Matrix.CreateTranslation(elevationPartLocation);
+
+                    var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
+                    var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
+
+                    Weapons[c].AzimuthPart = new MyTuple<MyEntity, Vector3, Matrix, Matrix> { Item1 = azimuthPart, Item2 = azimuthPartLocation, Item3 = fullStepAzRotation, Item4 = rFullStepAzRotation };
+                    Weapons[c].ElevationPart = new MyTuple<MyEntity, Vector3, Matrix, Matrix> { Item1 = elevationPart, Item2 = elevationPartLocation, Item3 = fullStepElRotation, Item4 = rFullStepElRotation };
 
                     try
                     {

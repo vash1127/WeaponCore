@@ -138,6 +138,8 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal string SubtypeId;
         [ProtoMember(2)] internal string AimPartId;
         [ProtoMember(3)] internal string MuzzlePartId;
+        [ProtoMember(4)] internal string AzimuthPartId;
+        [ProtoMember(5)] internal string ElevationPartId;
     }
 
     [ProtoContract]

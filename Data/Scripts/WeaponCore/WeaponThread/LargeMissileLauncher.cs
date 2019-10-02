@@ -18,7 +18,7 @@ namespace WeaponThread
             {
                 MountPoints = new[]
                 {
-                    MountPoint(subTypeId: "LargeMissileLauncher", aimPartId: "MissileTurretBarrels", muzzlePartId: "None"),
+                    MountPoint(subTypeId: "LargeMissileLauncher", aimPartId: "MissileTurretBarrels", muzzlePartId: "None", azimuthPartId: "", elevationPartId:""),
                 },
                 Barrels = Names("muzzle_missile_001", "muzzle_missile_002", "muzzle_missile_003", "muzzle_missile_004", "muzzle_missile_005", "muzzle_missile_006", "muzzle_missile_007",
                         "muzzle_missile_008", "muzzle_missile_009", "muzzle_missile_010", "muzzle_missile_011", "muzzle_missile_012", "muzzle_missile_013", "muzzle_missile_014",

@@ -25,20 +25,25 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
         }
 
-
         public override void UpdateBeforeSimulation()
         {
             try
             {
                 Timings();
                 if (Tick20) DsUtil.Start("");
-                _futureEvents.Tick(Tick);
+                FutureEventsManager.Tick(Tick);
                 if (Tick20) DsUtil.Complete("events", true);
                 Ui.UpdateInput();
+                if (ControlingWeaponCam)
+                {
+                    ControlledWeapon.UpdateTurretInput();
+                    WeaponCamera.RequestSetView();
+                }
                 if (Tick20) DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
                 if (Tick20) DsUtil.Complete("damage", true);
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
+                
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -117,6 +122,9 @@ namespace WeaponCore
 
                 if (!CompsToRemove.IsEmpty) RemoveComps();
 
+                if (ControlingWeaponCam) {
+                    ControlledWeapon.Comp.Ai.GridMatrix = ControlledWeapon.Comp.MyGrid.PositionComp.WorldMatrix;
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

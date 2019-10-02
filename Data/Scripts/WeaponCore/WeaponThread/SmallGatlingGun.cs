@@ -18,7 +18,7 @@ namespace WeaponThread
             {
                 MountPoints = new[]
                 {
-                    MountPoint(subTypeId: "SmallGatlingGun", aimPartId:"MissileTurretBarrels", muzzlePartId: "gunBarrel"),
+                    MountPoint(subTypeId: "SmallGatlingGun", aimPartId:"MissileTurretBarrels", muzzlePartId: "gunBarrel", azimuthPartId: "", elevationPartId:""),
                 },
                 Barrels = Names("muzzle_projectile", "muzzle_projectile001", "muzzle_projectile002", "muzzle_projectile003", "muzzle_projectile004", "muzzle_projectile005"),
                 EnableSubPartPhysics = false

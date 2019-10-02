@@ -1,10 +1,16 @@
 ﻿using System.Collections.Generic;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Common.ObjectBuilders.Definitions;
 using Sandbox.Definitions;
 using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRage.ModAPI;
+using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -70,6 +76,38 @@ namespace WeaponCore
             Log.Line($"Logging Started");
             HeatEmissives = CreateHeatEmissive();
 
+            var weaponCamPrefab = MyDefinitionManager.Static.GetPrefabDefinition("WeaponCamera").CubeGrids[0];
+
+            var cameraGrid = MyAPIGateway.Entities.CreateFromObjectBuilder(weaponCamPrefab) as MyCubeGrid;
+
+            if (cameraGrid != null)
+            {
+                cameraGrid.IsPreview = true;
+                cameraGrid.SyncFlag = false;
+                cameraGrid.Save = false;
+                cameraGrid.Physics.Enabled = false;
+                cameraGrid.SyncFlag = false;
+                MyAPIGateway.Entities.AddEntity(cameraGrid);
+                cameraGrid.Render.RemoveRenderObjects();
+                List<IMySlimBlock> cGridBlocks = new List<IMySlimBlock>();
+                ((IMyCubeGrid)cameraGrid).GetBlocks(cGridBlocks);
+
+                WeaponCameraGrid = cameraGrid;
+                MyEntities.Add(cameraGrid);
+
+                foreach(var block in cGridBlocks)
+                {
+                    if(block.FatBlock as MyCameraBlock != null)
+                        WeaponCamera = (MyCameraBlock)block.FatBlock;
+                }
+            }
+
+            //WeaponCamera.Physics.Enabled = false;
+            //WeaponCamera.SyncFlag = false;
+            //WeaponCamera.Render.RemoveRenderObjects();
+            Log.Line($"WeaponCam Created Camera Type:{WeaponCamera.GetType()}");
+            
+
             foreach (var x in _weaponDefinitions)
             {
                 var ae = x.Ammo.AreaEffect;
@@ -109,13 +147,15 @@ namespace WeaponCore
                     var subTypeId = mount.SubtypeId;
                     var muzzlePartId = mount.MuzzlePartId;
                     var aimPartId = mount.AimPartId;
+                    var azimuthPartId = mount.AzimuthPartId;
+                    var elevationPartId = mount.ElevationPartId;
 
-                    var extraInfo = new MyTuple<string, string> { Item1 = muzzlePartId, Item2 = weaponDef.HardPoint.WeaponId };
+                    var extraInfo = new MyTuple<string, string, string, string> { Item1 = muzzlePartId, Item2 = weaponDef.HardPoint.WeaponId, Item3 = azimuthPartId, Item4 = elevationPartId};
 
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                     {
 
-                        _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string>>
+                        _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string, string, string>>
                         {
                             [aimPartId] = extraInfo
                         };

@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Sandbox.Game.Weapons;
+using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
+using System;
 using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
@@ -128,7 +131,7 @@ namespace WeaponCore.Platform
             var maxElevationStep = step ? weapon.System.Values.HardPoint.Block.ElevateRate : double.MinValue;
 
             Vector3D currentVector;
-            Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
+            Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
             currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
 
             var up = cube.WorldMatrix.Up;
@@ -165,8 +168,8 @@ namespace WeaponCore.Platform
                 if (aim)
                 {
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
-                    turret.Azimuth = (float) weapon.Azimuth;
-                    turret.Elevation = (float) weapon.Elevation;
+                    weapon.AimBarrel(azDiff, elDiff);
+                    //turret.Elevation = (float) weapon.Elevation;
                 }
             }
 

@@ -14,6 +14,7 @@ using WeaponCore.Platform;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
 using VRage.ObjectBuilders;
+using System.Linq;
 
 namespace WeaponCore
 {
@@ -115,6 +116,7 @@ namespace WeaponCore
                 db.StaticEntitiesInRange = staticCount > 0;
 
                 db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || db.FirstRun;
+                Log.Line($"db.DbReady");
                 db.FirstRun = false;
                 //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.MyShield = db.MyShieldTmp;
@@ -337,10 +339,10 @@ namespace WeaponCore
             var remote = ControlledEntity as MyRemoteControl;
 
             if (cockpit != null && UpdateLocalAiAndCockpit())
-                _futureEvents.Schedule(TurnWeaponShootOff,GridTargetingAIs[cockpit.CubeGrid], 1);
+                FutureEventsManager.Schedule(TurnWeaponShootOff,GridTargetingAIs[cockpit.CubeGrid], 1);
 
             if (remote != null)
-                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
+                FutureEventsManager.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
 
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }
@@ -383,8 +385,8 @@ namespace WeaponCore
             if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
             {
                 Log.Line("comp found");
-
-                CompsToRemove.Enqueue(weaponComp);
+                if(!CompsToRemove.Contains(weaponComp))
+                    CompsToRemove.Enqueue(weaponComp);
 
                 OnEntityCreate(weaponComp.MyCube);
             }
@@ -561,7 +563,7 @@ namespace WeaponCore
                     else
                         fakeTick = ht.Value.Item2 + 1;
 
-                    _futureEvents.Schedule(UpdateWeaponHeat, MyTuple.Create(w, fakeTick, false), 20);
+                    FutureEventsManager.Schedule(UpdateWeaponHeat, MyTuple.Create(w, fakeTick, false), 20);
                 }
             }
         }

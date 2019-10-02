@@ -38,6 +38,8 @@ namespace WeaponCore.Platform
 
         internal MyEntity EntityPart;
         internal MyEntity BarrelPart;
+        internal MyTuple<MyEntity, Vector3, Matrix, Matrix> AzimuthPart;
+        internal MyTuple<MyEntity, Vector3, Matrix, Matrix> ElevationPart;
         internal WeaponSystem System;
         internal Dummy[] Dummies;
         internal Muzzle[] Muzzles;
@@ -112,7 +114,7 @@ namespace WeaponCore.Platform
         internal bool PlayTurretAv;
         internal bool AvCapable;
         internal bool DelayCeaseFire;
-        internal bool TargetWasExpired;
+        internal bool TargetWasExpired = true;
         internal bool Reloading;
         internal bool FirstLoad = true;
         internal bool ReturnHome;

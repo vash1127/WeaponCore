@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Common.ObjectBuilders.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
@@ -11,8 +13,10 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Library.Threading;
 using VRage.ModAPI;
+using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
@@ -80,7 +84,7 @@ namespace WeaponCore
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private readonly CachingList<AfterGlow> _afterGlow = new CachingList<AfterGlow>();
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string>>>();
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
 
@@ -160,10 +164,15 @@ namespace WeaponCore
         internal bool TargetArmed;
         internal bool InGridAiCockPit;
         internal bool ControlChanged;
+        internal bool ControlingWeaponCam;
 
         internal Vector3D CameraPos;
-        internal MyEntity ControlledEntity;
         internal MyCockpit ActiveCockPit;
+        internal MyEntity ControlledEntity;
+        internal Weapon ControlledWeapon;
+        internal MyCameraBlock WeaponCamera;
+        internal MyCubeGrid WeaponCameraGrid;
+
 
         internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
         internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
@@ -172,7 +181,7 @@ namespace WeaponCore
         internal readonly Guid LogicettingsGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811501");
 
         internal ShieldApi SApi = new ShieldApi();
-        private readonly FutureEvents _futureEvents = new FutureEvents();
+        internal readonly FutureEvents FutureEventsManager = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
 
     }

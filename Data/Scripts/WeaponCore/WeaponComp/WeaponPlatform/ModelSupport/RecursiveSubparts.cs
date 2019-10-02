@@ -58,8 +58,9 @@ namespace WeaponCore.Support
                             if (query.TryGetSubpart(name, out res))
                             {
                                 _subparts.Add(res);
+                                Log.Line(name);
                                 //EntityToName.Add(res, name);
-                                NameToEntity.Add(name, res);
+                                NameToEntity[name] = res;
                             }
                         }
                 }

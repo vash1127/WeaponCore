@@ -64,6 +64,20 @@ namespace WeaponCore.Support
         internal void UpdatePivotPos(Weapon weapon)
         {
             var weaponPComp = weapon.EntityPart.PositionComp;
+
+            if (Controlling)
+            {
+                var w = Session.Instance.ControlledWeapon;
+                var weaponCamera = Session.Instance.WeaponCamera;
+                var weaponCameraGrid = Session.Instance.WeaponCameraGrid;
+
+                var cameraMatrix = w.ElevationPart.Item1.PositionComp.WorldMatrix;
+                cameraMatrix.Translation += (cameraMatrix.Up * 1.2);
+                cameraMatrix.Translation += (-cameraMatrix.Forward * 1.2);
+
+                weaponCameraGrid.PositionComp.WorldMatrix = cameraMatrix;
+                weaponCamera.PositionComp.WorldMatrix = cameraMatrix;
+            }
             Vector3D center;
             if (AimOffset != Vector3D.Zero)
             {

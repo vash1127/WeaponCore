@@ -162,9 +162,9 @@ namespace WeaponThread
             return new Vector3D(x, y, z);
         }
 
-        internal MountPoint MountPoint(string subTypeId, string aimPartId, string muzzlePartId)
+        internal MountPoint MountPoint(string subTypeId, string aimPartId, string muzzlePartId, string azimuthPartId = "", string elevationPartId = "")
         {
-            return new MountPoint { SubtypeId = subTypeId, AimPartId = aimPartId, MuzzlePartId = muzzlePartId};
+            return new MountPoint { SubtypeId = subTypeId, AimPartId = aimPartId, MuzzlePartId = muzzlePartId, AzimuthPartId = azimuthPartId, ElevationPartId = elevationPartId };
         }
 
         internal EventTriggers[] Events(params EventTriggers[] events)

@@ -16,6 +16,8 @@ namespace WeaponCore.Support
 
         public readonly MyStringHash AimPartName;
         public readonly MyStringHash MuzzlePartName;
+        public readonly MyStringHash AzimuthPartName;
+        public readonly MyStringHash ElevationPartName;
         public readonly WeaponDefinition Values;
         public readonly MyDefinitionId AmmoDefId;
         public readonly MyAmmoMagazineDefinition MagazineDef;
@@ -93,6 +95,8 @@ namespace WeaponCore.Support
         public readonly double DetonateRadiusLarge;
         public readonly double MaxTargetSpeed;
         public readonly double ShieldModifier;
+        public readonly float AzStep;
+        public readonly float ElStep;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float WepCooldown;
@@ -125,10 +129,12 @@ namespace WeaponCore.Support
             WhenDone
         }
 
-        public WeaponSystem(MyStringHash aimPartName, MyStringHash muzzlePartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
+        public WeaponSystem(MyStringHash aimPartName, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
         {
             AimPartName = aimPartName;
             MuzzlePartName = muzzlePartName;
+            AzimuthPartName = azimuthPartName;
+            ElevationPartName = elevationPartName;
             Values = values;
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
@@ -141,6 +147,8 @@ namespace WeaponCore.Support
             IsMine = Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
             IsField = Values.Ammo.Trajectory.FieldTime > 0;
 
+            AzStep = Values.HardPoint.Block.RotateRate;
+            ElStep = Values.HardPoint.Block.ElevateRate;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
             BarrelEffect2 = values.Graphics.Particles.Barrel2.Name != string.Empty;
@@ -423,13 +431,15 @@ namespace WeaponCore.Support
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
 
-        public WeaponStructure(KeyValuePair<string, Dictionary<string, MyTuple<string, string>>> tDef, List<WeaponDefinition> wDefList)
+        public WeaponStructure(KeyValuePair<string, Dictionary<string, MyTuple<string, string, string, string>>> tDef, List<WeaponDefinition> wDefList)
         {
             var map = tDef.Value;
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
             var aimPartNames = new MyStringHash[numOfParts];
             var muzzlePartNames = new MyStringHash[numOfParts];
+            var azimuthPartNames = new MyStringHash[numOfParts];
+            var elevationPartNames = new MyStringHash[numOfParts];
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
@@ -438,6 +448,8 @@ namespace WeaponCore.Support
             {
                 var myAimNameHash = MyStringHash.GetOrCompute(w.Key);
                 var myMuzzleNameHash = MyStringHash.GetOrCompute(w.Value.Item1);
+                var myAzimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
+                var myElevationNameHash = MyStringHash.GetOrCompute(w.Value.Item4);
 
                 aimPartNames[mapIndex] = myAimNameHash;
                 muzzlePartNames[mapIndex] = myMuzzleNameHash;
@@ -461,7 +473,7 @@ namespace WeaponCore.Support
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
   
-                WeaponSystems.Add(myAimNameHash, new WeaponSystem(myAimNameHash, myMuzzleNameHash, weaponDef, typeName, ammoDefId));
+                WeaponSystems.Add(myAimNameHash, new WeaponSystem(myAimNameHash, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId));
                 if (!ammoBlank)
                 {
                     if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();

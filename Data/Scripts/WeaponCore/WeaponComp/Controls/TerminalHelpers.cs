@@ -10,6 +10,7 @@ using WeaponCore.Support;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 using SpaceEngineers.Game.ModAPI;
+using Sandbox.Game.Entities;
 
 namespace WeaponCore.Control
 {
@@ -23,7 +24,7 @@ namespace WeaponCore.Control
             {
                 var c = actions[i];
                 //Log.Line($"Count: {i} ID:{c.Id}");
-                if (c.Id != "Control" && !c.Id.Contains("OnOff") && !c.Id.Equals("Shoot") && !c.Id.Equals("ShootOnce"))
+                if (!c.Id.Contains("OnOff") && !c.Id.Equals("Shoot") && !c.Id.Equals("ShootOnce"))
                     c.Enabled = b => !WepUi.CoreWeaponEnableCheck(b, 0);
 
                 if (c.Id.Equals("ShootOnce"))
@@ -93,6 +94,9 @@ namespace WeaponCore.Control
 
                 if (c.Id.Equals("OnOff"))
                     ((IMyTerminalControlOnOffSwitch) c).Setter += OnOffAnimations;
+
+                if (c.Id.Equals("Control"))
+                    c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
             }
             return false;
         }
@@ -118,6 +122,8 @@ namespace WeaponCore.Control
 
                     w.OffDelay = (uint)(az + el > 0 ? az > el ? az : el : 0);
 
+                    Log.Line($"here");
+
                     w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
                 }
 
@@ -140,7 +146,7 @@ namespace WeaponCore.Control
             c.Visible = b => VisibleGetter(b, id);
             c.Getter = b => getter(b, id);
             c.Setter = (b, enabled) => setter(b, id, enabled);
-            MyAPIGateway.TerminalControls.AddControl<T>(c);
+            //MyAPIGateway.TerminalControls.AddControl<T>(c);
 
             CreateOnOffActionSet<T>(c, name, id, VisibleGetter);
 
@@ -282,7 +288,20 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-            internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int id)
+        internal static IMyTerminalControlButton AddButton<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, int, bool> visibleGetter = null, Action<IMyTerminalBlock,int> action = null) where T : IMyTerminalBlock
+        {
+            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlButton, T>($"WC_{id}_Control");
+
+            c.Title = MyStringId.GetOrCompute(title);
+            c.Tooltip = MyStringId.GetOrCompute(tooltip);
+            c.Visible = b => visibleGetter(b, id);
+            c.Action = b => action(b , id);
+
+            //MyAPIGateway.TerminalControls.AddControl<T>(c);
+            return c;
+        }
+
+        internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || !comp.Platform.Inited) return false;
@@ -310,18 +329,6 @@ namespace WeaponCore.Control
             cmb.Setter = setter;
             MyAPIGateway.TerminalControls.AddControl<T>(cmb);
             return cmb;
-        }
-
-        internal static IMyTerminalControlButton AddButton<T>(T block, string name, string title, string tooltip, Func<IMyTerminalBlock, bool> visibleGetter = null) where T : IMyTerminalBlock
-        {
-            var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlButton, T>(name);
-
-            c.Title = MyStringId.GetOrCompute(title);
-            c.Tooltip = MyStringId.GetOrCompute(tooltip);
-            c.Visible = visibleGetter;
-
-            MyAPIGateway.TerminalControls.AddControl<T>(c);
-            return c;
         }
 
         internal static IMyTerminalControlColor AddColorEditor<T>(T block, int id, string name, string title, string tooltip, Func<IMyTerminalBlock, Color> getter, Action<IMyTerminalBlock, Color> setter, Func<IMyTerminalBlock, int, int, bool> enabledGetter = null, Func<IMyTerminalBlock, int, int, bool> visibleGetter = null) where T : IMyTerminalBlock

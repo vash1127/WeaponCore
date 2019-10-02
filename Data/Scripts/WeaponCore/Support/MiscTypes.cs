@@ -268,7 +268,7 @@ namespace WeaponCore.Support
 
     internal class Target
     {
-        internal volatile bool Expired;
+        internal volatile bool Expired = true;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
         internal Projectile Projectile;

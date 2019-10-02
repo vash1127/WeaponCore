@@ -98,6 +98,7 @@ namespace WeaponCore.Support
         internal float OptimalDPS;
         internal Vector3D GridCenter;
         internal Vector3 GridVel;
+        internal MatrixD GridMatrix;
         internal enum TargetType
         {
             Projectile,
