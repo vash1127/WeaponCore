@@ -110,6 +110,13 @@ namespace WeaponCore
         internal int ModelCount;
         internal int ExplosionCounter;
 
+        internal int TargetRequests;
+        internal int TargetChecks;
+        internal int BlockChecks;
+        internal int RayCasts;
+        internal int CanShoot;
+        internal int ProjectileChecks;
+
         internal bool ExplosionReady
         {
             get

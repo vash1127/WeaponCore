@@ -14,6 +14,7 @@ namespace WeaponCore.Support
     {
         internal static void AcquireTarget(Weapon w)
         {
+            Session.Instance.TargetRequests++;
             w.LastTargetCheck = 0;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
             var targetType = TargetType.None;
@@ -51,7 +52,8 @@ namespace WeaponCore.Support
                         {
                             if (bt != target.LastBlockType) target.Top5.Clear();
                             target.LastBlockType = bt;
-                            GetClosestHitableBlockOfType(subSystemList, target, weaponPos, system, w);
+                            var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
+                            GetClosestHitableBlockOfType(subSystemList, target, weaponPos, targetLinVel, system, w);
                             if (target.Entity != null) return true;
                         }
                         else if (FindRandomBlock(system, ai, target, weaponPos, subSystemList, w)) return true;
@@ -80,6 +82,7 @@ namespace WeaponCore.Support
                     if (deck != null) next = deck[i];
 
                 var block = blockList[next];
+                Session.Instance.BlockChecks++;
                 if (block.MarkedForClose) continue;
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
                 double rayDist;
@@ -87,8 +90,10 @@ namespace WeaponCore.Support
                 {
                     var gridPhysics = ((IMyCubeGrid)block.CubeGrid).Physics;
                     Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
+                    Session.Instance.CanShoot++;
                     if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel)) continue;
 
+                    Session.Instance.RayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 
@@ -184,6 +189,7 @@ namespace WeaponCore.Support
             var s = w.System;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
+                Session.Instance.TargetChecks++;
                 var info = ai.SortedTargets[i];
 
                 if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
@@ -203,6 +209,7 @@ namespace WeaponCore.Support
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     if (!s.TrackGrids) continue;
+                    Session.Instance.CanShoot++;
                     if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
@@ -218,6 +225,8 @@ namespace WeaponCore.Support
 
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
+
+                Session.Instance.RayCasts++;
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
                 if (hitInfo != null && hitInfo.HitEntity == info.Target)
@@ -327,6 +336,7 @@ namespace WeaponCore.Support
             var weaponPos = w.Comp.MyPivotPos;
             foreach (var lp in collection)
             {
+                Session.Instance.ProjectileChecks++;
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
                 if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))
                 {
@@ -385,7 +395,7 @@ namespace WeaponCore.Support
             targetType = TargetType.None;
         }
 
-        internal static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Target target, Vector3D currentPos, WeaponSystem system, Weapon w = null)
+        internal static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, Target target, Vector3D currentPos, Vector3D targetLinVel, WeaponSystem system, Weapon w = null)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -407,6 +417,7 @@ namespace WeaponCore.Support
             
             for (int i = 0; i < cubes.Count + top5Count; i++)
             {
+                Session.Instance.BlockChecks++;
                 var index = i < top5Count ? i : i - top5Count;
                 var cube = i < top5Count ? top5[index] : cubes[index];
                 if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
@@ -423,7 +434,8 @@ namespace WeaponCore.Support
                     {
                         if (w != null && !(!w.IsTurret && system.Values.Ammo.Trajectory.Smarts.OverideTarget))
                         {
-                            Vector3D targetLinVel = grid.Physics?.LinearVelocity ?? Vector3D.Zero;
+                            Session.Instance.CanShoot++;
+                            Session.Instance.RayCasts++;
                             bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
                         }
                         else bestTest = true;

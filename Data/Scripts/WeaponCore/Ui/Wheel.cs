@@ -122,7 +122,7 @@ namespace WeaponCore
             var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
         }
-
+        
         internal void SetCurrentMessage()
         {
             var currentMessage = GetCurrentMenu().Message;
