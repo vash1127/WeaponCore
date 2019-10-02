@@ -180,6 +180,7 @@ namespace WeaponCore.Projectiles
                 hitEntity = p.T.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
+                p.LastHitShield = hitEntity.EventType == Shield;
             }
             return hitEntity;
         }

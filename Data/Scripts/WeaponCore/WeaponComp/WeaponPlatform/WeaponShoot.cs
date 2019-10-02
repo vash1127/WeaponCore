@@ -63,7 +63,7 @@ namespace WeaponCore.Platform
                 EventTriggerStateChanged(EventTriggers.PreFire, true);
                 return;
             }
-            else if(System.DelayToFire > 0)
+            if (System.DelayToFire > 0)
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
 
             _shots++;
@@ -386,11 +386,11 @@ namespace WeaponCore.Platform
                 {
                     if (!grid.IsSameConstructAs(Comp.MyGrid))
                     {
-                        Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
+                        //Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
                         masterWeapon.Target.Expired = true;
                         if (masterWeapon != this) Target.Expired = true;
                     }
-                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - sameLogicGroup: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    //Log.Line($"{System.WeaponName} - ShootRayCheck Success - sameLogicGroup: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
                 //Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");

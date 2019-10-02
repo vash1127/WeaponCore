@@ -131,8 +131,6 @@ namespace WeaponThread
                 },
             },
 
-
-
             Graphics = new GraphicDefinition
             {
                 ModelName = "",
@@ -152,7 +150,7 @@ namespace WeaponThread
                         Name = "MaterialHit_Metal",
                         Color = Color(red: 3, green: 2, blue: 1, alpha: 1),
                         Offset = Vector(x: 0, y: 0, z: 0),
-                        Extras = Options(loop: false, restart: false, distance: 5000, duration: 1, scale: 1.0f),
+                        Extras = Options(loop: false, restart: false, distance: 5000, duration: 1, scale: 1.0f, hitPlayChance: 0.1f),
                     },
                     Barrel1 = new Particle
                     {
@@ -194,6 +192,8 @@ namespace WeaponThread
                 {
                     TravelSound = "",
                     HitSound = "ArcImpMetalMetalCat0",
+                    HitPlayChance = 0.1f,
+                    HitPlayShield = false,
                 }, // Don't edit below this line
             },
         };

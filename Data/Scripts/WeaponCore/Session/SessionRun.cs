@@ -30,10 +30,39 @@ namespace WeaponCore
             try
             {
                 Timings();
-                if (Tick20) DsUtil.Start("");
-                FutureEventsManager.Tick(Tick);
-                if (Tick20) DsUtil.Complete("events", true);
+                if (Tick180)
+                {
+                    var projectileTime = DsUtil.GetValue("projectiles");
+                    var updateTime = DsUtil.GetValue("update");
+                    var damageTime = DsUtil.GetValue("damage");
+                    var drawTime = DsUtil.GetValue("draw");
+                    var db = DsUtil.GetValue("db");
+                    var effects = DsUtil.GetValue("effects");
+                    var events = DsUtil.GetValue("events");
+                    var animations = DsUtil.GetValue("animations");
+                    var ai = DsUtil.GetValue("ai");
+                    var threshold = Projectiles.Wait.Length * 12;
+                    //HighLoad = Load > threshold;
+                    HighLoad = false;
+                    Log.Line($"[Load:{Load:0.0}({threshold})] [Ai:{ai.Median:0.0000}({ai.Min:0.0000}/{ai.Max:0.0000})] [Update:{updateTime.Median:0.0000}({updateTime.Min:0.0000}/{updateTime.Max:0.0000}] [Projectiles:{projectileTime.Median:0.0000}({projectileTime.Min:0.0000}/{projectileTime.Max:0.0000})] [Damage:{damageTime.Median:0.0000}({damageTime.Min:0.0000}/{damageTime.Max:0.0000}] [Draw:{drawTime.Median:0.0000}({drawTime.Min:0.0000}/{drawTime.Max:0.0000}] [Dbs:{db.Median:0.0000}({db.Min:0.0000}/{db.Max:0.0000}] [Effects:{effects.Median:0.0000}({effects.Min:0.0000}/{effects.Max:0.0000}] [Events:{events.Median:0.0000}({events.Min:0.0000}/{events.Max:0.0000}] [Anim:{animations.Median:0.0000}({animations.Min:0.0000}/{animations.Max:0.0000}]");
+                    Log.Line($"AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] RayCasts:[{RayCasts}] - TargetTransfers:[{TargetTransfers}] - TargetSets:[{TargetSets}] - TargetResets:[{TargetResets}]");
+                    TargetRequests = 0;
+                    TargetChecks = 0;
+                    BlockChecks = 0;
+                    ProjectileChecks = 0;
+                    CanShoot = 0;
+                    RayCasts = 0;
+                    TargetTransfers = 0;
+                    TargetSets = 0;
+                    TargetResets = 0;
+                    Load = 0d;
+                    DsUtil.Clean();
+                }
+                DsUtil.Start("");
+                _futureEvents.Tick(Tick);
+                DsUtil.Complete("events", true);
                 Ui.UpdateInput();
+                DsUtil.Start("");
                 if (ControlingWeaponCam)
                 {
                     ControlledWeapon.UpdateTurretInput();
@@ -41,7 +70,7 @@ namespace WeaponCore
                 }
                 if (Tick20) DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
-                if (Tick20) DsUtil.Complete("damage", true);
+                DsUtil.Complete("damage", true);
                 if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
                 
             }
@@ -63,16 +92,19 @@ namespace WeaponCore
                     ProcessAnimationQueue();
                 }
 
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 AiLoop();
+                DsUtil.Complete("ai", true);
+
+                DsUtil.Start("");
                 UpdateWeaponPlatforms();
-                if (Tick20) DsUtil.Complete("update", true);
+                DsUtil.Complete("update", true);
 
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 Projectiles.Update();
-                if (Tick20) DsUtil.Complete("projectiles", true);
+                DsUtil.Complete("projectiles", true);
 
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 if (_effectedCubes.Count > 0) ApplyEffect();
                 if (Tick60)
                 {
@@ -91,7 +123,7 @@ namespace WeaponCore
                     }
                     _gridEffects.Clear();
                 }
-                if (Tick20) DsUtil.Complete("effects", true);
+                DsUtil.Complete("effects", true);
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
@@ -113,10 +145,10 @@ namespace WeaponCore
             try
             {
                 if (Placer != null) UpdatePlacer();
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 if (!DedicatedServer)//todo client side only
                     ProcessAnimations();
-                if (Tick20) DsUtil.Complete("animations", true);
+                DsUtil.Complete("animations", true);
 
                 if (!CompsToStart.IsEmpty) StartComps();
 
@@ -133,7 +165,7 @@ namespace WeaponCore
         {
             try
             {
-                if (Tick20) DsUtil.Start("");
+                DsUtil.Start("");
                 if (!DedicatedServer)
                 {
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
@@ -151,15 +183,7 @@ namespace WeaponCore
                     if (_afterGlow.Count > 0)
                         AfterGlow();
                 }
-                if (Tick20) DsUtil.Complete("draw", true);
-                if (Tick300)
-                {
-                    var threshold = Projectiles.Wait.Length * 10;
-                    HighLoad = Load > threshold;
-                    Log.Line($"[Load:{Load:0.00}({threshold}) - Mp:{HighLoad}] [Projectiles:{DsUtil.GetValue("projectiles")}] [Update:{DsUtil.GetValue("update")}] [Damage:{DsUtil.GetValue("damage")}] [Draw:{DsUtil.GetValue("draw")}] [Dbs:{DsUtil.GetValue("db")}] [Effects:{DsUtil.GetValue("effects")}] [Events:{DsUtil.GetValue("events")}] [Anim:{DsUtil.GetValue("animations")}]");
-                    Load = 0d;
-                    DsUtil.Clean();
-                }
+                DsUtil.Complete("draw", true);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }

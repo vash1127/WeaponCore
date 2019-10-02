@@ -141,7 +141,7 @@ namespace WeaponCore.Support
 
         internal void Clean()
         {
-            Target.Reset();
+            Target.Reset(false);
             HitList.Clear();
             System = null;
             Ai = null;
@@ -289,6 +289,8 @@ namespace WeaponCore.Support
 
         internal void TransferTo(Target target)
         {
+            Session.Instance.TargetTransfers++;
+
             target.Entity = Entity;
             target.Projectile = Projectile;
             target.IsProjectile = target.Projectile != null;
@@ -297,11 +299,13 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             target.Expired = Expired;
-            Reset();
+            Reset(false);
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null)
         {
+            Session.Instance.TargetSets++;
+
             Entity = ent;
             Projectile = projectile;
             IsProjectile = projectile != null;
@@ -312,8 +316,10 @@ namespace WeaponCore.Support
             Expired = false;
         }
 
-        internal void Reset()
+        internal void Reset(bool targetExpired = true)
         {
+            if (targetExpired) Session.Instance.TargetResets++;
+
             Entity = null;
             Projectile = null;
             IsProjectile = false;

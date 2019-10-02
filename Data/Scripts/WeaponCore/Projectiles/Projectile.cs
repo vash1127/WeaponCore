@@ -98,8 +98,9 @@ namespace WeaponCore.Projectiles
         internal bool MineTriggered;
         internal bool Miss;
         internal bool Active;
-        //internal readonly MyTimedItemCache VoxelRayCache = new MyTimedItemCache(4000);
-        internal List<MyLineSegmentOverlapResult<MyEntity>> EntityRaycastResult = null;
+        internal bool HitSoundActive;
+        internal bool HitParticleActive;
+        internal bool LastHitShield;
         internal Trajectile T = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -152,6 +153,9 @@ namespace WeaponCore.Projectiles
             MineActivated = false;
             MineTriggered = false;
             T.Cloaked = false;
+            HitSoundActive = false;
+            HitParticleActive = false;
+            LastHitShield = false;
             EndStep = 0;
             T.PrevDistanceTraveled = 0;
             T.DistanceTraveled = 0;
@@ -266,8 +270,17 @@ namespace WeaponCore.Projectiles
                 else HasTravelSound = false;
 
                 if (T.System.HitSound)
-                    HitSound.Init(T.System.Values.Audio.Ammo.HitSound, false);
+                {
+                    var hitSoundChance = T.System.Values.Audio.Ammo.HitPlayChance;
+                    HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f)); 
+                    if (HitSoundActive) HitSound.Init(T.System.Values.Audio.Ammo.HitSound, false);
+                }
 
+                if (T.System.HitParticle && !T.System.IsBeamWeapon)
+                {
+                    var hitPlayChance = T.System.Values.Graphics.Particles.Hit.Extras.HitPlayChance;
+                    HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
+                }
                 if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
                 {
                     FireSound.Init(T.System.Values.Audio.HardPoint.FiringSound, false);
@@ -761,13 +774,15 @@ namespace WeaponCore.Projectiles
             if (Colliding || force)
             {
                 if (force) LastHitPos = Position;
-                //if (T.System.HitParticle && !T.System.IsBeamWeapon) PlayHitParticle();
-                if (T.System.HitSound)
+                if (HitParticleActive) PlayHitParticle();
+                if (HitSoundActive)
                 {
-                    HitEmitter.SetPosition(Position);
-                    HitEmitter.CanPlayLoopSounds = false;
-                    //HitEmitter.PlaySoundWithDistance(HitSound.SoundId, true, false, false, true, true, false, false);
-                    HitEmitter.PlaySound(HitSound, true);
+                    if (force || T.System.Values.Audio.Ammo.HitPlayShield || !LastHitShield)
+                    {
+                        HitEmitter.SetPosition(Position);
+                        HitEmitter.CanPlayLoopSounds = false;
+                        HitEmitter.PlaySound(HitSound, true);
+                    }
                 }
             }
             Colliding = false;
@@ -819,6 +834,9 @@ namespace WeaponCore.Projectiles
             if (HitEffect != null) DisposeHitEffect(false);
             if (LastHitPos.HasValue)
             {
+                if (!T.System.Values.Graphics.Particles.Hit.ApplyToShield && LastHitShield)
+                    return;
+
                 var pos = LastHitPos.Value;
                 var matrix = MatrixD.CreateTranslation(pos);
                 MyParticlesManager.TryCreateParticleEffect(T.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref pos, uint.MaxValue, out HitEffect);

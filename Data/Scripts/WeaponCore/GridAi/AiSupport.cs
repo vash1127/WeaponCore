@@ -255,33 +255,18 @@ namespace WeaponCore.Support
             internal double DistSqr;
             internal float VelLenSqr;
             internal bool IsGrid;
-            internal bool Shielded;
             internal bool Approaching;
             internal int PartCount;
             internal int OffenseRating;
             internal MyCubeGrid MyGrid;
             internal GridAi Ai;
             internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
-            internal ShieldInfo ShieldInfo;
 
-            internal void Init(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, bool shielded, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
+            internal void Init(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
             {
                 EntInfo = entInfo;
                 Target = target;
                 IsGrid = isGrid;
-                Shielded = shielded;
-                if (Shielded)
-                {
-                    var shieldBlock = Session.Instance.SApi.GetShieldBlock(Target);
-                    ShieldInfo = new ShieldInfo
-                    {
-                        ShieldBlock = shieldBlock,
-                        AttachedGrid = (MyCubeGrid) shieldBlock.CubeGrid,
-                        WasOnline = Session.Instance.SApi.IsShieldUp(shieldBlock),
-                        Charge = Session.Instance.SApi.GetCharge(shieldBlock),
-                    };
-                }
-                else ShieldInfo = new ShieldInfo();
 
                 PartCount = partCount;
                 MyGrid = myGrid;
@@ -289,16 +274,20 @@ namespace WeaponCore.Support
                 TypeDict = typeDict;
                 Velocity = target.Physics.LinearVelocity;
                 VelLenSqr = Velocity.LengthSquared();
-                TargetDir = Vector3D.Normalize(Velocity);
                 TargetPos = Target.PositionComp.WorldAABB.Center;
                 if (!MyUtils.IsZero(Velocity, 1E-02F))
                 {
+                    TargetDir = Vector3D.Normalize(Velocity);
                     var refDir = Vector3D.Normalize(ai.GridCenter - TargetPos);
                     var dot = Vector3D.Dot(TargetDir, refDir);
                     var num = TargetDir.LengthSquared() * refDir.LengthSquared() * Session.Instance.ApproachDegrees * Math.Abs(Session.Instance.ApproachDegrees);
                     Approaching = Math.Abs(dot) * dot > num;
                 }
-                else Approaching = false;
+                else
+                {
+                    TargetDir = Vector3D.Zero;
+                    Approaching = false;
+                }
 
                 OffenseRating = TypeDict != null && TypeDict.ContainsKey(BlockTypes.Offense) ? TypeDict[BlockTypes.Offense].Count : 0;
                 Vector3D.DistanceSquared(ref TargetPos, ref Ai.GridCenter, out DistSqr);

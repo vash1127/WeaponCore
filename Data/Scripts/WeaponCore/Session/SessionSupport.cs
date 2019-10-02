@@ -73,17 +73,16 @@ namespace WeaponCore
                     var dictTypes = detectInfo.DictTypes;
                     var grid = ent as MyCubeGrid;
                     var targetInfo = db.TargetInfoPool.Get();
-                    var protectedByShield = ShieldApiLoaded && SApi.ProtectedByShield(ent);
                     if (grid == null)
-                        targetInfo.Init(detectInfo.EntInfo, ent, false, protectedByShield, null, 1, db.MyGrid, db);
+                        targetInfo.Init(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
                     else
                     {
-                        targetInfo.Init(detectInfo.EntInfo, grid, true, protectedByShield, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db);
+                        targetInfo.Init(detectInfo.EntInfo, grid, true, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db);
                         targetInfo.TypeDict = dictTypes;
                     }
 
                     db.SortedTargets.Add(targetInfo);
-                    db.Targets.Add(ent, targetInfo);
+                    db.Targets[ent] = targetInfo;
                 }
                 db.NewEntities.Clear();
                 db.SortedTargets.Sort(db.TargetCompare1);

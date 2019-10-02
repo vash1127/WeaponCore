@@ -1,4 +1,5 @@
-﻿using VRageMath;
+﻿using Sandbox.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -90,7 +91,7 @@ namespace WeaponCore
                         Log.Line($"gridAi.SortedTargets.Count:{gridAi.SortedTargets.Count} gridAi.Threats.Count: {gridAi.Threats.Count}");
 
                         w.SeekTarget = w.Target.Expired && w.TrackTarget;
-                        
+
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
 
@@ -108,7 +109,7 @@ namespace WeaponCore
                                 gridAi.ManualComps++;
                                 comp.Shooting++;
                             }
-                            else if(gunner != lastGunner && !gunner)
+                            else if (gunner != lastGunner && !gunner)
                             {
                                 gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
                                 comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
@@ -289,7 +290,7 @@ namespace WeaponCore
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {
                                 w.ManualShoot = ShootOff;
-                                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                                gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
                             }
                         }
                         else if (w.IsShooting)

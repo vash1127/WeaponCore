@@ -39,7 +39,7 @@ namespace WeaponCore.Support
                             SubGridsTmp.Add(grid);
                             continue;
                         }
-                        if (grid.MarkedForClose || !grid.InScene || grid.Physics?.Speed < 10 && !grid.IsPowered || grid.CubeBlocks.Count < 2)
+                        if (!grid.IsPowered || grid.CubeBlocks.Count < 2)
                             continue;
 
                         var typeDict = BlockTypePool.Get();

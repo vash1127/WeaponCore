@@ -219,8 +219,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                Ai.TotalSinkPower -= MaxRequiredPower;
-                Ai.OptimalDPS -= OptimalDPS;
                 base.OnRemovedFromScene();
                 if(!Session.Instance.CompsToRemove.Contains(this))
                     Session.Instance.CompsToRemove.Enqueue(this);
