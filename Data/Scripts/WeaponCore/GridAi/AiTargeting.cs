@@ -32,7 +32,7 @@ namespace WeaponCore.Support
 
             if (targetType == TargetType.None)
             {
-                w.NewTarget.Reset();
+                w.NewTarget.Reset(false);
                 w.LastTargetCheck = 1;
                 w.Target.Expired = true;
             }
@@ -176,7 +176,7 @@ namespace WeaponCore.Support
                 }
             }
             //Log.Line($"{p.T.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
-            p.T.Target.Reset();
+            p.T.Target.Reset(false);
             return false;
         }
 
@@ -517,7 +517,7 @@ namespace WeaponCore.Support
                 target.Set(newEntity, bestCubePos, shortDist, origDist, topEntId);
                 top5.Add(newEntity);
             }
-            else target.Reset();
+            else target.Reset(false);
 
             if (newEntity0 != null) top5.Add(newEntity0);
             if (newEntity1 != null) top5.Add(newEntity1);

@@ -116,6 +116,9 @@ namespace WeaponCore
         internal int RayCasts;
         internal int CanShoot;
         internal int ProjectileChecks;
+        internal int TargetTransfers;
+        internal int TargetSets;
+        internal int TargetResets;
 
         internal bool ExplosionReady
         {

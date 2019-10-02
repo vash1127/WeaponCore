@@ -276,7 +276,7 @@ namespace WeaponCore
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {
                                 w.ManualShoot = ShootOff;
-                                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                                gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
                             }
                         }
                         else if (w.IsShooting)
