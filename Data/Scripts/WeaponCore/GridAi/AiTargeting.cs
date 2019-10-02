@@ -435,8 +435,10 @@ namespace WeaponCore.Support
                         if (w != null && !(!w.IsTurret && system.Values.Ammo.Trajectory.Smarts.OverideTarget))
                         {
                             Session.Instance.CanShoot++;
-                            Session.Instance.RayCasts++;
-                            bestTest = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel) && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+                            
+                            var canShoot = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel);
+                            if (canShoot) Session.Instance.RayCasts++;
+                            bestTest = canShoot && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
                         }
                         else bestTest = true;
                     }

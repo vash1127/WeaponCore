@@ -63,7 +63,7 @@ namespace WeaponCore.Platform
                 EventTriggerStateChanged(EventTriggers.PreFire, true);
                 return;
             }
-            else if(System.DelayToFire > 0)
+            if (System.DelayToFire > 0)
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
 
             _shots++;
