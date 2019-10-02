@@ -59,7 +59,7 @@ namespace WeaponCore.Support
                             {
                                 _subparts.Add(res);
                                 //EntityToName.Add(res, name);
-                                NameToEntity.Add(name, res);
+                                NameToEntity[name] = res;
                             }
                         }
                 }
