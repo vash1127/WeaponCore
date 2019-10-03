@@ -247,7 +247,7 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == 60) GridAi.AcquireTarget(w);
+                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == (w.DelayPerAttempt * w.TargetDelayMulti)) GridAi.AcquireTarget(w);
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;

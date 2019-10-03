@@ -27,7 +27,6 @@ namespace WeaponCore.Support
         {
             if (MyGrid == null || !MyGrid.InScene || MyGrid.MarkedForClose)
                 return false;
-
             var bigOwners = MyGrid.BigOwners;
             if (bigOwners == null || bigOwners.Count <= 0)
             {

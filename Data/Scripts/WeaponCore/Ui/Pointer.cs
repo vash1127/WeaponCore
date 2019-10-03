@@ -1,20 +1,12 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
-using Havok;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Game.ModAPI.Interfaces;
 using VRage.Input;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 
