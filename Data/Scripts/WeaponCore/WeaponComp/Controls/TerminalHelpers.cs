@@ -16,7 +16,7 @@ namespace WeaponCore.Control
 {
     public static class TerminalHelpers
     {
-        internal static bool AlterActions<T>() where T : IMyLargeTurretBase
+        internal static bool AlterActions<T>() where T : IMyUpgradeModule
         {
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
@@ -81,7 +81,7 @@ namespace WeaponCore.Control
             return false;
         }
 
-        internal static bool AlterControls<T>() where T : IMyLargeTurretBase
+        internal static bool AlterControls<T>() where T : IMyUpgradeModule
         {
             List<IMyTerminalControl> controls;
             MyAPIGateway.TerminalControls.GetControls<T>(out controls);
@@ -112,17 +112,15 @@ namespace WeaponCore.Control
                 
                 if (!On && w.TurretMode)
                 {
-                    var az = ((IMyLargeMissileTurret) w.Comp.MyCube).Azimuth;
-                    var el = ((IMyLargeMissileTurret)w.Comp.MyCube).Elevation;
-                    var azSteps = az / w.System.Values.HardPoint.Block.RotateRate;
-                    var elSteps = el / w.System.Values.HardPoint.Block.ElevateRate;
+                    var az = w.Azimuth;
+                    var el = w.Elevation;
+                    var azSteps = az / w.System.AzStep;
+                    var elSteps = el / w.System.ElStep;
 
                     if (az < 0) az = az * -1;
                     if (az < 0) el = el * -1;
 
                     w.OffDelay = (uint)(az + el > 0 ? az > el ? az : el : 0);
-
-                    Log.Line($"here");
 
                     w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
                 }

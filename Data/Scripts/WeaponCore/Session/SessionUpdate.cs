@@ -22,8 +22,6 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                Log.Line($"gridAi.DbReady: {gridAi.DbReady} gridAi.ReturnHome: {gridAi.ReturnHome} gridAi.ManualComps: {gridAi.ManualComps} gridAi.Reloading: {gridAi.Reloading} ControlingWeaponCam: {ControlingWeaponCam}");
-
                 if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlingWeaponCam) || !gridAi.MyGrid.InScene) continue;
                 gridAi.Reloading = false;
                 foreach (var basePair in gridAi.WeaponBase)
@@ -42,8 +40,6 @@ namespace WeaponCore
 
                         var lastGunner = comp.Gunner;
                         var gunner = comp.Gunner = w == ControlledWeapon;
-
-                        Log.Line($"Gunner: {gunner}");
 
                         w.TargetWasExpired = w.Target.Expired;
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable && !w.ReturnHome) continue;
@@ -74,8 +70,9 @@ namespace WeaponCore
                         if (gunner && Ui.MouseButtonPressed)
                         {
                             w.TargetPos = Vector3D.Zero;
-                            var currentAmmo = comp.Gun.GunBase.CurrentAmmo;
-                            if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
+                            //TODO ammo fix for gunbase
+                            //var currentAmmo = comp.Gun.GunBase.CurrentAmmo;
+                            //if (currentAmmo <= 1) comp.Gun.GunBase.CurrentAmmo += 1;
                         }
 
                         if (w.DelayCeaseFire)
@@ -88,8 +85,6 @@ namespace WeaponCore
                         }
                         else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
-                        Log.Line($"gridAi.SortedTargets.Count:{gridAi.SortedTargets.Count} gridAi.Threats.Count: {gridAi.Threats.Count}");
-
                         w.SeekTarget = w.Target.Expired && w.TrackTarget;
 
                         if (w.TargetWasExpired != w.Target.Expired)
@@ -97,9 +92,6 @@ namespace WeaponCore
 
                         if (w.TurretMode && comp.State.Value.Online)
                         {
-
-                            Log.Line($"gunner: {gunner} lastGunner: {lastGunner} w.TargetWasExpired: {w.TargetWasExpired} w.Target.Expired: {w.Target.Expired}");
-
                             if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) ||
                                  (gunner != lastGunner && !gunner)))
                                 w.LastTargetLock = Tick;
@@ -153,7 +145,7 @@ namespace WeaponCore
                 {
                     var comp = basePair.Value;
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
-                    var gun = comp.Gun.GunBase;
+                    //var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
@@ -214,13 +206,14 @@ namespace WeaponCore
                         
                         if (comp.Charging) continue;
 
-                        if (ammoCheck)
+                        //TODO Ammo fix gunBase
+                        /*if (ammoCheck)
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
                                 AmmoPull(comp, w, false);
                             else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.System.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
-                        }
+                        }*/
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
                             if (w.AmmoMagTimer == int.MaxValue)

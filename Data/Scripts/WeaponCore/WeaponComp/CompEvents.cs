@@ -21,18 +21,19 @@ namespace WeaponCore.Support
                 Turret.AppendingCustomInfo += AppendingCustomInfo;
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
+                //TODO FIX inventory
                 //BlockInventory.ContentsAdded += OnContentsAdded;
-                BlockInventory.ContentsChanged += OnContentsChanged;
-                BlockInventory.ContentsRemoved += OnContentsRemoved;
-                Sink.CurrentInputChanged += CurrentInputChanged;
+                //BlockInventory.ContentsChanged += OnContentsChanged;
+                //BlockInventory.ContentsRemoved += OnContentsRemoved;
+                //Sink.CurrentInputChanged += CurrentInputChanged;
             }
             else
             {
                 Turret.AppendingCustomInfo -= AppendingCustomInfo;
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 //BlockInventory.ContentsAdded -= OnContentsAdded;
-                BlockInventory.ContentsChanged -= OnContentsChanged;
-                BlockInventory.ContentsRemoved -= OnContentsRemoved;
+                //BlockInventory.ContentsChanged -= OnContentsChanged;
+                //BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 
                 foreach (var w in Platform.Weapons)

@@ -15,7 +15,7 @@ namespace WeaponCore
             try
             {
                 if (myEntity == null) return;
-                var weaponBase = myEntity as IMyLargeMissileTurret;
+                var weaponBase = myEntity as IMyUpgradeModule;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 

@@ -19,8 +19,6 @@ namespace WeaponCore.Platform
 
         public void UpdateTurretInput() {
 
-            Comp.MyGrid.PositionComp.WorldMatrix = Comp.Ai.GridMatrix;
-
             List<MyKeys> pressedKeys = new List<MyKeys>();
             MyAPIGateway.Input.GetPressedKeys(pressedKeys);
 
@@ -101,11 +99,11 @@ namespace WeaponCore.Platform
 
         public bool TurretHomePosition()
         {
-            var turret = Comp.MyCube as IMyLargeMissileTurret;
+            var turret = Comp.MyCube as IMyUpgradeModule;
             if (turret == null) return false;
 
-            var azStep = System.Values.HardPoint.Block.RotateRate;
-            var elStep = System.Values.HardPoint.Block.ElevateRate;
+            var azStep = System.AzStep;
+            var elStep = System.ElStep;
 
             var az = Azimuth;
             var el = Elevation;
@@ -124,7 +122,7 @@ namespace WeaponCore.Platform
             AimBarrel(az - Azimuth, el - Elevation);
 
 
-            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return true;
+            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return false;
 
             return false;
         }

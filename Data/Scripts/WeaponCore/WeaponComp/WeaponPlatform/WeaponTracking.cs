@@ -37,7 +37,7 @@ namespace WeaponCore.Platform
             if (weapon == trackingWeapon)
             {
                 Vector3D currentVector;
-                Vector3D.CreateFromAzimuthAndElevation(turret.Azimuth, turret.Elevation, out currentVector);
+                Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
                 currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
 
                 var up = cube.WorldMatrix.Up;
@@ -126,8 +126,8 @@ namespace WeaponCore.Platform
             weapon.TargetPos = targetPos;
             var targetDir = targetPos - weapon.Comp.MyPivotPos;
 
-            var maxAzimuthStep = step ? weapon.System.Values.HardPoint.Block.RotateRate : double.MinValue;
-            var maxElevationStep = step ? weapon.System.Values.HardPoint.Block.ElevateRate : double.MinValue;
+            var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
+            var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
 
             Vector3D currentVector;
             Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
@@ -166,6 +166,7 @@ namespace WeaponCore.Platform
                 weapon.Comp.AiMoving = aim;
                 if (aim)
                 {
+                    Log.Line("here");
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
                     weapon.AimBarrel(azDiff, elDiff);
                     //turret.Elevation = (float) weapon.Elevation;
@@ -330,15 +331,15 @@ namespace WeaponCore.Platform
 
         internal void InitTracking()
         {
-            RotationSpeed = Comp.Platform.BaseDefinition.RotationSpeed;
-            ElevationSpeed = Comp.Platform.BaseDefinition.ElevationSpeed;
-            MinElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(Comp.Platform.BaseDefinition.MinElevationDegrees));
-            MaxElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(Comp.Platform.BaseDefinition.MaxElevationDegrees));
+            RotationSpeed = System.AzStep;
+            ElevationSpeed = System.ElStep;
+            MinElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MinElevation));
+            MaxElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MaxElevation));
 
             if (MinElevationRadians > MaxElevationRadians)
                 MinElevationRadians -= 6.283185f;
-            MinAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(Comp.Platform.BaseDefinition.MinAzimuthDegrees));
-            MaxAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(Comp.Platform.BaseDefinition.MaxAzimuthDegrees));
+            MinAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MinAzimuth));
+            MaxAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MaxAzimuth));
             if (MinAzimuthRadians > MaxAzimuthRadians)
                 MinAzimuthRadians -= 6.283185f;
         }

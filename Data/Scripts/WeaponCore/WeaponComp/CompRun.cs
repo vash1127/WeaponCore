@@ -72,8 +72,8 @@ namespace WeaponCore.Support
             }
 
             PullingAmmoCnt = Platform.Structure.AmmoToWeaponIds.Count;
-
-            FullInventory = BlockInventory.CargoPercentage >= 0.5;
+            //TODO FIX inventory
+            //FullInventory = BlockInventory.CargoPercentage >= 0.5;
             MultiInventory = PullingAmmoCnt > 1;
             if (MultiInventory)
             {
@@ -88,6 +88,7 @@ namespace WeaponCore.Support
             OptimalDPS = 0;
             foreach (var weapon in Platform.Weapons)
             {
+                
                 weapon.InitTracking();
                 Session.ComputeStorage(weapon);
 
@@ -111,18 +112,18 @@ namespace WeaponCore.Support
                 weapon.UpdateShotEnergy();
                 weapon.UpdateRequiredPower();
 
-                var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage: 1;
+                var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage : 1;
 
                 if (weapon.BaseDamage > weapon.System.BaseDamage)
                     mulitplier = mulitplier * mulitplier;
 
                 weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
                 weapon.areaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
-                weapon.detonateDmg = weapon.System.DetonationDamage * mulitplier; 
+                weapon.detonateDmg = weapon.System.DetonationDamage * mulitplier;
 
 
                 MaxRequiredPower -= weapon.RequiredPower;
-                weapon.RequiredPower = weapon.RequiredPower *mulitplier;
+                weapon.RequiredPower = weapon.RequiredPower * mulitplier;
                 MaxRequiredPower += weapon.RequiredPower;
 
 
@@ -135,20 +136,20 @@ namespace WeaponCore.Support
                 {
                     if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
                         weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
-                                          ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
+                                            ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
                                             weapon.System.Values.Ammo.Trajectory.DesiredSpeed
-                                          : 1);
+                                            : 1);
                     else
                         weapon.DPS += (weapon.areaEffectDmg / 2) *
-                                      (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
-                                          ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
+                                        (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                                            ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
                                             weapon.System.Values.Ammo.Trajectory.DesiredSpeed
-                                          : 1);
+                                            : 1);
                 }
 
-                HeatPerSecond += (60 / (float)weapon.TicksPerShot) *  weapon.HeatPShot * weapon.System.BarrelsPerShot;
+                HeatPerSecond += (60 / (float)weapon.TicksPerShot) * weapon.HeatPShot * weapon.System.BarrelsPerShot;
                 OptimalDPS += weapon.DPS;
-                
+
 
                 HeatSinkRate += weapon.HsRate;
 
@@ -159,22 +160,22 @@ namespace WeaponCore.Support
                     weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
                     weapon.FirstLoad = false;
                 }
-
             }
 
             Ai.OptimalDPS += OptimalDPS;
 
-            var gun = Gun.GunBase;
+            //var gun = Gun.GunBase;
             var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id
                 : Platform.Structure.AmmoToWeaponIds.First().Key;
-            BlockInventory.Constraint.Clear();
-            BlockInventory.Constraint.Add(id);
-            gun.SwitchAmmoMagazine(id);
+            //TODO FIX inventory
+            //BlockInventory.Constraint.Clear();
+            //BlockInventory.Constraint.Add(id);
+            //gun.SwitchAmmoMagazine(id);
             foreach (var w in Platform.Weapons)
             {
                 var otherId = w.System.MagazineDef.AmmoDefinitionId;
                 if (otherId == id) continue;
-                BlockInventory.Constraint.Add(otherId);
+                //BlockInventory.Constraint.Add(otherId);
             }
 
             RegisterEvents();
@@ -196,7 +197,7 @@ namespace WeaponCore.Support
                 Platform.ResetParts(this);
 
             Entity.NeedsWorldMatrix = true;
-            Turret.EnableIdleRotation = false;
+            //Turret.EnableIdleRotation = false;
             Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
 
             Ai.TotalSinkPower += MaxRequiredPower;

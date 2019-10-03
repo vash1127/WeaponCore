@@ -104,6 +104,10 @@ namespace WeaponCore.Support
         [ProtoMember(6)] internal Vector3D Offset;
         [ProtoMember(7)] internal bool FixedOffset;
         [ProtoMember(8)] internal bool Debug;
+        [ProtoMember(9)] internal int MaxAzimuth;
+        [ProtoMember(10)] internal int MinAzimuth;
+        [ProtoMember(11)] internal int MaxElevation;
+        [ProtoMember(12)] internal int MinElevation;
     }
 
     [ProtoContract]

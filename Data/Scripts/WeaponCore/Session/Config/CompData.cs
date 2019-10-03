@@ -11,7 +11,7 @@ namespace WeaponCore
     {
         public LogicStateValues Value = new LogicStateValues();
         public readonly WeaponComponent Comp;
-        public readonly IMyLargeMissileTurret Turret;
+        public readonly IMyUpgradeModule Turret;
         public LogicState(WeaponComponent comp)
         {
             Comp = comp;
@@ -76,7 +76,7 @@ namespace WeaponCore
     {
         public LogicSettingsValues Value = new LogicSettingsValues();
         public readonly WeaponComponent Comp;
-        public readonly IMyLargeMissileTurret Turret;
+        public readonly IMyUpgradeModule Turret;
         public LogicSettings(WeaponComponent comp)
         {
             Comp = comp;

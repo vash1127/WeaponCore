@@ -116,7 +116,8 @@ namespace WeaponCore
 
                 comp.BlockInventory.Constraint.Clear();
                 comp.BlockInventory.Constraint.Add(nextDef);
-                comp.Gun.GunBase.SwitchAmmoMagazine(nextDef);
+                //TODO ammo fix gunbase
+                //comp.Gun.GunBase.SwitchAmmoMagazine(nextDef);
                 foreach (var a in comp.Platform.Structure.AmmoToWeaponIds)
                 {
                     var def = a.Key;
@@ -131,8 +132,8 @@ namespace WeaponCore
                 return nextDef;
             }
 
-            comp.BlockInventory.Constraint.Remove(comp.Gun.GunBase.CurrentAmmoMagazineId);
-            Log.Line($"[returning none] current:{comp.Gun.GunBase.CurrentAmmoMagazineId.SubtypeId.String} - foundFirst:{firstFound} - Full:{oldWeapon.AmmoFull} - foundValid:{validFound} - oldWeaponId:{oldWeapon.WeaponId} - oldSus/oldUnSus:{oldWeapon.SuspendAmmoTick}/{oldWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend}");
+            //comp.BlockInventory.Constraint.Remove(comp.Gun.GunBase.CurrentAmmoMagazineId);
+            //Log.Line($"[returning none] current:{comp.Gun.GunBase.CurrentAmmoMagazineId.SubtypeId.String} - foundFirst:{firstFound} - Full:{oldWeapon.AmmoFull} - foundValid:{validFound} - oldWeaponId:{oldWeapon.WeaponId} - oldSus/oldUnSus:{oldWeapon.SuspendAmmoTick}/{oldWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend}");
             return null;
         }
 

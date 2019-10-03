@@ -37,7 +37,10 @@ namespace WeaponCore.Support
         public readonly int TargetLossTime;
         public readonly int PrimeModelId;
         public readonly int TriggerModelId;
-
+        public readonly int MinAzimuth;
+        public readonly int MaxAzimuth;
+        public readonly int MinElevation;
+        public readonly int MaxElevation;
         public readonly int MaxHeat;
         public readonly int WeaponId;
         public readonly int BarrelsPerShot;
@@ -149,6 +152,10 @@ namespace WeaponCore.Support
 
             AzStep = Values.HardPoint.Block.RotateRate;
             ElStep = Values.HardPoint.Block.ElevateRate;
+            MinAzimuth = Values.HardPoint.Block.MinAzimuth;
+            MaxAzimuth = Values.HardPoint.Block.MaxAzimuth;
+            MinElevation = Values.HardPoint.Block.MinElevation;
+            MaxElevation = Values.HardPoint.Block.MaxElevation;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
             BarrelEffect2 = values.Graphics.Particles.Barrel2.Name != string.Empty;

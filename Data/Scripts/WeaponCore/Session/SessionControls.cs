@@ -30,12 +30,12 @@ namespace WeaponCore
                 Controls = true;
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
-                TerminalHelpers.AlterActions<IMyLargeTurretBase>();
-                TerminalHelpers.AlterControls<IMyLargeTurretBase>();
+                TerminalHelpers.AlterActions<IMyUpgradeModule>();
+                TerminalHelpers.AlterControls<IMyUpgradeModule>();
 
                 if (WepControl) return;
 
-                TerminalHelpers.Separator<IMyLargeTurretBase>(0, "WC_sep0");
+                TerminalHelpers.Separator<IMyUpgradeModule>(0, "WC_sep0");
 
                 var wepIDs = new HashSet<int>();
                 List<IMyTerminalControlButton> controlButtons = new List<IMyTerminalControlButton>();
@@ -53,22 +53,22 @@ namespace WeaponCore
                         else
                             continue;
 
-                        controlButtons.Add(TerminalHelpers.AddButton<IMyLargeTurretBase>(wepID, $"Control {wepName}", "Control", "Control", TerminalHelpers.WeaponFunctionEnabled, EnableManualControl));
+                        controlButtons.Add(TerminalHelpers.AddButton<IMyUpgradeModule>(wepID, $"Control {wepName}", "Control", "Control", TerminalHelpers.WeaponFunctionEnabled, EnableManualControl));
 
-                        enableSwitches.Add(TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled));
-                        CreateShootActionSet<IMyLargeTurretBase>(wepName, wepID);
+                        enableSwitches.Add(TerminalHelpers.AddWeaponOnOff<IMyUpgradeModule>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled));
+                        CreateShootActionSet<IMyUpgradeModule>(wepName, wepID);
                     }
                 }
 
                 for (int i = 0; i < controlButtons.Count; i++)
-                    MyAPIGateway.TerminalControls.AddControl<IMyLargeTurretBase>(controlButtons[i]);
+                    MyAPIGateway.TerminalControls.AddControl<IMyUpgradeModule>(controlButtons[i]);
 
-                TerminalHelpers.Separator<IMyLargeTurretBase>(0, "WC_sep0");
+                TerminalHelpers.Separator<IMyUpgradeModule>(0, "WC_sep0");
 
                 for (int i = 0; i < enableSwitches.Count; i++)
-                    MyAPIGateway.TerminalControls.AddControl<IMyLargeTurretBase>(enableSwitches[i]);
+                    MyAPIGateway.TerminalControls.AddControl<IMyUpgradeModule>(enableSwitches[i]);
 
-                var action = MyAPIGateway.TerminalControls.CreateAction<IMyLargeTurretBase>($"WC_Shoot_Click");
+                var action = MyAPIGateway.TerminalControls.CreateAction<IMyUpgradeModule>($"WC_Shoot_Click");
                 action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
                 action.Name = new StringBuilder($"Activate Mouse Shoot");
                 action.Action = delegate (IMyTerminalBlock blk) {
@@ -97,18 +97,18 @@ namespace WeaponCore
                 action.Enabled = (b) => WepUi.CoreWeaponEnableCheck(b, 0);
                 action.ValidForGroups = true;
 
-                MyAPIGateway.TerminalControls.AddAction<IMyLargeTurretBase>(action);
+                MyAPIGateway.TerminalControls.AddAction<IMyUpgradeModule>(action);
 
-                TerminalHelpers.Separator<IMyLargeTurretBase>(0, "WC_sep1");
+                TerminalHelpers.Separator<IMyUpgradeModule>(0, "WC_sep1");
 
-                TerminalHelpers.AddWeaponOnOff<IMyLargeTurretBase>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddWeaponOnOff<IMyUpgradeModule>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
 
                 
-                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<IMyUpgradeModule>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps, WepUi.CoreWeaponEnableCheck);
 
-                TerminalHelpers.AddSlider<IMyLargeTurretBase>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<IMyUpgradeModule>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
 
-                TerminalHelpers.AddCheckbox<IMyLargeTurretBase>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddCheckbox<IMyUpgradeModule>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
 
                 WepControl = true;
             }
@@ -149,6 +149,8 @@ namespace WeaponCore
                     MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_RIGHT.String, MyAPIGateway.Session.Player.IdentityId, false);
 
                     MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_UP.String, MyAPIGateway.Session.Player.IdentityId, false);
+
+                    comp.Ai.GridMatrix = comp.MyGrid.PositionComp.WorldMatrix;
 
                 }
             }
@@ -317,7 +319,7 @@ namespace WeaponCore
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
-            var turret = block as IMyLargeTurretBase;
+            var turret = block as IMyUpgradeModule;
 
             if (controls.Count == 0 || turret == null) return;
 

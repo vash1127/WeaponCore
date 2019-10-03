@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Common.ObjectBuilders;
+using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -9,6 +10,7 @@ using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -92,8 +94,8 @@ namespace WeaponCore.Support
         internal MyCubeGrid MyGrid;
         internal MyPhysicsComponentBase Physics;
         internal MyWeaponPlatform Platform;
-        internal MyObjectBuilder_TurretBase Ob;
-        internal IMyLargeMissileTurret Turret;
+        internal MyObjectBuilder_UpgradeModule Ob;
+        internal IMyUpgradeModule Turret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
         internal Vector3D MyPivotPos;
@@ -104,7 +106,7 @@ namespace WeaponCore.Support
         internal LineD MyBarrelTestLine;
         internal LineD MyPivotTestLine;
         internal double MyPivotOffset;
-        internal IMyGunObject<MyGunBase> Gun;
+        //internal IMyGunObject<MyGunBase> Gun;
         internal bool MainInit;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
@@ -119,21 +121,37 @@ namespace WeaponCore.Support
         internal LogicState State;
         //internal MyResourceSinkComponent Sink => MyCube.ResourceSink;
         internal MyResourceSinkComponent Sink;
-        public WeaponComponent(GridAi ai, MyCubeBlock myCube, IMyLargeMissileTurret turret)
+        public WeaponComponent(GridAi ai, MyCubeBlock myCube, IMyUpgradeModule turret)
         {
+            if (myCube == null)
+                Log.Line("Cube null");
+
+            if (ai == null)
+                Log.Line("ai null");
+
             Ai = ai;
             MyCube = myCube;
+
             MyGrid = MyCube.CubeGrid;
             Turret = turret;
-            Gun = (IMyGunObject<MyGunBase>)MyCube;
-            BlockInventory = (MyInventory)MyCube.GetInventoryBase();
-            BlockInventory.Constraint.m_useDefaultIcon = false;
+            //Gun = (IMyGunObject<MyGunBase>)MyCube;          
+
+            BlockInventory = new MyInventory(0.384f,Vector3.Zero, MyInventoryFlags.CanReceive | MyInventoryFlags.CanSend);
+
+            MyCube.Components.Add(BlockInventory);
+
+            if (BlockInventory == null)
+                Log.Line("Inventory null");
+
+            //BlockInventory.Constraint.m_useDefaultIcon = false;
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
-            IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
+            //PowerInit();
+
+            //IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
             SinkPower = IdlePower;
-            PowerInit();
-            Ob = (MyObjectBuilder_TurretBase)myCube.GetObjectBuilderCubeBlock();
+            
+            Ob = (MyObjectBuilder_UpgradeModule)myCube.GetObjectBuilderCubeBlock();
         }        
     }
 }

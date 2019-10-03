@@ -7,6 +7,7 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Support;
 using WeaponThread;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -59,7 +60,7 @@ namespace WeaponCore
                     DsUtil.Clean();
                 }
                 DsUtil.Start("");
-                _futureEvents.Tick(Tick);
+                FutureEventsManager.Tick(Tick);
                 DsUtil.Complete("events", true);
                 Ui.UpdateInput();
                 DsUtil.Start("");
@@ -67,6 +68,8 @@ namespace WeaponCore
                 {
                     ControlledWeapon.UpdateTurretInput();
                     WeaponCamera.RequestSetView();
+                    ControlledWeapon.Comp.MyGrid.PositionComp.WorldMatrix = ControlledWeapon.Comp.Ai.GridMatrix;
+
                 }
                 if (Tick20) DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
@@ -142,6 +145,9 @@ namespace WeaponCore
 
         public override void UpdateAfterSimulation()
         {
+            if (ControlingWeaponCam)
+                ControlledWeapon.Comp.MyGrid.PositionComp.WorldMatrix = ControlledWeapon.Comp.Ai.GridMatrix;
+
             try
             {
                 if (Placer != null) UpdatePlacer();
@@ -153,16 +159,15 @@ namespace WeaponCore
                 if (!CompsToStart.IsEmpty) StartComps();
 
                 if (!CompsToRemove.IsEmpty) RemoveComps();
-
-                if (ControlingWeaponCam) {
-                    ControlledWeapon.Comp.Ai.GridMatrix = ControlledWeapon.Comp.MyGrid.PositionComp.WorldMatrix;
-                }
+                
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }
 
         public override void Draw()
         {
+            if (ControlingWeaponCam)
+                ControlledWeapon.Comp.MyGrid.PositionComp.WorldMatrix = ControlledWeapon.Comp.Ai.GridMatrix;
             try
             {
                 DsUtil.Start("");

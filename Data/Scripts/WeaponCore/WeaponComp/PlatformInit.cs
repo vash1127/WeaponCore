@@ -15,7 +15,7 @@ namespace WeaponCore.Platform
         internal readonly Weapon[] Weapons;
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly WeaponStructure Structure;
-        internal readonly MyLargeTurretBaseDefinition BaseDefinition;
+        //internal readonly MyLargeTurretBaseDefinition BaseDefinition;
         internal readonly bool Inited;
         internal MyWeaponPlatform(WeaponComponent comp)
         {
@@ -34,7 +34,7 @@ namespace WeaponCore.Platform
             }
             else Inited = true;
 
-            BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
+            //BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
 
             var partCount = Structure.AimPartNames.Length;
             Weapons = new Weapon[partCount];
