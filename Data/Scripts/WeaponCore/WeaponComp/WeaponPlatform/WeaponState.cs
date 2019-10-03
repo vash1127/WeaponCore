@@ -397,7 +397,7 @@ namespace WeaponCore.Platform
                 Comp.SinkPower += RequiredPower;
                 Comp.CurrentSinkPowerRequested += RequiredPower;
                 //TODO fix sink
-                //Comp.Sink.Update();
+                Comp.Sink.Update();
                 Comp.TerminalRefresh();
             }
             IsShooting = true;
@@ -418,7 +418,7 @@ namespace WeaponCore.Platform
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                     Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
                     //TODO fix sink
-                    //Comp.Sink.Update();
+                    Comp.Sink.Update();
                     Comp.TerminalRefresh();
                 }
                 IsShooting = false;

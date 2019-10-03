@@ -1,4 +1,5 @@
-﻿using Sandbox.ModAPI;
+﻿using Sandbox.Game.EntityComponents;
+using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Utils;
 
@@ -14,11 +15,15 @@ namespace WeaponCore.Support
                 MaxRequiredInput = 0f,
                 RequiredInputFunc = () => SinkPower,
             };
-            MyCube.Components.TryGet(out Sink);
+            //MyCube.Components.TryGet(out Sink);
             var gId = GId;
-            Sink.RemoveType(ref gId);
+            //Sink.RemoveType(ref gId);
+            Sink = new MyResourceSinkComponent() { TemporaryConnectedEntity = MyCube};
             Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
             Sink.AddType(ref resourceInfo);
+
+            MyCube.Components.Add(Sink);
+
             Sink.Update();
         }
 

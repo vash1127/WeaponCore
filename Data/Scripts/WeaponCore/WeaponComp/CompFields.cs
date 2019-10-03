@@ -146,7 +146,7 @@ namespace WeaponCore.Support
             //BlockInventory.Constraint.m_useDefaultIcon = false;
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
-            //PowerInit();
+            PowerInit();
 
             //IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
             SinkPower = IdlePower;
