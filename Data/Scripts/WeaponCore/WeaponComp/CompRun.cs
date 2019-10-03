@@ -77,8 +77,8 @@ namespace WeaponCore.Support
             MultiInventory = PullingAmmoCnt > 1;
             if (MultiInventory)
             {
-                MaxAmmoVolume = (float)MyFixedPoint.MultiplySafe(MaxInventoryVolume, 1 / (float)PullingAmmoCnt) * 0.5f;
-                MaxAmmoMass = (float)MyFixedPoint.MultiplySafe(MaxInventoryMass, 1 / (float)PullingAmmoCnt) * 0.5f;
+                MaxAmmoVolume = (float)MyFixedPoint.MultiplySafe(MaxInventoryVolume, (1 / (float)PullingAmmoCnt)) * 0.5f;
+                MaxAmmoMass = (float)MyFixedPoint.MultiplySafe(MaxInventoryMass, (1 / (float)PullingAmmoCnt)) * 0.5f;
             }
 
             StorageSetup();
@@ -88,7 +88,6 @@ namespace WeaponCore.Support
             OptimalDPS = 0;
             foreach (var weapon in Platform.Weapons)
             {
-                
                 weapon.InitTracking();
                 Session.ComputeStorage(weapon);
 
@@ -167,15 +166,15 @@ namespace WeaponCore.Support
             //var gun = Gun.GunBase;
             var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id
                 : Platform.Structure.AmmoToWeaponIds.First().Key;
-            //TODO FIX inventory
-            //BlockInventory.Constraint.Clear();
-            //BlockInventory.Constraint.Add(id);
+            
+            BlockInventory.Constraint.Clear();
+            BlockInventory.Constraint.Add(id);
             //gun.SwitchAmmoMagazine(id);
             foreach (var w in Platform.Weapons)
             {
                 var otherId = w.System.MagazineDef.AmmoDefinitionId;
                 if (otherId == id) continue;
-                //BlockInventory.Constraint.Add(otherId);
+                BlockInventory.Constraint.Add(otherId);
             }
 
             RegisterEvents();

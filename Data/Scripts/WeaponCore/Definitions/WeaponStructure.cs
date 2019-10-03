@@ -479,7 +479,9 @@ namespace WeaponCore.Support
                 else if (cap > 0 && gridWeaponCap > 0 && cap < gridWeaponCap) gridWeaponCap = cap;
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
-  
+
+                Session.Instance.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventoryBase, MyFixedPoint>();
+
                 WeaponSystems.Add(myAimNameHash, new WeaponSystem(myAimNameHash, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId));
                 if (!ammoBlank)
                 {

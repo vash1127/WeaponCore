@@ -213,6 +213,7 @@ namespace WeaponCore.Support
                     if (!s.TrackGrids) continue;
                     Session.Instance.CanShoot++;
                     if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
+                    
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);

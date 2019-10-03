@@ -143,7 +143,13 @@ namespace WeaponCore.Support
             if (BlockInventory == null)
                 Log.Line("Inventory null");
 
-            //BlockInventory.Constraint.m_useDefaultIcon = false;
+            BlockInventory.Constraint = new MyInventoryConstraint("AmmoConstraint")
+            {
+                m_useDefaultIcon = false
+            };
+
+            
+
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
             PowerInit();

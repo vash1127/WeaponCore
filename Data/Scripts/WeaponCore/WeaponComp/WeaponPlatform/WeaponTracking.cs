@@ -14,7 +14,6 @@ namespace WeaponCore.Platform
         internal static bool CanShootTarget(Weapon weapon, ref Vector3D targetCenter, ref Vector3D targetLinVel)
         {
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
-            var turret = weapon.Comp.Turret;
             var cube = weapon.Comp.MyCube;
             var trackingWeapon = weapon.Comp.TrackingWeapon;
             Vector3D targetPos;
@@ -52,12 +51,14 @@ namespace WeaponCore.Platform
                 double desiredElevation;
                 MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
+                
+
                 var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
                 var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
+
                 var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
                 var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 canTrack = !azConstrained && !elConstrained;
-                
             }
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);

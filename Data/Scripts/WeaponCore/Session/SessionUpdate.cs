@@ -155,7 +155,7 @@ namespace WeaponCore
                         DsDebugDraw.DrawLine(comp.MyPivotTestLine, Color.Green, 0.05f);
                         DsDebugDraw.DrawLine(comp.MyBarrelTestLine, Color.Red, 0.05f);
                         DsDebugDraw.DrawLine(comp.MyCenterTestLine, Color.Blue, 0.05f);
-                        DsDebugDraw.DrawSingleVec(comp.MyPivotPos, 0.5f, Color.White);
+                        DsDebugDraw.DrawSingleVec(comp.MyPivotPos, 1f, Color.White);
                     }
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
