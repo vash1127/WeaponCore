@@ -29,9 +29,9 @@ namespace WeaponCore.Support
             }
 
 
-            w.Comp.UpdatePivotPos(w);
-            w.AimCone.ConeDir = w.Comp.MyPivotDir;
-            w.AimCone.ConeTip = w.Comp.MyPivotPos;
+            w.UpdatePivotPos();
+            w.AimCone.ConeDir = w.MyPivotDir;
+            w.AimCone.ConeTip = w.MyPivotPos;
 
             var shootProjectile = pCount > 0 && w.System.TrackProjectile;
             var projectilesFirst = shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
@@ -112,7 +112,7 @@ namespace WeaponCore.Support
         {
             var ai = w.Comp.Ai;
             var physics = Session.Instance.Physics;
-            var weaponPos = w.Comp.MyPivotPos;
+            var weaponPos = w.MyPivotPos;
             var target = w.NewTarget;
             var s = w.System;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
@@ -127,7 +127,7 @@ namespace WeaponCore.Support
 
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
-                if (Vector3D.DistanceSquared(targetCenter, w.Comp.MyPivotPos) > s.MaxTrajectorySqr) continue;
+                if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
 
                 if (info.IsGrid)
@@ -284,7 +284,7 @@ namespace WeaponCore.Support
             wCache.SortProjectiles(w);
             var physics = Session.Instance.Physics;
             var target = w.NewTarget;
-            var weaponPos = w.Comp.MyPivotPos;
+            var weaponPos = w.MyPivotPos;
             foreach (var lp in collection)
             {
                 Session.Instance.ProjectileChecks++;

@@ -147,18 +147,20 @@ namespace WeaponCore
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
                     if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || (!gridAi.Ready && !comp.ReturnHome)) continue;
-                    if (comp.Debug)
-                    {
-                        DsDebugDraw.DrawLine(comp.MyPivotTestLine, Color.Green, 0.05f);
-                        DsDebugDraw.DrawLine(comp.MyBarrelTestLine, Color.Red, 0.05f);
-                        DsDebugDraw.DrawLine(comp.MyCenterTestLine, Color.Blue, 0.05f);
-                        DsDebugDraw.DrawSingleVec(comp.MyPivotPos, 1f, Color.White);
-                    }
+
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
+                        
+                        if (comp.Debug)
+                        {
+                            DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
+                            DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
+                            DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
+                            DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
+                        }
 
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || (!gridAi.Ready && !w.Reloading))
                         {
@@ -267,7 +269,7 @@ namespace WeaponCore
                                 w.LastTargetLock = 0;
                         }
 
-                        if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(CameraPos, comp.MyPivotPos) < 10000)
+                        if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < 10000)
                         {
                             if (w.IsTracking && comp.AiMoving && !comp.RotationEmitter.IsPlaying)
                                 comp.RotationEmitter.PlaySound(comp.RotationSound, true, false, false, false, false, false);

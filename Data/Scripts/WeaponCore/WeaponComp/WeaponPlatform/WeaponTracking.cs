@@ -25,9 +25,9 @@ namespace WeaponCore.Platform
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, prediction, out timeToIntercept);
             else
                 targetPos = targetCenter;
-            var targetDir = Vector3D.Normalize(targetPos - weapon.Comp.MyPivotPos);
+            var targetDir = Vector3D.Normalize(targetPos - weapon.MyPivotPos);
 
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
             
@@ -61,7 +61,7 @@ namespace WeaponCore.Platform
                 canTrack = !azConstrained && !elConstrained;
             }
             else
-                canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+                canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             var tracking = inRange && canTrack;
 
@@ -87,12 +87,12 @@ namespace WeaponCore.Platform
             else
                 targetPos = targetCenter;
 
-            var targetDir = targetPos - weapon.Comp.MyPivotPos;
+            var targetDir = targetPos - weapon.MyPivotPos;
 
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
-            var isAligned = inRange && MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            var isAligned = inRange && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             weapon.TargetPos = targetPos;
             weapon.IsAligned = isAligned;
@@ -121,11 +121,11 @@ namespace WeaponCore.Platform
             else
                 targetPos = targetCenter;
 
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.Comp.MyPivotPos, out rangeToTarget);
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
             weapon.TargetPos = targetPos;
-            var targetDir = targetPos - weapon.Comp.MyPivotPos;
+            var targetDir = targetPos - weapon.MyPivotPos;
 
             var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
             var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
@@ -157,8 +157,6 @@ namespace WeaponCore.Platform
                 var oldEl = weapon.Elevation;
                 var newAz = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
                 var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
-                weapon.DesiredAzimuth = desiredAzimuth;
-                weapon.DesiredElevation = desiredElevation;
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
                 var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
@@ -178,12 +176,14 @@ namespace WeaponCore.Platform
             var isAligned = false;
 
             if (weapon.IsTracking)
-                isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.Comp.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+                isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             else
                 weapon.SeekTarget = true;
 
             var wasAligned = weapon.IsAligned;
             weapon.IsAligned = isAligned;
+
+            Log.Line($"wasAligned: {wasAligned} isAligned: {isAligned}");
 
             var alignedChange = wasAligned != isAligned;
             if (alignedChange && isAligned) weapon.StartShooting();
@@ -204,7 +204,7 @@ namespace WeaponCore.Platform
                 return targetPos;
             }
 
-            var shooterPos = Comp.MyPivotPos;
+            var shooterPos = MyPivotPos;
             var shooterVel = Comp.Physics.LinearVelocity;
             var targetVel = targetLinVel;
             Vector3D predictedPos;

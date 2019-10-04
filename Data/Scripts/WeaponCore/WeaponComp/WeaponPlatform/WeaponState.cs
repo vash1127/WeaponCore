@@ -12,8 +12,8 @@ namespace WeaponCore.Platform
     {
         public void PositionChanged(MyPositionComponentBase pComp)
         {
-            if (Comp.LastPivotUpdateTick != Session.Instance.Tick)
-                Comp.UpdatePivotPos(this);
+            if (_posChangedTick != Session.Instance.Tick)
+                UpdatePivotPos();
 
             _posChangedTick = Session.Instance.Tick;
         }
@@ -22,10 +22,10 @@ namespace WeaponCore.Platform
         {
             var tick = Session.Instance.Tick;
 
-            if  (Comp.LastPivotUpdateTick != Session.Instance.Tick && !Target.Expired)
-                PositionChanged(pComp);
+            if (_posChangedTick != Session.Instance.Tick)
+                UpdatePivotPos();
 
-            if (Comp.PositionUpdateTick <= tick && Comp.LastPivotUpdateTick != tick)
+            if (Comp.PositionUpdateTick <= tick && _posChangedTick != tick)
             {
                 if (EntityPart == null || EntityPart.MarkedForClose) return;
                 var parentMatrix = EntityPart.Parent.PositionComp.WorldMatrix;

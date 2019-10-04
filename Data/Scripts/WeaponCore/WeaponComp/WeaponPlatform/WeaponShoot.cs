@@ -39,7 +39,7 @@ namespace WeaponCore.Platform
             }
 
             if (AvCapable && (!PlayTurretAv || session.Tick60))
-                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, Comp.MyPivotPos) < System.HardPointAvMaxDistSqr;
+                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos) < System.HardPointAvMaxDistSqr;
 
 
             if (System.BarrelAxisRotation) MovePart();
@@ -191,7 +191,7 @@ namespace WeaponCore.Platform
                             p.SelfDamage = System.SelfDamage || Comp.Gunner;
                             p.GridVel = Comp.Ai.GridVel;
                             p.T.Origin = muzzle.Position;
-                            p.T.OriginUp = Comp.MyPivotUp;
+                            p.T.OriginUp = MyPivotUp;
                             p.PredictedTargetPos = TargetPos;
                             p.Direction = muzzle.DeviatedDir;
                             p.State = Projectile.ProjectileState.Start;
@@ -294,10 +294,10 @@ namespace WeaponCore.Platform
 
             p.SelfDamage = System.SelfDamage || Comp.Gunner;
             p.GridVel = Comp.Ai.GridVel;
-            p.T.Origin = Comp.MyPivotPos;
-            p.T.OriginUp = Comp.MyPivotUp;
+            p.T.Origin = MyPivotPos;
+            p.T.OriginUp = MyPivotUp;
             p.PredictedTargetPos = TargetPos;
-            p.Direction = Comp.MyPivotDir;
+            p.Direction = MyPivotDir;
             p.State = Projectile.ProjectileState.Start;
             return p;
         }
@@ -325,7 +325,7 @@ namespace WeaponCore.Platform
             }
 
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
-            if (Vector3D.DistanceSquared(targetPos, Comp.MyPivotPos) > System.MaxTrajectorySqr)
+            if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > System.MaxTrajectorySqr)
             {
                 Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
                 masterWeapon.Target.Expired = true;
@@ -333,7 +333,7 @@ namespace WeaponCore.Platform
                 return;
             }
             Casting = true;
-            Session.Instance.Physics.CastRayParallel(ref Comp.MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
+            Session.Instance.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
         }
 
         public void ShootRayCheckCallBack(IHitInfo hitInfo)
@@ -407,7 +407,7 @@ namespace WeaponCore.Platform
                 {
                     var maxChange = hitInfo.HitEntity.PositionComp.LocalAABB.HalfExtents.Min();
                     var targetPos = Target.Entity.PositionComp.WorldMatrix.Translation;
-                    var weaponPos = Comp.MyPivotPos;
+                    var weaponPos = MyPivotPos;
 
                     double rayDist;
                     Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);

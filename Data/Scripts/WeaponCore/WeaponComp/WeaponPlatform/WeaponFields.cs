@@ -40,6 +40,13 @@ namespace WeaponCore.Platform
         internal MyEntity BarrelPart;
         internal MyTuple<MyEntity, Vector3, Matrix, Matrix> AzimuthPart;
         internal MyTuple<MyEntity, Vector3, Matrix, Matrix> ElevationPart;
+        internal Vector3D MyPivotPos;
+        internal Vector3D MyPivotDir;
+        internal Vector3D MyPivotUp;
+        internal Vector3D AimOffset;
+        internal LineD MyCenterTestLine;
+        internal LineD MyBarrelTestLine;
+        internal LineD MyPivotTestLine;
         internal WeaponSystem System;
         internal Dummy[] Dummies;
         internal Muzzle[] Muzzles;
@@ -95,8 +102,6 @@ namespace WeaponCore.Platform
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
-        internal double DesiredAzimuth;
-        internal double DesiredElevation;
         internal double AimingTolerance;
         internal double RotationSpeed;
         internal double ElevationSpeed;
@@ -104,6 +109,7 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
+        internal double MyPivotOffset;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -126,6 +132,7 @@ namespace WeaponCore.Platform
         internal bool CurrentlyDegrading;
         internal bool SleepTargets;
         internal bool HitOther;
+        internal bool FixedOffset;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 
@@ -236,7 +243,6 @@ namespace WeaponCore.Platform
                 Comp.Ai.MaxTargetingRange = System.MaxTrajectory;
                 Comp.Ai.MaxTargetingRangeSqr = System.MaxTrajectorySqr;
             }
-            Comp.UpdatePivotPos(this);
         }
 
         internal void UpdateRequiredPower()

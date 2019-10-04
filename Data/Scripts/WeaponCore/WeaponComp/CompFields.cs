@@ -1,16 +1,12 @@
 ﻿using System.Collections.Generic;
 using Sandbox.Common.ObjectBuilders;
-using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
-using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -49,7 +45,6 @@ namespace WeaponCore.Support
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
         internal uint lastInventoryChangedTick;
-        internal uint LastPivotUpdateTick;
         internal uint ShootTick = 0;
         internal uint DelayTicks = 0;
         internal uint IsWorkingChangedTick;
@@ -97,14 +92,6 @@ namespace WeaponCore.Support
         internal IMyUpgradeModule Turret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
-        internal Vector3D MyPivotPos;
-        internal Vector3D MyPivotDir;
-        internal Vector3D MyPivotUp;
-        internal Vector3D AimOffset;
-        internal LineD MyCenterTestLine;
-        internal LineD MyBarrelTestLine;
-        internal LineD MyPivotTestLine;
-        internal double MyPivotOffset;
         //internal IMyGunObject<MyGunBase> Gun;
         internal bool MainInit;
         internal bool SettingsUpdated;
@@ -115,7 +102,6 @@ namespace WeaponCore.Support
         internal bool MultiInventory;
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
-        internal bool FixedOffset;
         internal LogicSettings Set;
         internal LogicState State;
         //internal MyResourceSinkComponent Sink => MyCube.ResourceSink;

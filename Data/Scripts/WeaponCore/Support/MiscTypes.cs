@@ -345,7 +345,7 @@ namespace WeaponCore.Support
         internal void SortProjectiles(Weapon w)
         {
             var ai = w.Comp.Ai;
-            var weaponPos = w.Comp.MyPivotPos;
+            var weaponPos = w.MyPivotPos;
             if (Session.Instance.Tick != Tick)
             {
                 SortProjetiles.Clear();

@@ -64,7 +64,7 @@ namespace WeaponCore.Support
             IMyUpgradeModule myLargeTurretBaseCore = obj.FatBlock as IMyUpgradeModule;
             if (myLargeTurretBaseCore != null)
             {
-                _scanningRange.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, 10000f));
+                _scanningRange.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, 1500f));
                 myLargeTurretBaseCore.PropertiesChanged += TurretOnPropertiesChanged;
             }
             IMyLargeTurretBase myLargeTurretBase = obj.FatBlock as IMyLargeTurretBase;
@@ -80,7 +80,7 @@ namespace WeaponCore.Support
             IMyUpgradeModule myLargeTurretBaseCore = obj as IMyUpgradeModule;
             if (myLargeTurretBaseCore != null)
             {
-                _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, 10000f));
+                _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, 1500f));
             }
 
             IMyLargeTurretBase myLargeTurretBase = obj as IMyLargeTurretBase;

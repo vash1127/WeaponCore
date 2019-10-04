@@ -59,19 +59,30 @@ namespace WeaponCore.Platform
                     break;
                 }
 
-                Weapons[i] = new Weapon(aimPartEntity, Structure.WeaponSystems[Structure.AimPartNames[i]], i, comp, wepAnimationSet)
+                var system = Structure.WeaponSystems[Structure.AimPartNames[i]];
+
+                var azimuthPartName = string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String;
+                var elevationPartName = string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String;
+
+                Log.Line($"Has Part: {Parts.NameToEntity.ContainsKey(azimuthPartName)}");
+
+                Weapons[i] = new Weapon(aimPartEntity, system, i, comp, wepAnimationSet)
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
+                    AzimuthPart = new MyTuple<MyEntity, Vector3, Matrix, Matrix> { Item1 = Parts.NameToEntity[azimuthPartName], Item2 = Vector3.Zero, Item3 = Matrix.Zero, Item4 = Matrix.Zero },
+                    ElevationPart = new MyTuple<MyEntity, Vector3, Matrix, Matrix> { Item1 = Parts.NameToEntity[elevationPartName], Item2 = Vector3.Zero, Item3 = Matrix.Zero, Item4 = Matrix.Zero }
+
                 };
 
                 var weapon = Weapons[i];
+                weapon.UpdatePivotPos();
                 if (weapon.System.Values.HardPoint.Block.TurretController && comp.TrackingWeapon == null)
                 {
                     weapon.TrackingAi = true;
                     comp.Debug = weapon.System.Values.HardPoint.Block.Debug;
-                    comp.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
-                    comp.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
+                    weapon.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
+                    weapon.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
                     comp.TrackingWeapon = weapon;
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
                     {
@@ -101,8 +112,8 @@ namespace WeaponCore.Platform
 
                     Weapons[c].BarrelPart = noMuzzlePart ? comp.MyCube : Parts.NameToEntity[muzzlePartName];
 
-                    var azimuthPart = Parts.NameToEntity[azimuthPartName];
-                    var elevationPart = Parts.NameToEntity[elevationPartName];
+                    var azimuthPart = Weapons[c].AzimuthPart.Item1;
+                    var elevationPart = Weapons[c].ElevationPart.Item1;
 
                     var azimuthPartLocation = Session.Instance.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
                     var elevationPartLocation = Session.Instance.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
@@ -114,8 +125,13 @@ namespace WeaponCore.Platform
                     var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
                     var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
 
-                    Weapons[c].AzimuthPart = new MyTuple<MyEntity, Vector3, Matrix, Matrix> { Item1 = azimuthPart, Item2 = azimuthPartLocation, Item3 = fullStepAzRotation, Item4 = rFullStepAzRotation };
-                    Weapons[c].ElevationPart = new MyTuple<MyEntity, Vector3, Matrix, Matrix> { Item1 = elevationPart, Item2 = elevationPartLocation, Item3 = fullStepElRotation, Item4 = rFullStepElRotation };
+                    Weapons[c].AzimuthPart.Item2 = azimuthPartLocation;
+                    Weapons[c].AzimuthPart.Item3 = fullStepAzRotation;
+                    Weapons[c].AzimuthPart.Item4 = rFullStepAzRotation;
+
+                    Weapons[c].ElevationPart.Item2 = elevationPartLocation;
+                    Weapons[c].ElevationPart.Item3 = fullStepElRotation;
+                    Weapons[c].ElevationPart.Item4 = rFullStepElRotation;
 
                     try
                     {
