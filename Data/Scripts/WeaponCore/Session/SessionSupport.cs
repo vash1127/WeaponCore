@@ -115,7 +115,6 @@ namespace WeaponCore
                 db.StaticEntitiesInRange = staticCount > 0;
 
                 db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || db.FirstRun;
-                Log.Line($"db.DbReady");
                 db.FirstRun = false;
                 //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.MyShield = db.MyShieldTmp;

@@ -107,10 +107,6 @@ namespace WeaponCore.Platform
                     var azimuthPartLocation = Session.Instance.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
                     var elevationPartLocation = Session.Instance.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
 
-                    var cameraController = new CameraController();
-
-                    azimuthPart.Components.Add<MyEntityRespawnComponentBase>(cameraController);
-
                     var fullStepAzRotation = Matrix.CreateTranslation(-azimuthPartLocation) * Matrix.CreateRotationY(-m.Value.AzStep) * Matrix.CreateTranslation(azimuthPartLocation);
 
                     var fullStepElRotation = Matrix.CreateTranslation(-elevationPartLocation) * Matrix.CreateRotationX(-m.Value.ElStep) * Matrix.CreateTranslation(elevationPartLocation);

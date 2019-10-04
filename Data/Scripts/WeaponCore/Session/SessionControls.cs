@@ -30,17 +30,14 @@ namespace WeaponCore
                 Controls = true;
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
-                TerminalHelpers.AlterActions<IMyUpgradeModule>();
-                TerminalHelpers.AlterControls<IMyUpgradeModule>();
+                //TerminalHelpers.AlterActions<IMyUpgradeModule>();
+                //TerminalHelpers.AlterControls<IMyUpgradeModule>();
 
                 if (WepControl) return;
 
                 TerminalHelpers.Separator<IMyUpgradeModule>(0, "WC_sep0");
 
                 var wepIDs = new HashSet<int>();
-                List<IMyTerminalControlButton> controlButtons = new List<IMyTerminalControlButton>();
-                List<IMyTerminalControlOnOffSwitch> enableSwitches = new List<IMyTerminalControlOnOffSwitch>();
-
                 foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
                 {
                     foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
@@ -53,20 +50,10 @@ namespace WeaponCore
                         else
                             continue;
 
-                        controlButtons.Add(TerminalHelpers.AddButton<IMyUpgradeModule>(wepID, $"Control {wepName}", "Control", "Control", TerminalHelpers.WeaponFunctionEnabled, EnableManualControl));
-
-                        enableSwitches.Add(TerminalHelpers.AddWeaponOnOff<IMyUpgradeModule>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled));
+                        TerminalHelpers.AddWeaponOnOff<IMyUpgradeModule>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled);
                         CreateShootActionSet<IMyUpgradeModule>(wepName, wepID);
                     }
                 }
-
-                for (int i = 0; i < controlButtons.Count; i++)
-                    MyAPIGateway.TerminalControls.AddControl<IMyUpgradeModule>(controlButtons[i]);
-
-                TerminalHelpers.Separator<IMyUpgradeModule>(0, "WC_sep0");
-
-                for (int i = 0; i < enableSwitches.Count; i++)
-                    MyAPIGateway.TerminalControls.AddControl<IMyUpgradeModule>(enableSwitches[i]);
 
                 var action = MyAPIGateway.TerminalControls.CreateAction<IMyUpgradeModule>($"WC_Shoot_Click");
                 action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
@@ -113,47 +100,6 @@ namespace WeaponCore
                 WepControl = true;
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
-        }
-
-        private static void EnableManualControl(IMyTerminalBlock blk, int id)
-        {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || !comp.Platform.Inited) return;
-
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
-                var w = comp.Platform.Weapons[i];
-
-                if (w.System.WeaponId == id)
-                {
-                    Instance.ControlingWeaponCam = true;
-                    comp.Controlling = true;
-
-                    Instance.ControlledWeapon = w;
-
-                    var weaponCamera = Instance.WeaponCamera;
-                    var weaponCameraGrid = Instance.WeaponCameraGrid;
-
-                    var cameraMatrix = w.ElevationPart.Item1.PositionComp.WorldMatrix;
-                    cameraMatrix.Translation += (cameraMatrix.Up * 1.2);
-                    cameraMatrix.Translation += (-cameraMatrix.Forward * 1.2);
-                    weaponCamera.DisplayNameText = w.System.WeaponName;
-
-                    weaponCameraGrid.PositionComp.WorldMatrix = cameraMatrix;
-                    weaponCamera.PositionComp.WorldMatrix = cameraMatrix;
-
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_DOWN.String, MyAPIGateway.Session.Player.IdentityId, false);
-
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_LEFT.String, MyAPIGateway.Session.Player.IdentityId, false);
-
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_RIGHT.String, MyAPIGateway.Session.Player.IdentityId, false);
-
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_UP.String, MyAPIGateway.Session.Player.IdentityId, false);
-
-                    comp.Ai.GridMatrix = comp.MyGrid.PositionComp.WorldMatrix;
-
-                }
-            }
         }
 
         internal bool WeaponEnabled(IMyTerminalBlock block, int wepID)

@@ -65,15 +65,19 @@ namespace WeaponCore.Support
                 }
             }
             GetTargetBlocks(Targeting, this);
-            Targeting.AllowScanning = false;
+            //Targeting.AllowScanning = false;
         }
 
-        private static void GetTargetBlocks(MyGridTargeting targeting, GridAi ai)
+        private static void GetTargetBlocks(CoreTargeting targeting, GridAi ai)
         {
+            targeting.RescanIfNeeded();
             IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
             foreach (var targets in allTargets)
             {
                 var rootGrid = targets.Key;
+
+                Log.Line($"targets: {targets.Value.Count}");
+
                 Dictionary<BlockTypes, List<MyCubeBlock>> typeDict;
                 if (ai.ValidGrids.TryGetValue(rootGrid, out typeDict))
                 {

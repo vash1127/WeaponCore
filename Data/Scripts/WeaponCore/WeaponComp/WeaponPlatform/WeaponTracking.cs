@@ -155,19 +155,20 @@ namespace WeaponCore.Platform
             {
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
-                weapon.Azimuth += MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                var newAz = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
+                var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                 weapon.DesiredAzimuth = desiredAzimuth;
                 weapon.DesiredElevation = desiredElevation;
-                var azDiff = oldAz - weapon.Azimuth;
-                var elDiff = oldEl - weapon.Elevation;
+                var azDiff = oldAz - newAz;
+                var elDiff = oldEl - newEl;
                 var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
                 var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
                 var aim = !azLocked || !elLocked;
                 weapon.Comp.AiMoving = aim;
                 if (aim)
                 {
-                    Log.Line("here");
+                    //weapon.Azimuth = newAz;
+                    //weapon.Elevation = newEl;
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
                     weapon.AimBarrel(azDiff, elDiff);
                     //turret.Elevation = (float) weapon.Elevation;

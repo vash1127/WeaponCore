@@ -64,13 +64,6 @@ namespace WeaponCore
                 DsUtil.Complete("events", true);
                 Ui.UpdateInput();
                 DsUtil.Start("");
-                if (ControlingWeaponCam)
-                {
-                    ControlledWeapon.UpdateTurretInput();
-                    WeaponCamera.RequestSetView();
-                    ControlledWeapon.Comp.MyGrid.PositionComp.WorldMatrix = ControlledWeapon.Comp.Ai.GridMatrix;
-
-                }
                 if (Tick20) DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
                 DsUtil.Complete("damage", true);
@@ -145,9 +138,6 @@ namespace WeaponCore
 
         public override void UpdateAfterSimulation()
         {
-            if (ControlingWeaponCam)
-                ControlledWeapon.Comp.MyGrid.PositionComp.WorldMatrix = ControlledWeapon.Comp.Ai.GridMatrix;
-
             try
             {
                 if (Placer != null) UpdatePlacer();
@@ -166,8 +156,6 @@ namespace WeaponCore
 
         public override void Draw()
         {
-            if (ControlingWeaponCam)
-                ControlledWeapon.Comp.MyGrid.PositionComp.WorldMatrix = ControlledWeapon.Comp.Ai.GridMatrix;
             try
             {
                 DsUtil.Start("");

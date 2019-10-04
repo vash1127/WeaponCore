@@ -51,7 +51,7 @@ namespace WeaponCore.Support
         internal Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
 
         internal MyResourceDistributorComponent MyResourceDist;
-        internal MyGridTargeting Targeting { get; set; }
+        internal CoreTargeting Targeting { get; set; }
         internal DSUtils DsWatch = new DSUtils();
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
@@ -116,7 +116,9 @@ namespace WeaponCore.Support
         {
             MyGrid = grid;
             RegisterMyGridEvents(true, grid);
-            Targeting = MyGrid.Components.Get<MyGridTargeting>();
+
+            Targeting = (CoreTargeting)MyGrid.Components.Get<MyGridTargeting>();
+
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventoryBase, MyFixedPoint>>(Session.Instance.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }
     }

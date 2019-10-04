@@ -144,7 +144,7 @@ namespace WeaponCore.Control
             c.Visible = b => VisibleGetter(b, id);
             c.Getter = b => getter(b, id);
             c.Setter = (b, enabled) => setter(b, id, enabled);
-            //MyAPIGateway.TerminalControls.AddControl<T>(c);
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
 
             CreateOnOffActionSet<T>(c, name, id, VisibleGetter);
 
@@ -295,7 +295,7 @@ namespace WeaponCore.Control
             c.Visible = b => visibleGetter(b, id);
             c.Action = b => action(b , id);
 
-            //MyAPIGateway.TerminalControls.AddControl<T>(c);
+            MyAPIGateway.TerminalControls.AddControl<T>(c);
             return c;
         }
 

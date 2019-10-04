@@ -39,7 +39,7 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
 
                         var lastGunner = comp.Gunner;
-                        var gunner = comp.Gunner = w == ControlledWeapon;
+                        var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
 
                         w.TargetWasExpired = w.Target.Expired;
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable && !w.ReturnHome) continue;
@@ -117,9 +117,6 @@ namespace WeaponCore
 
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
                             gridAi.Reloading = true;
-
-
-                        Log.Line($"w.AiReady: {w.AiReady} w.SeekTarget: {w.SeekTarget} gunner: {gunner} w.ManualShoot: {w.ManualShoot}gridAi.Reloading: {gridAi.Reloading}");
 
                         if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading) gridAi.Ready = true;
                     }
@@ -297,7 +294,6 @@ namespace WeaponCore
                 gridAi.Ready = false;
                 gridAi.AvailablePowerIncrease = false;
                 gridAi.RecalcPowerPercent = false;
-                gridAi.DbReady = false;
 
                 if (gridAi.RecalcDone)
                 {

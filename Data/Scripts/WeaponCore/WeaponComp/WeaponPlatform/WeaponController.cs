@@ -16,41 +16,13 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-
-        public void UpdateTurretInput() {
-
-            List<MyKeys> pressedKeys = new List<MyKeys>();
-            MyAPIGateway.Input.GetPressedKeys(pressedKeys);
-
-            var currentEnt = Session.Instance.ControlledEntity as MyCockpit;
-
-            var grid = currentEnt.CubeGrid;
-            
-            for (int i = 0; i < pressedKeys.Count; i++) {
-                if (pressedKeys[i].ToString() == "F")
-                {
-                    Session.Instance.ControlingWeaponCam = false;
-                    Session.Instance.ControlledWeapon = null;
-                    Comp.Controlling = false;
-
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_DOWN.String, MyAPIGateway.Session.Player.IdentityId, true);
-
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_LEFT.String, MyAPIGateway.Session.Player.IdentityId, true);
-
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_RIGHT.String, MyAPIGateway.Session.Player.IdentityId, true);
-
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(MyControlsSpace.ROTATION_UP.String, MyAPIGateway.Session.Player.IdentityId, true);
-                }
-            }
-
-            //MyAPIGateway.Input.GetMouseX;
-            //MyAPIGateway.Input.GetMouseXForGamePlay;
-        }
-
         public void AimBarrel(double azimuthChange, double elevationChange)
         {
             float absAzChange;
             float absElChange;
+
+            Azimuth -= azimuthChange;
+            Elevation -= elevationChange;
 
             bool rAz = false;
             bool rEl = false;
@@ -105,24 +77,27 @@ namespace WeaponCore.Platform
             var azStep = System.AzStep;
             var elStep = System.ElStep;
 
-            var az = Azimuth;
-            var el = Elevation;
+            var oldAz = Azimuth;
+            var oldEl = Elevation;
 
-            if (az > 0)
-                Azimuth = az - azStep > 0 ? az - azStep : 0;
-            else if (az < 0)
-                Azimuth = az + azStep < 0 ? az + azStep : 0;
+            double newAz = 0; ;
+            double newEl = 0;
 
-            if (el > 0)
-                Elevation = el - elStep > 0 ? el - elStep : 0;
-            else if (el < 0)
-                Elevation = el + elStep < 0 ? el + elStep : 0;
+            if (oldAz > 0)
+                newAz = oldAz - azStep > 0 ? oldAz - azStep : 0;
+            else if (oldAz < 0)
+                newAz = oldAz + azStep < 0 ? oldAz + azStep : 0;
+
+            if (oldEl > 0)
+                newEl = oldEl - oldEl > 0 ? oldEl - elStep : 0;
+            else if (oldEl < 0)
+                newEl = oldEl + oldEl < 0 ? oldEl + elStep : 0;
 
 
-            AimBarrel(az - Azimuth, el - Elevation);
+            AimBarrel(oldAz - newAz, oldEl - newEl);
 
 
-            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return false;
+            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return true;
 
             return false;
         }

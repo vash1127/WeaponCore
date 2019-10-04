@@ -75,39 +75,7 @@ namespace WeaponCore
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
             HeatEmissives = CreateHeatEmissive();
-
-            var weaponCamPrefab = MyDefinitionManager.Static.GetPrefabDefinition("WeaponCamera").CubeGrids[0];
-
-            var cameraGrid = MyAPIGateway.Entities.CreateFromObjectBuilder(weaponCamPrefab) as MyCubeGrid;
-
-            if (cameraGrid != null)
-            {
-                cameraGrid.IsPreview = true;
-                cameraGrid.SyncFlag = false;
-                cameraGrid.Save = false;
-                cameraGrid.Physics.Enabled = false;
-                cameraGrid.SyncFlag = false;
-                MyAPIGateway.Entities.AddEntity(cameraGrid);
-                cameraGrid.Render.RemoveRenderObjects();
-                List<IMySlimBlock> cGridBlocks = new List<IMySlimBlock>();
-                ((IMyCubeGrid)cameraGrid).GetBlocks(cGridBlocks);
-
-                WeaponCameraGrid = cameraGrid;
-                MyEntities.Add(cameraGrid);
-
-                foreach(var block in cGridBlocks)
-                {
-                    if(block.FatBlock as MyCameraBlock != null)
-                        WeaponCamera = (MyCameraBlock)block.FatBlock;
-                }
-            }
-
-            //WeaponCamera.Physics.Enabled = false;
-            //WeaponCamera.SyncFlag = false;
-            //WeaponCamera.Render.RemoveRenderObjects();
-            Log.Line($"WeaponCam Created Camera Type:{WeaponCamera.GetType()}");
             
-
             foreach (var x in _weaponDefinitions)
             {
                 var ae = x.Ammo.AreaEffect;
