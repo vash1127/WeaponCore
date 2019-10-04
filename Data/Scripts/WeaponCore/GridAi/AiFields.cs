@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -65,6 +64,7 @@ namespace WeaponCore.Support
         internal int DbUpdating;
         internal int SourceCount;
         internal int ManualComps;
+        internal int BlockCount;
         internal long MyOwner;
         internal bool TargetNeutrals;
         internal bool TargetNoOwners;

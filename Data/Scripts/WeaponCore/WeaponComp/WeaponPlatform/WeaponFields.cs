@@ -79,7 +79,7 @@ namespace WeaponCore.Platform
         internal uint OffDelay;
         internal int TargetAttempts;
         internal int TargetDelayMulti;
-        internal int MaxAttempts = 6;
+        internal int MaxAttempts = 4;
         internal int DelayPerAttempt = 30;
         internal int RateOfFire;
         internal int CurrentAmmo;
@@ -88,6 +88,7 @@ namespace WeaponCore.Platform
         internal int WeaponId;
         internal int HsRate;
         internal int EnergyPriority;
+        internal int LastBlockCount;
         internal float HeatPShot;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
@@ -122,6 +123,7 @@ namespace WeaponCore.Platform
         internal bool ReturnHome;
         internal bool CurrentlyDegrading;
         internal bool SleepTargets;
+        internal bool HitOther;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 

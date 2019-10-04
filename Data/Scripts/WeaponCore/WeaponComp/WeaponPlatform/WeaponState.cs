@@ -480,5 +480,12 @@ namespace WeaponCore.Platform
         {
             RotateEmitter?.StopSound(true);
         }
+
+        internal void WakeTargets()
+        {
+            SleepTargets = false;
+            TargetAttempts = 0;
+            SleepingTargets.Clear();
+        }
     }
 }
