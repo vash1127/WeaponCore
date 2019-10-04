@@ -1,11 +1,114 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 
 namespace WeaponCore.Support
 {
+
     public static class GridIntersection
     {
+        internal static bool BresenhamGridIntersection(MyCubeGrid grid, Vector3D worldStart, Vector3D worldEnd)
+        {
+            //if (selfIntersect) worldEnd = worldStart + (-Vector3D.Normalize(worldStart - worldEnd) * (grid.PositionComp.LocalVolume.Radius + grid.GridSize));
+            var start = grid.WorldToGridInteger(worldStart);
+            var end = grid.WorldToGridInteger(worldEnd);
+            Vector3I delta = end - start;
+            Vector3I step = Vector3I.Sign(delta);
+            delta *= step;
+            int max = delta.AbsMax();
+
+            var gMinX = grid.Min.X;
+            var gMinY = grid.Min.Y;
+            var gMinZ = grid.Min.Z;
+            var gMaxX = grid.Max.X;
+            var gMaxY = grid.Max.Y;
+            var gMaxZ = grid.Max.Z;
+
+            if (max == delta.X)
+            {
+                int p1 = 2 * delta.Y - delta.X;
+                int p2 = 2 * delta.Z - delta.X;
+                while (start.X != end.X)
+                {
+                    start.X += step.X;
+                    if (p1 >= 0)
+                    {
+                        start.Y += step.Y;
+                        p1 -= 2 * delta.X;
+                    }
+
+                    if (p2 >= 0)
+                    {
+                        start.Z += step.Z;
+                        p2 -= 2 * delta.X;
+                    }
+                    p1 += 2 * delta.Y;
+                    p2 += 2 * delta.Z;
+                    var contained = gMinX <= start.X && start.X <= gMaxX && (gMinY <= start.Y && start.Y <= gMaxY) && (gMinZ <= start.Z && start.Z <= gMaxZ);
+                    if (!contained) return false;
+
+                    if (grid.GetCubeBlock(start) != null) return true;
+                }
+            }
+            else if (max == delta.Y)
+            {
+                int p1 = 2 * delta.X - delta.Y;
+                int p2 = 2 * delta.Z - delta.Y;
+                while (start.Y != end.Y)
+                {
+                    start.Y += step.Y;
+                    if (p1 >= 0)
+                    {
+                        start.X += step.X;
+                        p1 -= 2 * delta.Y;
+                    }
+
+                    if (p2 >= 0)
+                    {
+                        start.Z += step.Z;
+                        p2 -= 2 * delta.Y;
+                    }
+                    p1 += 2 * delta.X;
+                    p2 += 2 * delta.Z;
+
+                    var contained = gMinX <= start.X && start.X <= gMaxX && (gMinY <= start.Y && start.Y <= gMaxY) && (gMinZ <= start.Z && start.Z <= gMaxZ);
+                    if (!contained) return false;
+
+                    if (grid.GetCubeBlock(start) != null) return true;
+                }
+            }
+            else
+            {
+                int p1 = 2 * delta.X - delta.Z;
+                int p2 = 2 * delta.Y - delta.Z;
+                while (start.Z != end.Z)
+                {
+                    start.Z += step.Z;
+                    if (p1 >= 0)
+                    {
+                        start.X += step.X;
+                        p1 -= 2 * delta.Z;
+                    }
+
+                    if (p2 >= 0)
+                    {
+                        start.Y += step.Y;
+                        p2 -= 2 * delta.Z;
+                    }
+                    p1 += 2 * delta.X;
+                    p2 += 2 * delta.Y;
+
+                    var contained = gMinX <= start.X && start.X <= gMaxX && (gMinY <= start.Y && start.Y <= gMaxY) && (gMinZ <= start.Z && start.Z <= gMaxZ);
+                    if (!contained) return false;
+
+                    if (grid.GetCubeBlock(start) != null) return true;
+                }
+            }
+            return false;
+        }
+
         public static IMySlimBlock FirstBlock(this IMyCubeGrid grid, Vector3D worldStart, Vector3D worldEnd,
             Func<IMySlimBlock, bool> pred = null, Vector3I? gridSizeInflate = null)
         {

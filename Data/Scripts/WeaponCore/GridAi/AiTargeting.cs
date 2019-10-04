@@ -3,6 +3,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
@@ -15,6 +16,7 @@ namespace WeaponCore.Support
         internal static void AcquireTarget(Weapon w)
         {
             Session.Instance.TargetRequests++;
+            //Log.Line($"check: {w.LastTargetCheck} - {w.TargetAttempts}");
             w.LastTargetCheck = 0;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
             var targetType = TargetType.None;
@@ -29,15 +31,15 @@ namespace WeaponCore.Support
             else if (targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
 
             if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType);
-
-            Log.Line($"TargetType: {targetType}");
-
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset(false);
+                if (w.TargetAttempts < w.MaxAttempts) w.TargetDelayMulti++;
+                w.TargetAttempts++;
                 w.LastTargetCheck = 1;
                 w.Target.Expired = true;
             }
+            else w.TargetAttempts = 0;
         }
 
         private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)
@@ -45,6 +47,7 @@ namespace WeaponCore.Support
             if (system.TargetSubSystems)
             {
                 var subSystems = system.Values.Targeting.SubSystems;
+                var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 foreach (var bt in subSystems)
                 {
                     if (bt != Any && info.TypeDict[bt].Count > 0)
@@ -54,21 +57,21 @@ namespace WeaponCore.Support
                         {
                             if (bt != target.LastBlockType) target.Top5.Clear();
                             target.LastBlockType = bt;
-                            var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                             GetClosestHitableBlockOfType(subSystemList, target, weaponPos, targetLinVel, system, w);
                             if (target.Entity != null) return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, subSystemList, w)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, w)) return true;
                     }
                 }
                 if (system.OnlySubSystems) return false;
             }
-            if (FindRandomBlock(system, ai, target, weaponPos, info.TypeDict[Any], w)) return true;
+            if (FindRandomBlock(system, ai, target, weaponPos, info, w)) return true;
             return false;
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, List<MyCubeBlock> blockList, Weapon w)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, Weapon w)
         {
+            var blockList = info.TypeDict[Any];
             var totalBlocks = blockList.Count;
             var lastBlocks = system.Values.Targeting.TopBlocks;
             if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
@@ -76,7 +79,9 @@ namespace WeaponCore.Support
             if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
             var physics = Session.Instance.Physics;
             var turretCheck = w != null;
-
+            var grid = info.Target.GetTopMostParent() as IMyCubeGrid;
+            var gridPhysics = grid?.Physics;
+            Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
             for (int i = 0; i < totalBlocks; i++)
             {
                 var next = i;
@@ -90,8 +95,6 @@ namespace WeaponCore.Support
                 double rayDist;
                 if (turretCheck)
                 {
-                    var gridPhysics = ((IMyCubeGrid)block.CubeGrid).Physics;
-                    Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
                     Session.Instance.CanShoot++;
                     if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel)) continue;
 
@@ -211,12 +214,31 @@ namespace WeaponCore.Support
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     if (!s.TrackGrids) continue;
+
+                    if (w.TargetAttempts > w.MaxAttempts)
+                    {
+                        Vector3D oldDir;
+                        var newDir = targetCenter - weaponPos;
+                        if (w.SleepingTargets.TryGetValue(info.Target, out oldDir))
+                        {
+                            if (oldDir.Equals(newDir, 1E-01))
+                                continue;
+                            //Log.Line($"target:{info.Target.DebugName} moved");
+                            w.SleepingTargets.Remove(info.Target);
+                        }
+                        else w.SleepingTargets.Add(info.Target, newDir);
+                    }
+
                     Session.Instance.CanShoot++;
                     if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
-                    
+
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
+
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
+                    if (w.TargetAttempts > w.MaxAttempts)
+                        w.SleepingTargets.Clear();
+
                     return;
                 }
 
@@ -228,7 +250,6 @@ namespace WeaponCore.Support
 
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
-
                 Session.Instance.RayCasts++;
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);

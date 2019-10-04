@@ -64,6 +64,7 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
         internal readonly Dictionary<EventTriggers, HashSet<PartAnimation>> AnimationsSet;
+        internal readonly Dictionary<MyEntity, Vector3D> SleepingTargets = new Dictionary<MyEntity, Vector3D>();
         internal float RequiredPower;
         internal float BaseDamage;
         internal float ShotEnergyCost;
@@ -78,6 +79,10 @@ namespace WeaponCore.Platform
         internal uint LastTargetLock;
         internal uint FirstFireDelay;
         internal uint OffDelay;
+        internal int TargetAttempts;
+        internal int TargetDelayMulti;
+        internal int MaxAttempts = 6;
+        internal int DelayPerAttempt = 30;
         internal int RateOfFire;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
@@ -105,7 +110,6 @@ namespace WeaponCore.Platform
         internal bool SeekTarget;
         internal bool TrackingAi;
         internal bool IsTracking;
-        //internal bool IsInView;
         internal bool IsAligned;
         internal bool AmmoSuspend;
         internal bool AmmoFull;
@@ -119,6 +123,7 @@ namespace WeaponCore.Platform
         internal bool FirstLoad = true;
         internal bool ReturnHome;
         internal bool CurrentlyDegrading;
+        internal bool SleepTargets;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 
