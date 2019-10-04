@@ -79,7 +79,7 @@ namespace WeaponCore.Platform
         internal uint OffDelay;
         internal int TargetAttempts;
         internal int TargetDelayMulti;
-        internal int MaxAttempts = 4;
+        internal int MaxAttempts = 1;
         internal int DelayPerAttempt = 30;
         internal int RateOfFire;
         internal int CurrentAmmo;
