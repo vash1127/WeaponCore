@@ -80,7 +80,7 @@ namespace WeaponCore.Platform
         internal int TargetAttempts;
         internal int TargetDelayMulti;
         internal int MaxAttempts = 1;
-        internal int DelayPerAttempt = 30;
+        internal int DelayPerAttempt = 60;
         internal int RateOfFire;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
