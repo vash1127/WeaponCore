@@ -6,6 +6,7 @@ using Sandbox.Game.Weapons;
 using Sandbox.Game.World;
 using Sandbox.ModAPI;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,23 +24,39 @@ namespace WeaponCore.Support
     public class CoreTargeting : MyGridTargeting
     {
 
-        private MyCubeGrid m_grid;
-        private BoundingSphere m_queryLocal = new BoundingSphere(Vector3.Zero, float.MinValue);
-        private List<MyEntity> m_targetRoots = new List<MyEntity>();
-        private Dictionary<MyCubeGrid, List<MyEntity>> m_targetBlocks = new Dictionary<MyCubeGrid, List<MyEntity>>();
-        private List<long> m_ownersB = new List<long>();
-        private List<long> m_ownersA = new List<long>();
+        private MyCubeGrid _myGrid;
+        private BoundingSphere _scanningRange = new BoundingSphere(Vector3.Zero, float.MinValue);
+        private List<MyEntity> _targetGrids = new List<MyEntity>();
+        private Dictionary<MyCubeGrid, List<MyEntity>> _targetBlocks = new Dictionary<MyCubeGrid, List<MyEntity>>();
+        private List<long> _ownershipCheckB = new List<long>();
+        private List<long> _ownershipCheckA = new List<long>();
 
-        private static FastResourceLock m_scanLock = new FastResourceLock();
+        private FastResourceLock selfLock = new FastResourceLock();
 
-        private uint m_lastScan;
+        private static ConcurrentDictionary<MyCubeGrid, FastResourceLock> _gridLocks = new ConcurrentDictionary<MyCubeGrid, FastResourceLock>();
+        private static FastResourceLock _emergencyLock = new FastResourceLock();
+
+        private uint _lastScan;
         public new bool AllowScanning = true;
 
         public override void OnAddedToContainer()
         {
             base.OnAddedToContainer();
-            this.m_grid = (base.Entity as MyCubeGrid);
-            ((IMyCubeGrid)this.m_grid).OnBlockAdded += this.m_grid_OnBlockAdded;
+            _myGrid = (base.Entity as MyCubeGrid);
+            ((IMyCubeGrid)_myGrid).OnBlockAdded += m_grid_OnBlockAdded;
+            CoreTargeting._gridLocks.TryAdd(_myGrid,new FastResourceLock());
+        }
+
+        public override void OnBeforeRemovedFromContainer()
+        {
+            if (CoreTargeting._gridLocks.ContainsKey(_myGrid))
+            {
+                FastResourceLock removedLock;
+                if(CoreTargeting._gridLocks.TryRemove(_myGrid, out removedLock))
+                {
+                    ((IMyCubeGrid)_myGrid).OnBlockAdded += m_grid_OnBlockAdded;
+                }
+            }
         }
 
         private void m_grid_OnBlockAdded(IMySlimBlock obj)
@@ -47,14 +64,14 @@ namespace WeaponCore.Support
             IMyUpgradeModule myLargeTurretBaseCore = obj.FatBlock as IMyUpgradeModule;
             if (myLargeTurretBaseCore != null)
             {
-                this.m_queryLocal.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, 10000f));
-                myLargeTurretBaseCore.PropertiesChanged += this.TurretOnPropertiesChanged;
+                _scanningRange.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, 10000f));
+                myLargeTurretBaseCore.PropertiesChanged += TurretOnPropertiesChanged;
             }
             IMyLargeTurretBase myLargeTurretBase = obj.FatBlock as IMyLargeTurretBase;
             if (myLargeTurretBase != null)
             {
-                this.m_queryLocal.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, myLargeTurretBase.Range));
-                myLargeTurretBase.PropertiesChanged += this.TurretOnPropertiesChanged;
+                _scanningRange.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, myLargeTurretBase.Range));
+                myLargeTurretBase.PropertiesChanged += TurretOnPropertiesChanged;
             }
         }
 
@@ -63,13 +80,13 @@ namespace WeaponCore.Support
             IMyUpgradeModule myLargeTurretBaseCore = obj as IMyUpgradeModule;
             if (myLargeTurretBaseCore != null)
             {
-                this.m_queryLocal.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, 10000f));
+                _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, 10000f));
             }
 
             IMyLargeTurretBase myLargeTurretBase = obj as IMyLargeTurretBase;
             if (myLargeTurretBase != null)
             {
-                this.m_queryLocal.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, myLargeTurretBase.Range));
+                _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, myLargeTurretBase.Range));
             }
 
         }
@@ -78,11 +95,11 @@ namespace WeaponCore.Support
         {
             get
             {
-                if (this.AllowScanning && Session.Instance.Tick - this.m_lastScan > 100)
+                if (AllowScanning && Session.Instance.Tick - _lastScan > 100)
                 {
-                    this.Scan();
+                    Scan();
                 }
-                return this.m_targetRoots;
+                return _targetGrids;
             }
         }
 
@@ -90,140 +107,144 @@ namespace WeaponCore.Support
         {
             get
             {
-                if (this.AllowScanning && Session.Instance.Tick - this.m_lastScan > 100)
+                if (AllowScanning && Session.Instance.Tick - _lastScan > 100)
                 {
-                    this.Scan();
+                    Scan();
                 }
-                return this.m_targetBlocks;
+                return _targetBlocks;
             }
         }
 
         private void Scan()
         {
-            using (CoreTargeting.m_scanLock.AcquireExclusiveUsing())
+            using (selfLock.AcquireExclusiveUsing())
             {
-                if (this.AllowScanning && Session.Instance.Tick - this.m_lastScan > 100)
+                if (AllowScanning && Session.Instance.Tick - _lastScan > 100)
                 {
-                    this.m_lastScan = Session.Instance.Tick;
-                    BoundingSphereD boundingSphereD = new BoundingSphereD(Vector3D.Transform(this.m_queryLocal.Center, this.m_grid.WorldMatrix), (double)this.m_queryLocal.Radius);
-                    this.m_targetRoots.Clear();
-                    this.m_targetBlocks.Clear();
-                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, this.m_targetRoots, MyEntityQueryType.Both);
+                    _lastScan = Session.Instance.Tick;
+                    BoundingSphereD boundingSphereD = new BoundingSphereD(Vector3D.Transform(_scanningRange.Center, _myGrid.WorldMatrix), (double)_scanningRange.Radius);
+                    _targetGrids.Clear();
+                    _targetBlocks.Clear();
+                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, _targetGrids, MyEntityQueryType.Both);
 
-                    //MyMissiles.GetAllMissilesInSphere(ref boundingSphereD, this.m_targetRoots);
+                    //MyMissiles.GetAllMissilesInSphere(ref boundingSphereD, m_targetRoots);
 
-                    int count = this.m_targetRoots.Count;
-                    this.m_ownersA.AddRange(this.m_grid.SmallOwners);
-                    this.m_ownersA.AddRange(this.m_grid.BigOwners);
+                    int count = _targetGrids.Count;
+                    _ownershipCheckA.AddRange(_myGrid.SmallOwners);
+                    _ownershipCheckA.AddRange(_myGrid.BigOwners);
                     for (int i = 0; i < count; i++)
                     {
-                        MyCubeGrid myCubeGrid = this.m_targetRoots[i] as MyCubeGrid;
+                        MyCubeGrid myCubeGrid = _targetGrids[i] as MyCubeGrid;
                         if (myCubeGrid != null && (myCubeGrid.Physics == null || myCubeGrid.Physics.Enabled))
                         {
-                            bool flag = false;
-                            if (myCubeGrid.BigOwners.Count == 0 && myCubeGrid.SmallOwners.Count == 0)
-                            {
-                                using (List<long>.Enumerator enumerator = this.m_ownersA.GetEnumerator())
-                                {
-                                    while (enumerator.MoveNext())
-                                    {
-                                        if (MyIDModule.GetRelationPlayerBlock(enumerator.Current, 0L, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.NoOwnership)
-                                        {
-                                            flag = true;
-                                            break;
-                                        }
-                                    }
-                                    goto IL_221;
-                                }
-                            }
-                            goto IL_175;
-                            IL_221:
-                            if (flag)
-                            {
-                                
-                                if (!this.m_targetBlocks.ContainsKey(myCubeGrid))
-                                    this.m_targetBlocks[myCubeGrid] = new List<MyEntity>();
+                            FastResourceLock gridLock;
+                            if (!_gridLocks.TryGetValue(myCubeGrid, out gridLock))
+                                gridLock = _emergencyLock;
 
-                                var orAdd = this.m_targetBlocks[myCubeGrid];
-
-                                using (myCubeGrid.Pin())
-                                {
-                                    if (!myCubeGrid.MarkedForClose)
-                                    {
-                                        myCubeGrid.Hierarchy.QuerySphere(ref boundingSphereD, orAdd);
-                                    }
-                                    goto IL_334;
-                                }
-                            }
-                            foreach (MyCubeBlock myCubeBlock in myCubeGrid.GetFatBlocks())
+                            using (gridLock.AcquireExclusiveUsing())
                             {
-                                IMyComponentOwner<MyIDModule> myComponentOwner = myCubeBlock as IMyComponentOwner<MyIDModule>;
-                                MyIDModule myIDModule;
-                                if (myComponentOwner != null && myComponentOwner.GetComponent(out myIDModule))
+                                bool flag = false;
+                                if (myCubeGrid.BigOwners.Count == 0 && myCubeGrid.SmallOwners.Count == 0)
                                 {
-                                    long ownerId = myCubeBlock.OwnerId;
-                                    using (List<long>.Enumerator enumerator = this.m_ownersA.GetEnumerator())
+                                    using (List<long>.Enumerator enumerator = _ownershipCheckA.GetEnumerator())
                                     {
                                         while (enumerator.MoveNext())
                                         {
-                                            if (MyIDModule.GetRelationPlayerBlock(enumerator.Current, ownerId, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
+                                            if (MyIDModule.GetRelationPlayerBlock(enumerator.Current, 0L, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.NoOwnership)
                                             {
                                                 flag = true;
                                                 break;
                                             }
                                         }
                                     }
-                                    if (flag)
-                                    {
-                                        break;
-                                    }
                                 }
-                            }
-                            if (!flag)
-                            {
-                                goto IL_334;
-                            }
-                            if (!this.m_targetBlocks.ContainsKey(myCubeGrid))
-                                this.m_targetBlocks[myCubeGrid] = new List<MyEntity>();
-
-                            var orAdd2 = this.m_targetBlocks[myCubeGrid];
-
-                            if (!myCubeGrid.Closed)
-                            {
-                                myCubeGrid.Hierarchy.QuerySphere(ref boundingSphereD, orAdd2);
-                                goto IL_334;
-                            }
-                            goto IL_334;
-                            IL_175:
-                            this.m_ownersB.AddRange(myCubeGrid.BigOwners);
-                            this.m_ownersB.AddRange(myCubeGrid.SmallOwners);
-                            foreach (long owner in this.m_ownersA)
-                            {
-                                foreach (long user in this.m_ownersB)
+                                else
                                 {
-                                    if (MyIDModule.GetRelationPlayerBlock(owner, user, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
+                                    _ownershipCheckB.AddRange(myCubeGrid.BigOwners);
+                                    _ownershipCheckB.AddRange(myCubeGrid.SmallOwners);
+                                    foreach (long owner in _ownershipCheckA)
                                     {
-                                        flag = true;
-                                        break;
+                                        foreach (long user in _ownershipCheckB)
+                                        {
+                                            if (MyIDModule.GetRelationPlayerBlock(owner, user, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
+                                            {
+                                                flag = true;
+                                                break;
+                                            }
+                                        }
+                                        if (flag)
+                                        {
+                                            break;
+                                        }
                                     }
+                                    _ownershipCheckB.Clear();
                                 }
                                 if (flag)
                                 {
-                                    break;
+
+                                    if (!_targetBlocks.ContainsKey(myCubeGrid))
+                                        _targetBlocks[myCubeGrid] = new List<MyEntity>();
+
+                                    var orAdd = _targetBlocks[myCubeGrid];
+
+                                    using (myCubeGrid.Pin())
+                                    {
+                                        if (!myCubeGrid.MarkedForClose)
+                                        {
+                                            myCubeGrid.Hierarchy.QuerySphere(ref boundingSphereD, orAdd);
+                                        }
+                                        continue;
+                                    }
                                 }
+                                foreach (MyCubeBlock myCubeBlock in myCubeGrid.GetFatBlocks())
+                                {
+                                    IMyComponentOwner<MyIDModule> myComponentOwner = myCubeBlock as IMyComponentOwner<MyIDModule>;
+                                    MyIDModule myIDModule;
+                                    if (myComponentOwner != null && myComponentOwner.GetComponent(out myIDModule))
+                                    {
+                                        long ownerId = myCubeBlock.OwnerId;
+                                        using (List<long>.Enumerator enumerator = _ownershipCheckA.GetEnumerator())
+                                        {
+                                            while (enumerator.MoveNext())
+                                            {
+                                                if (MyIDModule.GetRelationPlayerBlock(enumerator.Current, ownerId, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
+                                                {
+                                                    flag = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        if (flag)
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (!flag)
+                                {
+                                    continue;
+                                }
+                                if (!_targetBlocks.ContainsKey(myCubeGrid))
+                                    _targetBlocks[myCubeGrid] = new List<MyEntity>();
+
+                                var orAdd2 = _targetBlocks[myCubeGrid];
+
+                                if (!myCubeGrid.Closed)
+                                {
+                                    myCubeGrid.Hierarchy.QuerySphere(ref boundingSphereD, orAdd2);
+                                    continue;
+                                }
+                                continue;
                             }
-                            this.m_ownersB.Clear();
-                            goto IL_221;
                         }
-                        IL_334:;
                     }
-                    this.m_ownersA.Clear();
-                    for (int j = this.m_targetRoots.Count - 1; j >= 0; j--)
+                    _ownershipCheckA.Clear();
+                    for (int j = _targetGrids.Count - 1; j >= 0; j--)
                     {
-                        MyEntity myEntity = this.m_targetRoots[j];
+                        MyEntity myEntity = _targetGrids[j];
                         if (myEntity is MyFloatingObject || (myEntity.Physics != null && !myEntity.Physics.Enabled) || myEntity.GetTopMostParent(null).Physics == null || !myEntity.GetTopMostParent(null).Physics.Enabled)
                         {
-                            this.m_targetRoots.RemoveAtFast(j);
+                            _targetGrids.RemoveAtFast(j);
                         }
                     }
                 }
@@ -240,9 +261,9 @@ namespace WeaponCore.Support
 
         public new void RescanIfNeeded()
         {
-            if (this.AllowScanning && Session.Instance.Tick - this.m_lastScan > 100)
+            if (AllowScanning && Session.Instance.Tick - _lastScan > 100)
             {
-                this.Scan();
+                Scan();
             }
         }
     }

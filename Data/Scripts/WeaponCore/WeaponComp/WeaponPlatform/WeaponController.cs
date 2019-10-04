@@ -24,11 +24,14 @@ namespace WeaponCore.Platform
             Azimuth -= azimuthChange;
             Elevation -= elevationChange;
 
+            AzimuthPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-AzimuthPart.Item2) * Matrix.CreateRotationY((float)-azimuthChange) * Matrix.CreateTranslation(AzimuthPart.Item2));
+
+            ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * Matrix.CreateRotationX((float)-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
+
             bool rAz = false;
             bool rEl = false;
 
-            //AzimuthPart.Item1.Render.RemoveRenderObjects();
-
+            /*
             if (azimuthChange < 0)
             {
                 absAzChange = (float)azimuthChange * -1f;
@@ -67,8 +70,8 @@ namespace WeaponCore.Platform
             }
             else
             {
-                ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * Matrix.CreateRotationY((float)-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
-            }
+                ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * Matrix.CreateRotationX((float)-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
+            }*/
 
         }
 
@@ -83,7 +86,7 @@ namespace WeaponCore.Platform
             var oldAz = Azimuth;
             var oldEl = Elevation;
 
-            double newAz = 0; ;
+            double newAz = 0;
             double newEl = 0;
 
             if (oldAz > 0)
@@ -92,9 +95,9 @@ namespace WeaponCore.Platform
                 newAz = oldAz + azStep < 0 ? oldAz + azStep : 0;
 
             if (oldEl > 0)
-                newEl = oldEl - oldEl > 0 ? oldEl - elStep : 0;
+                newEl = oldEl - elStep > 0 ? oldEl - elStep : 0;
             else if (oldEl < 0)
-                newEl = oldEl + oldEl < 0 ? oldEl + elStep : 0;
+                newEl = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
 
             AimBarrel(oldAz - newAz, oldEl - newEl);

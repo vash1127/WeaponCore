@@ -70,13 +70,12 @@ namespace WeaponCore.Support
 
         private static void GetTargetBlocks(CoreTargeting targeting, GridAi ai)
         {
-            targeting.RescanIfNeeded();
             IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
             foreach (var targets in allTargets)
             {
                 var rootGrid = targets.Key;
 
-                Log.Line($"targets: {targets.Value.Count}");
+                Log.Line($"CoreTargeting Blocks: {targets.Value.Count}");
 
                 Dictionary<BlockTypes, List<MyCubeBlock>> typeDict;
                 if (ai.ValidGrids.TryGetValue(rootGrid, out typeDict))
