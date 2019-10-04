@@ -112,7 +112,8 @@ namespace WeaponCore
                             if (w.LastTargetLock > 0)
                                 comp.ReturnHome = gridAi.ReturnHome = true;
 
-                            w.ReturnHome = (w.LastTargetLock + 240 < Tick && w.LastTargetLock > 0 || w.ReturnHome) && w.ManualShoot == ShootOff && !comp.Gunner;
+                            //w.ReturnHome = (w.LastTargetLock + 240 < Tick && w.LastTargetLock > 0 || w.ReturnHome) && w.ManualShoot == ShootOff && !comp.Gunner;
+                            w.ReturnHome = false;
                         }
 
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
