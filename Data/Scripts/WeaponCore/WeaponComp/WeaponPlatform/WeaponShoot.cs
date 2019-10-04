@@ -318,7 +318,7 @@ namespace WeaponCore.Platform
             }
             if (Target.Projectile == null && (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId))
             {
-                Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null or marked - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
+                //Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null or marked - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon != this) Target.Expired = true;
                 return;
