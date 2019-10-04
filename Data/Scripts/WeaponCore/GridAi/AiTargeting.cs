@@ -23,10 +23,11 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
 
             if (w.SleepTargets)
-                if (w.Comp.Ai.BlockCount != w.LastBlockCount)
-                {
+            {
+                if (w.Comp.Ai.BlockCount != w.LastBlockCount && w.TargetAttempts >= 600)
                     w.SleepingTargets.Clear();
-                }
+            }
+
 
             w.Comp.UpdatePivotPos(w);
             w.AimCone.ConeDir = w.Comp.MyPivotDir;

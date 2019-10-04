@@ -42,13 +42,12 @@ namespace WeaponCore.Support
 
         internal void RemoveComp()
         {
-            if (Platform != null && Platform.Inited)
+            WeaponComponent comp;
+            if (Ai.WeaponBase.TryRemove(MyCube, out comp))
             {
-                WeaponComponent comp;
-                if (Ai.WeaponBase.TryRemove(MyCube, out comp))
-                {
-                    Log.Line($"Removed Comp");
-
+                Log.Line($"Removed Comp");
+                if (Platform != null && Platform.Inited)
+                {                
                     GridAi.WeaponCount wCount;
 
                     if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
