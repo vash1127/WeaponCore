@@ -44,21 +44,34 @@ namespace WeaponCore.Support
 
         private void m_grid_OnBlockAdded(IMySlimBlock obj)
         {
-            IMyUpgradeModule myLargeTurretBase = obj.FatBlock as IMyUpgradeModule;
-            if (myLargeTurretBase != null)
+            IMyUpgradeModule myLargeTurretBaseCore = obj.FatBlock as IMyUpgradeModule;
+            if (myLargeTurretBaseCore != null)
             {
                 this.m_queryLocal.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, 10000f));
+                myLargeTurretBaseCore.PropertiesChanged += this.TurretOnPropertiesChanged;
+            }
+            IMyLargeTurretBase myLargeTurretBase = obj.FatBlock as IMyLargeTurretBase;
+            if (myLargeTurretBase != null)
+            {
+                this.m_queryLocal.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, myLargeTurretBase.Range));
                 myLargeTurretBase.PropertiesChanged += this.TurretOnPropertiesChanged;
             }
         }
 
         private void TurretOnPropertiesChanged(IMyTerminalBlock obj)
         {
-            IMyUpgradeModule myLargeTurretBase = obj as IMyUpgradeModule;
-            if (myLargeTurretBase != null)
+            IMyUpgradeModule myLargeTurretBaseCore = obj as IMyUpgradeModule;
+            if (myLargeTurretBaseCore != null)
             {
                 this.m_queryLocal.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, 10000f));
             }
+
+            IMyLargeTurretBase myLargeTurretBase = obj as IMyLargeTurretBase;
+            if (myLargeTurretBase != null)
+            {
+                this.m_queryLocal.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, myLargeTurretBase.Range));
+            }
+
         }
 
         public new List<MyEntity> TargetRoots
