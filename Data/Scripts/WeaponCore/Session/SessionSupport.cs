@@ -378,23 +378,30 @@ namespace WeaponCore
         private void StartComps()
         {
             WeaponComponent weaponComp;
-            CompsToStart.TryDequeue(out weaponComp);
-            if (weaponComp.MyCube.CubeGrid.Physics == null) return;
-            if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
+            while (CompsToStart.TryDequeue(out weaponComp))
             {
-                Log.Line("comp found");
+                if (weaponComp.MyCube.CubeGrid.Physics == null)
+                {
+                    CompsToRemove.Enqueue(weaponComp);
+                    return;
 
-                CompsToRemove.Enqueue(weaponComp);
+                }
+                if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
+                {
+                    Log.Line("comp found");
 
-                OnEntityCreate(weaponComp.MyCube);
-            }
-            else
-            {
+                    CompsToRemove.Enqueue(weaponComp);
 
-                weaponComp.MyCube.Components.Add(weaponComp);
-                weaponComp.OnAddedToScene();
-                weaponComp.Ai.FirstRun = true;
-                Log.Line($"added to comp");
+                    OnEntityCreate(weaponComp.MyCube);
+                }
+                else
+                {
+
+                    weaponComp.MyCube.Components.Add(weaponComp);
+                    weaponComp.OnAddedToScene();
+                    weaponComp.Ai.FirstRun = true;
+                    Log.Line($"added to comp");
+                }
             }
         }
 
@@ -403,6 +410,13 @@ namespace WeaponCore
             WeaponComponent weaponComp;
             while (CompsToRemove.TryDequeue(out weaponComp))
                 weaponComp.RemoveComp();
+        }
+
+        private void QueuePrefabComps()
+        {
+            MyEntity cube;
+            while (PrefabCubesToStart.TryDequeue(out cube))
+                OnEntityCreate(cube);
         }
 
         private void UpdatePlacer()
@@ -726,10 +740,14 @@ namespace WeaponCore
 
             foreach (var basePair in gridAi.WeaponBase)
             {
+                var comp = basePair.Value;
+                if (comp == null || comp.Platform == null) return;
+
                 for (int i = 0; i < basePair.Value.Platform.Weapons.Length; i++)
                 {
-                    var comp = basePair.Value;
                     var w = basePair.Value.Platform.Weapons[i];
+                    if (w == null) return;
+
                     if (w.ManualShoot == Weapon.TerminalActionState.ShootClick)
                     {
                         w.ManualShoot = Weapon.TerminalActionState.ShootOff;
