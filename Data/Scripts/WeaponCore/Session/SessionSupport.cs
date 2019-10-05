@@ -382,7 +382,7 @@ namespace WeaponCore
             if (weaponComp.MyCube.CubeGrid.Physics == null) return;
             if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
             {
-                Log.Line("comp found");
+                //Log.Line("comp found");
 
                 CompsToRemove.Enqueue(weaponComp);
 
@@ -394,7 +394,7 @@ namespace WeaponCore
                 weaponComp.MyCube.Components.Add(weaponComp);
                 weaponComp.OnAddedToScene();
                 weaponComp.Ai.FirstRun = true;
-                Log.Line($"added to comp");
+                //Log.Line($"added to comp");
             }
         }
 

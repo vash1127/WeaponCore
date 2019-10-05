@@ -63,12 +63,18 @@ namespace WeaponCore.Support
         
         internal void UpdatePivotPos(Weapon weapon)
         {
+            if (MyCube == null || weapon.EntityPart == null || TrackingWeapon == null)
+            {
+                if (MyCube == null) Log.Line($"MyCube null in UpDatePivotPos");
+                if (weapon.EntityPart == null) Log.Line($"EntityPart null in UpDatePivotPos");
+                return;
+            }
             var weaponPComp = weapon.EntityPart.PositionComp;
             Vector3D center;
             if (AimOffset != Vector3D.Zero)
             {
                 var startCenter = !FixedOffset ?  MyCube.PositionComp.WorldAABB.Center : weaponPComp.WorldAABB.Center;
-                center = startCenter + Vector3D.Rotate(TrackingWeapon.System.Values.HardPoint.Block.Offset, MyCube.PositionComp.WorldMatrix);
+                center = startCenter + Vector3D.Rotate(weapon.System.Values.HardPoint.Block.Offset, MyCube.PositionComp.WorldMatrix);
             }
             else center = MyCube.PositionComp.WorldAABB.Center;
 

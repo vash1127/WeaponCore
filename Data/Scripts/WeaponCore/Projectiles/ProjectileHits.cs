@@ -22,6 +22,11 @@ namespace WeaponCore.Projectiles
             var ai = p.T.Ai;
             var found = false;
             var lineCheck = p.T.System.CollisionIsLine;
+            if (p.T?.Ai?.MyGrid == null)
+            {
+                Log.Line($"TNull:{p.T == null} - AiNull:{p.T.Ai == null} - {p.T?.Ai?.MyGrid == null}");
+                return null;
+            }
             //Log.Line($"get all entities in line: LineCheck:{lineCheck} - ewarActive:{eWarActive} - ewarInactive:{eWarInactive} - jump:{jumpNullField} - Vel:{p.VelocityLengthSqr}");
 
             for (int i = 0; i < p.SegmentList.Count; i++)
