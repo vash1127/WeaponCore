@@ -37,7 +37,7 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             _myGrid = (base.Entity as MyCubeGrid);
             ((IMyCubeGrid)_myGrid).OnBlockAdded += m_grid_OnBlockAdded;
-            _gridLocks.TryAdd(_myGrid,new FastResourceLock());
+            _gridLocks.TryAdd(_myGrid, new FastResourceLock());
             MyLog.Default.WriteLine("CoreTargeting Added");
         }
 
@@ -46,10 +46,8 @@ namespace WeaponCore.Support
             if (_gridLocks.ContainsKey(_myGrid))
             {
                 FastResourceLock removedLock;
-                if(_gridLocks.TryRemove(_myGrid, out removedLock))
-                {
+                if (_gridLocks.TryRemove(_myGrid, out removedLock))
                     ((IMyCubeGrid)_myGrid).OnBlockAdded -= m_grid_OnBlockAdded;
-                }
             }
         }
 
@@ -135,11 +133,12 @@ namespace WeaponCore.Support
                             if (myCubeGrid != null && (myCubeGrid.Physics == null || myCubeGrid.Physics.Enabled))
                             {
                                 FastResourceLock gridLock;
-                                MyLog.Default.WriteLine("Gridlocking");
-                                if (!_gridLocks.TryGetValue(myCubeGrid, out gridLock))
+                                lock (_gridLocks)
                                 {
-                                    gridLock = _emergencyLock;
-                                    MyLog.Default.WriteLine("Emergency Gridlocking");
+                                    if (!_gridLocks.TryGetValue(myCubeGrid, out gridLock))
+                                    {
+                                        gridLock = _emergencyLock;
+                                    }
                                 }
 
                                 using (gridLock.AcquireExclusiveUsing())
