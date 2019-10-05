@@ -537,8 +537,8 @@ namespace WeaponCore.Platform
         internal void WakeTargets()
         {
             SleepTargets = false;
-            TargetAttempts = 0;
             SleepingTargets.Clear();
+            LastTargetTick = Session.Instance.Tick;
         }
     }
 }
