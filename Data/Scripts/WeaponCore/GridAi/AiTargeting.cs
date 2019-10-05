@@ -118,6 +118,7 @@ namespace WeaponCore.Support
             var weaponPos = w.MyPivotPos;
             var target = w.NewTarget;
             var s = w.System;
+            var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
                 Session.Instance.TargetChecks++;
@@ -132,7 +133,7 @@ namespace WeaponCore.Support
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
-                Vector3D targetAccel = info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero;
+                Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
 
                 if (info.IsGrid)
                 {
@@ -149,15 +150,13 @@ namespace WeaponCore.Support
                         {
                             if (oldDir.Equals(newDir, 1E-01))
                                 continue;
-                            //Log.Line($"target:{info.Target.DebugName} moved");
+
                             var oldNormDir = Vector3D.Normalize(oldDir);
                             var newNormDir = Vector3D.Normalize(newDir);
-                            if (oldNormDir.Equals(newNormDir, 1E-02))
-                            {
-                                //Log.Line($"target:{info.Target.DebugName} dirNorm equal");
+                            var dotDirChange = Vector3D.Dot(oldNormDir, newNormDir);
+                            if (dotDirChange < Session.AimDirToleranceCosine)
                                 continue;
-                            }
-                            //Log.Line($"target:{info.Target.DebugName} reTest");
+
                             w.SleepingTargets.Remove(info.Target);
                         }
                         else w.SleepingTargets.Add(info.Target, newDir);
@@ -357,7 +356,7 @@ namespace WeaponCore.Support
             {
                 var subSystems = system.Values.Targeting.SubSystems;
                 var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
-                var targetAccel = info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero;
+                var targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
 
                 foreach (var bt in subSystems)
                 {
@@ -391,17 +390,21 @@ namespace WeaponCore.Support
             if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
             var physics = Session.Instance.Physics;
             var turretCheck = w != null;
-            var grid = info.Target.GetTopMostParent() as IMyCubeGrid;
+            var topEnt = info.Target.GetTopMostParent();
+            var entSphere = topEnt.PositionComp.WorldVolume;
+            var grid = topEnt as IMyCubeGrid;
             var gridPhysics = grid?.Physics;
             Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
-            Vector3D targetAccel = gridPhysics?.LinearAcceleration ?? Vector3D.Zero;
-
+            Vector3D targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
+            var distToEnt = MyUtils.GetSmallestDistanceToSphere(ref weaponPos, ref entSphere);
             var notSelfHit = false;
             var foundBlock = false;
 
             for (int i = 0; i < totalBlocks; i++)
             {
-                if (i > 100 && Session.Instance.RayCasts > 7500) break;
+                if (i > 100 && (Session.Instance.RayCasts > 7500 || distToEnt > 800))
+                    break;
+
                 var next = i;
                 if (i < lastBlocks)
                     if (deck != null) next = deck[i];
@@ -410,6 +413,7 @@ namespace WeaponCore.Support
                 Session.Instance.BlockChecks++;
                 if (block.MarkedForClose) continue;
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
+
                 double rayDist;
                 if (turretCheck)
                 {
