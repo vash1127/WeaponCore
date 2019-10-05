@@ -343,16 +343,11 @@ namespace WeaponCore.Platform
             if (hitInfo?.HitEntity == null)
             {
                 if (DelayCeaseFire)
-                {
-                    //Log.Line($"{System.WeaponName} - ShootRayCheck Sucess - due to null DelayCeaseFire");
                     return;
-                }
 
                 if (Target.Projectile != null)
-                {
-                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - projectile exists and hit is null");
                     return;
-                }
+
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon != this) Target.Expired = true;
                 Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit");

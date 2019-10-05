@@ -18,15 +18,25 @@ namespace WeaponCore.Projectiles
     {
         internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, int poolId)
         {
+            /*
+            if (p.T?.Ai?.MyGrid == null || p.T.System == null || p.SegmentList == null || p.T.HitList == null || p.T.Target != null && p.T.Target.IsProjectile)
+            {
+                Log.Line($"TNull:{p.T == null} - AiNull:{p.T?.Ai == null} - {p.T?.Ai?.MyGrid == null} - seg:{p.SegmentList == null} - hitList:{p.T?.HitList == null} - projectile: {p.T?.Target != null && p.T.Target.IsProjectile && p.T.Target.Projectile != null}");
+                return null;
+            }
+            */
+            if (p.T.Target != null && p.T.Target.IsProjectile)
+            {
+                var valid = p.T?.Target != null && p.T.Target.IsProjectile && p.T.Target.Projectile != null;
+                Log.Line($"projectile: {valid}");
+                if (!valid) return null;
+            }
+
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var ai = p.T.Ai;
             var found = false;
             var lineCheck = p.T.System.CollisionIsLine;
-            if (p.T?.Ai?.MyGrid == null)
-            {
-                Log.Line($"TNull:{p.T == null} - AiNull:{p.T.Ai == null} - {p.T?.Ai?.MyGrid == null}");
-                return null;
-            }
+
             //Log.Line($"get all entities in line: LineCheck:{lineCheck} - ewarActive:{eWarActive} - ewarInactive:{eWarInactive} - jump:{jumpNullField} - Vel:{p.VelocityLengthSqr}");
 
             for (int i = 0; i < p.SegmentList.Count; i++)

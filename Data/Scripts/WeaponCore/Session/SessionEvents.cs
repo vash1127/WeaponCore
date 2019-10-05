@@ -35,7 +35,7 @@ namespace WeaponCore
 
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-                    Log.Line("here");
+                    //Log.Line("here");
 
                     using (myEntity.Pin())
                     {
@@ -53,7 +53,7 @@ namespace WeaponCore
                                 gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
 
                             CompsToStart.Enqueue(weaponComp);
-                            Log.Line($"cube type: {cube.BlockDefinition.Id.TypeId} subtype: {cube.BlockDefinition.Id.SubtypeId}");
+                            //Log.Line($"cube type: {cube.BlockDefinition.Id.TypeId} subtype: {cube.BlockDefinition.Id.SubtypeId}");
                         }
                     }
                 }

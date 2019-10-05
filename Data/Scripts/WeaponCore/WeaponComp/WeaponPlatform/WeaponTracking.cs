@@ -231,7 +231,6 @@ namespace WeaponCore.Platform
                 predictedPos = CalculateProjectileInterceptPointFast(ammoSpeed, 60, shooterVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
             else
                 predictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, ammoSpeed, 60, shooterVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
-                //predictedPos = CalculateProjectileInterceptPointFast(ammoSpeed, 60, shooterVel, shooterPos, targetVel, targetPos, out timeToIntercept);
 
             return predictedPos;
         }
