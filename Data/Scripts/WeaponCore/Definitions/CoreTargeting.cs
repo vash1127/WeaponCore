@@ -54,7 +54,7 @@ namespace WeaponCore.Support
                 FastResourceLock removedLock;
                 if(CoreTargeting._gridLocks.TryRemove(_myGrid, out removedLock))
                 {
-                    ((IMyCubeGrid)_myGrid).OnBlockAdded += m_grid_OnBlockAdded;
+                    ((IMyCubeGrid)_myGrid).OnBlockAdded -= m_grid_OnBlockAdded;
                 }
             }
         }

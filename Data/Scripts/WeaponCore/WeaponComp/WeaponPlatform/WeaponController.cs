@@ -112,27 +112,24 @@ namespace WeaponCore.Platform
         {
             var weaponPComp = ElevationPart.Item1.PositionComp;
             var basePart = AzimuthPart.Item1;
-            Vector3D center;
-            if (AimOffset != Vector3D.Zero)
-            {
-                var startCenter = !FixedOffset ? basePart.PositionComp.WorldAABB.Center : weaponPComp.WorldAABB.Center;
-                center = startCenter + Vector3D.Rotate(System.Values.HardPoint.Block.Offset, basePart.PositionComp.WorldMatrix);
-            }
-            else center = basePart.PositionComp.WorldAABB.Center;
 
+            var center = !FixedOffset ? basePart.PositionComp.WorldAABB.Center : weaponPComp.WorldAABB.Center;
             var weaponCenter = weaponPComp.WorldMatrix.Translation;
             var weaponForward = weaponPComp.WorldMatrix.Forward;
             var weaponUp = weaponPComp.WorldMatrix.Up;
             var blockUp = basePart.PositionComp.WorldMatrix.Up;
             MyPivotDir = weaponForward;
             MyPivotUp = weaponUp;
-            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, blockUp, weaponCenter, weaponForward) : center;
+            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, blockUp, weaponCenter, weaponForward)+ AimOffset : center + AimOffset;
             if (Comp.Debug)
             {
                 var cubeleft = basePart.PositionComp.WorldMatrix.Left;
                 MyCenterTestLine = new LineD(center, center + (blockUp * 20));
                 MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 20));
                 MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 10), MyPivotPos - (cubeleft * 10));
+                MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (weaponForward*20));
+                if (!Target.Expired)
+                    MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
             }
         }
     }
