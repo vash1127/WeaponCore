@@ -8,6 +8,7 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 
 namespace WeaponCore.Support
@@ -130,7 +131,7 @@ namespace WeaponCore.Support
                         {
                             FastResourceLock gridLock;
                             if (!_gridLocks.TryGetValue(myCubeGrid, out gridLock))
-                                gridLock = _emergencyLock;
+                                gridLock = _emergencyLock; //should never hit here, only if removed from container from another script
 
                             using (gridLock.AcquireExclusiveUsing())
                             {
