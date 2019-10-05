@@ -61,8 +61,6 @@ namespace WeaponCore.Platform
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            Log.Line($"CanTrack: {canTrack}");
-
             var tracking = inRange && canTrack;
 
             return tracking;
@@ -172,12 +170,8 @@ namespace WeaponCore.Platform
                 weapon.Comp.AiMoving = aim;
                 if (aim)
                 {
-                    Log.Line($"Aiming azDiff: {azDiff} elDiff: {elDiff}");
-                    //weapon.Azimuth = newAz;
-                    //weapon.Elevation = newEl;
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
-                    weapon.AimBarrel(azDiff, elDiff);
-                    //turret.Elevation = (float) weapon.Elevation;
+                    weapon.AimBarrel(azDiff, elDiff);  
                 }
             }
 

@@ -24,14 +24,10 @@ namespace WeaponCore.Platform
             Azimuth -= azimuthChange;
             Elevation -= elevationChange;
 
-            AzimuthPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-AzimuthPart.Item2) * MatrixD.CreateRotationY(-azimuthChange) * Matrix.CreateTranslation(AzimuthPart.Item2));
-
-            ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * MatrixD.CreateRotationX(-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
-
             bool rAz = false;
             bool rEl = false;
 
-            /*
+            
             if (azimuthChange < 0)
             {
                 absAzChange = (float)azimuthChange * -1f;
@@ -71,7 +67,7 @@ namespace WeaponCore.Platform
             else
             {
                 ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * Matrix.CreateRotationX((float)-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
-            }*/
+            }
 
         }
 
@@ -117,7 +113,7 @@ namespace WeaponCore.Platform
             var center = !FixedOffset ? azimuthComp.WorldAABB.Center : elevationComp.WorldAABB.Center;
             var weaponCenter = weaponMatrix.Translation;
             var weaponForward = weaponMatrix.Forward;
-            WeaponConstUp = azimuthComp.WorldMatrix.Up;
+            var WeaponConstUp = azimuthComp.WorldMatrix.Up;
 
             MyPivotDir = weaponForward;
             MyPivotUp = weaponMatrix.Up;
