@@ -1,22 +1,13 @@
 ﻿using Sandbox.Game.Entities;
-using Sandbox.Game.Entities.Cube;
-using Sandbox.Game.Entities.Debris;
 using Sandbox.Game.EntityComponents;
-using Sandbox.Game.Weapons;
-using Sandbox.Game.World;
 using Sandbox.ModAPI;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Library.Collections;
 using VRageMath;
 
 namespace WeaponCore.Support
@@ -28,8 +19,8 @@ namespace WeaponCore.Support
         private BoundingSphere _scanningRange = new BoundingSphere(Vector3.Zero, float.MinValue);
         private List<MyEntity> _targetGrids = new List<MyEntity>();
         private Dictionary<MyCubeGrid, List<MyEntity>> _targetBlocks = new Dictionary<MyCubeGrid, List<MyEntity>>();
-        private List<long> _ownershipCheckB = new List<long>();
-        private List<long> _ownershipCheckA = new List<long>();
+        private List<long> _users = new List<long>();
+        private List<long> _owners = new List<long>();
 
         private FastResourceLock selfLock = new FastResourceLock();
 
@@ -44,15 +35,15 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             _myGrid = (base.Entity as MyCubeGrid);
             ((IMyCubeGrid)_myGrid).OnBlockAdded += m_grid_OnBlockAdded;
-            CoreTargeting._gridLocks.TryAdd(_myGrid,new FastResourceLock());
+            _gridLocks.TryAdd(_myGrid,new FastResourceLock());
         }
 
         public override void OnBeforeRemovedFromContainer()
         {
-            if (CoreTargeting._gridLocks.ContainsKey(_myGrid))
+            if (_gridLocks.ContainsKey(_myGrid))
             {
                 FastResourceLock removedLock;
-                if(CoreTargeting._gridLocks.TryRemove(_myGrid, out removedLock))
+                if(_gridLocks.TryRemove(_myGrid, out removedLock))
                 {
                     ((IMyCubeGrid)_myGrid).OnBlockAdded -= m_grid_OnBlockAdded;
                 }
@@ -130,8 +121,8 @@ namespace WeaponCore.Support
                     //MyMissiles.GetAllMissilesInSphere(ref boundingSphereD, m_targetRoots);
 
                     int count = _targetGrids.Count;
-                    _ownershipCheckA.AddRange(_myGrid.SmallOwners);
-                    _ownershipCheckA.AddRange(_myGrid.BigOwners);
+                    _owners.AddRange(_myGrid.SmallOwners);
+                    _owners.AddRange(_myGrid.BigOwners);
                     for (int i = 0; i < count; i++)
                     {
                         MyCubeGrid myCubeGrid = _targetGrids[i] as MyCubeGrid;
@@ -146,7 +137,7 @@ namespace WeaponCore.Support
                                 bool flag = false;
                                 if (myCubeGrid.BigOwners.Count == 0 && myCubeGrid.SmallOwners.Count == 0)
                                 {
-                                    using (List<long>.Enumerator enumerator = _ownershipCheckA.GetEnumerator())
+                                    using (List<long>.Enumerator enumerator = _owners.GetEnumerator())
                                     {
                                         while (enumerator.MoveNext())
                                         {
@@ -160,12 +151,14 @@ namespace WeaponCore.Support
                                 }
                                 else
                                 {
-                                    _ownershipCheckB.AddRange(myCubeGrid.BigOwners);
-                                    _ownershipCheckB.AddRange(myCubeGrid.SmallOwners);
-                                    foreach (long owner in _ownershipCheckA)
+                                    _users.AddRange(myCubeGrid.BigOwners);
+                                    _users.AddRange(myCubeGrid.SmallOwners);
+                                    for(int j = 0; j <_owners.Count; j++)
                                     {
-                                        foreach (long user in _ownershipCheckB)
+                                        var owner = _owners[j];
+                                        for (int c = 0; c < _users.Count; c++)
                                         {
+                                            var user = _users[c];
                                             if (MyIDModule.GetRelationPlayerBlock(owner, user, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
                                             {
                                                 flag = true;
@@ -177,7 +170,7 @@ namespace WeaponCore.Support
                                             break;
                                         }
                                     }
-                                    _ownershipCheckB.Clear();
+                                    _users.Clear();
                                 }
                                 if (flag)
                                 {
@@ -203,7 +196,7 @@ namespace WeaponCore.Support
                                     if (myComponentOwner != null && myComponentOwner.GetComponent(out myIDModule))
                                     {
                                         long ownerId = myCubeBlock.OwnerId;
-                                        using (List<long>.Enumerator enumerator = _ownershipCheckA.GetEnumerator())
+                                        using (List<long>.Enumerator enumerator = _owners.GetEnumerator())
                                         {
                                             while (enumerator.MoveNext())
                                             {
@@ -238,7 +231,7 @@ namespace WeaponCore.Support
                             }
                         }
                     }
-                    _ownershipCheckA.Clear();
+                    _owners.Clear();
                     for (int j = _targetGrids.Count - 1; j >= 0; j--)
                     {
                         MyEntity myEntity = _targetGrids[j];
