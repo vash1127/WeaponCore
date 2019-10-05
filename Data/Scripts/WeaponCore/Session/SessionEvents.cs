@@ -47,7 +47,7 @@ namespace WeaponCore
                     
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-                    Log.Line("here");
+                    //Log.Line("here");
 
                     using (myEntity.Pin())
                     {

@@ -45,7 +45,7 @@ namespace WeaponCore.Support
             WeaponComponent comp;
             if (Ai.WeaponBase.TryRemove(MyCube, out comp))
             {
-                Log.Line($"Removed Comp");
+                //Log.Line($"Removed Comp");
                 if (Platform != null && Platform.Inited)
                 {                
                     GridAi.WeaponCount wCount;

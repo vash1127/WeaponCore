@@ -401,7 +401,7 @@ namespace WeaponCore
                     weaponComp.MyCube.Components.Add(weaponComp);
                     weaponComp.OnAddedToScene();
                     weaponComp.Ai.FirstRun = true;
-                    Log.Line($"added to comp");
+                    //Log.Line($"added to comp");
                 }
             }
         }

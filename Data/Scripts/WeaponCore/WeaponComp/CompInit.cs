@@ -58,19 +58,19 @@ namespace WeaponCore.Support
 
             if (State == null)
             {
-                Log.Line($"State null");
+                //Log.Line($"State null");
                 State = new LogicState(this);
             }
 
             if (Turret.Storage == null)
             {
-                Log.Line("Storage null");
+                //Log.Line("Storage null");
                 State.StorageInit();
             }
 
             if (Set == null)
             {
-                Log.Line($"Settings null");
+                //Log.Line($"Settings null");
                 Set = new LogicSettings(this);
             }
 

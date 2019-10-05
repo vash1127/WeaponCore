@@ -132,11 +132,12 @@ namespace WeaponCore.Support
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
+                Vector3D targetAccel = info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero;
 
                 if (info.IsGrid)
                 {
                     double intercept;
-                    var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, w.Prediction, out intercept) : targetCenter;
+                    var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, w.Prediction, out intercept) : targetCenter;
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     if (!s.TrackGrids) continue;
@@ -162,7 +163,7 @@ namespace WeaponCore.Support
                         else w.SleepingTargets.Add(info.Target, newDir);
                     }
                     Session.Instance.CanShoot++;
-                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
+                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel, ref targetAccel)) continue;
 
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
 
@@ -178,7 +179,7 @@ namespace WeaponCore.Support
                 var character = info.Target as IMyCharacter;
                 if (character != null && !s.TrackCharacters) continue;
 
-                if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel)) continue;
+                if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel, ref targetAccel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
                 Session.Instance.RayCasts++;
                 IHitInfo hitInfo;
@@ -292,7 +293,7 @@ namespace WeaponCore.Support
             {
                 Session.Instance.ProjectileChecks++;
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
-                if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity))
+                if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity, ref lp.AccelVelocity))
                 {
                     var needsCast = false;
                     for (int i = 0; i < ai.Obstructions.Count; i++)
@@ -356,6 +357,8 @@ namespace WeaponCore.Support
             {
                 var subSystems = system.Values.Targeting.SubSystems;
                 var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
+                var targetAccel = info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero;
+
                 foreach (var bt in subSystems)
                 {
                     if (bt != Any && info.TypeDict[bt].Count > 0)
@@ -363,9 +366,9 @@ namespace WeaponCore.Support
                         var subSystemList = info.TypeDict[bt];
                         if (system.ClosestFirst)
                         {
-                            if (bt != target.LastBlockType) target.Top5.Clear();
+                            if (target.Top5.Count > 0 && (bt != target.LastBlockType || target.Top5[0].CubeGrid != subSystemList[0].CubeGrid)) target.Top5.Clear();
                             target.LastBlockType = bt;
-                            GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, system, w);
+                            GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w);
                             if (target.Entity != null) return true;
                         }
                         else if (FindRandomBlock(system, ai, target, weaponPos, info, w)) return true;
@@ -381,7 +384,8 @@ namespace WeaponCore.Support
         {
             var blockList = info.TypeDict[Any];
             var totalBlocks = blockList.Count;
-            var lastBlocks = system.Values.Targeting.TopBlocks;
+            var overRayCap = Session.Instance.RayCasts > 7500;
+            var lastBlocks = !overRayCap ? system.Values.Targeting.TopBlocks: 100;
             if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
             int[] deck = null;
             if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
@@ -390,11 +394,14 @@ namespace WeaponCore.Support
             var grid = info.Target.GetTopMostParent() as IMyCubeGrid;
             var gridPhysics = grid?.Physics;
             Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
+            Vector3D targetAccel = gridPhysics?.LinearAcceleration ?? Vector3D.Zero;
+
             var notSelfHit = false;
             var foundBlock = false;
 
             for (int i = 0; i < totalBlocks; i++)
             {
+                if (i > 100 && Session.Instance.RayCasts > 7500) break;
                 var next = i;
                 if (i < lastBlocks)
                     if (deck != null) next = deck[i];
@@ -407,7 +414,7 @@ namespace WeaponCore.Support
                 if (turretCheck)
                 {
                     Session.Instance.CanShoot++;
-                    if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel)) continue;
+                    if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel, ref targetAccel)) continue;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
                         continue;
@@ -456,7 +463,7 @@ namespace WeaponCore.Support
             return foundBlock;
         }
 
-        internal static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, WeaponSystem system, Weapon w = null)
+        internal static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -497,7 +504,7 @@ namespace WeaponCore.Support
                         {
                             Session.Instance.CanShoot++;
                             
-                            var canShoot = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel);
+                            var canShoot = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel, ref targetAccel);
                             var castRay = false;
                             if (canShoot)
                             {

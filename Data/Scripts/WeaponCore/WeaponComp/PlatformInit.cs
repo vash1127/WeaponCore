@@ -191,7 +191,7 @@ namespace WeaponCore.Platform
 
         internal bool ResetParts(WeaponComponent comp)
         {
-            Log.Line("Resetting parts!!!!!!!!!!");
+            //Log.Line("Resetting parts!!!!!!!!!!");
             RemoveParts(comp);
             Parts.CheckSubparts();
             foreach (var w in Weapons)
