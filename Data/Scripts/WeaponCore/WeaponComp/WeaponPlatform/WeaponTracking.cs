@@ -111,8 +111,7 @@ namespace WeaponCore.Platform
 
         internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
         {  
-            var turret = weapon.Comp.Turret;
-            var cube = weapon.Comp.MyCube;
+            var AzimuthPart = weapon.AzimuthPart.Item1;
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
@@ -146,11 +145,11 @@ namespace WeaponCore.Platform
             var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
             var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
 
-            Vector3D currentVector;
-            Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
-            currentVector = Vector3D.Rotate(currentVector, cube.WorldMatrix);
+            Vector3D currentVector = weapon.MyPivotDir;
+            //Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
+            //currentVector = Vector3D.Rotate(currentVector, AzimuthPart.WorldMatrix);
 
-            var up = cube.WorldMatrix.Up;
+            var up = AzimuthPart.WorldMatrix.Up;
             var left = Vector3D.Cross(up, currentVector);
             if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
                 left.Normalize();
@@ -208,7 +207,7 @@ namespace WeaponCore.Platform
                 weapon.StopShooting();
 
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
-            return weapon.Comp.TurretTargetLock;
+            return weapon.IsTracking;
         }
 
         public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Vector3D targetAccel,

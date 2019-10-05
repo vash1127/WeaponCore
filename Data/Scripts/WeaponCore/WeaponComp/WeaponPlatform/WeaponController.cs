@@ -24,9 +24,9 @@ namespace WeaponCore.Platform
             Azimuth -= azimuthChange;
             Elevation -= elevationChange;
 
-            AzimuthPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-AzimuthPart.Item2) * Matrix.CreateRotationY((float)-azimuthChange) * Matrix.CreateTranslation(AzimuthPart.Item2));
+            AzimuthPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-AzimuthPart.Item2) * MatrixD.CreateRotationY(-azimuthChange) * Matrix.CreateTranslation(AzimuthPart.Item2));
 
-            ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * Matrix.CreateRotationX((float)-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
+            ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * MatrixD.CreateRotationX(-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
 
             bool rAz = false;
             bool rEl = false;
