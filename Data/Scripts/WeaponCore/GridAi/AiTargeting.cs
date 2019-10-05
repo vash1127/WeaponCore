@@ -363,7 +363,7 @@ namespace WeaponCore.Support
                         var subSystemList = info.TypeDict[bt];
                         if (system.ClosestFirst)
                         {
-                            if (bt != target.LastBlockType) target.Top5.Clear();
+                            if (target.Top5.Count > 0 && (bt != target.LastBlockType || target.Top5[0].CubeGrid != subSystemList[0].CubeGrid)) target.Top5.Clear();
                             target.LastBlockType = bt;
                             GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w);
                             if (target.Entity != null) return true;
@@ -381,7 +381,8 @@ namespace WeaponCore.Support
         {
             var blockList = info.TypeDict[Any];
             var totalBlocks = blockList.Count;
-            var lastBlocks = system.Values.Targeting.TopBlocks;
+            var overRayCap = Session.Instance.RayCasts > 7500;
+            var lastBlocks = !overRayCap ? system.Values.Targeting.TopBlocks: 100;
             if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
             int[] deck = null;
             if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
@@ -397,6 +398,7 @@ namespace WeaponCore.Support
 
             for (int i = 0; i < totalBlocks; i++)
             {
+                if (i > 100 && Session.Instance.RayCasts > 7500) break;
                 var next = i;
                 if (i < lastBlocks)
                     if (deck != null) next = deck[i];

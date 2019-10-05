@@ -18,19 +18,17 @@ namespace WeaponCore.Projectiles
     {
         internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, int poolId)
         {
-            /*
-            if (p.T?.Ai?.MyGrid == null || p.T.System == null || p.SegmentList == null || p.T.HitList == null || p.T.Target != null && p.T.Target.IsProjectile)
+            if (p.T?.Ai?.MyGrid == null || p.T.System == null || p.SegmentList == null || p.T.HitList == null)
             {
                 Log.Line($"TNull:{p.T == null} - AiNull:{p.T?.Ai == null} - {p.T?.Ai?.MyGrid == null} - seg:{p.SegmentList == null} - hitList:{p.T?.HitList == null} - projectile: {p.T?.Target != null && p.T.Target.IsProjectile && p.T.Target.Projectile != null}");
                 return null;
             }
-            */
             if (p.T.Target != null && p.T.Target.IsProjectile)
             {
-                var valid = p.T?.Target != null && p.T.Target.IsProjectile && p.T.Target.Projectile != null;
-                if (!valid)
+                var valid = p.T.Target.Projectile != null;
+                if (!valid || p.T.Target.Projectile.T?.System == null)
                 {
-                    Log.Line($"projectile: {valid}");
+                    Log.Line($"projectile is invalid");
                     return null;
                 }
             }
