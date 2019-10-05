@@ -291,6 +291,59 @@ namespace WeaponCore.Platform
             }
         }
 
+        internal void UpdateRequiredPower()
+        {
+            if (System.EnergyAmmo || System.IsHybrid)
+                RequiredPower = ((ShotEnergyCost * (RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+            else
+                RequiredPower = Comp.IdlePower;
+
+            Comp.MaxRequiredPower += RequiredPower;
+        }
+
+        internal void UpdateShotEnergy()
+        {
+            var ewar = (int)System.Values.Ammo.AreaEffect.AreaEffect > 3;
+            ShotEnergyCost = ewar ? System.Values.HardPoint.EnergyCost * areaEffectDmg : System.Values.HardPoint.EnergyCost * BaseDamage;
+        }
+
+        internal void UpdateBarrelRotation()
+        {
+            if (!Comp.MyCube.MarkedForClose && Comp.MyCube != null)
+            {
+                var rof = RateOfFire < 3599 ? RateOfFire : 3599;
+
+                var angle = MathHelper.ToRadians((360f / System.Barrels.Length) / (3600f / rof));
+
+
+                var axis = System.Values.HardPoint.RotateBarrelAxis;
+                if (axis != 0 && BarrelPart != Comp.MyCube)
+                {
+                    var partPos = (Vector3)Session.Instance.GetPartLocation("subpart_" + System.MuzzlePartName.String,
+                        ((MyEntitySubpart)BarrelPart).Parent.Model);
+
+                    var to = Matrix.CreateTranslation(-partPos);
+                    var from = Matrix.CreateTranslation(partPos);
+
+                    Matrix rotationMatrix = Matrix.Zero;
+                    switch (axis)
+                    {
+                        case 1:
+                            rotationMatrix = to * Matrix.CreateRotationX(angle) * from;
+                            break;
+                        case 2:
+                            rotationMatrix = to * Matrix.CreateRotationY(angle) * from;
+                            break;
+                        case 3:
+                            rotationMatrix = to * Matrix.CreateRotationZ(angle) * from;
+                            break;
+                    }
+
+                    BarrelRotationPerShot = rotationMatrix;
+                }
+            }
+        }
+
         public void ShootGraphics()
         {
             if (System.BarrelEffect1 || System.BarrelEffect2)

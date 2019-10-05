@@ -181,6 +181,7 @@ namespace WeaponCore.Platform
                 weapon.Comp.AiMoving = aim;
                 if (aim)
                 {
+                    Log.Line($"Aiming azDiff: {azDiff} elDiff: {elDiff}");
                     //weapon.Azimuth = newAz;
                     //weapon.Elevation = newEl;
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
@@ -207,7 +208,7 @@ namespace WeaponCore.Platform
                 weapon.StopShooting();
 
             weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
-            return weapon.IsTracking;
+            return weapon.Comp.TurretTargetLock;
         }
 
         public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Vector3D targetAccel,

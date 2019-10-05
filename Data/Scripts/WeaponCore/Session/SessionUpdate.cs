@@ -48,8 +48,12 @@ namespace WeaponCore
                         else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile)) w.Target.Reset();
                         else if (w.TrackingAi)
                         {
+                            Log.Line("AI Exist");
                             if (!Weapon.TrackingTarget(w, w.Target, !gunner))
+                            {
                                 w.Target.Expired = true;
+                                Log.Line("expired");
+                            }
                         }
                         else
                         {
