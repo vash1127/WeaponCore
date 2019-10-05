@@ -145,17 +145,17 @@ namespace WeaponCore.Platform
             var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
             var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
 
-            Vector3D currentVector = weapon.MyPivotDir;
+            //Vector3D currentVector = weapon.MyPivotDir;
             //Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
             //currentVector = Vector3D.Rotate(currentVector, AzimuthPart.WorldMatrix);
 
-            var up = AzimuthPart.WorldMatrix.Up;
-            var left = Vector3D.Cross(up, currentVector);
-            if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
-                left.Normalize();
-            var forward = Vector3D.Cross(left, up);
+            //var up = weapon.WeaponConstUp;
+            //var left = Vector3D.Cross(up, currentVector);
+            //if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
+            //    left.Normalize();
+            //var forward = Vector3D.Cross(left, up);
 
-            var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
+            var matrix = new MatrixD { Forward = weapon.MyPivotDir, Left = weapon.MyPivotLeft, Up = weapon.WeaponConstUp, };
             double desiredAzimuth;
             double desiredElevation;
             MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);

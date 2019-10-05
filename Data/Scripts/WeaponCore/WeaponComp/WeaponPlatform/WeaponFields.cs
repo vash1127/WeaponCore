@@ -43,6 +43,8 @@ namespace WeaponCore.Platform
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
+        internal Vector3D MyPivotLeft;
+        internal Vector3D WeaponConstUp;
         internal Vector3D AimOffset;
         internal LineD MyCenterTestLine;
         internal LineD MyBarrelTestLine;

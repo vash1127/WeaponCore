@@ -110,21 +110,23 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            var weaponPComp = ElevationPart.Item1.PositionComp;
-            var basePart = AzimuthPart.Item1;
+            var elevationComp = ElevationPart.Item1.PositionComp;
+            var weaponMatrix = elevationComp.WorldMatrix;
+            var azimuthComp = AzimuthPart.Item1.PositionComp;
 
-            var center = !FixedOffset ? basePart.PositionComp.WorldAABB.Center : weaponPComp.WorldAABB.Center;
-            var weaponCenter = weaponPComp.WorldMatrix.Translation;
-            var weaponForward = weaponPComp.WorldMatrix.Forward;
-            var weaponUp = weaponPComp.WorldMatrix.Up;
-            var blockUp = basePart.PositionComp.WorldMatrix.Up;
+            var center = !FixedOffset ? azimuthComp.WorldAABB.Center : elevationComp.WorldAABB.Center;
+            var weaponCenter = weaponMatrix.Translation;
+            var weaponForward = weaponMatrix.Forward;
+            WeaponConstUp = azimuthComp.WorldMatrix.Up;
+
             MyPivotDir = weaponForward;
-            MyPivotUp = weaponUp;
-            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, blockUp, weaponCenter, weaponForward)+ AimOffset : center + AimOffset;
+            MyPivotUp = weaponMatrix.Up;
+            MyPivotLeft = weaponMatrix.Left;
+            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, WeaponConstUp, weaponCenter, weaponForward)+ AimOffset : center + AimOffset;
             if (Comp.Debug)
             {
-                var cubeleft = basePart.PositionComp.WorldMatrix.Left;
-                MyCenterTestLine = new LineD(center, center + (blockUp * 20));
+                var cubeleft = azimuthComp.WorldMatrix.Left;
+                MyCenterTestLine = new LineD(center, center + (WeaponConstUp * 20));
                 MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 20));
                 MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 10), MyPivotPos - (cubeleft * 10));
                 MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (weaponForward*20));
