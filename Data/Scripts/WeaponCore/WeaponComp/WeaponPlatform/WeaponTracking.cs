@@ -141,37 +141,29 @@ namespace WeaponCore.Platform
 
             weapon.TargetPos = targetPos;
             var targetDir = targetPos - weapon.MyPivotPos;
+            targetDir.Normalize();
 
             var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
             var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
 
-            //Vector3D currentVector = weapon.MyPivotDir;
-            //Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
-            //currentVector = Vector3D.Rotate(currentVector, AzimuthPart.WorldMatrix);
-
-            //var up = weapon.WeaponConstUp;
-            //var left = Vector3D.Cross(up, currentVector);
-            //if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
-            //    left.Normalize();
-            //var forward = Vector3D.Cross(left, up);
-
-            var matrix = new MatrixD { Forward = weapon.MyPivotDir, Left = weapon.MyPivotLeft, Up = weapon.WeaponConstUp, };
+            var matrix = new MatrixD { Forward = weapon.MyPivotDir, Left = weapon.MyPivotLeft, Up = weapon.MyPivotUp };
             double desiredAzimuth;
             double desiredElevation;
             MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
-
+           
             var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
             var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
             var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.000001;
             var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.000001;
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
             if (!step) return weapon.IsTracking;
+
             if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
             {
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
                 var newAz = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation, -maxElevationStep, maxElevationStep);
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
                 var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;

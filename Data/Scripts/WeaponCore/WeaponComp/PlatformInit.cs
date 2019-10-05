@@ -76,7 +76,6 @@ namespace WeaponCore.Platform
                 };
 
                 var weapon = Weapons[i];
-                weapon.UpdatePivotPos();
                 if (weapon.System.Values.HardPoint.Block.TurretController && comp.TrackingWeapon == null)
                 {
                     weapon.TrackingAi = true;
@@ -91,6 +90,7 @@ namespace WeaponCore.Platform
                         comp.RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
                     }
                 }
+                weapon.UpdatePivotPos();
             }
             CompileTurret(comp);
         }

@@ -49,7 +49,7 @@ namespace WeaponCore
                         else if (w.TrackingAi)
                         {
                             Log.Line("AI Exist");
-                            if (!Weapon.TrackingTarget(w, w.Target, !gunner))
+                            if (!Weapon.TrackingTarget(w, w.Target, true))
                             {
                                 w.Target.Expired = true;
                                 Log.Line("expired");
