@@ -48,6 +48,7 @@ namespace WeaponCore.Platform
         internal LineD MyBarrelTestLine;
         internal LineD MyPivotTestLine;
         internal LineD MyAimTestLine;
+        internal LineD MyPivotDirLine;
         internal LineD MyShootAlignmentLine;
         internal WeaponSystem System;
         internal Dummy[] Dummies;

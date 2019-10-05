@@ -118,6 +118,8 @@ namespace WeaponCore
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
                             gridAi.Reloading = true;
 
+                        Log.Line($"w.AiReady: {w.AiReady} w.SeekTarget: {w.SeekTarget}");
+
                         if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading) gridAi.Ready = true;
                     }
                 }
@@ -160,6 +162,7 @@ namespace WeaponCore
                             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
                             DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
                             DsDebugDraw.DrawLine(w.MyAimTestLine, Color.DeepPink, 0.05f);
+                            DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Orange, 0.05f);
                             DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
 
                             if(!w.Target.Expired)
@@ -257,7 +260,8 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == (w.DelayPerAttempt * w.TargetDelayMulti)) GridAi.AcquireTarget(w);
+                            if (w.LastTargetCheck++ == 0 || w.LastTargetCheck == (w.DelayPerAttempt * w.TargetDelayMulti)) 
+                                GridAi.AcquireTarget(w);
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;

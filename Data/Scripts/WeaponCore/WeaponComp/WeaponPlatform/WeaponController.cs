@@ -128,6 +128,7 @@ namespace WeaponCore.Platform
                 MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 20));
                 MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 10), MyPivotPos - (cubeleft * 10));
                 MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (weaponForward*20));
+                MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
                 if (!Target.Expired)
                     MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
             }
