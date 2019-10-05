@@ -92,6 +92,7 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
 
         internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
+        internal readonly ConcurrentQueue<MyEntity> PrefabCubesToStart = new ConcurrentQueue<MyEntity>();
         internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
         internal readonly MyConcurrentHashSet<MyEntity> BlocksToInit = new MyConcurrentHashSet<MyEntity>();
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(25));

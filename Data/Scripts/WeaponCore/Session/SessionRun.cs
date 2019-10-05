@@ -148,6 +148,8 @@ namespace WeaponCore
 
                 if (!CompsToRemove.IsEmpty) RemoveComps();
 
+                if (!PrefabCubesToStart.IsEmpty) QueuePrefabComps();
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }
@@ -186,6 +188,7 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
+                MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
