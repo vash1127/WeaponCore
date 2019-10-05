@@ -28,8 +28,11 @@ namespace WeaponCore.Projectiles
             if (p.T.Target != null && p.T.Target.IsProjectile)
             {
                 var valid = p.T?.Target != null && p.T.Target.IsProjectile && p.T.Target.Projectile != null;
-                Log.Line($"projectile: {valid}");
-                if (!valid) return null;
+                if (!valid)
+                {
+                    Log.Line($"projectile: {valid}");
+                    return null;
+                }
             }
 
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
