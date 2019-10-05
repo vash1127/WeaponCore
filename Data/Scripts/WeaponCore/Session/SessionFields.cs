@@ -23,7 +23,11 @@ namespace WeaponCore
         internal const ushort PACKET_ID = 62518;
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
+        internal const double AimDirToleranceAngle = 5; //in degrees
+
         internal static readonly double VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
+        internal static readonly double AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
+
         internal static Session Instance { get; private set; }
 
         internal volatile bool Inited;
