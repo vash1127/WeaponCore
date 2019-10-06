@@ -75,8 +75,6 @@ namespace WeaponCore.Support
             {
                 var rootGrid = targets.Key;
 
-                Log.Line($"CoreTargeting Blocks: {targets.Value.Count}");
-
                 Dictionary<BlockTypes, List<MyCubeBlock>> typeDict;
                 if (ai.ValidGrids.TryGetValue(rootGrid, out typeDict))
                 {

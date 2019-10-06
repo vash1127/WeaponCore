@@ -14,7 +14,6 @@ namespace WeaponCore.Support
     {
         private const string Arc = "Arc";
 
-        public readonly MyStringHash AimPartName;
         public readonly MyStringHash MuzzlePartName;
         public readonly MyStringHash AzimuthPartName;
         public readonly MyStringHash ElevationPartName;
@@ -132,9 +131,8 @@ namespace WeaponCore.Support
             WhenDone
         }
 
-        public WeaponSystem(MyStringHash aimPartName, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
+        public WeaponSystem(MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
         {
-            AimPartName = aimPartName;
             MuzzlePartName = muzzlePartName;
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
@@ -142,7 +140,7 @@ namespace WeaponCore.Support
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
-            WeaponId = (weaponName + aimPartName + muzzlePartName).GetHashCode();
+            WeaponId = (weaponName + elevationPartName + muzzlePartName + azimuthPartName).GetHashCode();
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);
@@ -433,17 +431,15 @@ namespace WeaponCore.Support
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
-        public readonly MyStringHash[] AimPartNames;
         public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
 
-        public WeaponStructure(KeyValuePair<string, Dictionary<string, MyTuple<string, string, string, string>>> tDef, List<WeaponDefinition> wDefList)
+        public WeaponStructure(KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList)
         {
             var map = tDef.Value;
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
-            var aimPartNames = new MyStringHash[numOfParts];
             var muzzlePartNames = new MyStringHash[numOfParts];
             var azimuthPartNames = new MyStringHash[numOfParts];
             var elevationPartNames = new MyStringHash[numOfParts];
@@ -453,15 +449,13 @@ namespace WeaponCore.Support
             var gridWeaponCap = 0;
             foreach (var w in map)
             {
-                var myAimNameHash = MyStringHash.GetOrCompute(w.Key);
-                var myMuzzleNameHash = MyStringHash.GetOrCompute(w.Value.Item1);
-                var myAzimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
-                var myElevationNameHash = MyStringHash.GetOrCompute(w.Value.Item4);
+                var myMuzzleNameHash = MyStringHash.GetOrCompute(w.Key);
+                var myAzimuthNameHash = MyStringHash.GetOrCompute(w.Value.Item2);
+                var myElevationNameHash = MyStringHash.GetOrCompute(w.Value.Item3);
 
-                aimPartNames[mapIndex] = myAimNameHash;
                 muzzlePartNames[mapIndex] = myMuzzleNameHash;
 
-                var typeName = w.Value.Item2;
+                var typeName = w.Value.Item1;
                 var weaponDef = new WeaponDefinition();
 
                 foreach (var weapon in wDefList)
@@ -482,7 +476,7 @@ namespace WeaponCore.Support
 
                 Session.Instance.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventoryBase, MyFixedPoint>();
 
-                WeaponSystems.Add(myAimNameHash, new WeaponSystem(myAimNameHash, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId));
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId));
                 if (!ammoBlank)
                 {
                     if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();
@@ -502,7 +496,6 @@ namespace WeaponCore.Support
             }
 
             GridWeaponCap = gridWeaponCap;
-            AimPartNames = aimPartNames;
             MuzzlePartNames = muzzlePartNames;
         }
     }

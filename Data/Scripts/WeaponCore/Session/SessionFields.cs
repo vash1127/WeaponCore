@@ -89,7 +89,7 @@ namespace WeaponCore
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private readonly CachingList<AfterGlow> _afterGlow = new CachingList<AfterGlow>();
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string, string>>>();
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
 

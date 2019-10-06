@@ -139,6 +139,7 @@ namespace WeaponCore.Platform
 
             weapon.TargetPos = targetPos;
             var targetDir = targetPos - weapon.MyPivotPos;
+            targetDir.Normalize();
 
             var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
             var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
@@ -180,10 +181,10 @@ namespace WeaponCore.Platform
                 weapon.LastAzDiff = azDiff;
                 weapon.LastElDiff = elDiff;            
 
-                if (weapon.AzZeroCrossCount >= 2)
+                if (weapon.AzZeroCrossCount > 1)
                     azDiff = 0;
 
-                if (weapon.ElZeroCrossCount >= 2)
+                if (weapon.ElZeroCrossCount > 1)
                     elDiff = 0;
 
                 var aim = (!azLocked || !elLocked) && (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
@@ -193,9 +194,9 @@ namespace WeaponCore.Platform
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
                     weapon.AimBarrel(azDiff, elDiff);
                 }
-
+                #endregion
             }
-            #endregion
+
 
             var isAligned = false;
 

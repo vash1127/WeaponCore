@@ -27,9 +27,9 @@ namespace WeaponCore.Platform
 
             if (Comp.PositionUpdateTick <= tick && _posChangedTick != tick)
             {
-                if (EntityPart == null || EntityPart.MarkedForClose) return;
-                var parentMatrix = EntityPart.Parent.PositionComp.WorldMatrix;
-                EntityPart.PositionComp.UpdateWorldMatrix(ref parentMatrix);
+                if (BarrelPart == null || BarrelPart.MarkedForClose) return;
+                var parentMatrix = BarrelPart.Parent.PositionComp.WorldMatrix;
+                BarrelPart.PositionComp.UpdateWorldMatrix(ref parentMatrix);
                 Comp.PositionUpdateTick = tick + 1;
             }
         }
@@ -361,9 +361,9 @@ namespace WeaponCore.Platform
                     var particles = System.Values.Graphics.Particles;
                     var vel = Comp.Physics.LinearVelocity;
                     var pos = dummy.Info.Position;
-                    var entityExists = EntityPart?.Parent != null && !EntityPart.MarkedForClose;
+                    var entityExists = BarrelPart?.Parent != null && !BarrelPart.MarkedForClose;
                     var matrix = MatrixD.Zero;
-                    if (entityExists) matrix = MatrixD.CreateWorld(pos, EntityPart.WorldMatrix.Forward, EntityPart.Parent.WorldMatrix.Up);
+                    if (entityExists) matrix = MatrixD.CreateWorld(pos, BarrelPart.WorldMatrix.Forward, BarrelPart.Parent.WorldMatrix.Up);
 
                     if (System.BarrelEffect1)
                     {

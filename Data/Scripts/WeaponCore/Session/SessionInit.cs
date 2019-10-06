@@ -114,24 +114,23 @@ namespace WeaponCore
                 {
                     var subTypeId = mount.SubtypeId;
                     var muzzlePartId = mount.MuzzlePartId;
-                    var aimPartId = mount.AimPartId;
                     var azimuthPartId = mount.AzimuthPartId;
                     var elevationPartId = mount.ElevationPartId;
 
-                    var extraInfo = new MyTuple<string, string, string, string> { Item1 = muzzlePartId, Item2 = weaponDef.HardPoint.WeaponId, Item3 = azimuthPartId, Item4 = elevationPartId};
+                    var extraInfo = new MyTuple<string, string, string> { Item1 = weaponDef.HardPoint.WeaponId, Item2 = azimuthPartId, Item3 = elevationPartId};
 
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                     {
 
-                        _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string, string, string>>
+                        _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string, string>>
                         {
-                            [aimPartId] = extraInfo
+                            [muzzlePartId] = extraInfo
                         };
                         _subTypeIdToWeaponDefs[subTypeId] = new List<WeaponDefinition> {weaponDef};
                     }
                     else
                     {
-                        _turretDefinitions[subTypeId][aimPartId] = extraInfo;
+                        _turretDefinitions[subTypeId][muzzlePartId] = extraInfo;
                         _subTypeIdToWeaponDefs[subTypeId].Add(weaponDef);
                     }
                 }

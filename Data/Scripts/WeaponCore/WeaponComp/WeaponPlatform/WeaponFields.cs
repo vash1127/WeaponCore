@@ -35,8 +35,6 @@ namespace WeaponCore.Platform
 
         private bool _newCycle;
         //private bool _firstRun = true;
-
-        internal MyEntity EntityPart;
         internal MyEntity BarrelPart;
         internal MyTuple<MyEntity, Vector3, Matrix, Matrix> AzimuthPart;
         internal MyTuple<MyEntity, Vector3, Matrix, Matrix> ElevationPart;
@@ -191,7 +189,7 @@ namespace WeaponCore.Platform
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, HashSet<PartAnimation>> animationSets)
         {
-            EntityPart = entity;
+            BarrelPart = entity;
             AnimationsSet = animationSets;
             _localTranslation = entity.PositionComp.LocalMatrix.Translation;
             System = system;

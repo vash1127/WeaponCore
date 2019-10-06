@@ -89,6 +89,8 @@ namespace WeaponCore
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
 
+                        Log.Line("w.TargetWasExpired != w.Target.Expired");
+
                         if (w.TurretMode && comp.State.Value.Online)
                         {
                             if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) ||
