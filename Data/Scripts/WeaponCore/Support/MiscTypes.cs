@@ -321,8 +321,8 @@ namespace WeaponCore.Support
             if (targetExpired) Session.Instance.TargetResets++;
 
             Entity = null;
-            Projectile = null;
             IsProjectile = false;
+            Projectile = null;
             HitPos = Vector3D.Zero;
             HitShortDist = 0;
             OrigDistance = 0;

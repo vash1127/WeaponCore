@@ -327,7 +327,7 @@ namespace WeaponCore.Platform
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
             if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > System.MaxTrajectorySqr)
             {
-                Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
+                //Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon !=  this) Target.Expired = true;
                 return;
@@ -415,8 +415,8 @@ namespace WeaponCore.Platform
                     {
                         masterWeapon.Target.Expired = true;
                         if (masterWeapon != this) Target.Expired = true;
-                        if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
-                        else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met - {distanceToTarget} - {Target.OrigDistance} -{distanceToTarget - Target.OrigDistance} > {Target.OrigDistance}");
+                        //if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
+                        //else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met - {distanceToTarget} - {Target.OrigDistance} -{distanceToTarget - Target.OrigDistance} > {Target.OrigDistance}");
                     }
                 }
             }

@@ -124,7 +124,9 @@ namespace WeaponCore
         internal int TargetRequests;
         internal int TargetChecks;
         internal int BlockChecks;
-        internal int RayCasts;
+        internal int ClosestRayCasts;
+        internal int RandomRayCasts;
+        internal int TopRayCasts;
         internal int CanShoot;
         internal int ProjectileChecks;
         internal int TargetTransfers;

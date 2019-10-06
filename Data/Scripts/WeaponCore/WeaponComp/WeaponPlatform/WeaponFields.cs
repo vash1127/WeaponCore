@@ -86,14 +86,11 @@ namespace WeaponCore.Platform
         internal uint SuspendAmmoTick;
         internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
-        internal uint LastTargetCheck;
+        internal uint LastTargetTick;
+        internal uint TargetCheckTick;
         internal uint LastTargetLock;
         internal uint FirstFireDelay;
         internal uint OffDelay;
-        internal int TargetAttempts;
-        internal int TargetDelayMulti;
-        internal int MaxAttempts = 1;
-        internal int DelayPerAttempt = 60;
         internal int RateOfFire;
         internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;

@@ -15,16 +15,15 @@ namespace WeaponCore.Support
     {
         internal static void AcquireTarget(Weapon w)
         {
-            Session.Instance.TargetRequests++;
-            //Log.Line($"check: {w.LastTargetCheck} - {w.TargetAttempts}");
-            w.LastTargetCheck = 0;
             w.HitOther = false;
+            var tick = Session.Instance.Tick;
+            w.TargetCheckTick = tick;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
             var targetType = TargetType.None;
 
             if (w.SleepTargets)
             {
-                if (w.Comp.Ai.BlockCount != w.LastBlockCount && w.TargetAttempts >= 600)
+                if (w.Comp.Ai.BlockCount != w.LastBlockCount && tick - w.LastTargetTick > 300)
                     w.SleepingTargets.Clear();
             }
 
@@ -45,14 +44,8 @@ namespace WeaponCore.Support
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset(false);
-                if (w.TargetAttempts < w.MaxAttempts) w.TargetDelayMulti++;
-                else
-                {
-                    w.SleepTargets = true;
-                    w.LastBlockCount = w.Comp.Ai.BlockCount;
-                }
-                w.TargetAttempts++;
-                w.LastTargetCheck = 1;
+                w.SleepTargets = true;
+                w.LastBlockCount = w.Comp.Ai.BlockCount;
                 w.Target.Expired = true;
             }
             else
@@ -113,6 +106,7 @@ namespace WeaponCore.Support
 
         private static void AcquireOther(Weapon w, out TargetType targetType)
         {
+            Session.Instance.TargetRequests++;
             var ai = w.Comp.Ai;
             var physics = Session.Instance.Physics;
             var weaponPos = w.MyPivotPos;
@@ -121,7 +115,6 @@ namespace WeaponCore.Support
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
             {
-                Session.Instance.TargetChecks++;
                 var info = ai.SortedTargets[i];
 
                 if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
@@ -132,6 +125,7 @@ namespace WeaponCore.Support
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
+                Session.Instance.TargetChecks++;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
 
@@ -142,7 +136,7 @@ namespace WeaponCore.Support
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     if (!s.TrackGrids) continue;
-                    if (w.TargetAttempts > w.MaxAttempts)
+                    if (w.SleepTargets)
                     {
                         Vector3D oldDir;
                         var newDir = targetCenter - weaponPos;
@@ -180,7 +174,7 @@ namespace WeaponCore.Support
 
                 if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel, ref targetAccel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
-                Session.Instance.RayCasts++;
+                Session.Instance.TopRayCasts++;
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
                 if (hitInfo != null && hitInfo.HitEntity == info.Target)
@@ -194,156 +188,6 @@ namespace WeaponCore.Support
                     targetType = TargetType.Other;
                     target.TransferTo(w.Target);
                     return;
-                }
-            }
-            targetType = TargetType.None;
-        }
-
-        private static bool Obstruction(ref TargetInfo info, ref Vector3D targetPos, Projectile p)
-        {
-            var ai = p.T.Ai;
-            var obstruction = false;
-            for (int j = 0; j < ai.Obstructions.Count; j++)
-            {
-                var ent = ai.Obstructions[j];
-                var voxel = ent as MyVoxelBase;
-                var dir = (targetPos - p.Position);
-                if (voxel != null)
-                {
-                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
-                    {
-                        var dirNorm = Vector3D.Normalize(dir);
-                        var targetDist = Vector3D.Distance(p.Position, targetPos);
-                        var tRadius = info.Target.PositionComp.LocalVolume.Radius;
-                        var testPos = p.Position + (dirNorm * (targetDist - tRadius));
-                        var lineTest = new LineD(p.Position, testPos);
-                        Vector3D? voxelHit = null;
-                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                        var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-
-                        if (obb.Intersects(ref lineTest) != null)
-                            voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
-
-                        obstruction = voxelHit.HasValue;
-                        if (obstruction)
-                            break;
-                    }
-                }
-                else
-                {
-                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
-                    {
-                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                        var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                        var lineTest = new LineD(p.Position, targetPos);
-                        if (obb.Intersects(ref lineTest) != null)
-                        {
-                            obstruction = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if (!obstruction)
-            {
-                var dir = (targetPos - p.Position);
-                var ray = new RayD(ref p.Position, ref dir);
-                var dist = ai.MyGrid.PositionComp.WorldVolume.Intersects(ray);
-                if (dist.HasValue)
-                {
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                    if (obb.Intersects(ref ray) != null)
-                        obstruction = ai.MyGrid.RayCastBlocks(p.Position, targetPos) != null;
-                }
-
-                if (!obstruction)
-                {
-                    foreach (var sub in ai.SubGrids)
-                    {
-                        var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
-                        if (subDist.HasValue)
-                        {
-                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
-                            var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                            if (obb.Intersects(ref ray) != null)
-                                obstruction = sub.RayCastBlocks(p.Position, targetPos) != null;
-                        }
-
-                        if (obstruction) break;
-                    }
-                }
-            }
-            return obstruction;
-        }
-
-        private static void AcquireProjectile(Weapon w, out TargetType targetType)
-        {
-            var wCache = w.WeaponCache;
-            var ai = w.Comp.Ai;
-            var s = w.System;
-            var collection = s.ClosestFirst ? wCache.SortProjetiles : ai.LiveProjectile as IEnumerable<Projectile>;
-            wCache.SortProjectiles(w);
-            var physics = Session.Instance.Physics;
-            var target = w.NewTarget;
-            var weaponPos = w.MyPivotPos;
-            foreach (var lp in collection)
-            {
-                Session.Instance.ProjectileChecks++;
-                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
-                if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity, ref lp.AccelVelocity))
-                {
-                    var needsCast = false;
-                    for (int i = 0; i < ai.Obstructions.Count; i++)
-                    {
-                        var ent = ai.Obstructions[i];
-                        var obsSphere = ent.PositionComp.WorldVolume;
-
-                        var dir = lp.Position - weaponPos;
-                        var beam = new RayD(ref weaponPos, ref dir);
-                        
-                        if (beam.Intersects(obsSphere) != null)
-                        {
-                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                            var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                            if (obb.Intersects(ref beam) != null)
-                            {
-                                needsCast = true;
-                                break;
-                            }
-                        }
-                    }
-
-                    if (needsCast)
-                    {
-                        IHitInfo hitInfo;
-                        physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
-                        if (hitInfo?.HitEntity == null)
-                        {
-                            double hitDist;
-                            Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
-                            var shortDist = hitDist;
-                            var origDist = hitDist;
-                            const long topEntId = long.MaxValue;
-                            target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
-                            targetType = TargetType.Projectile;
-                            target.TransferTo(w.Target);
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        double hitDist;
-                        Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
-                        var shortDist = hitDist;
-                        var origDist = hitDist;
-                        const long topEntId = long.MaxValue;
-                        target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
-                        targetType = TargetType.Projectile;
-                        target.TransferTo(w.Target);
-                        return;
-                    }
                 }
             }
             targetType = TargetType.None;
@@ -365,7 +209,9 @@ namespace WeaponCore.Support
                         var subSystemList = info.TypeDict[bt];
                         if (system.ClosestFirst)
                         {
-                            if (target.Top5.Count > 0 && (bt != target.LastBlockType || target.Top5[0].CubeGrid != subSystemList[0].CubeGrid)) target.Top5.Clear();
+                            if (target.Top5.Count > 0 && (bt != target.LastBlockType || target.Top5[0].CubeGrid != subSystemList[0].CubeGrid))
+                                target.Top5.Clear();
+
                             target.LastBlockType = bt;
                             GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w);
                             if (target.Entity != null) return true;
@@ -383,47 +229,48 @@ namespace WeaponCore.Support
         {
             var blockList = info.TypeDict[Any];
             var totalBlocks = blockList.Count;
-            var overRayCap = Session.Instance.RayCasts > 7500;
-            var lastBlocks = !overRayCap ? system.Values.Targeting.TopBlocks: 100;
-            if (lastBlocks > 0 && totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            int[] deck = null;
-            if (lastBlocks > 0) deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
-            var physics = Session.Instance.Physics;
-            var turretCheck = w != null;
+
             var topEnt = info.Target.GetTopMostParent();
             var entSphere = topEnt.PositionComp.WorldVolume;
+            var distToEnt = MyUtils.GetSmallestDistanceToSphere(ref weaponPos, ref entSphere);
+            var turretCheck = w != null;
+            var lastBlocks = system.Values.Targeting.TopBlocks > 10 && distToEnt < 1000 ? system.Values.Targeting.TopBlocks : 10;
+            if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
+            var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
+            var physics = Session.Instance.Physics;
             var grid = topEnt as IMyCubeGrid;
             var gridPhysics = grid?.Physics;
             Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
             Vector3D targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-            var distToEnt = MyUtils.GetSmallestDistanceToSphere(ref weaponPos, ref entSphere);
             var notSelfHit = false;
             var foundBlock = false;
-
             for (int i = 0; i < totalBlocks; i++)
             {
-                if (i > 100 && (Session.Instance.RayCasts > 7500 || distToEnt > 800))
+                if (turretCheck && i > lastBlocks)
                     break;
 
                 var next = i;
                 if (i < lastBlocks)
-                    if (deck != null) next = deck[i];
+                    next = deck[i];
 
                 var block = blockList[next];
-                Session.Instance.BlockChecks++;
                 if (block.MarkedForClose) continue;
+
+                Session.Instance.BlockChecks++;
+
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
 
                 double rayDist;
                 if (turretCheck)
                 {
                     Session.Instance.CanShoot++;
-                    if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel, ref targetAccel)) continue;
+                    if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel, ref targetAccel))
+                        continue;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
                         continue;
 
-                    Session.Instance.RayCasts++;
+                    Session.Instance.RandomRayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 
@@ -462,7 +309,6 @@ namespace WeaponCore.Support
                 foundBlock = true;
                 break;
             }
-
             if (turretCheck && !notSelfHit) w.HitOther = true;
             return foundBlock;
         }
@@ -507,23 +353,19 @@ namespace WeaponCore.Support
                         if (w != null && !(!w.IsTurret && system.Values.Ammo.Trajectory.Smarts.OverideTarget))
                         {
                             Session.Instance.CanShoot++;
-                            
-                            var canShoot = Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel, ref targetAccel);
                             var castRay = false;
-                            if (canShoot)
+
+                            if (Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel, ref targetAccel))
+                                castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
+
+                            if (castRay)
                             {
-                                if (!w.HitOther)
-                                {
-                                    if (!GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos))
-                                        castRay = true;
-                                    else continue;
-                                }
-                                else castRay = true;
-                                Session.Instance.RayCasts++;
+                                Session.Instance.ClosestRayCasts++;
+                                bestTest = physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
+
+                                if (hit.HitEntity != ai.MyGrid || hit == null)
+                                    notSelfHit = true;
                             }
-                            bestTest = castRay && physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
-                            if (hit == null || hit.HitEntity != ai.MyGrid)
-                                notSelfHit = true;
                         }
                         else bestTest = true;
                     }
@@ -611,5 +453,156 @@ namespace WeaponCore.Support
 
             if (!notSelfHit) w.HitOther = true;
         }
+
+        private static void AcquireProjectile(Weapon w, out TargetType targetType)
+        {
+            var wCache = w.WeaponCache;
+            var ai = w.Comp.Ai;
+            var s = w.System;
+            var collection = s.ClosestFirst ? wCache.SortProjetiles : ai.LiveProjectile as IEnumerable<Projectile>;
+            wCache.SortProjectiles(w);
+            var physics = Session.Instance.Physics;
+            var target = w.NewTarget;
+            var weaponPos = w.Comp.MyPivotPos;
+            foreach (var lp in collection)
+            {
+                Session.Instance.ProjectileChecks++;
+                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
+                if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity, ref lp.AccelVelocity))
+                {
+                    var needsCast = false;
+                    for (int i = 0; i < ai.Obstructions.Count; i++)
+                    {
+                        var ent = ai.Obstructions[i];
+                        var obsSphere = ent.PositionComp.WorldVolume;
+
+                        var dir = lp.Position - weaponPos;
+                        var beam = new RayD(ref weaponPos, ref dir);
+
+                        if (beam.Intersects(obsSphere) != null)
+                        {
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                            var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                            if (obb.Intersects(ref beam) != null)
+                            {
+                                needsCast = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (needsCast)
+                    {
+                        IHitInfo hitInfo;
+                        physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
+                        if (hitInfo?.HitEntity == null)
+                        {
+                            double hitDist;
+                            Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
+                            var shortDist = hitDist;
+                            var origDist = hitDist;
+                            const long topEntId = long.MaxValue;
+                            target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
+                            targetType = TargetType.Projectile;
+                            target.TransferTo(w.Target);
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        double hitDist;
+                        Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);
+                        var shortDist = hitDist;
+                        var origDist = hitDist;
+                        const long topEntId = long.MaxValue;
+                        target.Set(null, lp.Position, shortDist, origDist, topEntId, lp);
+                        targetType = TargetType.Projectile;
+                        target.TransferTo(w.Target);
+                        return;
+                    }
+                }
+            }
+            targetType = TargetType.None;
+        }
+
+        private static bool Obstruction(ref TargetInfo info, ref Vector3D targetPos, Projectile p)
+        {
+            var ai = p.T.Ai;
+            var obstruction = false;
+            for (int j = 0; j < ai.Obstructions.Count; j++)
+            {
+                var ent = ai.Obstructions[j];
+                var voxel = ent as MyVoxelBase;
+                var dir = (targetPos - p.Position);
+                if (voxel != null)
+                {
+                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
+                    {
+                        var dirNorm = Vector3D.Normalize(dir);
+                        var targetDist = Vector3D.Distance(p.Position, targetPos);
+                        var tRadius = info.Target.PositionComp.LocalVolume.Radius;
+                        var testPos = p.Position + (dirNorm * (targetDist - tRadius));
+                        var lineTest = new LineD(p.Position, testPos);
+                        Vector3D? voxelHit = null;
+                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                        var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+
+                        if (obb.Intersects(ref lineTest) != null)
+                            voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+
+                        obstruction = voxelHit.HasValue;
+                        if (obstruction)
+                            break;
+                    }
+                }
+                else
+                {
+                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
+                    {
+                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
+                        var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        var lineTest = new LineD(p.Position, targetPos);
+                        if (obb.Intersects(ref lineTest) != null)
+                        {
+                            obstruction = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!obstruction)
+            {
+                var dir = (targetPos - p.Position);
+                var ray = new RayD(ref p.Position, ref dir);
+                var dist = ai.MyGrid.PositionComp.WorldVolume.Intersects(ray);
+                if (dist.HasValue)
+                {
+                    var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
+                    var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                    if (obb.Intersects(ref ray) != null)
+                        obstruction = ai.MyGrid.RayCastBlocks(p.Position, targetPos) != null;
+                }
+
+                if (!obstruction)
+                {
+                    foreach (var sub in ai.SubGrids)
+                    {
+                        var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
+                        if (subDist.HasValue)
+                        {
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
+                            var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                            if (obb.Intersects(ref ray) != null)
+                                obstruction = sub.RayCastBlocks(p.Position, targetPos) != null;
+                        }
+
+                        if (obstruction) break;
+                    }
+                }
+            }
+            return obstruction;
+        }
+
     }
 }
