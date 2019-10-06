@@ -197,7 +197,7 @@ namespace WeaponCore
         internal readonly Guid LogicettingsGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811501");
 
         internal ShieldApi SApi = new ShieldApi();
-        internal readonly FutureEvents FutureEventsManager = new FutureEvents();
+        private readonly FutureEvents _futureEvents = new FutureEvents();
         internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
 
     }

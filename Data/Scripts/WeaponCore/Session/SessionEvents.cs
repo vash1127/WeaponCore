@@ -81,10 +81,10 @@ namespace WeaponCore
             var remote = ControlledEntity as MyRemoteControl;
 
             if (cockpit != null && UpdateLocalAiAndCockpit())
-                FutureEventsManager.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
+                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
 
             if (remote != null)
-                FutureEventsManager.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
+                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
         }
 
         private void OnPrefabSpawn(long entityId, string prefabName)

@@ -62,7 +62,7 @@ namespace WeaponCore
                     DsUtil.Clean();
                 }
                 DsUtil.Start("");
-                FutureEventsManager.Tick(Tick);
+                _futureEvents.Tick(Tick);
                 DsUtil.Complete("events", true);
                 Ui.UpdateInput();
                 DsUtil.Start("");

@@ -338,10 +338,10 @@ namespace WeaponCore
             var remote = ControlledEntity as MyRemoteControl;
 
             if (cockpit != null && UpdateLocalAiAndCockpit())
-                FutureEventsManager.Schedule(TurnWeaponShootOff,GridTargetingAIs[cockpit.CubeGrid], 1);
+                _futureEvents.Schedule(TurnWeaponShootOff,GridTargetingAIs[cockpit.CubeGrid], 1);
 
             if (remote != null)
-                FutureEventsManager.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
+                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
 
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }
@@ -584,7 +584,7 @@ namespace WeaponCore
                     else
                         fakeTick = ht.Value.Item2 + 1;
 
-                    FutureEventsManager.Schedule(UpdateWeaponHeat, MyTuple.Create(w, fakeTick, false), 20);
+                    _futureEvents.Schedule(UpdateWeaponHeat, MyTuple.Create(w, fakeTick, false), 20);
                 }
             }
         }
