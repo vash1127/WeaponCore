@@ -276,8 +276,9 @@ namespace WeaponCore.Platform
                         {
                             if (active && animation.Looping != true)
                             {
-                                Session.Instance.animationsToProcess.Enqueue(animation);
-                                if (animation.DoesLoop)
+                                if (!Session.Instance.animationsToProcess.Contains(animation))
+                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                else
                                     animation.Looping = true;
                             }
                             else
