@@ -135,6 +135,7 @@ namespace WeaponCore.Platform
         internal bool SleepTargets;
         internal bool HitOther;
         internal bool FixedOffset;
+        internal bool TurretTargetLock;
         internal double LastAzDiff;
         internal double LastElDiff;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;

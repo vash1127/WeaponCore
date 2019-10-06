@@ -187,6 +187,8 @@ namespace WeaponCore.Platform
                 if (weapon.ElZeroCrossCount > 1)
                     elDiff = 0;
 
+                #endregion
+
                 var aim = (!azLocked || !elLocked) && (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
 
                 if (aim)
@@ -194,7 +196,7 @@ namespace WeaponCore.Platform
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
                     weapon.AimBarrel(azDiff, elDiff);
                 }
-                #endregion
+                
             }
 
 
@@ -213,7 +215,7 @@ namespace WeaponCore.Platform
             else if (alignedChange && !weapon.DelayCeaseFire)
                 weapon.StopShooting();
 
-            weapon.Comp.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
+            weapon.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
             return weapon.IsTracking;
         }
 

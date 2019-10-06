@@ -64,7 +64,6 @@ namespace WeaponCore.Support
         internal float CompPowerPerc;
         internal float IdlePower;
         internal bool Overheated;
-        internal bool TurretTargetLock;
         internal bool Gunner;
         internal bool NotFailed;
         internal bool WarmedUp;
