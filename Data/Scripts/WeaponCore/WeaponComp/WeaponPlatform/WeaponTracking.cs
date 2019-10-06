@@ -9,7 +9,7 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal static bool CanShootTarget(Weapon weapon, ref Vector3D targetCenter, ref Vector3D targetLinVel, ref Vector3D targetAccel)
+        internal static bool CanShootTarget(Weapon weapon, Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel)
         {
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var turret = weapon.Comp.Turret;

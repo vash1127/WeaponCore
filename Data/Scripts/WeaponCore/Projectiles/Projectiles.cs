@@ -6,6 +6,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
@@ -125,9 +126,12 @@ namespace WeaponCore.Projectiles
             }
             foreach (var p in pool.Active)
             {
+                if (MyUtils.IsZero(p.Velocity) && p.Age > 0) Log.Line($"Age: {p.Age} - name:{p.T.System.WeaponName} - toTravelSqr:{p.DistanceToTravelSqr} - Traveled:{p.T.DistanceTraveled} - State:{p.State} - Speed:{p.Velocity.Length()} - Max:{p.MaxSpeed} - isProjectile:{p.T.Target.IsProjectile}");
+
                 p.Age++;
                 p.T.OnScreen = false;
                 p.Active = false;
+
                 switch (p.State)
                 {
                     case ProjectileState.Dead:
@@ -153,6 +157,7 @@ namespace WeaponCore.Projectiles
                         p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
                         break;
                 }
+
                 if (p.AccelLength > 0)
                 {
                     if (p.SmartsOn) p.RunSmart();
@@ -275,7 +280,6 @@ namespace WeaponCore.Projectiles
 
                         checkList.Clear();
                         CheckPool[poolId].Return(checkList);
-                        //UtilsStatic.CreateFakeExplosion(dInfo.DetonationRadius, p.Position, p.T.System);
                         p.HitEffects(true);
                     }
                 }
@@ -471,6 +475,5 @@ namespace WeaponCore.Projectiles
                 ProjectilePool[poolId].DeallocateAllMarked();
             }
         }
-
     }
 }

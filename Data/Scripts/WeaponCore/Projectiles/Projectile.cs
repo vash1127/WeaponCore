@@ -541,7 +541,6 @@ namespace WeaponCore.Projectiles
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelVelocity = (Direction * AccelLength);
 
-
             if (ConstantSpeed)
             {
                 Velocity = MaxVelocity;
