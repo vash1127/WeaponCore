@@ -267,27 +267,28 @@ namespace WeaponCore.Platform
                             }
                         }
 
-                    break;
-                
-                case EventTriggers.OutOfAmmo:
-                case EventTriggers.BurstReload:
-                case EventTriggers.PreFire:
-                    if (AnimationsSet.ContainsKey(state))
-                    {
-                        foreach (var animation in AnimationsSet[state])
+                        break;
+
+                    case EventTriggers.OutOfAmmo:
+                    case EventTriggers.BurstReload:
+                    case EventTriggers.PreFire:
+                        if (AnimationsSet.ContainsKey(state))
                         {
-                            if (active && animation.Looping != true)
+                            foreach (var animation in AnimationsSet[state])
                             {
-                                if (!Session.Instance.animationsToProcess.Contains(animation))
-                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                if (active && animation.Looping != true)
+                                {
+                                    if (!Session.Instance.animationsToProcess.Contains(animation))
+                                        Session.Instance.animationsToProcess.Enqueue(animation);
+                                    else
+                                        animation.Looping = true;
+                                }
                                 else
-                                    animation.Looping = true;
+                                    animation.Looping = false;
                             }
-                            else
-                                animation.Looping = false;
                         }
-                    }
-                    break;
+                        break;
+                }
             }
         }
 
