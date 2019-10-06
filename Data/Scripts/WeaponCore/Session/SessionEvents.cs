@@ -5,6 +5,7 @@ using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRageRender;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -28,11 +29,14 @@ namespace WeaponCore
                 if (weaponBase != null)
                 {
                     if (!Controls)
-                        lock(InitObj)
+                    {
+                        Controls = true;
+                        lock (InitObj)
                             MyAPIGateway.Utilities.InvokeOnGameThread(CreateLogicElements);
+                    }
 
-                    var cube = myEntity as MyCubeBlock;
-
+                    var cube = (MyCubeBlock)myEntity;
+                    if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
                     //Log.Line("here");
