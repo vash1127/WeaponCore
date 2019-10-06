@@ -117,8 +117,9 @@ namespace WeaponCore.Platform
 
             MyPivotDir = weaponForward;
             MyPivotUp = weaponMatrix.Up;
-            MyPivotLeft = weaponMatrix.Left;
-            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, WeaponConstUp, weaponCenter, weaponForward)+ AimOffset : center + AimOffset;
+            MyPivotMatrix = new MatrixD { Forward = MyPivotDir, Left = weaponMatrix.Left, Up = MyPivotUp };
+
+            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, WeaponConstUp, weaponCenter, weaponForward)+ Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);
             if (Comp.Debug)
             {
                 var cubeleft = azimuthComp.WorldMatrix.Left;

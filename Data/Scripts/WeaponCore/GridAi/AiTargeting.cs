@@ -463,7 +463,7 @@ namespace WeaponCore.Support
             wCache.SortProjectiles(w);
             var physics = Session.Instance.Physics;
             var target = w.NewTarget;
-            var weaponPos = w.Comp.MyPivotPos;
+            var weaponPos = w.MyPivotPos;
             foreach (var lp in collection)
             {
                 Session.Instance.ProjectileChecks++;

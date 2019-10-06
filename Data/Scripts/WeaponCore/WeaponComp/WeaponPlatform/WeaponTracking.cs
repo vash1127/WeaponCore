@@ -139,15 +139,13 @@ namespace WeaponCore.Platform
 
             weapon.TargetPos = targetPos;
             var targetDir = targetPos - weapon.MyPivotPos;
-            targetDir.Normalize();
 
             var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
             var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
 
-            var matrix = new MatrixD { Forward = weapon.MyPivotDir, Left = weapon.MyPivotLeft, Up = weapon.MyPivotUp };
             double desiredAzimuth;
             double desiredElevation;
-            MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
+            MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
            
             var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
             var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
@@ -156,7 +154,7 @@ namespace WeaponCore.Platform
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
             if (!step) return weapon.IsTracking;
 
-            if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
+            if (weapon.IsTracking && maxAzimuthStep > double.MinValue)
             {
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
@@ -164,16 +162,40 @@ namespace WeaponCore.Platform
                 var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation, -maxElevationStep, maxElevationStep);
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
-                var azLocked = azDiff > -1E-10d && azDiff < 1E-10d;
-                var elLocked = elDiff > -1E-10d && elDiff < 1E-10d;
-                var aim = !azLocked || !elLocked;
-                weapon.Comp.AiMoving = aim;
+                var azLocked = azDiff > -1E-04d && azDiff < 1E-04d;
+                var elLocked = elDiff > -1E-04d && elDiff < 1E-04d;
+
+                #region Debounce for rapid small movements causing twitch, sub 1 deviationAngle
+
+                if (weapon.LastAzDiff > 0 && azDiff < 0 || azDiff > 0 && weapon.LastAzDiff < 0)
+                    weapon.AzZeroCrossCount++;
+                else
+                    weapon.AzZeroCrossCount = 0;
+
+                if (weapon.LastElDiff > 0 && elDiff < 0 || elDiff > 0 && weapon.LastElDiff < 0)
+                    weapon.ElZeroCrossCount++;
+                else
+                    weapon.ElZeroCrossCount = 0;
+
+                weapon.LastAzDiff = azDiff;
+                weapon.LastElDiff = elDiff;            
+
+                if (weapon.AzZeroCrossCount >= 2)
+                    azDiff = 0;
+
+                if (weapon.ElZeroCrossCount >= 2)
+                    elDiff = 0;
+
+                var aim = (!azLocked || !elLocked) && (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
+
                 if (aim)
                 {
                     weapon.Comp.LastTrackedTick = Session.Instance.Tick;
-                    weapon.AimBarrel(azDiff, elDiff);  
+                    weapon.AimBarrel(azDiff, elDiff);
                 }
+
             }
+            #endregion
 
             var isAligned = false;
 
@@ -184,8 +206,6 @@ namespace WeaponCore.Platform
 
             var wasAligned = weapon.IsAligned;
             weapon.IsAligned = isAligned;
-
-            Log.Line($"wasAligned: {wasAligned} isAligned: {isAligned}");
 
             var alignedChange = wasAligned != isAligned;
             if (alignedChange && isAligned) weapon.StartShooting();

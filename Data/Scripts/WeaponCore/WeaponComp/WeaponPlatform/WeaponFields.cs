@@ -43,8 +43,8 @@ namespace WeaponCore.Platform
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
-        internal Vector3D MyPivotLeft;
         internal Vector3D AimOffset;
+        internal MatrixD MyPivotMatrix;
         internal LineD MyCenterTestLine;
         internal LineD MyBarrelTestLine;
         internal LineD MyPivotTestLine;
@@ -99,6 +99,8 @@ namespace WeaponCore.Platform
         internal int HsRate;
         internal int EnergyPriority;
         internal int LastBlockCount;
+        internal int AzZeroCrossCount;
+        internal int ElZeroCrossCount;
         internal float HeatPShot;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
@@ -118,6 +120,7 @@ namespace WeaponCore.Platform
         internal bool SeekTarget;
         internal bool TrackingAi;
         internal bool IsTracking;
+        internal bool WasLocked;
         internal bool IsAligned;
         internal bool AmmoSuspend;
         internal bool AmmoFull;
@@ -134,6 +137,8 @@ namespace WeaponCore.Platform
         internal bool SleepTargets;
         internal bool HitOther;
         internal bool FixedOffset;
+        internal double LastAzDiff;
+        internal double LastElDiff;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 
