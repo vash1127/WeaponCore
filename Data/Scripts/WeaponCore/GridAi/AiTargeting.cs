@@ -212,19 +212,17 @@ namespace WeaponCore.Support
                             GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w);
                             if (target.Entity != null) return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, info, w)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w)) return true;
                     }
                 }
                 if (system.OnlySubSystems) return false;
             }
-            if (FindRandomBlock(system, ai, target, weaponPos, info, w)) return true;
-            return false;
+            return FindRandomBlock(system, ai, target, weaponPos, info, info.TypeDict[Any], w);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, Weapon w)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, List<MyCubeBlock> subSystemList, Weapon w)
         {
-            var blockList = info.TypeDict[Any];
-            var totalBlocks = blockList.Count;
+            var totalBlocks = subSystemList.Count;
 
             var topEnt = info.Target.GetTopMostParent();
             var entSphere = topEnt.PositionComp.WorldVolume;
@@ -249,7 +247,7 @@ namespace WeaponCore.Support
                 if (i < lastBlocks)
                     next = deck[i];
 
-                var block = blockList[next];
+                var block = subSystemList[next];
                 if (block.MarkedForClose) continue;
 
                 Session.Instance.BlockChecks++;
