@@ -46,9 +46,10 @@ namespace WeaponCore
                         Controls = true;
                         lock (InitObj)
                             MyAPIGateway.Utilities.InvokeOnGameThread(CreateLogicElements);
+                    }
 
-                        if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
-                        if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+                    if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
+                    if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
                     //Log.Line("here");
 
