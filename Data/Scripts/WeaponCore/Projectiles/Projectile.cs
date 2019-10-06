@@ -896,6 +896,7 @@ namespace WeaponCore.Projectiles
             if (!EnableAv && T.System.PrimeModelId == -1 && T.System.TriggerModelId == -1)
             {
                 State = ProjectileState.Dead;
+                T.Target.IsProjectile = false;
                 Manager.CleanUp[PoolId].Add(this);
             }
             else State = ProjectileState.Ending;
@@ -912,6 +913,7 @@ namespace WeaponCore.Projectiles
                     if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
                 State = ProjectileState.Dead;
+                T.Target.IsProjectile = false;
                 Manager.CleanUp[PoolId].Add(this);
             }
         }
