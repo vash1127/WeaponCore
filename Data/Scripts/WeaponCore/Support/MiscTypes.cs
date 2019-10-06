@@ -155,7 +155,7 @@ namespace WeaponCore.Support
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Session.Instance.Camera.WorldMatrix.Translation);
             ScaleFov = (float)Math.Tan(Session.Instance.Camera.FovWithZoom * 0.5);
 
-            LineWidth = Math.Max(width, 0.1f * ScaleFov * (DistanceToLine / 100));
+            LineWidth = Math.Max(width, 0.11f * ScaleFov * (DistanceToLine / 100));
             Color = color;
         }
 

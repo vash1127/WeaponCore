@@ -267,27 +267,27 @@ namespace WeaponCore.Platform
                             }
                         }
 
-                        break;
-
-                    case EventTriggers.OutOfAmmo:
-                    case EventTriggers.BurstReload:
-                    case EventTriggers.PreFire:
-                        if (AnimationsSet.ContainsKey(state))
+                    break;
+                
+                case EventTriggers.OutOfAmmo:
+                case EventTriggers.BurstReload:
+                case EventTriggers.PreFire:
+                    if (AnimationsSet.ContainsKey(state))
+                    {
+                        foreach (var animation in AnimationsSet[state])
                         {
-                            foreach (var animation in AnimationsSet[state])
+                            if (active && animation.Looping != true)
                             {
-                                if (active && animation.Looping != true)
-                                {
+                                if (!Session.Instance.animationsToProcess.Contains(animation))
                                     Session.Instance.animationsToProcess.Enqueue(animation);
-                                    if (animation.DoesLoop)
-                                        animation.Looping = true;
-                                }
                                 else
-                                    animation.Looping = false;
+                                    animation.Looping = true;
                             }
+                            else
+                                animation.Looping = false;
                         }
-                        break;
-                }
+                    }
+                    break;
             }
         }
 
@@ -449,7 +449,6 @@ namespace WeaponCore.Platform
                 Comp.CurrentDPS += DPS;
                 Comp.SinkPower += RequiredPower;
                 Comp.CurrentSinkPowerRequested += RequiredPower;
-                //TODO fix sink
                 Comp.Sink.Update();
                 Comp.TerminalRefresh();
             }

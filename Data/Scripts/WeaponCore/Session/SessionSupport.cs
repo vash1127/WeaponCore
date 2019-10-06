@@ -378,6 +378,15 @@ namespace WeaponCore
 
         private void StartComps()
         {
+            WeaponComponent weaponCompPeek;
+            if (CompsToStart.TryPeek(out weaponCompPeek))
+            {
+                if (weaponCompPeek.MyGrid.CanHavePhysics() && weaponCompPeek.MyGrid.Physics == null)
+                {
+                    Log.Line($"physics not ready: {weaponCompPeek.MyGrid.DebugName}");
+                    return;
+                }
+            }
             WeaponComponent weaponComp;
             while (CompsToStart.TryDequeue(out weaponComp))
             {
@@ -385,7 +394,6 @@ namespace WeaponCore
                 {
                     CompsToRemove.Enqueue(weaponComp);
                     return;
-
                 }
                 if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
                 {
