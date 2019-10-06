@@ -4,6 +4,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Components;
@@ -36,7 +37,7 @@ namespace WeaponCore.Support
         internal MyEntity3DSoundEmitter RotationEmitter; 
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
-        internal bool InThisTerminal => Session.Instance.LastTerminalId == Turret.EntityId;
+        internal bool InThisTerminal => Session.Instance.LastTerminalId == MyCube.EntityId;
 
         internal MyFixedPoint MaxInventoryVolume;
         internal MyFixedPoint MaxInventoryMass;
@@ -88,7 +89,8 @@ namespace WeaponCore.Support
         internal MyPhysicsComponentBase Physics;
         internal MyWeaponPlatform Platform;
         internal MyObjectBuilder_UpgradeModule Ob;
-        internal IMyUpgradeModule Turret;
+        internal IMyLargeMissileTurret ControllableTurret;
+        internal IMyUpgradeModule AIOnlyTurret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
         //internal IMyGunObject<MyGunBase> Gun;
@@ -101,11 +103,12 @@ namespace WeaponCore.Support
         internal bool MultiInventory;
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
+        internal bool IsAIOnlyTurret;
         internal LogicSettings Set;
         internal LogicState State;
         //internal MyResourceSinkComponent Sink => MyCube.ResourceSink;
         internal MyResourceSinkComponent Sink;
-        public WeaponComponent(GridAi ai, MyCubeBlock myCube, IMyUpgradeModule turret)
+        public WeaponComponent(GridAi ai, MyCubeBlock myCube)
         {
             if (myCube == null)
                 Log.Line("Cube null");
@@ -117,7 +120,19 @@ namespace WeaponCore.Support
             MyCube = myCube;
 
             MyGrid = MyCube.CubeGrid;
-            Turret = turret;
+
+            if (myCube is IMyLargeMissileTurret)
+            {
+                ControllableTurret = myCube as IMyLargeMissileTurret;
+                IsAIOnlyTurret = false;
+            }
+
+            else if (myCube is IMyUpgradeModule)
+            {
+                AIOnlyTurret = myCube as IMyUpgradeModule;
+                IsAIOnlyTurret = true;
+            }
+
             //Gun = (IMyGunObject<MyGunBase>)MyCube;          
 
             BlockInventory = new MyInventory(0.384f,Vector3.Zero, MyInventoryFlags.CanReceive | MyInventoryFlags.CanSend);
@@ -131,8 +146,6 @@ namespace WeaponCore.Support
             {
                 m_useDefaultIcon = false
             };
-
-            
 
             MaxInventoryVolume = BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;

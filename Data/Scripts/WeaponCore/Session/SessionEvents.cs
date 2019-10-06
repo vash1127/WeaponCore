@@ -30,7 +30,6 @@ namespace WeaponCore
                 }
                
 
-                var weaponBase = myEntity as IMyUpgradeModule;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
@@ -39,7 +38,7 @@ namespace WeaponCore
                     lock (InitObj)
                         Init();
 
-                if (weaponBase != null)
+                if (myEntity is IMyUpgradeModule || myEntity is IMyLargeMissileTurret)
                 {
                     if (!Controls)
                     {
@@ -62,7 +61,7 @@ namespace WeaponCore
                             gridAi = new GridAi(cube.CubeGrid);
                             GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                         }
-                        var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
+                        var weaponComp = new WeaponComponent(gridAi, cube);
                         if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
                         {
                             if(!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))

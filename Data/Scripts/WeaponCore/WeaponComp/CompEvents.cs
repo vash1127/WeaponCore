@@ -18,7 +18,11 @@ namespace WeaponCore.Support
         {
             if (register)
             {
-                Turret.AppendingCustomInfo += AppendingCustomInfo;
+                if(IsAIOnlyTurret)
+                    AIOnlyTurret.AppendingCustomInfo += AppendingCustomInfo;
+                else
+                    ControllableTurret.AppendingCustomInfo += AppendingCustomInfo;
+
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
                 //BlockInventory.ContentsAdded += OnContentsAdded;
@@ -28,7 +32,11 @@ namespace WeaponCore.Support
             }
             else
             {
-                Turret.AppendingCustomInfo -= AppendingCustomInfo;
+                if (IsAIOnlyTurret)
+                    AIOnlyTurret.AppendingCustomInfo -= AppendingCustomInfo;
+                else
+                    ControllableTurret.AppendingCustomInfo -= AppendingCustomInfo;
+
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 //BlockInventory.ContentsAdded -= OnContentsAdded;
                 BlockInventory.ContentsChanged -= OnContentsChanged;

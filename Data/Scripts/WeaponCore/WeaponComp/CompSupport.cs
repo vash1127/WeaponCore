@@ -9,7 +9,11 @@ namespace WeaponCore.Support
     {
         internal void TerminalRefresh(bool update = true)
         {
-            Turret.RefreshCustomInfo();
+            if (IsAIOnlyTurret)
+                AIOnlyTurret.RefreshCustomInfo();
+            else
+                ControllableTurret.RefreshCustomInfo();
+
             if (update && InControlPanel)
             {
                  MyCube.UpdateTerminal();

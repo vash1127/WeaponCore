@@ -181,10 +181,20 @@ namespace WeaponCore.Support
 
             OnAddedToSceneTasks();
 
-            if(!Turret.Enabled)
+            if (IsAIOnlyTurret)
             {
-                foreach (var w in Platform.Weapons)
-                    w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                if (!AIOnlyTurret.Enabled)
+                {
+                    foreach (var w in Platform.Weapons)
+                        w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                }
+            }
+            else {
+                if (!ControllableTurret.Enabled)
+                {
+                    foreach (var w in Platform.Weapons)
+                        w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                }
             }
 
             MainInit = true;
@@ -230,10 +240,21 @@ namespace WeaponCore.Support
         {
             if (MyAPIGateway.Multiplayer.IsServer)
             {
-                if (Turret.Storage != null)
+                if (IsAIOnlyTurret)
                 {
-                    State.SaveState();
-                    Set.SaveSettings();
+                    if (AIOnlyTurret.Storage != null)
+                    {
+                        State.SaveState();
+                        Set.SaveSettings();
+                    }
+                }
+                else
+                {
+                    if (ControllableTurret.Storage != null)
+                    {
+                        State.SaveState();
+                        Set.SaveSettings();
+                    }
                 }
             }
             return false;

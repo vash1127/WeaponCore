@@ -19,7 +19,7 @@ namespace WeaponCore.Platform
         internal readonly bool Inited;
         internal MyWeaponPlatform(WeaponComponent comp)
         {
-            Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.Turret.BlockDefinition.SubtypeId]];
+            Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
 
             var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
             wCounter.Max = Structure.GridWeaponCap;

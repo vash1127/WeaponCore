@@ -62,10 +62,21 @@ namespace WeaponCore.Support
                 State = new LogicState(this);
             }
 
-            if (Turret.Storage == null)
+            if (IsAIOnlyTurret)
             {
-                //Log.Line("Storage null");
-                State.StorageInit();
+                if (AIOnlyTurret.Storage == null)
+                {
+                    //Log.Line("Storage null");
+                    State.StorageInit();
+                }
+            }
+            else
+            {
+                if (ControllableTurret.Storage == null)
+                {
+                    //Log.Line("Storage null");
+                    State.StorageInit();
+                }
             }
 
             if (Set == null)
