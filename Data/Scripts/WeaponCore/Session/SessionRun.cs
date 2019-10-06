@@ -69,7 +69,7 @@ namespace WeaponCore
                 if (Tick20) DsUtil.Start("");
                 if (!Hits.IsEmpty) ProcessHits();
                 DsUtil.Complete("damage", true);
-                if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
+                //if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
                 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }

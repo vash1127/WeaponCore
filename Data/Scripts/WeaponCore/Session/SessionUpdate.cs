@@ -144,7 +144,7 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-                    var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
+                    //var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
                     //var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
@@ -213,14 +213,7 @@ namespace WeaponCore
                         
                         if (comp.Charging) continue;
 
-                        //TODO Ammo fix gunBase
-                        /*if (ammoCheck)
-                        {
-                            if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
-                                AmmoPull(comp, w, false);
-                            else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.System.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
-                                AmmoPull(comp, w, true);
-                        }*/
+                       
                         if (!energyAmmo && w.CurrentAmmo == 0)
                         {
                             if (w.AmmoMagTimer == int.MaxValue)

@@ -12,8 +12,6 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal const uint SuspendAmmoCount = 300;
-        internal const uint UnSuspendAmmoCount = 1200;
         internal int NextMuzzle;
         internal static bool UiSet;
         internal volatile bool Casting;
@@ -81,8 +79,6 @@ namespace WeaponCore.Platform
         internal float areaEffectDmg;
         internal float detonateDmg;
         internal float LastHeat;
-        internal uint SuspendAmmoTick;
-        internal uint UnSuspendAmmoTick;
         internal uint ShotCounter;
         internal uint LastTargetTick;
         internal uint TargetCheckTick;
@@ -120,7 +116,6 @@ namespace WeaponCore.Platform
         internal bool IsTracking;
         internal bool WasLocked;
         internal bool IsAligned;
-        internal bool AmmoSuspend;
         internal bool AmmoFull;
         internal bool IsShooting;
         internal bool BarrelMove;

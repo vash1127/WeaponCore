@@ -7,7 +7,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        
+        /*
         private void UpdateBlockInventories()
         {
             InventoryChange change;
@@ -23,12 +23,12 @@ namespace WeaponCore
                     //if (!nextDefRaw.HasValue) return;
                 }
             }
-        }
+        }*/
 
         private static void AmmoPull(WeaponComponent comp, Weapon weapon, bool suspend)
         {
             //Log.Line($"[ammo pull] suspend:{suspend}(was:{weapon.AmmoSuspend}) weaponId:{weapon.WeaponId} - weaponDef:{weapon.System.AmmoDefId.SubtypeId.String} - Full:{weapon.AmmoFull} - weaponSuspendAge:{weapon.SuspendAmmoTick} - weaponUnSuspendAge:{weapon.UnSuspendAmmoTick} - multi:{comp.MultiInventory} - ");
-            weapon.AmmoSuspend = suspend;
+            /*weapon.AmmoSuspend = suspend;
 
             if (suspend) NextActiveAmmoDef(comp, weapon, true);
             else
@@ -42,9 +42,10 @@ namespace WeaponCore
             }
 
             if (suspend) comp.PullingAmmoCnt--;
-            else comp.PullingAmmoCnt++;
+            else comp.PullingAmmoCnt++;*/
         }
 
+        /*
         private static MyDefinitionId? NextActiveAmmoDef(WeaponComponent comp, Weapon oldWeapon, bool skipOld = false)
         {
             var ammoToWeaponIds = comp.Platform.Structure.AmmoToWeaponIds;
@@ -135,7 +136,7 @@ namespace WeaponCore
             //comp.BlockInventory.Constraint.Remove(comp.Gun.GunBase.CurrentAmmoMagazineId);
             //Log.Line($"[returning none] current:{comp.Gun.GunBase.CurrentAmmoMagazineId.SubtypeId.String} - foundFirst:{firstFound} - Full:{oldWeapon.AmmoFull} - foundValid:{validFound} - oldWeaponId:{oldWeapon.WeaponId} - oldSus/oldUnSus:{oldWeapon.SuspendAmmoTick}/{oldWeapon.UnSuspendAmmoTick} - oldAmmoSuspend:{oldWeapon.AmmoSuspend}");
             return null;
-        }
+        }*/
 
         internal static bool ComputeStorage(Weapon weapon)
         {
