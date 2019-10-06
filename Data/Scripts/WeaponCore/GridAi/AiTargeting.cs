@@ -156,7 +156,7 @@ namespace WeaponCore.Support
                         else w.SleepingTargets.Add(info.Target, newDir);
                     }
                     Session.Instance.CanShoot++;
-                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel, ref targetAccel)) continue;
+                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
 
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
 
@@ -172,7 +172,7 @@ namespace WeaponCore.Support
                 var character = info.Target as IMyCharacter;
                 if (character != null && !s.TrackCharacters) continue;
 
-                if (!Weapon.CanShootTarget(w, ref targetCenter, ref targetLinVel, ref targetAccel)) continue;
+                if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
                 Session.Instance.TopRayCasts++;
                 IHitInfo hitInfo;
@@ -192,8 +192,7 @@ namespace WeaponCore.Support
             }
             targetType = TargetType.None;
         }
-
-
+        
         private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)
         {
             if (system.TargetSubSystems)
@@ -216,19 +215,17 @@ namespace WeaponCore.Support
                             GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w);
                             if (target.Entity != null) return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, info, w)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w)) return true;
                     }
                 }
                 if (system.OnlySubSystems) return false;
             }
-            if (FindRandomBlock(system, ai, target, weaponPos, info, w)) return true;
-            return false;
+            return FindRandomBlock(system, ai, target, weaponPos, info, info.TypeDict[Any], w);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, Weapon w)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, List<MyCubeBlock> subSystemList, Weapon w)
         {
-            var blockList = info.TypeDict[Any];
-            var totalBlocks = blockList.Count;
+            var totalBlocks = subSystemList.Count;
 
             var topEnt = info.Target.GetTopMostParent();
             var entSphere = topEnt.PositionComp.WorldVolume;
@@ -253,7 +250,7 @@ namespace WeaponCore.Support
                 if (i < lastBlocks)
                     next = deck[i];
 
-                var block = blockList[next];
+                var block = subSystemList[next];
                 if (block.MarkedForClose) continue;
 
                 Session.Instance.BlockChecks++;
@@ -264,7 +261,7 @@ namespace WeaponCore.Support
                 if (turretCheck)
                 {
                     Session.Instance.CanShoot++;
-                    if (!Weapon.CanShootTarget(w, ref blockPos, ref targetLinVel, ref targetAccel))
+                    if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel))
                         continue;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
@@ -355,7 +352,7 @@ namespace WeaponCore.Support
                             Session.Instance.CanShoot++;
                             var castRay = false;
 
-                            if (Weapon.CanShootTarget(w, ref cubePos, ref targetLinVel, ref targetAccel))
+                            if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
                                 castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
 
                             if (castRay)
@@ -468,7 +465,7 @@ namespace WeaponCore.Support
             {
                 Session.Instance.ProjectileChecks++;
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
-                if (Weapon.CanShootTarget(w, ref lp.Position, ref lp.Velocity, ref lp.AccelVelocity))
+                if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity))
                 {
                     var needsCast = false;
                     for (int i = 0; i < ai.Obstructions.Count; i++)

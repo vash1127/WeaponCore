@@ -23,7 +23,7 @@ namespace WeaponCore.Projectiles
                 var valid = p.T.Target.Projectile != null;
                 if (valid && p.T.Target.Projectile.T.System == null)
                 {
-                    Log.Line($"projectile is invalid: {p.T.Target.Projectile.T.System == null} - {p.State} - {p.T.Target.Projectile.State}");
+                    Log.Line($"projectile is invalid: {p.T.Target.Projectile.T.System == null} - {p.State} - {p.T.Target.Projectile.State} - {p.T.Target.Projectile.T.BaseHealthPool}");
                     return null;
                 }
             }
@@ -33,8 +33,6 @@ namespace WeaponCore.Projectiles
             var found = false;
             var lineCheck = p.T.System.CollisionIsLine;
 
-            //Log.Line($"get all entities in line: LineCheck:{lineCheck} - ewarActive:{eWarActive} - ewarInactive:{eWarInactive} - jump:{jumpNullField} - Vel:{p.VelocityLengthSqr}");
-
             for (int i = 0; i < p.SegmentList.Count; i++)
             {
                 var ent = p.SegmentList[i].Element;
@@ -42,7 +40,7 @@ namespace WeaponCore.Projectiles
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
                 if (grid == null && p.EwarActive && p.AreaEffect != DotField && ent is IMyCharacter) continue;
-                if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) {continue;}
+                if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
                     var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
@@ -191,7 +189,7 @@ namespace WeaponCore.Projectiles
                 hitEntity = p.T.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
-                p.LastHitShield = hitEntity.EventType == Shield;
+                p.T.LastHitShield = hitEntity.EventType == Shield;
             }
             return hitEntity;
         }

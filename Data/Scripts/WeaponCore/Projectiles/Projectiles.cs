@@ -6,6 +6,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
@@ -128,6 +129,7 @@ namespace WeaponCore.Projectiles
                 p.Age++;
                 p.T.OnScreen = false;
                 p.Active = false;
+
                 switch (p.State)
                 {
                     case ProjectileState.Dead:
@@ -153,6 +155,7 @@ namespace WeaponCore.Projectiles
                         p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
                         break;
                 }
+
                 if (p.AccelLength > 0)
                 {
                     if (p.SmartsOn) p.RunSmart();
@@ -275,7 +278,6 @@ namespace WeaponCore.Projectiles
 
                         checkList.Clear();
                         CheckPool[poolId].Return(checkList);
-                        //UtilsStatic.CreateFakeExplosion(dInfo.DetonationRadius, p.Position, p.T.System);
                         p.HitEffects(true);
                     }
                 }
@@ -369,16 +371,7 @@ namespace WeaponCore.Projectiles
                         p.DisposeAmmoEffect(false, true);
                 }
 
-                if (p.HasTravelSound)
-                {
-                    if (!p.AmmoSound)
-                    {
-                        double dist;
-                        Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
-                        if (dist <= p.AmmoTravelSoundRangeSqr) p.AmmoSoundStart();
-                    }
-                    else p.TravelEmitter.SetPosition(p.Position);
-                }
+
 
                 if (p.DrawLine)
                 {
@@ -471,6 +464,5 @@ namespace WeaponCore.Projectiles
                 ProjectilePool[poolId].DeallocateAllMarked();
             }
         }
-
     }
 }
