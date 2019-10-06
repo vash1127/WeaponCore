@@ -126,8 +126,6 @@ namespace WeaponCore.Projectiles
             }
             foreach (var p in pool.Active)
             {
-                if (MyUtils.IsZero(p.Velocity) && p.Age > 0) Log.Line($"Age: {p.Age} - name:{p.T.System.WeaponName} - toTravelSqr:{p.DistanceToTravelSqr} - Traveled:{p.T.DistanceTraveled} - State:{p.State} - Speed:{p.Velocity.Length()} - Max:{p.MaxSpeed} - isProjectile:{p.T.Target.IsProjectile}");
-
                 p.Age++;
                 p.T.OnScreen = false;
                 p.Active = false;
@@ -373,16 +371,7 @@ namespace WeaponCore.Projectiles
                         p.DisposeAmmoEffect(false, true);
                 }
 
-                if (p.HasTravelSound)
-                {
-                    if (!p.AmmoSound)
-                    {
-                        double dist;
-                        Vector3D.DistanceSquared(ref p.Position, ref cameraPos, out dist);
-                        if (dist <= p.AmmoTravelSoundRangeSqr) p.AmmoSoundStart();
-                    }
-                    else p.TravelEmitter.SetPosition(p.Position);
-                }
+
 
                 if (p.DrawLine)
                 {

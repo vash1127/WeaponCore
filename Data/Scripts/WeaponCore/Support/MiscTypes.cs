@@ -31,6 +31,18 @@ namespace WeaponCore.Support
 
         internal readonly Target Target = new Target();
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
+        internal readonly MySoundPair FireSound = new MySoundPair();
+        internal readonly MySoundPair TravelSound = new MySoundPair();
+        internal readonly MySoundPair HitSound = new MySoundPair();
+        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal WeaponSystem.FiringSoundState FiringSoundState;
+        internal bool AmmoSound;
+        internal bool HasTravelSound;
+        internal bool HitSoundActive;
+        internal float AmmoTravelSoundRangeSqr;
+
         internal WeaponSystem System;
         internal GridAi Ai;
         internal MyEntity PrimeEntity;
@@ -68,8 +80,50 @@ namespace WeaponCore.Support
         internal bool Triggered;
         internal bool Cloaked;
         internal bool End;
+        internal bool ForceHit;
+        internal bool LastHitShield;
         internal ReSize ReSizing;
         internal DrawState Draw;
+
+        internal void SetupSounds()
+        {
+            if (!System.IsBeamWeapon && System.AmmoTravelSound)
+            {
+                HasTravelSound = true;
+                TravelSound.Init(System.Values.Audio.Ammo.TravelSound, false);
+            }
+            else HasTravelSound = false;
+
+            if (System.HitSound)
+            {
+                var hitSoundChance = System.Values.Audio.Ammo.HitPlayChance;
+                HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f));
+                if (HitSoundActive) HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
+            }
+
+            if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
+            {
+                FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
+                FireSoundStart();
+            }
+
+            FiringSoundState = System.FiringSound;
+            AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
+        }
+
+        internal void FireSoundStart()
+        {
+            FireEmitter.SetPosition(Origin);
+            FireEmitter.PlaySound(FireSound, true);
+        }
+
+        internal void AmmoSoundStart()
+        {
+            TravelEmitter.SetPosition(Position);
+            TravelEmitter.PlaySound(TravelSound, true);
+
+            AmmoSound = true;
+        }
 
         internal void Complete(HitEntity hitEntity, DrawState draw)
         {
@@ -151,6 +205,11 @@ namespace WeaponCore.Support
             WeaponCache = null;
             Triggered = false;
             End = false;
+            AmmoSound = false;
+            HitSoundActive = false;
+            HasTravelSound = false;
+            ForceHit = false;
+            LastHitShield = false;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
             GrowDistance = 0;

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using VRage.Game;
 using VRage.Utils;
 using VRageMath;
@@ -16,6 +15,30 @@ namespace WeaponCore
             for (int i = 0; i < drawList.Count; i++)
             {
                 var t = drawList[i];
+
+                if (t.HasTravelSound)
+                {
+                    if (!t.AmmoSound)
+                    {
+                        double dist;
+                        Vector3D.DistanceSquared(ref t.Position, ref CameraPos, out dist);
+                        if (dist <= t.AmmoTravelSoundRangeSqr) t.AmmoSoundStart();
+                    }
+                    else t.TravelEmitter.SetPosition(t.Position);
+                }
+
+                if (t.HitSoundActive)
+                {
+                    if (t.ForceHit || !t.LastHitShield || t.System.Values.Audio.Ammo.HitPlayShield)
+                    {
+                        t.ForceHit = false;
+                        //t.LastHitShield = false;
+                        t.HitEmitter.SetPosition(t.Position);
+                        t.HitEmitter.CanPlayLoopSounds = false;
+                        t.HitEmitter.PlaySound(t.HitSound, true);
+                    }
+                }
+
                 if (t.PrimeEntity != null)
                 {
                     if (t.Draw != Trajectile.DrawState.Last && !t.PrimeEntity.InScene && !t.Cloaked)

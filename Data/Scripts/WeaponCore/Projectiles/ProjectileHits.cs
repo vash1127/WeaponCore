@@ -23,7 +23,7 @@ namespace WeaponCore.Projectiles
                 var valid = p.T.Target.Projectile != null;
                 if (valid && p.T.Target.Projectile.T.System == null)
                 {
-                    Log.Line($"projectile is invalid: {p.T.Target.Projectile.T.System == null} - {p.State} - {p.T.Target.Projectile.State}");
+                    Log.Line($"projectile is invalid: {p.T.Target.Projectile.T.System == null} - {p.State} - {p.T.Target.Projectile.State} - {p.T.Target.Projectile.T.BaseHealthPool}");
                     return null;
                 }
             }
@@ -189,7 +189,7 @@ namespace WeaponCore.Projectiles
                 hitEntity = p.T.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
-                p.LastHitShield = hitEntity.EventType == Shield;
+                p.T.LastHitShield = hitEntity.EventType == Shield;
             }
             return hitEntity;
         }

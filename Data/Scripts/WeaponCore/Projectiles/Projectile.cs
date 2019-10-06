@@ -20,7 +20,6 @@ namespace WeaponCore.Projectiles
         internal EntityState ModelState;
         internal MyEntityQueryType PruneQuery;
         internal AreaEffectType AreaEffect;
-        internal WeaponSystem.FiringSoundState FiringSoundState;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal Vector3D Direction;
         internal Vector3D AccelDir;
@@ -59,7 +58,6 @@ namespace WeaponCore.Projectiles
         internal double VisualStep;
         internal double DeadZone;
         internal float DesiredSpeed;
-        internal float AmmoTravelSoundRangeSqr;
         internal float MaxTrajectory;
         internal int PoolId;
         internal int Age;
@@ -74,9 +72,8 @@ namespace WeaponCore.Projectiles
         internal int PulseInterval;
         internal bool EnableAv;
         internal bool DrawLine;
-        internal bool AmmoSound;
+
         internal bool FirstOffScreen;
-        internal bool HasTravelSound;
         internal bool ConstantSpeed;
         internal bool PositionChecked;
         internal bool MoveToAndActivate;
@@ -98,19 +95,12 @@ namespace WeaponCore.Projectiles
         internal bool MineTriggered;
         internal bool Miss;
         internal bool Active;
-        internal bool HitSoundActive;
         internal bool HitParticleActive;
-        internal bool LastHitShield;
         internal Trajectile T = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
-        internal MySoundPair FireSound = new MySoundPair();
-        internal MySoundPair TravelSound = new MySoundPair();
-        internal MySoundPair HitSound = new MySoundPair();
         internal Projectiles Manager;
-        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
@@ -146,16 +136,13 @@ namespace WeaponCore.Projectiles
             ParticleLateStart = false;
             T.OnScreen = true;
             FirstOffScreen = true;
-            AmmoSound = false;
             PositionChecked = false;
             EwarActive = false;
             MineSeeking = false;
             MineActivated = false;
             MineTriggered = false;
             T.Cloaked = false;
-            HitSoundActive = false;
             HitParticleActive = false;
-            LastHitShield = false;
             EndStep = 0;
             T.PrevDistanceTraveled = 0;
             T.DistanceTraveled = 0;
@@ -247,8 +234,7 @@ namespace WeaponCore.Projectiles
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
             PickTarget = LockedTarget && T.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
-            FiringSoundState = T.System.FiringSound;
-            AmmoTravelSoundRangeSqr = T.System.AmmoTravelSoundDistSqr;
+
             AreaEffect = T.System.Values.Ammo.AreaEffect.AreaEffect;
             Ewar = AreaEffect > (AreaEffectType) 2;
             EwarEffect = AreaEffect > (AreaEffectType) 3;
@@ -262,29 +248,11 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                if (!T.System.IsBeamWeapon && T.System.AmmoTravelSound)
-                {
-                    HasTravelSound = true;
-                    TravelSound.Init(T.System.Values.Audio.Ammo.TravelSound, false);
-                }
-                else HasTravelSound = false;
-
-                if (T.System.HitSound)
-                {
-                    var hitSoundChance = T.System.Values.Audio.Ammo.HitPlayChance;
-                    HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f)); 
-                    if (HitSoundActive) HitSound.Init(T.System.Values.Audio.Ammo.HitSound, false);
-                }
-
+                T.SetupSounds();
                 if (T.System.HitParticle && !T.System.IsBeamWeapon)
                 {
                     var hitPlayChance = T.System.Values.Graphics.Particles.Hit.Extras.HitPlayChance;
                     HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
-                }
-                if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
-                {
-                    FireSound.Init(T.System.Values.Audio.HardPoint.FiringSound, false);
-                    FireSoundStart();
                 }
             }
 
@@ -374,19 +342,6 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal void FireSoundStart()
-        {
-            FireEmitter.SetPosition(T.Origin);
-            FireEmitter.PlaySound(FireSound, true);
-        }
-
-        internal void AmmoSoundStart()
-        {
-            TravelEmitter.SetPosition(Position);
-            TravelEmitter.PlaySound(TravelSound, true);
-
-            AmmoSound = true;
-        }
 
         internal bool Intersected(Projectile p, List<Trajectile> drawList, HitEntity hitEntity)
         {
@@ -774,15 +729,7 @@ namespace WeaponCore.Projectiles
             {
                 if (force) LastHitPos = Position;
                 if (HitParticleActive) PlayHitParticle();
-                if (HitSoundActive)
-                {
-                    if (force || T.System.Values.Audio.Ammo.HitPlayShield || !LastHitShield)
-                    {
-                        HitEmitter.SetPosition(Position);
-                        HitEmitter.CanPlayLoopSounds = false;
-                        HitEmitter.PlaySound(HitSound, true);
-                    }
-                }
+                T.ForceHit = force;
             }
             Colliding = false;
         }
@@ -833,7 +780,7 @@ namespace WeaponCore.Projectiles
             if (HitEffect != null) DisposeHitEffect(false);
             if (LastHitPos.HasValue)
             {
-                if (!T.System.Values.Graphics.Particles.Hit.ApplyToShield && LastHitShield)
+                if (!T.System.Values.Graphics.Particles.Hit.ApplyToShield && T.LastHitShield)
                     return;
 
                 var pos = LastHitPos.Value;
@@ -910,7 +857,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (T.System.AmmoParticle) DisposeAmmoEffect(false, false);
                     HitEffects();
-                    if (AmmoSound) TravelEmitter.StopSound(false, true);
+                    //if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
                 State = ProjectileState.Dead;
                 T.Target.IsProjectile = false;
