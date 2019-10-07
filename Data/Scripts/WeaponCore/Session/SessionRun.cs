@@ -148,12 +148,13 @@ namespace WeaponCore
                     ProcessAnimations();
                 DsUtil.Complete("animations", true);
 
+
                 if (!CompsToStart.IsEmpty) StartComps();
 
                 if (!CompsToRemove.IsEmpty) RemoveComps();
 
                 if (!PrefabCubesToStart.IsEmpty) QueuePrefabComps();
-
+                
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

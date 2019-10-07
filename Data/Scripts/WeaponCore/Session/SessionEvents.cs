@@ -19,36 +19,38 @@ namespace WeaponCore
             {
                 var cube = myEntity as MyCubeBlock;
 
-                if (cube == null) return;
-
-                var targeting = cube.CubeGrid?.Components?.Get<MyGridTargeting>() as CoreTargeting;
-
-                if (targeting == null && cube.CubeGrid != null) {
-                    targeting = new CoreTargeting();
-                    cube.CubeGrid.Components.Remove<MyGridTargeting>();
-                    cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
-                }
-               
-
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
-
+                if (myEntity.IsPreview || cube == null || cube.CubeGrid.IsPreview) return;
+               
                 if (!Inited)
                     lock (InitObj)
                         Init();
 
+                var isCore = false;
                 if (myEntity is IMyUpgradeModule || myEntity is IMyLargeMissileTurret)
                 {
-                    if (!Controls)
+                    if (!UpgradeControls && myEntity is IMyUpgradeModule)
                     {
-                        Controls = true;
                         lock (InitObj)
-                            MyAPIGateway.Utilities.InvokeOnGameThread(CreateLogicElements);
+                        {
+                            if (!UpgradeControls)
+                                MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyUpgradeModule>);
+                        }
+                        UpgradeControls = true;
                     }
-
-                    if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
+                    if (!TurretControls && myEntity is IMyUpgradeModule)
+                    {
+                        lock (InitObj)
+                        {
+                            if (!TurretControls)
+                                MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyLargeMissileTurret>);
+                        }
+                        TurretControls = true;
+                    }
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+                    isCore = true;
 
                     //Log.Line("here");
 
@@ -70,6 +72,16 @@ namespace WeaponCore
                             CompsToStart.Enqueue(weaponComp);
                         }
                     }
+                }
+
+                //replace Targeting on all grids to improve lock speed, and handle grid locking
+                var targeting = cube.CubeGrid?.Components?.Get<MyGridTargeting>() as CoreTargeting;
+
+                if (targeting == null && cube.CubeGrid != null && !isCore)
+                {
+                    targeting = new CoreTargeting();
+                    cube.CubeGrid.Components.Remove<MyGridTargeting>();
+                    cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
@@ -103,7 +115,5 @@ namespace WeaponCore
 
             }
         }
-
-
     }
 }

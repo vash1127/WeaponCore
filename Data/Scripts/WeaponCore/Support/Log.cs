@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.IO;
 using Sandbox.ModAPI;
 
@@ -9,6 +10,8 @@ namespace WeaponCore.Support
         private static Log _instance = null;
         private TextWriter _file = null;
         private string _fileName = "";
+
+        private static ConcurrentQueue<string[]> threadedLineQueue = new ConcurrentQueue<string[]>();
 
         private Log()
         {
@@ -98,12 +101,28 @@ namespace WeaponCore.Support
             }
         }
 
+        public static void ThreadedWrite(string logLine)
+        {
+            threadedLineQueue.Enqueue(new string[] { $"Actual Time: {DateTime.Now:MM-dd-yy_HH-mm-ss-fff -}", logLine });
+            MyAPIGateway.Utilities.InvokeOnGameThread(WriteLog);
+        }
+
+        private static void WriteLog() {
+            string[] line;
+            while (threadedLineQueue.TryDequeue(out line))
+            {
+                Line(line[0] + line[1]);
+            }
+
+        }
+
         public static void Close()
         {
             try
             {
                 if (GetInstance()._file != null)
                 {
+                    threadedLineQueue.Clear();
                     GetInstance()._file.Flush();
                     GetInstance()._file.Close();
                 }

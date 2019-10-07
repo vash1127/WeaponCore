@@ -15,6 +15,7 @@ using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
 using VRage.ObjectBuilders;
 using System.Linq;
+using Sandbox.Game.EntityComponents;
 
 namespace WeaponCore
 {
@@ -381,35 +382,24 @@ namespace WeaponCore
             WeaponComponent weaponCompPeek;
             if (CompsToStart.TryPeek(out weaponCompPeek))
             {
-                if (weaponCompPeek.MyGrid.CanHavePhysics() && weaponCompPeek.MyGrid.Physics == null)
+                if (weaponCompPeek.MyCube.CubeGrid.CanHavePhysics() && weaponCompPeek.MyCube.CubeGrid.Physics == null && !weaponCompPeek.MyGrid.MarkedForClose)
                 {
-                    Log.Line($"physics not ready: {weaponCompPeek.MyGrid.DebugName}");
+                    //Log.Line($"physics not ready: {weaponCompPeek.MyCube.CubeGrid.DebugName}");
                     return;
                 }
             }
             WeaponComponent weaponComp;
             while (CompsToStart.TryDequeue(out weaponComp))
             {
-                if (weaponComp.MyCube.CubeGrid.Physics == null)
-                {
+                if (weaponComp.MyGrid.MarkedForClose)
                     CompsToRemove.Enqueue(weaponComp);
-                    return;
-                }
-                if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
-                {
-                    Log.Line("comp found");
-
-                    CompsToRemove.Enqueue(weaponComp);
-
-                    OnEntityCreate(weaponComp.MyCube);
-                }
                 else
                 {
 
                     weaponComp.MyCube.Components.Add(weaponComp);
                     weaponComp.OnAddedToScene();
                     weaponComp.Ai.FirstRun = true;
-                    //Log.Line($"added to comp");
+                    Log.Line($"added to comp");
                 }
             }
         }

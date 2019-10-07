@@ -122,7 +122,7 @@ namespace WeaponCore.Platform
                 targetLinVel = topMostEnt.Physics.LinearVelocity;
                 targetAccel = topMostEnt.Physics.LinearAcceleration;
             }
-            if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3D.Zero;
+            if (Vector3D.IsZero(targetLinVel, 5E-04)) targetLinVel = Vector3D.Zero;
 
             if (weapon.Prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
@@ -134,7 +134,6 @@ namespace WeaponCore.Platform
 
             weapon.TargetPos = targetPos;
             var targetDir = targetPos - weapon.MyPivotPos;
-            targetDir.Normalize();
 
             var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
             var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
@@ -176,16 +175,10 @@ namespace WeaponCore.Platform
                     weapon.ElZeroCrossCount = 0;
 
                 if (weapon.AzZeroCrossCount > 1)
-                {
                     azDiff = (azDiff + weapon.LastAzDiff) * .5;
-                    Log.Line("AZBounce");
-                }
 
                 if (weapon.ElZeroCrossCount > 1)
-                {
                     elDiff = (elDiff + weapon.LastElDiff) * .5;
-                    Log.Line("ElBounce");
-                }
 
                 weapon.LastAzDiff = azDiff;
                 weapon.LastElDiff = elDiff;

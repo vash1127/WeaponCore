@@ -10,6 +10,7 @@ using Sandbox.Game.Entities;
 using WeaponCore.Control;
 using Sandbox.Game;
 using VRage.Input;
+using SpaceEngineers.Game.ModAPI;
 
 namespace WeaponCore
 {
@@ -22,20 +23,20 @@ namespace WeaponCore
             
         }
 
-        public void CreateLogicElements()
+        public void CreateTerminalUI<T>() where T : IMyTerminalBlock
         {
             try
             {
-                if (Controls) return;
-                Controls = true;
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
-                //TerminalHelpers.AlterActions<IMyUpgradeModule>();
-                //TerminalHelpers.AlterControls<IMyUpgradeModule>();
+                if(typeof(T) == typeof(IMyLargeTurretBase))
+                    TerminalHelpers.AlterActions<IMyLargeMissileTurret>();
+
+                TerminalHelpers.AlterControls<T>();
 
                 if (WepControl) return;
 
-                TerminalHelpers.Separator<IMyUpgradeModule>(0, "WC_sep0");
+                TerminalHelpers.Separator<T>(0, "WC_sep0");
 
                 var wepIDs = new HashSet<int>();
                 foreach (KeyValuePair<MyStringHash, WeaponStructure> wp in WeaponPlatforms)
@@ -50,12 +51,12 @@ namespace WeaponCore
                         else
                             continue;
 
-                        TerminalHelpers.AddWeaponOnOff<IMyUpgradeModule>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled);
-                        CreateShootActionSet<IMyUpgradeModule>(wepName, wepID);
+                        TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled);
+                        CreateShootActionSet<T>(wepName, wepID);
                     }
                 }
 
-                var action = MyAPIGateway.TerminalControls.CreateAction<IMyUpgradeModule>($"WC_Shoot_Click");
+                var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
                 action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
                 action.Name = new StringBuilder($"Activate Mouse Shoot");
                 action.Action = delegate (IMyTerminalBlock blk) {
@@ -84,18 +85,18 @@ namespace WeaponCore
                 action.Enabled = (b) => WepUi.CoreWeaponEnableCheck(b, 0);
                 action.ValidForGroups = true;
 
-                MyAPIGateway.TerminalControls.AddAction<IMyUpgradeModule>(action);
+                MyAPIGateway.TerminalControls.AddAction<T>(action);
 
-                TerminalHelpers.Separator<IMyUpgradeModule>(0, "WC_sep1");
+                TerminalHelpers.Separator<T>(0, "WC_sep1");
 
-                TerminalHelpers.AddWeaponOnOff<IMyUpgradeModule>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
 
                 
-                TerminalHelpers.AddSlider<IMyUpgradeModule>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<T>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps, WepUi.CoreWeaponEnableCheck);
 
-                TerminalHelpers.AddSlider<IMyUpgradeModule>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<T>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
 
-                TerminalHelpers.AddCheckbox<IMyUpgradeModule>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
 
                 WepControl = true;
             }

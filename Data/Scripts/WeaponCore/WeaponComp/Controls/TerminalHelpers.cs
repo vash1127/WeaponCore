@@ -16,7 +16,7 @@ namespace WeaponCore.Control
 {
     public static class TerminalHelpers
     {
-        internal static bool AlterActions<T>() where T : IMyUpgradeModule
+        internal static bool AlterActions<T>() where T : IMyLargeMissileTurret
         {
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
@@ -81,7 +81,7 @@ namespace WeaponCore.Control
             return false;
         }
 
-        internal static bool AlterControls<T>() where T : IMyUpgradeModule
+        internal static bool AlterControls<T>()
         {
             List<IMyTerminalControl> controls;
             MyAPIGateway.TerminalControls.GetControls<T>(out controls);

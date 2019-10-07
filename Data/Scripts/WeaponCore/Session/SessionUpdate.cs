@@ -89,7 +89,7 @@ namespace WeaponCore
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
 
-                        //Log.Line("w.TargetWasExpired != w.Target.Expired");
+                        //Log.Line($"{w.System.WeaponName} w.TargetWasExpired: {w.TargetWasExpired} w.Target.Expired: {w.Target.Expired}");
 
                         if (w.TurretMode && comp.State.Value.Online)
                         {
@@ -121,7 +121,7 @@ namespace WeaponCore
 
                         //Log.Line($"w.AiReady: {w.AiReady} w.SeekTarget: {w.SeekTarget}");
 
-                        if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading) gridAi.Ready = true;
+                        if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading || w.ReturnHome) gridAi.Ready = true;
                     }
                 }
             }
@@ -136,7 +136,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if ((!gridAi.Ready && !gridAi.ReturnHome) || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
@@ -149,7 +149,7 @@ namespace WeaponCore
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
-                    if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || (!gridAi.Ready && !comp.ReturnHome)) continue;
+                    if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || !gridAi.Ready) continue;
 
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
@@ -170,7 +170,7 @@ namespace WeaponCore
                                 DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.CornflowerBlue, 0.05f);
                         }
 
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || (!gridAi.Ready && !w.Reloading))
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || !gridAi.Ready)
                         {
                             if (w.ReturnHome)
                                 w.ReturnHome = w.TurretHomePosition();
