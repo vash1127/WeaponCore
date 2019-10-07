@@ -167,17 +167,17 @@ namespace WeaponCore.Platform
                 if (weapon.LastAzDiff > 0 && azDiff < 0 || azDiff > 0 && weapon.LastAzDiff < 0)
                     weapon.AzZeroCrossCount++;
                 else
-                    weapon.AzZeroCrossCount = 0;
+                    weapon.AzZeroCrossCount = weapon.AzZeroCrossCount - 1 > 0 ? weapon.AzZeroCrossCount - 1 : 0;
 
                 if (weapon.LastElDiff > 0 && elDiff < 0 || elDiff > 0 && weapon.LastElDiff < 0)
                     weapon.ElZeroCrossCount++;
                 else
-                    weapon.ElZeroCrossCount = 0;
+                    weapon.ElZeroCrossCount = weapon.ElZeroCrossCount - 1 > 0 ? weapon.ElZeroCrossCount - 1 : 0;
 
-                if (weapon.AzZeroCrossCount > 1)
+                if (weapon.AzZeroCrossCount > 2)
                     azDiff = (azDiff + weapon.LastAzDiff) * .5;
 
-                if (weapon.ElZeroCrossCount > 1)
+                if (weapon.ElZeroCrossCount > 2)
                     elDiff = (elDiff + weapon.LastElDiff) * .5;
 
                 weapon.LastAzDiff = azDiff;
