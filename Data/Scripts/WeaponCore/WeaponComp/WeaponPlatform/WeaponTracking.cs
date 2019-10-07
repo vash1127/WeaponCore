@@ -197,7 +197,14 @@ namespace WeaponCore.Platform
                 if (aim)
                 {
                     weapon.LastTrackedTick = Session.Instance.Tick;
-                    weapon.AimBarrel(azDiff, elDiff);
+
+                    if (weapon.Comp.IsAIOnlyTurret)
+                        weapon.AimBarrel(azDiff, elDiff);
+                    else
+                    {
+                        weapon.Comp.ControllableTurret.Azimuth = (float)newAz;
+                        weapon.Comp.ControllableTurret.Elevation = (float)newEl;
+                    }
                 }
                 
             }
