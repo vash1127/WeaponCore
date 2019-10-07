@@ -163,7 +163,7 @@ namespace WeaponCore.Platform
                 var azLocked = !(azDiff < 0 || azDiff > 0);
                 var elLocked = !(elDiff < 0 || elDiff > 0);
 
-                #region Debounce for rapid small movements causing twitch, sub 1 deviationAngle
+                #region Debounce for rapid small movements causing twitch
 
                 if (weapon.LastAzDiff > 0 && azDiff < 0 || azDiff > 0 && weapon.LastAzDiff < 0)
                     weapon.AzZeroCrossCount++;
