@@ -202,8 +202,8 @@ namespace WeaponCore.Platform
                         weapon.AimBarrel(azDiff, elDiff);
                     else
                     {
-                        weapon.Comp.ControllableTurret.Azimuth = (float)newAz;
-                        weapon.Comp.ControllableTurret.Elevation = (float)newEl;
+                        weapon.Azimuth = weapon.Comp.ControllableTurret.Azimuth = (float)newAz;
+                        weapon.Elevation = weapon.Comp.ControllableTurret.Elevation = (float)newEl;
                     }
                 }
                 
