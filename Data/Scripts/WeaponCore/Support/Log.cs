@@ -103,7 +103,7 @@ namespace WeaponCore.Support
 
         public static void ThreadedWrite(string logLine)
         {
-            threadedLineQueue.Enqueue(new string[] { $"Actual Time: {DateTime.Now:MM-dd-yy_HH-mm-ss-fff -}", logLine });
+            threadedLineQueue.Enqueue(new string[] { $"Actual Time: {DateTime.Now:MM-dd-yy_HH-mm-ss-fff -} ", logLine });
             MyAPIGateway.Utilities.InvokeOnGameThread(WriteLog);
         }
 
