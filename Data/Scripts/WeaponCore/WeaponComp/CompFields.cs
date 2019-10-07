@@ -42,7 +42,6 @@ namespace WeaponCore.Support
         internal MyFixedPoint MaxInventoryVolume;
         internal MyFixedPoint MaxInventoryMass;
         internal uint LastAmmoUnSuspendTick;
-        internal uint LastTrackedTick;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
         internal uint lastInventoryChangedTick;

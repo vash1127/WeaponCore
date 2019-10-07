@@ -75,13 +75,16 @@ namespace WeaponCore.Platform
                 };
 
                 var weapon = Weapons[i];
-                if (weapon.System.Values.HardPoint.Block.TurretController && comp.TrackingWeapon == null)
+                if (weapon.System.Values.HardPoint.Block.TurretController)
                 {
                     weapon.TrackingAi = true;
-                    comp.Debug = weapon.System.Values.HardPoint.Block.Debug;
+                    comp.Debug = weapon.System.Values.HardPoint.Block.Debug || comp.Debug;
                     weapon.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
                     weapon.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
-                    comp.TrackingWeapon = weapon;
+
+                    if(weapon.System.Values.HardPoint.Block.PrimaryTracking && comp.TrackingWeapon == null)
+                        comp.TrackingWeapon = weapon;
+
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
                     {
                         comp.RotationEmitter = new MyEntity3DSoundEmitter(comp.MyCube, true, 1f);

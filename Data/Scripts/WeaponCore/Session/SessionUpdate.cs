@@ -89,7 +89,7 @@ namespace WeaponCore
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
 
-                        Log.Line("w.TargetWasExpired != w.Target.Expired");
+                        //Log.Line("w.TargetWasExpired != w.Target.Expired");
 
                         if (w.TurretMode && comp.State.Value.Online)
                         {
@@ -119,7 +119,7 @@ namespace WeaponCore
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
                             gridAi.Reloading = true;
 
-                        Log.Line($"w.AiReady: {w.AiReady} w.SeekTarget: {w.SeekTarget}");
+                        //Log.Line($"w.AiReady: {w.AiReady} w.SeekTarget: {w.SeekTarget}");
 
                         if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading) gridAi.Ready = true;
                     }
@@ -274,7 +274,7 @@ namespace WeaponCore
                         {
                             if (w.IsTracking && comp.AiMoving && !comp.RotationEmitter.IsPlaying)
                                 comp.RotationEmitter.PlaySound(comp.RotationSound, true, false, false, false, false, false);
-                            else if ((!w.IsTracking || !comp.AiMoving && Tick - comp.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
+                            else if ((!w.IsTracking || !comp.AiMoving && Tick - w.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
                         var manualShoot = w.ManualShoot;

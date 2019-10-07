@@ -108,6 +108,7 @@ namespace WeaponCore.Support
         [ProtoMember(10)] internal int MinAzimuth;
         [ProtoMember(11)] internal int MaxElevation;
         [ProtoMember(12)] internal int MinElevation;
+        [ProtoMember(13)] internal bool PrimaryTracking;
     }
 
     [ProtoContract]
