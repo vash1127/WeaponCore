@@ -391,12 +391,11 @@ namespace WeaponCore
             WeaponComponent weaponComp;
             while (CompsToStart.TryDequeue(out weaponComp))
             {
-                if (weaponComp.MyGrid.MarkedForClose)
+                if (weaponComp.Ai.MyGrid.MarkedForClose)
                     CompsToRemove.Enqueue(weaponComp);
                 else
                 {
                     weaponComp.MyCube.Components.Add(weaponComp);
-                    weaponComp.OnAddedToScene();
                     weaponComp.Ai.FirstRun = true;
                     Log.Line($"added to comp");
                 }
@@ -764,14 +763,6 @@ namespace WeaponCore
 
             weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
-
-        internal void ReturnHome(object o) {
-            var weapon = o as Weapon;
-            if (weapon == null) return;
-
-            weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
-        }
-
         #endregion
     }
 }

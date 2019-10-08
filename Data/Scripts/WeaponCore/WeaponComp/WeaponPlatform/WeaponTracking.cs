@@ -1,7 +1,4 @@
-﻿using Sandbox.Game.Weapons;
-using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
-using System;
+﻿using System;
 using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;

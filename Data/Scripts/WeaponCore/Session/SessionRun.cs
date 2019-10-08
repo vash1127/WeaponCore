@@ -192,6 +192,7 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
+                MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
@@ -221,7 +222,6 @@ namespace WeaponCore
             
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
-
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
             MyVisualScriptLogicProvider.PrefabSpawnedDetailed -= OnPrefabSpawn;

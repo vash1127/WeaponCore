@@ -46,7 +46,6 @@ namespace WeaponCore
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
                         else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile)) w.Target.Reset();
                         else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable)
-                        {
                             if (!Weapon.TrackingTarget(w, w.Target, !gunner))
                                 w.Target.Expired = true;
                         else
@@ -204,7 +203,7 @@ namespace WeaponCore
                         if (comp.Charging) continue;
 
                        
-                        if (!energyAmmo && w.CurrentAmmo == 0)
+                        if (!w.System.EnergyAmmo && w.CurrentAmmo == 0)
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
                             {

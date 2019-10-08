@@ -12,14 +12,6 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent : MyEntityComponentBase
     {
-        public override void OnAddedToContainer()
-        {
-            base.OnAddedToContainer();
-            if (Container.Entity.InScene)
-            {
-            }
-        }
-
         public override void OnBeforeRemovedFromContainer()
         {
 
@@ -30,33 +22,36 @@ namespace WeaponCore.Support
             base.OnBeforeRemovedFromContainer();
         }
 
-        public override void OnAddedToScene()
+        public override void OnAddedToContainer()
         {
-            try
+            base.OnAddedToContainer();
+            if (Container.Entity.InScene)
             {
-                base.OnAddedToScene();
-                if (MainInit)
+                try
                 {
-                    GridAi gridAi;
-                    if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
+                    if (MainInit)
                     {
-                        gridAi = new GridAi(MyCube.CubeGrid);
-                        Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
-                    }
-                    Ai = gridAi;
-                    PowerInit();
-                    RegisterEvents();
-                    if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
-                        OnAddedToSceneTasks();
+                        GridAi gridAi;
+                        if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
+                        {
+                            gridAi = new GridAi(MyCube.CubeGrid);
+                            Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
+                        }
+                        Ai = gridAi;
+                        PowerInit();
+                        RegisterEvents();
+                        if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
+                            OnAddedToSceneTasks();
 
-                    return;
+                        return;
+                    }
+                    _isServer = Session.Instance.IsServer;
+                    _isDedicated = Session.Instance.DedicatedServer;
+                    _mpActive = Session.Instance.MpActive;
+                    InitPlatform();
                 }
-                _isServer = Session.Instance.IsServer;
-                _isDedicated = Session.Instance.DedicatedServer;
-                _mpActive = Session.Instance.MpActive;
-                InitPlatform();
+                catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
             }
-            catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
 
         public void InitPlatform()
@@ -64,8 +59,7 @@ namespace WeaponCore.Support
             Platform = new MyWeaponPlatform(this);
             if (!Platform.Inited)
             {
-                WeaponComponent removed;
-                Ai.WeaponBase.TryRemove(MyCube, out removed);
+                Session.Instance.CompsToRemove.Enqueue(this);
                 Log.Line("init platform returned");
                 return;
             }

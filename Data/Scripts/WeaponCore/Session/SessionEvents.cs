@@ -23,12 +23,22 @@ namespace WeaponCore
                 if (placer != null && Placer == null) Placer = placer;
 
                 if (myEntity.IsPreview || cube == null || cube.CubeGrid.IsPreview) return;
-               
+
+                //replace Targeting on all grids to improve lock speed, and handle grid locking
+                var targeting = cube.CubeGrid?.Components?.Get<MyGridTargeting>() as CoreTargeting;
+
+                if (targeting == null && cube.CubeGrid != null)
+                {
+                    targeting = new CoreTargeting();
+                    cube.CubeGrid.Components.Remove<MyGridTargeting>();
+                    cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
+                }
+
+
                 if (!Inited)
                     lock (InitObj)
                         Init();
 
-                var isCore = false;
                 if (myEntity is IMyUpgradeModule || myEntity is IMyLargeMissileTurret)
                 {
                     if (!UpgradeControls && myEntity is IMyUpgradeModule)
@@ -50,7 +60,6 @@ namespace WeaponCore
                         TurretControls = true;
                     }
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
-                    isCore = true;
 
                     //Log.Line("here");
 
@@ -72,16 +81,6 @@ namespace WeaponCore
                             CompsToStart.Enqueue(weaponComp);
                         }
                     }
-                }
-
-                //replace Targeting on all grids to improve lock speed, and handle grid locking
-                var targeting = cube.CubeGrid?.Components?.Get<MyGridTargeting>() as CoreTargeting;
-
-                if (!isCore && targeting == null && cube.CubeGrid != null)
-                {
-                    targeting = new CoreTargeting();
-                    cube.CubeGrid.Components.Remove<MyGridTargeting>();
-                    cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
