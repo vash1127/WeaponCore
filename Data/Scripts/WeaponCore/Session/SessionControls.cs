@@ -24,8 +24,6 @@ namespace WeaponCore
         {
             try
             {
-                if (Controls) return;
-                Controls = true;
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
                 TerminalHelpers.AlterActions<IMyLargeTurretBase>();

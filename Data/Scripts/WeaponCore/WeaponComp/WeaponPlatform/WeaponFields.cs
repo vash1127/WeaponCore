@@ -75,7 +75,6 @@ namespace WeaponCore.Platform
         internal uint ShotCounter;
         internal uint LastTargetTick;
         internal uint TargetCheckTick;
-        internal uint LastTargetLock;
         internal uint FirstFireDelay;
         internal uint OffDelay;
         internal int RateOfFire;

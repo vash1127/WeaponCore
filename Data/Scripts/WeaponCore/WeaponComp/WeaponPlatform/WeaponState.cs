@@ -5,6 +5,7 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -371,7 +372,6 @@ namespace WeaponCore.Platform
             }
 
             ReturnHome = false;
-            LastTargetLock = 0;
         }
 
         public void ShootGraphics()

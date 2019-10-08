@@ -21,7 +21,6 @@ namespace WeaponCore
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
-
                 if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged) || !gridAi.MyGrid.InScene) continue;
                 gridAi.Reloading = false;
                 foreach (var basePair in gridAi.WeaponBase)
@@ -46,7 +45,7 @@ namespace WeaponCore
                         if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
                         else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile)) w.Target.Reset();
-                        else if (w.TrackingAi)
+                        else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable)
                         {
                             if (!Weapon.TrackingTarget(w, w.Target, !gunner))
                                 w.Target.Expired = true;
@@ -109,7 +108,6 @@ namespace WeaponCore
                                 }
                             }
                             w.ReturnHome = w.ReturnHome && w.ManualShoot == ShootOff && !comp.Gunner;
-
                             if (w.ReturnHome)
                                 comp.ReturnHome = gridAi.ReturnHome = true;
                         }
@@ -117,7 +115,7 @@ namespace WeaponCore
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
                             gridAi.Reloading = true;
 
-                        if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading) gridAi.Ready = true;
+                        if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading || w.ReturnHome) gridAi.Ready = true;
                     }
                 }
             }
@@ -132,7 +130,7 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if ((!gridAi.Ready && !gridAi.ReturnHome) || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
@@ -144,7 +142,7 @@ namespace WeaponCore
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
-                    if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || (!gridAi.Ready && !comp.ReturnHome)) continue;
+                    if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || !gridAi.Ready) continue;
                     if (comp.Debug)
                     {
                         DsDebugDraw.DrawLine(comp.MyPivotTestLine, Color.Green, 0.05f);
@@ -162,12 +160,6 @@ namespace WeaponCore
                         {
                             if (w.ReturnHome)
                                 w.TurretHomePosition();
-
-                            if (w.ReturnHome)
-                            {
-                                comp.ReturnHome = true;
-                                gridAi.ReturnHome = true;
-                            }
                             continue;
                         }
 
@@ -243,7 +235,7 @@ namespace WeaponCore
                         if (!w.Target.Expired)
                             w.ReturnHome = false;
                         else if (w.ReturnHome)
-                            if (!(w.ReturnHome = w.TurretHomePosition()))
+                            w.TurretHomePosition();
 
                         if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(CameraPos, comp.MyPivotPos) < 10000)
                         {

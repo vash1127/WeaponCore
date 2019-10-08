@@ -118,7 +118,7 @@ namespace WeaponCore.Control
 
                     w.OffDelay = (uint)(az + el > 0 ? az > el ? az : el : 0);
 
-                    w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
+                    w.ReturnHome = comp.ReturnHome = comp.Ai.ReturnHome = true;
                 }
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
