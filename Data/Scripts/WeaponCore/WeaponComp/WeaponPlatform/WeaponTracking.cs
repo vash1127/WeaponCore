@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Eventing.Reader;
 using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
