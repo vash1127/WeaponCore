@@ -37,15 +37,13 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 if (MainInit)
                 {
-                    MyGrid = MyCube.CubeGrid;
                     GridAi gridAi;
-                    if (!Session.Instance.GridTargetingAIs.TryGetValue(MyGrid, out gridAi))
+                    if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
                     {
-                        gridAi = new GridAi(MyGrid);
-                        Session.Instance.GridTargetingAIs.TryAdd(MyGrid, gridAi);
+                        gridAi = new GridAi(MyCube.CubeGrid);
+                        Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
                     }
                     Ai = gridAi;
-                    MyGrid = MyCube.CubeGrid;
                     PowerInit();
                     RegisterEvents();
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
@@ -68,6 +66,7 @@ namespace WeaponCore.Support
             {
                 WeaponComponent removed;
                 Ai.WeaponBase.TryRemove(MyCube, out removed);
+                Log.Line("init platform returned");
                 return;
             }
 
@@ -197,7 +196,6 @@ namespace WeaponCore.Support
 
             Entity.NeedsWorldMatrix = true;
             Turret.EnableIdleRotation = false;
-            Physics = ((IMyCubeGrid)MyCube.CubeGrid).Physics;
 
             Ai.TotalSinkPower += MaxRequiredPower;
             Ai.MinSinkPower += IdlePower;
@@ -205,7 +203,7 @@ namespace WeaponCore.Support
             Ai.UpdatePowerSources = true;
             if (!Ai.GridInit)
             {
-                foreach (var cubeBlock in MyGrid.GetFatBlocks())
+                foreach (var cubeBlock in Ai.MyGrid.GetFatBlocks())
                 {
                     Ai.FatBlockAdded(cubeBlock);
                 }

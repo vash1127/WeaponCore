@@ -88,8 +88,6 @@ namespace WeaponCore.Support
         }
 
         internal MyCubeBlock MyCube;
-        internal MyCubeGrid MyGrid;
-        internal MyPhysicsComponentBase Physics;
         internal MyWeaponPlatform Platform;
         internal MyObjectBuilder_TurretBase Ob;
         internal IMyLargeMissileTurret Turret;
@@ -122,7 +120,6 @@ namespace WeaponCore.Support
         {
             Ai = ai;
             MyCube = myCube;
-            MyGrid = MyCube.CubeGrid;
             Turret = turret;
             Gun = (IMyGunObject<MyGunBase>)MyCube;
             BlockInventory = (MyInventory)MyCube.GetInventoryBase();

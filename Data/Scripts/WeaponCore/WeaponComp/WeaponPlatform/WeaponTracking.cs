@@ -217,20 +217,24 @@ namespace WeaponCore.Platform
             }
 
             var shooterPos = Comp.MyPivotPos;
-            var shooterVel = Comp.Physics.LinearVelocity;
+            if (Comp.Ai.VelocityUpdateTick != Session.Instance.Tick)
+            {
+                Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics.LinearVelocity;
+                Comp.Ai.VelocityUpdateTick = Session.Instance.Tick;
+            }
             var targetVel = targetLinVel;
             Vector3D predictedPos;
             if (prediction == Prediction.Basic) 
             {
                 var deltaPos = targetPos - shooterPos;
-                var deltaVel = targetVel - shooterVel;
+                var deltaVel = targetVel - Comp.Ai.GridVel;
                 timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, ammoSpeed);
                 predictedPos = targetPos + (float)timeToIntercept * deltaVel;
             }
             else if (prediction == Prediction.Accurate)
-                predictedPos = CalculateProjectileInterceptPointFast(ammoSpeed, 60, shooterVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
+                predictedPos = CalculateProjectileInterceptPointFast(ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
             else
-                predictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, ammoSpeed, 60, shooterVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
+                predictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
 
             return predictedPos;
         }
