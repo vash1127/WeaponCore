@@ -380,7 +380,7 @@ namespace WeaponCore
             WeaponComponent weaponCompPeek;
             if (CompsToStart.TryPeek(out weaponCompPeek))
             {
-                if (weaponCompPeek.MyGrid.CanHavePhysics() && weaponCompPeek.MyGrid.Physics == null)
+                if (weaponCompPeek.Ai.MyGrid.CanHavePhysics() && weaponCompPeek.Ai.MyGrid.Physics == null)
                 {
                     //Log.Line($"physics not ready: {weaponCompPeek.MyGrid.DebugName} - {weaponCompPeek.MyCube.BlockDefinition.Id.SubtypeId}");
                     return;
@@ -394,7 +394,7 @@ namespace WeaponCore
                     CompsToRemove.Enqueue(weaponComp);
                     return;
                 }
-                if (weaponComp.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
+                if (weaponComp.Ai.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
                 {
                     Log.Line("comp found");
 
