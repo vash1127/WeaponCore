@@ -13,7 +13,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private void OnEntityCreate(MyEntity myEntity)
+        internal void OnEntityCreate(MyEntity myEntity)
         {
             try
             {
@@ -34,6 +34,7 @@ namespace WeaponCore
                     cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
                 }
 
+                Log.Line("Created");
 
                 if (!Inited)
                     lock (InitObj)
@@ -109,7 +110,7 @@ namespace WeaponCore
             foreach (var cube in cubes)
             {
                 if (cube is IMyLargeMissileTurret || cube is IMyUpgradeModule)
-                    PrefabCubesToStart.Enqueue(cube);
+                    CubesToStart.Enqueue(cube);
             }
         }
     }

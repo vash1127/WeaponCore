@@ -39,6 +39,20 @@ namespace WeaponCore.Support
             _myGrid = (base.Entity as MyCubeGrid);
             ((IMyCubeGrid)_myGrid).OnBlockAdded += m_grid_OnBlockAdded;
             Log.ThreadedWrite($"CoreTargeting Added - EntityId: {_myGrid.EntityId}");
+
+            FastResourceLock gridLock = _gridLocks.GetOrAdd(_myGrid, new FastResourceLock());
+            using (gridLock.AcquireExclusiveUsing())
+            {
+                var existingBlocks = _myGrid.GetFatBlocks();
+                if (_scanningRange.Radius == float.MinValue)
+                {
+                    for (int i = 0; i < existingBlocks.Count; i++)
+                    {
+                        if (existingBlocks[i] is IMyUpgradeModule)
+                            _scanningRange.Include(new BoundingSphere(existingBlocks[i].PositionComp.LocalMatrix.Translation, 1500f));
+                    }
+                }
+            }
         }
 
         public override void OnBeforeRemovedFromContainer()
@@ -128,7 +142,7 @@ namespace WeaponCore.Support
                         MyCubeGrid myCubeGrid = _targetGrids[i] as MyCubeGrid;
                         if (myCubeGrid != null && (myCubeGrid.Physics == null || myCubeGrid.Physics.Enabled))
                         {
-                            FastResourceLock gridLock = _gridLocks.GetOrAdd(_myGrid, new FastResourceLock());
+                            FastResourceLock gridLock = _gridLocks.GetOrAdd(myCubeGrid, new FastResourceLock());
 
                             using (gridLock.AcquireExclusiveUsing())
                             {

@@ -153,7 +153,7 @@ namespace WeaponCore
 
                 if (!CompsToRemove.IsEmpty) RemoveComps();
 
-                if (!PrefabCubesToStart.IsEmpty) QueuePrefabComps();
+                if (!CubesToStart.IsEmpty) CubesToInit();
                 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }

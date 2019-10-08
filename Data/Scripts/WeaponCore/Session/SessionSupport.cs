@@ -414,10 +414,10 @@ namespace WeaponCore
                 weaponComp.RemoveComp();
         }
 
-        private void QueuePrefabComps()
+        private void CubesToInit()
         {
             MyEntity cube;
-            while (PrefabCubesToStart.TryDequeue(out cube))
+            while (CubesToStart.TryDequeue(out cube))
                 OnEntityCreate(cube);
         }
 

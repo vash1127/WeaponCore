@@ -17,7 +17,10 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             if (Container.Entity.InScene)
             {
-                OnAddedToScene();
+                _isServer = Session.Instance.IsServer;
+                _isDedicated = Session.Instance.DedicatedServer;
+                _mpActive = Session.Instance.MpActive;
+                InitPlatform();
             }
         }
 
@@ -38,20 +41,9 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 if (MainInit)
                 {
-                  
-                    var gridAi = Session.Instance.GridTargetingAIs.GetOrAdd(MyCube.CubeGrid, new GridAi(MyCube.CubeGrid));
-                    Ai = gridAi;
-                    //PowerInit();
-                    RegisterEvents();
-                    if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
-                        OnAddedToSceneTasks();
-
-                    return;
+                    RemoveComp();
+                    Session.Instance.CubesToStart.Enqueue(MyCube);
                 }
-                    _isServer = Session.Instance.IsServer;
-                    _isDedicated = Session.Instance.DedicatedServer;
-                    _mpActive = Session.Instance.MpActive;
-                    InitPlatform();
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
