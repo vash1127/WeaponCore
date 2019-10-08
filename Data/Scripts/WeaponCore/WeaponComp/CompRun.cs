@@ -12,6 +12,15 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent : MyEntityComponentBase
     {
+        public override void OnAddedToContainer()
+        {
+            base.OnAddedToContainer();
+            if (Container.Entity.InScene)
+            {
+                OnAddedToScene();
+            }
+        }
+
         public override void OnBeforeRemovedFromContainer()
         {
 
@@ -22,36 +31,29 @@ namespace WeaponCore.Support
             base.OnBeforeRemovedFromContainer();
         }
 
-        public override void OnAddedToContainer()
+        public override void OnAddedToScene()
         {
-            base.OnAddedToContainer();
-            if (Container.Entity.InScene)
+            try
             {
-                try
+                base.OnAddedToScene();
+                if (MainInit)
                 {
-                    if (MainInit)
-                    {
-                        GridAi gridAi;
-                        if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
-                        {
-                            gridAi = new GridAi(MyCube.CubeGrid);
-                            Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
-                        }
-                        Ai = gridAi;
-                        PowerInit();
-                        RegisterEvents();
-                        if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
-                            OnAddedToSceneTasks();
+                  
+                    var gridAi = Session.Instance.GridTargetingAIs.GetOrAdd(MyCube.CubeGrid, new GridAi(MyCube.CubeGrid));
+                    Ai = gridAi;
+                    //PowerInit();
+                    RegisterEvents();
+                    if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
+                        OnAddedToSceneTasks();
 
-                        return;
-                    }
+                    return;
+                }
                     _isServer = Session.Instance.IsServer;
                     _isDedicated = Session.Instance.DedicatedServer;
                     _mpActive = Session.Instance.MpActive;
                     InitPlatform();
-                }
-                catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
             }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
 
         public void InitPlatform()
@@ -79,8 +81,9 @@ namespace WeaponCore.Support
             MaxRequiredPower = 0;
             HeatPerSecond = 0;
             OptimalDPS = 0;
-            foreach (var weapon in Platform.Weapons)
+            for (int i  = 0; i< Platform.Weapons.Length; i++)
             {
+                var weapon = Platform.Weapons[i];
                 weapon.InitTracking();
                 Session.ComputeStorage(weapon);
 

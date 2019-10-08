@@ -391,7 +391,12 @@ namespace WeaponCore
             WeaponComponent weaponComp;
             while (CompsToStart.TryDequeue(out weaponComp))
             {
-                if (weaponComp.Ai.MyGrid.MarkedForClose)
+                
+                if (weaponComp.MyCube.CubeGrid != weaponComp.Ai.MyGrid) {
+                    CompsToRemove.Enqueue(weaponComp);
+                    OnEntityCreate(weaponComp.MyCube);
+                }
+                else if (weaponComp.Ai.MyGrid.MarkedForClose)
                     CompsToRemove.Enqueue(weaponComp);
                 else
                 {

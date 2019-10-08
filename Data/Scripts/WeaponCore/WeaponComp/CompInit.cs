@@ -18,6 +18,7 @@ namespace WeaponCore.Support
             //MyCube.Components.TryGet(out Sink);
             var gId = GId;
             //Sink.RemoveType(ref gId);
+            MyCube.Components.Remove<MyResourceSinkComponent>();
             Sink = new MyResourceSinkComponent() { TemporaryConnectedEntity = MyCube};
             Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
             Sink.AddType(ref resourceInfo);
