@@ -141,7 +141,6 @@ namespace WeaponCore
                 {
                     var comp = basePair.Value;
                     var ammoCheck = comp.MultiInventory && !comp.FullInventory && Tick - comp.LastAmmoUnSuspendTick >= Weapon.SuspendAmmoCount;
-                    var gun = comp.Gun.GunBase;
 
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
@@ -162,26 +161,22 @@ namespace WeaponCore
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || (!gridAi.Ready && !w.Reloading))
                         {
                             if (w.ReturnHome)
-                                w.ReturnHome = w.TurretHomePosition();
+                                w.TurretHomePosition();
 
                             if (w.ReturnHome)
                             {
                                 comp.ReturnHome = true;
                                 gridAi.ReturnHome = true;
                             }
-
                             continue;
                         }
 
-                        var energyAmmo = w.System.EnergyAmmo;
-
-                        if ((energyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
+                        if ((w.System.EnergyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
                         {
                             if (comp.ShootTick <= Tick)
                             {
                                 comp.Charging = false;
                                 comp.ShootTick = Tick + comp.DelayTicks;
-                                comp.TerminalRefresh();
                                 if (w.IsShooting)
                                 {
                                     if (w.FiringEmitter != null) w.StartFiringSound();
@@ -195,8 +190,8 @@ namespace WeaponCore
                                     w.StopShooting(true);
 
                                 comp.Charging = true;
-                                comp.TerminalRefresh();
                             }
+                            comp.TerminalRefresh();
                         }
                         else comp.Charging = false;
                         
@@ -206,30 +201,21 @@ namespace WeaponCore
                         {
                             if (w.AmmoSuspend && w.UnSuspendAmmoTick++ >= Weapon.UnSuspendAmmoCount)
                                 AmmoPull(comp, w, false);
-                            else if (!w.AmmoSuspend && gun.CurrentAmmoMagazineId == w.System.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
+                            else if (!w.AmmoSuspend && comp.Gun.GunBase.CurrentAmmoMagazineId == w.System.AmmoDefId && w.SuspendAmmoTick++ >= Weapon.SuspendAmmoCount)
                                 AmmoPull(comp, w, true);
                         }
-                        if (!energyAmmo && w.CurrentAmmo == 0)
+                        if (!w.System.EnergyAmmo && w.CurrentAmmo == 0)
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
                                 if (!w.Reloading)
                                 {
                                     w.EventTriggerStateChanged(state: Weapon.EventTriggers.Firing, active: true, pause: true);
-
                                     if (w.IsShooting)
-                                    {
                                         w.StopShooting(true);
-                                        comp.CurrentDPS -= w.DPS;
-                                    }
                                 }
                                 if (w.CurrentMags != 0)
-                                {
-                                    w.EventTriggerStateChanged(Weapon.EventTriggers.Reloading, true);
-                                    w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, false);
-                                    w.LoadAmmoMag = true;
-                                    w.StartReloadSound();
-                                }
+                                    w.StartReload();
                                 else if(!w.Reloading)
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, true);
 
@@ -266,8 +252,7 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - comp.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
-                        var manualShoot = w.ManualShoot;
-                        if (manualShoot == ShootOn || manualShoot == ShootOnce || (manualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((manualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
+                        if (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
                         {
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {
@@ -276,10 +261,8 @@ namespace WeaponCore
                             }
                         }
                         else if (w.IsShooting)
-                        {
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.Firing, false);
                             w.StopShooting();
-                        }
+
                         if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
                     }
                 }

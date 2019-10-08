@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using Sandbox.Game;
 using VRage.Game;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -27,16 +29,23 @@ namespace WeaponCore
                     else t.TravelEmitter.SetPosition(t.Position);
                 }
 
-                if (t.HitSoundActive)
+                if (t.HitSoundActived)
                 {
-                    if (t.ForceHit || !t.LastHitShield || t.System.Values.Audio.Ammo.HitPlayShield)
+                    t.HitSoundActived = false;
+                    t.HitEmitter.SetPosition(t.Position);
+                    t.HitEmitter.CanPlayLoopSounds = false;
+                    t.HitEmitter.PlaySound(t.HitSound, true);
+                    /*
+                    var prevPos = t.Position + (-t.Direction * t.Length);
+                    IHitInfo hitInfo;
+                    Physics.CastRay(prevPos, t.Position, out hitInfo, 15, false);
+                    if (hitInfo?.HitEntity != null)
                     {
-                        t.ForceHit = false;
-                        //t.LastHitShield = false;
-                        t.HitEmitter.SetPosition(t.Position);
-                        t.HitEmitter.CanPlayLoopSounds = false;
-                        t.HitEmitter.PlaySound(t.HitSound, true);
+                        Log.Line("hit");
+                        var myHitInfo = new MyHitInfo { Position = hitInfo.Position, Normal = hitInfo.Normal };
+                        MyDecals.HandleAddDecal(hitInfo.HitEntity, myHitInfo, new MyStringHash(), new MyStringHash(), null, -1f);
                     }
+                    */
                 }
 
                 if (t.PrimeEntity != null)
@@ -72,16 +81,6 @@ namespace WeaponCore
                     if (!t.System.Values.Graphics.Line.Tracer.Enable) continue;
                 }
 
-                /*
-                const double MAX_VIEW_DIST = 3000;
-                const double FADE_VIEW_DIST = 2000;
-
-                float alpha = 1f;
-                if (distance > FADE_VIEW_DIST)
-                    alpha = 1f - (float)((distance - FADE_VIEW_DIST) / (MAX_VIEW_DIST - FADE_VIEW_DIST));
-
-                var color = Color.Red * alpha;
-                */
                 var color = t.Color;
                 var thickness = t.LineWidth;
                 if (t.System.IsBeamWeapon)

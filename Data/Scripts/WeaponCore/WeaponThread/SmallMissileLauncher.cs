@@ -152,7 +152,7 @@ namespace WeaponThread
                         Name = "",
                         Color = Color(red: 243, green: 190, blue: 51, alpha: 1),
                         Offset = Vector(x: 0, y: 0, z: 0),
-                        Extras = Options(loop: false, restart: false, distance: 5000, duration: 1, scale: 1.5f),
+                        Extras = Options(loop: false, restart: false, distance: 5000, duration: 1, scale: 1.5f, hitPlayChance: 1f),
                     },
                     Barrel1 = new Particle
                     {
@@ -194,6 +194,8 @@ namespace WeaponThread
                 {
                     TravelSound = "",
                     HitSound = "",
+                    HitPlayChance = 1f,
+                    HitPlayShield = true,
                 }, // Don't edit below this line
             },
         };
