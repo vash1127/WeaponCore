@@ -334,7 +334,6 @@ namespace WeaponCore.Projectiles
         {
             var drawList = DrawProjectiles[poolId];
             var camera = Session.Instance.Camera;
-            var cameraPos = Session.Instance.CameraPos;
 
             var pool = ProjectilePool[poolId];
             foreach (var p in pool.Active)

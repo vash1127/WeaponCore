@@ -729,7 +729,10 @@ namespace WeaponCore.Projectiles
             {
                 if (force) LastHitPos = Position;
                 if (HitParticleActive) PlayHitParticle();
-                T.ForceHit = force;
+                T.HitSoundActived = T.System.HitSound && (T.HitSoundActive && (force || LastHitPos.HasValue && (!T.LastHitShield || T.System.Values.Audio.Ammo.HitPlayShield)));
+
+                if (T.HitSoundActived) T.HitEmitter.Entity = T.HitEntity?.Entity;
+                T.LastHitShield = false;
             }
             Colliding = false;
         }
@@ -791,7 +794,6 @@ namespace WeaponCore.Projectiles
                 HitEffect.DurationMax = T.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
                 HitEffect.DistanceMax = T.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
                 HitEffect.UserColorMultiplier = T.System.Values.Graphics.Particles.Hit.Color;
-                //var reScale = (float)Math.Log(195312.5, DistanceFromCameraSqr); // wtf is up with particles and camera distance
                 var reScale = 1;
                 var scaler = reScale < 1 ? reScale : 1;
 

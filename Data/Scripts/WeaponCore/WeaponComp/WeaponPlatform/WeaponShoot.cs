@@ -86,7 +86,7 @@ namespace WeaponCore.Platform
             {
                 Projectile vProjectile = null;
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
-                var targetable = System.Values.Ammo.Health > 0;
+                var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
                 if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
                 var isStatic = Comp.Physics.IsStatic;
 
@@ -222,7 +222,7 @@ namespace WeaponCore.Platform
                                     var targetAi = Comp.Ai.TargetAis[t];
                                     if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None || Comp.Set.Value.Guidance)
                                     {
-                                        var threatLin = targetAi.MyGrid.Physics?.LinearVelocity ?? Vector3.Zero;
+                                        var threatLin = targetAi.GridVel;
 
                                         bool intercept;
                                         if (Vector3D.IsZero(threatLin, 0.025)) intercept = Vector3.Dot(p.Direction, p.Position - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0;

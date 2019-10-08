@@ -16,7 +16,6 @@ namespace WeaponCore
         {
             try
             {            
-
                 var weaponBase = myEntity as IMyLargeMissileTurret;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
@@ -37,6 +36,7 @@ namespace WeaponCore
 
                     var cube = (MyCubeBlock)myEntity;
                     if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
+                    //Log.Line($"SubtypeId:{cube.BlockDefinition.Id.SubtypeId} - {cube.BlockDefinition.Id.TypeId} - {cube.DebugName}");
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
                     //Log.Line("here");
@@ -87,10 +87,8 @@ namespace WeaponCore
 
             foreach (var cube in cubes)
             {
-
                 if (cube is IMyLargeMissileTurret || cube is IMyUpgradeModule)
                     PrefabCubesToStart.Enqueue(cube);
-
             }
         }
 

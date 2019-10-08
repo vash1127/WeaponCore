@@ -382,7 +382,7 @@ namespace WeaponCore
             {
                 if (weaponCompPeek.MyGrid.CanHavePhysics() && weaponCompPeek.MyGrid.Physics == null)
                 {
-                    Log.Line($"physics not ready: {weaponCompPeek.MyGrid.DebugName}");
+                    //Log.Line($"physics not ready: {weaponCompPeek.MyGrid.DebugName} - {weaponCompPeek.MyCube.BlockDefinition.Id.SubtypeId}");
                     return;
                 }
             }

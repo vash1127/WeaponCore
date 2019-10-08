@@ -458,10 +458,11 @@ namespace WeaponCore.Support
             var physics = Session.Instance.Physics;
             var target = w.NewTarget;
             var weaponPos = w.Comp.MyPivotPos;
+            const Projectile.ProjectileState ignoreStates = (Projectile.ProjectileState) 1;
             foreach (var lp in collection)
             {
                 Session.Instance.ProjectileChecks++;
-                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
+                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State > ignoreStates) continue;
                 if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity))
                 {
                     var needsCast = false;
