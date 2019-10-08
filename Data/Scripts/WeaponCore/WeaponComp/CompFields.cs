@@ -85,12 +85,10 @@ namespace WeaponCore.Support
 
         internal MyCubeBlock MyCube;
         internal MyWeaponPlatform Platform;
-        internal MyObjectBuilder_UpgradeModule Ob;
         internal IMyLargeMissileTurret ControllableTurret;
         internal IMyUpgradeModule AIOnlyTurret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
-        //internal IMyGunObject<MyGunBase> Gun;
         internal bool MainInit;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
@@ -103,7 +101,6 @@ namespace WeaponCore.Support
         internal bool IsAIOnlyTurret;
         internal LogicSettings Set;
         internal LogicState State;
-        //internal MyResourceSinkComponent Sink => MyCube.ResourceSink;
         internal MyResourceSinkComponent Sink;
         public WeaponComponent(GridAi ai, MyCubeBlock myCube)
         {
@@ -126,10 +123,9 @@ namespace WeaponCore.Support
             {
                 AIOnlyTurret = myCube as IMyUpgradeModule;
                 IsAIOnlyTurret = true;
-            }
+            }      
 
-            //Gun = (IMyGunObject<MyGunBase>)MyCube;          
-
+            //TODO add to config
             BlockInventory = new MyInventory(0.384f,Vector3.Zero, MyInventoryFlags.CanReceive | MyInventoryFlags.CanSend);
 
             MyCube.Components.Add(BlockInventory);
@@ -149,7 +145,6 @@ namespace WeaponCore.Support
             //IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
             SinkPower = IdlePower;
             
-            Ob = (MyObjectBuilder_UpgradeModule)myCube.GetObjectBuilderCubeBlock();
         }        
     }
 }
