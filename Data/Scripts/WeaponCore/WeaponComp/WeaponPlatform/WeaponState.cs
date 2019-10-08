@@ -342,34 +342,36 @@ namespace WeaponCore.Platform
             }
         }
 
-        public bool TurretHomePosition()
+        public void TurretHomePosition()
         {
-            var turret = Comp.MyCube as IMyLargeMissileTurret;
-            if (turret == null) return false;
-            
             var azStep = System.Values.HardPoint.Block.RotateRate;
             var elStep = System.Values.HardPoint.Block.ElevateRate;
 
-            var az = turret.Azimuth;
-            var el = turret.Elevation;
+            var az = Comp.Turret.Azimuth;
+            var el = Comp.Turret.Elevation;
 
             if (az > 0)
-                turret.Azimuth = az - azStep > 0 ? az - azStep : 0;
+                Comp.Turret.Azimuth = az - azStep > 0 ? az - azStep : 0;
             else if (az < 0)
-                turret.Azimuth = az + azStep < 0 ? az + azStep : 0;
+                Comp.Turret.Azimuth = az + azStep < 0 ? az + azStep : 0;
 
             if (el > 0)
-                turret.Elevation = el - elStep > 0 ? el - elStep : 0;
+                Comp.Turret.Elevation = el - elStep > 0 ? el - elStep : 0;
             else if (el < 0)
-                turret.Elevation = el + elStep < 0 ? el + elStep : 0;
+                Comp.Turret.Elevation = el + elStep < 0 ? el + elStep : 0;
 
-            Azimuth = turret.Azimuth;
-            Elevation = turret.Elevation;
+            Azimuth = Comp.Turret.Azimuth;
+            Elevation = Comp.Turret.Elevation;
 
 
-            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return true;
+            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
+            {
+                ReturnHome = true;
+                return;
+            }
 
-            return false;
+            ReturnHome = false;
+            LastTargetLock = 0;
         }
 
         public void ShootGraphics()
@@ -486,6 +488,7 @@ namespace WeaponCore.Platform
         public void StopShooting(bool avOnly = false)
         {
             //Log.Line("stop shooting");
+            EventTriggerStateChanged(EventTriggers.Firing, false);
             StopFiringSound(false);
             StopRotateSound();
             ShootGraphics();
@@ -502,6 +505,17 @@ namespace WeaponCore.Platform
                 }
                 IsShooting = false;
             }
+            Comp.CurrentDPS -= DPS;
+        }
+
+        public void StartReload()
+        {
+            EventTriggerStateChanged(EventTriggers.Reloading, true);
+            EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
+            LoadAmmoMag = true;
+
+            if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
+            ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
         }
 
         public void StartFiringSound()
@@ -512,12 +526,6 @@ namespace WeaponCore.Platform
         public void StopFiringSound(bool force)
         {
             FiringEmitter?.StopSound(force);
-        }
-
-        public void StartReloadSound()
-        {
-            if (ReloadEmitter == null|| ReloadEmitter.IsPlaying) return;
-            ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
         }
 
         public void StopReloadSound()
