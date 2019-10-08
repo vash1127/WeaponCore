@@ -77,7 +77,7 @@ namespace WeaponCore
                 //replace Targeting on all grids to improve lock speed, and handle grid locking
                 var targeting = cube.CubeGrid?.Components?.Get<MyGridTargeting>() as CoreTargeting;
 
-                if (targeting == null && cube.CubeGrid != null && !isCore)
+                if (!isCore && targeting == null && cube.CubeGrid != null)
                 {
                     targeting = new CoreTargeting();
                     cube.CubeGrid.Components.Remove<MyGridTargeting>();

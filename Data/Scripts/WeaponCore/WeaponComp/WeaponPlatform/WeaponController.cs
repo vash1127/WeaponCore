@@ -18,63 +18,70 @@ namespace WeaponCore.Platform
     {
         public void AimBarrel(double azimuthChange, double elevationChange)
         {
-            float absAzChange;
-            float absElChange;
-
             Azimuth -= azimuthChange;
             Elevation -= elevationChange;
 
-            bool rAz = false;
-            bool rEl = false;
+            LastTrackedTick = Session.Instance.Tick;
 
-            
-            if (azimuthChange < 0)
+            if (Comp.IsAIOnlyTurret)
             {
-                absAzChange = (float)azimuthChange * -1f;
-                rAz = true;
-            }
-            else
-                absAzChange = (float)azimuthChange;
+                float absAzChange;
+                float absElChange;
 
-            if (elevationChange < 0)
-            {
-                absElChange = (float)elevationChange * -1f;
-                rEl = true;
-            }
-            else
-                absElChange = (float)elevationChange;
+                bool rAz = false;
+                bool rEl = false;
 
-
-            if (absAzChange >= System.AzStep)
-            {
-                if (rAz)
-                    AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
+                if (azimuthChange < 0)
+                {
+                    absAzChange = (float)azimuthChange * -1f;
+                    rAz = true;
+                }
                 else
-                    AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item3;
-            }
-            else
-            {
-                AzimuthPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-AzimuthPart.Item2) * Matrix.CreateRotationY((float)-azimuthChange) * Matrix.CreateTranslation(AzimuthPart.Item2));
-            }
+                    absAzChange = (float)azimuthChange;
 
-            if (absElChange >= System.ElStep)
-            {
-                if (rEl)
-                    ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item4;
+                if (elevationChange < 0)
+                {
+                    absElChange = (float)elevationChange * -1f;
+                    rEl = true;
+                }
                 else
-                    ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item3;
+                    absElChange = (float)elevationChange;
+
+
+                if (absAzChange >= System.AzStep)
+                {
+                    if (rAz)
+                        AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
+                    else
+                        AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item3;
+                }
+                else
+                {
+                    AzimuthPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-AzimuthPart.Item2) * Matrix.CreateRotationY((float)-azimuthChange) * Matrix.CreateTranslation(AzimuthPart.Item2));
+                }
+
+                if (absElChange >= System.ElStep)
+                {
+                    if (rEl)
+                        ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item4;
+                    else
+                        ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item3;
+                }
+                else
+                {
+                    ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * Matrix.CreateRotationX((float)-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
+                }
             }
-            else
-            {
-                ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * Matrix.CreateRotationX((float)-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
+            else {
+                Comp.ControllableTurret.Azimuth = (float)Azimuth;
+                Comp.ControllableTurret.Elevation = (float)Elevation;
             }
 
         }
 
         public bool TurretHomePosition()
         {
-            var turret = Comp.MyCube as IMyUpgradeModule;
-            if (turret == null) return false;
+            if (Comp.AIOnlyTurret == null && Comp.ControllableTurret == null) return false;
 
             var azStep = System.AzStep;
             var elStep = System.ElStep;

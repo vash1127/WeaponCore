@@ -117,14 +117,10 @@ namespace WeaponCore.Support
             MyGrid = grid;
             RegisterMyGridEvents(true, grid);
 
-            Targeting = MyGrid.Components.Get<MyGridTargeting>() as CoreTargeting; 
             
-            if(Targeting == null)
-            {
-                Targeting = new CoreTargeting();
-                grid.Components.Remove<MyGridTargeting>();
-                grid.Components.Add<MyGridTargeting>(Targeting);
-            }
+            MyGrid.Components.Remove<MyGridTargeting>();
+            Targeting = new CoreTargeting();
+            MyGrid.Components.Add<MyGridTargeting>(Targeting);
 
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventoryBase, MyFixedPoint>>(Session.Instance.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }

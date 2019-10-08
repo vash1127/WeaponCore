@@ -184,7 +184,6 @@ namespace WeaponCore
         internal bool TargetArmed;
         internal bool InGridAiCockPit;
         internal bool ControlChanged;
-        internal bool ControlingWeaponCam;
 
         internal Vector3D CameraPos;
         internal MyCockpit ActiveCockPit;

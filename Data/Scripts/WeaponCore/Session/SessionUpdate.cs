@@ -22,18 +22,18 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
 
-                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlingWeaponCam) || !gridAi.MyGrid.InScene) continue;
+                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading) || !gridAi.MyGrid.InScene) continue;
                 gridAi.Reloading = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-
                     if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || comp.Status != Started)
                     {
                         if (comp.Status != Started) comp.HealthCheck();
                         continue;
                     }
 
+                    comp.ReturnHome = gridAi.ReturnHome = false;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
@@ -91,29 +91,28 @@ namespace WeaponCore
 
                         //Log.Line($"{w.System.WeaponName} w.TargetWasExpired: {w.TargetWasExpired} w.Target.Expired: {w.Target.Expired}");
 
-                        if (w.TurretMode && comp.State.Value.Online)
+                        if (w.TurretMode)
                         {
-                            if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) ||
-                                 (gunner != lastGunner && !gunner)))
-                                w.LastTargetLock = Tick;
-
-                            if (gunner != lastGunner && gunner)
+                            if (comp.State.Value.Online)
                             {
-                                gridAi.ManualComps++;
-                                comp.Shooting++;
-                            }
-                            else if (gunner != lastGunner && !gunner)
-                            {
-                                gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
-                                comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
-                            }
+                                if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) ||
+                                     (gunner != lastGunner && !gunner)))
+                                    _futureEvents.Schedule(ReturnHome, w, Tick + 240);
 
-                            comp.ReturnHome = gridAi.ReturnHome = false;
-
-                            if (w.LastTargetLock > 0)
+                                if (gunner != lastGunner && gunner)
+                                {
+                                    gridAi.ManualComps++;
+                                    comp.Shooting++;
+                                }
+                                else if (gunner != lastGunner && !gunner)
+                                {
+                                    gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
+                                    comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
+                                }
+                            }
+                            w.ReturnHome = w.ReturnHome && w.ManualShoot == ShootOff && !comp.Gunner;
+                            if (w.ReturnHome)
                                 comp.ReturnHome = gridAi.ReturnHome = true;
-
-                            w.ReturnHome = (w.LastTargetLock + 240 < Tick && w.LastTargetLock > 0 || w.ReturnHome) && w.ManualShoot == ShootOff && !comp.Gunner;
                         }
 
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
@@ -174,12 +173,6 @@ namespace WeaponCore
                         {
                             if (w.ReturnHome)
                                 w.ReturnHome = w.TurretHomePosition();
-
-                            if (w.ReturnHome)
-                            {
-                                comp.ReturnHome = true;
-                                gridAi.ReturnHome = true;
-                            }
 
                             continue;
                         }
@@ -260,15 +253,9 @@ namespace WeaponCore
                             w.Target = w.Comp.TrackingWeapon.Target;
 
                         if (!w.Target.Expired)
-                        {
-                            w.LastTargetLock = 0;
                             w.ReturnHome = false;
-                        }
                         else if (w.ReturnHome)
-                        {
                             if (!(w.ReturnHome = w.TurretHomePosition()))
-                                w.LastTargetLock = 0;
-                        }
 
                         if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < 10000)
                         {

@@ -88,7 +88,7 @@ namespace WeaponCore.Control
             for (int i = 0; i < controls.Count; i++)
             {
                 var c = controls[i];
-                //Log.Line($"Count: {i} ID:{c.Id}");
+                Log.Line($"Count: {i} ID:{c.Id}");
                 if ((i > 6 && i < 10) || i > 12 )
                     c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
 
@@ -112,17 +112,15 @@ namespace WeaponCore.Control
                 
                 if (!On && w.TurretMode)
                 {
-                    var az = w.Azimuth;
-                    var el = w.Elevation;
-                    var azSteps = az / w.System.AzStep;
-                    var elSteps = el / w.System.ElStep;
+                    var azSteps = w.Azimuth / w.System.AzStep;
+                    var elSteps = w.Elevation / w.System.ElStep;
 
-                    if (az < 0) az = az * -1;
-                    if (az < 0) el = el * -1;
+                    if (azSteps < 0) azSteps = azSteps * -1;
+                    if (azSteps < 0) azSteps = azSteps * -1;
 
-                    w.OffDelay = (uint)(az + el > 0 ? az > el ? az : el : 0);
+                    w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
-                    w.ReturnHome = comp.Ai.ReturnHome = comp.Ai.ReturnHome = true;
+                    w.ReturnHome = comp.ReturnHome = comp.Ai.ReturnHome = true;
                 }
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);

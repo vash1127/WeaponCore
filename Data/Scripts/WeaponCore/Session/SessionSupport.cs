@@ -395,7 +395,6 @@ namespace WeaponCore
                     CompsToRemove.Enqueue(weaponComp);
                 else
                 {
-
                     weaponComp.MyCube.Components.Add(weaponComp);
                     weaponComp.OnAddedToScene();
                     weaponComp.Ai.FirstRun = true;
@@ -756,6 +755,13 @@ namespace WeaponCore
 
                 }
             }
+        }
+
+        internal void ReturnHome(object o) {
+            var weapon = o as Weapon;
+            if (weapon == null) return;
+
+            weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
 
         #endregion

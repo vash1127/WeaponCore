@@ -188,17 +188,7 @@ namespace WeaponCore.Platform
                 var aim = (!azLocked || !elLocked) && (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
 
                 if (aim)
-                {
-                    weapon.LastTrackedTick = Session.Instance.Tick;
-
-                    if (weapon.Comp.IsAIOnlyTurret)
-                        weapon.AimBarrel(azDiff, elDiff);
-                    else
-                    {
-                        weapon.Azimuth = weapon.Comp.ControllableTurret.Azimuth = (float)newAz;
-                        weapon.Elevation = weapon.Comp.ControllableTurret.Elevation = (float)newEl;
-                    }
-                }
+                    weapon.AimBarrel(azDiff, elDiff);
                 
             }
 

@@ -27,6 +27,7 @@ namespace WeaponCore.Support
         private FastResourceLock _selfLock = new FastResourceLock();
 
         private static ConcurrentDictionary<MyCubeGrid, FastResourceLock> _gridLocks = new ConcurrentDictionary<MyCubeGrid, FastResourceLock>();
+        private static uint _lockClean;
         private static FastResourceLock _emergencyLock = new FastResourceLock();
 
         private uint _lastScan;
@@ -37,21 +38,13 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             _myGrid = (base.Entity as MyCubeGrid);
             ((IMyCubeGrid)_myGrid).OnBlockAdded += m_grid_OnBlockAdded;
-            _gridLocks.TryAdd(_myGrid, new FastResourceLock());
             Log.ThreadedWrite($"CoreTargeting Added - EntityId: {_myGrid.EntityId}");
         }
 
         public override void OnBeforeRemovedFromContainer()
         {
-            if (_gridLocks.ContainsKey(_myGrid))
-            {
-                FastResourceLock removedLock;
-                if (_gridLocks.TryRemove(_myGrid, out removedLock))
-                {
-                    ((IMyCubeGrid)_myGrid).OnBlockAdded -= m_grid_OnBlockAdded;
-                    Log.ThreadedWrite($"CoreTargeting Removed - EntityId: {_myGrid.EntityId}");
-                }
-            }
+            base.OnBeforeRemovedFromContainer();
+            ((IMyCubeGrid)_myGrid).OnBlockAdded -= m_grid_OnBlockAdded;
         }
 
         private void m_grid_OnBlockAdded(IMySlimBlock obj)
@@ -135,28 +128,23 @@ namespace WeaponCore.Support
                         MyCubeGrid myCubeGrid = _targetGrids[i] as MyCubeGrid;
                         if (myCubeGrid != null && (myCubeGrid.Physics == null || myCubeGrid.Physics.Enabled))
                         {
-                            FastResourceLock gridLock;
-                            if (!_gridLocks.TryGetValue(myCubeGrid, out gridLock))
-                            {
-                                gridLock = _emergencyLock;
-                            }
+                            FastResourceLock gridLock = _gridLocks.GetOrAdd(_myGrid, new FastResourceLock());
 
                             using (gridLock.AcquireExclusiveUsing())
                             {
                                 bool flag = false;
                                 if (myCubeGrid.BigOwners.Count == 0 && myCubeGrid.SmallOwners.Count == 0)
                                 {
-                                    using (List<long>.Enumerator enumerator = _owners.GetEnumerator())
+
+                                    for(int j = 0; j < _owners.Count; j++)
                                     {
-                                        while (enumerator.MoveNext())
+                                        if (MyIDModule.GetRelationPlayerBlock(_owners[j], 0L, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.NoOwnership)
                                         {
-                                            if (MyIDModule.GetRelationPlayerBlock(enumerator.Current, 0L, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.NoOwnership)
-                                            {
-                                                flag = true;
-                                                break;
-                                            }
+                                            flag = true;
+                                            break;
                                         }
                                     }
+
                                 }
                                 else
                                 {
@@ -206,15 +194,12 @@ namespace WeaponCore.Support
                                     if (myComponentOwner != null && myComponentOwner.GetComponent(out myIDModule))
                                     {
                                         long ownerId = myCubeBlock.OwnerId;
-                                        using (List<long>.Enumerator enumerator = _owners.GetEnumerator())
+                                        for (int c = 0; c < _owners.Count; c++)
                                         {
-                                            while (enumerator.MoveNext())
+                                            if (MyIDModule.GetRelationPlayerBlock(_owners[c], ownerId, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
                                             {
-                                                if (MyIDModule.GetRelationPlayerBlock(enumerator.Current, ownerId, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
-                                                {
-                                                    flag = true;
-                                                    break;
-                                                }
+                                                flag = true;
+                                                break;
                                             }
                                         }
                                         if (flag)
