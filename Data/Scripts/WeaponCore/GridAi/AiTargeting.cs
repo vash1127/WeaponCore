@@ -124,6 +124,7 @@ namespace WeaponCore.Support
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
                 Session.Instance.TargetChecks++;
+
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
 
@@ -459,10 +460,12 @@ namespace WeaponCore.Support
             var physics = Session.Instance.Physics;
             var target = w.NewTarget;
             var weaponPos = w.MyPivotPos;
+            const Projectile.ProjectileState ignoreStates = (Projectile.ProjectileState)1;
             foreach (var lp in collection)
             {
                 Session.Instance.ProjectileChecks++;
-                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0) continue;
+                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State > ignoreStates) continue;
+                if (lp.State != Projectile.ProjectileState.Alive && lp.State != Projectile.ProjectileState.Start) Log.Line($"invaid projectile state: {lp.State}");
                 if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity))
                 {
                     var needsCast = false;

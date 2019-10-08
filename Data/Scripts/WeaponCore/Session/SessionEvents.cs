@@ -109,10 +109,8 @@ namespace WeaponCore
 
             foreach (var cube in cubes)
             {
-
                 if (cube is IMyLargeMissileTurret || cube is IMyUpgradeModule)
                     PrefabCubesToStart.Enqueue(cube);
-
             }
         }
     }

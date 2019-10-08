@@ -194,6 +194,8 @@ namespace WeaponThread
                 {
                     TravelSound = "",
                     HitSound = "",
+                    HitPlayChance = 1f,
+                    HitPlayShield = true,
                 }, // Don't edit below this line
             },
         };

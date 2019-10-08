@@ -84,8 +84,6 @@ namespace WeaponCore.Support
         }
 
         internal MyCubeBlock MyCube;
-        internal MyCubeGrid MyGrid;
-        internal MyPhysicsComponentBase Physics;
         internal MyWeaponPlatform Platform;
         internal MyObjectBuilder_UpgradeModule Ob;
         internal IMyLargeMissileTurret ControllableTurret;
@@ -117,8 +115,6 @@ namespace WeaponCore.Support
 
             Ai = ai;
             MyCube = myCube;
-
-            MyGrid = MyCube.CubeGrid;
 
             if (myCube is IMyLargeMissileTurret)
             {

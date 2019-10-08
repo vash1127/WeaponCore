@@ -12,20 +12,6 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        public void TargetGridEvents(MyCubeGrid grid, bool register = true)
-        {
-            if (register)
-            {
-                grid.OnBlockAdded += BlockAddedEvent;
-                grid.OnBlockRemoved += BlockRemovedEvent;
-            }
-            else
-            {
-                grid.OnBlockAdded -= BlockAddedEvent;
-                grid.OnBlockRemoved -= BlockRemovedEvent;
-            }
-        }
-
         private void RegisterMyGridEvents(bool register = true, MyCubeGrid grid = null)
         {
             if (grid == null) grid = MyGrid;
@@ -33,28 +19,17 @@ namespace WeaponCore.Support
             {
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
+                grid.OnMarkForClose += GridClose;
+                grid.OnClose += GridClose;
+
             }
             else
             {
                 grid.OnFatBlockAdded -= FatBlockAdded;
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
+                grid.OnMarkForClose -= GridClose;
+                grid.OnClose -= GridClose;
             }
-        }
-
-        private void BlockAddedEvent(IMySlimBlock block)
-        {
-            try
-            {
-            }
-            catch (Exception ex) { Log.Line($"Exception in Controller BlockAdded: {ex}"); }
-        }
-
-        private void BlockRemovedEvent(IMySlimBlock block)
-        {
-            try
-            {
-            }
-            catch (Exception ex) { Log.Line($"Exception in Controller BlockRemoved: {ex}"); }
         }
 
         internal void FatBlockAdded(MyCubeBlock myCubeBlock)
@@ -69,7 +44,6 @@ namespace WeaponCore.Support
                         var type = source.ResourceTypes[0];
                         if (type != MyResourceDistributorComponent.ElectricityId) return;
                         if (Sources.Add(source)) SourceCount++;
-                        //source.OutputChanged += SourceOutputChanged;
                         UpdatePowerSources = true;
                     }
                 }
@@ -138,10 +112,25 @@ namespace WeaponCore.Support
 
         private void SourceOutputChanged(MyDefinitionId changedResourceId, float oldOutput, MyResourceSourceComponent source)
         {
-            if (ResetPowerTick != Session.Instance.Tick && oldOutput > source.CurrentOutput) {
+            if (ResetPowerTick != Session.Instance.Tick && oldOutput > source.CurrentOutput)
+            {
                 UpdatePowerSources = true;
                 ResetPowerTick = Session.Instance.Tick;
             }
+        }
+
+        private void GridClose(MyEntity myEntity)
+        { 
+            RegisterMyGridEvents(false);
+            WeaponBase.Clear();
+            SubGrids.Clear();
+            Obstructions.Clear();
+            Threats.Clear();
+            TargetAis.Clear();
+            EntitiesInRange.Clear();
+            Sources.Clear();
+            Targets.Clear();
+            Targeting = null;
         }
     }
 }

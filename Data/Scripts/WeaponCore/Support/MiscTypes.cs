@@ -80,13 +80,16 @@ namespace WeaponCore.Support
         internal bool Triggered;
         internal bool Cloaked;
         internal bool End;
-        internal bool ForceHit;
+        internal bool HitSoundActived;
         internal bool LastHitShield;
         internal ReSize ReSizing;
         internal DrawState Draw;
 
         internal void SetupSounds()
         {
+            FiringSoundState = System.FiringSound;
+            AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
+
             if (!System.IsBeamWeapon && System.AmmoTravelSound)
             {
                 HasTravelSound = true;
@@ -98,30 +101,24 @@ namespace WeaponCore.Support
             {
                 var hitSoundChance = System.Values.Audio.Ammo.HitPlayChance;
                 HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f));
-                if (HitSoundActive) HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
+                if (HitSoundActive)
+                    HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
             }
 
             if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
             {
                 FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
-                FireSoundStart();
+                FireEmitter.SetPosition(Origin);
+                FireEmitter.Entity = Target.FiringCube;
+                FireEmitter.PlaySound(FireSound, true);
             }
-
-            FiringSoundState = System.FiringSound;
-            AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
-        }
-
-        internal void FireSoundStart()
-        {
-            FireEmitter.SetPosition(Origin);
-            FireEmitter.PlaySound(FireSound, true);
         }
 
         internal void AmmoSoundStart()
         {
             TravelEmitter.SetPosition(Position);
+            TravelEmitter.Entity = PrimeEntity;
             TravelEmitter.PlaySound(TravelSound, true);
-
             AmmoSound = true;
         }
 
@@ -207,8 +204,8 @@ namespace WeaponCore.Support
             End = false;
             AmmoSound = false;
             HitSoundActive = false;
+            HitSoundActived = false;
             HasTravelSound = false;
-            ForceHit = false;
             LastHitShield = false;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;

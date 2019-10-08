@@ -21,8 +21,7 @@ namespace WeaponCore
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
-
-                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading) || !gridAi.MyGrid.InScene) continue;
+                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged) || !gridAi.MyGrid.InScene) continue;
                 gridAi.Reloading = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
@@ -46,7 +45,8 @@ namespace WeaponCore
                         if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
                         else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile)) w.Target.Reset();
-                        else if (w.TrackingAi)
+                        else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable)
+                        {
                             if (!Weapon.TrackingTarget(w, w.Target, !gunner))
                                 w.Target.Expired = true;
                         else
@@ -172,20 +172,17 @@ namespace WeaponCore
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || !gridAi.Ready)
                         {
                             if (w.ReturnHome)
-                                w.ReturnHome = w.TurretHomePosition();
+                                w.TurretHomePosition();
 
                             continue;
                         }
 
-                        var energyAmmo = w.System.EnergyAmmo;
-
-                        if ((energyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
+                        if ((w.System.EnergyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
                         {
                             if (comp.ShootTick <= Tick)
                             {
                                 comp.Charging = false;
                                 comp.ShootTick = Tick + comp.DelayTicks;
-                                comp.TerminalRefresh();
                                 if (w.IsShooting)
                                 {
                                     if (w.FiringEmitter != null) w.StartFiringSound();
@@ -199,8 +196,8 @@ namespace WeaponCore
                                     w.StopShooting(true);
 
                                 comp.Charging = true;
-                                comp.TerminalRefresh();
                             }
+                            comp.TerminalRefresh();
                         }
                         else comp.Charging = false;
                         
@@ -214,20 +211,11 @@ namespace WeaponCore
                                 if (!w.Reloading)
                                 {
                                     w.EventTriggerStateChanged(state: Weapon.EventTriggers.Firing, active: true, pause: true);
-
                                     if (w.IsShooting)
-                                    {
                                         w.StopShooting(true);
-                                        comp.CurrentDPS -= w.DPS;
-                                    }
                                 }
                                 if (w.CurrentMags != 0)
-                                {
-                                    w.EventTriggerStateChanged(Weapon.EventTriggers.Reloading, true);
-                                    w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, false);
-                                    w.LoadAmmoMag = true;
-                                    w.StartReloadSound();
-                                }
+                                    w.StartReload();
                                 else if(!w.Reloading)
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, true);
 
@@ -252,10 +240,10 @@ namespace WeaponCore
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;
 
-                        if (!w.Target.Expired)
-                            w.ReturnHome = false;
-                        else if (w.ReturnHome)
-                            if (!(w.ReturnHome = w.TurretHomePosition()))
+                            if (!w.Target.Expired)
+                                w.ReturnHome = false;
+                            else if (w.ReturnHome)
+                                w.TurretHomePosition();
 
                         if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < 10000)
                         {
@@ -264,8 +252,7 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - w.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
-                        var manualShoot = w.ManualShoot;
-                        if (manualShoot == ShootOn || manualShoot == ShootOnce || (manualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((manualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
+                        if (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
                         {
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {
@@ -274,10 +261,8 @@ namespace WeaponCore
                             }
                         }
                         else if (w.IsShooting)
-                        {
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.Firing, false);
                             w.StopShooting();
-                        }
+
                         if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
                     }
                 }

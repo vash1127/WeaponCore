@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using System;
+using Sandbox.Game.Entities;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -15,6 +16,8 @@ namespace WeaponCore.Platform
     {
         internal void Shoot()
         {
+            if (Comp.Ai.MyGrid.MarkedForClose) Log.Line("grid marked");
+
             var session = Session.Instance;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
@@ -40,7 +43,6 @@ namespace WeaponCore.Platform
 
             if (AvCapable && (!PlayTurretAv || session.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos) < System.HardPointAvMaxDistSqr;
-
 
             if (System.BarrelAxisRotation) MovePart();
 
@@ -78,7 +80,7 @@ namespace WeaponCore.Platform
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
-                Comp.Ai.GridVel = Comp.Physics.LinearVelocity;
+                Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics.LinearVelocity;
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
@@ -86,10 +88,9 @@ namespace WeaponCore.Platform
             {
                 Projectile vProjectile = null;
                 var targetAiCnt = Comp.Ai.TargetAis.Count;
-                var targetable = System.Values.Ammo.Health > 0;
+                var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
                 if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
-                var isStatic = Comp.Physics.IsStatic;
-
+                var isStatic = Comp.Ai.MyGrid.Physics.IsStatic;
                 for (int i = 0; i < bps; i++)
                 {
                     var current = NextMuzzle;
@@ -112,7 +113,7 @@ namespace WeaponCore.Platform
                     }
 
                     if (System.HasBackKickForce && !isStatic)
-                        Comp.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
+                        Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                     muzzle.LastShot = tick;
                     if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
@@ -222,7 +223,7 @@ namespace WeaponCore.Platform
                                     var targetAi = Comp.Ai.TargetAis[t];
                                     if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None || Comp.Set.Value.Guidance)
                                     {
-                                        var threatLin = targetAi.MyGrid.Physics?.LinearVelocity ?? Vector3.Zero;
+                                        var threatLin = targetAi.GridVel;
 
                                         bool intercept;
                                         if (Vector3D.IsZero(threatLin, 0.025)) intercept = Vector3.Dot(p.Direction, p.Position - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
@@ -236,7 +237,7 @@ namespace WeaponCore.Platform
                             }
                         }
                     }
-                    
+
                     _muzzlesToFire.Add(MuzzleIDToName[current]);
 
                     if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
@@ -369,7 +370,7 @@ namespace WeaponCore.Platform
                 }
 
                 var grid = parentAsGrid ?? rootAsGrid;
-                if (grid == Comp.MyGrid)
+                if (grid == Comp.Ai.MyGrid)
                 {
                     masterWeapon.Target.Expired = true;
                     if (masterWeapon != this) Target.Expired = true;
@@ -379,7 +380,7 @@ namespace WeaponCore.Platform
 
                 if (!GridAi.GridEnemy(Comp.MyCube, grid))
                 {
-                    if (!grid.IsSameConstructAs(Comp.MyGrid))
+                    if (!grid.IsSameConstructAs(Comp.Ai.MyGrid))
                     {
                         //Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
                         masterWeapon.Target.Expired = true;
@@ -395,7 +396,7 @@ namespace WeaponCore.Platform
             {
                 if (Target.Projectile != null)
                 {
-                    Log.Line($"projectile not null other branch2: {((MyEntity)hitInfo.HitEntity).DebugName} - {Comp.MyGrid.IsSameConstructAs(hitInfo.HitEntity as MyCubeGrid)}");
+                    Log.Line($"projectile not null other branch2: {((MyEntity)hitInfo.HitEntity).DebugName} - {Comp.Ai.MyGrid.IsSameConstructAs(hitInfo.HitEntity as MyCubeGrid)}");
                 }
                 var grid = hitInfo.HitEntity as MyCubeGrid;
                 if (grid != null && Target.Entity.GetTopMostParent() == grid)

@@ -73,7 +73,7 @@ namespace WeaponCore.Support
             if (Ai.WeaponBase.Count == 0)
             {
                 GridAi gridAi;
-                Session.Instance.GridTargetingAIs.TryRemove(MyGrid, out gridAi);
+                Session.Instance.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
                 //Ai = null;
                 //MyGrid = null;
             }

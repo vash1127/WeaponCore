@@ -382,7 +382,7 @@ namespace WeaponCore
             WeaponComponent weaponCompPeek;
             if (CompsToStart.TryPeek(out weaponCompPeek))
             {
-                if (weaponCompPeek.MyCube.CubeGrid.CanHavePhysics() && weaponCompPeek.MyCube.CubeGrid.Physics == null && !weaponCompPeek.MyGrid.MarkedForClose)
+                if (weaponCompPeek.MyCube.CubeGrid.CanHavePhysics() && weaponCompPeek.MyCube.CubeGrid.Physics == null && !weaponCompPeek.Ai.MyGrid.MarkedForClose)
                 {
                     //Log.Line($"physics not ready: {weaponCompPeek.MyCube.CubeGrid.DebugName}");
                     return;
@@ -755,6 +755,14 @@ namespace WeaponCore
 
                 }
             }
+        }
+
+        internal void ReturnHome(object o)
+        {
+            var weapon = o as Weapon;
+            if (weapon == null) return;
+
+            weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
 
         internal void ReturnHome(object o) {

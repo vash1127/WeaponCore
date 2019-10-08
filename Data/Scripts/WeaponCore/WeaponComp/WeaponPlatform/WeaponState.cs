@@ -5,6 +5,7 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -360,7 +361,12 @@ namespace WeaponCore.Platform
                     var ticksAgo = tick - lastUpdateTick;
 
                     var particles = System.Values.Graphics.Particles;
-                    var vel = Comp.Physics.LinearVelocity;
+                    if (Comp.Ai.VelocityUpdateTick != tick)
+                    {
+                        Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics.LinearVelocity;
+                        Comp.Ai.VelocityUpdateTick = tick;
+                    }
+
                     var pos = dummy.Info.Position;
                     var entityExists = BarrelPart?.Parent != null && !BarrelPart.MarkedForClose;
                     var matrix = MatrixD.Zero;
@@ -389,7 +395,7 @@ namespace WeaponCore.Platform
                             if (BarrelEffects1[id] != null)
                             {
                                 BarrelEffects1[id].WorldMatrix = matrix;
-                                BarrelEffects1[id].Velocity = vel;
+                                BarrelEffects1[id].Velocity = Comp.Ai.GridVel;
                             }
                         }
                         else if (BarrelEffects1[id] != null)
@@ -422,7 +428,7 @@ namespace WeaponCore.Platform
                             if (BarrelEffects2[id] != null)
                             {
                                 BarrelEffects2[id].WorldMatrix = matrix;
-                                BarrelEffects2[id].Velocity = vel;
+                                BarrelEffects2[id].Velocity = Comp.Ai.GridVel;
                             }
                         }
                         else if (BarrelEffects2[id] != null)
@@ -459,6 +465,7 @@ namespace WeaponCore.Platform
         public void StopShooting(bool avOnly = false)
         {
             //Log.Line("stop shooting");
+            EventTriggerStateChanged(EventTriggers.Firing, false);
             StopFiringSound(false);
             StopRotateSound();
             ShootGraphics();
@@ -478,6 +485,16 @@ namespace WeaponCore.Platform
             }
         }
 
+        public void StartReload()
+        {
+            EventTriggerStateChanged(EventTriggers.Reloading, true);
+            EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
+            LoadAmmoMag = true;
+
+            if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
+            ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
+        }
+
         public void StartFiringSound()
         {
             FiringEmitter?.PlaySound(FiringSound);
@@ -486,12 +503,6 @@ namespace WeaponCore.Platform
         public void StopFiringSound(bool force)
         {
             FiringEmitter?.StopSound(force);
-        }
-
-        public void StartReloadSound()
-        {
-            if (ReloadEmitter == null|| ReloadEmitter.IsPlaying) return;
-            ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
         }
 
         public void StopReloadSound()

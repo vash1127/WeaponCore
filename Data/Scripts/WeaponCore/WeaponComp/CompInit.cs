@@ -29,7 +29,7 @@ namespace WeaponCore.Support
 
         private bool EntityAlive()
         {
-            if (MyGrid?.Physics == null) return false;
+            if (Ai.MyGrid?.Physics == null) return false;
             if (!_firstSync && _readyToSync) SaveAndSendAll();
             if (!_isDedicated && _count == 29) TerminalRefresh();
 
