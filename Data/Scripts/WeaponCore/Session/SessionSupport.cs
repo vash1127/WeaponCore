@@ -380,35 +380,23 @@ namespace WeaponCore
             WeaponComponent weaponCompPeek;
             if (CompsToStart.TryPeek(out weaponCompPeek))
             {
-                if (weaponCompPeek.Ai.MyGrid.CanHavePhysics() && weaponCompPeek.Ai.MyGrid.Physics == null)
+                if (weaponCompPeek.MyCube.CubeGrid.CanHavePhysics() && weaponCompPeek.MyCube.CubeGrid.Physics == null && !weaponCompPeek.Ai.MyGrid.MarkedForClose)
                 {
-                    //Log.Line($"physics not ready: {weaponCompPeek.MyGrid.DebugName} - {weaponCompPeek.MyCube.BlockDefinition.Id.SubtypeId}");
+                    //Log.Line($"physics not ready: {weaponCompPeek.MyCube.CubeGrid.DebugName}");
                     return;
                 }
             }
             WeaponComponent weaponComp;
             while (CompsToStart.TryDequeue(out weaponComp))
             {
-                if (weaponComp.MyCube.CubeGrid.Physics == null)
-                {
+                if (weaponCompPeek.Ai.MyGrid.MarkedForClose)
                     CompsToRemove.Enqueue(weaponComp);
-                    return;
-                }
-                if (weaponComp.Ai.MyGrid.EntityId != weaponComp.MyCube.CubeGrid.EntityId)
-                {
-                    Log.Line("comp found");
-
-                    CompsToRemove.Enqueue(weaponComp);
-
-                    OnEntityCreate(weaponComp.MyCube);
-                }
                 else
                 {
-
                     weaponComp.MyCube.Components.Add(weaponComp);
                     weaponComp.OnAddedToScene();
                     weaponComp.Ai.FirstRun = true;
-                    //Log.Line($"added to comp");
+                    Log.Line($"added to comp");
                 }
             }
         }
