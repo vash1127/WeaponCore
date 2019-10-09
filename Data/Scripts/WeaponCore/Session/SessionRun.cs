@@ -46,7 +46,7 @@ namespace WeaponCore
                     HighLoad = Load > threshold;
                     //Log.Line($"[Load:{Load:0.0}({threshold})] [Ai:{ai.Median:0.0000}({ai.Min:0.0000}/{ai.Max:0.0000})] [Update:{updateTime.Median:0.0000}({updateTime.Min:0.0000}/{updateTime.Max:0.0000}] [Projectiles:{projectileTime.Median:0.0000}({projectileTime.Min:0.0000}/{projectileTime.Max:0.0000})] [Damage:{damageTime.Median:0.0000}({damageTime.Min:0.0000}/{damageTime.Max:0.0000}] [Draw:{drawTime.Median:0.0000}({drawTime.Min:0.0000}/{drawTime.Max:0.0000}] [Dbs:{db.Median:0.0000}({db.Min:0.0000}/{db.Max:0.0000}] [Effects:{effects.Median:0.0000}({effects.Min:0.0000}/{effects.Max:0.0000}] [Events:{events.Median:0.0000}({events.Min:0.0000}/{events.Max:0.0000}] [Anim:{animations.Median:0.0000}({animations.Min:0.0000}/{animations.Max:0.0000}]");
                     //Log.Line($"AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] RayCasts:[{RayCasts}] - TargetTransfers:[{TargetTransfers}] - TargetSets:[{TargetSets}] - TargetResets:[{TargetResets}]");
-                    //Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000}");
+                    Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000}");
                     TargetRequests = 0;
                     TargetChecks = 0;
                     BlockChecks = 0;
@@ -189,7 +189,6 @@ namespace WeaponCore
             {
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
-
                 MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);

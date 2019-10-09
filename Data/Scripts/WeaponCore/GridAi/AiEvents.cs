@@ -17,7 +17,7 @@ namespace WeaponCore.Support
             {
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
-                grid.OnMarkForClose += GridMarkClose;
+                grid.OnMarkForClose += GridClose;
                 grid.OnClose += GridClose;
 
             }
@@ -25,7 +25,7 @@ namespace WeaponCore.Support
             {
                 grid.OnFatBlockAdded -= FatBlockAdded;
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
-                grid.OnMarkForClose -= GridMarkClose;
+                grid.OnMarkForClose -= GridClose;
                 grid.OnClose -= GridClose;
             }
         }
@@ -71,22 +71,6 @@ namespace WeaponCore.Support
 
         private void GridClose(MyEntity myEntity)
         {
-            Log.Line($"close: {myEntity.DebugName} - {myEntity.EntityId}");
-            RegisterMyGridEvents(false);
-            WeaponBase.Clear();
-            SubGrids.Clear();
-            Obstructions.Clear();
-            Threats.Clear();
-            TargetAis.Clear();
-            EntitiesInRange.Clear();
-            Sources.Clear();
-            Targets.Clear();
-            Targeting = null;
-        }
-
-        private void GridMarkClose(MyEntity myEntity)
-        {
-            Log.Line($"mark: {myEntity.DebugName} - {myEntity.EntityId}");
             RegisterMyGridEvents(false);
             WeaponBase.Clear();
             SubGrids.Clear();
