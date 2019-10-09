@@ -17,17 +17,20 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             if (Container.Entity.InScene)
             {
+                _isServer = Session.Instance.IsServer;
+                _isDedicated = Session.Instance.DedicatedServer;
+                _mpActive = Session.Instance.MpActive;
+                InitPlatform();
             }
         }
 
         public override void OnBeforeRemovedFromContainer()
         {
+            base.OnBeforeRemovedFromContainer();
 
             if (Container.Entity.InScene)
             {
             }
-
-            base.OnBeforeRemovedFromContainer();
         }
 
         public override void OnAddedToScene()
@@ -44,17 +47,10 @@ namespace WeaponCore.Support
                         Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
                     }
                     Ai = gridAi;
-                    PowerInit();
                     RegisterEvents();
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                         OnAddedToSceneTasks();
-
-                    return;
                 }
-                _isServer = Session.Instance.IsServer;
-                _isDedicated = Session.Instance.DedicatedServer;
-                _mpActive = Session.Instance.MpActive;
-                InitPlatform();
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -218,7 +214,7 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                Session.Instance.CompsToRemove.Enqueue(this);
+                RemoveComp();
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
