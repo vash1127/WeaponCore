@@ -34,8 +34,6 @@ namespace WeaponCore
                     cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
                 }
 
-                Log.Line("Created");
-
                 if (!Inited)
                     lock (InitObj)
                         Init();

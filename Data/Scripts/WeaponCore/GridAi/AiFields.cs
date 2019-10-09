@@ -124,7 +124,6 @@ namespace WeaponCore.Support
                 Targeting = new CoreTargeting();
                 MyGrid.Components.Remove<MyGridTargeting>();
                 MyGrid.Components.Add<MyGridTargeting>(Targeting);
-                Log.ThreadedWrite("Added Core Targeting");
             }
 
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventoryBase, MyFixedPoint>>(Session.Instance.AmmoInventoriesMaster, MyDefinitionId.Comparer);
