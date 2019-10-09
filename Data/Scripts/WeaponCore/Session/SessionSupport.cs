@@ -396,7 +396,7 @@ namespace WeaponCore
                     weaponComp.MyCube.Components.Add(weaponComp);
                     weaponComp.OnAddedToScene();
                     weaponComp.Ai.FirstRun = true;
-                    Log.Line($"added to comp");
+                    //Log.Line($"added to comp");
                 }
             }
         }
@@ -410,9 +410,9 @@ namespace WeaponCore
 
         private void QueuePrefabComps()
         {
-            MyEntity cube;
-            while (PrefabCubesToStart.TryDequeue(out cube))
-                OnEntityCreate(cube);
+            MyEntity myEntity;
+            while (PrefabCubesToStart.TryDequeue(out myEntity))
+                InitComp(myEntity);
         }
 
         private void UpdatePlacer()
