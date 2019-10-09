@@ -190,6 +190,7 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 //MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
+                MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
