@@ -17,10 +17,7 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             if (Container.Entity.InScene)
             {
-                _isServer = Session.Instance.IsServer;
-                _isDedicated = Session.Instance.DedicatedServer;
-                _mpActive = Session.Instance.MpActive;
-                InitPlatform();
+                
             }
         }
 
@@ -57,6 +54,10 @@ namespace WeaponCore.Support
 
         public void InitPlatform()
         {
+            _isServer = Session.Instance.IsServer;
+            _isDedicated = Session.Instance.DedicatedServer;
+            _mpActive = Session.Instance.MpActive;
+
             Platform = new MyWeaponPlatform(this);
             if (!Platform.Inited)
             {

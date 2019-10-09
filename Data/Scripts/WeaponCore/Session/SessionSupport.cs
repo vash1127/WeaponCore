@@ -378,6 +378,7 @@ namespace WeaponCore
         private void StartComps()
         {
             WeaponComponent weaponCompPeek;
+            Log.Line($"CompsToStart: {CompsToStart.Count}");
             if (CompsToStart.TryPeek(out weaponCompPeek))
             {
                 if (weaponCompPeek.MyCube.CubeGrid.CanHavePhysics() && weaponCompPeek.MyCube.CubeGrid.Physics == null && !weaponCompPeek.Ai.MyGrid.MarkedForClose)
@@ -389,14 +390,20 @@ namespace WeaponCore
             WeaponComponent weaponComp;
             while (CompsToStart.TryDequeue(out weaponComp))
             {
-                if (weaponCompPeek.Ai.MyGrid.MarkedForClose)
+
+                if (weaponComp.MyCube.CubeGrid != weaponComp.Ai.MyGrid)
+                {
+                    CompsToRemove.Enqueue(weaponComp);
+                    OnEntityCreate(weaponComp.MyCube);
+                }
+                else if (weaponComp.Ai.MyGrid.MarkedForClose)
                     CompsToRemove.Enqueue(weaponComp);
                 else
                 {
                     weaponComp.MyCube.Components.Add(weaponComp);
-                    weaponComp.OnAddedToScene();
+                    weaponComp.InitPlatform();
                     weaponComp.Ai.FirstRun = true;
-                    //Log.Line($"added to comp");
+                    Log.Line($"added to comp");
                 }
             }
         }

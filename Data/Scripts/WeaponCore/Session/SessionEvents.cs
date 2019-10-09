@@ -35,14 +35,6 @@ namespace WeaponCore
                             MyAPIGateway.Utilities.InvokeOnGameThread(CreateLogicElements);
                     }
 
-                    var cube = (MyCubeBlock)myEntity;
-                    if (cube.BlockDefinition.Id.SubtypeId == MyStringHash.NullOrEmpty)
-                    {
-                        Log.Line($"empty Subtype: {cube.BlockDefinition.Id.SubtypeName}");
-                        PrefabCubesToStart.Enqueue(cube);
-                        return;
-                    }
-
                     InitComp(myEntity);
                 }
             }
@@ -91,22 +83,5 @@ namespace WeaponCore
             if (remote != null)
                 _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
         }
-
-        private void OnPrefabSpawn(long entityId, string prefabName)
-        {
-            var grid = MyEntities.GetEntityById(entityId) as MyCubeGrid;
-
-            if (grid == null) return;
-
-            var cubes = grid.GetFatBlocks();
-
-            foreach (var cube in cubes)
-            {
-                if (cube is IMyLargeMissileTurret || cube is IMyUpgradeModule)
-                    PrefabCubesToStart.Enqueue(cube);
-            }
-        }
-
-
     }
 }
