@@ -222,7 +222,7 @@ namespace WeaponCore
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || !comp.Platform.Inited) return false;
+            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return false;
             if (id == 0) return true;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
