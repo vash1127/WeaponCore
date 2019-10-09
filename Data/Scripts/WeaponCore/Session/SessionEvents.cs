@@ -24,7 +24,7 @@ namespace WeaponCore
                 if (!Inited)
                     lock (InitObj)
                         Init();
-
+                //Log.Line($"OnEntityCreate: {myEntity.DebugName} - Id:{myEntity.EntityId}");
                 if (weaponBase != null)
                 {
                     if (!Controls)
@@ -35,20 +35,23 @@ namespace WeaponCore
                     }
 
                     var cube = (MyCubeBlock)myEntity;
+                    //Log.Line("OnEntityCreate weapon");
                     if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
                     //Log.Line($"SubtypeId:{cube.BlockDefinition.Id.SubtypeId} - {cube.BlockDefinition.Id.TypeId} - {cube.DebugName}");
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-                    //Log.Line("here");
+                    //Log.Line("valid subtype");
 
                     using (myEntity.Pin())
                     {
                         if (myEntity.MarkedForClose) return;
+                        //Log.Line("no marked close");
                         GridAi gridAi;
                         if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                         {
                             gridAi = new GridAi(cube.CubeGrid);
                             GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
+                            //Log.Line("new gridAi");
                         }
                         var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
                         if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
@@ -57,7 +60,7 @@ namespace WeaponCore
                                 gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
 
                             CompsToStart.Enqueue(weaponComp);
-                            //Log.Line($"cube type: {cube.BlockDefinition.Id.TypeId} subtype: {cube.BlockDefinition.Id.SubtypeId}");
+                            //Log.Line($"CompsToStart: {cube.BlockDefinition.Id.TypeId} subtype: {cube.BlockDefinition.Id.SubtypeId}");
                         }
                     }
                 }
