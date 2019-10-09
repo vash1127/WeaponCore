@@ -15,7 +15,6 @@ namespace WeaponCore
     {
         private void BeforeStartInit()
         {
-
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;
             DedicatedServer = MyAPIGateway.Utilities.IsDedicated;

@@ -409,9 +409,9 @@ namespace WeaponCore
 
         private void QueuePrefabComps()
         {
-            MyEntity cube;
-            while (PrefabCubesToStart.TryDequeue(out cube))
-                OnEntityCreate(cube);
+            MyEntity myEntity;
+            while (PrefabCubesToStart.TryDequeue(out myEntity))
+                InitComp(myEntity);
         }
 
         private void UpdatePlacer()
@@ -599,6 +599,7 @@ namespace WeaponCore
                                     if (string.IsNullOrEmpty(definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
                                         .String))
                                     {
+                                        Log.Line("1");
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newSMissileOB = (MyObjectBuilder_CubeBlock)sMissileBuilder.Clone();
                                         newSMissileOB.EntityId = 0;
@@ -614,6 +615,7 @@ namespace WeaponCore
                                 case "MyObjectBuilder_SmallMissileLauncherReload":
                                     if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId.String == "SmallRocketLauncherReload")
                                     {
+                                        Log.Line("2");
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newSMissileOB = (MyObjectBuilder_CubeBlock)rMissileBuilder.Clone();
                                         newSMissileOB.EntityId = 0;
@@ -630,6 +632,7 @@ namespace WeaponCore
                                     if (string.IsNullOrEmpty(definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
                                         .String))
                                     {
+                                        Log.Line("3");
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newSGatOB = (MyObjectBuilder_CubeBlock)sGatBuilder.Clone();
                                         newSGatOB.EntityId = 0;
@@ -647,6 +650,7 @@ namespace WeaponCore
                                     if (string.IsNullOrEmpty(definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
                                         .String))
                                     {
+                                        Log.Line("4");
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newGatOB = (MyObjectBuilder_CubeBlock)gatBuilder.Clone();
                                         newGatOB.EntityId = 0;
@@ -660,6 +664,7 @@ namespace WeaponCore
                                     else if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId.String ==
                                              "SmallGatlingTurret")
                                     {
+                                        Log.Line("5");
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newGatOB = (MyObjectBuilder_CubeBlock)lSGatBuilder.Clone();
                                         newGatOB.EntityId = 0;
@@ -677,6 +682,7 @@ namespace WeaponCore
                                     if (string.IsNullOrEmpty(definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId
                                         .String))
                                     {
+                                        Log.Line("6");
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newMissileOB = (MyObjectBuilder_CubeBlock)missileBuilder.Clone();
                                         newMissileOB.EntityId = 0;
@@ -694,6 +700,7 @@ namespace WeaponCore
                                     if (definition.Value.CubeGrids[j].CubeBlocks[i].SubtypeId.String ==
                                         "LargeInteriorTurret")
                                     {
+                                        Log.Line("7");
                                         var origOB = definition.Value.CubeGrids[j].CubeBlocks[i];
                                         var newInteriorOB = (MyObjectBuilder_CubeBlock)interBuilder.Clone();
                                         newInteriorOB.EntityId = 0;
@@ -727,7 +734,6 @@ namespace WeaponCore
                 }
             }
         }
-
         internal void TurnWeaponShootOff(object ai)
         {
             var gridAi = ai as GridAi;

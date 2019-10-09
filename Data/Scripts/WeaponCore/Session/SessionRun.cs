@@ -190,7 +190,7 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
 
-                MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
+                //MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -222,7 +222,7 @@ namespace WeaponCore
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
-            MyVisualScriptLogicProvider.PrefabSpawnedDetailed -= OnPrefabSpawn;
+            //MyVisualScriptLogicProvider.PrefabSpawnedDetailed -= OnPrefabSpawn;
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
             ProjectileTree.Clear();

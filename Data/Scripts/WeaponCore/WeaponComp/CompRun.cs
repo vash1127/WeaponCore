@@ -50,7 +50,6 @@ namespace WeaponCore.Support
                         Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
                     }
                     Ai = gridAi;
-                    PowerInit();
                     RegisterEvents();
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                     {

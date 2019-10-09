@@ -5,6 +5,7 @@ using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageRender;
 using WeaponCore.Support;
 
@@ -15,7 +16,7 @@ namespace WeaponCore
         private void OnEntityCreate(MyEntity myEntity)
         {
             try
-            {            
+            {
                 var weaponBase = myEntity as IMyLargeMissileTurret;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
@@ -24,9 +25,9 @@ namespace WeaponCore
                 if (!Inited)
                     lock (InitObj)
                         Init();
-                //Log.Line($"OnEntityCreate: {myEntity.DebugName} - Id:{myEntity.EntityId}");
                 if (weaponBase != null)
                 {
+
                     if (!Controls)
                     {
                         Controls = true;
@@ -35,37 +36,52 @@ namespace WeaponCore
                     }
 
                     var cube = (MyCubeBlock)myEntity;
-                    //Log.Line("OnEntityCreate weapon");
-                    if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
-                    //Log.Line($"SubtypeId:{cube.BlockDefinition.Id.SubtypeId} - {cube.BlockDefinition.Id.TypeId} - {cube.DebugName}");
-                    if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-                    //Log.Line("valid subtype");
-
-                    using (myEntity.Pin())
+                    if (cube.BlockDefinition.Id.SubtypeId == MyStringHash.NullOrEmpty)
                     {
-                        if (myEntity.MarkedForClose) return;
-                        //Log.Line("no marked close");
-                        GridAi gridAi;
-                        if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
-                        {
-                            gridAi = new GridAi(cube.CubeGrid);
-                            GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
-                            //Log.Line("new gridAi");
-                        }
-                        var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
-                        if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
-                        {
-                            if(!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                                gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
-
-                            CompsToStart.Enqueue(weaponComp);
-                            //Log.Line($"CompsToStart: {cube.BlockDefinition.Id.TypeId} subtype: {cube.BlockDefinition.Id.SubtypeId}");
-                        }
+                        Log.Line($"[OnEntityCreateEmptySubTypeId] typeId:{cube.BlockDefinition.Id.TypeId} - name:{cube.DebugName}");
+                        PrefabCubesToStart.Enqueue(cube);
+                        return;
                     }
+
+                    InitComp(myEntity);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
+        }
+
+        private void InitComp(MyEntity myEntity)
+        {
+            var cube = (MyCubeBlock)myEntity;
+            var weaponBase = myEntity as IMyLargeMissileTurret;
+            //Log.Line("OnEntityCreate weapon");
+            if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
+            Log.Line($"[InitComp] SubtypeId:{cube.BlockDefinition.Id.SubtypeId} - typeId:{cube.BlockDefinition.Id.TypeId} - name:{cube.DebugName}");
+            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+
+            //Log.Line("valid subtype");
+
+            using (myEntity.Pin())
+            {
+                if (myEntity.MarkedForClose) return;
+                //Log.Line("no marked close");
+                GridAi gridAi;
+                if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                {
+                    gridAi = new GridAi(cube.CubeGrid);
+                    GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
+                    //Log.Line("new gridAi");
+                }
+                var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
+                if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
+                {
+                    if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
+                        gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
+
+                    CompsToStart.Enqueue(weaponComp);
+                    //Log.Line($"CompsToStart: {cube.BlockDefinition.Id.TypeId} subtype: {cube.BlockDefinition.Id.SubtypeId}");
+                }
+            }
         }
 
         private void MenuOpened(object obj)
@@ -85,6 +101,7 @@ namespace WeaponCore
             var grid = MyEntities.GetEntityById(entityId) as MyCubeGrid;
 
             if (grid == null) return;
+            Log.Line($"OnPrefabSpawn: {entityId} - {grid.DebugName}");
 
             var cubes = grid.GetFatBlocks();
 
