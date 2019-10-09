@@ -39,11 +39,35 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
+
                 if (MainInit)
+                {
+                    Log.Line("MainInit");
+                    GridAi gridAi;
+                    if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
+                    {
+                        Log.Line($"OnAddedToScene no grid found: {MyCube.CubeGrid.DebugName} - {Session.Instance.GridTargetingAIs.Count}");
+                        gridAi = new GridAi(MyCube.CubeGrid);
+                        Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
+                    }
+                    else Log.Line("OnAddedToScene grid found");
+                    Ai = gridAi;
+                    //PowerInit();
+                    RegisterEvents();
+                    if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
+                    {
+                        Log.Line($"gridAi not null and added weapon: gridAiCnt:{Session.Instance.GridTargetingAIs.Count}");
+                        OnAddedToSceneTasks();
+                    }
+
+                    return;
+                }
+
+                /*if (MainInit)
                 {
                     RemoveComp();
                     Session.Instance.CubesToStart.Enqueue(MyCube);
-                }
+                }*/
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -217,8 +241,8 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                if(!Session.Instance.CompsToRemove.Contains(this))
-                    Session.Instance.CompsToRemove.Enqueue(this);
+
+                RemoveComp();
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
