@@ -125,7 +125,6 @@ namespace WeaponCore
         {
             if (!GameLoaded) return;
             if (!DbsUpdating && DbsToUpdate.Count > 0) UpdateDbsInQueue();
-            var report = false;
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
@@ -136,11 +135,6 @@ namespace WeaponCore
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
 
-                if (!report && Tick300)
-                {
-                    report = true;
-                    Log.Line($"grid:{gridAi.MyGrid.DebugName} - Ais:{GridTargetingAIs.Count} - Weapons:{gridAi.WeaponBase.Count}");
-                }
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
