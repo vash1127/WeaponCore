@@ -6,6 +6,7 @@ using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageRender;
 using WeaponCore.Support;
 
@@ -60,7 +61,7 @@ namespace WeaponCore
                     }
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-                    //Log.Line("here");
+            //Log.Line("here");
 
                     using (myEntity.Pin())
                     {
@@ -95,21 +96,6 @@ namespace WeaponCore
 
             if (remote != null)
                 _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
-        }
-
-        private void OnPrefabSpawn(long entityId, string prefabName)
-        {
-            var grid = MyEntities.GetEntityById(entityId) as MyCubeGrid;
-
-            if (grid == null) return;
-
-            var cubes = grid.GetFatBlocks();
-
-            foreach (var cube in cubes)
-            {
-                if (cube is IMyLargeMissileTurret || cube is IMyUpgradeModule)
-                    CubesToStart.Enqueue(cube);
-            }
         }
     }
 }

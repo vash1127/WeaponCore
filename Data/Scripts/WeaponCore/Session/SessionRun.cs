@@ -193,7 +193,7 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
-                MyVisualScriptLogicProvider.PrefabSpawnedDetailed += OnPrefabSpawn;
+                Session.Player.Character.ControllerInfo.ControlAcquired += PlayerControlAcquired;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -224,13 +224,12 @@ namespace WeaponCore
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
-            MyVisualScriptLogicProvider.PrefabSpawnedDetailed -= OnPrefabSpawn;
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
             ProjectileTree.Clear();
             GridTargetingAIs.Clear();
             //Session.Player.Character.ControllerInfo.ControlReleased -= PlayerControlReleased;
-            //Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
+            Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
             AllDefinitions = null;
             SoundDefinitions = null;
 

@@ -17,21 +17,17 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             if (Container.Entity.InScene)
             {
-                _isServer = Session.Instance.IsServer;
-                _isDedicated = Session.Instance.DedicatedServer;
-                _mpActive = Session.Instance.MpActive;
-                InitPlatform();
+                
             }
         }
 
         public override void OnBeforeRemovedFromContainer()
         {
+            base.OnBeforeRemovedFromContainer();
 
             if (Container.Entity.InScene)
             {
             }
-
-            base.OnBeforeRemovedFromContainer();
         }
 
         public override void OnAddedToScene()
@@ -39,41 +35,29 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
-
                 if (MainInit)
                 {
-                    Log.Line("MainInit");
                     GridAi gridAi;
                     if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
                     {
-                        Log.Line($"OnAddedToScene no grid found: {MyCube.CubeGrid.DebugName} - {Session.Instance.GridTargetingAIs.Count}");
                         gridAi = new GridAi(MyCube.CubeGrid);
                         Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
                     }
-                    else Log.Line("OnAddedToScene grid found");
                     Ai = gridAi;
-                    //PowerInit();
                     RegisterEvents();
                     if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
-                    {
-                        Log.Line($"gridAi not null and added weapon: gridAiCnt:{Session.Instance.GridTargetingAIs.Count}");
                         OnAddedToSceneTasks();
-                    }
-
-                    return;
                 }
-
-                /*if (MainInit)
-                {
-                    RemoveComp();
-                    Session.Instance.CubesToStart.Enqueue(MyCube);
-                }*/
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
 
         public void InitPlatform()
         {
+            _isServer = Session.Instance.IsServer;
+            _isDedicated = Session.Instance.DedicatedServer;
+            _mpActive = Session.Instance.MpActive;
+
             Platform = new MyWeaponPlatform(this);
             if (!Platform.Inited)
             {

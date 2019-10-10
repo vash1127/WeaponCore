@@ -105,30 +105,30 @@ namespace WeaponCore
 
         internal bool WeaponEnabled(IMyTerminalBlock block, int wepID)
         {
-            var tmpComp = block?.Components?.Get<WeaponComponent>();
-            if (tmpComp == null || !tmpComp.Platform.Inited) return false;
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return false;
 
             var enabled = false;
-            for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
-                    enabled = tmpComp.Set.Value.Weapons[i].Enable;
+                if (comp.Platform.Weapons[i].System.WeaponId == wepID)
+                    enabled = comp.Set.Value.Weapons[i].Enable;
             }
             return enabled;
         }
 
         internal void EnableWeapon(IMyTerminalBlock block, int wepID, bool enabled)
         {
-            var tmpComp = block?.Components?.Get<WeaponComponent>();
-            if (tmpComp != null && tmpComp.Platform.Inited)
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp != null && comp.Platform != null && comp.Platform.Inited)
             {
-                for (int i = 0; i < tmpComp.Platform.Weapons.Length; i++)
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
-                    if (tmpComp.Platform.Weapons[i].System.WeaponId == wepID)
+                    if (comp.Platform.Weapons[i].System.WeaponId == wepID)
                     {
-                        tmpComp.Set.Value.Weapons[i].Enable = enabled;
-                        tmpComp.SettingsUpdated = true;
-                        tmpComp.ClientUiUpdate = true;
+                        comp.Set.Value.Weapons[i].Enable = enabled;
+                        comp.SettingsUpdated = true;
+                        comp.ClientUiUpdate = true;
                     }
 
                 }

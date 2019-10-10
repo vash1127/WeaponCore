@@ -380,6 +380,7 @@ namespace WeaponCore
         private void StartComps()
         {
             WeaponComponent weaponCompPeek;
+            Log.Line($"CompsToStart: {CompsToStart.Count}");
             if (CompsToStart.TryPeek(out weaponCompPeek))
             {
                 if (weaponCompPeek.MyCube.CubeGrid.CanHavePhysics() && weaponCompPeek.MyCube.CubeGrid.Physics == null && !weaponCompPeek.Ai.MyGrid.MarkedForClose)
@@ -401,6 +402,7 @@ namespace WeaponCore
                 else
                 {
                     weaponComp.MyCube.Components.Add(weaponComp);
+                    weaponComp.InitPlatform();
                     weaponComp.Ai.FirstRun = true;
                     Log.Line($"added to comp");
                 }
@@ -416,9 +418,9 @@ namespace WeaponCore
 
         private void CubesToInit()
         {
-            MyEntity cube;
-            while (CubesToStart.TryDequeue(out cube))
-                OnEntityCreate(cube);
+            MyEntity myEntity;
+            while (CubesToStart.TryDequeue(out myEntity))
+                InitComp(myEntity);
         }
 
         private void UpdatePlacer()
