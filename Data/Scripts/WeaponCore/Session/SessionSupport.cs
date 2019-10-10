@@ -382,19 +382,44 @@ namespace WeaponCore
                 var weaponComp = CompsToStart[i];
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
+                    Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.RemoveComp();
                     CompsToStart.Remove(weaponComp);
                     continue;
                 }
                 if (weaponComp.MyCube.CubeGrid.CanHavePhysics() && weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose)
                     continue;
-
-                if (weaponComp.Platform == null)
+                if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
                 {
+                    /*
+                    Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
+                    weaponComp.RemoveComp();
+                    GridAi gridAi;
+                    if (GridTargetingAIs.TryGetValue(weaponComp.MyCube.CubeGrid, out gridAi))
+                    {
+                        weaponComp.Ai = gridAi;
+                        if (gridAi != null && gridAi.WeaponBase.TryAdd(weaponComp.MyCube, weaponComp))
+                        {
+                            if (!gridAi.WeaponCounter.ContainsKey(weaponComp.MyCube.BlockDefinition.Id.SubtypeId))
+                                gridAi.WeaponCounter.TryAdd(weaponComp.MyCube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
+                        }
+                    }
+
+                    weaponComp.InitPlatform();
+                    CompsToStart.Remove(weaponComp);
+                    */
+                }
+                else if (weaponComp.Platform == null)
+                {
+                    Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.MyCube.Components.Add(weaponComp);
                     CompsToStart.Remove(weaponComp);
                 }
-                else CompsToStart.Remove(weaponComp);
+                else
+                {
+                    Log.Line($"[Other] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    CompsToStart.Remove(weaponComp);
+                }
             }
             CompsToStart.ApplyRemovals();
         }

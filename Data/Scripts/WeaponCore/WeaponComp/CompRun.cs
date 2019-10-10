@@ -17,18 +17,11 @@ namespace WeaponCore.Support
                 if (Container.Entity.InScene)
                 {
                     lock (this)
-                        InitPlatform();
+                        if (Platform == null)
+                            InitPlatform();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
-        }
-
-        public override void OnBeforeRemovedFromContainer()
-        {
-            base.OnBeforeRemovedFromContainer();
-            if (Container.Entity.InScene)
-            {
-            }
         }
 
         public override void OnAddedToScene()
@@ -37,10 +30,19 @@ namespace WeaponCore.Support
             {
                 base.OnAddedToScene();
                 lock (this)
-                    if (MainInit)
-                        ReInitPlatform();
+                {
+                    //if (MainInit) MyAPIGateway.Utilities.InvokeOnGameThread(ReInitPlatform);
+                    if (MainInit) ReInitPlatform();
+                    else MyAPIGateway.Utilities.InvokeOnGameThread(InitPlatform);
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
+        }
+        
+        public override void OnBeforeRemovedFromContainer()
+        {
+            base.OnBeforeRemovedFromContainer();
+
         }
 
         public void InitPlatform()
@@ -110,7 +112,7 @@ namespace WeaponCore.Support
 
 
                 MaxRequiredPower -= weapon.RequiredPower;
-                weapon.RequiredPower = weapon.RequiredPower * mulitplier;
+                weapon.RequiredPower *= mulitplier;
                 MaxRequiredPower += weapon.RequiredPower;
 
 

@@ -20,7 +20,6 @@ namespace WeaponCore
                 var weaponBase = myEntity as IMyLargeMissileTurret;
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
-
                 if (!Inited)
                     lock (InitObj)
                         Init();
@@ -33,8 +32,6 @@ namespace WeaponCore
                         lock (InitObj)
                             MyAPIGateway.Utilities.InvokeOnGameThread(CreateLogicElements);
                     }
-                    var cube = (MyCubeBlock)myEntity;
-                    if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
                     InitComp(myEntity);
                 }
             }
