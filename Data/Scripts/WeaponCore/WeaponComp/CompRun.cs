@@ -11,12 +11,16 @@ namespace WeaponCore.Support
     {
         public override void OnAddedToContainer()
         {
-            base.OnAddedToContainer();
-            if (Container.Entity.InScene)
+            try
             {
-                lock (this)
-                    InitPlatform();
+                base.OnAddedToContainer();
+                if (Container.Entity.InScene)
+                {
+                    lock (this)
+                        InitPlatform();
+                }
             }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
         }
 
         public override void OnBeforeRemovedFromContainer()
