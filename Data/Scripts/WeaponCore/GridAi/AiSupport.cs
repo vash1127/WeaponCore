@@ -67,34 +67,6 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void DebugPlanet()
-        {
-            if (MyPlanet == null) return;
-            var planetCenter = MyPlanet.PositionComp.WorldAABB.Center;
-            var closestPointSphere = new BoundingSphereD(planetCenter, Vector3D.Distance(planetCenter, PlanetClosestPoint));
-            var closestSphere = new BoundingSphereD(planetCenter, MyPlanet.MinimumRadius);
-            var furthestSphere = new BoundingSphereD(planetCenter, MyPlanet.MaximumRadius);
-            DsDebugDraw.DrawSphere(closestPointSphere, Color.Green);
-            DsDebugDraw.DrawSphere(closestSphere, Color.Blue);
-            DsDebugDraw.DrawSphere(furthestSphere, Color.Red);
-            DsDebugDraw.DrawSingleVec(PlanetClosestPoint, 10f, Color.Red);
-        }
-
-        internal void SubGridInfo()
-        {
-            SubUpdate = false;
-            SubTick = Session.Instance.Tick + 10;
-            SubGridUpdate = true;
-            SubGrids.Clear();
-            foreach (var sub in MyAPIGateway.GridGroups.GetGroup(MyGrid, GridLinkTypeEnum.Mechanical))
-                SubGrids.Add((MyCubeGrid) sub);
-
-            foreach (var sub in SubGrids)
-                    GroupAABB.Include(sub.PositionComp.WorldAABB);
-
-            SubGridUpdate = false;
-        }
-
         public static bool GridEnemy(MyCubeBlock myCube, MyCubeGrid grid, List<long> owners = null)
         {
             if (owners == null) owners = grid.BigOwners;

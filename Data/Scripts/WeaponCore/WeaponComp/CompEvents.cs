@@ -6,9 +6,7 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
-using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 
 namespace WeaponCore.Support
 {
@@ -21,7 +19,6 @@ namespace WeaponCore.Support
                 Turret.AppendingCustomInfo += AppendingCustomInfo;
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
-                //BlockInventory.ContentsAdded += OnContentsAdded;
                 BlockInventory.ContentsChanged += OnContentsChanged;
                 BlockInventory.ContentsRemoved += OnContentsRemoved;
                 Sink.CurrentInputChanged += CurrentInputChanged;
@@ -30,7 +27,6 @@ namespace WeaponCore.Support
             {
                 Turret.AppendingCustomInfo -= AppendingCustomInfo;
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
-                //BlockInventory.ContentsAdded -= OnContentsAdded;
                 BlockInventory.ContentsChanged -= OnContentsChanged;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
@@ -45,7 +41,7 @@ namespace WeaponCore.Support
             WeaponComponent comp;
             if (Ai.WeaponBase.TryRemove(MyCube, out comp))
             {
-                //Log.Line($"Removed Comp");
+                Log.Line($"Removed Comp");
                 if (Platform != null && Platform.Inited)
                 {                
                     GridAi.WeaponCount wCount;
@@ -64,10 +60,9 @@ namespace WeaponCore.Support
 
             if (Ai.WeaponBase.Count == 0)
             {
+                Log.Line($"remove gridAi");
                 GridAi gridAi;
                 Session.Instance.GridTargetingAIs.TryRemove(MyCube.CubeGrid, out gridAi);
-                //Ai = null;
-                //MyGrid = null;
             }
         }
 

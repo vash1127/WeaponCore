@@ -31,6 +31,9 @@ namespace WeaponCore
             try
             {
                 Timings();
+
+                if (!CompsToStart.IsEmpty) StartComps();
+
                 if (Tick180)
                 {
                     var projectileTime = DsUtil.GetValue("projectiles");
@@ -146,12 +149,8 @@ namespace WeaponCore
                     ProcessAnimations();
                 DsUtil.Complete("animations", true);
 
-                if (!CompsToStart.IsEmpty) StartComps();
 
-                if (!CompsToRemove.IsEmpty) RemoveComps();
-
-                if (!PrefabCubesToStart.IsEmpty) QueuePrefabComps();
-
+                //if (!CompsToRemove.IsEmpty) RemoveComps();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }
@@ -188,13 +187,13 @@ namespace WeaponCore
             try
             {
                 Instance = this;
-                MyEntities.OnEntityCreate += OnEntityCreate;
-                MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
-                Session.Player.Character.ControllerInfo.ControlAcquired += PlayerControlAcquired;
-                MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
-                MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
+                MyEntities.OnEntityCreate += OnEntityCreate;
+                MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
+                //Session.Player.Character.ControllerInfo.ControlAcquired += PlayerControlAcquired;
+                MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
+                MyAPIGateway.Utilities.SendModMessage(7772, null);
 
                 var weapons = new Weapons();
                 var weaponDefinitions = weapons.ReturnDefs();
@@ -226,8 +225,7 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
             ProjectileTree.Clear();
             GridTargetingAIs.Clear();
-            //Session.Player.Character.ControllerInfo.ControlReleased -= PlayerControlReleased;
-            Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
+            //Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
             AllDefinitions = null;
             SoundDefinitions = null;
 

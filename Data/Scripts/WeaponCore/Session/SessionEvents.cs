@@ -21,7 +21,6 @@ namespace WeaponCore
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
-
                 if (!Inited)
                     lock (InitObj)
                         Init();
@@ -34,7 +33,8 @@ namespace WeaponCore
                         lock (InitObj)
                             MyAPIGateway.Utilities.InvokeOnGameThread(CreateLogicElements);
                     }
-
+                    var cube = (MyCubeBlock)myEntity;
+                    if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
                     InitComp(myEntity);
                 }
             }
@@ -43,13 +43,8 @@ namespace WeaponCore
 
         private void InitComp(MyEntity myEntity)
         {
-            var weaponBase = myEntity as IMyLargeMissileTurret;
             var cube = (MyCubeBlock)myEntity;
-            if (myEntity.IsPreview || cube.CubeGrid.IsPreview) return;
-            //Log.Line($"SubtypeId:{cube.BlockDefinition.Id.SubtypeId} - {cube.BlockDefinition.Id.TypeId} - {cube.DebugName}");
             if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
-
-            //Log.Line("here");
 
             using (myEntity.Pin())
             {
@@ -60,14 +55,15 @@ namespace WeaponCore
                     gridAi = new GridAi(cube.CubeGrid);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
+                var weaponBase = myEntity as IMyLargeMissileTurret;
                 var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
                 {
                     if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
                         gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
 
-                    CompsToStart.Enqueue(weaponComp);
-                    //Log.Line($"cube type: {cube.BlockDefinition.Id.TypeId} subtype: {cube.BlockDefinition.Id.SubtypeId}");
+                    CompsToStart.Add(weaponComp);
+                    CompsToStart.ApplyAdditions();
                 }
             }
         }

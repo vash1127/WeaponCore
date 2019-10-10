@@ -3,9 +3,6 @@ using System.Linq;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Components;
-using VRage.Game.Entity;
-using VRage.Game.ModAPI;
-using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -17,14 +14,14 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             if (Container.Entity.InScene)
             {
-                
+                lock (this)
+                    InitPlatform();
             }
         }
 
         public override void OnBeforeRemovedFromContainer()
         {
             base.OnBeforeRemovedFromContainer();
-
             if (Container.Entity.InScene)
             {
             }
@@ -35,19 +32,9 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
-                if (MainInit)
-                {
-                    GridAi gridAi;
-                    if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
-                    {
-                        gridAi = new GridAi(MyCube.CubeGrid);
-                        Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
-                    }
-                    Ai = gridAi;
-                    RegisterEvents();
-                    if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
-                        OnAddedToSceneTasks();
-                }
+                lock (this)
+                    if (MainInit)
+                        ReInitPlatform();
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -58,6 +45,7 @@ namespace WeaponCore.Support
             _isDedicated = Session.Instance.DedicatedServer;
             _mpActive = Session.Instance.MpActive;
 
+            Ai.FirstRun = true;
             Platform = new MyWeaponPlatform(this);
             if (!Platform.Inited)
             {
@@ -107,18 +95,18 @@ namespace WeaponCore.Support
                 weapon.UpdateShotEnergy();
                 weapon.UpdateRequiredPower();
 
-                var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage: 1;
+                var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage : 1;
 
                 if (weapon.BaseDamage > weapon.System.BaseDamage)
                     mulitplier = mulitplier * mulitplier;
 
                 weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
                 weapon.areaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
-                weapon.detonateDmg = weapon.System.DetonationDamage * mulitplier; 
+                weapon.detonateDmg = weapon.System.DetonationDamage * mulitplier;
 
 
                 MaxRequiredPower -= weapon.RequiredPower;
-                weapon.RequiredPower = weapon.RequiredPower *mulitplier;
+                weapon.RequiredPower = weapon.RequiredPower * mulitplier;
                 MaxRequiredPower += weapon.RequiredPower;
 
 
@@ -142,9 +130,9 @@ namespace WeaponCore.Support
                                           : 1);
                 }
 
-                HeatPerSecond += (60 / (float)weapon.TicksPerShot) *  weapon.HeatPShot * weapon.System.BarrelsPerShot;
+                HeatPerSecond += (60 / (float)weapon.TicksPerShot) * weapon.HeatPShot * weapon.System.BarrelsPerShot;
                 OptimalDPS += weapon.DPS;
-                
+
 
                 HeatSinkRate += weapon.HsRate;
 
@@ -174,16 +162,32 @@ namespace WeaponCore.Support
             }
 
             RegisterEvents();
+            Log.Line($"init comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
 
             OnAddedToSceneTasks();
 
-            if(!Turret.Enabled)
+            if (!Turret.Enabled)
             {
                 foreach (var w in Platform.Weapons)
                     w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
             }
 
             MainInit = true;
+        }
+
+        public void ReInitPlatform()
+        {
+            GridAi gridAi;
+            if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
+            {
+                gridAi = new GridAi(MyCube.CubeGrid);
+                Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
+            }
+            Ai = gridAi;
+            RegisterEvents();
+            Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
+            if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
+                OnAddedToSceneTasks();
         }
 
         private void OnAddedToSceneTasks()
@@ -199,13 +203,10 @@ namespace WeaponCore.Support
             Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
             if (!Ai.GridInit)
-            {
-                foreach (var cubeBlock in Ai.MyGrid.GetFatBlocks())
-                {
+                foreach (var cubeBlock in MyCube.CubeGrid.GetFatBlocks())
                     Ai.FatBlockAdded(cubeBlock);
-                }
-                Ai.GridInit = true;
-            }
+
+            Ai.GridInit = true;
 
             Status = Start.Starting;
         }

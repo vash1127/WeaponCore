@@ -377,49 +377,26 @@ namespace WeaponCore
 
         private void StartComps()
         {
-            WeaponComponent weaponCompPeek;
-            Log.Line($"CompsToStart: {CompsToStart.Count}");
-            if (CompsToStart.TryPeek(out weaponCompPeek))
+            for (int i = 0; i < CompsToStart.Count; i++)
             {
-                if (weaponCompPeek.MyCube.CubeGrid.CanHavePhysics() && weaponCompPeek.MyCube.CubeGrid.Physics == null && !weaponCompPeek.Ai.MyGrid.MarkedForClose)
+                var weaponComp = CompsToStart[i];
+                if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
-                    //Log.Line($"physics not ready: {weaponCompPeek.MyCube.CubeGrid.DebugName}");
-                    return;
+                    weaponComp.RemoveComp();
+                    CompsToStart.Remove(weaponComp);
+                    continue;
                 }
-            }
-            WeaponComponent weaponComp;
-            while (CompsToStart.TryDequeue(out weaponComp))
-            {
+                if (weaponComp.MyCube.CubeGrid.CanHavePhysics() && weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose)
+                    continue;
 
-                if (weaponComp.MyCube.CubeGrid != weaponComp.Ai.MyGrid)
-                {
-                    CompsToRemove.Enqueue(weaponComp);
-                    OnEntityCreate(weaponComp.MyCube);
-                }
-                else if (weaponComp.Ai.MyGrid.MarkedForClose)
-                    CompsToRemove.Enqueue(weaponComp);
-                else
+                if (weaponComp.Platform == null)
                 {
                     weaponComp.MyCube.Components.Add(weaponComp);
-                    weaponComp.InitPlatform();
-                    weaponComp.Ai.FirstRun = true;
-                    Log.Line($"added to comp");
+                    CompsToStart.Remove(weaponComp);
                 }
+                else CompsToStart.Remove(weaponComp);
             }
-        }
-
-        private void RemoveComps()
-        {
-            WeaponComponent weaponComp;
-            while (CompsToRemove.TryDequeue(out weaponComp))
-                weaponComp.RemoveComp();
-        }
-
-        private void QueuePrefabComps()
-        {
-            MyEntity myEntity;
-            while (PrefabCubesToStart.TryDequeue(out myEntity))
-                InitComp(myEntity);
+            CompsToStart.ApplyRemovals();
         }
 
         private void UpdatePlacer()
