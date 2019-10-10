@@ -87,7 +87,8 @@ namespace WeaponCore
                     if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
                         gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
 
-                    CompsToStart.Enqueue(weaponComp);
+                    CompsToStart.Add(weaponComp);
+                    CompsToStart.ApplyAdditions();
                 }
             }
         }

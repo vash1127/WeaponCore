@@ -464,7 +464,7 @@ namespace WeaponCore.Support
         public Results GetValue(string name)
         {
             Timings times;
-            if (_timings.TryGetValue(name, out times))
+            if (_timings.TryGetValue(name, out times) && times.Values.Count > 0)
             {
                 var itemCnt = times.Values.Count;
                 var tmpCnt = times.TmpArray.Length;

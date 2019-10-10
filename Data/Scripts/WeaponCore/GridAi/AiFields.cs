@@ -17,7 +17,6 @@ namespace WeaponCore.Support
     public partial class GridAi
     {
         internal volatile bool Ready;
-        internal static volatile bool SubGridUpdate;
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(50);
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(50);
@@ -59,7 +58,6 @@ namespace WeaponCore.Support
         internal Vector3D PlanetClosestPoint;
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
-        internal uint SubTick;
         internal uint TargetsUpdatedTick;
         internal uint RecalcLowPowerTick;
         internal uint ResetPowerTick;
@@ -69,13 +67,10 @@ namespace WeaponCore.Support
         internal int ManualComps;
         internal int BlockCount;
         internal long MyOwner;
-        internal bool TargetNeutrals;
-        internal bool TargetNoOwners;
-        internal bool SubUpdate;
+        internal bool GridInit;
         internal bool DbReady;
         internal bool ResetPower = true;
         internal bool RecalcPowerPercent;
-        internal bool GridInit;
         internal bool UpdatePowerSources;
         internal bool AvailablePowerIncrease;
         internal bool RecalcDone;
@@ -109,7 +104,6 @@ namespace WeaponCore.Support
             None,
         }
 
-        internal BoundingBoxD GroupAABB;
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
 
         internal GridAi(MyCubeGrid grid)

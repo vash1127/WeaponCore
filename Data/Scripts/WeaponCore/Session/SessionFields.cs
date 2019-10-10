@@ -101,10 +101,7 @@ namespace WeaponCore
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
 
-        internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventoryBase, MyFixedPoint>>  AmmoInventoriesMaster  = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventoryBase, MyFixedPoint>>(MyDefinitionId.Comparer);
-        internal readonly ConcurrentQueue<WeaponComponent> CompsToStart = new ConcurrentQueue<WeaponComponent>();
-        internal readonly ConcurrentQueue<WeaponComponent> CompsToRemove = new ConcurrentQueue<WeaponComponent>();
-        internal readonly MyConcurrentHashSet<MyEntity> BlocksToInit = new MyConcurrentHashSet<MyEntity>();
+        internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(25));
         internal DSUtils DsUtil { get; set; } = new DSUtils();
 

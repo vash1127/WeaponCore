@@ -30,7 +30,6 @@ namespace WeaponCore.Support
         private bool _readyToSync;
         private bool _firstSync;
 
-        private DSUtils Dsutil1 { get; set; } = new DSUtils();
         private HashSet<string> UIControls = new HashSet<string>(); 
         internal GridAi Ai { get; set; }
         internal MySoundPair RotationSound;
