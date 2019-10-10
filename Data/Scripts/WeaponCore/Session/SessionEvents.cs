@@ -39,6 +39,8 @@ namespace WeaponCore
                     lock (InitObj)
                         Init();
 
+                
+
                 if (myEntity is IMyUpgradeModule || myEntity is IMyLargeMissileTurret)
                 {
                     if (!UpgradeControls && myEntity is IMyUpgradeModule)
@@ -50,7 +52,7 @@ namespace WeaponCore
                         }
                         UpgradeControls = true;
                     }
-                    if (!TurretControls && myEntity is IMyUpgradeModule)
+                    if (!TurretControls && myEntity is IMyLargeMissileTurret)
                     {
                         lock (InitObj)
                         {
@@ -59,31 +61,35 @@ namespace WeaponCore
                         }
                         TurretControls = true;
                     }
+
                     if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
-
-            //Log.Line("here");
-
-                    using (myEntity.Pin())
-                    {
-                        if (myEntity.MarkedForClose) return;
-                        GridAi gridAi;
-                        if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
-                        {
-                            gridAi = new GridAi(cube.CubeGrid);
-                            GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
-                        }
-                        var weaponComp = new WeaponComponent(gridAi, cube);
-                        if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
-                        {
-                            if(!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                                gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
-
-                            CompsToStart.Enqueue(weaponComp);
-                        }
-                    }
+                    
+                    InitComp(cube);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
+        }
+
+        private void InitComp(MyCubeBlock cube)
+        {
+            using (cube.Pin())
+            {
+                if (cube.MarkedForClose) return;
+                GridAi gridAi;
+                if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                {
+                    gridAi = new GridAi(cube.CubeGrid);
+                    GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
+                }
+                var weaponComp = new WeaponComponent(gridAi, cube);
+                if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
+                {
+                    if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
+                        gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
+
+                    CompsToStart.Enqueue(weaponComp);
+                }
+            }
         }
 
         private void MenuOpened(object obj)

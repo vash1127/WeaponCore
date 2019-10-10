@@ -28,7 +28,6 @@ namespace WeaponCore.Support
 
         private static ConcurrentDictionary<MyCubeGrid, FastResourceLock> _gridLocks = new ConcurrentDictionary<MyCubeGrid, FastResourceLock>();
         private static uint _lockClean;
-        private static FastResourceLock _emergencyLock = new FastResourceLock();
 
         private uint _lastScan;
         public new bool AllowScanning = true;
@@ -37,7 +36,7 @@ namespace WeaponCore.Support
         {
             base.OnAddedToContainer();
             _myGrid = (base.Entity as MyCubeGrid);
-            ((IMyCubeGrid)_myGrid).OnBlockAdded += m_grid_OnBlockAdded;
+            ((IMyCubeGrid)_myGrid).OnBlockAdded += OnBlockAdded;
             Log.ThreadedWrite($"CoreTargeting Added - EntityId: {_myGrid.EntityId}");
 
             FastResourceLock gridLock = _gridLocks.GetOrAdd(_myGrid, new FastResourceLock());
@@ -58,10 +57,10 @@ namespace WeaponCore.Support
         public override void OnBeforeRemovedFromContainer()
         {
             base.OnBeforeRemovedFromContainer();
-            ((IMyCubeGrid)_myGrid).OnBlockAdded -= m_grid_OnBlockAdded;
+            ((IMyCubeGrid)_myGrid).OnBlockAdded -= OnBlockAdded;
         }
 
-        private void m_grid_OnBlockAdded(IMySlimBlock obj)
+        private void OnBlockAdded(IMySlimBlock obj)
         {
             IMyUpgradeModule myLargeTurretBaseCore = obj.FatBlock as IMyUpgradeModule;
             if (myLargeTurretBaseCore != null)
@@ -131,8 +130,6 @@ namespace WeaponCore.Support
                     _targetGrids.Clear();
                     _targetBlocks.Clear();
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, _targetGrids, MyEntityQueryType.Both);
-
-                    //MyMissiles.GetAllMissilesInSphere(ref boundingSphereD, m_targetRoots);
 
                     int count = _targetGrids.Count;
                     _owners.AddRange(_myGrid.SmallOwners);
@@ -248,6 +245,23 @@ namespace WeaponCore.Support
                         {
                             _targetGrids.RemoveAtFast(j);
                         }
+                    }
+
+                    if (Session.Instance.Tick >= _lockClean) {
+                        using (var enumerator = _gridLocks.GetEnumerator()) {
+                            List<MyCubeGrid> gridsToRemove = new List<MyCubeGrid>();
+                            while (enumerator.MoveNext()) {
+                                if (enumerator.Current.Key.MarkedForClose)
+                                    gridsToRemove.Add(enumerator.Current.Key);
+                            }
+                            for (int i = 0; i < gridsToRemove.Count; i++)
+                            {
+                                FastResourceLock disposeLock;
+                                _gridLocks.TryRemove(gridsToRemove[i], out disposeLock);
+                            }
+                            gridsToRemove.Clear();
+                        }
+                        _lockClean = Session.Instance.Tick + 7200;
                     }
                 }
             }

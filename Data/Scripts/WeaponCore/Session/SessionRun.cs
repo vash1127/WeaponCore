@@ -152,8 +152,6 @@ namespace WeaponCore
                 if (!CompsToStart.IsEmpty) StartComps();
 
                 if (!CompsToRemove.IsEmpty) RemoveComps();
-
-                if (!CubesToStart.IsEmpty) CubesToInit();
                 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
@@ -193,7 +191,7 @@ namespace WeaponCore
                 Instance = this;
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
-                Session.Player.Character.ControllerInfo.ControlAcquired += PlayerControlAcquired;
+                //MyAPIGateway.Session.Player.Character.ControllerInfo.ControlAcquired += PlayerControlAcquired;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 AllDefinitions = Static.GetAllDefinitions();
@@ -217,23 +215,28 @@ namespace WeaponCore
 
         protected override void UnloadData()
         {
-            PurgeAllEffects();
-            SApi.Unload();
-            
-            MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
-            MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
-            MyEntities.OnEntityCreate -= OnEntityCreate;
-            MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
-            MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
-            MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
-            ProjectileTree.Clear();
-            GridTargetingAIs.Clear();
-            //Session.Player.Character.ControllerInfo.ControlReleased -= PlayerControlReleased;
-            Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
-            AllDefinitions = null;
-            SoundDefinitions = null;
+            try
+            {
+                PurgeAllEffects();
+                SApi.Unload();
 
-            Instance = null;
+                MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
+                MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
+                MyEntities.OnEntityCreate -= OnEntityCreate;
+                MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
+                MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
+                MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
+                ProjectileTree.Clear();
+                GridTargetingAIs.Clear();
+                //Session.Player.Character.ControllerInfo.ControlReleased -= PlayerControlReleased;
+                //MyAPIGateway.Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
+                AllDefinitions = null;
+                SoundDefinitions = null;
+
+                Instance = null;
+                
+            }
+            catch (Exception e) { }
             Log.Line("Logging stopped.");
             Log.Close();
         }

@@ -395,7 +395,7 @@ namespace WeaponCore
                 
                 if (weaponComp.MyCube.CubeGrid != weaponComp.Ai.MyGrid) {
                     CompsToRemove.Enqueue(weaponComp);
-                    OnEntityCreate(weaponComp.MyCube);
+                    InitComp(weaponComp.MyCube);
                 }
                 else if (weaponComp.Ai.MyGrid.MarkedForClose)
                     CompsToRemove.Enqueue(weaponComp);
@@ -414,13 +414,6 @@ namespace WeaponCore
             WeaponComponent weaponComp;
             while (CompsToRemove.TryDequeue(out weaponComp))
                 weaponComp.RemoveComp();
-        }
-
-        private void CubesToInit()
-        {
-            MyEntity myEntity;
-            while (CubesToStart.TryDequeue(out myEntity))
-                InitComp(myEntity);
         }
 
         private void UpdatePlacer()
