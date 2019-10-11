@@ -41,7 +41,7 @@ namespace WeaponCore.Support
             WeaponComponent comp;
             if (Ai.WeaponBase.TryRemove(MyCube, out comp))
             {
-                Log.Line($"Removed Comp");
+                Log.Line($"Removed Comp: remaining:{Ai.WeaponBase.Count}");
                 if (Platform != null && Platform.Inited)
                 {                
                     GridAi.WeaponCount wCount;
@@ -60,9 +60,9 @@ namespace WeaponCore.Support
 
             if (Ai.WeaponBase.Count == 0)
             {
-                Log.Line($"remove gridAi");
                 GridAi gridAi;
-                Session.Instance.GridTargetingAIs.TryRemove(MyCube.CubeGrid, out gridAi);
+                if (Session.Instance.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
+                    Log.Line($"remove gridAi");
             }
         }
 

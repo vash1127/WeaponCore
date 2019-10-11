@@ -13,7 +13,9 @@ using VRage.Utils;
 using WeaponCore.Platform;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
+using SpaceEngineers.Game.ModAPI;
 using VRage.ObjectBuilders;
+using VRageRender;
 
 namespace WeaponCore
 {
@@ -377,6 +379,7 @@ namespace WeaponCore
 
         private void StartComps()
         {
+            var reassign = false;
             for (int i = 0; i < CompsToStart.Count; i++)
             {
                 var weaponComp = CompsToStart[i];
@@ -391,23 +394,11 @@ namespace WeaponCore
                     continue;
                 if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
                 {
-                    /*
                     Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
                     weaponComp.RemoveComp();
-                    GridAi gridAi;
-                    if (GridTargetingAIs.TryGetValue(weaponComp.MyCube.CubeGrid, out gridAi))
-                    {
-                        weaponComp.Ai = gridAi;
-                        if (gridAi != null && gridAi.WeaponBase.TryAdd(weaponComp.MyCube, weaponComp))
-                        {
-                            if (!gridAi.WeaponCounter.ContainsKey(weaponComp.MyCube.BlockDefinition.Id.SubtypeId))
-                                gridAi.WeaponCounter.TryAdd(weaponComp.MyCube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
-                        }
-                    }
-
-                    weaponComp.InitPlatform();
+                    InitComp(weaponComp.MyCube, false);
+                    reassign = true;
                     CompsToStart.Remove(weaponComp);
-                    */
                 }
                 else if (weaponComp.Platform == null)
                 {
@@ -422,6 +413,38 @@ namespace WeaponCore
                 }
             }
             CompsToStart.ApplyRemovals();
+            if (reassign)
+            {
+                CompsToStart.ApplyAdditions();
+                StartComps();
+            }
+        }
+
+        private void InitComp(MyEntity myEntity, bool apply = true)
+        {
+            var cube = (MyCubeBlock)myEntity;
+            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+
+            using (myEntity.Pin())
+            {
+                if (myEntity.MarkedForClose) return;
+                GridAi gridAi;
+                if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                {
+                    gridAi = new GridAi(cube.CubeGrid);
+                    GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
+                }
+                var weaponBase = myEntity as IMyLargeMissileTurret;
+                var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
+                if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
+                {
+                    if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
+                        gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
+
+                    CompsToStart.Add(weaponComp);
+                    if (apply) CompsToStart.ApplyAdditions();
+                }
+            }
         }
 
         private void UpdatePlacer()

@@ -213,8 +213,7 @@ namespace WeaponCore.Support
                     Ai.FatBlockAdded(cubeBlock);
 
             Ai.GridInit = true;
-
-            Status = Start.Starting;
+            Status = !IsWorking ? Start.Starting : Start.ReInit;
         }
 
         public override void OnRemovedFromScene()

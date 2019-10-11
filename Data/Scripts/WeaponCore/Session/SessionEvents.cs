@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Screens.Models;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
@@ -36,33 +37,6 @@ namespace WeaponCore
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
-        }
-
-        private void InitComp(MyEntity myEntity)
-        {
-            var cube = (MyCubeBlock)myEntity;
-            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
-
-            using (myEntity.Pin())
-            {
-                if (myEntity.MarkedForClose) return;
-                GridAi gridAi;
-                if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
-                {
-                    gridAi = new GridAi(cube.CubeGrid);
-                    GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
-                }
-                var weaponBase = myEntity as IMyLargeMissileTurret;
-                var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
-                if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
-                {
-                    if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                        gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
-
-                    CompsToStart.Add(weaponComp);
-                    CompsToStart.ApplyAdditions();
-                }
-            }
         }
 
         private void MenuOpened(object obj)
