@@ -8,6 +8,7 @@ using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
@@ -38,9 +39,7 @@ namespace WeaponCore.Support
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.Instance.LastTerminalId == MyCube.EntityId;
 
-        internal MyFixedPoint MaxInventoryVolume;
         internal MyFixedPoint MaxInventoryMass;
-        internal uint LastAmmoUnSuspendTick;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
         internal uint lastInventoryChangedTick;
@@ -48,7 +47,7 @@ namespace WeaponCore.Support
         internal uint DelayTicks = 0;
         internal uint IsWorkingChangedTick;
         internal uint PositionUpdateTick;
-        internal int PullingAmmoCnt;
+        internal float MaxInventoryVolume;
         internal float OptimalDPS;
         internal float CurrentDPS;
         internal float CurrentHeat;
@@ -94,10 +93,11 @@ namespace WeaponCore.Support
         internal bool IsFunctional;
         internal bool IsWorking;
         internal bool FullInventory;
-        internal bool MultiInventory;
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
         internal bool IsAIOnlyTurret;
+        internal bool HasInventory;
+        internal bool IgnoreInvChange;
         internal LogicSettings Set;
         internal LogicState State;
         internal MyResourceSinkComponent Sink;
@@ -122,23 +122,37 @@ namespace WeaponCore.Support
             {
                 AIOnlyTurret = myCube as IMyUpgradeModule;
                 IsAIOnlyTurret = true;
-            }      
+            }
 
             //TODO add to config
-            BlockInventory = new MyInventory(0.384f,Vector3.Zero, MyInventoryFlags.CanReceive | MyInventoryFlags.CanSend);
 
-            MyCube.Components.Add(BlockInventory);
-
-            if (BlockInventory == null)
-                Log.Line("Inventory null");
-
-            BlockInventory.Constraint = new MyInventoryConstraint("AmmoConstraint")
+            if (IsAIOnlyTurret)
             {
-                m_useDefaultIcon = false
-            };
+                BlockInventory = new MyInventory(0.384f, Vector3.Zero, MyInventoryFlags.CanReceive | MyInventoryFlags.CanSend);
 
-            MaxInventoryVolume = BlockInventory.MaxVolume;
+                if (BlockInventory == null)
+                    Log.Line("Inventory null");
+
+                MyCube.Components.Add(BlockInventory);
+
+                //MaxInventoryVolume = BlockInventory.MaxVolume;
+                MaxInventoryMass = BlockInventory.MaxMass;
+                BlockInventory.Refresh();
+
+                var invOB = BlockInventory.GetObjectBuilder();
+                var cubeOB = MyCube.GetObjectBuilderCubeBlock();
+                cubeOB.ConstructionInventory = invOB;
+                MyCube.Init(cubeOB, myCube.CubeGrid);
+                
+            }
+
+            BlockInventory = myCube.GetInventory(0);
+
+            //BlockInventory = MyCube.GetInventory();
+
+            MaxInventoryVolume = (float)BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
+
             PowerInit();
 
             //IdlePower = Turret.ResourceSink.RequiredInputByType(GId);

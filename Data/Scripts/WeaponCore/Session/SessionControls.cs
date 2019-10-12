@@ -30,7 +30,7 @@ namespace WeaponCore
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
                 if(typeof(T) == typeof(IMyLargeTurretBase))
-                    TerminalHelpers.AlterActions<IMyLargeMissileTurret>();
+                    TerminalHelpers.AlterActions<IMyLargeTurretBase>();
 
                 TerminalHelpers.AlterControls<T>();
 

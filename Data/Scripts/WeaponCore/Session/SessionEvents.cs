@@ -57,7 +57,7 @@ namespace WeaponCore
                         lock (InitObj)
                         {
                             if (!TurretControls)
-                                MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyLargeMissileTurret>);
+                                MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyLargeTurretBase>);
                         }
                         TurretControls = true;
                     }

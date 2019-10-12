@@ -391,7 +391,13 @@ namespace WeaponCore
                 if (weaponComp.MyCube.CubeGrid.CanHavePhysics() && weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose)
                     continue;
 
-                if (weaponComp.Platform == null)
+                if(weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
+                {
+                    weaponComp.RemoveComp();
+                    InitComp(weaponComp.MyCube);
+                    CompsToStart.Remove(weaponComp);
+                }
+                else if (weaponComp.Platform == null)
                 {
                     weaponComp.MyCube.Components.Add(weaponComp);
                     CompsToStart.Remove(weaponComp);

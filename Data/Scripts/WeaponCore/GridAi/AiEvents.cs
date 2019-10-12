@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -47,12 +48,13 @@ namespace WeaponCore.Support
                         UpdatePowerSources = true;
                     }
                 }
-                if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler) {
+                if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler)
+                {
                     MyInventory inventory;
-                    if (myCubeBlock.TryGetInventory(out inventory)) {
+                    if (myCubeBlock.TryGetInventory(out inventory))
                         inventory.InventoryContentChanged += CheckAmmoInventory;
-                    }
                 }
+                
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
         }
@@ -93,19 +95,22 @@ namespace WeaponCore.Support
         {
             if (item.Content is MyObjectBuilder_AmmoMagazine)
             {
+                var myInventory = inventory as MyInventory;
+                if (myInventory == null) return;
                 var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
                 var magId = ammoMag.GetObjectId();
 
                 if (AmmoInventories.ContainsKey(magId))
                 {
-                    if (!AmmoInventories[magId].ContainsKey(inventory) && amount > 0)
-                        AmmoInventories[ammoMag.GetObjectId()][inventory] = amount;
+                    var hasIntentory = AmmoInventories[magId].ContainsKey(myInventory);
+                    if (!hasIntentory && amount > 0)
+                        AmmoInventories[ammoMag.GetObjectId()][myInventory] = amount;
 
-                    else if (AmmoInventories[magId][inventory] + amount > 0)
-                        AmmoInventories[magId][inventory] += amount;
+                    else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
+                        AmmoInventories[magId][myInventory] += amount;
 
-                    else if (AmmoInventories[magId].ContainsKey(inventory))
-                        AmmoInventories[magId].Remove(inventory);
+                    else if (hasIntentory)
+                        AmmoInventories[magId].Remove(myInventory);
                 }
             }
         }

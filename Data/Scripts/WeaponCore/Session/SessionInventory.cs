@@ -1,5 +1,8 @@
 ﻿using Sandbox.Game;
-using VRage.Game;
+using Sandbox.ModAPI;
+using System.Collections.Generic;
+using VRage;
+using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 using WeaponCore.Support;
 
@@ -25,7 +28,7 @@ namespace WeaponCore
             }
         }*/
 
-        private static void AmmoPull(WeaponComponent comp, Weapon weapon, bool suspend)
+        /*private static void AmmoPull(WeaponComponent comp, Weapon weapon, bool suspend)
         {
             //Log.Line($"[ammo pull] suspend:{suspend}(was:{weapon.AmmoSuspend}) weaponId:{weapon.WeaponId} - weaponDef:{weapon.System.AmmoDefId.SubtypeId.String} - Full:{weapon.AmmoFull} - weaponSuspendAge:{weapon.SuspendAmmoTick} - weaponUnSuspendAge:{weapon.UnSuspendAmmoTick} - multi:{comp.MultiInventory} - ");
             /*weapon.AmmoSuspend = suspend;
@@ -43,7 +46,7 @@ namespace WeaponCore
 
             if (suspend) comp.PullingAmmoCnt--;
             else comp.PullingAmmoCnt++;*/
-        }
+        //}
 
         /*
         private static MyDefinitionId? NextActiveAmmoDef(WeaponComponent comp, Weapon oldWeapon, bool skipOld = false)
@@ -138,27 +141,110 @@ namespace WeaponCore
             return null;
         }*/
 
-        internal static bool ComputeStorage(Weapon weapon)
+        internal static void ComputeStorage(Weapon weapon)
         {
             var comp = weapon.Comp;
-            comp.BlockInventory.Refresh();
+            if (!comp.MyCube.HasInventory) return;
+           
             var def = weapon.System.AmmoDefId;
-            comp.FullInventory = comp.BlockInventory.CargoPercentage >= 0.5;
             var lastMags = weapon.CurrentMags;
+            
+            
             weapon.CurrentMags = comp.BlockInventory.GetItemAmount(def);
+
+            Log.Line($"weapon.CurrentMags: {weapon.CurrentMags}");
+
+            
+
+            var invMagsAvailable = comp.Ai.AmmoInventories[def];
+
+            Log.ThreadedWrite($"weapon.CurrentAmmoVolume: {weapon.CurrentAmmoVolume} 25% amount: {0.25f * weapon.System.MaxAmmoVolume}");
+
+            if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invMagsAvailable.Count > 0)
+            {
+                MyAPIGateway.Parallel.Start(() =>
+                {
+                    AmmoPull(weapon);
+                });
+            }
 
             if (lastMags == 0 && weapon.CurrentMags > 0)
                 weapon.Comp.Ai.Reloading = true;
 
+            //Log.Line($"[computed storage] AmmoDef:{def.SubtypeId.String}({weapon.CurrentMags.ToIntSafe()}) - Full:{weapon.AmmoFull} - Mass:<{itemMass}>{ammoMass}({comp.MaxAmmoMass})[{comp.MaxAmmoMass}] - Volume:<{itemVolume}>{ammoVolume}({comp.MaxAmmoVolume})[{comp.MaxInventoryVolume}]");
+        }
+
+        internal static void AmmoPull(Weapon weapon) {
+
+            DSUtils timer = new DSUtils();
+            timer.Start("AmmoPull");
+            var def = weapon.System.AmmoDefId;
+            Log.ThreadedWrite($"here");
             float itemMass;
             float itemVolume;
+            
             MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
-            var ammoMass = itemMass * weapon.CurrentMags.ToIntSafe();
+            
             var ammoVolume = itemVolume * weapon.CurrentMags.ToIntSafe();
-            weapon.AmmoFull = ammoMass >= comp.MaxAmmoMass || ammoVolume >= comp.MaxAmmoVolume;
+            var invMagsAvailable = weapon.Comp.Ai.AmmoInventories[def];
+            var currentInventory = invMagsAvailable.GetEnumerator();
+            var fullAmount = 0.75f * weapon.System.MaxAmmoVolume;
+            var magItem = weapon.System.AmmoItem;
+            var weaponInventory = weapon.Comp.BlockInventory;
+            var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / itemVolume);
 
-            return weapon.CurrentMags > lastMags;
-            //Log.Line($"[computed storage] AmmoDef:{def.SubtypeId.String}({weapon.CurrentMags.ToIntSafe()}) - Full:{weapon.AmmoFull} - Mass:<{itemMass}>{ammoMass}({comp.MaxAmmoMass})[{comp.MaxAmmoMass}] - Volume:<{itemVolume}>{ammoVolume}({comp.MaxAmmoVolume})[{comp.MaxInventoryVolume}]");
+            List<MyTuple<MyInventory, int>> inventoriesToPull = new List<MyTuple<MyInventory, int>>();
+
+            Log.ThreadedWrite($"magsNeeded: {magsNeeded}");
+
+            while (magsNeeded > 0 && currentInventory.MoveNext())
+            {
+                var magsAvailable = (int)currentInventory.Current.Value;
+                var inventory = currentInventory.Current.Key;
+
+                Log.ThreadedWrite($"canTransfer: {((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def)}");
+
+                if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
+                {
+
+                    Log.ThreadedWrite($"magsAvailable: {magsAvailable}");
+
+                    if (magsAvailable > magsNeeded)
+                    {
+                        inventoriesToPull.Add(new MyTuple<MyInventory, int> {Item1 = inventory, Item2 = magsNeeded });
+                        magsNeeded = 0;
+                    }
+                    else
+                    {
+                        inventoriesToPull.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsAvailable });
+                        magsNeeded -= magsAvailable;
+                    }
+                }
+            }
+
+            if (inventoriesToPull.Count > 0) {
+                MyAPIGateway.Utilities.InvokeOnGameThread(()=> 
+                {
+                    MoveAmmo(weapon, inventoriesToPull);
+                });
+            }
+            timer.Complete("ammoPull", false, true);
+        }
+
+        internal static void MoveAmmo(Weapon weapon, List<MyTuple<MyInventory,int>> inventoriesToPull)
+        {
+            
+            var def = weapon.System.AmmoDefId;
+            var magItem = weapon.System.AmmoItem;
+
+            weapon.Comp.IgnoreInvChange = true;
+            for (int i = 0; i < inventoriesToPull.Count; i++)
+            {
+                var amt = inventoriesToPull[i].Item2;
+                inventoriesToPull[i].Item1.RemoveItemsOfType(amt, def);
+                weapon.Comp.BlockInventory.Add(magItem, amt);
+            }
+            weapon.Comp.IgnoreInvChange = false;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace WeaponCore.Control
 {
     public static class TerminalHelpers
     {
-        internal static bool AlterActions<T>() where T : IMyLargeMissileTurret
+        internal static bool AlterActions<T>() where T : IMyLargeTurretBase
         {
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);

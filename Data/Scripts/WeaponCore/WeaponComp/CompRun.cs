@@ -1,8 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using Sandbox.Game;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Game;
 using VRage.Game.Components;
+using VRage.Game.Entity;
+using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -11,12 +17,19 @@ namespace WeaponCore.Support
     {
         public override void OnAddedToContainer()
         {
-            base.OnAddedToContainer();
-            if (Container.Entity.InScene)
+            try
             {
-                lock (this)
-                    InitPlatform();
+                base.OnAddedToContainer();
+                if (Container.Entity.InScene)
+                {
+                    lock (this)
+                        if (Platform == null)
+                            InitPlatform();
+
+                    Log.Line("Added To Container");
+                }
             }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
         }
 
         public override void OnBeforeRemovedFromContainer()
@@ -33,8 +46,12 @@ namespace WeaponCore.Support
             {
                 base.OnAddedToScene();
                 lock (this)
-                    if (MainInit)
-                        ReInitPlatform();
+                {
+                    if (MainInit) MyAPIGateway.Utilities.InvokeOnGameThread(ReInitPlatform);
+                    else MyAPIGateway.Utilities.InvokeOnGameThread(InitPlatform);
+                }
+
+                Log.Line("Added To Scene");
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -49,26 +66,21 @@ namespace WeaponCore.Support
             Platform = new MyWeaponPlatform(this);
             if (!Platform.Inited)
             {
-                Session.Instance.CompsToRemove.Enqueue(this);
+                WeaponComponent removed;
+                Ai.WeaponBase.TryRemove(MyCube, out removed);
                 Log.Line("init platform returned");
                 return;
             }
 
-            PullingAmmoCnt = Platform.Structure.AmmoToWeaponIds.Count;
-            //TODO FIX inventory
-            //FullInventory = BlockInventory.CargoPercentage >= 0.5;
-            MultiInventory = PullingAmmoCnt > 1;
-            if (MultiInventory)
-            {
-                MaxAmmoVolume = (float)MyFixedPoint.MultiplySafe(MaxInventoryVolume, (1 / (float)PullingAmmoCnt)) * 0.5f;
-                MaxAmmoMass = (float)MyFixedPoint.MultiplySafe(MaxInventoryMass, (1 / (float)PullingAmmoCnt)) * 0.5f;
-            }
+
+
 
             StorageSetup();
 
             MaxRequiredPower = 0;
             HeatPerSecond = 0;
             OptimalDPS = 0;
+
             for (int i  = 0; i< Platform.Weapons.Length; i++)
             {
                 var weapon = Platform.Weapons[i];
@@ -143,26 +155,36 @@ namespace WeaponCore.Support
                     weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
                     weapon.FirstLoad = false;
                 }
+
+                MaxInventoryVolume += weapon.System.MaxAmmoVolume;
             }
 
             Ai.OptimalDPS += OptimalDPS;
 
-            //var gun = Gun.GunBase;
-            var id = PullingAmmoCnt == 0 ? Platform.Weapons[0].System.MagazineDef.Id
-                : Platform.Structure.AmmoToWeaponIds.First().Key;
-            
-            BlockInventory.Constraint.Clear();
-            BlockInventory.Constraint.Add(id);
-            //gun.SwitchAmmoMagazine(id);
-            foreach (var w in Platform.Weapons)
+            Log.Line($"Has Inventory: {MyCube.HasInventory}");
+
+            if (MyCube.HasInventory)
             {
-                var otherId = w.System.MagazineDef.AmmoDefinitionId;
-                if (otherId == id) continue;
-                BlockInventory.Constraint.Add(otherId);
+
+                if (!IsAIOnlyTurret)
+                {
+                    foreach (var w in Platform.Weapons)
+                    {
+                        var otherId = w.System.MagazineDef.AmmoDefinitionId;
+                        Log.Line($"otherId: {otherId.SubtypeId}");
+
+                        BlockInventory.Constraint.Add(otherId);
+                    }
+                }
+                else
+                {
+                    BlockInventory.FixInventoryVolume(MaxAmmoVolume);
+                }
+                BlockInventory.Refresh();
             }
 
             RegisterEvents();
-            Log.Line($"init comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
+            //Log.Line($"init comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
 
             OnAddedToSceneTasks();
 
@@ -195,7 +217,7 @@ namespace WeaponCore.Support
             }
             Ai = gridAi;
             RegisterEvents();
-            Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
+            //Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                 OnAddedToSceneTasks();
         }
@@ -232,6 +254,32 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
 
+        public void SaveInventory(bool createStorage = false)
+        {
+            if ((IsAIOnlyTurret && AIOnlyTurret.Storage == null) || !IsAIOnlyTurret) return;
+
+            var invItems = BlockInventory.GetItems();
+
+            var binary = MyAPIGateway.Utilities.SerializeToBinary(invItems);
+
+            if (IsAIOnlyTurret)
+                AIOnlyTurret.Storage[Session.Instance.InstanceInvStateGuid] = Convert.ToBase64String(binary);
+        }
+
+        public void LoadInventory(bool createStorage = false)
+        {
+            if ((IsAIOnlyTurret && AIOnlyTurret.Storage == null) || (!IsAIOnlyTurret && ControllableTurret.Storage == null)) return;
+
+            string rawData;
+            byte[] base64;
+
+            if (IsAIOnlyTurret && AIOnlyTurret.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
+                base64 = Convert.FromBase64String(rawData);
+
+            //var items = MyAPIGateway.Utilities.SerializeFromBinary<List<MyPhysicalInventoryItem>>(base64);
+
+        }
+
         public override bool IsSerialized()
         {
             if (MyAPIGateway.Multiplayer.IsServer)
@@ -242,6 +290,7 @@ namespace WeaponCore.Support
                     {
                         State.SaveState();
                         Set.SaveSettings();
+                        SaveInventory();
                     }
                 }
                 else

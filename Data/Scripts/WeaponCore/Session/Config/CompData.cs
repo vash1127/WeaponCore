@@ -62,8 +62,7 @@ namespace WeaponCore
 
         public bool LoadState()
         {
-
-            if (AiOnlyTurret.Storage == null && ControllableTurret.Storage == null) return false;
+            if ((isAiOnlyTurret && AiOnlyTurret.Storage == null) || (!isAiOnlyTurret && ControllableTurret.Storage == null)) return false;
 
             byte[] base64;
             LogicStateValues loadedState = null;
@@ -131,7 +130,7 @@ namespace WeaponCore
 
         public void SaveSettings(bool createStorage = false)
         {
-            if (AiOnlyTurret.Storage == null && ControllableTurret.Storage == null) return;
+            if ((isAiOnlyTurret && AiOnlyTurret.Storage == null) || (!isAiOnlyTurret && ControllableTurret.Storage == null)) return;
 
             var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
 
@@ -143,17 +142,18 @@ namespace WeaponCore
 
         public bool LoadSettings()
         {
-            if (AiOnlyTurret.Storage == null && ControllableTurret.Storage == null) return false;
+            if ((isAiOnlyTurret && AiOnlyTurret.Storage == null) || (!isAiOnlyTurret && ControllableTurret.Storage == null)) return false;
             string rawData;
             bool loadedSomething = false;
             byte[] base64;
             LogicSettingsValues loadedSettings = null;
 
+
             if (isAiOnlyTurret && AiOnlyTurret.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
             {
                 base64 = Convert.FromBase64String(rawData);
                 loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<LogicSettingsValues>(base64);
-                //if (Session.Enforced.Debug == 3) Log.Line($"Loaded -LogicId [{Logic.EntityId}]:\n{Value.ToString()}");
+                
             }
             else if (ControllableTurret.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
             {

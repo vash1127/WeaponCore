@@ -96,6 +96,7 @@ namespace WeaponCore.Platform
         internal int AzZeroCrossCount;
         internal int ElZeroCrossCount;
         internal float HeatPShot;
+        internal float CurrentAmmoVolume;
         internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
@@ -116,7 +117,6 @@ namespace WeaponCore.Platform
         internal bool IsTracking;
         internal bool WasLocked;
         internal bool IsAligned;
-        internal bool AmmoFull;
         internal bool IsShooting;
         internal bool BarrelMove;
         internal bool PlayTurretAv;

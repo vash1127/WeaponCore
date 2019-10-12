@@ -23,8 +23,10 @@ namespace WeaponCore.Support
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
+                if (BlockInventory == null)
+                    Log.Line("Inventory null");
                 BlockInventory.ContentsChanged += OnContentsChanged;
-                BlockInventory.ContentsRemoved += OnContentsRemoved;
+                //BlockInventory.ContentsRemoved += OnContentsRemoved;
                 Sink.CurrentInputChanged += CurrentInputChanged;
             }
             else
@@ -36,7 +38,7 @@ namespace WeaponCore.Support
 
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsChanged -= OnContentsChanged;
-                BlockInventory.ContentsRemoved -= OnContentsRemoved;
+                //BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 
                 foreach (var w in Platform.Weapons)
@@ -70,7 +72,7 @@ namespace WeaponCore.Support
             {
                 Log.Line($"remove gridAi");
                 GridAi gridAi;
-                Session.Instance.GridTargetingAIs.TryRemove(MyCube.CubeGrid, out gridAi);
+                Session.Instance.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
             }
         }
 
@@ -78,16 +80,14 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (lastInventoryChangedTick < Session.Instance.Tick)
+                Log.Line($"inventory changed");
+                if (lastInventoryChangedTick < Session.Instance.Tick && !IgnoreInvChange)
                 {
-                    if (obj.GetItems().Count > 0)
-                    {
-                        foreach (var w in Platform.Weapons)
-                        {
-                            Session.Instance.InventoryEvent.Enqueue(new InventoryChange(w, new MyPhysicalInventoryItem(), 0, InventoryChange.ChangeType.Changed));
-                        }
-                    }
+                    //BlockInventory.Refresh();
 
+                    for (int i = 0; i < Platform.Weapons.Length; i++)
+                        Session.ComputeStorage(Platform.Weapons[i]);
+                    
                     lastInventoryChangedTick = Session.Instance.Tick;
                 }
             }
@@ -97,7 +97,7 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void OnContentsAdded(MyPhysicalInventoryItem item, MyFixedPoint amount)
+        /*internal void OnContentsAdded(MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
             try
             {
@@ -134,7 +134,7 @@ namespace WeaponCore.Support
                 //weapon.UnSuspendAmmoTick = 0;
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsRemoved: {ex}"); }
-        }
+        }*/
 
         private void IsWorkingChanged(MyCubeBlock myCubeBlock)
         {

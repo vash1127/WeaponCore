@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Definitions;
+using Sandbox.Game;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI.Ingame;
+using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -27,6 +31,7 @@ namespace WeaponCore.Support
         public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
         public readonly Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix?[]> WeaponLinearMoveSet;
+        public readonly MyPhysicalInventoryItem AmmoItem;
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly int ReloadTime;
@@ -107,6 +112,7 @@ namespace WeaponCore.Support
         public readonly float DetonationDamage;
         public readonly float MinTargetRadius;
         public readonly float MaxTargetRadius;
+        public readonly float MaxAmmoVolume;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -145,6 +151,8 @@ namespace WeaponCore.Support
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);
 
+            if (ammoDefId.SubtypeName != "Blank") AmmoItem = new MyPhysicalInventoryItem() { Amount = 1, Content = MyObjectBuilderSerializer.CreateNewObject<MyObjectBuilder_AmmoMagazine>(AmmoDefId.SubtypeName) };
+
             IsMine = Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
             IsField = Values.Ammo.Trajectory.FieldTime > 0;
 
@@ -154,6 +162,7 @@ namespace WeaponCore.Support
             MaxAzimuth = Values.HardPoint.Block.MaxAzimuth;
             MinElevation = Values.HardPoint.Block.MinElevation;
             MaxElevation = Values.HardPoint.Block.MaxElevation;
+            MaxAmmoVolume = Values.HardPoint.Block.InventorySize;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
             BarrelEffect2 = values.Graphics.Particles.Barrel2.Name != string.Empty;
@@ -474,7 +483,7 @@ namespace WeaponCore.Support
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
 
-                Session.Instance.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventoryBase, MyFixedPoint>();
+                Session.Instance.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventory, MyFixedPoint>();
 
                 WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId));
                 if (!ammoBlank)
