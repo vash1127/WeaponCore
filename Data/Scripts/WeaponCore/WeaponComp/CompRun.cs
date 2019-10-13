@@ -168,7 +168,7 @@ namespace WeaponCore.Support
             }
 
             RegisterEvents();
-            Log.Line($"init comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
+            //Log.Line($"init comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
 
             OnAddedToSceneTasks();
 
@@ -191,7 +191,7 @@ namespace WeaponCore.Support
             }
             Ai = gridAi;
             RegisterEvents();
-            Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
+            //Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                 OnAddedToSceneTasks();
         }

@@ -31,6 +31,7 @@ namespace WeaponCore
 
                 if (t.HitSoundActived)
                 {
+                    Log.Line("hit sound");
                     t.HitSoundActived = false;
                     t.HitEmitter.SetPosition(t.Position);
                     t.HitEmitter.CanPlayLoopSounds = false;
@@ -46,6 +47,13 @@ namespace WeaponCore
                         MyDecals.HandleAddDecal(hitInfo.HitEntity, myHitInfo, new MyStringHash(), new MyStringHash(), null, -1f);
                     }
                     */
+                }
+
+                if (t.FakeExplosion)
+                {
+                    t.FakeExplosion = false;
+                    if (ExplosionReady)
+                        UtilsStatic.CreateFakeExplosion(t.System.Values.Ammo.AreaEffect.AreaEffectRadius, t.Position, t.System);
                 }
 
                 if (t.PrimeEntity != null)

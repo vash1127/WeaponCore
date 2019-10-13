@@ -370,8 +370,6 @@ namespace WeaponCore.Projectiles
                         p.DisposeAmmoEffect(false, true);
                 }
 
-
-
                 if (p.DrawLine)
                 {
                     if (p.State == ProjectileState.OneAndDone)

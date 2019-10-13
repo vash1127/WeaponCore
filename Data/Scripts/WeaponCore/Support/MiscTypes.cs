@@ -80,6 +80,7 @@ namespace WeaponCore.Support
         internal bool Triggered;
         internal bool Cloaked;
         internal bool End;
+        internal bool FakeExplosion;
         internal bool HitSoundActived;
         internal bool LastHitShield;
         internal ReSize ReSizing;
@@ -207,6 +208,7 @@ namespace WeaponCore.Support
             HitSoundActived = false;
             HasTravelSound = false;
             LastHitShield = false;
+            FakeExplosion = false;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
             GrowDistance = 0;
@@ -237,7 +239,6 @@ namespace WeaponCore.Support
         public bool Hit;
         public bool SphereCheck;
         public bool DamageOverTime;
-        public bool End;
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public Type EventType;

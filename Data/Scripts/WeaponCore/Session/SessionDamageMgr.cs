@@ -254,8 +254,7 @@ namespace WeaponCore
                     {
                         var damage = detonateOnEnd && theEnd ? detonateDmg : areaEffectDmg;
                         var radius = detonateOnEnd && theEnd ? detonateRadius : areaRadius;
-                        if (ExplosionReady) UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, grid, system);
-                        else UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, grid, system, true);
+                        UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, grid, system, true);
                     }
                     else if (!nova)
                     {
@@ -388,14 +387,7 @@ namespace WeaponCore
                 damage *= t.WeaponCache.Hits;
 
             if (hitEnt.HitPos.HasValue)
-            {
-                if (ExplosionReady)
-                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system);
-                else
-                    UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system, true);
-            }
-            else if (!hitEnt.Hit == false && hitEnt.HitPos.HasValue)
-                UtilsStatic.CreateFakeExplosion(radius, hitEnt.HitPos.Value, system);
+                UtilsStatic.CreateMissileExplosion(damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system, true);
         }
 
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)

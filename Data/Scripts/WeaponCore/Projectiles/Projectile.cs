@@ -249,7 +249,7 @@ namespace WeaponCore.Projectiles
             if (EnableAv)
             {
                 T.SetupSounds();
-                if (T.System.HitParticle && !T.System.IsBeamWeapon)
+                if (T.System.HitParticle && !T.System.IsBeamWeapon || AreaEffect == AreaEffectType.Explosive && !T.System.Values.Ammo.AreaEffect.Explosions.NoVisuals)
                 {
                     var hitPlayChance = T.System.Values.Graphics.Particles.Hit.Extras.HitPlayChance;
                     HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
@@ -728,7 +728,8 @@ namespace WeaponCore.Projectiles
             if (Colliding || force)
             {
                 if (force) LastHitPos = Position;
-                if (HitParticleActive) PlayHitParticle();
+                if (HitParticleActive && T.System.HitParticle) PlayHitParticle();
+                else if (HitParticleActive) T.FakeExplosion = true;
                 T.HitSoundActived = T.System.HitSound && (T.HitSoundActive && (force || LastHitPos.HasValue && (!T.LastHitShield || T.System.Values.Audio.Ammo.HitPlayShield)));
 
                 if (T.HitSoundActived) T.HitEmitter.Entity = T.HitEntity?.Entity;
