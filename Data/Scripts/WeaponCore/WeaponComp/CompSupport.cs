@@ -81,7 +81,7 @@ namespace WeaponCore.Support
             RotationEmitter?.StopSound(true, true);
             if (Platform == null)
             {
-                Log.Line($"[StopAllSounds] MyCubeId:{MyCube.EntityId} - Grid:{MyCube.CubeGrid.DebugName} - WeaponName:{Ob.SubtypeId.String} - !Marked:{!MyCube.MarkedForClose} - inScene:{MyCube.InScene} - gridMatch:{MyCube.CubeGrid == Ai.MyGrid}");
+                Log.Line($"[StopAllSounds] MyCubeId:{MyCube.EntityId} - Grid:{MyCube.CubeGrid.DebugName} - WeaponName:{MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!MyCube.MarkedForClose} - inScene:{MyCube.InScene} - gridMatch:{MyCube.CubeGrid == Ai.MyGrid}");
                 return;
             }
             foreach (var w in Platform.Weapons)

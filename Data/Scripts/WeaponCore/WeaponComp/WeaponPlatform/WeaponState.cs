@@ -70,9 +70,9 @@ namespace WeaponCore.Platform
                             {
                                 if (active && animation.Looping != true && !pause)
                                 {
-                                    if (!Session.Instance.animationsToProcess.Contains(animation) && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
+                                    if (!Session.Instance.AnimationsToProcess.Contains(animation) && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
                                     {
-                                        Session.Instance.animationsToProcess.Enqueue(animation);
+                                        Session.Instance.AnimationsToProcess.Enqueue(animation);
                                         if (animation.DoesLoop)
                                             animation.Looping = true;
                                     }
@@ -99,8 +99,8 @@ namespace WeaponCore.Platform
                         {
                             foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
                             {
-                                if (Session.Instance.animationsToProcess.Contains(animation) ||
-                                    Session.Instance.animationsToQueue.Contains(animation))
+                                if (Session.Instance.AnimationsToProcess.Contains(animation) ||
+                                    Session.Instance.AnimationsToQueue.Contains(animation))
                                     canReload = false;
                             }
                         }
@@ -109,8 +109,8 @@ namespace WeaponCore.Platform
                         {
                             foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
                             {
-                                if (Session.Instance.animationsToProcess.Contains(animation) ||
-                                    Session.Instance.animationsToQueue.Contains(animation))
+                                if (Session.Instance.AnimationsToProcess.Contains(animation) ||
+                                    Session.Instance.AnimationsToQueue.Contains(animation))
                                     canReload = false;
                             }
                         }
@@ -120,9 +120,9 @@ namespace WeaponCore.Platform
                             foreach (var animation in AnimationsSet[
                                 EventTriggers.Reloading])
                             {
-                                if (active && animation.Looping != true && !pause && !Session.Instance.animationsToProcess.Contains(animation))
+                                if (active && animation.Looping != true && !pause && !Session.Instance.AnimationsToProcess.Contains(animation))
                                 {
-                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    Session.Instance.AnimationsToProcess.Enqueue(animation);
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
                                 }
@@ -151,8 +151,8 @@ namespace WeaponCore.Platform
                                 {
                                     if (animation.CurrentMove == 0 && !animation.Looping)
                                     {
-                                        if (!Session.Instance.animationsToProcess.Contains(animation))
-                                            Session.Instance.animationsToProcess.Enqueue(animation);
+                                        if (!Session.Instance.AnimationsToProcess.Contains(animation))
+                                            Session.Instance.AnimationsToProcess.Enqueue(animation);
                                         else
                                             animation.Looping = true;
                                     }
@@ -173,7 +173,7 @@ namespace WeaponCore.Platform
                             {
                                 if (active && animation.Looping != true)
                                 {
-                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    Session.Instance.AnimationsToProcess.Enqueue(animation);
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
                                 }
@@ -194,7 +194,7 @@ namespace WeaponCore.Platform
                             {
                                 foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
                                 {
-                                    if (Session.Instance.animationsToProcess.Contains(animation))
+                                    if (Session.Instance.AnimationsToProcess.Contains(animation))
                                     {
                                         OnAnimations = false;
                                         animation.Reverse = true;
@@ -206,7 +206,7 @@ namespace WeaponCore.Platform
                             {
                                 foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
                                 {
-                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    Session.Instance.AnimationsToProcess.Enqueue(animation);
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
                                 }
@@ -225,7 +225,7 @@ namespace WeaponCore.Platform
 
                                 foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
                                 {
-                                    if (Session.Instance.animationsToProcess.Contains(animation))
+                                    if (Session.Instance.AnimationsToProcess.Contains(animation))
                                     {
                                         OffAnimations = false;
                                         animation.Reverse = true;
@@ -241,7 +241,7 @@ namespace WeaponCore.Platform
                                         ? Session.Instance.Tick + animation.MotionDelay + OffDelay
                                         : 0;
 
-                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    Session.Instance.AnimationsToProcess.Enqueue(animation);
                                     foreach (var set in AnimationsSet)
                                     {
                                         foreach (var anim in set.Value)
@@ -263,7 +263,7 @@ namespace WeaponCore.Platform
                             {
                                 if (active)
                                 {
-                                    Session.Instance.animationsToProcess.Enqueue(animation);
+                                    Session.Instance.AnimationsToProcess.Enqueue(animation);
                                 }
                             }
                         }
@@ -279,8 +279,8 @@ namespace WeaponCore.Platform
                             {
                                 if (active && animation.Looping != true)
                                 {
-                                    if (!Session.Instance.animationsToProcess.Contains(animation))
-                                        Session.Instance.animationsToProcess.Enqueue(animation);
+                                    if (!Session.Instance.AnimationsToProcess.Contains(animation))
+                                        Session.Instance.AnimationsToProcess.Enqueue(animation);
                                     else
                                         animation.Looping = true;
                                 }

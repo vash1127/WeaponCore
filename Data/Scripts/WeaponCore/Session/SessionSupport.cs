@@ -398,7 +398,7 @@ namespace WeaponCore
                     continue;
                 if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
                 {
-                    Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
+                    Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
                     weaponComp.RemoveComp();
                     InitComp(weaponComp.MyCube, false);
                     reassign = true;
@@ -424,22 +424,20 @@ namespace WeaponCore
             }
         }
 
-        private void InitComp(MyEntity myEntity, bool apply = true)
+        private void InitComp(MyCubeBlock cube, bool apply = true)
         {
-            var cube = (MyCubeBlock)myEntity;
             if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
-            using (myEntity.Pin())
+            using (cube.Pin())
             {
-                if (myEntity.MarkedForClose) return;
+                if (cube.MarkedForClose) return;
                 GridAi gridAi;
                 if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                 {
                     gridAi = new GridAi(cube.CubeGrid);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
-                var weaponBase = myEntity as IMyLargeMissileTurret;
-                var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
+                var weaponComp = new WeaponComponent(gridAi, cube);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
                 {
                     if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))

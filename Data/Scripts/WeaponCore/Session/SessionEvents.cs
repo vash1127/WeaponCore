@@ -61,7 +61,7 @@ namespace WeaponCore
                         }
                         TurretControls = true;
                     }
-                    InitComp(myEntity);
+                    InitComp(cube);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
