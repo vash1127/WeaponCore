@@ -356,6 +356,18 @@ namespace WeaponCore.Platform
         {
             RotationSpeed = System.AzStep;
             ElevationSpeed = System.ElStep;
+            var minAz = System.MinAzimuth;
+            var maxAz = System.MaxAzimuth;
+            var minEl = System.MinElevation;
+            var maxEl = System.MaxElevation;
+
+            if (!Comp.IsAIOnlyTurret)
+            {
+                var baseDef = Comp.MyCube
+            }
+
+            var
+
             MinElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MinElevation));
             MaxElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MaxElevation));
 
