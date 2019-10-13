@@ -248,8 +248,8 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                T.SetupSounds();
-                if (T.System.HitParticle && !T.System.IsBeamWeapon)
+                T.SetupSounds(DistanceFromCameraSqr);
+                if (T.System.HitParticle && !T.System.IsBeamWeapon || AreaEffect == AreaEffectType.Explosive && !T.System.Values.Ammo.AreaEffect.Explosions.NoVisuals)
                 {
                     var hitPlayChance = T.System.Values.Graphics.Particles.Hit.Extras.HitPlayChance;
                     HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
@@ -378,7 +378,10 @@ namespace WeaponCore.Projectiles
                 Session.Instance.Hits.Enqueue(p);
                 if (p.EnableAv && p.T.OnScreen) CreateFakeBeams(p, hitEntity, drawList);
             }
-            if (p.EnableAv && p.T.OnScreen) p.HitEffects();
+
+            if (p.EnableAv)
+                p.HitEffects();
+
             return true;
         }
 
@@ -727,9 +730,12 @@ namespace WeaponCore.Projectiles
         {
             if (Colliding || force)
             {
+                var distToCameraSqr = Vector3D.DistanceSquared(Position, Session.Instance.CameraPos);
+                var closeToCamera = distToCameraSqr < 360000;
                 if (force) LastHitPos = Position;
-                if (HitParticleActive) PlayHitParticle();
-                T.HitSoundActived = T.System.HitSound && (T.HitSoundActive && (force || LastHitPos.HasValue && (!T.LastHitShield || T.System.Values.Audio.Ammo.HitPlayShield)));
+                if (T.OnScreen && HitParticleActive && T.System.HitParticle) PlayHitParticle();
+                else if (HitParticleActive && (T.OnScreen || closeToCamera)) T.FakeExplosion = true;
+                T.HitSoundActived = T.System.HitSound && (T.HitSoundActive && (force || distToCameraSqr < T.System.HitSoundDistSqr || LastHitPos.HasValue && (!T.LastHitShield || T.System.Values.Audio.Ammo.HitPlayShield)));
 
                 if (T.HitSoundActived) T.HitEmitter.Entity = T.HitEntity?.Entity;
                 T.LastHitShield = false;

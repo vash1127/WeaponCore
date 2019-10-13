@@ -76,7 +76,7 @@ namespace WeaponThread
                 Characters = 0.2f,
                 Grids = Options(largeGridModifier: -1f, smallGridModifier: -1f),
                 Armor = Options(armor: -1f, light: -1f, heavy: -1f, nonArmor: -1f),
-                Shields = Options(modifier: -1f, type: Kinetic), // Types: Kinetic, Energy, Emp or Bypass
+                Shields = Options(modifier: -1f, type: Energy), // Types: Kinetic, Energy, Emp or Bypass
 
                 // ignoreOthers will cause projectiles to pass through all blocks that do not match the custom subtypeIds.
                 Custom = SubTypeIds(false),
@@ -98,7 +98,7 @@ namespace WeaponThread
                     AreaEffectRadius = 4f,
                     Pulse = Options(interval: 30, pulseChance: 0), // interval measured in game ticks (60 == 1 second)
                     Explosions = Options(noVisuals: false, noSound: false, scale: 1, customParticle: "", customSound: ""),
-                    Detonation = Options(detonateOnEnd: false, armOnlyOnHit: false, detonationDamage: 0, detonationRadius: 70),
+                    Detonation = Options(detonateOnEnd: true, armOnlyOnHit: false, detonationDamage: 0, detonationRadius: 0),
                 },
                 Beams = new BeamDefinition
                 {
@@ -154,6 +154,7 @@ namespace WeaponThread
                         Color = Color(red: 243, green: 190, blue: 51, alpha: 1),
                         Offset = Vector(x: 0, y: 0, z: 0),
                         Extras = Options(loop: false, restart: false, distance: 5000, duration: 1, scale: 1.5f),
+                        ApplyToShield = true,
                     },
                     Barrel1 = new Particle
                     {

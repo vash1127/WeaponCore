@@ -50,7 +50,7 @@ namespace WeaponCore.Support
             WeaponComponent comp;
             if (Ai.WeaponBase.TryRemove(MyCube, out comp))
             {
-                Log.Line($"Removed Comp");
+                Log.Line($"Removed Comp: remaining:{Ai.WeaponBase.Count}");
                 if (Platform != null && Platform.Inited)
                 {                
                     GridAi.WeaponCount wCount;
@@ -69,9 +69,9 @@ namespace WeaponCore.Support
 
             if (Ai.WeaponBase.Count == 0)
             {
-                Log.Line($"remove gridAi");
                 GridAi gridAi;
-                Session.Instance.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
+                if (Session.Instance.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
+                    Log.Line($"remove gridAi");
             }
         }
 
@@ -161,7 +161,6 @@ namespace WeaponCore.Support
 
         internal string GetSystemStatus()
         {
-            Log.ThreadedWrite($"State.Value.Online: {State.Value.Online}");
             if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
             if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
             if (Charging && !(SinkPower > 0)) return "[Insufficient Power]";

@@ -137,16 +137,17 @@ namespace WeaponCore
                     return;
                 }
 
-                var targetDir = Vector3D.Normalize(Session.Instance.Target.Physics?.LinearVelocity ?? Vector3.Zero);
-                var targetPos = Session.Instance.Target.PositionComp.WorldAABB.Center;
+                var target = Wheel.Ai.PrimeTarget;
+                var targetDir = Vector3D.Normalize(target.Physics?.LinearVelocity ?? Vector3.Zero);
+                var targetPos = target.PositionComp.WorldAABB.Center;
 
                 var myPos = Wheel.Ai.MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
                 var degrees = Math.Cos(MathHelper.ToRadians(25));
-                var name = Session.Instance.Target.DisplayName;
-                var speed = Math.Round(Session.Instance.Target.Physics?.Speed ?? 0, 2);
+                var name = target.DisplayName;
+                var speed = Math.Round(target.Physics?.Speed ?? 0, 2);
                 var nameLen = 30;
-                var armed = OtherArms || Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Session.Instance.Target);
+                var armed = OtherArms || Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)target);
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
                 var armedStr = armed ? "Yes" : "No";
                 var interceptStr = intercept ? "Yes" : "No";
@@ -170,16 +171,17 @@ namespace WeaponCore
                     return;
                 }
 
-                var targetDir = Vector3D.Normalize(Session.Instance.Target.Physics?.LinearVelocity ?? Vector3.Zero);
-                var targetPos = Session.Instance.Target.PositionComp.WorldAABB.Center;
+                var target = Wheel.Ai.PrimeTarget;
+                var targetDir = Vector3D.Normalize(target.Physics?.LinearVelocity ?? Vector3.Zero);
+                var targetPos = target.PositionComp.WorldAABB.Center;
 
                 var myPos = Wheel.Ai.MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
                 var degrees = Math.Cos(MathHelper.ToRadians(25));
-                var name = Session.Instance.Target.DisplayName;
-                var speed = Math.Round(Session.Instance.Target.Physics?.Speed ?? 0, 1);
+                var name = target.DisplayName;
+                var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
                 var nameLen = 30;
-                var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)Session.Instance.Target);
+                var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)target);
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
                 var armedStr = armed ? "Yes" : "No";
                 var interceptStr = intercept ? "Yes" : "No";

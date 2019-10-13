@@ -358,7 +358,6 @@ namespace WeaponCore.Support
 
         private void Sound()
         {
-
             HitSound = Values.Audio.Ammo.HitSound != string.Empty;
             AmmoTravelSound = Values.Audio.Ammo.TravelSound != string.Empty;
             WeaponReloadSound = Values.Audio.HardPoint.ReloadSound != string.Empty;
@@ -380,6 +379,13 @@ namespace WeaponCore.Support
             var barrelSound = string.Concat(Arc, Values.Audio.HardPoint.BarrelRotationSound);
             var hardPointSound = string.Concat(Arc, Values.Audio.HardPoint.HardPointRotationSound);
             var noAmmoSound = string.Concat(Arc, Values.Audio.HardPoint.NoAmmoSound);
+
+            if (Values.Graphics.Particles.Barrel1.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel1.Extras.MaxDistance;
+
+            if (Values.Graphics.Particles.Barrel2.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel2.Extras.MaxDistance;
+
             foreach (var def in Session.Instance.SoundDefinitions)
             {
                 var id = def.Id.SubtypeId.String;
@@ -426,13 +432,8 @@ namespace WeaponCore.Support
                     if (ob != null) NoAmmoSoundDistSqr = ob.MaxDistance * ob.MaxDistance;
                     if (NoAmmoSoundDistSqr > HardPointAvMaxDistSqr) HardPointAvMaxDistSqr = NoAmmoSoundDistSqr;
                 }
-
-                if (Values.Graphics.Particles.Barrel1.Extras.MaxDistance > HardPointAvMaxDistSqr)
-                    HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel1.Extras.MaxDistance;
-
-                if (Values.Graphics.Particles.Barrel2.Extras.MaxDistance > HardPointAvMaxDistSqr)
-                    HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel2.Extras.MaxDistance;
             }
+            if (FiringSoundDistSqr <= 0) FiringSoundDistSqr = Values.Ammo.Trajectory.MaxTrajectory * Values.Ammo.Trajectory.MaxTrajectory;
         }
     }
 

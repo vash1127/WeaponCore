@@ -13,9 +13,12 @@ using VRage.Utils;
 using WeaponCore.Platform;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
+using Sandbox.ModAPI.Ingame;
+using SpaceEngineers.Game.ModAPI;
 using VRage.ObjectBuilders;
 using System.Linq;
 using Sandbox.Game.EntityComponents;
+using VRageRender;
 
 namespace WeaponCore
 {
@@ -192,13 +195,13 @@ namespace WeaponCore
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (Target == null)
+            if (ai.PrimeTarget == null)
                 return false;
 
-            if (Target.MarkedForClose || ai != TrackingAi)
+            if (ai.PrimeTarget.MarkedForClose || ai != TrackingAi)
             {
                 Log.Line("resetting target");
-                Target = null;
+                ai.PrimeTarget = null;
                 TrackingAi = null;
                 RemoveGps();
                 return false;
@@ -209,9 +212,9 @@ namespace WeaponCore
 
         internal void SetTarget(MyEntity entity, GridAi ai)
         {
-            Target = entity;
+            ai.PrimeTarget = entity;
             TrackingAi = ai;
-
+            ai.TargetResetTick = Tick + 1;
             GridAi gridAi;
             TargetArmed = false;
             if (GridTargetingAIs.TryGetValue((MyCubeGrid)entity, out gridAi))
@@ -231,15 +234,16 @@ namespace WeaponCore
 
         internal void GetTargetInfo(GridAi ai, out double speed, out string armedStr, out string interceptStr, out string shieldedStr, out string threatStr)
         {
-            var targetVel = Target.Physics?.LinearVelocity ?? Vector3.Zero;
+            var target = ai.PrimeTarget;
+            var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
             var targetDir = Vector3D.Normalize(targetVel);
-            var targetPos = Target.PositionComp.WorldAABB.Center;
+            var targetPos = target.PositionComp.WorldAABB.Center;
             var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
             var myHeading = Vector3D.Normalize(myPos - targetPos);
             var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
-            var shielded = ShieldApiLoaded && SApi.ProtectedByShield(Target);
-            var grid = Target as MyCubeGrid;
+            var shielded = ShieldApiLoaded && SApi.ProtectedByShield(target);
+            var grid = target as MyCubeGrid;
             var friend = false;
             if (grid != null && grid.BigOwners.Count != 0)
             {
@@ -251,7 +255,7 @@ namespace WeaponCore
             armedStr = TargetArmed ? "A" : "_";
             interceptStr = intercept ? "I" : "_";
             threatStr = threat > 0 ? "T" + threat : "__";
-            speed = Math.Round(Target.Physics?.Speed ?? 0, 1);
+            speed = Math.Round(target.Physics?.Speed ?? 0, 1);
         }
 
         internal static double ModRadius(double radius, bool largeBlock)
@@ -379,32 +383,72 @@ namespace WeaponCore
 
         private void StartComps()
         {
+            var reassign = false;
             for (int i = 0; i < CompsToStart.Count; i++)
             {
                 var weaponComp = CompsToStart[i];
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
+                    //Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.RemoveComp();
                     CompsToStart.Remove(weaponComp);
                     continue;
                 }
                 if (weaponComp.MyCube.CubeGrid.CanHavePhysics() && weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose)
                     continue;
-
-                if(weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
+                if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
                 {
+                    Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
                     weaponComp.RemoveComp();
-                    InitComp(weaponComp.MyCube);
+                    InitComp(weaponComp.MyCube, false);
+                    reassign = true;
                     CompsToStart.Remove(weaponComp);
                 }
                 else if (weaponComp.Platform == null)
                 {
+                    //Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.MyCube.Components.Add(weaponComp);
                     CompsToStart.Remove(weaponComp);
                 }
-                else CompsToStart.Remove(weaponComp);
+                else
+                {
+                    //Log.Line($"[Other] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    CompsToStart.Remove(weaponComp);
+                }
             }
             CompsToStart.ApplyRemovals();
+            if (reassign)
+            {
+                CompsToStart.ApplyAdditions();
+                StartComps();
+            }
+        }
+
+        private void InitComp(MyEntity myEntity, bool apply = true)
+        {
+            var cube = (MyCubeBlock)myEntity;
+            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+
+            using (myEntity.Pin())
+            {
+                if (myEntity.MarkedForClose) return;
+                GridAi gridAi;
+                if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                {
+                    gridAi = new GridAi(cube.CubeGrid);
+                    GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
+                }
+                var weaponBase = myEntity as IMyLargeMissileTurret;
+                var weaponComp = new WeaponComponent(gridAi, cube, weaponBase);
+                if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
+                {
+                    if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
+                        gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
+
+                    CompsToStart.Add(weaponComp);
+                    if (apply) CompsToStart.ApplyAdditions();
+                }
+            }
         }
 
         private void UpdatePlacer()

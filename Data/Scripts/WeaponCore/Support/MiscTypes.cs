@@ -80,12 +80,14 @@ namespace WeaponCore.Support
         internal bool Triggered;
         internal bool Cloaked;
         internal bool End;
+        internal bool FakeExplosion;
         internal bool HitSoundActived;
+        internal bool StartSoundActived;
         internal bool LastHitShield;
         internal ReSize ReSizing;
         internal DrawState Draw;
 
-        internal void SetupSounds()
+        internal void SetupSounds(double distanceFromCameraSqr)
         {
             FiringSoundState = System.FiringSound;
             AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
@@ -105,12 +107,12 @@ namespace WeaponCore.Support
                     HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
             }
 
-            if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
+            if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr)
             {
+                StartSoundActived = true;
                 FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
                 FireEmitter.SetPosition(Origin);
                 FireEmitter.Entity = Target.FiringCube;
-                FireEmitter.PlaySound(FireSound, true);
             }
         }
 
@@ -205,8 +207,10 @@ namespace WeaponCore.Support
             AmmoSound = false;
             HitSoundActive = false;
             HitSoundActived = false;
+            StartSoundActived = false;
             HasTravelSound = false;
             LastHitShield = false;
+            FakeExplosion = false;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
             GrowDistance = 0;
@@ -237,7 +241,6 @@ namespace WeaponCore.Support
         public bool Hit;
         public bool SphereCheck;
         public bool DamageOverTime;
-        public bool End;
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public Type EventType;

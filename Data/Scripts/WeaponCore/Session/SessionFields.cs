@@ -5,14 +5,12 @@ using Sandbox.Common.ObjectBuilders;
 using Sandbox.Common.ObjectBuilders.Definitions;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Library.Threading;
 using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
@@ -39,7 +37,6 @@ namespace WeaponCore
         internal volatile bool TurretControls;
         internal volatile bool UpgradeControls;
         internal object InitObj = new object();
-        internal volatile bool Dispatched;
         internal bool DbsUpdating;
         internal bool HighLoad;
 
@@ -47,8 +44,6 @@ namespace WeaponCore
         private int _lCount;
         private int _eCount;
         private double _syncDistSqr;
-
-        internal readonly SpinLockRef _configLock = new SpinLockRef();
 
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
@@ -61,24 +56,16 @@ namespace WeaponCore
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
-        internal readonly CachingDictionary<LineD, uint> RayCheckLines = new CachingDictionary<LineD, uint>();
+        internal readonly CachingDictionary<LineD, uint> RaCheckLines = new CachingDictionary<LineD, uint>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
-        internal Queue<PartAnimation> animationsToProcess = new Queue<PartAnimation>();
-        internal Queue<PartAnimation> animationsToQueue = new Queue<PartAnimation>();
+        internal Queue<PartAnimation> AnimationsToProcess = new Queue<PartAnimation>();
+        internal Queue<PartAnimation> AnimationsToQueue = new Queue<PartAnimation>();
 
         internal IMyPhysics Physics;
         internal IMyCamera Camera;
         internal IMyGps TargetGps;
-        internal MyEntity Target;
         internal GridAi TrackingAi;
         internal IMyBlockPlacerBase Placer;
-        internal MyEntity LcdEntity1;
-        internal IMyTextPanel LcdPanel1;
-        internal readonly HashSet<string> WepActions = new HashSet<string>()
-        {
-            "WC-L_PowerLevel",
-            "WC-L_Guidance"
-        };
 
         internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
@@ -187,15 +174,8 @@ namespace WeaponCore
         internal MyEntity ControlledEntity;
 
 
-        internal readonly MyStringId LaserMaterial = MyStringId.GetOrCompute("WeaponLaser");
-        internal readonly MyStringId WarpMaterial = MyStringId.GetOrCompute("WarpBubble");
-
-        internal readonly Guid LogictateGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811500");
-        internal readonly Guid LogicettingsGuid = new Guid("85BED4F5-4FB9-4230-FEED-BE79D9811501");
-
         internal ShieldApi SApi = new ShieldApi();
         private readonly FutureEvents _futureEvents = new FutureEvents();
-        internal MatrixD EndMatrix = MatrixD.CreateTranslation(Vector3D.MaxValue);
 
     }
 }

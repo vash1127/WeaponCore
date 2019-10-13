@@ -83,7 +83,7 @@ namespace WeaponCore
                         else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired || w.SeekTarget;
 
 
-                        w.SeekTarget = w.Target.Expired && w.TrackTarget;
+                        w.SeekTarget = w.Target.Expired && w.TrackTarget || gridAi.TargetResetTick == Tick;
 
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
@@ -129,7 +129,6 @@ namespace WeaponCore
         {
             if (!GameLoaded) return;
             if (!DbsUpdating && DbsToUpdate.Count > 0) UpdateDbsInQueue();
-            var report = false;
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
@@ -140,11 +139,6 @@ namespace WeaponCore
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
 
-                if (!report && Tick300)
-                {
-                    report = true;
-                    Log.Line($"grid:{gridAi.MyGrid.DebugName} - Ais:{GridTargetingAIs.Count} - Weapons:{gridAi.WeaponBase.Count}");
-                }
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -240,7 +234,7 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119) GridAi.AcquireTarget(w);
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick) GridAi.AcquireTarget(w);
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;

@@ -18,6 +18,12 @@ namespace WeaponCore
             {
                 var t = drawList[i];
 
+                if (t.StartSoundActived)
+                {
+                    t.StartSoundActived = false;
+                    t.FireEmitter.PlaySound(t.FireSound, true);
+                }
+
                 if (t.HasTravelSound)
                 {
                     if (!t.AmmoSound)
@@ -46,6 +52,13 @@ namespace WeaponCore
                         MyDecals.HandleAddDecal(hitInfo.HitEntity, myHitInfo, new MyStringHash(), new MyStringHash(), null, -1f);
                     }
                     */
+                }
+
+                if (t.FakeExplosion)
+                {
+                    t.FakeExplosion = false;
+                    if (ExplosionReady)
+                        UtilsStatic.CreateFakeExplosion(t.System.Values.Ammo.AreaEffect.AreaEffectRadius, t.Position, t.System);
                 }
 
                 if (t.PrimeEntity != null)

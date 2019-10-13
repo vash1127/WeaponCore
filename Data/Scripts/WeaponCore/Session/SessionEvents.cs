@@ -61,36 +61,10 @@ namespace WeaponCore
                         }
                         TurretControls = true;
                     }
-
-                    if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
-                    
-                    InitComp(cube);
+                    InitComp(myEntity);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnEntityCreate: {ex}"); }
-        }
-
-        private void InitComp(MyCubeBlock cube)
-        {
-            using (cube.Pin())
-            {
-                if (cube.MarkedForClose) return;
-                GridAi gridAi;
-                if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
-                {
-                    gridAi = new GridAi(cube.CubeGrid);
-                    GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
-                }
-                var weaponComp = new WeaponComponent(gridAi, cube);
-                if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
-                {
-                    if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                        gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
-
-                    CompsToStart.Add(weaponComp);
-                    CompsToStart.ApplyAdditions();
-                }
-            }
         }
 
         private void MenuOpened(object obj)

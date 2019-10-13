@@ -53,6 +53,7 @@ namespace WeaponCore.Support
         internal DSUtils DsWatch = new DSUtils();
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
+        internal MyEntity PrimeTarget;
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
         internal Vector3D PlanetClosestPoint;
@@ -62,6 +63,7 @@ namespace WeaponCore.Support
         internal uint RecalcLowPowerTick;
         internal uint ResetPowerTick;
         internal uint VelocityUpdateTick;
+        internal uint TargetResetTick;
         internal int DbUpdating;
         internal int SourceCount;
         internal int ManualComps;
