@@ -82,6 +82,7 @@ namespace WeaponCore.Support
         internal bool End;
         internal bool FakeExplosion;
         internal bool HitSoundActived;
+        internal bool StartSoundActived;
         internal bool LastHitShield;
         internal ReSize ReSizing;
         internal DrawState Draw;
@@ -108,10 +109,10 @@ namespace WeaponCore.Support
 
             if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
             {
+                StartSoundActived = true;
                 FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
                 FireEmitter.SetPosition(Origin);
                 FireEmitter.Entity = Target.FiringCube;
-                FireEmitter.PlaySound(FireSound, true);
             }
         }
 
@@ -206,6 +207,7 @@ namespace WeaponCore.Support
             AmmoSound = false;
             HitSoundActive = false;
             HitSoundActived = false;
+            StartSoundActived = false;
             HasTravelSound = false;
             LastHitShield = false;
             FakeExplosion = false;
