@@ -148,17 +148,9 @@ namespace WeaponCore
            
             var def = weapon.System.AmmoDefId;
             var lastMags = weapon.CurrentMags;
-            
-            
-            weapon.CurrentMags = comp.BlockInventory.GetItemAmount(def);
-
-            Log.Line($"weapon.CurrentMags: {weapon.CurrentMags}");
-
-            
-
             var invMagsAvailable = comp.Ai.AmmoInventories[def];
 
-            Log.ThreadedWrite($"weapon.CurrentAmmoVolume: {weapon.CurrentAmmoVolume} 25% amount: {0.25f * weapon.System.MaxAmmoVolume} invMagsAvailable.Count: {invMagsAvailable.Count }");
+            weapon.CurrentMags = comp.BlockInventory.GetItemAmount(def);
 
             if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invMagsAvailable.Count > 0)
             {
@@ -195,20 +187,13 @@ namespace WeaponCore
 
             List<MyTuple<MyInventory, int>> inventoriesToPull = new List<MyTuple<MyInventory, int>>();
 
-            Log.ThreadedWrite($"magsNeeded: {magsNeeded}");
-
             while (magsNeeded > 0 && currentInventory.MoveNext())
             {
                 var magsAvailable = (int)currentInventory.Current.Value;
                 var inventory = currentInventory.Current.Key;
 
-                Log.ThreadedWrite($"canTransfer: {((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def)}");
-
                 if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
                 {
-
-                    Log.ThreadedWrite($"magsAvailable: {magsAvailable}");
-
                     if (magsAvailable > magsNeeded)
                     {
                         inventoriesToPull.Add(new MyTuple<MyInventory, int> {Item1 = inventory, Item2 = magsNeeded });

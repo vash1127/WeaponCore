@@ -79,7 +79,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                Log.Line($"inventory changed");
                 if (lastInventoryChangedTick < Session.Instance.Tick && !IgnoreInvChange)
                 {
                     //BlockInventory.Refresh();
@@ -139,7 +138,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                Log.Line("Changed");
                 var wasFunctional = IsFunctional;
                 IsFunctional = myCubeBlock.IsFunctional;
                 if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
