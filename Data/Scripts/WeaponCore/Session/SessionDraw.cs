@@ -18,6 +18,12 @@ namespace WeaponCore
             {
                 var t = drawList[i];
 
+                if (t.StartSoundActived)
+                {
+                    t.StartSoundActived = false;
+                    t.FireEmitter.PlaySound(t.FireSound, true);
+                }
+
                 if (t.HasTravelSound)
                 {
                     if (!t.AmmoSound)
@@ -31,7 +37,6 @@ namespace WeaponCore
 
                 if (t.HitSoundActived)
                 {
-                    Log.Line("hit sound");
                     t.HitSoundActived = false;
                     t.HitEmitter.SetPosition(t.Position);
                     t.HitEmitter.CanPlayLoopSounds = false;

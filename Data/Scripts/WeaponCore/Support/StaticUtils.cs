@@ -331,9 +331,10 @@ namespace WeaponCore.Support
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
             cullSphere.Radius = af.AreaEffectRadius * 5;
-            const MyExplosionFlags eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT; ;
             var drawParticles = !eInfo.NoVisuals && Session.Instance.Session.Camera.IsInFrustum(ref cullSphere);
-
+            MyExplosionFlags eFlags; 
+            if (drawParticles) eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT;
+            else eFlags = MyExplosionFlags.CREATE_DECALS;
             var customParticle = eInfo.CustomParticle != string.Empty;
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
             MyExplosionInfo explosionInfo = new MyExplosionInfo()
