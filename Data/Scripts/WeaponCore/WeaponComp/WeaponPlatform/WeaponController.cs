@@ -51,25 +51,25 @@ namespace WeaponCore.Platform
                 if (absAzChange >= System.AzStep)
                 {
                     if (rAz)
-                        AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
+                        AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item5;
                     else
-                        AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item3;
+                        AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
                 }
                 else
                 {
-                    AzimuthPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-AzimuthPart.Item2) * Matrix.CreateRotationY((float)-azimuthChange) * Matrix.CreateTranslation(AzimuthPart.Item2));
+                    AzimuthPart.Item1.PositionComp.LocalMatrix *= (AzimuthPart.Item2 * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.Item3);
                 }
 
                 if (absElChange >= System.ElStep)
                 {
                     if (rEl)
-                        ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item4;
+                        ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item5;
                     else
-                        ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item3;
+                        ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item4;
                 }
                 else
                 {
-                    ElevationPart.Item1.PositionComp.LocalMatrix *= (Matrix.CreateTranslation(-ElevationPart.Item2) * Matrix.CreateRotationX((float)-elevationChange) * Matrix.CreateTranslation(ElevationPart.Item2));
+                    ElevationPart.Item1.PositionComp.LocalMatrix *= (ElevationPart.Item2 * Matrix.CreateRotationX((float)-elevationChange) * ElevationPart.Item3);
                 }
             }
             else {

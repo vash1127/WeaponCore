@@ -34,8 +34,8 @@ namespace WeaponCore.Platform
         private bool _newCycle;
         //private bool _firstRun = true;
         internal MyEntity BarrelPart;
-        internal MyTuple<MyEntity, Vector3, Matrix, Matrix> AzimuthPart;
-        internal MyTuple<MyEntity, Vector3, Matrix, Matrix> ElevationPart;
+        internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> AzimuthPart;
+        internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> ElevationPart;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;

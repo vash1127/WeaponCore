@@ -69,8 +69,8 @@ namespace WeaponCore.Platform
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
-                    AzimuthPart = new MyTuple<MyEntity, Vector3, Matrix, Matrix> { Item1 = Parts.NameToEntity[azimuthPartName], Item2 = Vector3.Zero, Item3 = Matrix.Zero, Item4 = Matrix.Zero },
-                    ElevationPart = new MyTuple<MyEntity, Vector3, Matrix, Matrix> { Item1 = Parts.NameToEntity[elevationPartName], Item2 = Vector3.Zero, Item3 = Matrix.Zero, Item4 = Matrix.Zero }
+                    AzimuthPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> { Item1 = Parts.NameToEntity[azimuthPartName], Item2 = Matrix.Zero, Item3 = Matrix.Zero, Item4 = Matrix.Zero, Item5 = Matrix.Zero },
+                    ElevationPart = new MyTuple<MyEntity, Matrix, Matrix , Matrix, Matrix> { Item1 = Parts.NameToEntity[elevationPartName], Item2 = Matrix.Zero, Item3 = Matrix.Zero, Item4 = Matrix.Zero, Item5 = Matrix.Zero }
 
                 };
 
@@ -120,20 +120,27 @@ namespace WeaponCore.Platform
                     var azimuthPartLocation = Session.Instance.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
                     var elevationPartLocation = Session.Instance.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
 
-                    var fullStepAzRotation = Matrix.CreateTranslation(-azimuthPartLocation) * Matrix.CreateRotationY(-m.Value.AzStep) * Matrix.CreateTranslation(azimuthPartLocation);
+                    var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
+                    var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);
+                    var elPartPosTo = Matrix.CreateTranslation(-elevationPartLocation);
+                    var elPartPosFrom = Matrix.CreateTranslation(elevationPartLocation);
 
-                    var fullStepElRotation = Matrix.CreateTranslation(-elevationPartLocation) * Matrix.CreateRotationX(-m.Value.ElStep) * Matrix.CreateTranslation(elevationPartLocation);
+                    var fullStepAzRotation = azPartPosTo * Matrix.CreateRotationY(-m.Value.AzStep) * azPrtPosFrom;
+
+                    var fullStepElRotation = elPartPosTo * Matrix.CreateRotationX(-m.Value.ElStep) * elPartPosFrom;
 
                     var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
                     var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
 
-                    Weapons[c].AzimuthPart.Item2 = azimuthPartLocation;
-                    Weapons[c].AzimuthPart.Item3 = fullStepAzRotation;
-                    Weapons[c].AzimuthPart.Item4 = rFullStepAzRotation;
+                    Weapons[c].AzimuthPart.Item2 = azPartPosTo;
+                    Weapons[c].AzimuthPart.Item3 = azPrtPosFrom;
+                    Weapons[c].AzimuthPart.Item4 = fullStepAzRotation;
+                    Weapons[c].AzimuthPart.Item5 = rFullStepAzRotation;
 
-                    Weapons[c].ElevationPart.Item2 = elevationPartLocation;
-                    Weapons[c].ElevationPart.Item3 = fullStepElRotation;
-                    Weapons[c].ElevationPart.Item4 = rFullStepElRotation;
+                    Weapons[c].ElevationPart.Item2 = elPartPosTo;
+                    Weapons[c].ElevationPart.Item3 = elPartPosFrom;
+                    Weapons[c].ElevationPart.Item4 = fullStepElRotation;
+                    Weapons[c].ElevationPart.Item5 = rFullStepElRotation;
 
                     try
                     {
