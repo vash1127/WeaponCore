@@ -109,11 +109,17 @@ namespace WeaponCore.Support
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
-            for (int i = 0; i < ai.SortedTargets.Count; i++)
+            TargetInfo primeInfo = null;
+            if (ai.PrimeTarget != null) ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo);
+            var targetCount = ai.SortedTargets.Count;
+            var needOffset = primeInfo != null;
+            var offset = needOffset ? 1 : 0;
+            var adjTargetCount = needOffset ? targetCount + offset : targetCount;
+            for (int x = 0; x < adjTargetCount; x++)
             {
-                var info = ai.SortedTargets[i];
+                var info = x < 1 && needOffset ? primeInfo : ai.SortedTargets[x - offset];
 
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
+                if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;

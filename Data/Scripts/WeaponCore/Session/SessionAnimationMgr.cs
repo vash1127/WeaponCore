@@ -600,7 +600,7 @@ namespace WeaponCore
         internal void ProcessAnimations()
         {
             PartAnimation animation;
-            while (animationsToProcess.TryDequeue(out animation))
+            while (AnimationsToProcess.TryDequeue(out animation))
             {
 
                 //var data = new AnimationParallelData(ref animation);
@@ -615,11 +615,11 @@ namespace WeaponCore
                     else if (animation.MotionDelay > 0 && animation.StartTick == 0)
                     {
                         animation.StartTick = Tick + animation.MotionDelay;
-                        animationsToQueue.Enqueue(animation);
+                        AnimationsToQueue.Enqueue(animation);
                     }
                     else
                     {
-                        animationsToQueue.Enqueue(animation);
+                        AnimationsToQueue.Enqueue(animation);
                     }
 
                 }
@@ -629,10 +629,10 @@ namespace WeaponCore
         internal void ProcessAnimationQueue()
         {
             PartAnimation animation;
-            while (animationsToQueue.TryDequeue(out animation))
+            while (AnimationsToQueue.TryDequeue(out animation))
             {
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null)
-                    animationsToProcess.Enqueue(animation);
+                    AnimationsToProcess.Enqueue(animation);
             }
         }
 
@@ -724,7 +724,7 @@ namespace WeaponCore
 
             if (animation.Reverse || animation.Looping || animation.CurrentMove > 0)
             {
-                animationsToQueue.Enqueue(animation);
+                AnimationsToQueue.Enqueue(animation);
             }
         }
 
@@ -807,7 +807,7 @@ namespace WeaponCore
 
             if (animation.Reverse || animation.DoesLoop || animation.CurrentMove > 0)
             {
-                animationsToQueue.Enqueue(animationData.Animation);
+                AnimationsToQueue.Enqueue(animationData.Animation);
             }
 
             //animationData.timer.Complete();

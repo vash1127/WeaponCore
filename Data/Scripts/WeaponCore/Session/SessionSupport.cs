@@ -13,6 +13,7 @@ using VRage.Utils;
 using WeaponCore.Platform;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
+using Sandbox.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI;
 using VRage.ObjectBuilders;
 using VRageRender;
@@ -192,13 +193,13 @@ namespace WeaponCore
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (Target == null)
+            if (ai.PrimeTarget == null)
                 return false;
 
-            if (Target.MarkedForClose || ai != TrackingAi)
+            if (ai.PrimeTarget.MarkedForClose || ai != TrackingAi)
             {
                 Log.Line("resetting target");
-                Target = null;
+                ai.PrimeTarget = null;
                 TrackingAi = null;
                 RemoveGps();
                 return false;
@@ -209,7 +210,7 @@ namespace WeaponCore
 
         internal void SetTarget(MyEntity entity, GridAi ai)
         {
-            Target = entity;
+            ai.PrimeTarget = entity;
             TrackingAi = ai;
 
             GridAi gridAi;
@@ -231,15 +232,16 @@ namespace WeaponCore
 
         internal void GetTargetInfo(GridAi ai, out double speed, out string armedStr, out string interceptStr, out string shieldedStr, out string threatStr)
         {
-            var targetVel = Target.Physics?.LinearVelocity ?? Vector3.Zero;
+            var target = ai.PrimeTarget;
+            var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
             var targetDir = Vector3D.Normalize(targetVel);
-            var targetPos = Target.PositionComp.WorldAABB.Center;
+            var targetPos = target.PositionComp.WorldAABB.Center;
             var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
             var myHeading = Vector3D.Normalize(myPos - targetPos);
             var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
-            var shielded = ShieldApiLoaded && SApi.ProtectedByShield(Target);
-            var grid = Target as MyCubeGrid;
+            var shielded = ShieldApiLoaded && SApi.ProtectedByShield(target);
+            var grid = target as MyCubeGrid;
             var friend = false;
             if (grid != null && grid.BigOwners.Count != 0)
             {
@@ -251,7 +253,7 @@ namespace WeaponCore
             armedStr = TargetArmed ? "A" : "_";
             interceptStr = intercept ? "I" : "_";
             threatStr = threat > 0 ? "T" + threat : "__";
-            speed = Math.Round(Target.Physics?.Speed ?? 0, 1);
+            speed = Math.Round(target.Physics?.Speed ?? 0, 1);
         }
 
         internal static double ModRadius(double radius, bool largeBlock)

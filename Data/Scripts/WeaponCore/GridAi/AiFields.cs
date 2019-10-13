@@ -49,6 +49,7 @@ namespace WeaponCore.Support
         internal MyGridTargeting Targeting { get; set; }
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
+        internal MyEntity PrimeTarget;
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
         internal Vector3D PlanetClosestPoint;
