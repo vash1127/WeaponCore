@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sandbox.Definitions;
+using System;
 using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
@@ -363,18 +364,22 @@ namespace WeaponCore.Platform
 
             if (!Comp.IsAIOnlyTurret)
             {
-                var baseDef = Comp.MyCube
+                var baseDef = Comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
+                minAz = baseDef.MinAzimuthDegrees;
+                maxAz = baseDef.MaxAzimuthDegrees;
+                minEl = baseDef.MinElevationDegrees;
+                maxEl = baseDef.MaxElevationDegrees;
             }
 
             var
 
-            MinElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MinElevation));
-            MaxElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MaxElevation));
+            MinElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minEl));
+            MaxElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxEl));
 
             if (MinElevationRadians > MaxElevationRadians)
                 MinElevationRadians -= 6.283185f;
-            MinAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MinAzimuth));
-            MaxAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(System.MaxAzimuth));
+            MinAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minAz));
+            MaxAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxAz));
             if (MinAzimuthRadians > MaxAzimuthRadians)
                 MinAzimuthRadians -= 6.283185f;
         }
