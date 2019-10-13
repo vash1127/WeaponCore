@@ -266,18 +266,11 @@ namespace WeaponCore
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
-            var turret = block as IMyUpgradeModule;
-
-            if (controls.Count == 0 || turret == null) return;
-
-            if (turret != null) {
-                var comp = turret?.Components?.Get<WeaponComponent>();
-                if (comp != null)
-                {
-                    comp.TerminalRefresh();
-                }
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp != null)
+            {
+                comp.TerminalRefresh();
             }
-            
         }
         #endregion
     }

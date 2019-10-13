@@ -178,14 +178,14 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-                    BlockInventory.FixInventoryVolume(MaxAmmoVolume);
+                    Log.Line($"MaxInventoryVolume: {MaxInventoryVolume}");
+                    BlockInventory.FixInventoryVolume(MaxInventoryVolume);
                 }
                 BlockInventory.Refresh();
             }
 
+            PowerInit();
             RegisterEvents();
-            //Log.Line($"init comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
-
             OnAddedToSceneTasks();
 
             if (IsAIOnlyTurret)
@@ -254,32 +254,6 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
 
-        public void SaveInventory(bool createStorage = false)
-        {
-            if ((IsAIOnlyTurret && AIOnlyTurret.Storage == null) || !IsAIOnlyTurret) return;
-
-            var invItems = BlockInventory.GetItems();
-
-            var binary = MyAPIGateway.Utilities.SerializeToBinary(invItems);
-
-            if (IsAIOnlyTurret)
-                AIOnlyTurret.Storage[Session.Instance.InstanceInvStateGuid] = Convert.ToBase64String(binary);
-        }
-
-        public void LoadInventory(bool createStorage = false)
-        {
-            if ((IsAIOnlyTurret && AIOnlyTurret.Storage == null) || (!IsAIOnlyTurret && ControllableTurret.Storage == null)) return;
-
-            string rawData;
-            byte[] base64;
-
-            if (IsAIOnlyTurret && AIOnlyTurret.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
-                base64 = Convert.FromBase64String(rawData);
-
-            //var items = MyAPIGateway.Utilities.SerializeFromBinary<List<MyPhysicalInventoryItem>>(base64);
-
-        }
-
         public override bool IsSerialized()
         {
             if (MyAPIGateway.Multiplayer.IsServer)
@@ -290,7 +264,6 @@ namespace WeaponCore.Support
                     {
                         State.SaveState();
                         Set.SaveSettings();
-                        SaveInventory();
                     }
                 }
                 else

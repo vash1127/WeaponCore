@@ -158,11 +158,11 @@ namespace WeaponCore
 
             var invMagsAvailable = comp.Ai.AmmoInventories[def];
 
-            Log.ThreadedWrite($"weapon.CurrentAmmoVolume: {weapon.CurrentAmmoVolume} 25% amount: {0.25f * weapon.System.MaxAmmoVolume}");
+            Log.ThreadedWrite($"weapon.CurrentAmmoVolume: {weapon.CurrentAmmoVolume} 25% amount: {0.25f * weapon.System.MaxAmmoVolume} invMagsAvailable.Count: {invMagsAvailable.Count }");
 
             if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invMagsAvailable.Count > 0)
             {
-                MyAPIGateway.Parallel.Start(() =>
+                MyAPIGateway.Parallel.StartBackground(() =>
                 {
                     AmmoPull(weapon);
                 });

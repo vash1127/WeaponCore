@@ -1,7 +1,6 @@
 ﻿using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using VRage;
@@ -47,8 +46,17 @@ namespace WeaponCore.Support
                 {
                     for (int i = 0; i < existingBlocks.Count; i++)
                     {
-                        if (existingBlocks[i] is IMyUpgradeModule)
+                        if (existingBlocks[i] is IMyConveyorSorter)
+                        {
+                            if (!Session.Instance.WeaponPlatforms.ContainsKey(existingBlocks[i].BlockDefinition.Id.SubtypeId)) return;
                             _scanningRange.Include(new BoundingSphere(existingBlocks[i].PositionComp.LocalMatrix.Translation, 1500f));
+                                ((IMyTerminalBlock)existingBlocks[i]).PropertiesChanged += TurretOnPropertiesChanged;
+                        }
+                        else if (existingBlocks[i] is IMyLargeTurretBase)
+                        {
+                            _scanningRange.Include(new BoundingSphere(existingBlocks[i].PositionComp.LocalMatrix.Translation, ((IMyLargeTurretBase)existingBlocks[i]).Range));
+                            ((IMyTerminalBlock)existingBlocks[i]).PropertiesChanged += TurretOnPropertiesChanged;
+                        }
                     }
                 }
             }
@@ -62,9 +70,10 @@ namespace WeaponCore.Support
 
         private void OnBlockAdded(IMySlimBlock obj)
         {
-            IMyUpgradeModule myLargeTurretBaseCore = obj.FatBlock as IMyUpgradeModule;
+            IMyConveyorSorter myLargeTurretBaseCore = obj.FatBlock as IMyConveyorSorter;
             if (myLargeTurretBaseCore != null)
             {
+                if (!Session.Instance.WeaponPlatforms.ContainsKey(((MyCubeBlock)myLargeTurretBaseCore).BlockDefinition.Id.SubtypeId)) return;
                 _scanningRange.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, 1500f));
                 myLargeTurretBaseCore.PropertiesChanged += TurretOnPropertiesChanged;
             }
@@ -78,7 +87,7 @@ namespace WeaponCore.Support
 
         private void TurretOnPropertiesChanged(IMyTerminalBlock obj)
         {
-            IMyUpgradeModule myLargeTurretBaseCore = obj as IMyUpgradeModule;
+            IMyConveyorSorter myLargeTurretBaseCore = obj as IMyConveyorSorter;
             if (myLargeTurretBaseCore != null)
             {
                 _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, 1500f));
@@ -246,7 +255,7 @@ namespace WeaponCore.Support
                             _targetGrids.RemoveAtFast(j);
                         }
                     }
-
+                     
                     if (Session.Instance.Tick >= _lockClean) {
                         using (var enumerator = _gridLocks.GetEnumerator()) {
                             List<MyCubeGrid> gridsToRemove = new List<MyCubeGrid>();

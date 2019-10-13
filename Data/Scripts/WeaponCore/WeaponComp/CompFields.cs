@@ -1,16 +1,13 @@
 ﻿using System.Collections.Generic;
-using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game;
-using VRage.Game.Components;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -80,11 +77,11 @@ namespace WeaponCore.Support
             ReInit,
             WarmingUp,
         }
-
+        
         internal MyCubeBlock MyCube;
         internal MyWeaponPlatform Platform;
         internal IMyLargeMissileTurret ControllableTurret;
-        internal IMyUpgradeModule AIOnlyTurret;
+        internal Sandbox.ModAPI.IMyConveyorSorter AIOnlyTurret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
         internal bool MainInit;
@@ -118,42 +115,32 @@ namespace WeaponCore.Support
                 IsAIOnlyTurret = false;
             }
 
-            else if (myCube is IMyUpgradeModule)
+            else if (myCube is Sandbox.ModAPI.IMyConveyorSorter)
             {
-                AIOnlyTurret = myCube as IMyUpgradeModule;
+                AIOnlyTurret = myCube as Sandbox.ModAPI.IMyConveyorSorter;
                 IsAIOnlyTurret = true;
             }
 
             //TODO add to config
-
+            BlockInventory = myCube.GetInventory(0);
             if (IsAIOnlyTurret)
             {
-                BlockInventory = new MyInventory(0.384f, Vector3.Zero, MyInventoryFlags.CanReceive | MyInventoryFlags.CanSend);
+                BlockInventory.SetFlags(MyInventoryFlags.CanSend);
+
+                BlockInventory.ResetVolume();
 
                 if (BlockInventory == null)
                     Log.Line("Inventory null");
 
-                MyCube.Components.Add(BlockInventory);
-
-                //MaxInventoryVolume = BlockInventory.MaxVolume;
-                MaxInventoryMass = BlockInventory.MaxMass;
                 BlockInventory.Refresh();
-
-                var invOB = BlockInventory.GetObjectBuilder();
-                var cubeOB = MyCube.GetObjectBuilderCubeBlock();
-                cubeOB.ConstructionInventory = invOB;
-                MyCube.Init(cubeOB, myCube.CubeGrid);
-                
             }
 
-            BlockInventory = myCube.GetInventory(0);
+            //BlockInventory = myCube.GetInventory(0);
 
             //BlockInventory = MyCube.GetInventory();
 
-            MaxInventoryVolume = (float)BlockInventory.MaxVolume;
+            //MaxInventoryVolume = (float)BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
-
-            PowerInit();
 
             //IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
             SinkPower = IdlePower;

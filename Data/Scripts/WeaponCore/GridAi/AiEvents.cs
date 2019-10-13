@@ -93,13 +93,13 @@ namespace WeaponCore.Support
 
         private void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
+            
             if (item.Content is MyObjectBuilder_AmmoMagazine)
             {
                 var myInventory = inventory as MyInventory;
                 if (myInventory == null) return;
                 var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
                 var magId = ammoMag.GetObjectId();
-
                 if (AmmoInventories.ContainsKey(magId))
                 {
                     var hasIntentory = AmmoInventories[magId].ContainsKey(myInventory);

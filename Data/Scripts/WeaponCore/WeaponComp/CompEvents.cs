@@ -23,8 +23,7 @@ namespace WeaponCore.Support
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
-                if (BlockInventory == null)
-                    Log.Line("Inventory null");
+
                 BlockInventory.ContentsChanged += OnContentsChanged;
                 //BlockInventory.ContentsRemoved += OnContentsRemoved;
                 Sink.CurrentInputChanged += CurrentInputChanged;
@@ -140,6 +139,7 @@ namespace WeaponCore.Support
         {
             try
             {
+                Log.Line("Changed");
                 var wasFunctional = IsFunctional;
                 IsFunctional = myCubeBlock.IsFunctional;
                 if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
@@ -158,11 +158,12 @@ namespace WeaponCore.Support
                 }
                 IsWorkingChangedTick = Session.Instance.Tick;
             }
-            catch (Exception ex) { Log.Line($"Exception in IsWorkingChanged: {ex}"); }
+            catch (Exception ex) { Log.ThreadedWrite($"Exception in IsWorkingChanged: {ex}"); }
         }
 
         internal string GetSystemStatus()
         {
+            Log.ThreadedWrite($"State.Value.Online: {State.Value.Online}");
             if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
             if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
             if (Charging && !(SinkPower > 0)) return "[Insufficient Power]";

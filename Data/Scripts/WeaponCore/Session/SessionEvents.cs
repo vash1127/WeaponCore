@@ -41,14 +41,14 @@ namespace WeaponCore
 
                 
 
-                if (myEntity is IMyUpgradeModule || myEntity is IMyLargeMissileTurret)
+                if (myEntity is IMyConveyorSorter || myEntity is IMyLargeMissileTurret)
                 {
-                    if (!UpgradeControls && myEntity is IMyUpgradeModule)
+                    if (!UpgradeControls && myEntity is IMyConveyorSorter)
                     {
                         lock (InitObj)
                         {
-                            if (!UpgradeControls)
-                                MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyUpgradeModule>);
+                            //if (!UpgradeControls)
+                                //MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyConveyorSorter>);
                         }
                         UpgradeControls = true;
                     }
