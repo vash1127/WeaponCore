@@ -371,8 +371,6 @@ namespace WeaponCore.Platform
                 maxEl = baseDef.MaxElevationDegrees;
             }
 
-            var
-
             MinElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minEl));
             MaxElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxEl));
 
