@@ -87,7 +87,7 @@ namespace WeaponCore.Support
         internal ReSize ReSizing;
         internal DrawState Draw;
 
-        internal void SetupSounds()
+        internal void SetupSounds(double distanceFromCameraSqr)
         {
             FiringSoundState = System.FiringSound;
             AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
@@ -107,7 +107,7 @@ namespace WeaponCore.Support
                     HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
             }
 
-            if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot)
+            if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr)
             {
                 StartSoundActived = true;
                 FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);

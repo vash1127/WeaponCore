@@ -248,7 +248,7 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                T.SetupSounds();
+                T.SetupSounds(DistanceFromCameraSqr);
                 if (T.System.HitParticle && !T.System.IsBeamWeapon || AreaEffect == AreaEffectType.Explosive && !T.System.Values.Ammo.AreaEffect.Explosions.NoVisuals)
                 {
                     var hitPlayChance = T.System.Values.Graphics.Particles.Hit.Extras.HitPlayChance;
