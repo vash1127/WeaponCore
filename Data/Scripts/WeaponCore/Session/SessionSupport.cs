@@ -212,7 +212,7 @@ namespace WeaponCore
         {
             ai.PrimeTarget = entity;
             TrackingAi = ai;
-
+            ai.TargetResetTick = Tick + 1;
             GridAi gridAi;
             TargetArmed = false;
             if (GridTargetingAIs.TryGetValue((MyCubeGrid)entity, out gridAi))

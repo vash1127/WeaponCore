@@ -13,7 +13,7 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal static void AcquireTarget(Weapon w)
+        internal static void AcquireTarget(Weapon w, bool attemptReset = false)
         {
             w.HitOther = false;
             var tick = Session.Instance.Tick;
@@ -30,13 +30,13 @@ namespace WeaponCore.Support
             w.Comp.UpdatePivotPos(w);
             w.AimCone.ConeDir = w.Comp.MyPivotDir;
             w.AimCone.ConeTip = w.Comp.MyPivotPos;
-
             var shootProjectile = pCount > 0 && w.System.TrackProjectile;
-            var projectilesFirst = shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
-            if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType);
-            else if (targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
+            var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
 
+            if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType, attemptReset);
+            else if (!attemptReset && targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
             if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType);
+
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset(false);
@@ -44,10 +44,7 @@ namespace WeaponCore.Support
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
                 w.Target.Expired = true;
             }
-            else
-                w.WakeTargets();
-
-            //if (!w.HitOther) Log.Line("didn't hit other'");
+            else w.WakeTargets();
         }
 
         internal static bool ReacquireTarget(Projectile p)
@@ -100,7 +97,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static void AcquireOther(Weapon w, out TargetType targetType)
+        private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false)
         {
             Session.Instance.TargetRequests++;
             var ai = w.Comp.Ai;
@@ -117,6 +114,7 @@ namespace WeaponCore.Support
             var adjTargetCount = needOffset ? targetCount + offset : targetCount;
             for (int x = 0; x < adjTargetCount; x++)
             {
+                if (attemptReset && x > 0) break;
                 var info = x < 1 && needOffset ? primeInfo : ai.SortedTargets[x - offset];
 
                 if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
@@ -193,7 +191,8 @@ namespace WeaponCore.Support
                     return;
                 }
             }
-            targetType = TargetType.None;
+            if (!attemptReset || w.Target.Expired) targetType = TargetType.None;
+            else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
         }
         
         private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)

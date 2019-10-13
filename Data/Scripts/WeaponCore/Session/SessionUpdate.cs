@@ -83,7 +83,7 @@ namespace WeaponCore
                         }
                         else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Comp.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
-                        w.SeekTarget = w.Target.Expired && w.TrackTarget;
+                        w.SeekTarget = w.Target.Expired && w.TrackTarget || gridAi.TargetResetTick == Tick;
 
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
@@ -227,7 +227,7 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119) GridAi.AcquireTarget(w);
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick) GridAi.AcquireTarget(w);
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;
