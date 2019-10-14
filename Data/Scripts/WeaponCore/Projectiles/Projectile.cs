@@ -108,7 +108,6 @@ namespace WeaponCore.Projectiles
 
         internal void Start(Projectiles manager, bool noAv, int poolId)
         {
-            T.Session = manager.Session;
             PoolId = poolId;
             Manager = manager;
             Position = T.Origin;
