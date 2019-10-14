@@ -48,7 +48,9 @@ namespace WeaponCore.Support
         public override void OnBeforeRemovedFromContainer()
         {
             base.OnBeforeRemovedFromContainer();
-
+            if (Container.Entity.InScene)
+            {
+            }
         }
 
         public void InitPlatform()

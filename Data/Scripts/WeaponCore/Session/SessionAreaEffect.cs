@@ -261,35 +261,6 @@ namespace WeaponCore
             if (_effectedCubes.Count == 0) _effectActive = false;
         }
 
-        internal void PurgeAllEffects()
-        {
-            foreach (var item in _effectedCubes)
-            {
-                var cubeid = item.Key;
-                var blockInfo = item.Value;
-                var functBlock = blockInfo.FunctBlock;
-                var cube = blockInfo.CubeBlock;
-
-                if (cube == null || cube.MarkedForClose)
-                {
-                    _effectPurge.Enqueue(cubeid);
-                    continue;
-                }
-
-                functBlock.EnabledChanged -= ForceDisable;
-                functBlock.Enabled = blockInfo.FirstState;
-                cube.SetDamageEffect(false);
-                _effectPurge.Enqueue(cubeid);
-            }
-
-            while (_effectPurge.Count != 0)
-            {
-                _effectedCubes.Remove(_effectPurge.Dequeue());
-            }
-
-            _effectActive = false;
-            RemoveEffectsFromGrid.Clear();
-        }
 
         private static void ForceDisable(IMyTerminalBlock myTerminalBlock)
         {

@@ -47,14 +47,13 @@ namespace WeaponCore
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
 
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>();
-        internal readonly Projectiles.Projectiles Projectiles;
+        internal Projectiles.Projectiles Projectiles;
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly MyConcurrentDictionary<MyEntity, Dictionary<Vector3I, IMySlimBlock>> SlimSpace = new MyConcurrentDictionary<MyEntity, Dictionary<Vector3I, IMySlimBlock>>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
-        internal readonly CachingDictionary<LineD, uint> RaCheckLines = new CachingDictionary<LineD, uint>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
         internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();

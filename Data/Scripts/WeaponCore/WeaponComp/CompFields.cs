@@ -28,7 +28,6 @@ namespace WeaponCore.Support
         private bool _readyToSync;
         private bool _firstSync;
 
-        private HashSet<string> UIControls = new HashSet<string>(); 
         internal GridAi Ai { get; set; }
         internal MySoundPair RotationSound;
         internal MyEntity3DSoundEmitter RotationEmitter; 

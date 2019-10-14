@@ -211,7 +211,7 @@ namespace WeaponCore
 
         protected override void UnloadData()
         {
-            PurgeAllEffects();
+            PurgeAll();
             SApi.Unload();
             
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);

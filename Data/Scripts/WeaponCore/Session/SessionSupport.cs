@@ -796,6 +796,36 @@ namespace WeaponCore
 
             weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
+        internal void PurgeAll()
+        {
+            foreach (var item in _effectedCubes)
+            {
+                var cubeid = item.Key;
+                var blockInfo = item.Value;
+                var functBlock = blockInfo.FunctBlock;
+                var cube = blockInfo.CubeBlock;
+
+                if (cube == null || cube.MarkedForClose)
+                {
+                    _effectPurge.Enqueue(cubeid);
+                    continue;
+                }
+
+                functBlock.EnabledChanged -= ForceDisable;
+                functBlock.Enabled = blockInfo.FirstState;
+                cube.SetDamageEffect(false);
+                _effectPurge.Enqueue(cubeid);
+            }
+
+            while (_effectPurge.Count != 0)
+            {
+                _effectedCubes.Remove(_effectPurge.Dequeue());
+            }
+
+            _effectActive = false;
+            RemoveEffectsFromGrid.Clear();
+            Projectiles = null;
+        }
         #endregion
     }
 }
