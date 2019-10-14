@@ -16,11 +16,9 @@ namespace WeaponCore.Support
     public partial class GridAi
     {
         internal volatile bool Ready;
-        internal readonly MyCubeGrid MyGrid;
-        internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(50);
-        internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(50);
+        internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(25);
+        internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(25);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
-
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
@@ -39,16 +37,17 @@ namespace WeaponCore.Support
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
-
+        internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
+        internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
+        internal readonly TargetCompare TargetCompare1 = new TargetCompare();
 
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly Session Session;
-        internal List<TargetInfo> SortedTargets = new List<TargetInfo>();
-        internal Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
+        internal readonly MyCubeGrid MyGrid;
 
-        internal MyResourceDistributorComponent MyResourceDist;
-        internal MyGridTargeting Targeting { get; set; }
+
+        internal MyGridTargeting Targeting;
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyEntity PrimeTarget;
@@ -102,8 +101,6 @@ namespace WeaponCore.Support
             Other,
             None,
         }
-
-        internal readonly TargetCompare TargetCompare1 = new TargetCompare();
 
         internal GridAi(MyCubeGrid grid, Session session)
         {

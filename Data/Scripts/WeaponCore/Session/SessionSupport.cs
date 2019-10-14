@@ -824,6 +824,7 @@ namespace WeaponCore
 
             _effectActive = false;
             RemoveEffectsFromGrid.Clear();
+            Projectiles = null;
         }
         #endregion
     }

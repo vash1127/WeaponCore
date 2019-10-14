@@ -26,6 +26,7 @@ namespace WeaponCore.Support
             else
             {
                 Turret.AppendingCustomInfo -= AppendingCustomInfo;
+                Turret.AppendingCustomInfo -= AppendingCustomInfo;
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsChanged -= OnContentsChanged;
                 BlockInventory.ContentsRemoved -= OnContentsRemoved;

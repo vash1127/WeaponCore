@@ -80,7 +80,15 @@ namespace WeaponCore.Support
             EntitiesInRange.Clear();
             Sources.Clear();
             Targets.Clear();
+            SortedTargets.Clear();
+            BlockTypePool.Clean();
+            CubePool.Clean();
             Targeting = null;
+            MyShieldTmp = null;
+            MyShield = null;
+            PrimeTarget = null;
+            MyPlanetTmp = null;
+            MyPlanet = null;
         }
     }
 }
