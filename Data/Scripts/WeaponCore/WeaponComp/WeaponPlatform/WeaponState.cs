@@ -13,17 +13,17 @@ namespace WeaponCore.Platform
     {
         public void PositionChanged(MyPositionComponentBase pComp)
         {
-            if (_posChangedTick != Session.Instance.Tick)
+            if (_posChangedTick != Comp.Ai.Session.Tick)
                 UpdatePivotPos();
 
-            _posChangedTick = Session.Instance.Tick;
+            _posChangedTick = Comp.Ai.Session.Tick;
         }
 
         internal void UpdatePartPos(MyPositionComponentBase pComp)
         {
-            var tick = Session.Instance.Tick;
+            var tick = Comp.Ai.Session.Tick;
 
-            if (_posChangedTick != Session.Instance.Tick)
+            if (_posChangedTick != Comp.Ai.Session.Tick)
                 UpdatePivotPos();
 
             if (Comp.PositionUpdateTick <= tick && _posChangedTick != tick)
@@ -321,7 +321,7 @@ namespace WeaponCore.Platform
                 var axis = System.Values.HardPoint.RotateBarrelAxis;
                 if (axis != 0 && BarrelPart != Comp.MyCube)
                 {
-                    var partPos = (Vector3)Session.Instance.GetPartLocation("subpart_" + System.MuzzlePartName.String,
+                    var partPos = (Vector3)Comp.Ai.Session.GetPartLocation("subpart_" + System.MuzzlePartName.String,
                         ((MyEntitySubpart)BarrelPart).Parent.Model);
 
                     var to = Matrix.CreateTranslation(-partPos);
@@ -357,7 +357,7 @@ namespace WeaponCore.Platform
                     var muzzle = barrelPair.Key;
                     var id = muzzle.MuzzleId;
                     var dummy = Dummies[id];
-                    var tick = Session.Instance.Tick;
+                    var tick = Comp.Ai.Session.Tick;
                     var ticksAgo = tick - lastUpdateTick;
 
                     var particles = System.Values.Graphics.Particles;
@@ -523,7 +523,7 @@ namespace WeaponCore.Platform
         {
             SleepTargets = false;
             SleepingTargets.Clear();
-            LastTargetTick = Session.Instance.Tick;
+            LastTargetTick = Comp.Ai.Session.Tick;
         }
     }
 }

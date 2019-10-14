@@ -98,7 +98,7 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
 
-            if (Session.Instance.IsServer)
+            if (Comp.Ai.Session.IsServer)
             {
                 Value.MId++;
                 if(isAiOnlyTurret)
@@ -173,10 +173,10 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
             Value.MId++;
-            if (Session.Instance.IsServer)
+            if (Comp.Ai.Session.IsServer)
             {
                 if(isAiOnlyTurret)
-                Session.Instance.PacketizeToClientsInRange(AiOnlyTurret, new DataLogicSettings(AiOnlyTurret.EntityId, Value)); // update clients with server's settings
+                Session.PacketizeToClientsInRange(AiOnlyTurret, new DataLogicSettings(AiOnlyTurret.EntityId, Value)); // update clients with server's settings
                 else
                     Session.Instance.PacketizeToClientsInRange(ControllableTurret, new DataLogicSettings(ControllableTurret.EntityId, Value));
             }

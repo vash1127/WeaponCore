@@ -286,7 +286,7 @@ namespace WeaponCore.Support
             return surfaceArea;
         }
 
-        public static void CreateMissileExplosion(float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponSystem weaponSystem, bool forceNoDraw = false)
+        public static void CreateMissileExplosion(Session session, float damage, double radius, Vector3D position, Vector3D direction, MyEntity owner, MyEntity hitEnt, WeaponSystem weaponSystem, bool forceNoDraw = false)
         {
             var af = weaponSystem.Values.Ammo.AreaEffect;
             var eInfo = af.Explosions;
@@ -294,7 +294,7 @@ namespace WeaponCore.Support
             var cullSphere = sphere;
             cullSphere.Radius = radius * 5;
             MyExplosionFlags eFlags;
-            var drawParticles = !forceNoDraw && !eInfo.NoVisuals && Session.Instance.Session.Camera.IsInFrustum(ref cullSphere);
+            var drawParticles = !forceNoDraw && !eInfo.NoVisuals && session.Camera.IsInFrustum(ref cullSphere);
             if (drawParticles)
                 eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.AFFECT_VOXELS | MyExplosionFlags.APPLY_FORCE_AND_DAMAGE | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT | MyExplosionFlags.CREATE_SHRAPNELS | MyExplosionFlags.APPLY_DEFORMATION;
             else
@@ -324,14 +324,14 @@ namespace WeaponCore.Support
             MyExplosions.AddExplosion(ref explosionInfo);
         }
 
-        public static void CreateFakeExplosion(double radius, Vector3D position, WeaponSystem weaponSystem)
+        public static void CreateFakeExplosion(Session session, double radius, Vector3D position, WeaponSystem weaponSystem)
         {
             var af = weaponSystem.Values.Ammo.AreaEffect;
             var eInfo = af.Explosions;
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
             cullSphere.Radius = af.AreaEffectRadius * 5;
-            var drawParticles = !eInfo.NoVisuals && Session.Instance.Session.Camera.IsInFrustum(ref cullSphere);
+            var drawParticles = !eInfo.NoVisuals && session.Camera.IsInFrustum(ref cullSphere);
             MyExplosionFlags eFlags; 
             if (drawParticles) eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT;
             else eFlags = MyExplosionFlags.CREATE_DECALS;

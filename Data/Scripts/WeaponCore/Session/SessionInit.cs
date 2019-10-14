@@ -141,7 +141,7 @@ namespace WeaponCore
                 var subTypeIdHash = MyStringHash.GetOrCompute(tDef.Key);
                 SubTypeIdHashMap[tDef.Key] = subTypeIdHash;
 
-                WeaponPlatforms[subTypeIdHash] =  new WeaponStructure(tDef, _subTypeIdToWeaponDefs[tDef.Key]);
+                WeaponPlatforms[subTypeIdHash] =  new WeaponStructure(this, tDef, _subTypeIdToWeaponDefs[tDef.Key]);
             }
             for (int i = 0; i < Projectiles.Wait.Length; i++)
             {

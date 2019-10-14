@@ -53,9 +53,9 @@ namespace WeaponCore.Support
 
         public void InitPlatform()
         {
-            _isServer = Session.Instance.IsServer;
-            _isDedicated = Session.Instance.DedicatedServer;
-            _mpActive = Session.Instance.MpActive;
+            _isServer = Ai.Session.IsServer;
+            _isDedicated = Ai.Session.DedicatedServer;
+            _mpActive = Ai.Session.MpActive;
 
             Ai.FirstRun = true;
             Platform = new MyWeaponPlatform(this);
@@ -202,10 +202,10 @@ namespace WeaponCore.Support
         public void ReInitPlatform()
         {
             GridAi gridAi;
-            if (!Session.Instance.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
+            if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
             {
-                gridAi = new GridAi(MyCube.CubeGrid);
-                Session.Instance.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
+                gridAi = new GridAi(MyCube.CubeGrid, Ai.Session);
+                Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
             }
             Ai = gridAi;
             RegisterEvents();

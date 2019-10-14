@@ -19,7 +19,7 @@ namespace WeaponCore
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private readonly Vector2 _pointerPosition = new Vector2(0, 0.25f);
         private readonly Vector2 _targetDrawPosition = new Vector2(-1f, 1f);
-
+        private readonly Session Session;
         private bool _cachedPointerPos;
         private bool _cachedTargetPos;
 
@@ -28,35 +28,40 @@ namespace WeaponCore
         internal Vector3D TargetOffset;
         internal double AdjScale;
 
+        internal Pointer(Session session)
+        {
+            Session = session;
+        }
+
         internal void SelectTarget()
         {
             if (!_cachedPointerPos) InitPointerOffset();
             if (!_cachedTargetPos) InitTargetOffset();
-            if (!Session.Instance.UpdateLocalAiAndCockpit()) return;
-            var ai = Session.Instance.TrackingAi;
-            var cockPit = Session.Instance.ActiveCockPit;
+            if (!Session.UpdateLocalAiAndCockpit()) return;
+            var ai = Session.TrackingAi;
+            var cockPit = Session.ActiveCockPit;
             Vector3D start;
             Vector3D end;
             if (!MyAPIGateway.Session.CameraController.IsInFirstPersonView)
             {
-                var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
+                var cameraWorldMatrix = Session.Camera.WorldMatrix;
                 var offetPosition = Vector3D.Transform(PointerOffset, cameraWorldMatrix);
                 start = offetPosition;
-                var dir = Vector3D.Normalize(start - Session.Instance.CameraPos);
+                var dir = Vector3D.Normalize(start - Session.CameraPos);
                 end = offetPosition + (dir * ai.MaxTargetingRange);
             }
             else
             {
                 start = cockPit.PositionComp.WorldAABB.Center;
-                end = start + (Vector3D.Normalize(cockPit.PositionComp.WorldMatrix.Forward) * Session.Instance.TrackingAi.MaxTargetingRange);
+                end = start + (Vector3D.Normalize(cockPit.PositionComp.WorldMatrix.Forward) * Session.TrackingAi.MaxTargetingRange);
             }
-            Session.Instance.Physics.CastRay(start, end, _hitInfo);
+            Session.Physics.CastRay(start, end, _hitInfo);
             for (int i = 0; i < _hitInfo.Count; i++)
             {
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;
                 if (hit == null || hit.IsSameConstructAs(ai.MyGrid)) continue;
-                Session.Instance.SetTarget(hit, ai);
-                Session.Instance.ResetGps();
+                Session.SetTarget(hit, ai);
+                Session.ResetGps();
 
                 Log.Line($"{hit.DebugName}");
                 break;
@@ -65,14 +70,14 @@ namespace WeaponCore
 
         internal void DrawSelector()
         {
-            if (!Session.Instance.UpdateLocalAiAndCockpit() || Session.Instance.Ui.WheelActive) return;
-            if (Session.Instance.CheckTarget(Session.Instance.TrackingAi)) UpdateTarget();
+            if (!Session.UpdateLocalAiAndCockpit() || Session.Ui.WheelActive) return;
+            if (Session.CheckTarget(Session.TrackingAi)) UpdateTarget();
             if (MyAPIGateway.Session.CameraController.IsInFirstPersonView) return;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
             if (!_3RdPersonDraw) return;
             if (!_cachedPointerPos) InitPointerOffset();
             if (!_cachedTargetPos) InitTargetOffset();
-            var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
+            var cameraWorldMatrix = Session.Camera.WorldMatrix;
             var offetPosition = Vector3D.Transform(PointerOffset, cameraWorldMatrix);
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
@@ -81,27 +86,29 @@ namespace WeaponCore
 
         private void UpdateTarget()
         {
-            var ai = Session.Instance.TrackingAi;
-            if (ai == null || !Session.Instance.CheckTarget(ai) || Session.Instance.TargetGps == null) return;
+            var ai = Session.TrackingAi;
+            if (ai == null || !Session.CheckTarget(ai) || Session.TargetGps == null) return;
 
-            var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
+            var cameraWorldMatrix = Session.Camera.WorldMatrix;
             var offetPosition = Vector3D.Transform(TargetOffset, cameraWorldMatrix);
             double speed;
             string armedStr;
             string interceptStr;
             string shieldedStr;
             string threatStr;
-            Session.Instance.GetTargetInfo(ai, out speed, out armedStr, out interceptStr, out shieldedStr, out threatStr);
-            var gpsName = $"Status[ {armedStr}, {shieldedStr}, {interceptStr}, {threatStr} ]             Speed[ {speed} m/s ]";
-            var distance = Vector3D.Distance(ai.PrimeTarget.PositionComp.WorldAABB.Center, Session.Instance.ActiveCockPit.PositionComp.WorldAABB.Center);
-            Session.Instance.SetGpsInfo(offetPosition, gpsName, distance);
+            Session.GetTargetInfo(ai, out speed, out armedStr, out interceptStr, out shieldedStr, out threatStr);
+            var gpsName = $"Status[ {armedStr}, {shieldedStr}, {interceptStr}, {threatStr} ]             Speed[ {speed:0} m/s ]";
+            var targetSphere = ai.PrimeTarget.PositionComp.WorldVolume;
+            var cockPitCenter = Session.ActiveCockPit.PositionComp.WorldAABB.Center;
+            var distance = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref cockPitCenter, ref targetSphere);
+            Session.SetGpsInfo(offetPosition, gpsName, distance);
         }
 
         private void InitPointerOffset()
         {
             var position = new Vector3D(_pointerPosition.X, _pointerPosition.Y, 0);
-            var fov = Session.Instance.Session.Camera.FovWithZoom;
-            double aspectratio = Session.Instance.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
+            var fov = Session.Session.Camera.FovWithZoom;
+            double aspectratio = Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
             var scale = 0.075 * Math.Tan(fov * 0.5);
 
             position.X *= scale * aspectratio;
@@ -116,8 +123,8 @@ namespace WeaponCore
         private void InitTargetOffset()
         {
             var position = new Vector3D(_targetDrawPosition.X, _targetDrawPosition.Y, 0);
-            var fov = Session.Instance.Session.Camera.FovWithZoom;
-            double aspectratio = Session.Instance.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
+            var fov = Session.Session.Camera.FovWithZoom;
+            double aspectratio = Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
             var scale = 0.075 * Math.Tan(fov * 0.5);
 
             position.X *= scale * aspectratio;

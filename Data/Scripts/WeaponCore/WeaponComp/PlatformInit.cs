@@ -19,7 +19,7 @@ namespace WeaponCore.Platform
         internal readonly bool Inited;
         internal MyWeaponPlatform(WeaponComponent comp)
         {
-            Structure = Session.Instance.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
+            Structure = Session.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
 
             var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
             wCounter.Max = Structure.GridWeaponCap;
@@ -45,7 +45,7 @@ namespace WeaponCore.Platform
                 var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;
 
                 var wepAnimationSet =
-                    Session.Instance.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
+                    Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
 
                 MyEntity barrelPartEntity;
                 if (!Parts.NameToEntity.TryGetValue(Structure.MuzzlePartNames[i].String, out barrelPartEntity))

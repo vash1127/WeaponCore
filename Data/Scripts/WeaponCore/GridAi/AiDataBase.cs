@@ -55,7 +55,7 @@ namespace WeaponCore.Support
                         NewEntities.Add(new DetectInfo(ent, typeDict, entInfo));
                         ValidGrids.Add(ent, typeDict);
                         GridAi targetAi;
-                        if (Session.Instance.GridTargetingAIs.TryGetValue(grid, out targetAi))
+                        if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))
                         {
                             targetAi.ThreatsTmp.Add(this);
                             TargetAisTmp.Add(targetAi);
@@ -109,7 +109,7 @@ namespace WeaponCore.Support
             {
                 var ent = EntitiesInRange[i];
                 var hasPhysics = ent.Physics != null;
-                if (Session.Instance.ShieldApiLoaded && !hasPhysics && !ent.IsPreview && !ent.Render.CastShadows)
+                if (Session.ShieldApiLoaded && !hasPhysics && !ent.IsPreview && !ent.Render.CastShadows)
                 {
                     long testId;
                     long.TryParse(ent.Name, out testId);

@@ -84,7 +84,7 @@ namespace WeaponCore.Support
 
         private void UpdateSettings()
         {
-            if (Session.Instance.Tick % 33 == 0)
+            if (Ai.Session.Tick % 33 == 0)
             {
                 if (SettingsUpdated)
                 {
@@ -97,7 +97,7 @@ namespace WeaponCore.Support
                     }
                 }
             }
-            else if (Session.Instance.Tick % 34 == 0)
+            else if (Ai.Session.Tick % 34 == 0)
             {
                 if (ClientUiUpdate)
                 {
@@ -109,7 +109,7 @@ namespace WeaponCore.Support
 
         internal void UpdateNetworkState()
         {
-            if (Session.Instance.MpActive)
+            if (Ai.Session.MpActive)
             {
                 State.NetworkUpdate();
                 if (_isServer) TerminalRefresh(false);

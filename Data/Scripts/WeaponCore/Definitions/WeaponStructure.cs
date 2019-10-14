@@ -26,7 +26,7 @@ namespace WeaponCore.Support
         public readonly MyAmmoMagazineDefinition MagazineDef;
         public readonly MyStringId TracerMaterial;
         public readonly MyStringId TrailMaterial;
-
+        public readonly Session Session;
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
         public readonly Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> WeaponEmissiveSet;
@@ -137,8 +137,9 @@ namespace WeaponCore.Support
             WhenDone
         }
 
-        public WeaponSystem(MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
+        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
         {
+            Session = session;
             MuzzlePartName = muzzlePartName;
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
@@ -225,7 +226,7 @@ namespace WeaponCore.Support
 
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
-            Session.Instance.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet);
+            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet);
         }
 
         private void SetWeaponAnimations( )
@@ -324,8 +325,8 @@ namespace WeaponCore.Support
             else triggerModelId  = -1;
             if (Values.Graphics.ModelName != string.Empty)
             {
-                primeModelId = Session.Instance.ModelCount++;
-                Session.Instance.ModelIdToName.Add(PrimeModelId, Values.ModPath + Values.Graphics.ModelName);
+                primeModelId = Session.ModelCount++;
+                Session.ModelIdToName.Add(PrimeModelId, Values.ModPath + Values.Graphics.ModelName);
             }
             else primeModelId = -1;
         }
@@ -386,7 +387,7 @@ namespace WeaponCore.Support
             if (Values.Graphics.Particles.Barrel2.Extras.MaxDistance > HardPointAvMaxDistSqr)
                 HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel2.Extras.MaxDistance;
 
-            foreach (var def in Session.Instance.SoundDefinitions)
+            foreach (var def in Session.SoundDefinitions)
             {
                 var id = def.Id.SubtypeId.String;
                 if (FiringSound != FiringSoundState.None && id == fireSound)
@@ -444,9 +445,11 @@ namespace WeaponCore.Support
         public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
+        public readonly Session Session;
 
-        public WeaponStructure(KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList)
+        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string>>> tDef, List<WeaponDefinition> wDefList)
         {
+            Session = session;
             var map = tDef.Value;
             var numOfParts = wDefList.Count;
             MultiParts = numOfParts > 1;
@@ -473,7 +476,7 @@ namespace WeaponCore.Support
 
                 var ammoDefId = new MyDefinitionId();
                 var ammoBlank = weaponDef.HardPoint.AmmoMagazineId == string.Empty || weaponDef.HardPoint.AmmoMagazineId == "Blank";
-                foreach (var def in Session.Instance.AllDefinitions)
+                foreach (var def in Session.AllDefinitions)
                 {
                     if (ammoBlank && def.Id.SubtypeId.String == "Blank" || def.Id.SubtypeId.String == weaponDef.HardPoint.AmmoMagazineId) ammoDefId = def.Id;
                 }
@@ -484,9 +487,9 @@ namespace WeaponCore.Support
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
 
-                Session.Instance.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventory, MyFixedPoint>();
+                Session.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventory, MyFixedPoint>();
 
-                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId));
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId));
                 if (!ammoBlank)
                 {
                     if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();

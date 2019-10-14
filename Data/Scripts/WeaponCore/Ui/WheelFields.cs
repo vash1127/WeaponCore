@@ -26,6 +26,7 @@ namespace WeaponCore
         internal readonly List<MenuTarget> Characters = new List<MenuTarget>();
         internal readonly List<MenuTarget> Projectiles = new List<MenuTarget>();
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
+        internal readonly Session Session;
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
 
@@ -88,16 +89,17 @@ namespace WeaponCore
         {
             get
             {
-                var cockPit = Session.Instance.Session.ControlledObject as MyCockpit;
-                var isGridAi = cockPit != null && Session.Instance.GridTargetingAIs.TryGetValue(cockPit.CubeGrid, out Ai);
+                var cockPit = Session.Session.ControlledObject as MyCockpit;
+                var isGridAi = cockPit != null && Session.GridTargetingAIs.TryGetValue(cockPit.CubeGrid, out Ai);
                 if (MyAPIGateway.Input.WasMiddleMouseReleased() && !WheelActive && isGridAi) return State.Open;
                 if (MyAPIGateway.Input.WasMiddleMouseReleased() && WheelActive) return State.Close;
                 return State.NoChange;
             }
         }
 
-        internal Wheel()
+        internal Wheel(Session session)
         {
+            Session = session;
             var main = new Menu(this, "Main", MainItems, MainItems.Length);
             var subSystems = new Menu(this, "SubSystems", SubSystemItems, SubSystemItems.Length);
             var grids = new Menu(this, "Grids", GridItems, GridItems.Length);

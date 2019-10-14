@@ -16,7 +16,7 @@ namespace WeaponCore.Support
         internal static void AcquireTarget(Weapon w, bool attemptReset = false)
         {
             w.HitOther = false;
-            var tick = Session.Instance.Tick;
+            var tick = w.Comp.Ai.Session.Tick;
             w.TargetCheckTick = tick;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
             var targetType = TargetType.None;
@@ -52,7 +52,7 @@ namespace WeaponCore.Support
         internal static bool ReacquireTarget(Projectile p)
         {
             p.ChaseAge = p.Age;
-            var physics = Session.Instance.Physics;
+            var physics = p.T.Ai.Session.Physics;
             var s = p.T.System;
             var ai = p.T.Ai;
             var weaponPos = p.Position;
@@ -101,9 +101,9 @@ namespace WeaponCore.Support
 
         private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false)
         {
-            Session.Instance.TargetRequests++;
             var ai = w.Comp.Ai;
-            var physics = Session.Instance.Physics;
+            ai.Session.TargetRequests++;
+            var physics = ai.Session.Physics;
             var weaponPos = w.MyPivotPos;
             var target = w.NewTarget;
             var s = w.System;
@@ -127,7 +127,7 @@ namespace WeaponCore.Support
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
-                Session.Instance.TargetChecks++;
+                Session.TargetChecks++;
 
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
@@ -151,14 +151,14 @@ namespace WeaponCore.Support
                             var oldNormDir = Vector3D.Normalize(oldDir);
                             var newNormDir = Vector3D.Normalize(newDir);
                             var dotDirChange = Vector3D.Dot(oldNormDir, newNormDir);
-                            if (dotDirChange < Session.AimDirToleranceCosine)
+                            if (dotDirChange < ai.Session.AimDirToleranceCosine)
                                 continue;
 
                             w.SleepingTargets.Remove(info.Target);
                         }
                         else w.SleepingTargets.Add(info.Target, newDir);
                     }
-                    Session.Instance.CanShoot++;
+                    ai.Session.CanShoot++;
                     if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
 
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
@@ -177,7 +177,7 @@ namespace WeaponCore.Support
 
                 if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
-                Session.Instance.TopRayCasts++;
+                ai.Session.TopRayCasts++;
                 IHitInfo hitInfo;
                 physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
                 if (hitInfo != null && hitInfo.HitEntity == info.Target)
@@ -238,7 +238,7 @@ namespace WeaponCore.Support
             var lastBlocks = system.Values.Targeting.TopBlocks > 10 && distToEnt < 1000 ? system.Values.Targeting.TopBlocks : 10;
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
             var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
-            var physics = Session.Instance.Physics;
+            var physics = ai.Session.Physics;
             var grid = topEnt as IMyCubeGrid;
             var gridPhysics = grid?.Physics;
             Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
@@ -257,21 +257,21 @@ namespace WeaponCore.Support
                 var block = subSystemList[next];
                 if (block.MarkedForClose) continue;
 
-                Session.Instance.BlockChecks++;
+                ai.Session.BlockChecks++;
 
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
 
                 double rayDist;
                 if (turretCheck)
                 {
-                    Session.Instance.CanShoot++;
+                    ai.Session.CanShoot++;
                     if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel))
                         continue;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
                         continue;
 
-                    Session.Instance.RandomRayCasts++;
+                    ai.Session.RandomRayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 
@@ -331,12 +331,12 @@ namespace WeaponCore.Support
             var top5Count = target.Top5.Count;
             var testPos = currentPos;
             var top5 = target.Top5;
-            var physics = Session.Instance.Physics;
+            var physics = ai.Session.Physics;
             IHitInfo hitInfo = null;
             var notSelfHit = false;
             for (int i = 0; i < cubes.Count + top5Count; i++)
             {
-                Session.Instance.BlockChecks++;
+                ai.Session.BlockChecks++;
                 var index = i < top5Count ? i : i - top5Count;
                 var cube = i < top5Count ? top5[index] : cubes[index];
                 if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
@@ -353,7 +353,7 @@ namespace WeaponCore.Support
                     {
                         if (w != null && !(!w.IsTurret && system.Values.Ammo.Trajectory.Smarts.OverideTarget))
                         {
-                            Session.Instance.CanShoot++;
+                            ai.Session.CanShoot++;
                             var castRay = false;
 
                             if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
@@ -361,7 +361,7 @@ namespace WeaponCore.Support
 
                             if (castRay)
                             {
-                                Session.Instance.ClosestRayCasts++;
+                                ai.Session.ClosestRayCasts++;
                                 bestTest = physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
 
                                 if (hit.HitEntity != ai.MyGrid || hit == null)
@@ -462,13 +462,13 @@ namespace WeaponCore.Support
             var s = w.System;
             var collection = s.ClosestFirst ? wCache.SortProjetiles : ai.LiveProjectile as IEnumerable<Projectile>;
             wCache.SortProjectiles(w);
-            var physics = Session.Instance.Physics;
+            var physics = ai.Session.Physics;
             var target = w.NewTarget;
             var weaponPos = w.MyPivotPos;
             const Projectile.ProjectileState ignoreStates = (Projectile.ProjectileState)1;
             foreach (var lp in collection)
             {
-                Session.Instance.ProjectileChecks++;
+                ai.Session.ProjectileChecks++;
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State > ignoreStates) continue;
                 if (lp.State != Projectile.ProjectileState.Alive && lp.State != Projectile.ProjectileState.Start) Log.Line($"invaid projectile state: {lp.State}");
                 if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity))

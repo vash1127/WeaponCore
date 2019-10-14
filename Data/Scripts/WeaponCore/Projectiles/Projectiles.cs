@@ -17,7 +17,7 @@ namespace WeaponCore.Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal const int PoolCount = 8;
-
+        internal readonly Session Session;
         internal readonly MyConcurrentPool<Fragments>[] ShrapnelPool = new MyConcurrentPool<Fragments>[PoolCount];
         internal readonly MyConcurrentPool<Fragment>[] FragmentPool = new MyConcurrentPool<Fragment>[PoolCount];
         internal readonly List<Fragments>[] ShrapnelToSpawn = new List<Fragments>[PoolCount];
@@ -47,8 +47,9 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
         internal readonly object[] Wait = new object[PoolCount];
 
-        internal Projectiles()
+        internal Projectiles(Session session)
         {
+            Session = session;
             for (int i = 0; i < Wait.Length; i++)
             {
                 Wait[i] = new object();
@@ -82,7 +83,7 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            if (Session.Instance.HighLoad)
+            if (Session.HighLoad)
             {
                 MyAPIGateway.Parallel.For(0, Wait.Length, i =>
                 {
@@ -114,7 +115,7 @@ namespace WeaponCore.Projectiles
 
         private void UpdateState(int i)
         {
-            var noAv = Session.Instance.DedicatedServer;
+            var noAv = Session.DedicatedServer;
             ModelClosed[i] = false;
             var pool = ProjectilePool[i];
             var spawnShrapnel = ShrapnelToSpawn[i];
@@ -333,7 +334,7 @@ namespace WeaponCore.Projectiles
         private void UpdateAv(int poolId)
         {
             var drawList = DrawProjectiles[poolId];
-            var camera = Session.Instance.Camera;
+            var camera = Session.Camera;
 
             var pool = ProjectilePool[poolId];
             foreach (var p in pool.Active)

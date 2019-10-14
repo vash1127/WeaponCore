@@ -22,7 +22,7 @@ namespace WeaponCore.Data.Scripts.WeaponCore.Support
         {
             base.Init(objectBuilder, cubeGrid);
         }
-
+        /*
         public new bool CanSwitchToWeapon(MyDefinitionId? weapon)
             {
                 Log.Line($"Made It");
@@ -33,5 +33,7 @@ namespace WeaponCore.Data.Scripts.WeaponCore.Support
                 MyObjectBuilderType typeId = weapon.Value.TypeId;
                 return typeId == typeof(MyObjectBuilder_Drill) || typeId == typeof(MyObjectBuilder_SmallMissileLauncher) || typeId == typeof(MyObjectBuilder_SmallGatlingGun) || typeId == typeof(MyObjectBuilder_ShipGrinder) || typeId == typeof(MyObjectBuilder_ShipWelder) || typeId == typeof(MyObjectBuilder_SmallMissileLauncherReload) ||Session.Instance.WeaponPlatforms.ContainsKey(weapon.Value.SubtypeId);
             }
-        }
+        */
+
+    }
 }

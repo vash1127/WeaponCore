@@ -113,12 +113,12 @@ namespace WeaponCore.Projectiles
             Position = T.Origin;
             AccelDir = Direction;
             VisualDir = Direction;
-            var cameraStart = Session.Instance.CameraPos;
+            var cameraStart = T.Ai.Session.CameraPos;
             Vector3D.DistanceSquared(ref cameraStart, ref T.Origin, out DistanceFromCameraSqr);
             GenerateShrapnel = T.System.Values.Ammo.Shrapnel.Fragments > 0;
             var noSAv = T.IsShrapnel && T.System.Values.Ammo.Shrapnel.NoAudioVisual;
             var probability = T.System.Values.Graphics.VisualProbability;
-            EnableAv = !noAv && !noSAv && DistanceFromCameraSqr <= Session.Instance.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
+            EnableAv = !noAv && !noSAv && DistanceFromCameraSqr <= T.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
 
             T.PrimeMatrix = MatrixD.Identity;
             T.TriggerMatrix = MatrixD.Identity;
@@ -365,7 +365,7 @@ namespace WeaponCore.Projectiles
             }
 
             p.Colliding = true;
-            if (!p.T.System.VirtualBeams) Session.Instance.Hits.Enqueue(p);
+            if (!p.T.System.VirtualBeams) T.Ai.Session.Hits.Enqueue(p);
             else
             {
                 p.T.WeaponCache.VirtualHit = true;
@@ -375,7 +375,7 @@ namespace WeaponCore.Projectiles
                 p.T.WeaponCache.HitDistance = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
 
                 if (hitEntity.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = hitEntity.Blocks[0];
-                Session.Instance.Hits.Enqueue(p);
+                T.Ai.Session.Hits.Enqueue(p);
                 if (p.EnableAv && p.T.OnScreen) CreateFakeBeams(p, hitEntity, drawList);
             }
 
@@ -421,7 +421,7 @@ namespace WeaponCore.Projectiles
             {
                 p.ModelSphereLast.Center = p.LastEntityPos;
                 p.ModelSphereCurrent.Center = p.Position;
-                if (Session.Instance.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Instance.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
+                if (T.Ai.Session.Camera.IsInFrustum(ref p.ModelSphereLast) || T.Ai.Session.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
                 {
                     p.T.OnScreen = true;
                     p.FirstOffScreen = false;
@@ -437,15 +437,15 @@ namespace WeaponCore.Projectiles
                     return;
                 }
                 var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
-                if (Session.Instance.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
+                if (T.Ai.Session.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
             }
         }
 
         private void SpawnShrapnel()
         {
-            var shrapnel = Session.Instance.Projectiles.ShrapnelPool[PoolId].Get();
-            shrapnel.Init(this, Session.Instance.Projectiles.FragmentPool[PoolId]);
-            Session.Instance.Projectiles.ShrapnelToSpawn[PoolId].Add(shrapnel);
+            var shrapnel = T.Ai.Session.Projectiles.ShrapnelPool[PoolId].Get();
+            shrapnel.Init(this, T.Ai.Session.Projectiles.FragmentPool[PoolId]);
+            T.Ai.Session.Projectiles.ShrapnelToSpawn[PoolId].Add(shrapnel);
         }
 
         internal bool EndChase()
@@ -646,7 +646,7 @@ namespace WeaponCore.Projectiles
             {
                 case AreaEffectType.AntiSmart:
                     var eWarSphere = new BoundingSphereD(Position, T.System.AreaEffectSize);
-                    DynTrees.GetAllProjectilesInSphere(ref eWarSphere, EwaredProjectiles, false);
+                    DynTrees.GetAllProjectilesInSphere(T.Ai.Session, ref eWarSphere, EwaredProjectiles, false);
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
                         var netted = EwaredProjectiles[j];
@@ -730,7 +730,7 @@ namespace WeaponCore.Projectiles
         {
             if (Colliding || force)
             {
-                var distToCameraSqr = Vector3D.DistanceSquared(Position, Session.Instance.CameraPos);
+                var distToCameraSqr = Vector3D.DistanceSquared(Position, T.Ai.Session.CameraPos);
                 var closeToCamera = distToCameraSqr < 360000;
                 if (force) LastHitPos = Position;
                 if (T.OnScreen && HitParticleActive && T.System.HitParticle) PlayHitParticle();
@@ -748,7 +748,7 @@ namespace WeaponCore.Projectiles
             if (Age == 0 && !ParticleLateStart)
             {
                 TestSphere.Center = Position;
-                if (!Session.Instance.Session.Camera.IsInFrustum(ref TestSphere))
+                if (!T.Ai.Session.Camera.IsInFrustum(ref TestSphere))
                 {
                     ParticleLateStart = true;
                     return;

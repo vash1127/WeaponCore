@@ -52,7 +52,7 @@ namespace WeaponCore.Support
                     SinkPower = CompPowerPerc * Ai.WeaponCleanPower;
 
                     DelayTicks += (uint)(5 * MaxRequiredPower / SinkPower) - DelayTicks;
-                    ShootTick = DelayTicks + Session.Instance.Tick;
+                    ShootTick = DelayTicks + Ai.Session.Tick;
                     Ai.RecalcDone = true;
                 }
                 else

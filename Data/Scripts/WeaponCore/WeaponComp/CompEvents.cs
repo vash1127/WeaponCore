@@ -70,7 +70,7 @@ namespace WeaponCore.Support
             if (Ai.WeaponBase.Count == 0)
             {
                 GridAi gridAi;
-                if (Session.Instance.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
+                if (Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
                     Log.Line($"remove gridAi");
             }
         }
@@ -110,7 +110,7 @@ namespace WeaponCore.Support
                     var weapon = Platform.Weapons[id];
                     Session.ComputeStorage(weapon);
                 }
-                Session.Instance.InventoryEvent.Enqueue(new InventoryChange(Platform.Weapons[0], item, amount, InventoryChange.ChangeType.Add));
+                Ai.Session.InventoryEvent.Enqueue(new InventoryChange(Platform.Weapons[0], item, amount, InventoryChange.ChangeType.Add));
             }
             catch (Exception ex) { Log.Line($"Exception in OnContentsAdded: {ex}"); }
         }
@@ -154,7 +154,7 @@ namespace WeaponCore.Support
                         w.StopShooting();
                     }
                 }
-                IsWorkingChangedTick = Session.Instance.Tick;
+                IsWorkingChangedTick = Ai.Session.Tick;
             }
             catch (Exception ex) { Log.ThreadedWrite($"Exception in IsWorkingChanged: {ex}"); }
         }
@@ -201,7 +201,7 @@ namespace WeaponCore.Support
             {
 
                 var currentInput = sink.CurrentInputByType(changedResourceTypeId);
-                var tick = Session.Instance.Tick;
+                var tick = Ai.Session.Tick;
                 if (Ai.ResetPower && tick != LastUpdateTick)
                 {
                     if (currentInput < CurrentSinkPowerRequested)

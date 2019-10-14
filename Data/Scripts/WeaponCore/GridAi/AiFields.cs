@@ -7,6 +7,7 @@ using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -45,6 +46,7 @@ namespace WeaponCore.Support
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
 
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+        internal readonly Session Session;
         internal List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
 
@@ -108,9 +110,10 @@ namespace WeaponCore.Support
 
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
 
-        internal GridAi(MyCubeGrid grid)
+        internal GridAi(MyCubeGrid grid, Session session)
         {
             MyGrid = grid;
+            Session = session;
             RegisterMyGridEvents(true, grid);
 
             Targeting = MyGrid.Components.Get<MyGridTargeting>() as CoreTargeting;

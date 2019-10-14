@@ -177,12 +177,10 @@ namespace WeaponCore
         {
             try
             {
-                Instance = this;
                 AllDefinitions = Static.GetAllDefinitions();
                 SoundDefinitions = Static.GetSoundDefinitions();
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
-                //MyAPIGateway.Session.Player.Character.ControllerInfo.ControlAcquired += PlayerControlAcquired;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
 
@@ -216,11 +214,9 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
             ProjectileTree.Clear();
             GridTargetingAIs.Clear();
-            //Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
             AllDefinitions = null;
             SoundDefinitions = null;
 
-            Instance = null;
             Log.Line("Logging stopped.");
             Log.Close();
         }

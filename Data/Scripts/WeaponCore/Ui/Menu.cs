@@ -111,7 +111,7 @@ namespace WeaponCore
                             if (target.MyEntity == null) break;
                             OtherArms = target.OtherArms;
                             Threat = target.Threat;
-                            Session.Instance.SetTarget(target.MyEntity, Wheel.Ai);
+                            Wheel.Session.SetTarget(target.MyEntity, Wheel.Ai);
                             FormatGridMessage();
                         }
                         break;
@@ -131,7 +131,7 @@ namespace WeaponCore
 
             internal void FormatGridMessage()
             {
-                if (!Session.Instance.CheckTarget(Wheel.Ai))
+                if (!Wheel.Session.CheckTarget(Wheel.Ai))
                 {
                     Message = string.Empty;
                     return;
@@ -147,7 +147,7 @@ namespace WeaponCore
                 var name = target.DisplayName;
                 var speed = Math.Round(target.Physics?.Speed ?? 0, 2);
                 var nameLen = 30;
-                var armed = OtherArms || Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)target);
+                var armed = OtherArms || Wheel.Session.GridTargetingAIs.ContainsKey((MyCubeGrid)target);
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
                 var armedStr = armed ? "Yes" : "No";
                 var interceptStr = intercept ? "Yes" : "No";
@@ -160,7 +160,7 @@ namespace WeaponCore
                               + $"Threat:  {Threat}\n"
                               + $"Intercept:  {interceptStr}]";
                 var gpsName = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
-                Session.Instance.SetGpsInfo(targetPos, gpsName);
+                Wheel.Session.SetGpsInfo(targetPos, gpsName);
                 Message = message;
             }
             internal void FormatProjectileMessage()
@@ -181,7 +181,7 @@ namespace WeaponCore
                 var name = target.DisplayName;
                 var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
                 var nameLen = 30;
-                var armed = Session.Instance.GridTargetingAIs.ContainsKey((MyCubeGrid)target);
+                var armed = Wheel.Session.GridTargetingAIs.ContainsKey((MyCubeGrid)target);
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
                 var armedStr = armed ? "Yes" : "No";
                 var interceptStr = intercept ? "Yes" : "No";
@@ -194,7 +194,7 @@ namespace WeaponCore
                               + $"Threat:  {Threat}\n"  
                               + $"Intercept:  {interceptStr}]";
                 var gpsName = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
-                Session.Instance.SetGpsInfo(targetPos, gpsName);
+                Wheel.Session.SetGpsInfo(targetPos, gpsName);
                 Message = message;
             }
 
@@ -218,13 +218,13 @@ namespace WeaponCore
                         break;
                 }
 
-                Session.Instance.ResetGps();
+                Wheel.Session.ResetGps();
                 GetTargetInfo(item);
             }
 
             internal void CleanUp()
             {
-                Session.Instance.RemoveGps();
+                Wheel.Session.RemoveGps();
                 Targets?.Clear();
             }
         }

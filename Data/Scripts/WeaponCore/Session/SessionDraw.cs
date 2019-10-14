@@ -58,7 +58,7 @@ namespace WeaponCore
                 {
                     t.FakeExplosion = false;
                     if (ExplosionReady)
-                        UtilsStatic.CreateFakeExplosion(t.System.Values.Ammo.AreaEffect.AreaEffectRadius, t.Position, t.System);
+                        UtilsStatic.CreateFakeExplosion(this, t.System.Values.Ammo.AreaEffect.AreaEffectRadius, t.Position, t.System);
                 }
 
                 if (t.PrimeEntity != null)

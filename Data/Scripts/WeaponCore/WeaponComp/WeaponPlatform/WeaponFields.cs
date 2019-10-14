@@ -152,7 +152,7 @@ namespace WeaponCore.Platform
                 {
                     Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
                     AmmoMagTimer = FirstLoad ? 1 : System.ReloadTime;
-                    _ReloadedTick = Session.Instance.Tick + (uint)AmmoMagTimer;
+                    _ReloadedTick = Comp.Ai.Session.Tick + (uint)AmmoMagTimer;
                     FirstLoad = false;
                 }
             }
@@ -162,7 +162,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                if (_ReloadedTick > Session.Instance.Tick) return false;
+                if (_ReloadedTick > Comp.Ai.Session.Tick) return false;
                 CurrentAmmo = System.MagazineDef.Capacity;
                 AmmoMagTimer = int.MaxValue;
                 return true;
@@ -192,7 +192,7 @@ namespace WeaponCore.Platform
             Comp = comp;
             comp.HasEnergyWeapon = comp.HasEnergyWeapon || System.EnergyAmmo || System.IsHybrid;
 
-            AvCapable = System.HasBarrelShootAv && !Session.Instance.DedicatedServer;
+            AvCapable = System.HasBarrelShootAv && !Comp.Ai.Session.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {

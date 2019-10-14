@@ -18,7 +18,7 @@ namespace WeaponCore.Platform
         {
             if (Comp.Ai.MyGrid.MarkedForClose) Log.Line("grid marked");
 
-            var session = Session.Instance;
+            var session = Comp.Ai.Session;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
             if (System.BurstMode)
@@ -241,7 +241,7 @@ namespace WeaponCore.Platform
                     _muzzlesToFire.Add(MuzzleIDToName[current]);
 
                     if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
-                        Session.Instance.UpdateWeaponHeat(MyTuple.Create(this, 0, true));
+                        Comp.Ai.Session.UpdateWeaponHeat(MyTuple.Create(this, 0, true));
 
                     Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                     Comp.CurrentHeat += HeatPShot;
@@ -271,9 +271,8 @@ namespace WeaponCore.Platform
 
         private Projectile CreateVirtualProjectile()
         {
-            var session = Session.Instance;
             Projectile p;
-            session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out p);
+            Comp.Ai.Session.Projectiles.ProjectilePool[Comp.Ai.Session.ProCounter].AllocateOrCreate(out p);
             p.T.System = System;
             p.T.Ai = Comp.Ai;
             p.T.Target.Entity = Target.Entity;
@@ -305,7 +304,7 @@ namespace WeaponCore.Platform
 
         private void ShootRayCheck()
         {
-            Comp.LastRayCastTick = Session.Instance.Tick;
+            Comp.LastRayCastTick = Comp.Ai.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
             if (Target.Projectile != null)
             {
@@ -334,7 +333,7 @@ namespace WeaponCore.Platform
                 return;
             }
             Casting = true;
-            Session.Instance.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
+            Comp.Ai.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
         }
 
         public void ShootRayCheckCallBack(IHitInfo hitInfo)
