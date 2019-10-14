@@ -12,7 +12,6 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
-
         internal void HealthCheck()
         {
             switch (Status)

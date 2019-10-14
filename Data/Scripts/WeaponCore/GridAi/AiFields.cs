@@ -44,7 +44,7 @@ namespace WeaponCore.Support
 
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly Session Session;
-        internal readonly MyCubeGrid MyGrid;
+        internal MyCubeGrid MyGrid;
 
 
         internal MyGridTargeting Targeting;

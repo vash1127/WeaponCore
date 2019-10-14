@@ -31,7 +31,6 @@ namespace WeaponCore.Support
         private bool _readyToSync;
         private bool _firstSync;
 
-        private HashSet<string> UIControls = new HashSet<string>(); 
         internal GridAi Ai { get; set; }
         internal MySoundPair RotationSound;
         internal MyEntity3DSoundEmitter RotationEmitter; 
@@ -113,7 +112,6 @@ namespace WeaponCore.Support
         internal bool FixedOffset;
         internal LogicSettings Set;
         internal LogicState State;
-        //internal MyResourceSinkComponent Sink => MyCube.ResourceSink;
         internal MyResourceSinkComponent Sink;
         public WeaponComponent(GridAi ai, MyCubeBlock myCube, IMyLargeMissileTurret turret)
         {

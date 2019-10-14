@@ -3,6 +3,7 @@ using System.Linq;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -42,7 +43,9 @@ namespace WeaponCore.Support
         public override void OnBeforeRemovedFromContainer()
         {
             base.OnBeforeRemovedFromContainer();
-
+            if (Container.Entity.InScene)
+            {
+            }
         }
 
         public void InitPlatform()
@@ -168,6 +171,7 @@ namespace WeaponCore.Support
             }
 
             RegisterEvents();
+
             //Log.Line($"init comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
 
             OnAddedToSceneTasks();
