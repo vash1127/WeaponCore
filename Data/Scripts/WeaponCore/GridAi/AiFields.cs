@@ -59,6 +59,7 @@ namespace WeaponCore.Support
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
         internal Vector3D PlanetClosestPoint;
+        internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
         internal uint TargetsUpdatedTick;
@@ -83,6 +84,7 @@ namespace WeaponCore.Support
         internal bool ReturnHome;
         internal bool ShieldNearTmp;
         internal bool ShieldNear;
+        internal bool CheckReload;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double GridRadius;

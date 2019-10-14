@@ -21,7 +21,7 @@ namespace WeaponCore
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
-                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged) || !gridAi.MyGrid.InScene) continue;
+                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged && !gridAi.CheckReload) || !gridAi.MyGrid.InScene) continue;
                 gridAi.Reloading = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
@@ -114,6 +114,7 @@ namespace WeaponCore
                                 comp.ReturnHome = gridAi.ReturnHome = true;
                         }
 
+                        if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType) ComputeStorage(w);
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
                             gridAi.Reloading = true;
 
@@ -122,6 +123,7 @@ namespace WeaponCore
                         if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading || w.ReturnHome) gridAi.Ready = true;
                     }
                 }
+                gridAi.CheckReload = false;
             }
         }
 

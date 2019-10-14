@@ -93,7 +93,7 @@ namespace WeaponCore.Support
 
         private void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
-            
+            Session.DsUtil.Start("AmmoInventory");
             if (item.Content is MyObjectBuilder_AmmoMagazine)
             {
                 var myInventory = inventory as MyInventory;
@@ -111,8 +111,12 @@ namespace WeaponCore.Support
 
                     else if (hasIntentory)
                         AmmoInventories[magId].Remove(myInventory);
+                    CheckReload = true;
+                    NewAmmoType = magId;
                 }
             }
+            Session.AmmoMoveTriggered++;
+            Session.DsUtil.Complete("AmmoInventory", true, false);
         }
 
         private void SourceOutputChanged(MyDefinitionId changedResourceId, float oldOutput, MyResourceSourceComponent source)

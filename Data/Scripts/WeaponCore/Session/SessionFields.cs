@@ -117,6 +117,8 @@ namespace WeaponCore
         internal int TargetTransfers;
         internal int TargetSets;
         internal int TargetResets;
+        internal int AmmoMoveTriggered;
+        internal int AmmoPulls;
 
         internal bool ExplosionReady
         {

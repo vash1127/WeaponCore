@@ -168,10 +168,8 @@ namespace WeaponCore
 
         internal static void AmmoPull(Weapon weapon) {
 
-            DSUtils timer = new DSUtils();
-            timer.Start("AmmoPull");
+            weapon.Comp.Ai.Session.DsUtil.Start("AmmoPull");
             var def = weapon.System.AmmoDefId;
-            Log.ThreadedWrite($"here");
             float itemMass;
             float itemVolume;
             
@@ -213,7 +211,8 @@ namespace WeaponCore
                     MoveAmmo(weapon, inventoriesToPull);
                 });
             }
-            timer.Complete("ammoPull", false, true);
+            weapon.Comp.Ai.Session.AmmoPulls++;
+            weapon.Comp.Ai.Session.DsUtil.Complete("AmmoPull", true, false);
         }
 
         internal static void MoveAmmo(Weapon weapon, List<MyTuple<MyInventory,int>> inventoriesToPull)
