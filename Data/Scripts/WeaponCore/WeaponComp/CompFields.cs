@@ -34,7 +34,7 @@ namespace WeaponCore.Support
         internal MyEntity3DSoundEmitter RotationEmitter; 
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
-        internal bool InThisTerminal => Session.LastTerminalId == MyCube.EntityId;
+        internal bool InThisTerminal => Ai.Session.LastTerminalId == MyCube.EntityId;
 
         internal MyFixedPoint MaxInventoryMass;
         internal uint LastRayCastTick;

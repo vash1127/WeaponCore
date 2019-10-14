@@ -19,7 +19,7 @@ namespace WeaponCore.Platform
         internal readonly bool Inited;
         internal MyWeaponPlatform(WeaponComponent comp)
         {
-            Structure = Session.WeaponPlatforms[Session.Instance.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
+            Structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
 
             var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
             wCounter.Max = Structure.GridWeaponCap;
@@ -45,7 +45,7 @@ namespace WeaponCore.Platform
                 var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;
 
                 var wepAnimationSet =
-                    Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
+                    comp.Ai.Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
 
                 MyEntity barrelPartEntity;
                 if (!Parts.NameToEntity.TryGetValue(Structure.MuzzlePartNames[i].String, out barrelPartEntity))
@@ -117,8 +117,8 @@ namespace WeaponCore.Platform
                     var azimuthPart = Weapons[c].AzimuthPart.Item1;
                     var elevationPart = Weapons[c].ElevationPart.Item1;
 
-                    var azimuthPartLocation = Session.Instance.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
-                    var elevationPartLocation = Session.Instance.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
+                    var azimuthPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
+                    var elevationPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
 
                     var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
                     var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);

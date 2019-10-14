@@ -127,7 +127,7 @@ namespace WeaponCore.Support
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
-                Session.TargetChecks++;
+                w.Comp.Ai.Session.TargetChecks++;
 
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;

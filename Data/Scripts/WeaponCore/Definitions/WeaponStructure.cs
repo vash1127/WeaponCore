@@ -447,7 +447,7 @@ namespace WeaponCore.Support
         public readonly int GridWeaponCap;
         public readonly Session Session;
 
-        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string>>> tDef, List<WeaponDefinition> wDefList)
+        public WeaponStructure(Session session, KeyValuePair<string, Dictionary<string, MyTuple<string, string, string>>> tDef, List<WeaponDefinition> wDefList)
         {
             Session = session;
             var map = tDef.Value;

@@ -120,12 +120,12 @@ namespace WeaponCore.Support
 
             if (Targeting == null)
             {
-                Targeting = new CoreTargeting(Session.Instance);
+                Targeting = new CoreTargeting(Session);
                 MyGrid.Components.Remove<MyGridTargeting>();
                 MyGrid.Components.Add<MyGridTargeting>(Targeting);
             }
 
-            AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.Instance.AmmoInventoriesMaster, MyDefinitionId.Comparer);
+            AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }
     }
 }

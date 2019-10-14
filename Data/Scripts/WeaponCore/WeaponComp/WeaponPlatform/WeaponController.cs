@@ -21,7 +21,7 @@ namespace WeaponCore.Platform
             Azimuth -= azimuthChange;
             Elevation -= elevationChange;
 
-            LastTrackedTick = Session.Instance.Tick;
+            LastTrackedTick = Comp.Ai.Session.Tick;
 
             if (Comp.IsAIOnlyTurret)
             {

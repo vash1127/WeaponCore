@@ -117,10 +117,10 @@ namespace WeaponCore.Support
 
         private void SourceOutputChanged(MyDefinitionId changedResourceId, float oldOutput, MyResourceSourceComponent source)
         {
-            if (ResetPowerTick != Session.Instance.Tick && oldOutput > source.CurrentOutput)
+            if (ResetPowerTick != Session.Tick && oldOutput > source.CurrentOutput)
             {
                 UpdatePowerSources = true;
-                ResetPowerTick = Session.Instance.Tick;
+                ResetPowerTick = Session.Tick;
             }
         }
 

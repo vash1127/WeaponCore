@@ -31,14 +31,14 @@ namespace WeaponCore
             {
                 if (AiOnlyTurret.Storage == null)
                 {
-                    AiOnlyTurret.Storage = new MyModStorageComponent { [Session.Instance.LogicSettingsGuid] = "" };
+                    AiOnlyTurret.Storage = new MyModStorageComponent { [Comp.Ai.Session.LogicSettingsGuid] = "" };
                 }
             }
             else
             {
                 if (ControllableTurret.Storage == null)
                 {
-                    ControllableTurret.Storage = new MyModStorageComponent { [Session.Instance.LogicSettingsGuid] = "" };
+                    ControllableTurret.Storage = new MyModStorageComponent { [Comp.Ai.Session.LogicSettingsGuid] = "" };
                 }
             }
         }
@@ -49,14 +49,14 @@ namespace WeaponCore
                 if (AiOnlyTurret.Storage == null) return;
 
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
-                AiOnlyTurret.Storage[Session.Instance.LogicStateGuid] = Convert.ToBase64String(binary);
+                AiOnlyTurret.Storage[Comp.Ai.Session.LogicStateGuid] = Convert.ToBase64String(binary);
             }
             else
             {
                 if (ControllableTurret.Storage == null) return;
 
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
-                ControllableTurret.Storage[Session.Instance.LogicStateGuid] = Convert.ToBase64String(binary);
+                ControllableTurret.Storage[Comp.Ai.Session.LogicStateGuid] = Convert.ToBase64String(binary);
             }
         }
 
@@ -71,7 +71,7 @@ namespace WeaponCore
 
             if (isAiOnlyTurret)
             {
-                if (AiOnlyTurret.Storage.TryGetValue(Session.Instance.LogicStateGuid, out rawData))
+                if (AiOnlyTurret.Storage.TryGetValue(Comp.Ai.Session.LogicStateGuid, out rawData))
                 {
                     base64 = Convert.FromBase64String(rawData);
                     loadedState = MyAPIGateway.Utilities.SerializeFromBinary<LogicStateValues>(base64);
@@ -79,7 +79,7 @@ namespace WeaponCore
             }
             else
             {
-                if (ControllableTurret.Storage.TryGetValue(Session.Instance.LogicStateGuid, out rawData))
+                if (ControllableTurret.Storage.TryGetValue(Comp.Ai.Session.LogicStateGuid, out rawData))
                 {
                     base64 = Convert.FromBase64String(rawData);
                     loadedState = MyAPIGateway.Utilities.SerializeFromBinary<LogicStateValues>(base64);
@@ -102,9 +102,9 @@ namespace WeaponCore
             {
                 Value.MId++;
                 if(isAiOnlyTurret)
-                    Session.Instance.PacketizeToClientsInRange(AiOnlyTurret, new DataLogicState(AiOnlyTurret.EntityId, Value)); // update clients with server's state
+                    Comp.Ai.Session.PacketizeToClientsInRange(AiOnlyTurret, new DataLogicState(AiOnlyTurret.EntityId, Value)); // update clients with server's state
                 else
-                    Session.Instance.PacketizeToClientsInRange(ControllableTurret, new DataLogicState(ControllableTurret.EntityId, Value));
+                    Comp.Ai.Session.PacketizeToClientsInRange(ControllableTurret, new DataLogicState(ControllableTurret.EntityId, Value));
             }
         }
         #endregion
@@ -135,9 +135,9 @@ namespace WeaponCore
             var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
 
             if(isAiOnlyTurret)
-                AiOnlyTurret.Storage[Session.Instance.LogicSettingsGuid] = Convert.ToBase64String(binary);
+                AiOnlyTurret.Storage[Comp.Ai.Session.LogicSettingsGuid] = Convert.ToBase64String(binary);
             else
-                ControllableTurret.Storage[Session.Instance.LogicSettingsGuid] = Convert.ToBase64String(binary);
+                ControllableTurret.Storage[Comp.Ai.Session.LogicSettingsGuid] = Convert.ToBase64String(binary);
         }
 
         public bool LoadSettings()
@@ -149,13 +149,13 @@ namespace WeaponCore
             LogicSettingsValues loadedSettings = null;
 
 
-            if (isAiOnlyTurret && AiOnlyTurret.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
+            if (isAiOnlyTurret && AiOnlyTurret.Storage.TryGetValue(Comp.Ai.Session.LogicSettingsGuid, out rawData))
             {
                 base64 = Convert.FromBase64String(rawData);
                 loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<LogicSettingsValues>(base64);
                 
             }
-            else if (ControllableTurret.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
+            else if (ControllableTurret.Storage.TryGetValue(Comp.Ai.Session.LogicSettingsGuid, out rawData))
             {
                 base64 = Convert.FromBase64String(rawData);
                 loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<LogicSettingsValues>(base64);
@@ -176,9 +176,9 @@ namespace WeaponCore
             if (Comp.Ai.Session.IsServer)
             {
                 if(isAiOnlyTurret)
-                Session.PacketizeToClientsInRange(AiOnlyTurret, new DataLogicSettings(AiOnlyTurret.EntityId, Value)); // update clients with server's settings
+                    Comp.Ai.Session.PacketizeToClientsInRange(AiOnlyTurret, new DataLogicSettings(AiOnlyTurret.EntityId, Value)); // update clients with server's settings
                 else
-                    Session.Instance.PacketizeToClientsInRange(ControllableTurret, new DataLogicSettings(ControllableTurret.EntityId, Value));
+                    Comp.Ai.Session.PacketizeToClientsInRange(ControllableTurret, new DataLogicSettings(ControllableTurret.EntityId, Value));
             }
             else // client, send settings to server
             {

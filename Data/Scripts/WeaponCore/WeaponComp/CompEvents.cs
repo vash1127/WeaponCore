@@ -79,14 +79,14 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (lastInventoryChangedTick < Session.Instance.Tick && !IgnoreInvChange)
+                if (lastInventoryChangedTick < Ai.Session.Tick && !IgnoreInvChange)
                 {
                     //BlockInventory.Refresh();
 
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                         Session.ComputeStorage(Platform.Weapons[i]);
                     
-                    lastInventoryChangedTick = Session.Instance.Tick;
+                    lastInventoryChangedTick = Ai.Session.Tick;
                 }
             }
             catch (Exception ex)
