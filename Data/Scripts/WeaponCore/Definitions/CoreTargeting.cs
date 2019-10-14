@@ -4,6 +4,7 @@ using Sandbox.ModAPI;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -17,6 +18,7 @@ namespace WeaponCore.Support
     {
 
         private MyCubeGrid _myGrid;
+        private Session _mySession;
         private BoundingSphere _scanningRange = new BoundingSphere(Vector3.Zero, float.MinValue);
         private List<MyEntity> _targetGrids = new List<MyEntity>();
         private Dictionary<MyCubeGrid, List<MyEntity>> _targetBlocks = new Dictionary<MyCubeGrid, List<MyEntity>>();
@@ -26,10 +28,16 @@ namespace WeaponCore.Support
         private FastResourceLock _selfLock = new FastResourceLock();
 
         private static ConcurrentDictionary<MyCubeGrid, FastResourceLock> _gridLocks = new ConcurrentDictionary<MyCubeGrid, FastResourceLock>();
+        private static MyConcurrentList<MyCubeGrid> _lockCleanItr = new MyConcurrentList<MyCubeGrid>();
         private static uint _lockClean;
 
         private uint _lastScan;
         public new bool AllowScanning = true;
+
+        public CoreTargeting(Session mySession)
+        {
+            _mySession = mySession;
+        }
 
         public override void OnAddedToContainer()
         {
@@ -48,7 +56,7 @@ namespace WeaponCore.Support
                     {
                         if (existingBlocks[i] is IMyConveyorSorter)
                         {
-                            if (!Session.Instance.WeaponPlatforms.ContainsKey(existingBlocks[i].BlockDefinition.Id.SubtypeId)) return;
+                            if (!_mySession.WeaponPlatforms.ContainsKey(existingBlocks[i].BlockDefinition.Id.SubtypeId)) return;
                             _scanningRange.Include(new BoundingSphere(existingBlocks[i].PositionComp.LocalMatrix.Translation, 1500f));
                                 ((IMyTerminalBlock)existingBlocks[i]).PropertiesChanged += TurretOnPropertiesChanged;
                         }
@@ -73,7 +81,7 @@ namespace WeaponCore.Support
             IMyConveyorSorter myLargeTurretBaseCore = obj.FatBlock as IMyConveyorSorter;
             if (myLargeTurretBaseCore != null)
             {
-                if (!Session.Instance.WeaponPlatforms.ContainsKey(((MyCubeBlock)myLargeTurretBaseCore).BlockDefinition.Id.SubtypeId)) return;
+                if (!_mySession.WeaponPlatforms.ContainsKey(((MyCubeBlock)myLargeTurretBaseCore).BlockDefinition.Id.SubtypeId)) return;
                 _scanningRange.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, 1500f));
                 myLargeTurretBaseCore.PropertiesChanged += TurretOnPropertiesChanged;
             }
@@ -105,7 +113,7 @@ namespace WeaponCore.Support
         {
             get
             {
-                if (AllowScanning && Session.Instance.Tick - _lastScan > 100)
+                if (AllowScanning && _mySession.Tick - _lastScan > 100)
                 {
                     Scan();
                 }
@@ -119,7 +127,7 @@ namespace WeaponCore.Support
         {
             get
             {
-                if (AllowScanning && Session.Instance.Tick - _lastScan > 100)
+                if (AllowScanning && _mySession.Tick - _lastScan > 100)
                 {
                     Scan();
                 }
@@ -132,9 +140,9 @@ namespace WeaponCore.Support
         {
             using (_selfLock.AcquireExclusiveUsing())
             {
-                if (AllowScanning && Session.Instance.Tick - _lastScan > 100)
+                if (AllowScanning && _mySession.Tick - _lastScan > 100)
                 {
-                    _lastScan = Session.Instance.Tick;
+                    _lastScan = _mySession.Tick;
                     BoundingSphereD boundingSphereD = new BoundingSphereD(Vector3D.Transform(_scanningRange.Center, _myGrid.WorldMatrix), (double)_scanningRange.Radius);
                     _targetGrids.Clear();
                     _targetBlocks.Clear();
@@ -148,7 +156,12 @@ namespace WeaponCore.Support
                         MyCubeGrid myCubeGrid = _targetGrids[i] as MyCubeGrid;
                         if (myCubeGrid != null && (myCubeGrid.Physics == null || myCubeGrid.Physics.Enabled))
                         {
-                            FastResourceLock gridLock = _gridLocks.GetOrAdd(myCubeGrid, new FastResourceLock());
+                            FastResourceLock gridLock;
+                            if (!_gridLocks.TryGetValue(myCubeGrid, out gridLock))
+                            {
+                                gridLock = _gridLocks.GetOrAdd(myCubeGrid, new FastResourceLock());
+                                _lockCleanItr.Add(myCubeGrid);
+                            }
 
                             using (gridLock.AcquireExclusiveUsing())
                             {
@@ -256,21 +269,17 @@ namespace WeaponCore.Support
                         }
                     }
                      
-                    if (Session.Instance.Tick >= _lockClean) {
-                        using (var enumerator = _gridLocks.GetEnumerator()) {
-                            List<MyCubeGrid> gridsToRemove = new List<MyCubeGrid>();
-                            while (enumerator.MoveNext()) {
-                                if (enumerator.Current.Key.MarkedForClose)
-                                    gridsToRemove.Add(enumerator.Current.Key);
-                            }
-                            for (int i = 0; i < gridsToRemove.Count; i++)
+                    if (_mySession.Tick >= _lockClean) {
+                        for (int i = _lockCleanItr.Count - 1; i >= 0; i--)
+                        {
+                            if (_lockCleanItr[i] == null || _lockCleanItr[i].MarkedForClose || _lockCleanItr[i].Closed)
                             {
                                 FastResourceLock disposeLock;
-                                _gridLocks.TryRemove(gridsToRemove[i], out disposeLock);
+                                _gridLocks.TryRemove(_lockCleanItr[i], out disposeLock);
+                                _lockCleanItr.RemoveAtFast(i);
                             }
-                            gridsToRemove.Clear();
                         }
-                        _lockClean = Session.Instance.Tick + 7200;
+                        _lockClean = _mySession.Tick + 7200;
                     }
                 }
             }
@@ -286,7 +295,7 @@ namespace WeaponCore.Support
 
         public new void RescanIfNeeded()
         {
-            if (AllowScanning && Session.Instance.Tick - _lastScan > 100)
+            if (AllowScanning && _mySession.Tick - _lastScan > 100)
             {
                 Scan();
             }

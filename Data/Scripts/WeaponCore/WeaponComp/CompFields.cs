@@ -135,15 +135,10 @@ namespace WeaponCore.Support
                 BlockInventory.Refresh();
             }
 
-            //BlockInventory = myCube.GetInventory(0);
-
-            //BlockInventory = MyCube.GetInventory();
-
-            //MaxInventoryVolume = (float)BlockInventory.MaxVolume;
             MaxInventoryMass = BlockInventory.MaxMass;
 
             //IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
-            SinkPower = IdlePower;
+            //SinkPower = IdlePower;
             
         }        
     }

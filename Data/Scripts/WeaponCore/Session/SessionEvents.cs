@@ -30,7 +30,7 @@ namespace WeaponCore
 
                 if (targeting == null && cube.CubeGrid != null)
                 {
-                    targeting = new CoreTargeting();
+                    targeting = new CoreTargeting(this);
                     cube.CubeGrid.Components.Remove<MyGridTargeting>();
                     cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
                 }
@@ -43,14 +43,14 @@ namespace WeaponCore
 
                 if (myEntity is IMyConveyorSorter || myEntity is IMyLargeMissileTurret)
                 {
-                    if (!UpgradeControls && myEntity is IMyConveyorSorter)
+                    if (!SorterControls && myEntity is IMyConveyorSorter)
                     {
                         lock (InitObj)
                         {
                             //if (!UpgradeControls)
-                                //MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyConveyorSorter>);
+                            //MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyConveyorSorter>);
+                            SorterControls = true;
                         }
-                        UpgradeControls = true;
                     }
                     if (!TurretControls && myEntity is IMyLargeMissileTurret)
                     {
@@ -58,8 +58,8 @@ namespace WeaponCore
                         {
                             if (!TurretControls)
                                 MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyLargeTurretBase>);
+                            TurretControls = true;
                         }
-                        TurretControls = true;
                     }
                     InitComp(cube);
                 }

@@ -117,7 +117,7 @@ namespace WeaponCore.Support
 
             if (Targeting == null)
             {
-                Targeting = new CoreTargeting();
+                Targeting = new CoreTargeting(Session.Instance);
                 MyGrid.Components.Remove<MyGridTargeting>();
                 MyGrid.Components.Add<MyGridTargeting>(Targeting);
             }

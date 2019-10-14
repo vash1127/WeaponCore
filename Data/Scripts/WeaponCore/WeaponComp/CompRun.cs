@@ -158,7 +158,6 @@ namespace WeaponCore.Support
 
             if (MyCube.HasInventory)
             {
-
                 if (!IsAIOnlyTurret)
                 {
                     foreach (var w in Platform.Weapons)
