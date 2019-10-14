@@ -32,6 +32,8 @@ namespace WeaponCore
             {
                 Timings();
 
+                if(!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
+
                 if (!CompsToStart.IsEmpty) StartComps();
 
                 if (Tick180)

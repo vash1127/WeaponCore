@@ -56,6 +56,8 @@ namespace WeaponCore
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly CachingDictionary<LineD, uint> RaCheckLines = new CachingDictionary<LineD, uint>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
+        internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
+        internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
         internal Queue<PartAnimation> AnimationsToProcess = new Queue<PartAnimation>();
         internal Queue<PartAnimation> AnimationsToQueue = new Queue<PartAnimation>();
 

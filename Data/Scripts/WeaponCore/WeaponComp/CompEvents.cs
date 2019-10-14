@@ -79,6 +79,7 @@ namespace WeaponCore.Support
         {
             try
             {
+                Log.Line($"IgnoreInvChange: {IgnoreInvChange}");
                 if (lastInventoryChangedTick < Ai.Session.Tick && !IgnoreInvChange)
                 {
                     //BlockInventory.Refresh();

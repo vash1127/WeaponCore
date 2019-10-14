@@ -73,7 +73,6 @@ namespace WeaponCore.Platform
                 }
             }
             else {
-                Log.Line("Aim Turret");
                 Comp.ControllableTurret.Azimuth = (float)Azimuth;
                 Comp.ControllableTurret.Elevation = (float)Elevation;
             }
