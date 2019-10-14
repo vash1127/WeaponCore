@@ -23,10 +23,8 @@ namespace WeaponCore
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
 
-        internal static readonly double VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
-        internal static readonly double AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
-
-        //internal static Session Instance { get; private set; }
+        internal readonly double VisDirToleranceCosine;
+        internal readonly double AimDirToleranceCosine;
 
         internal volatile bool Inited;
         internal volatile bool Controls;
@@ -174,6 +172,8 @@ namespace WeaponCore
             Pointer = new Pointer(this);
             Ui = new Wheel(this);
             Projectiles = new Projectiles.Projectiles(this);
+            VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
+            AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
         }
     }
 }

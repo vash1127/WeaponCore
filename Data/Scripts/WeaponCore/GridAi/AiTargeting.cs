@@ -149,7 +149,7 @@ namespace WeaponCore.Support
                             var oldNormDir = Vector3D.Normalize(oldDir);
                             var newNormDir = Vector3D.Normalize(newDir);
                             var dotDirChange = Vector3D.Dot(oldNormDir, newNormDir);
-                            if (dotDirChange < Session.AimDirToleranceCosine)
+                            if (dotDirChange < ai.Session.AimDirToleranceCosine)
                                 continue;
 
                             w.SleepingTargets.Remove(info.Target);
