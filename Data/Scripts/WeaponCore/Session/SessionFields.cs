@@ -70,6 +70,9 @@ namespace WeaponCore
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
+        internal ConcurrentDictionary<MyCubeGrid, FastResourceLock> GridLocks = new ConcurrentDictionary<MyCubeGrid, FastResourceLock>();
+        internal MyConcurrentList<MyCubeGrid> LockCleanItr = new MyConcurrentList<MyCubeGrid>();
+        internal uint LockClean;
 
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();

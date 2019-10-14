@@ -27,10 +27,6 @@ namespace WeaponCore.Support
 
         private FastResourceLock _selfLock = new FastResourceLock();
 
-        private static ConcurrentDictionary<MyCubeGrid, FastResourceLock> _gridLocks = new ConcurrentDictionary<MyCubeGrid, FastResourceLock>();
-        private static MyConcurrentList<MyCubeGrid> _lockCleanItr = new MyConcurrentList<MyCubeGrid>();
-        private static uint _lockClean;
-
         private uint _lastScan;
         public new bool AllowScanning = true;
 
@@ -46,7 +42,7 @@ namespace WeaponCore.Support
             ((IMyCubeGrid)_myGrid).OnBlockAdded += OnBlockAdded;
             Log.ThreadedWrite($"CoreTargeting Added - EntityId: {_myGrid.EntityId}");
 
-            FastResourceLock gridLock = _gridLocks.GetOrAdd(_myGrid, new FastResourceLock());
+            FastResourceLock gridLock = _mySession.GridLocks.GetOrAdd(_myGrid, new FastResourceLock());
             using (gridLock.AcquireExclusiveUsing())
             {
                 var existingBlocks = _myGrid.GetFatBlocks();
@@ -157,10 +153,10 @@ namespace WeaponCore.Support
                         if (myCubeGrid != null && (myCubeGrid.Physics == null || myCubeGrid.Physics.Enabled))
                         {
                             FastResourceLock gridLock;
-                            if (!_gridLocks.TryGetValue(myCubeGrid, out gridLock))
+                            if (!_mySession.GridLocks.TryGetValue(myCubeGrid, out gridLock))
                             {
-                                gridLock = _gridLocks.GetOrAdd(myCubeGrid, new FastResourceLock());
-                                _lockCleanItr.Add(myCubeGrid);
+                                gridLock = _mySession.GridLocks.GetOrAdd(myCubeGrid, new FastResourceLock());
+                                _mySession.LockCleanItr.Add(myCubeGrid);
                             }
 
                             using (gridLock.AcquireExclusiveUsing())
@@ -269,17 +265,17 @@ namespace WeaponCore.Support
                         }
                     }
                      
-                    if (_mySession.Tick >= _lockClean) {
-                        for (int i = _lockCleanItr.Count - 1; i >= 0; i--)
+                    if (_mySession.Tick >= _mySession.LockClean) {
+                        for (int i = _mySession.LockCleanItr.Count - 1; i >= 0; i--)
                         {
-                            if (_lockCleanItr[i] == null || _lockCleanItr[i].MarkedForClose || _lockCleanItr[i].Closed)
+                            if (_mySession.LockCleanItr[i] == null || _mySession.LockCleanItr[i].MarkedForClose || _mySession.LockCleanItr[i].Closed)
                             {
                                 FastResourceLock disposeLock;
-                                _gridLocks.TryRemove(_lockCleanItr[i], out disposeLock);
-                                _lockCleanItr.RemoveAtFast(i);
+                                _mySession.GridLocks.TryRemove(_mySession.LockCleanItr[i], out disposeLock);
+                                _mySession.LockCleanItr.RemoveAtFast(i);
                             }
                         }
-                        _lockClean = _mySession.Tick + 7200;
+                        _mySession.LockClean = _mySession.Tick + 7200;
                     }
                 }
             }
