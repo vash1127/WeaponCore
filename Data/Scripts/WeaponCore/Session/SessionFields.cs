@@ -26,7 +26,7 @@ namespace WeaponCore
         internal static readonly double VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
         internal static readonly double AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
 
-        internal static Session Instance { get; private set; }
+        //internal static Session Instance { get; private set; }
 
         internal volatile bool Inited;
         internal volatile bool Controls;
@@ -43,7 +43,7 @@ namespace WeaponCore
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
 
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>();
-        internal readonly Projectiles.Projectiles Projectiles = new Projectiles.Projectiles();
+        internal readonly Projectiles.Projectiles Projectiles;
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly MyConcurrentDictionary<MyEntity, Dictionary<Vector3I, IMySlimBlock>> SlimSpace = new MyConcurrentDictionary<MyEntity, Dictionary<Vector3I, IMySlimBlock>>();
@@ -88,8 +88,8 @@ namespace WeaponCore
 
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
-        internal readonly Wheel Ui = new Wheel();
-        internal readonly Pointer Pointer = new Pointer();
+        internal readonly Wheel Ui;
+        internal readonly Pointer Pointer;
         internal Color[] HeatEmissives;
 
         internal double Load;
@@ -169,5 +169,11 @@ namespace WeaponCore
         internal ShieldApi SApi = new ShieldApi();
         private readonly FutureEvents _futureEvents = new FutureEvents();
 
+        public Session()
+        {
+            Pointer = new Pointer(this);
+            Ui = new Wheel(this);
+            Projectiles = new Projectiles.Projectiles(this);
+        }
     }
 }

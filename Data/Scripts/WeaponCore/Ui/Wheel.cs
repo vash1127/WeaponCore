@@ -29,7 +29,7 @@ namespace WeaponCore
                 MouseButtonLeft = false;
                 MouseButtonMiddle = false;
                 MouseButtonRight = false;
-                if (WheelActive && !(Session.Instance.Session.ControlledObject is MyCockpit)) CloseWheel();
+                if (WheelActive && !(Session.Session.ControlledObject is MyCockpit)) CloseWheel();
             }
 
             UpdatePosition();
@@ -77,19 +77,19 @@ namespace WeaponCore
         internal void DrawWheel()
         {
             var position = new Vector3D(_wheelPosition.X, _wheelPosition.Y, 0);
-            var fov = Session.Instance.Camera.FovWithZoom;
-            double aspectratio = Session.Instance.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
+            var fov = Session.Camera.FovWithZoom;
+            double aspectratio = Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
             var scale = 0.075 * Math.Tan(fov * 0.5);
             position.X *= scale * aspectratio;
             position.Y *= scale;
-            var cameraWorldMatrix = Session.Instance.Camera.WorldMatrix;
+            var cameraWorldMatrix = Session.Camera.WorldMatrix;
             position = Vector3D.Transform(new Vector3D(position.X, position.Y, -.1), cameraWorldMatrix);
 
             var origin = position;
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
-            if (Session.Instance.Tick10)
+            if (Session.Tick10)
                 SetCurrentMessage();
             
             MyTransparentGeometry.AddBillboardOriented(GetCurrentMenuItem().Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game.Entity;
@@ -149,10 +150,10 @@ namespace WeaponCore.Support
             }
 
             var target = Position + (-Direction * Length);
-
-            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Session.Instance.CameraPos);
-            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Session.Instance.Camera.WorldMatrix.Translation);
-            ScaleFov = (float)Math.Tan(Session.Instance.Camera.FovWithZoom * 0.5);
+            var cameraPos = MyAPIGateway.Session.Camera.Position;
+            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref cameraPos);
+            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
+            ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
 
             LineWidth = Math.Max(width, 0.11f * ScaleFov * (DistanceToLine / 100));
             Color = color;
@@ -262,7 +263,7 @@ namespace WeaponCore.Support
         internal static List<T> CastOrGetList<T>(HitEntity hitEnt, HashSet<T> lst)
         {
             if (hitEnt._listCache == null)
-                hitEnt._listCache = Session.Instance.Projectiles.GenericListPool[hitEnt.PoolId].Get();
+                hitEnt._listCache = hitEnt.T.Ai.Session.Projectiles.GenericListPool[hitEnt.PoolId].Get();
             var list = hitEnt._listCache as List<T>;
             return list;
         }
@@ -270,7 +271,7 @@ namespace WeaponCore.Support
         internal static HashSet<T> CastOrGetHashSet<T>(HitEntity hitEnt, HashSet<T> lst)
         {
             if (hitEnt._hashSetCache == null)
-                hitEnt._hashSetCache = Session.Instance.Projectiles.GenericHashSetPool[hitEnt.PoolId].Get();
+                hitEnt._hashSetCache = hitEnt.T.Ai.Session.Projectiles.GenericHashSetPool[hitEnt.PoolId].Get();
             var hashSet = hitEnt._hashSetCache as HashSet<T>;
 
             return hashSet;
@@ -304,7 +305,7 @@ namespace WeaponCore.Support
                     if (set != null)
                     {
                         set.Clear();
-                        Session.Instance.Projectiles.GenericHashSetPool[PoolId].Return(_hashSetCache);
+                        T.Ai.Session.Projectiles.GenericHashSetPool[PoolId].Return(_hashSetCache);
                     }
                     _hashSetCache = null;
                 }
@@ -348,8 +349,6 @@ namespace WeaponCore.Support
 
         internal void TransferTo(Target target)
         {
-            Session.Instance.TargetTransfers++;
-
             target.Entity = Entity;
             target.Projectile = Projectile;
             target.IsProjectile = target.Projectile != null;
@@ -363,8 +362,6 @@ namespace WeaponCore.Support
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null)
         {
-            Session.Instance.TargetSets++;
-
             Entity = ent;
             Projectile = projectile;
             IsProjectile = projectile != null;
@@ -377,8 +374,6 @@ namespace WeaponCore.Support
 
         internal void Reset(bool targetExpired = true)
         {
-            if (targetExpired) Session.Instance.TargetResets++;
-
             Entity = null;
             IsProjectile = false;
             Projectile = null;
@@ -405,7 +400,7 @@ namespace WeaponCore.Support
         {
             var ai = w.Comp.Ai;
             var weaponPos = w.Comp.MyPivotPos;
-            if (Session.Instance.Tick != Tick)
+            if (w.Comp.Ai.Session.Tick != Tick)
             {
                 SortProjetiles.Clear();
                 foreach (var lp in ai.LiveProjectile) if (lp.MaxSpeed < w.System.MaxTargetSpeed) SortProjetiles.Add(lp);
@@ -472,11 +467,13 @@ namespace WeaponCore.Support
 
         internal void Spawn(int poolId)
         {
+            Session session = null;
             for (int i = 0; i < Sharpnel.Count; i++)
             {
                 var frag = Sharpnel[i];
+                session = frag.Ai.Session;
                 Projectile p;
-                Session.Instance.Projectiles.ProjectilePool[poolId].AllocateOrCreate(out p);
+                frag.Ai.Session.Projectiles.ProjectilePool[poolId].AllocateOrCreate(out p);
                 p.T.System = frag.System;
                 p.T.Ai = frag.Ai;
                 p.T.Target.Entity = frag.Target;
@@ -492,9 +489,10 @@ namespace WeaponCore.Support
                 p.State = Projectile.ProjectileState.Start;
 
                 p.StartSpeed = frag.Velocity;
-                Session.Instance.Projectiles.FragmentPool[poolId].Return(frag);
+                frag.Ai.Session.Projectiles.FragmentPool[poolId].Return(frag);
             }
-            Session.Instance.Projectiles.ShrapnelPool[poolId].Return(this);
+
+            session?.Projectiles.ShrapnelPool[poolId].Return(this);
             Sharpnel.Clear();
         }
     }

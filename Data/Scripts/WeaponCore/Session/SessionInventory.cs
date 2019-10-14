@@ -36,7 +36,7 @@ namespace WeaponCore
                 ComputeStorage(weapon);
                 weapon.SuspendAmmoTick = 0;
                 weapon.UnSuspendAmmoTick = 0;
-                comp.LastAmmoUnSuspendTick = Instance.Tick;
+                comp.LastAmmoUnSuspendTick = comp.Ai.Session.Tick;
                 if (!comp.FullInventory && !weapon.AmmoFull)
                     NextActiveAmmoDef(comp, weapon, false);
             }

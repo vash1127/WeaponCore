@@ -43,7 +43,7 @@ namespace WeaponCore.Projectiles
                 if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
-                    var shieldBlock = Session.Instance.SApi?.MatchEntToShieldFast(ent, true);
+                    var shieldBlock = p.T.Ai.Session.SApi?.MatchEntToShieldFast(ent, true);
                     if (shieldBlock != null)
                     {
                         if (ent.Physics == null && !p.T.Ai.MyGrid.IsSameConstructAs(shieldBlock.CubeGrid))
@@ -225,7 +225,7 @@ namespace WeaponCore.Projectiles
                 if (hitEnt.Projectile != null) dist = Vector3D.Distance(hitEnt.HitPos.Value, beam.From);
                 else if (shield != null)
                 {
-                    var hitPos = Session.Instance.SApi.LineIntersectShield(shield, beam);
+                    var hitPos = hitEnt.T.Ai.Session.SApi.LineIntersectShield(shield, beam);
                     if (hitPos != null)
                     {
                         dist = Vector3D.Distance(hitPos.Value, beam.From);
@@ -366,7 +366,7 @@ namespace WeaponCore.Projectiles
                     var character = ent as IMyCharacter;
                     if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                    if (!GridAi.CreateEntInfo(ent, p.T.Ai.MyOwner, out entInfo)) continue;
+                    if (!p.T.Ai.CreateEntInfo(ent, p.T.Ai.MyOwner, out entInfo)) continue;
                     switch (entInfo.Relationship)
                     {
                         case MyRelationsBetweenPlayerAndBlock.Owner:

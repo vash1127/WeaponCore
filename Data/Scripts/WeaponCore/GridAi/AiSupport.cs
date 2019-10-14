@@ -19,8 +19,8 @@ namespace WeaponCore.Support
             if (!UpdateOwner() || Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
             GridCenter = MyGrid.PositionComp.WorldAABB.Center;
             GridRadius = MyGrid.PositionComp.LocalVolume.Radius;
-            Session.Instance.DbsToUpdate.Add(this);
-            TargetsUpdatedTick = Session.Instance.Tick;
+            Session.DbsToUpdate.Add(this);
+            TargetsUpdatedTick = Session.Tick;
         }
 
         private bool UpdateOwner()
@@ -95,7 +95,7 @@ namespace WeaponCore.Support
             return deck;
         }
 
-        internal static bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
+        internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
         {
             if (entity == null)
             {
@@ -112,7 +112,7 @@ namespace WeaponCore.Support
                 #else
                 var relationship = topMostParent.BigOwners.Count != 0 ? MyIDModule.GetRelationPlayerBlock(gridOwner, topMostParent.BigOwners[0], MyOwnershipShareModeEnum.Faction) : MyRelationsBetweenPlayerAndBlock.NoOwnership;
                 #endif
-                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Instance.Tick);
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(topMostParent.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship, new BoundingBoxD(), Session.Tick);
                 return true;
             }
 
@@ -129,7 +129,7 @@ namespace WeaponCore.Support
                 var relationPlayerBlock = MyIDModule.GetRelationPlayerBlock(gridOwner, playerId, MyOwnershipShareModeEnum.Faction);
                 #endif
 
-                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Instance.Tick);
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
                 return true;
             }
             const MyRelationsBetweenPlayerAndBlock relationship1 = MyRelationsBetweenPlayerAndBlock.Neutral;
@@ -137,19 +137,19 @@ namespace WeaponCore.Support
             if (myPlanet != null)
             {
                 const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Planet;
-                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Tick);
                 return true;
             }
             if (entity is MyVoxelMap)
             {
                 const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Asteroid;
-                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Tick);
                 return true;
             }
             if (entity is MyMeteor)
             {
                 const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Meteor;
-                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Instance.Tick);
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Tick);
                 return true;
             }
             entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
@@ -251,7 +251,7 @@ namespace WeaponCore.Support
                     TargetDir = Vector3D.Normalize(Velocity);
                     var refDir = Vector3D.Normalize(ai.GridCenter - TargetPos);
                     var dot = Vector3D.Dot(TargetDir, refDir);
-                    var num = TargetDir.LengthSquared() * refDir.LengthSquared() * Session.Instance.ApproachDegrees * Math.Abs(Session.Instance.ApproachDegrees);
+                    var num = TargetDir.LengthSquared() * refDir.LengthSquared() * ai.Session.ApproachDegrees * Math.Abs(ai.Session.ApproachDegrees);
                     Approaching = Math.Abs(dot) * dot > num;
                 }
                 else

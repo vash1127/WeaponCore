@@ -392,7 +392,7 @@ namespace WeaponCore
                     CompsToStart.Remove(weaponComp);
                     continue;
                 }
-                if (weaponComp.MyCube.CubeGrid.CanHavePhysics() && weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose)
+                if (weaponComp.MyCube.CubeGrid.Physics == null && !weaponComp.MyCube.CubeGrid.MarkedForClose && weaponComp.MyCube.BlockDefinition.HasPhysics)
                     continue;
                 if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
                 {
@@ -433,7 +433,7 @@ namespace WeaponCore
                 GridAi gridAi;
                 if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                 {
-                    gridAi = new GridAi(cube.CubeGrid);
+                    gridAi = new GridAi(cube.CubeGrid, this);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
                 var weaponBase = myEntity as IMyLargeMissileTurret;

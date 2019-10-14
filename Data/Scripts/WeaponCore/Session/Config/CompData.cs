@@ -25,7 +25,7 @@ namespace WeaponCore
         {
             if (Turret.Storage == null)
             {
-                Turret.Storage = new MyModStorageComponent {[Session.Instance.LogicSettingsGuid] = ""};
+                Turret.Storage = new MyModStorageComponent {[Comp.Ai.Session.LogicSettingsGuid] = ""};
             }
         }
 
@@ -34,7 +34,7 @@ namespace WeaponCore
             if (Turret.Storage == null) return;
 
             var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
-            Turret.Storage[Session.Instance.LogicStateGuid] = Convert.ToBase64String(binary);
+            Turret.Storage[Comp.Ai.Session.LogicStateGuid] = Convert.ToBase64String(binary);
         }
 
         public bool LoadState()
@@ -44,7 +44,7 @@ namespace WeaponCore
             string rawData;
             bool loadedSomething = false;
 
-            if (Turret.Storage.TryGetValue(Session.Instance.LogicStateGuid, out rawData))
+            if (Turret.Storage.TryGetValue(Comp.Ai.Session.LogicStateGuid, out rawData))
             {
                 LogicStateValues loadedState = null;
                 var base64 = Convert.FromBase64String(rawData);
@@ -63,10 +63,10 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
 
-            if (Session.Instance.IsServer)
+            if (Comp.Ai.Session.IsServer)
             {
                 Value.MId++;
-                Session.Instance.PacketizeToClientsInRange(Turret, new DataLogicState(Turret.EntityId, Value)); // update clients with server's state
+                Comp.Ai.Session.PacketizeToClientsInRange(Turret, new DataLogicState(Turret.EntityId, Value)); // update clients with server's state
             }
         }
         #endregion
@@ -91,7 +91,7 @@ namespace WeaponCore
             if (Turret.Storage == null) return;
 
             var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
-            Turret.Storage[Session.Instance.LogicSettingsGuid] = Convert.ToBase64String(binary);
+            Turret.Storage[Comp.Ai.Session.LogicSettingsGuid] = Convert.ToBase64String(binary);
         }
 
         public bool LoadSettings()
@@ -100,7 +100,7 @@ namespace WeaponCore
             string rawData;
             bool loadedSomething = false;
 
-            if (Turret.Storage.TryGetValue(Session.Instance.LogicSettingsGuid, out rawData))
+            if (Turret.Storage.TryGetValue(Comp.Ai.Session.LogicSettingsGuid, out rawData))
             {
                 LogicSettingsValues loadedSettings = null;
                 var base64 = Convert.FromBase64String(rawData);
@@ -120,9 +120,9 @@ namespace WeaponCore
         public void NetworkUpdate()
         {
             Value.MId++;
-            if (Session.Instance.IsServer)
+            if (Comp.Ai.Session.IsServer)
             {
-                Session.Instance.PacketizeToClientsInRange(Turret, new DataLogicSettings(Turret.EntityId, Value)); // update clients with server's settings
+                Comp.Ai.Session.PacketizeToClientsInRange(Turret, new DataLogicSettings(Turret.EntityId, Value)); // update clients with server's settings
             }
             else // client, send settings to server
             {

@@ -110,7 +110,7 @@ namespace WeaponCore
             var logic = Entity.GameLogic.GetAs<WeaponComponent>();
             if (logic == null) return false;
 
-            Session.Instance.WeaponHits.Add(new WeaponHit(logic, State.HitPos, State.Size, State.Effect));
+            //Session.Instance.WeaponHits.Add(new WeaponHit(logic, State.HitPos, State.Size, State.Effect));
             return false;
         }
     }

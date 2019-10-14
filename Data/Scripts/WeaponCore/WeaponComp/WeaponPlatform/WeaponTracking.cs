@@ -179,7 +179,7 @@ namespace WeaponCore.Platform
                 weapon.Comp.AiMoving = aim;
                 if (aim)
                 {
-                    weapon.Comp.LastTrackedTick = Session.Instance.Tick;
+                    weapon.Comp.LastTrackedTick = weapon.Comp.Ai.Session.Tick;
                     turret.Azimuth = (float) weapon.Azimuth;
                     turret.Elevation = (float) weapon.Elevation;
                 }
@@ -216,10 +216,10 @@ namespace WeaponCore.Platform
             }
 
             var shooterPos = Comp.MyPivotPos;
-            if (Comp.Ai.VelocityUpdateTick != Session.Instance.Tick)
+            if (Comp.Ai.VelocityUpdateTick != Comp.Ai.Session.Tick)
             {
                 Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics.LinearVelocity;
-                Comp.Ai.VelocityUpdateTick = Session.Instance.Tick;
+                Comp.Ai.VelocityUpdateTick = Comp.Ai.Session.Tick;
             }
             var targetVel = targetLinVel;
             Vector3D predictedPos;
@@ -233,7 +233,7 @@ namespace WeaponCore.Platform
             else if (prediction == Prediction.Accurate)
                 predictedPos = CalculateProjectileInterceptPointFast(ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
             else
-                predictedPos = CalculateProjectileInterceptPoint(Session.Instance.MaxEntitySpeed, ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
+                predictedPos = CalculateProjectileInterceptPoint(Comp.Ai.Session.MaxEntitySpeed, ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
 
             return predictedPos;
         }
