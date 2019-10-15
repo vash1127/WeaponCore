@@ -364,6 +364,7 @@ namespace WeaponCore.Platform
 
             if (!Comp.IsAIOnlyTurret)
             {
+                Log.Line("MissileTurret");
                 var baseDef = Comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
                 minAz = baseDef.MinAzimuthDegrees;
                 maxAz = baseDef.MaxAzimuthDegrees;

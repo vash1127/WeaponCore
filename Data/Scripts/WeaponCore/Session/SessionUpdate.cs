@@ -80,7 +80,7 @@ namespace WeaponCore
                                 w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
                             }
                         }
-                        else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired || w.SeekTarget;
+                        else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
 
                         w.SeekTarget = w.Target.Expired && w.TrackTarget || gridAi.TargetResetTick == Tick;
@@ -253,6 +253,7 @@ namespace WeaponCore
                             else if ((!w.IsTracking || !comp.AiMoving && Tick - w.LastTrackedTick > 30) && comp.RotationEmitter.IsPlaying)
                                 comp.StopRotSound(false);
                         }
+
                         if (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
                         {
                             w.Shoot();

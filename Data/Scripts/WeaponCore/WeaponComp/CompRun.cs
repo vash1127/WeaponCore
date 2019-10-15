@@ -165,14 +165,11 @@ namespace WeaponCore.Support
                     foreach (var w in Platform.Weapons)
                     {
                         var otherId = w.System.MagazineDef.AmmoDefinitionId;
-                        Log.Line($"otherId: {otherId.SubtypeId}");
-
                         BlockInventory.Constraint.Add(otherId);
                     }
                 }
                 else
                 {
-                    Log.Line($"MaxInventoryVolume: {MaxInventoryVolume}");
                     BlockInventory.FixInventoryVolume(MaxInventoryVolume);
                 }
                 BlockInventory.Refresh();
