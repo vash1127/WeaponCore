@@ -89,14 +89,13 @@ namespace WeaponCore.Control
             {
                 var c = controls[i];
                 Log.Line($"Count: {i} ID:{c.Id}");
-                if ((i > 6 && i < 10) || i > 12 )
+
+                if(!c.Id.Contains("OnOff") && !string.IsNullOrEmpty(c.Id) && !c.Id.Contains("ShowInTerminal") && !c.Id.Contains("ShowInInventory") && !c.Id.Contains("ShowInToolbarConfig") && !c.Id.Contains("Name") && !c.Id.Contains("ShowOnHUD") && !c.Id.Contains("CustomData") && !c.Id.Contains("ShootOnce") && !c.Id.Contains("Shoot") && !c.Id.Contains("Control") && !c.Id.Contains("Range"))
                     c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
 
                 if (c.Id.Equals("OnOff"))
                     ((IMyTerminalControlOnOffSwitch) c).Setter += OnOffAnimations;
 
-                if (c.Id.Equals("Control"))
-                    c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
             }
             return false;
         }

@@ -47,8 +47,8 @@ namespace WeaponCore
                     {
                         lock (InitObj)
                         {
-                            //if (!UpgradeControls)
-                            //MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyConveyorSorter>);
+                            if (!SorterControls)
+                            MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyConveyorSorter>);
                             SorterControls = true;
                         }
                     }

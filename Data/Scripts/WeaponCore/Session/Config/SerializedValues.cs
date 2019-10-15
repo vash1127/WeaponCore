@@ -31,6 +31,7 @@ namespace WeaponCore
         [ProtoMember(5)] public float DPSModifier = 1;
         [ProtoMember(6)] public float ROFModifier = 1;
         [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
+        [ProtoMember(8)] public float range = 100;
     }
 
     [ProtoContract]

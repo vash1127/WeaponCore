@@ -155,7 +155,6 @@ namespace WeaponCore
         internal bool IsServer;
         internal bool DedicatedServer;
         internal bool WepAction;
-        internal bool WepControl;
         internal bool FirstLoop;
         internal bool GameLoaded;
         internal bool MiscLoaded;

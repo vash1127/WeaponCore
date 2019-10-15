@@ -94,7 +94,10 @@ namespace WeaponCore.Support
             IMyConveyorSorter myLargeTurretBaseCore = obj as IMyConveyorSorter;
             if (myLargeTurretBaseCore != null)
             {
-                _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, 1500f));
+                var comp = myLargeTurretBaseCore?.Components?.Get<WeaponComponent>();
+                if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+
+                _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, comp.Set.Value.range));
             }
 
             IMyLargeTurretBase myLargeTurretBase = obj as IMyLargeTurretBase;

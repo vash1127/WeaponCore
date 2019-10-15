@@ -11,6 +11,8 @@ using WeaponCore.Control;
 using Sandbox.Game;
 using VRage.Input;
 using SpaceEngineers.Game.ModAPI;
+using Sandbox.Definitions;
+using VRage.Game;
 
 namespace WeaponCore
 {
@@ -18,23 +20,29 @@ namespace WeaponCore
     {
         #region UI Config
 
-        public void AlterControlsActions()
-        {
-            
-        }
-
         public void CreateTerminalUI<T>() where T : IMyTerminalBlock
         {
             try
             {
-                MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
+                string currentType = "";
+                
 
-                if(typeof(T) == typeof(IMyLargeTurretBase))
+                if (typeof(T) == typeof(IMyLargeTurretBase))
+                {
                     TerminalHelpers.AlterActions<IMyLargeTurretBase>();
+                    currentType = "Missile";
+                }
+
+                if (typeof(T) == typeof(IMyConveyorSorter))
+                {
+                    TerminalHelpers.AddSlider<T>(0, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, WepUi.CoreWeaponEnableCheck);
+                    currentType = "Sorter";
+                    
+                }
 
                 TerminalHelpers.AlterControls<T>();
 
-                if (WepControl) return;
+                MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
                 TerminalHelpers.Separator<T>(0, "WC_sep0");
 
@@ -43,16 +51,28 @@ namespace WeaponCore
                 {
                     foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
                     {
-                        var wepName = ws.Value.WeaponName;
-                        var wepID = ws.Value.WeaponId;
 
-                        if (!wepIDs.Contains(wepID))
-                            wepIDs.Add(wepID);
-                        else
-                            continue;
+                        Type type = null;
+                        foreach (var def in AllDefinitions) {
+                            if (def.Id.SubtypeId == wp.Key)
+                                type = def.Id.TypeId;
+                        }
 
-                        TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled);
-                        CreateShootActionSet<T>(wepName, wepID);
+
+                        if (type != null && type.ToString().Contains(currentType))
+                        {
+
+                            var wepName = ws.Value.WeaponName;
+                            var wepID = ws.Value.WeaponId;
+
+                            if (!wepIDs.Contains(wepID))
+                                wepIDs.Add(wepID);
+                            else
+                                continue;
+
+                            TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled);
+                            CreateShootActionSet<T>(wepName, wepID);
+                        }
                     }
                 }
 
@@ -97,8 +117,6 @@ namespace WeaponCore
                 TerminalHelpers.AddSlider<T>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
 
                 TerminalHelpers.AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
-
-                WepControl = true;
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
         }
@@ -269,7 +287,22 @@ namespace WeaponCore
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp != null)
             {
+                var maxTrajectory = 0f;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    var curMax = comp.Platform.Weapons[i].System.MaxTrajectory;
+                    if (curMax > maxTrajectory)
+                        maxTrajectory = (float)curMax;
+
+                }
                 comp.TerminalRefresh();
+                for (int i = 0; i < controls.Count; i++)
+                {
+                    var c = controls[i];
+
+                    if (c.Id.Contains("WC_Range"))
+                        ((IMyTerminalControlSlider)c).SetLimits(0, maxTrajectory);
+                }
             }
         }
         #endregion

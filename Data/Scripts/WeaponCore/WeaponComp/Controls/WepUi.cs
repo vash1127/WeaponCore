@@ -219,6 +219,18 @@ namespace WeaponCore
             }
         }
 
+        internal static float GetRange(IMyTerminalBlock block) {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return 100;
+            return comp.Set.Value.range;
+        }
+
+        internal static void SetRange(IMyTerminalBlock block, float range) {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+            comp.Set.Value.range = range;
+        }
+
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
