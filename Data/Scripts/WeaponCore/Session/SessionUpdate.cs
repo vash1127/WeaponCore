@@ -134,7 +134,6 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-                gridAi.UpdateBlockGroups();
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
                 if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
@@ -242,10 +241,10 @@ namespace WeaponCore
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;
 
-                            if (!w.Target.Expired)
-                                w.ReturnHome = false;
-                            else if (w.ReturnHome)
-                                w.TurretHomePosition();
+                        if (!w.Target.Expired)
+                            w.ReturnHome = false;
+                        else if (w.ReturnHome)
+                            w.TurretHomePosition();
 
                         if (w.TrackingAi && w.AvCapable && comp.RotationEmitter != null && Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < 10000)
                         {
