@@ -76,7 +76,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
             var userControlled = Comp.Gunner || ManualShoot != TerminalActionState.ShootOff;
-            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null ) ShootRayCheck();
+            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null && !DelayCeaseFire) ShootRayCheck();
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
@@ -305,6 +305,7 @@ namespace WeaponCore.Platform
         private void ShootRayCheck()
         {
             Comp.LastRayCastTick = Comp.Ai.Session.Tick;
+
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
             if (Target.Projectile != null)
             {
@@ -342,15 +343,12 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
             if (hitInfo?.HitEntity == null)
             {
-                if (DelayCeaseFire)
-                    return;
-
                 if (Target.Projectile != null)
                     return;
 
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon != this) Target.Expired = true;
-                Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit");
+                Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit - target:{Target?.Entity?.DebugName}");
                 return;
             }
 

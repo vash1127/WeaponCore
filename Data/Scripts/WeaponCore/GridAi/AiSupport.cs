@@ -67,6 +67,69 @@ namespace WeaponCore.Support
             }
         }
 
+        public void UpdateBlockGroups(bool clear = false)
+        {
+            if (BlockGroups == null)
+            {
+                Log.Line($"BlockGroups null");
+                return;
+            }
+            if (BlockGroupPool == null)
+            {
+                Log.Line($"BlockGroupPool null");
+                return;
+            }
+            if (MyGrid == null || MyGrid.MarkedForClose)
+            {
+                Log.Line($"MyGrid Null:{MyGrid == null} - Marked:{MyGrid?.MarkedForClose} - Age:{Session.Tick - CreatedTick}");
+                return;
+            }
+            if (TmpBlockGroups == null)
+            {
+                Log.Line($"TmpBlockGroups null");
+                return;
+            }
+            if (TerminalSystem == null)
+            {
+                Log.Line($"TerminalSystem null: Age:{Session.Tick - CreatedTick}");
+                return;
+            }
+            foreach (var bg in BlockGroups)
+            {
+                bg.Value.Clear();
+                BlockGroupPool.Return(bg.Value);
+            }
+            BlockGroups.Clear();
+
+            if (clear) return;
+
+            TerminalSystem.GetBlockGroups(TmpBlockGroups);
+            foreach (var b in TmpBlockGroups)
+            {
+                var groupList = TmpBlockGroupPool.Get();
+                b.GetBlocks(groupList);
+                var name = b.Name;
+                var groupSet = BlockGroupPool.Get();
+                foreach (var terminal in groupList)
+                {
+                    var cube = terminal as MyCubeBlock;
+                    if (cube != null)
+                    {
+                        WeaponComponent weaponComp;
+                        if (WeaponBase.TryGetValue(cube, out weaponComp))
+                        {
+                            weaponComp.GroupNames.Add(name);
+                            groupSet.Add(cube);
+                        }
+                    }
+                }
+                groupList.Clear();
+                TmpBlockGroupPool.Return(groupList);
+                BlockGroups.Add(name, groupSet);
+            }
+            TmpBlockGroups.Clear();
+        }
+
         public static bool GridEnemy(MyCubeBlock myCube, MyCubeGrid grid, List<long> owners = null)
         {
             if (owners == null) owners = grid.BigOwners;

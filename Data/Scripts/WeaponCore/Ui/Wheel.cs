@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
 using VRageMath;
+using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Wheel.Menu;
 using static WeaponCore.Support.TargetingDefinition.BlockTypes;
@@ -100,7 +102,6 @@ namespace WeaponCore
             WheelActive = true;
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
             if (_currentMenu == string.Empty) _currentMenu = "Main";
-
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;

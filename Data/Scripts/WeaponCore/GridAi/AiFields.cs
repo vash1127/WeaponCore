@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -17,6 +18,9 @@ namespace WeaponCore.Support
     {
         internal volatile bool Ready;
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(25);
+        internal readonly MyConcurrentPool<List<IMyTerminalBlock>> TmpBlockGroupPool = new MyConcurrentPool<List<IMyTerminalBlock>>();
+        internal readonly MyConcurrentPool<HashSet<MyCubeBlock>> BlockGroupPool = new MyConcurrentPool<HashSet<MyCubeBlock>>();
+
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(25);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
@@ -37,17 +41,22 @@ namespace WeaponCore.Support
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
+        internal readonly List<IMyBlockGroup> TmpBlockGroups = new List<IMyBlockGroup>();
+        internal readonly Dictionary<string, HashSet<MyCubeBlock>> BlockGroups = new Dictionary<string, HashSet<MyCubeBlock>>();
+
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
-
-        internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly Session Session;
-        internal MyCubeGrid MyGrid;
+        internal readonly MyCubeGrid MyGrid;
+        internal readonly MyGridTargeting Targeting;
+        internal IMyGridTerminalSystem TerminalSystem;
+        internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+        internal readonly uint CreatedTick;
 
 
-        internal MyGridTargeting Targeting;
+
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyEntity PrimeTarget;
@@ -108,6 +117,7 @@ namespace WeaponCore.Support
             Session = session;
             RegisterMyGridEvents(true, grid);
             Targeting = MyGrid.Components.Get<MyGridTargeting>();
+            CreatedTick = Session.Tick;
         }
     }
 }

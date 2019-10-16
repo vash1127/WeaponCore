@@ -38,6 +38,7 @@ namespace WeaponCore.Support
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Ai.Session.LastTerminalId == Turret.EntityId;
 
+        internal HashSet<string> GroupNames = new HashSet<string>();
         internal MyFixedPoint MaxInventoryVolume;
         internal MyFixedPoint MaxInventoryMass;
         internal uint LastAmmoUnSuspendTick;

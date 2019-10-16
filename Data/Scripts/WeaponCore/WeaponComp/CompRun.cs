@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using Sandbox.Game.Entities;
+using Sandbox.Game.GameSystems;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Components;
@@ -213,10 +215,15 @@ namespace WeaponCore.Support
             Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
             if (!Ai.GridInit)
+            {
+                Ai.GridInit = true;
+                if (Ai.MyGrid != MyCube.CubeGrid || Ai.MyGrid.MarkedForClose) Log.Line($"AiGrid Mismatch during OnAddedToScene");
+                Ai.TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(Ai.MyGrid);
+
                 foreach (var cubeBlock in MyCube.CubeGrid.GetFatBlocks())
                     Ai.FatBlockAdded(cubeBlock);
+            }
 
-            Ai.GridInit = true;
             Status = !IsWorking ? Start.Starting : Start.ReInit;
         }
 
