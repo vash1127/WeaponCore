@@ -105,42 +105,59 @@ namespace WeaponCore.Platform
                 MyEntity muzzlePart;
                 if (Parts.NameToEntity.TryGetValue(m.Key.String, out muzzlePart))
                 {
-                    var muzzlePartName = m.Value.MuzzlePartName.String;
                     var azimuthPartName = string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String;
                     var elevationPartName = string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String;
 
-                    //    GetPartLocation("subpart_" +
-                    var noMuzzlePart = muzzlePartName == "None" || muzzlePartName == "none" || string.IsNullOrEmpty(muzzlePartName);
-
+                    if (reset)
+                    {
+                        MyEntity azimuthPartEntity;
+                        MyEntity elevationPartEntity;
+                        if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))
+                        {
+                            if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
+                            {
+                                Log.Line("Reset parts");
+                                Weapons[c].AzimuthPart.Item1 = azimuthPartEntity;
+                                Weapons[c].ElevationPart.Item1 = elevationPartEntity;
+                            }
+                            else
+                                return;
+                        }
+                        else
+                            return;
+                    }
                     Weapons[c].BarrelPart = muzzlePart;
 
-                    var azimuthPart = Weapons[c].AzimuthPart.Item1;
-                    var elevationPart = Weapons[c].ElevationPart.Item1;
+                    if (comp.IsAIOnlyTurret)
+                    {
+                        var azimuthPart = Weapons[c].AzimuthPart.Item1;
+                        var elevationPart = Weapons[c].ElevationPart.Item1;
 
-                    var azimuthPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
-                    var elevationPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
+                        var azimuthPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
+                        var elevationPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
 
-                    var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
-                    var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);
-                    var elPartPosTo = Matrix.CreateTranslation(-elevationPartLocation);
-                    var elPartPosFrom = Matrix.CreateTranslation(elevationPartLocation);
+                        var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
+                        var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);
+                        var elPartPosTo = Matrix.CreateTranslation(-elevationPartLocation);
+                        var elPartPosFrom = Matrix.CreateTranslation(elevationPartLocation);
 
-                    var fullStepAzRotation = azPartPosTo * Matrix.CreateRotationY(-m.Value.AzStep) * azPrtPosFrom;
+                        var fullStepAzRotation = azPartPosTo * Matrix.CreateRotationY(-m.Value.AzStep) * azPrtPosFrom;
 
-                    var fullStepElRotation = elPartPosTo * Matrix.CreateRotationX(-m.Value.ElStep) * elPartPosFrom;
+                        var fullStepElRotation = elPartPosTo * Matrix.CreateRotationX(-m.Value.ElStep) * elPartPosFrom;
 
-                    var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
-                    var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
+                        var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
+                        var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
 
-                    Weapons[c].AzimuthPart.Item2 = azPartPosTo;
-                    Weapons[c].AzimuthPart.Item3 = azPrtPosFrom;
-                    Weapons[c].AzimuthPart.Item4 = fullStepAzRotation;
-                    Weapons[c].AzimuthPart.Item5 = rFullStepAzRotation;
+                        Weapons[c].AzimuthPart.Item2 = azPartPosTo;
+                        Weapons[c].AzimuthPart.Item3 = azPrtPosFrom;
+                        Weapons[c].AzimuthPart.Item4 = fullStepAzRotation;
+                        Weapons[c].AzimuthPart.Item5 = rFullStepAzRotation;
 
-                    Weapons[c].ElevationPart.Item2 = elPartPosTo;
-                    Weapons[c].ElevationPart.Item3 = elPartPosFrom;
-                    Weapons[c].ElevationPart.Item4 = fullStepElRotation;
-                    Weapons[c].ElevationPart.Item5 = rFullStepElRotation;
+                        Weapons[c].ElevationPart.Item2 = elPartPosTo;
+                        Weapons[c].ElevationPart.Item3 = elPartPosFrom;
+                        Weapons[c].ElevationPart.Item4 = fullStepElRotation;
+                        Weapons[c].ElevationPart.Item5 = rFullStepElRotation;
+                    }
 
                     try
                     {
@@ -148,7 +165,7 @@ namespace WeaponCore.Platform
                     }
                     catch (Exception e)
                     {
-                        Log.Line($"Blah: {e}");
+                        // no emissive parts for barrel
                     }
 
                     var barrelCount = m.Value.Barrels.Length;

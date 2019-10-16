@@ -166,7 +166,7 @@ namespace WeaponCore.Support
                     foreach (var w in Platform.Weapons)
                     {
                         var otherId = w.System.MagazineDef.AmmoDefinitionId;
-                        BlockInventory.Constraint.Add(otherId);
+                        //BlockInventory.Constraint.Add(otherId);
                     }
                 }
                 else
