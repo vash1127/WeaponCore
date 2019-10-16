@@ -137,7 +137,6 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
                     if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || !gridAi.Ready) continue;
