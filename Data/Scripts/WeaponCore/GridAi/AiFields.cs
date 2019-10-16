@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
@@ -52,7 +53,6 @@ namespace WeaponCore.Support
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
         internal readonly Session Session;
         internal readonly MyCubeGrid MyGrid;
-        internal readonly MyGridTargeting Targeting;
         internal IMyGridTerminalSystem TerminalSystem;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;

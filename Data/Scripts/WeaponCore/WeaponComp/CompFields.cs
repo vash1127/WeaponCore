@@ -36,7 +36,6 @@ namespace WeaponCore.Support
         internal bool InThisTerminal => Ai.Session.LastTerminalId == MyCube.EntityId;
 
         internal HashSet<string> GroupNames = new HashSet<string>();
-        internal MyFixedPoint MaxInventoryVolume;
         internal MyFixedPoint MaxInventoryMass;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
