@@ -88,7 +88,7 @@ namespace WeaponCore.Control
             for (int i = 0; i < controls.Count; i++)
             {
                 var c = controls[i];
-                Log.Line($"Count: {i} ID:{c.Id}");
+                //Log.Line($"Count: {i} ID:{c.Id}");
 
                 if(!c.Id.Contains("OnOff") && !string.IsNullOrEmpty(c.Id) && !c.Id.Contains("ShowInTerminal") && !c.Id.Contains("ShowInInventory") && !c.Id.Contains("ShowInToolbarConfig") && !c.Id.Contains("Name") && !c.Id.Contains("ShowOnHUD") && !c.Id.Contains("CustomData") && !c.Id.Contains("ShootOnce") && !c.Id.Contains("Shoot") && !c.Id.Contains("Control") && !c.Id.Contains("Range"))
                     c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);

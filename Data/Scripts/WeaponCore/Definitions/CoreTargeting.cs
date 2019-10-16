@@ -40,7 +40,7 @@ namespace WeaponCore.Support
             base.OnAddedToContainer();
             _myGrid = (base.Entity as MyCubeGrid);
             ((IMyCubeGrid)_myGrid).OnBlockAdded += OnBlockAdded;
-            Log.ThreadedWrite($"CoreTargeting Added - EntityId: {_myGrid.EntityId}");
+            //Log.ThreadedWrite($"CoreTargeting Added - EntityId: {_myGrid.EntityId}");
 
             FastResourceLock gridLock = _mySession.GridLocks.GetOrAdd(_myGrid, new FastResourceLock());
             using (gridLock.AcquireExclusiveUsing())
