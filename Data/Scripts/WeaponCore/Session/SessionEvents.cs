@@ -23,12 +23,12 @@ namespace WeaponCore
                 var placer = myEntity as IMyBlockPlacerBase;
                 if (placer != null && Placer == null) Placer = placer;
 
-                if (myEntity.IsPreview || cube == null || cube.CubeGrid.IsPreview) return;
+                if (cube == null) return;
 
                 //replace Targeting on all grids to improve lock speed, and handle grid locking
                 var targeting = cube.CubeGrid?.Components?.Get<MyGridTargeting>() as CoreTargeting;
 
-                if (targeting == null && cube.CubeGrid.Components != null)
+                if (targeting == null && cube.CubeGrid?.Components != null)
                 {
                     targeting = new CoreTargeting(this);
                     cube.CubeGrid.Components.Remove<MyGridTargeting>();
@@ -39,9 +39,11 @@ namespace WeaponCore
                     lock (InitObj)
                         Init();
 
-                if (myEntity is IMyConveyorSorter || myEntity is IMyLargeMissileTurret)
+                var sorter = myEntity as MyConveyorSorter;
+                var missileTurret = myEntity as IMyLargeMissileTurret;
+                if (sorter != null || missileTurret != null)
                 {
-                    if (!SorterControls && myEntity is IMyConveyorSorter)
+                    if (!SorterControls && sorter != null)
                     {
                         lock (InitObj)
                         {
@@ -50,7 +52,7 @@ namespace WeaponCore
                             SorterControls = true;
                         }
                     }
-                    if (!TurretControls && myEntity is IMyLargeMissileTurret)
+                    if (!TurretControls && missileTurret != null)
                     {
                         lock (InitObj)
                         {
