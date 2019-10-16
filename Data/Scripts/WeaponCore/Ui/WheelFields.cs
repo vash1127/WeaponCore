@@ -66,6 +66,8 @@ namespace WeaponCore
 
         internal readonly Item[] WeaponGroupItems =
         {
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "[Weapon Groups]", ParentName = "Main", SubName = "Main"},
+            /*
             new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_0"), ItemMessage = "[Group 0]", ParentName = "Main"},
             new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_1"), ItemMessage = "[Group 1]", ParentName = "Main"},
             new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_2"), ItemMessage = "[Group 2]", ParentName = "Main"},
@@ -76,6 +78,7 @@ namespace WeaponCore
             new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_7"), ItemMessage = "[Group 7]", ParentName = "Main"},
             new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_8"), ItemMessage = "[Group 8]", ParentName = "Main"},
             new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_9"), ItemMessage = "[Group 9]", ParentName = "Main"},
+       */
         };
 
         internal enum State

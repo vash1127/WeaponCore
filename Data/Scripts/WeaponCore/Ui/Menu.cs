@@ -76,7 +76,15 @@ namespace WeaponCore
                                 var item = Items[0];
                                 if (item.SubSlot < item.SubSlotCount - 1) item.SubSlot++;
                                 else item.SubSlot = 0;
-                                GetTargetInfo(item);
+                                switch (Name)
+                                {
+                                    case "WeaponGroups":
+                                        Log.Line("weapon group forward");
+                                        break;
+                                    default:
+                                        GetTargetInfo(item);
+                                        break;
+                                }
                             }
 
                             break;
@@ -93,7 +101,15 @@ namespace WeaponCore
                             var item = Items[0];
                             if (item.SubSlot - 1 >= 0) item.SubSlot--;
                             else item.SubSlot = item.SubSlotCount - 1;
-                            GetTargetInfo(item);
+                            switch (Name)
+                            {
+                                case "WeaponGroups":
+                                    Log.Line("weapon group backward");
+                                    break;
+                                default:
+                                    GetTargetInfo(item);
+                                    break;
+                            }
                         }
                         break;
                 }

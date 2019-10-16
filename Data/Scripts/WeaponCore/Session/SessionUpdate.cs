@@ -134,6 +134,7 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
+                gridAi.UpdateBlockGroups();
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
                 if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -28,23 +29,15 @@ namespace WeaponCore
         {
             DbsUpdating = true;
             MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
-            //ProcessDbs();
-            //ProcessDbsCallBack();
         }
 
         private void ProcessDbs()
         {
-            //MyAPIGateway.Parallel.For(0, DbsToUpdate.Count, x => DbsToUpdate[x].UpdateTargetDb(), 6);
-
             foreach (var db in DbsToUpdate)
-            {
                 db.UpdateTargetDb();
-            }
 
             foreach (var db in DbsToUpdate)
-            {
                 db.FinalizeTargetDb();
-            }
         }
 
         private void ProcessDbsCallBack()
@@ -92,38 +85,33 @@ namespace WeaponCore
                 db.SortedTargets.Sort(db.TargetCompare1);
 
                 db.Threats.Clear();
-                var thrCnt = db.ThreatsTmp.Count;
-                db.Threats.Capacity = thrCnt;
-                for (var i = 0; i < thrCnt; i++) db.Threats.Add(db.ThreatsTmp[i]);
+                db.Threats.AddRange(db.TargetAisTmp);
                 db.ThreatsTmp.Clear();
 
                 db.TargetAis.Clear();
-                var tAiCnt = db.TargetAisTmp.Count;
-                db.TargetAis.Capacity = tAiCnt;
-                for (var i = 0; i < tAiCnt; i++) db.TargetAis.Add(db.TargetAisTmp[i]);
+                db.TargetAis.AddRange(db.TargetAisTmp);
                 db.TargetAisTmp.Clear();
 
                 db.Obstructions.Clear();
-                var obsCnt = db.ObstructionsTmp.Count;
-                db.Obstructions.Capacity = obsCnt;
-                for (int i = 0; i < obsCnt; i++) db.Obstructions.Add(db.ObstructionsTmp[i]);
+                db.Obstructions.AddRange(db.ObstructionsTmp);
                 db.ObstructionsTmp.Clear();
 
                 db.StaticsInRange.Clear();
                 if (db.PlanetSurfaceInRange) db.StaticsInRangeTmp.Add(db.MyPlanet);
                 var staticCount = db.StaticsInRangeTmp.Count;
-
-                db.StaticsInRange.Capacity = staticCount;
-                for (int i = 0; i < staticCount; i++) db.StaticsInRange.Add(db.StaticsInRangeTmp[i]);
-                db.StaticsInRangeTmp.Clear();
+                db.StaticsInRange.AddRange(db.StaticsInRangeTmp);
                 db.StaticEntitiesInRange = staticCount > 0;
+                db.StaticsInRangeTmp.Clear();
 
                 db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || db.FirstRun;
-                db.FirstRun = false;
-                //Log.Line($"[DB] - dbReady:{db.DbReady} - liveProjectiles:{db.LiveProjectile.Count} - armedGrids:{db.Threats.Count} - obstructions:{db.Obstructions.Count} - targets:{db.SortedTargets.Count} - checkedTargets:{db.NewEntities.Count} - targetRoots:{db.Targeting.TargetRoots.Count} - forGrid:{db.MyGrid.DebugName}");
                 db.MyShield = db.MyShieldTmp;
                 db.ShieldNear = db.ShieldNearTmp;
                 db.BlockCount = db.MyGrid.BlocksCount;
+
+                if (db.FirstRun)
+                    db.UpdateBlockGroups();
+
+                db.FirstRun = false;
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }
             DbsToUpdate.Clear();

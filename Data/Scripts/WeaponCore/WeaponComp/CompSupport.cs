@@ -31,6 +31,41 @@ namespace WeaponCore.Support
             State.NetworkUpdate();
         }
 
+        internal void RemoveComp()
+        {
+            WeaponComponent comp;
+            if (Ai.WeaponBase.TryRemove(MyCube, out comp))
+            {
+                //Log.Line($"Removed Comp: remaining:{Ai.WeaponBase.Count}");
+                if (Platform != null && Platform.Inited)
+                {
+                    GridAi.WeaponCount wCount;
+
+                    if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                        wCount.Current--;
+
+                    RegisterEvents(false);
+                    StopAllSounds();
+                    Platform.RemoveParts(this);
+
+                    foreach (var groupName in GroupNames)
+                        Ai.BlockGroups[groupName].Remove(MyCube);
+
+                    Ai.TotalSinkPower -= MaxRequiredPower;
+                    Ai.OptimalDPS -= OptimalDPS;
+                }
+            }
+
+            if (Ai.WeaponBase.Count == 0)
+            {
+                GridAi gridAi;
+                if (Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
+                {
+                    //Log.Line($"remove gridAi");
+                }
+            }
+        }
+
         internal void UpdateCompPower()
         {
             var shooting = false;

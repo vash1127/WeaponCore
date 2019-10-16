@@ -131,6 +131,7 @@ namespace WeaponCore.Support
         private void GridClose(MyEntity myEntity)
         { 
             RegisterMyGridEvents(false);
+            UpdateBlockGroups(true);
             WeaponBase.Clear();
             SubGrids.Clear();
             Obstructions.Clear();
@@ -142,7 +143,6 @@ namespace WeaponCore.Support
             SortedTargets.Clear();
             BlockTypePool.Clean();
             CubePool.Clean();
-            Targeting = null;
             MyShieldTmp = null;
             MyShield = null;
             PrimeTarget = null;

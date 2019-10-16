@@ -35,6 +35,8 @@ namespace WeaponCore.Support
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Ai.Session.LastTerminalId == MyCube.EntityId;
 
+        internal HashSet<string> GroupNames = new HashSet<string>();
+        internal MyFixedPoint MaxInventoryVolume;
         internal MyFixedPoint MaxInventoryMass;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
@@ -99,12 +101,6 @@ namespace WeaponCore.Support
         internal MyResourceSinkComponent Sink;
         public WeaponComponent(GridAi ai, MyCubeBlock myCube)
         {
-            if (myCube == null)
-                Log.Line("Cube null");
-
-            if (ai == null)
-                Log.Line("ai null");
-
             Ai = ai;
             MyCube = myCube;
 
