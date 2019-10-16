@@ -65,7 +65,6 @@ namespace WeaponCore
                 MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
                 MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
             }
-            //LcdEntity1 = Spawn.SpawnPrefab("HelmetHUD_ghostLCD", out LcdPanel1, true);
         }
 
         internal void Init()

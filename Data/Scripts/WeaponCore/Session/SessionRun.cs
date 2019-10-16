@@ -144,9 +144,6 @@ namespace WeaponCore
                 if (Placer != null) UpdatePlacer();
                 if (!DedicatedServer)//todo client side only
                     ProcessAnimations();
-
-
-                //if (!CompsToRemove.IsEmpty) RemoveComps();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

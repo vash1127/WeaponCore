@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Threading;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -14,12 +13,7 @@ using VRage.Utils;
 using WeaponCore.Platform;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
-using Sandbox.ModAPI.Ingame;
-using SpaceEngineers.Game.ModAPI;
 using VRage.ObjectBuilders;
-using System.Linq;
-using Sandbox.Game.EntityComponents;
-using VRageRender;
 
 namespace WeaponCore
 {

@@ -15,7 +15,6 @@ namespace WeaponCore.Platform
         internal readonly Weapon[] Weapons;
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly WeaponStructure Structure;
-        //internal readonly MyLargeTurretBaseDefinition BaseDefinition;
         internal readonly bool Inited;
         internal MyWeaponPlatform(WeaponComponent comp)
         {
@@ -33,8 +32,6 @@ namespace WeaponCore.Platform
                 else return;
             }
             else Inited = true;
-
-            //BaseDefinition = comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
 
             var partCount = Structure.MuzzlePartNames.Length;
             Weapons = new Weapon[partCount];
@@ -111,20 +108,18 @@ namespace WeaponCore.Platform
                     if (reset)
                     {
                         MyEntity azimuthPartEntity;
-                        MyEntity elevationPartEntity;
                         if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))
                         {
+                            MyEntity elevationPartEntity;
                             if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
                             {
-                                Log.Line("Reset parts");
+                                //Log.Line("Reset parts");
                                 Weapons[c].AzimuthPart.Item1 = azimuthPartEntity;
                                 Weapons[c].ElevationPart.Item1 = elevationPartEntity;
                             }
-                            else
-                                return;
+                            else return;
                         }
-                        else
-                            return;
+                        else return;
                     }
                     Weapons[c].BarrelPart = muzzlePart;
 

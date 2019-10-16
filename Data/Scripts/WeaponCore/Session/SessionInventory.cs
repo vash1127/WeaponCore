@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using VRage;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
-using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -185,7 +184,7 @@ namespace WeaponCore
                 var weaponInventory = weapon.Comp.BlockInventory;
                 var magsNeeded = (int)((fullAmount - weapon.CurrentAmmoVolume) / itemVolume);
 
-                List<MyTuple<MyInventory, int>> inventoriesToPull = new List<MyTuple<MyInventory, int>>();
+                var inventoriesToPull = new List<MyTuple<MyInventory, int>>();
 
                 var magsAdded = 0;
                 while (magsNeeded > 0 && currentInventory.MoveNext())

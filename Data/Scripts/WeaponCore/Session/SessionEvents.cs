@@ -28,7 +28,7 @@ namespace WeaponCore
                 //replace Targeting on all grids to improve lock speed, and handle grid locking
                 var targeting = cube.CubeGrid?.Components?.Get<MyGridTargeting>() as CoreTargeting;
 
-                if (targeting == null && cube.CubeGrid != null)
+                if (targeting == null && cube.CubeGrid.Components != null)
                 {
                     targeting = new CoreTargeting(this);
                     cube.CubeGrid.Components.Remove<MyGridTargeting>();
@@ -39,8 +39,6 @@ namespace WeaponCore
                     lock (InitObj)
                         Init();
 
-                
-
                 if (myEntity is IMyConveyorSorter || myEntity is IMyLargeMissileTurret)
                 {
                     if (!SorterControls && myEntity is IMyConveyorSorter)
@@ -48,7 +46,7 @@ namespace WeaponCore
                         lock (InitObj)
                         {
                             if (!SorterControls)
-                            MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyConveyorSorter>);
+                                MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyConveyorSorter>);
                             SorterControls = true;
                         }
                     }
