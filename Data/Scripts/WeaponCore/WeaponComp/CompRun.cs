@@ -1,15 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Sandbox.Game.Entities;
-using Sandbox.Game.GameSystems;
-using Sandbox.Game;
 using Sandbox.ModAPI;
-using VRage;
-using VRage.Game;
 using VRage.Game.Components;
-using VRage.Game.Entity;
-using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -38,7 +29,6 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 lock (this)
                 {
-                    //if (MainInit) MyAPIGateway.Utilities.InvokeOnGameThread(ReInitPlatform);
                     if (MainInit) ReInitPlatform();
                     else MyAPIGateway.Utilities.InvokeOnGameThread(InitPlatform);
                 }
@@ -69,9 +59,6 @@ namespace WeaponCore.Support
                 Log.Line("init platform returned");
                 return;
             }
-
-
-
 
             StorageSetup();
 
