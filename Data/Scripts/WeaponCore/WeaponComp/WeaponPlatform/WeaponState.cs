@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
-using SpaceEngineers.Game.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
-using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -218,7 +215,7 @@ namespace WeaponCore.Platform
                     case EventTriggers.TurnOff:
                         if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                         {
-                            var OffAnimations = true;
+                            var offAnimations = true;
 
                             if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                             {
@@ -227,12 +224,12 @@ namespace WeaponCore.Platform
                                 {
                                     if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                     {
-                                        OffAnimations = false;
+                                        offAnimations = false;
                                         animation.Reverse = true;
                                     }
                                 }
                             }
-                            if (OffAnimations)
+                            if (offAnimations)
                             {
 
                                 foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
@@ -306,7 +303,7 @@ namespace WeaponCore.Platform
         internal void UpdateShotEnergy()
         {
             var ewar = (int)System.Values.Ammo.AreaEffect.AreaEffect > 3;
-            ShotEnergyCost = ewar ? System.Values.HardPoint.EnergyCost * areaEffectDmg : System.Values.HardPoint.EnergyCost * BaseDamage;
+            ShotEnergyCost = ewar ? System.Values.HardPoint.EnergyCost * AreaEffectDmg : System.Values.HardPoint.EnergyCost * BaseDamage;
         }
 
         internal void UpdateBarrelRotation()
@@ -453,7 +450,7 @@ namespace WeaponCore.Platform
             if (FiringEmitter != null) StartFiringSound();
             if (ShotEnergyCost > 0 && !IsShooting)
             {
-                Comp.CurrentDPS += DPS;
+                Comp.CurrentDps += Dps;
                 Comp.SinkPower += RequiredPower;
                 Comp.CurrentSinkPowerRequested += RequiredPower;
                 Comp.Sink.Update();
@@ -464,7 +461,6 @@ namespace WeaponCore.Platform
 
         public void StopShooting(bool avOnly = false)
         {
-            //Log.Line("stop shooting");
             EventTriggerStateChanged(EventTriggers.Firing, false);
             StopFiringSound(false);
             StopRotateSound();
@@ -474,7 +470,7 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
-                    Comp.CurrentDPS -= DPS;
+                    Comp.CurrentDps -= Dps;
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                     Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
                     Comp.Sink.Update();

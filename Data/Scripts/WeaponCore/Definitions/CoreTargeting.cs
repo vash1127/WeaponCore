@@ -1,10 +1,8 @@
 ﻿using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using VRage;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -16,272 +14,170 @@ namespace WeaponCore.Support
 {
     public class CoreTargeting : MyGridTargeting
     {
-
         private MyCubeGrid _myGrid;
-        private Session _mySession;
-        private BoundingSphere _scanningRange = new BoundingSphere(Vector3.Zero, float.MinValue);
-        private List<MyEntity> _targetGrids = new List<MyEntity>();
-        private Dictionary<MyCubeGrid, List<MyEntity>> _targetBlocks = new Dictionary<MyCubeGrid, List<MyEntity>>();
-        private List<long> _users = new List<long>();
-        private List<long> _owners = new List<long>();
-
-        private FastResourceLock _selfLock = new FastResourceLock();
-
+        private readonly Session _session;
+        private double _scanningRange = double.MinValue;
+        internal readonly List<MyEntity> Targets = new List<MyEntity>();
+        internal readonly Dictionary<MyCubeGrid, List<MyEntity>> GridBlocks = new Dictionary<MyCubeGrid, List<MyEntity>>();
+        private readonly List<long> _users = new List<long>();
+        private readonly List<long> _owners = new List<long>();
+        private static readonly FastResourceLock SelfLock = new FastResourceLock();
+        private bool _inited;
         private uint _lastScan;
         public new bool AllowScanning = true;
 
-        public CoreTargeting(Session mySession)
+        public CoreTargeting(Session session)
         {
-            _mySession = mySession;
+            _session = session;
         }
-
         public override void OnAddedToContainer()
         {
             base.OnAddedToContainer();
-            _myGrid = (base.Entity as MyCubeGrid);
-            ((IMyCubeGrid)_myGrid).OnBlockAdded += OnBlockAdded;
-            //Log.ThreadedWrite($"CoreTargeting Added - EntityId: {_myGrid.EntityId}");
+            _myGrid = (MyCubeGrid)Entity;
+            _myGrid.OnFatBlockAdded += OnFatBlockChanged;
+            _myGrid.OnFatBlockRemoved += OnFatBlockChanged;
 
-            FastResourceLock gridLock = _mySession.GridLocks.GetOrAdd(_myGrid, new FastResourceLock());
-            using (gridLock.AcquireExclusiveUsing())
-            {
-                var existingBlocks = _myGrid.GetFatBlocks();
-                if (_scanningRange.Radius == float.MinValue)
-                {
-                    for (int i = 0; i < existingBlocks.Count; i++)
-                    {
-                        if (existingBlocks[i] is IMyConveyorSorter)
-                        {
-                            if (!_mySession.WeaponPlatforms.ContainsKey(existingBlocks[i].BlockDefinition.Id.SubtypeId)) return;
-                            _scanningRange.Include(new BoundingSphere(existingBlocks[i].PositionComp.LocalMatrix.Translation, 1500f));
-                                ((IMyTerminalBlock)existingBlocks[i]).PropertiesChanged += TurretOnPropertiesChanged;
-                        }
-                        else if (existingBlocks[i] is IMyLargeTurretBase)
-                        {
-                            _scanningRange.Include(new BoundingSphere(existingBlocks[i].PositionComp.LocalMatrix.Translation, ((IMyLargeTurretBase)existingBlocks[i]).Range));
-                            ((IMyTerminalBlock)existingBlocks[i]).PropertiesChanged += TurretOnPropertiesChanged;
-                        }
-                    }
-                }
-            }
         }
 
         public override void OnBeforeRemovedFromContainer()
         {
             base.OnBeforeRemovedFromContainer();
-            ((IMyCubeGrid)_myGrid).OnBlockAdded -= OnBlockAdded;
-        }
-
-        private void OnBlockAdded(IMySlimBlock obj)
-        {
-            IMyConveyorSorter myLargeTurretBaseCore = obj.FatBlock as IMyConveyorSorter;
-            if (myLargeTurretBaseCore != null)
-            {
-                if (!_mySession.WeaponPlatforms.ContainsKey(((MyCubeBlock)myLargeTurretBaseCore).BlockDefinition.Id.SubtypeId)) return;
-                _scanningRange.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, 1500f));
-                myLargeTurretBaseCore.PropertiesChanged += TurretOnPropertiesChanged;
-            }
-            IMyLargeTurretBase myLargeTurretBase = obj.FatBlock as IMyLargeTurretBase;
-            if (myLargeTurretBase != null)
-            {
-                _scanningRange.Include(new BoundingSphere(obj.FatBlock.PositionComp.LocalMatrix.Translation, myLargeTurretBase.Range));
-                myLargeTurretBase.PropertiesChanged += TurretOnPropertiesChanged;
-            }
-        }
-
-        private void TurretOnPropertiesChanged(IMyTerminalBlock obj)
-        {
-            IMyConveyorSorter myLargeTurretBaseCore = obj as IMyConveyorSorter;
-            if (myLargeTurretBaseCore != null)
-            {
-                var comp = myLargeTurretBaseCore?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
-
-                _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, comp.Set.Value.range));
-            }
-
-            IMyLargeTurretBase myLargeTurretBase = obj as IMyLargeTurretBase;
-            if (myLargeTurretBase != null)
-            {
-                _scanningRange.Include(new BoundingSphere(obj.PositionComp.LocalMatrix.Translation, myLargeTurretBase.Range));
-            }
+            _myGrid.OnFatBlockAdded -= OnFatBlockChanged;
+            _myGrid.OnFatBlockRemoved -= OnFatBlockChanged;
 
         }
 
-        public new List<MyEntity> TargetRoots
+        private void OnFatBlockChanged(MyCubeBlock myCubeBlock)
         {
-            get
-            {
-                if (AllowScanning && _mySession.Tick - _lastScan > 100)
-                {
-                    Scan();
-                }
-                MyLog.Default.WriteLine("Get Target Blocks");
-                using (_selfLock)
-                    return new List<MyEntity>(_targetGrids);
-            }
+            GridAi gridAi;
+            if (_session.GridTargetingAIs.TryGetValue(myCubeBlock.CubeGrid, out gridAi))
+                _scanningRange = gridAi.MaxTargetingRange;
+            else _scanningRange = double.MinValue;
         }
 
-        public new IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> TargetBlocks
+        private void Init()
         {
-            get
-            {
-                if (AllowScanning && _mySession.Tick - _lastScan > 100)
-                {
-                    Scan();
-                }
-                using (_selfLock)
-                    return new Dictionary<MyCubeGrid, List<MyEntity>>(_targetBlocks);
-            }
+            _inited = true;
+            GridAi gridAi;
+            if (_session.GridTargetingAIs.TryGetValue(_myGrid, out gridAi))
+                _scanningRange = gridAi.MaxTargetingRange;
         }
 
         private void Scan()
         {
-            using (_selfLock.AcquireExclusiveUsing())
+            //_session.DsUtil.Start("");
+            using (SelfLock.AcquireExclusiveUsing())
             {
-                if (AllowScanning && _mySession.Tick - _lastScan > 100)
+                if (AllowScanning && _session.Tick - _lastScan > 100)
                 {
-                    _lastScan = _mySession.Tick;
-                    BoundingSphereD boundingSphereD = new BoundingSphereD(Vector3D.Transform(_scanningRange.Center, _myGrid.WorldMatrix), (double)_scanningRange.Radius);
-                    _targetGrids.Clear();
-                    _targetBlocks.Clear();
-                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, _targetGrids, MyEntityQueryType.Both);
+                    _lastScan = _session.Tick;
+                    var boundingSphereD = _myGrid.PositionComp.WorldVolume;
+                    boundingSphereD.Radius = _scanningRange;
+                    Targets.Clear();
+                    GridBlocks.Clear();
+                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, Targets);
 
-                    int count = _targetGrids.Count;
+                    int count = Targets.Count;
                     _owners.AddRange(_myGrid.SmallOwners);
                     _owners.AddRange(_myGrid.BigOwners);
                     for (int i = 0; i < count; i++)
                     {
-                        MyCubeGrid myCubeGrid = _targetGrids[i] as MyCubeGrid;
+                        var myCubeGrid = Targets[i] as MyCubeGrid;
                         if (myCubeGrid != null && (myCubeGrid.Physics == null || myCubeGrid.Physics.Enabled))
                         {
-                            FastResourceLock gridLock;
-                            if (!_mySession.GridLocks.TryGetValue(myCubeGrid, out gridLock))
+                            var flag = false;
+                            if (myCubeGrid.BigOwners.Count == 0 && myCubeGrid.SmallOwners.Count == 0)
                             {
-                                gridLock = _mySession.GridLocks.GetOrAdd(myCubeGrid, new FastResourceLock());
-                                _mySession.LockCleanItr.Add(myCubeGrid);
-                            }
 
-                            using (gridLock.AcquireExclusiveUsing())
-                            {
-                                bool flag = false;
-                                if (myCubeGrid.BigOwners.Count == 0 && myCubeGrid.SmallOwners.Count == 0)
+                                for(int j = 0; j < _owners.Count; j++)
                                 {
-
-                                    for(int j = 0; j < _owners.Count; j++)
+                                    if (MyIDModule.GetRelationPlayerBlock(_owners[j], 0L, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.NoOwnership)
                                     {
-                                        if (MyIDModule.GetRelationPlayerBlock(_owners[j], 0L, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.NoOwnership)
+                                        flag = true;
+                                        break;
+                                    }
+                                }
+
+                            }
+                            else
+                            {
+                                _users.AddRange(myCubeGrid.BigOwners);
+                                _users.AddRange(myCubeGrid.SmallOwners);
+                                for (int j = 0; j < _owners.Count; j++)
+                                {
+                                    var owner = _owners[j];
+                                    for (int c = 0; c < _users.Count; c++)
+                                    {
+                                        var user = _users[c];
+                                        if (MyIDModule.GetRelationPlayerBlock(owner, user, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
                                         {
                                             flag = true;
                                             break;
                                         }
                                     }
-
+                                    if (flag) break;
                                 }
-                                else
+                                _users.Clear();
+                            }
+                            if (flag)
+                            {
+                                if (!GridBlocks.ContainsKey(myCubeGrid))
+                                    GridBlocks[myCubeGrid] = new List<MyEntity>();
+
+                                var orAdd = GridBlocks[myCubeGrid];
+
+                                using (myCubeGrid.Pin())
                                 {
-                                    _users.AddRange(myCubeGrid.BigOwners);
-                                    _users.AddRange(myCubeGrid.SmallOwners);
-                                    for (int j = 0; j < _owners.Count; j++)
+                                    if (!myCubeGrid.MarkedForClose)
                                     {
-                                        var owner = _owners[j];
-                                        for (int c = 0; c < _users.Count; c++)
+                                        myCubeGrid.Hierarchy.QuerySphere(ref boundingSphereD, orAdd);
+                                    }
+                                    continue;
+                                }
+                            }
+                            var fatBlocks = myCubeGrid.GetFatBlocks();
+                            for (int j = 0; j < fatBlocks.Count; j++){
+                                var myCubeBlock = fatBlocks[j];
+                                IMyComponentOwner<MyIDModule> myComponentOwner = myCubeBlock;
+                                MyIDModule myIdModule;
+                                if (myComponentOwner != null && myComponentOwner.GetComponent(out myIdModule))
+                                {
+                                    var ownerId = myCubeBlock.OwnerId;
+                                    for (int c = 0; c < _owners.Count; c++)
+                                    {
+                                        if (MyIDModule.GetRelationPlayerBlock(_owners[c], ownerId, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
                                         {
-                                            var user = _users[c];
-                                            if (MyIDModule.GetRelationPlayerBlock(owner, user, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
-                                            {
-                                                flag = true;
-                                                break;
-                                            }
-                                        }
-                                        if (flag)
-                                        {
+                                            flag = true;
                                             break;
                                         }
                                     }
-                                    _users.Clear();
+                                    if (flag) break;
                                 }
-                                if (flag)
-                                {
+                            }
+                            if (!flag) continue;
+                            if (!GridBlocks.ContainsKey(myCubeGrid))
+                                GridBlocks[myCubeGrid] = new List<MyEntity>();
 
-                                    if (!_targetBlocks.ContainsKey(myCubeGrid))
-                                        _targetBlocks[myCubeGrid] = new List<MyEntity>();
+                            var orAdd2 = GridBlocks[myCubeGrid];
 
-                                    var orAdd = _targetBlocks[myCubeGrid];
-
-                                    using (myCubeGrid.Pin())
-                                    {
-                                        if (!myCubeGrid.MarkedForClose)
-                                        {
-                                            myCubeGrid.Hierarchy.QuerySphere(ref boundingSphereD, orAdd);
-                                        }
-                                        continue;
-                                    }
-                                }
-                                var fatBlocks = myCubeGrid.GetFatBlocks();
-                                for (int j = 0; j < fatBlocks.Count; j++){
-                                    var myCubeBlock = fatBlocks[j];
-                                    IMyComponentOwner<MyIDModule> myComponentOwner = myCubeBlock as IMyComponentOwner<MyIDModule>;
-                                    MyIDModule myIDModule;
-                                    if (myComponentOwner != null && myComponentOwner.GetComponent(out myIDModule))
-                                    {
-                                        long ownerId = myCubeBlock.OwnerId;
-                                        for (int c = 0; c < _owners.Count; c++)
-                                        {
-                                            if (MyIDModule.GetRelationPlayerBlock(_owners[c], ownerId, MyOwnershipShareModeEnum.None, MyRelationsBetweenPlayerAndBlock.Enemies, MyRelationsBetweenFactions.Enemies, MyRelationsBetweenPlayerAndBlock.FactionShare) == MyRelationsBetweenPlayerAndBlock.Enemies)
-                                            {
-                                                flag = true;
-                                                break;
-                                            }
-                                        }
-                                        if (flag)
-                                        {
-                                            break;
-                                        }
-                                    }
-                                }
-                                if (!flag)
-                                {
-                                    continue;
-                                }
-                                if (!_targetBlocks.ContainsKey(myCubeGrid))
-                                    _targetBlocks[myCubeGrid] = new List<MyEntity>();
-
-                                var orAdd2 = _targetBlocks[myCubeGrid];
-
-                                if (!myCubeGrid.Closed)
-                                {
-                                    myCubeGrid.Hierarchy.QuerySphere(ref boundingSphereD, orAdd2);
-                                    continue;
-                                }
-                                continue;
+                            if (!myCubeGrid.Closed)
+                            {
+                                myCubeGrid.Hierarchy.QuerySphere(ref boundingSphereD, orAdd2);
                             }
                         }
                     }
                     _owners.Clear();
-                    for (int j = _targetGrids.Count - 1; j >= 0; j--)
+                    for (int j = Targets.Count - 1; j >= 0; j--)
                     {
-                        MyEntity myEntity = _targetGrids[j];
+                        MyEntity myEntity = Targets[j];
                         if (myEntity is MyFloatingObject || (myEntity.Physics != null && !myEntity.Physics.Enabled) || myEntity.GetTopMostParent(null).Physics == null || !myEntity.GetTopMostParent(null).Physics.Enabled)
                         {
-                            _targetGrids.RemoveAtFast(j);
+                            Targets.RemoveAtFast(j);
                         }
-                    }
-                     
-                    if (_mySession.Tick >= _mySession.LockClean) {
-                        for (int i = _mySession.LockCleanItr.Count - 1; i >= 0; i--)
-                        {
-                            if (_mySession.LockCleanItr[i] == null || _mySession.LockCleanItr[i].MarkedForClose || _mySession.LockCleanItr[i].Closed)
-                            {
-                                FastResourceLock disposeLock;
-                                _mySession.GridLocks.TryRemove(_mySession.LockCleanItr[i], out disposeLock);
-                                _mySession.LockCleanItr.RemoveAtFast(i);
-                            }
-                        }
-                        _mySession.LockClean = _mySession.Tick + 7200;
                     }
                 }
             }
+            //_session.DsUtil.Complete("", false, true);
         }
         
         public override string ComponentTypeDebugString
@@ -294,8 +190,9 @@ namespace WeaponCore.Support
 
         public new void RescanIfNeeded()
         {
-            if (AllowScanning && _mySession.Tick - _lastScan > 100)
+            if (AllowScanning && _session.Tick - _lastScan > 100)
             {
+                if (!_inited) Init();
                 Scan();
             }
         }

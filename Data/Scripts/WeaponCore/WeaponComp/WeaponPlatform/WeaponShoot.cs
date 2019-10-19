@@ -186,8 +186,8 @@ namespace WeaponCore.Platform
                             p.T.MuzzleId = muzzle.MuzzleId;
                             p.T.BaseDamagePool = BaseDamage;
                             p.T.EnableGuidance = Comp.Set.Value.Guidance;
-                            p.T.DetonationDamage = detonateDmg;
-                            p.T.AreaEffectDamage = areaEffectDmg;
+                            p.T.DetonationDamage = DetonateDmg;
+                            p.T.AreaEffectDamage = AreaEffectDmg;
 
                             p.SelfDamage = System.SelfDamage || Comp.Gunner;
                             p.GridVel = Comp.Ai.GridVel;
@@ -238,7 +238,7 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    _muzzlesToFire.Add(MuzzleIDToName[current]);
+                    _muzzlesToFire.Add(MuzzleIdToName[current]);
 
                     if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
                         Comp.Ai.Session.UpdateWeaponHeat(MyTuple.Create(this, 0, true));
@@ -281,8 +281,8 @@ namespace WeaponCore.Platform
             p.T.Target.FiringCube = Comp.MyCube;
             p.T.BaseDamagePool = BaseDamage;
             p.T.EnableGuidance = Comp.Set.Value.Guidance;
-            p.T.DetonationDamage = detonateDmg;
-            p.T.AreaEffectDamage = areaEffectDmg;
+            p.T.DetonationDamage = DetonateDmg;
+            p.T.AreaEffectDamage = AreaEffectDmg;
 
             p.T.WeaponCache = WeaponCache;
 
@@ -348,7 +348,7 @@ namespace WeaponCore.Platform
 
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon != this) Target.Expired = true;
-                Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit - target:{Target?.Entity?.DebugName}");
+                //Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit - target:{Target?.Entity?.DebugName} - {Target?.Entity?.MarkedForClose}");
                 return;
             }
 
@@ -426,24 +426,6 @@ namespace WeaponCore.Platform
 
             if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
                 StartRotateSound();
-            
-            /*
-            BarrelMove = true;
-            double radiansPerShot;
-            var heat = Comp.State.Value.Weapons[WeaponId].Heat;
-            if (System.DegRof && heat > (System.MaxHeat * .8)) TimePerShot = (3600d / RateOfFire) / (heat / System.MaxHeat);
-            if (TimePerShot > 0.999999 && TimePerShot < 1.000001) radiansPerShot = 0.06666666666;
-            else radiansPerShot = 2 * Math.PI / _numOfBarrels;
-            var radians = radiansPerShot / TimePerShot;
-            var axis = System.Values.HardPoint.RotateBarrelAxis;
-            MatrixD rotationMatrix;
-            if (axis == 1) rotationMatrix = MatrixD.CreateRotationX(radians * _rotationTime);
-            else if (axis == 2) rotationMatrix = MatrixD.CreateRotationY(radians * _rotationTime);
-            else if (axis == 3) rotationMatrix = MatrixD.CreateRotationZ(radians * _rotationTime);
-            else return;
-
-            _rotationTime += time;
-            rotationMatrix.Translation = _localTranslation;*/
         }
     }
 }

@@ -127,9 +127,15 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
+
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit || gridAi.MyGrid.MarkedForClose) continue;
+
+                if (gridAi.WeaponBase.Count <= 0)
+                {
+                    Log.Line($"AiComps:{gridAi.WeaponBase.Count}");
+                }
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
@@ -139,7 +145,7 @@ namespace WeaponCore
                     var comp = basePair.Value;
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
-                    if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || !gridAi.Ready) continue;
+                    if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || !gridAi.Ready || comp.MyCube.MarkedForClose) continue;
 
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
@@ -220,7 +226,7 @@ namespace WeaponCore
                             {
                                 if (w.FiringEmitter != null) w.StartFiringSound();
                                 if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying) w.StartRotateSound();
-                                comp.CurrentDPS += w.DPS;
+                                comp.CurrentDps += w.Dps;
                             }
                             w.Reloading = false;
                         }

@@ -29,6 +29,7 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 lock (this)
                 {
+                    Log.Line($"OnAddedToScene: mainInit:{MainInit} - {MyCube.DebugName} - {MyCube.CubeGrid.DebugName} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid}");
                     if (MainInit) ReInitPlatform();
                     else MyAPIGateway.Utilities.InvokeOnGameThread(InitPlatform);
                 }
@@ -64,7 +65,7 @@ namespace WeaponCore.Support
 
             MaxRequiredPower = 0;
             HeatPerSecond = 0;
-            OptimalDPS = 0;
+            OptimalDps = 0;
 
             for (int i  = 0; i< Platform.Weapons.Length; i++)
             {
@@ -98,8 +99,8 @@ namespace WeaponCore.Support
                     mulitplier = mulitplier * mulitplier;
 
                 weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
-                weapon.areaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
-                weapon.detonateDmg = weapon.System.DetonationDamage * mulitplier;
+                weapon.AreaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
+                weapon.DetonateDmg = weapon.System.DetonationDamage * mulitplier;
 
 
                 MaxRequiredPower -= weapon.RequiredPower;
@@ -110,17 +111,17 @@ namespace WeaponCore.Support
                 weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
-                weapon.DPS = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
+                weapon.Dps = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
 
                 if (weapon.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
                 {
                     if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                        weapon.DPS += (weapon.detonateDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                        weapon.Dps += (weapon.DetonateDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
                                             ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
                                             weapon.System.Values.Ammo.Trajectory.DesiredSpeed
                                             : 1);
                     else
-                        weapon.DPS += (weapon.areaEffectDmg / 2) *
+                        weapon.Dps += (weapon.AreaEffectDmg / 2) *
                                         (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
                                             ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
                                             weapon.System.Values.Ammo.Trajectory.DesiredSpeed
@@ -128,7 +129,7 @@ namespace WeaponCore.Support
                 }
 
                 HeatPerSecond += (60 / (float)weapon.TicksPerShot) * weapon.HeatPShot * weapon.System.BarrelsPerShot;
-                OptimalDPS += weapon.DPS;
+                OptimalDps += weapon.Dps;
 
 
                 HeatSinkRate += weapon.HsRate;
@@ -144,11 +145,11 @@ namespace WeaponCore.Support
                 MaxInventoryVolume += weapon.System.MaxAmmoVolume;
             }
 
-            Ai.OptimalDPS += OptimalDPS;
+            Ai.OptimalDps += OptimalDps;
 
             if (MyCube.HasInventory)
             {
-                if (!IsAIOnlyTurret)
+                if (!IsAiOnlyTurret)
                 {
                     foreach (var w in Platform.Weapons)
                     {
@@ -167,9 +168,9 @@ namespace WeaponCore.Support
             RegisterEvents();
             OnAddedToSceneTasks();
 
-            if (IsAIOnlyTurret)
+            if (IsAiOnlyTurret)
             {
-                if (!AIOnlyTurret.Enabled)
+                if (!AiOnlyTurret.Enabled)
                 {
                     foreach (var w in Platform.Weapons)
                         w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
@@ -191,9 +192,11 @@ namespace WeaponCore.Support
             GridAi gridAi;
             if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
             {
-                gridAi = new GridAi(MyCube.CubeGrid, Ai.Session);
+                Log.Line($"reinit, new gridAi");
+                gridAi = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
                 Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
             }
+            else Log.Line($"reinit valid gridAi");
             Ai = gridAi;
             RegisterEvents();
             //Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
@@ -241,9 +244,9 @@ namespace WeaponCore.Support
         {
             if (MyAPIGateway.Multiplayer.IsServer)
             {
-                if (IsAIOnlyTurret)
+                if (IsAiOnlyTurret)
                 {
-                    if (AIOnlyTurret.Storage != null)
+                    if (AiOnlyTurret.Storage != null)
                     {
                         State.SaveState();
                         Set.SaveSettings();

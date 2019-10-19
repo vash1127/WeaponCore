@@ -16,8 +16,8 @@ namespace WeaponCore.Support
         {
             if (register)
             {
-                if(IsAIOnlyTurret)
-                    AIOnlyTurret.AppendingCustomInfo += AppendingCustomInfo;
+                if(IsAiOnlyTurret)
+                    AiOnlyTurret.AppendingCustomInfo += AppendingCustomInfo;
                 else
                     ControllableTurret.AppendingCustomInfo += AppendingCustomInfo;
 
@@ -30,8 +30,8 @@ namespace WeaponCore.Support
             }
             else
             {
-                if (IsAIOnlyTurret)
-                    AIOnlyTurret.AppendingCustomInfo -= AppendingCustomInfo;
+                if (IsAiOnlyTurret)
+                    AiOnlyTurret.AppendingCustomInfo -= AppendingCustomInfo;
                 else
                     ControllableTurret.AppendingCustomInfo -= AppendingCustomInfo;
 
@@ -50,14 +50,14 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (lastInventoryChangedTick < Ai.Session.Tick && !IgnoreInvChange)
+                if (LastInventoryChangedTick < Ai.Session.Tick && !IgnoreInvChange)
                 {
                     //BlockInventory.Refresh();
 
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                         Session.ComputeStorage(Platform.Weapons[i]);
                     
-                    lastInventoryChangedTick = Ai.Session.Tick;
+                    LastInventoryChangedTick = Ai.Session.Tick;
                 }
             }
             catch (Exception ex)
@@ -146,8 +146,8 @@ namespace WeaponCore.Support
                 var status = GetSystemStatus();
 
                 stringBuilder.Append(status +
-                    "\n[Optimal DPS]: " + OptimalDPS.ToString("0.0") + 
-                    "\n[Current DPS]: " + CurrentDPS.ToString("0.0") +" ("+ (CurrentDPS/OptimalDPS).ToString("P") + ")");
+                    "\n[Optimal DPS]: " + OptimalDps.ToString("0.0") + 
+                    "\n[Current DPS]: " + CurrentDps.ToString("0.0") +" ("+ (CurrentDps/OptimalDps).ToString("P") + ")");
 
                 if (HeatPerSecond > 0)
                     stringBuilder.Append("\n__________________________________" +

@@ -7,17 +7,17 @@ namespace WeaponCore
 {
     internal static class WepUi
     {
-        internal static bool GetGuidance(IMyTerminalBlock block, int wepID)
+        internal static bool GetGuidance(IMyTerminalBlock block, int wepId)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return false;
+            if (comp?.Platform == null || !comp.Platform.Inited) return false;
             return comp.Set.Value.Guidance;
         }
 
-        internal static void SetGuidance(IMyTerminalBlock block, int wepID, bool newValue)
+        internal static void SetGuidance(IMyTerminalBlock block, int wepId, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+            if (comp?.Platform == null || !comp.Platform.Inited) return;
             comp.Set.Value.Guidance = newValue;
             comp.SettingsUpdated = true;
             comp.ClientUiUpdate = true;
@@ -26,24 +26,24 @@ namespace WeaponCore
         internal static float GetDps(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return 0;
+            if (comp?.Platform == null || !comp.Platform.Inited) return 0;
             return comp.Set.Value.DPSModifier;
         }
 
         internal static void SetDps(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+            if (comp?.Platform == null || !comp.Platform.Inited) return;
             comp.Set.Value.DPSModifier = newValue;
 
             comp.MaxRequiredPower = 0;
             comp.HeatPerSecond = 0;
-            comp.Ai.OptimalDPS -= comp.OptimalDPS;
-            comp.OptimalDPS = 0;
+            comp.Ai.OptimalDps -= comp.OptimalDps;
+            comp.OptimalDps = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                 var w = comp.Platform.Weapons[i];
                 if (!w.System.EnergyAmmo) {
-                    comp.OptimalDPS += w.DPS;
+                    comp.OptimalDps += w.Dps;
                     comp.MaxRequiredPower += w.RequiredPower;
                     comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
                     continue;
@@ -66,49 +66,49 @@ namespace WeaponCore
                 var mulitplier = (w.System.EnergyAmmo && w.System.BaseDamage > 0) ? w.BaseDamage / w.System.BaseDamage : 1;
 
                 if (w.BaseDamage > w.System.BaseDamage)
-                    mulitplier = mulitplier * mulitplier;
+                    mulitplier *= mulitplier;
 
                 w.HeatPShot = w.System.HeatPerShot * mulitplier;
-                w.areaEffectDmg = w.System.AreaEffectDamage * mulitplier;
-                w.detonateDmg = w.System.DetonationDamage * mulitplier;
+                w.AreaEffectDmg = w.System.AreaEffectDamage * mulitplier;
+                w.DetonateDmg = w.System.DetonationDamage * mulitplier;
 
 
                 comp.MaxRequiredPower -= w.RequiredPower;
-                w.RequiredPower = w.RequiredPower * mulitplier;
+                w.RequiredPower *= mulitplier;
                 comp.MaxRequiredPower += w.RequiredPower;
 
                 w.TicksPerShot = (uint)(3600f / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
-                var oldDps = w.DPS;
-                w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
+                var oldDps = w.Dps;
+                w.Dps = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
                 if (w.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
                 {
                     if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                        w.DPS += (w.detonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                        w.Dps += (w.DetonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
                                           ? w.System.Values.Ammo.Trajectory.AccelPerSec /
                                             w.System.Values.Ammo.Trajectory.DesiredSpeed
                                           : 1);
                     else
-                        w.DPS += (w.areaEffectDmg / 2) *
+                        w.Dps += (w.AreaEffectDmg / 2) *
                                       (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
                                           ? w.System.Values.Ammo.Trajectory.AccelPerSec /
                                             w.System.Values.Ammo.Trajectory.DesiredSpeed
                                           : 1);
                 }
                 comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
-                comp.OptimalDPS += w.DPS;
+                comp.OptimalDps += w.Dps;
 
                 if (w.IsShooting)
                 {
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
-                    comp.CurrentDPS -= (oldDps - w.DPS);
+                    comp.CurrentDps -= (oldDps - w.Dps);
                 }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
             }
-            comp.Ai.OptimalDPS += comp.OptimalDPS;
+            comp.Ai.OptimalDps += comp.OptimalDps;
             comp.TerminalRefresh();
             comp.Ai.RecalcPowerPercent = true;
             comp.Ai.UpdatePowerSources = true;
@@ -120,20 +120,20 @@ namespace WeaponCore
         internal static float GetRof(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return 0;
+            if (comp?.Platform == null || !comp.Platform.Inited) return 0;
             return comp.Set.Value.ROFModifier;
         }
 
         internal static void SetRof(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+            if (comp?.Platform == null || !comp.Platform.Inited) return;
             comp.Set.Value.ROFModifier = newValue;
 
             comp.MaxRequiredPower = 0;
             comp.HeatPerSecond = 0;
-            comp.Ai.OptimalDPS -= comp.OptimalDPS;
-            comp.OptimalDPS = 0;
+            comp.Ai.OptimalDps -= comp.OptimalDps;
+            comp.OptimalDps = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
@@ -153,18 +153,18 @@ namespace WeaponCore
 
                 w.UpdateBarrelRotation();
 
-                var oldDps = w.DPS;
-                w.DPS = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
+                var oldDps = w.Dps;
+                w.Dps = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
                 if (w.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
                 {
                     if (w.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                        w.DPS += (w.detonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
+                        w.Dps += (w.DetonateDmg / 2) * (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
                                           ? w.System.Values.Ammo.Trajectory.AccelPerSec /
                                             w.System.Values.Ammo.Trajectory.DesiredSpeed
                                           : 1);
                     else
-                        w.DPS += (w.areaEffectDmg / 2) *
+                        w.Dps += (w.AreaEffectDmg / 2) *
                                       (w.System.Values.Ammo.Trajectory.DesiredSpeed > 0
                                           ? w.System.Values.Ammo.Trajectory.AccelPerSec /
                                             w.System.Values.Ammo.Trajectory.DesiredSpeed
@@ -172,19 +172,19 @@ namespace WeaponCore
                 }
 
                 comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
-                comp.OptimalDPS += w.DPS;
+                comp.OptimalDps += w.Dps;
 
                 if (w.IsShooting)
                 {
                     comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
-                    comp.CurrentDPS -= (oldDps - w.DPS);
+                    comp.CurrentDps -= (oldDps - w.Dps);
                 }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
 
 
             }
-            comp.Ai.OptimalDPS += comp.OptimalDPS;
+            comp.Ai.OptimalDps += comp.OptimalDps;
             comp.TerminalRefresh();
             comp.Ai.RecalcPowerPercent = true;
             comp.Ai.UpdatePowerSources = true;
@@ -196,14 +196,14 @@ namespace WeaponCore
         internal static bool GetOverload(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return false;
+            if (comp?.Platform == null || !comp.Platform.Inited) return false;
             return comp.Set.Value.Overload == 2;
         }
 
         internal static void SetOverload(IMyTerminalBlock block, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+            if (comp?.Platform == null || !comp.Platform.Inited) return;
 
             if (newValue)
                 comp.Set.Value.Overload = 2;
@@ -221,25 +221,24 @@ namespace WeaponCore
 
         internal static float GetRange(IMyTerminalBlock block) {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return 100;
+            if (comp?.Platform == null || !comp.Platform.Inited) return 100;
             return comp.Set.Value.range;
         }
 
         internal static void SetRange(IMyTerminalBlock block, float range) {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+            if (comp?.Platform == null || !comp.Platform.Inited) return;
             comp.Set.Value.range = range;
         }
 
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return false;
+            if (comp?.Platform == null || !comp.Platform.Inited) return false;
             if (id == 0) return true;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                //Log.Line($"w.System.Values.Ui.ToggleGuidance");
                 var w = comp.Platform.Weapons[i];
                 switch (id) {
                     case -1:

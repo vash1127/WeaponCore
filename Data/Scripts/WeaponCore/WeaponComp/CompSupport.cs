@@ -1,5 +1,7 @@
-﻿using Sandbox.ModAPI;
+﻿using System;
+using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game.Entity;
 using VRage.Game.VisualScripting;
 using VRageMath;
 using WeaponCore.Platform;
@@ -10,8 +12,8 @@ namespace WeaponCore.Support
     {
         internal void TerminalRefresh(bool update = true)
         {
-            if (IsAIOnlyTurret)
-                AIOnlyTurret.RefreshCustomInfo();
+            if (IsAiOnlyTurret)
+                AiOnlyTurret.RefreshCustomInfo();
             else
                 ControllableTurret.RefreshCustomInfo();
 
@@ -33,37 +35,60 @@ namespace WeaponCore.Support
 
         internal void RemoveComp()
         {
-            WeaponComponent comp;
-            if (Ai.WeaponBase.TryRemove(MyCube, out comp))
+            try
             {
-                //Log.Line($"Removed Comp: remaining:{Ai.WeaponBase.Count}");
-                if (Platform != null && Platform.Inited)
+                WeaponComponent comp;
+                if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                 {
-                    GridAi.WeaponCount wCount;
+                    Log.Line($"removing Comp:{MyCube.DebugName} marked:{MyCube.MarkedForClose} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
+                    //Log.Line($"Removed Comp: remaining:{Ai.WeaponBase.Count}");
+                    if (Platform != null && Platform.Inited)
+                    {
+                        GridAi.WeaponCount wCount;
 
-                    if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
-                        wCount.Current--;
+                        if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                            wCount.Current--;
 
-                    RegisterEvents(false);
-                    StopAllSounds();
-                    Platform.RemoveParts(this);
+                        RegisterEvents(false);
+                        StopAllSounds();
+                        Platform.RemoveParts(this);
 
-                    foreach (var groupName in GroupNames)
-                        Ai.BlockGroups[groupName].Remove(MyCube);
+                        foreach (var groupName in GroupNames)
+                            Ai.BlockGroups[groupName].Remove(MyCube);
 
-                    Ai.TotalSinkPower -= MaxRequiredPower;
-                    Ai.OptimalDPS -= OptimalDPS;
+                        GroupNames.Clear();
+                        Ai.TotalSinkPower -= MaxRequiredPower;
+                        Ai.OptimalDps -= OptimalDps;
+                    }
+                    else Log.Line("platform not initted");
+                }
+                else
+                {
+                    Log.Line($"no comp found to remove: {MyCube.DebugName} - marked:{MyCube.MarkedForClose} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
+                    GridAi gridAi;
+                    if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
+                    {
+                        Log.Line($"cube matches different grid: marked:{MyCube.MarkedForClose}({gridAi.MyGrid.MarkedForClose}) - gridMisMatch: {gridAi.MyGrid != MyCube.CubeGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
+                        if (gridAi.WeaponBase.TryRemove(MyCube, out comp))
+                        {
+                            Log.Line($"cube removed from old grid");
+                        }
+                        else Log.Line($"cube not found in old grid: marked:{MyCube.MarkedForClose} - inScene:{MyCube.InScene}");
+                    }
+                    else Log.Line($"cube doesn't match any grid: grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
+                }
+
+                if (Ai.WeaponBase.Count == 0)
+                {
+                    GridAi gridAi;
+                    if (Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
+                    {
+                        Log.Line($"remove gridAi: {Ai.MyGrid.DebugName} - gridMismatch:{Ai.MyGrid != MyCube.CubeGrid}");
+                    }
+                    else Log.Line($"no gridAi found for:{Ai.MyGrid.DebugName}({Ai.MyGrid.MarkedForClose}) - {MyCube.DebugName}({MyCube.CubeGrid.MarkedForClose})");
                 }
             }
-
-            if (Ai.WeaponBase.Count == 0)
-            {
-                GridAi gridAi;
-                if (Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
-                {
-                    //Log.Line($"remove gridAi");
-                }
-            }
+            catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
         }
 
         internal void UpdateCompPower()

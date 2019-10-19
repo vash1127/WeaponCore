@@ -13,13 +13,11 @@ namespace WeaponCore.Platform
     public partial class Weapon
     {
         internal int NextMuzzle;
-        internal static bool UiSet;
         internal volatile bool Casting;
 
-        private readonly Vector3 _localTranslation;
         private readonly int _numOfBarrels;
-        private HashSet<string> _muzzlesToFire = new HashSet<string>();
-        internal readonly Dictionary<int, string> MuzzleIDToName = new Dictionary<int, string>();
+        private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
+        internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
 
         private int _shotsInCycle;
         private int _shots = 1;
@@ -27,7 +25,7 @@ namespace WeaponCore.Platform
         private uint _ticksUntilShoot;
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
-        private uint _ReloadedTick;
+        private uint _reloadedTick;
         internal uint TicksPerShot;
         internal double TimePerShot;
 
@@ -75,9 +73,9 @@ namespace WeaponCore.Platform
         internal float RequiredPower;
         internal float BaseDamage;
         internal float ShotEnergyCost;
-        internal float DPS;
-        internal float areaEffectDmg;
-        internal float detonateDmg;
+        internal float Dps;
+        internal float AreaEffectDmg;
+        internal float DetonateDmg;
         internal float LastHeat;
         internal uint ShotCounter;
         internal uint LastTargetTick;
@@ -107,7 +105,6 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
-        internal double MyPivotOffset;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -115,10 +112,8 @@ namespace WeaponCore.Platform
         internal bool SeekTarget;
         internal bool TrackingAi;
         internal bool IsTracking;
-        internal bool WasLocked;
         internal bool IsAligned;
         internal bool IsShooting;
-        internal bool BarrelMove;
         internal bool PlayTurretAv;
         internal bool AvCapable;
         internal bool DelayCeaseFire;
@@ -152,7 +147,7 @@ namespace WeaponCore.Platform
                 {
                     Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
                     AmmoMagTimer = FirstLoad ? 1 : System.ReloadTime;
-                    _ReloadedTick = Comp.Ai.Session.Tick + (uint)AmmoMagTimer;
+                    _reloadedTick = Comp.Ai.Session.Tick + (uint)AmmoMagTimer;
                     FirstLoad = false;
                 }
             }
@@ -162,7 +157,7 @@ namespace WeaponCore.Platform
         {
             get
             {
-                if (_ReloadedTick > Comp.Ai.Session.Tick) return false;
+                if (_reloadedTick > Comp.Ai.Session.Tick) return false;
                 CurrentAmmo = System.MagazineDef.Capacity;
                 AmmoMagTimer = int.MaxValue;
                 return true;
@@ -187,7 +182,6 @@ namespace WeaponCore.Platform
         {
             BarrelPart = entity;
             AnimationsSet = animationSets;
-            _localTranslation = entity.PositionComp.LocalMatrix.Translation;
             System = system;
             Comp = comp;
             comp.HasEnergyWeapon = comp.HasEnergyWeapon || System.EnergyAmmo || System.IsHybrid;

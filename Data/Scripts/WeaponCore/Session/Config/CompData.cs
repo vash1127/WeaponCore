@@ -13,13 +13,13 @@ namespace WeaponCore
         public readonly WeaponComponent Comp;
         public readonly IMyConveyorSorter AiOnlyTurret;
         public readonly IMyLargeMissileTurret ControllableTurret;
-        public readonly bool isAiOnlyTurret;
+        public readonly bool IsAiOnlyTurret;
         public LogicState(WeaponComponent comp)
         {
             Comp = comp;
-            AiOnlyTurret = comp.AIOnlyTurret;
+            AiOnlyTurret = comp.AiOnlyTurret;
             ControllableTurret = comp.ControllableTurret;
-            isAiOnlyTurret = comp.IsAIOnlyTurret;
+            IsAiOnlyTurret = comp.IsAiOnlyTurret;
             Value.Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length];
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
                 if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponStateValues();
@@ -27,7 +27,7 @@ namespace WeaponCore
 
         public void StorageInit()
         {
-            if (isAiOnlyTurret)
+            if (IsAiOnlyTurret)
             {
                 if (AiOnlyTurret.Storage == null)
                 {
@@ -45,7 +45,7 @@ namespace WeaponCore
 
         public void SaveState(bool createStorage = false)
         {
-            if (isAiOnlyTurret) { 
+            if (IsAiOnlyTurret) { 
                 if (AiOnlyTurret.Storage == null) return;
 
                 var binary = MyAPIGateway.Utilities.SerializeToBinary(Value);
@@ -62,14 +62,14 @@ namespace WeaponCore
 
         public bool LoadState()
         {
-            if ((isAiOnlyTurret && AiOnlyTurret.Storage == null) || (!isAiOnlyTurret && ControllableTurret.Storage == null)) return false;
+            if ((IsAiOnlyTurret && AiOnlyTurret.Storage == null) || (!IsAiOnlyTurret && ControllableTurret.Storage == null)) return false;
 
             byte[] base64;
             LogicStateValues loadedState = null;
             string rawData;
             bool loadedSomething = false;
 
-            if (isAiOnlyTurret)
+            if (IsAiOnlyTurret)
             {
                 if (AiOnlyTurret.Storage.TryGetValue(Comp.Ai.Session.LogicStateGuid, out rawData))
                 {
@@ -101,7 +101,7 @@ namespace WeaponCore
             if (Comp.Ai.Session.IsServer)
             {
                 Value.MId++;
-                if(isAiOnlyTurret)
+                if(IsAiOnlyTurret)
                     Comp.Ai.Session.PacketizeToClientsInRange(AiOnlyTurret, new DataLogicState(AiOnlyTurret.EntityId, Value)); // update clients with server's state
                 else
                     Comp.Ai.Session.PacketizeToClientsInRange(ControllableTurret, new DataLogicState(ControllableTurret.EntityId, Value));
@@ -120,9 +120,9 @@ namespace WeaponCore
         public LogicSettings(WeaponComponent comp)
         {
             Comp = comp;
-            AiOnlyTurret = comp.AIOnlyTurret;
+            AiOnlyTurret = comp.AiOnlyTurret;
             ControllableTurret = comp.ControllableTurret;
-            isAiOnlyTurret = comp.IsAIOnlyTurret;
+            isAiOnlyTurret = comp.IsAiOnlyTurret;
             Value.Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length];
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
                 if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();

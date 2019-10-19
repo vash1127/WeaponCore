@@ -33,8 +33,8 @@ namespace WeaponCore.Support
             IsFunctional = MyCube.IsFunctional;
             State.Value.Online = IsWorking && IsFunctional;
 
-            if(IsAIOnlyTurret)
-                if (AIOnlyTurret.Enabled) { AIOnlyTurret.Enabled = false; AIOnlyTurret.Enabled = true; }
+            if(IsAiOnlyTurret)
+                if (AiOnlyTurret.Enabled) { AiOnlyTurret.Enabled = false; AiOnlyTurret.Enabled = true; }
             else
                 if (ControllableTurret.Enabled) { ControllableTurret.Enabled = false; ControllableTurret.Enabled = true; }
 

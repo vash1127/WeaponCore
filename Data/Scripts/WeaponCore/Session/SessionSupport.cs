@@ -371,7 +371,7 @@ namespace WeaponCore
                 var weaponComp = CompsToStart[i];
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
-                    //Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.RemoveComp();
                     CompsToStart.Remove(weaponComp);
                     continue;
@@ -416,7 +416,7 @@ namespace WeaponCore
                 GridAi gridAi;
                 if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                 {
-                    gridAi = new GridAi(cube.CubeGrid, this);
+                    gridAi = new GridAi(cube.CubeGrid, this, Tick);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
                 var weaponComp = new WeaponComponent(gridAi, cube);

@@ -15,7 +15,8 @@ namespace WeaponCore.Support
         internal void UpdateTargetDb()
         {
             Targeting.AllowScanning = true;
-            foreach (var ent in Targeting.TargetRoots)
+            Targeting.RescanIfNeeded();
+            foreach (var ent in Targeting.Targets)
             {
                 if (ent == null)  continue;
                 using (ent.Pin())
@@ -65,13 +66,12 @@ namespace WeaponCore.Support
                 }
             }
             GetTargetBlocks(Targeting, this);
-            //Targeting.AllowScanning = false;
+            Targeting.AllowScanning = false;
         }
 
         private static void GetTargetBlocks(CoreTargeting targeting, GridAi ai)
         {
-            IEnumerable<KeyValuePair<MyCubeGrid, List<MyEntity>>> allTargets = targeting.TargetBlocks;
-            foreach (var targets in allTargets)
+            foreach (var targets in targeting.GridBlocks)
             {
                 var rootGrid = targets.Key;
 
