@@ -22,16 +22,23 @@ namespace WeaponCore
         public void UpdateDbsInQueue()
         {
             DbsUpdating = true;
-            MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            MyAPIGateway.Parallel.StartBackground(ProcessDbs, ProcessDbsCallBack);
         }
 
         private void ProcessDbs()
         {
+            //var dsUtil = new DSUtils();
+            //dsUtil.Start("");
             foreach (var db in DbsToUpdate)
-                db.UpdateTargetDb();
+            {
+                db.Targeting.Scanning = true;
+                db.Targeting.Scan();
+                db.Targeting.Scanning = false;
+            }
+            //dsUtil.Complete("", false, true);
 
-            foreach (var db in DbsToUpdate)
-                db.FinalizeTargetDb();
+            //foreach (var db in DbsToUpdate)
+            //db.FinalizeTargetDb();
         }
 
         private void ProcessDbsCallBack()

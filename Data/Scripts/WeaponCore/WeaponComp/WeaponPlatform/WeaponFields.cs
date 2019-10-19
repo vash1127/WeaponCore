@@ -232,10 +232,11 @@ namespace WeaponCore.Platform
             BeamSlot = new uint[_numOfBarrels];
             Target = new Target(comp.MyCube);
             NewTarget = new Target(comp.MyCube);
-            if (System.MaxTrajectorySqr > Comp.Ai.MaxTargetingRangeSqr)
+            var gridRadiusSqr = (Comp.Ai.GridRadius * Comp.Ai.GridRadius);
+            if (System.MaxTrajectorySqr + gridRadiusSqr> Comp.Ai.MaxTargetingRangeSqr)
             {
-                Comp.Ai.MaxTargetingRange = System.MaxTrajectory;
-                Comp.Ai.MaxTargetingRangeSqr = System.MaxTrajectorySqr;
+                Comp.Ai.MaxTargetingRange = System.MaxTrajectory + Comp.Ai.GridRadius;
+                Comp.Ai.MaxTargetingRangeSqr = System.MaxTrajectorySqr + gridRadiusSqr;
             }
         }
     }
