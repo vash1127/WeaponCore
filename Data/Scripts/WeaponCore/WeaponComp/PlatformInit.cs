@@ -123,7 +123,7 @@ namespace WeaponCore.Platform
                     }
                     Weapons[c].BarrelPart = muzzlePart;
 
-                    if (comp.IsAIOnlyTurret)
+                    if (comp.IsAiOnlyTurret)
                     {
                         var azimuthPart = Weapons[c].AzimuthPart.Item1;
                         var elevationPart = Weapons[c].ElevationPart.Item1;
@@ -200,7 +200,7 @@ namespace WeaponCore.Platform
                     {
                         var barrel = m.Value.Barrels[i];
                         Weapons[c].Dummies[i] = new Dummy(Weapons[c].BarrelPart, barrel);
-                        Weapons[c].MuzzleIDToName.Add(i, barrel);
+                        Weapons[c].MuzzleIdToName.Add(i, barrel);
                         Weapons[c].Muzzles[i] = new Weapon.Muzzle(i);
                     }
 
@@ -216,7 +216,7 @@ namespace WeaponCore.Platform
             Parts.CheckSubparts();
             foreach (var w in Weapons)
             {
-                w.MuzzleIDToName.Clear();
+                w.MuzzleIdToName.Clear();
                 w.Muzzles = new Weapon.Muzzle[w.System.Barrels.Length];
                 w.Dummies = new Dummy[w.System.Barrels.Length];
             }

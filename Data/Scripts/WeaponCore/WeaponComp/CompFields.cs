@@ -39,14 +39,14 @@ namespace WeaponCore.Support
         internal MyFixedPoint MaxInventoryMass;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
-        internal uint lastInventoryChangedTick;
+        internal uint LastInventoryChangedTick;
         internal uint ShootTick = 0;
         internal uint DelayTicks = 0;
         internal uint IsWorkingChangedTick;
         internal uint PositionUpdateTick;
         internal float MaxInventoryVolume;
-        internal float OptimalDPS;
-        internal float CurrentDPS;
+        internal float OptimalDps;
+        internal float CurrentDps;
         internal float CurrentHeat;
         internal float MaxHeat;
         internal float HeatPerSecond;
@@ -81,7 +81,7 @@ namespace WeaponCore.Support
         internal MyCubeBlock MyCube;
         internal MyWeaponPlatform Platform;
         internal IMyLargeMissileTurret ControllableTurret;
-        internal Sandbox.ModAPI.IMyConveyorSorter AIOnlyTurret;
+        internal Sandbox.ModAPI.IMyConveyorSorter AiOnlyTurret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
         internal bool MainInit;
@@ -92,7 +92,7 @@ namespace WeaponCore.Support
         internal bool FullInventory;
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
-        internal bool IsAIOnlyTurret;
+        internal bool IsAiOnlyTurret;
         internal bool HasInventory;
         internal bool IgnoreInvChange;
         internal LogicSettings Set;
@@ -105,19 +105,19 @@ namespace WeaponCore.Support
 
             if (myCube is IMyLargeMissileTurret)
             {
-                ControllableTurret = myCube as IMyLargeMissileTurret;
-                IsAIOnlyTurret = false;
+                ControllableTurret = (IMyLargeMissileTurret) myCube;
+                IsAiOnlyTurret = false;
             }
 
             else if (myCube is Sandbox.ModAPI.IMyConveyorSorter)
             {
-                AIOnlyTurret = myCube as Sandbox.ModAPI.IMyConveyorSorter;
-                IsAIOnlyTurret = true;
+                AiOnlyTurret = (Sandbox.ModAPI.IMyConveyorSorter) myCube;
+                IsAiOnlyTurret = true;
             }
 
             //TODO add to config
             BlockInventory = myCube.GetInventory(0);
-            if (IsAIOnlyTurret)
+            if (IsAiOnlyTurret)
             {
                 BlockInventory.SetFlags(MyInventoryFlags.CanSend);
 

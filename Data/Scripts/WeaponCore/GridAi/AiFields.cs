@@ -8,7 +8,6 @@ using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -57,11 +56,7 @@ namespace WeaponCore.Support
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;
 
-
-
-        //internal MyResourceDistributorComponent MyResourceDist;
         internal CoreTargeting Targeting { get; set; }
-        //internal DSUtils DsWatch = new DSUtils();
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyEntity PrimeTarget;
@@ -108,10 +103,9 @@ namespace WeaponCore.Support
         internal float MinSinkPower;
         internal float CurrentWeaponsDraw;
         internal float LastAvailablePower;
-        internal float OptimalDPS;
+        internal float OptimalDps;
         internal Vector3D GridCenter;
         internal Vector3 GridVel;
-        internal MatrixD GridMatrix;
         internal enum TargetType
         {
             Projectile,
@@ -119,10 +113,11 @@ namespace WeaponCore.Support
             None,
         }
 
-        internal GridAi(MyCubeGrid grid, Session session)
+        internal GridAi(MyCubeGrid grid, Session session, uint createdTick)
         {
             MyGrid = grid;
             Session = session;
+            CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
 
             Targeting = MyGrid.Components.Get<MyGridTargeting>() as CoreTargeting;
@@ -131,6 +126,10 @@ namespace WeaponCore.Support
             {
                 Targeting = new CoreTargeting(Session);
                 MyGrid.Components.Remove<MyGridTargeting>();
+
+                var baseTargeting = (MyGridTargeting)Targeting;
+                baseTargeting.AllowScanning = false;
+
                 MyGrid.Components.Add<MyGridTargeting>(Targeting);
             }
 

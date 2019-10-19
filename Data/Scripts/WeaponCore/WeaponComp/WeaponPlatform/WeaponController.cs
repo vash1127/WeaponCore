@@ -23,7 +23,7 @@ namespace WeaponCore.Platform
 
             LastTrackedTick = Comp.Ai.Session.Tick;
 
-            if (Comp.IsAIOnlyTurret)
+            if (Comp.IsAiOnlyTurret)
             {
                 float absAzChange;
                 float absElChange;
@@ -81,7 +81,7 @@ namespace WeaponCore.Platform
 
         public bool TurretHomePosition()
         {
-            if (Comp.AIOnlyTurret == null && Comp.ControllableTurret == null) return false;
+            if (Comp.AiOnlyTurret == null && Comp.ControllableTurret == null) return false;
 
             var azStep = System.AzStep;
             var elStep = System.ElStep;

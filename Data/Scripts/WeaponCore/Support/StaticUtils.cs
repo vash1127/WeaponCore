@@ -328,6 +328,7 @@ namespace WeaponCore.Support
         {
             var af = weaponSystem.Values.Ammo.AreaEffect;
             var eInfo = af.Explosions;
+            if (radius > 10) radius = 10;
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
             cullSphere.Radius = af.AreaEffectRadius * 5;

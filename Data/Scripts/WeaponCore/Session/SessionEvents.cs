@@ -32,6 +32,8 @@ namespace WeaponCore
                 {
                     targeting = new CoreTargeting(this);
                     cube.CubeGrid.Components.Remove<MyGridTargeting>();
+                    var baseTargeting = (MyGridTargeting)targeting;
+                    baseTargeting.AllowScanning = false;
                     cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
                 }
 

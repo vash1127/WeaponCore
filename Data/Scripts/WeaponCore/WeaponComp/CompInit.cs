@@ -15,16 +15,11 @@ namespace WeaponCore.Support
                 MaxRequiredInput = 0f,
                 RequiredInputFunc = () => SinkPower,
             };
-            //MyCube.Components.TryGet(out Sink);
-            var gId = GId;
-            //Sink.RemoveType(ref gId);
             MyCube.Components.Remove<MyResourceSinkComponent>();
             Sink = new MyResourceSinkComponent() { TemporaryConnectedEntity = MyCube};
             Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
             Sink.AddType(ref resourceInfo);
-
             MyCube.Components.Add(Sink);
-
             Sink.Update();
         }
 
@@ -63,9 +58,9 @@ namespace WeaponCore.Support
                 State = new LogicState(this);
             }
 
-            if (IsAIOnlyTurret)
+            if (IsAiOnlyTurret)
             {
-                if (AIOnlyTurret.Storage == null)
+                if (AiOnlyTurret.Storage == null)
                 {
                     //Log.Line("Storage null");
                     State.StorageInit();

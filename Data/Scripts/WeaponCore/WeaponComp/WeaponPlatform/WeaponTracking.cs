@@ -362,13 +362,16 @@ namespace WeaponCore.Platform
             var minEl = System.MinElevation;
             var maxEl = System.MaxElevation;
 
-            if (!Comp.IsAIOnlyTurret)
+            if (!Comp.IsAiOnlyTurret)
             {
                 var baseDef = Comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
-                minAz = baseDef.MinAzimuthDegrees;
-                maxAz = baseDef.MaxAzimuthDegrees;
-                minEl = baseDef.MinElevationDegrees;
-                maxEl = baseDef.MaxElevationDegrees;
+                if (baseDef != null)
+                {
+                    minAz = baseDef.MinAzimuthDegrees;
+                    maxAz = baseDef.MaxAzimuthDegrees;
+                    minEl = baseDef.MinElevationDegrees;
+                    maxEl = baseDef.MaxElevationDegrees;
+                }
             }
 
             MinElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minEl));

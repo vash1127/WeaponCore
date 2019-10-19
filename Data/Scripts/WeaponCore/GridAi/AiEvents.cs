@@ -131,8 +131,8 @@ namespace WeaponCore.Support
         private void GridClose(MyEntity myEntity)
         { 
             RegisterMyGridEvents(false);
-            UpdateBlockGroups(true);
-            WeaponBase.Clear();
+            //UpdateBlockGroups(true);
+            //WeaponBase.Clear();
             SubGrids.Clear();
             Obstructions.Clear();
             Threats.Clear();
