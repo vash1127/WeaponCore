@@ -27,7 +27,6 @@ namespace WeaponCore.Support
                     w.SleepingTargets.Clear();
             }
 
-
             w.UpdatePivotPos();
             w.AimCone.ConeDir = w.MyPivotDir;
             w.AimCone.ConeTip = w.MyPivotPos;
@@ -109,7 +108,9 @@ namespace WeaponCore.Support
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
             TargetInfo primeInfo = null;
-            if (ai.PrimeTarget != null) ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo);
+            if (ai.PrimeTarget != null)
+                ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo);
+
             var targetCount = ai.SortedTargets.Count;
             var needOffset = primeInfo != null;
             var offset = needOffset ? 1 : 0;
@@ -118,9 +119,7 @@ namespace WeaponCore.Support
             {
                 if (attemptReset && x > 0) break;
                 var info = x < 1 && needOffset ? primeInfo : ai.SortedTargets[x - offset];
-
                 if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
-
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
 
