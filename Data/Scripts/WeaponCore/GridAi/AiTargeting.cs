@@ -119,7 +119,6 @@ namespace WeaponCore.Support
             {
                 if (attemptReset && x > 0) break;
                 var info = x < 1 && needOffset ? primeInfo : ai.SortedTargets[x - offset];
-                if (attemptReset) Log.Line($"attempreset for: {primeInfo.Target.DebugName}");
                 if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
