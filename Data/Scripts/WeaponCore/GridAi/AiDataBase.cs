@@ -14,7 +14,7 @@ namespace WeaponCore.Support
     {
         internal void UpdateTargetDb()
         {
-            Targeting.AllowScanning = true;
+            Targeting.Scanning = true;
             Targeting.RescanIfNeeded();
             foreach (var ent in Targeting.Targets)
             {
@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                 }
             }
             GetTargetBlocks(Targeting, this);
-            Targeting.AllowScanning = false;
+            Targeting.Scanning = false;
         }
 
         private static void GetTargetBlocks(CoreTargeting targeting, GridAi ai)

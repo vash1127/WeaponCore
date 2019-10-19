@@ -128,7 +128,7 @@ namespace WeaponCore.Support
                 MyGrid.Components.Remove<MyGridTargeting>();
 
                 var baseTargeting = (MyGridTargeting)Targeting;
-                //baseTargeting.AllowScanning = false;
+                baseTargeting.AllowScanning = false;
 
                 MyGrid.Components.Add<MyGridTargeting>(Targeting);
             }

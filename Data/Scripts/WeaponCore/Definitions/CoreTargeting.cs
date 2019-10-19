@@ -24,7 +24,7 @@ namespace WeaponCore.Support
         private static readonly FastResourceLock SelfLock = new FastResourceLock();
         private bool _inited;
         private uint _lastScan;
-        public new bool AllowScanning = true;
+        public bool Scanning = true;
 
         public CoreTargeting(Session session)
         {
@@ -68,7 +68,7 @@ namespace WeaponCore.Support
             //_session.DsUtil.Start("");
             using (SelfLock.AcquireExclusiveUsing())
             {
-                if (AllowScanning && _session.Tick - _lastScan > 100)
+                if (Scanning && _session.Tick - _lastScan > 100)
                 {
                     _lastScan = _session.Tick;
                     var boundingSphereD = _myGrid.PositionComp.WorldVolume;
@@ -190,7 +190,7 @@ namespace WeaponCore.Support
 
         public new void RescanIfNeeded()
         {
-            if (AllowScanning && _session.Tick - _lastScan > 100)
+            if (Scanning && _session.Tick - _lastScan > 100)
             {
                 if (!_inited) Init();
                 Scan();
