@@ -429,7 +429,7 @@ namespace WeaponCore.Projectiles
             var hitPos = sphere.Center;
             if (fatOnly)
             {
-                foreach (var cube in ai.Targets[grid].TypeDict[TargetingDefinition.BlockTypes.Any])
+                foreach (var cube in ai.Session.GridToFatMap[grid])
                 {
                     switch (fieldType)
                     {

@@ -65,7 +65,7 @@ namespace WeaponCore
                         targetInfo.Init(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
                     else
                     {
-                        targetInfo.Init(detectInfo.EntInfo, grid, true, dictTypes, dictTypes[TargetingDefinition.BlockTypes.Any].Count, db.MyGrid, db);
+                        targetInfo.Init(detectInfo.EntInfo, grid, true, dictTypes, GridToFatMap[grid].Count, db.MyGrid, db);
                         targetInfo.TypeDict = dictTypes;
                     }
 
@@ -380,7 +380,7 @@ namespace WeaponCore
                 {
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                     {
-                        Log.Line($"grid not yet in map");
+                        //Log.Line($"grid not yet in map");
                         continue;
                     }
 
@@ -394,7 +394,7 @@ namespace WeaponCore
                 {
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                     {
-                        Log.Line($"grid not yet in map");
+                        //Log.Line($"grid not yet in map");
                         continue;
                     }
                     //Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");

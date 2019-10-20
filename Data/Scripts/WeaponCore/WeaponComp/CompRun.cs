@@ -208,7 +208,7 @@ namespace WeaponCore.Support
         {
             if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
             {
-                Log.Line($"OnAddedToSceneTasks not yet ready");
+                //Log.Line($"OnAddedToSceneTasks not yet ready");
                 MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
                 return;
             }

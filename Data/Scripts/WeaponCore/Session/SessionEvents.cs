@@ -74,12 +74,14 @@ namespace WeaponCore
             while (NewGrids.TryDequeue(out grid))
             {
                 //Log.Line($"added to grid");
-                grid.OnFatBlockAdded += ToFatMap;
-                grid.OnFatBlockRemoved += FromFatMap;
-                grid.OnClose += RemoveGridFromMap;
+
                 var fatMap = ConcurrentListPool.Get();
                 fatMap.AddRange(grid.GetFatBlocks());
                 GridToFatMap.Add(grid, fatMap);
+
+                grid.OnFatBlockAdded += ToFatMap;
+                grid.OnFatBlockRemoved += FromFatMap;
+                grid.OnClose += RemoveGridFromMap;
             }
         }
 
@@ -89,11 +91,11 @@ namespace WeaponCore
             MyConcurrentList<MyCubeBlock> list;
             if (GridToFatMap.TryRemove(grid, out list))
             {
+                list.Clear();
+                ConcurrentListPool.Return(list);
                 grid.OnFatBlockAdded -= ToFatMap;
                 grid.OnFatBlockRemoved -= FromFatMap;
                 grid.OnClose -= RemoveGridFromMap;
-                list.Clear();
-                ConcurrentListPool.Return(list);
                 //Log.Line("grid removed and list cleaned");
             }
             else Log.Line($"grid not removed and list not cleaned");
