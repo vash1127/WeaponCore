@@ -16,7 +16,7 @@ namespace WeaponCore.Projectiles
     public partial class Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal const int PoolCount = 8;
+        internal const int PoolCount = 4;
         internal readonly Session Session;
         internal readonly MyConcurrentPool<Fragments>[] ShrapnelPool = new MyConcurrentPool<Fragments>[PoolCount];
         internal readonly MyConcurrentPool<Fragment>[] FragmentPool = new MyConcurrentPool<Fragment>[PoolCount];
@@ -31,19 +31,6 @@ namespace WeaponCore.Projectiles
         internal readonly List<Projectile>[] CleanUp = new List<Projectile>[PoolCount];
         internal readonly bool[] ModelClosed = new bool[PoolCount];
 
-        internal readonly MyConcurrentPool<object>[] GenericListPool = new MyConcurrentPool<object>[PoolCount];
-        internal readonly MyConcurrentPool<object>[] GenericHashSetPool = new MyConcurrentPool<object>[PoolCount];
-
-        object CreateListInstance<T>(HashSet<T> lst)
-        {
-            return new List<T>();
-        }
-
-        object CreateHashSetInstance<T>(HashSet<T> lst)
-        {
-            return new HashSet<T>();
-        }
-
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
         internal readonly object[] Wait = new object[PoolCount];
 
@@ -53,17 +40,15 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Wait.Length; i++)
             {
                 Wait[i] = new object();
-                ShrapnelToSpawn[i] = new List<Fragments>(25);
-                GenericListPool[i] = new MyConcurrentPool<object>(25, null, 10000, () => CreateListInstance(((MyCubeGrid)null)?.CubeBlocks));
-                GenericHashSetPool[i] = new MyConcurrentPool<object>(25, null, 10000, () => CreateHashSetInstance(((MyCubeGrid)null)?.CubeBlocks));
-                ShrapnelPool[i] = new MyConcurrentPool<Fragments>(25);
-                FragmentPool[i] = new MyConcurrentPool<Fragment>(100);
-                CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(50);
-                ProjectilePool[i] = new ObjectsPool<Projectile>(100);
-                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(50);
-                DrawProjectiles[i] = new List<Trajectile>(100);
-                CleanUp[i] = new List<Projectile>(100);
-                TrajectilePool[i] = new ObjectsPool<Trajectile>(100);
+                ShrapnelToSpawn[i] = new List<Fragments>(10);
+                ShrapnelPool[i] = new MyConcurrentPool<Fragments>(10);
+                FragmentPool[i] = new MyConcurrentPool<Fragment>(50);
+                CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(25);
+                ProjectilePool[i] = new ObjectsPool<Projectile>(50);
+                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(25);
+                DrawProjectiles[i] = new List<Trajectile>(50);
+                CleanUp[i] = new List<Projectile>(50);
+                TrajectilePool[i] = new ObjectsPool<Trajectile>(50);
             }
         }
 

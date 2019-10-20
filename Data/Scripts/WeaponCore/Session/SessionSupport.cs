@@ -802,6 +802,41 @@ namespace WeaponCore
 
             _effectActive = false;
             RemoveEffectsFromGrid.Clear();
+            WeaponAmmoPullQueue.Clear();
+            DbsToUpdate.Clear();
+            AmmoToPullQueue.Clear();
+            Hits.Clear();
+            AllArmorBaseDefinitions.Clear();
+            HeavyArmorBaseDefinitions.Clear();
+            AllArmorBaseDefinitions.Clear();
+            CompsToStart.ClearImmediate();
+            _shrinkPool.Clean();
+            _shrinkPool.Clean();
+            _afterGlow.Clear();
+            _subTypeIdToWeaponDefs.Clear();
+            _weaponDefinitions.Clear();
+            _slimsSortedList.Clear();
+            _destroyedSlims.Clear();
+            _slimsSet.Clear();
+            for (int i = 0; i < Projectiles.Wait.Length; i++)
+            {
+                Projectiles.CheckPool[i].Clean();
+                Projectiles.ShrapnelToSpawn[i].Clear();
+                Projectiles.ShrapnelPool[i].Clean();
+                Projectiles.FragmentPool[i].Clean();
+                Projectiles.CheckPool[i].Clean();
+                Projectiles.ProjectilePool[i].DeallocateAll();
+                Projectiles.HitEntityPool[i].Clean();
+                Projectiles.DrawProjectiles[i].Clear();
+                Projectiles.CleanUp[i].Clear();
+                Projectiles.TrajectilePool[i].DeallocateAll();
+            }
+            foreach (var structure in WeaponPlatforms.Values)
+            {
+                structure.WeaponSystems.Clear();
+                structure.AmmoToWeaponIds.Clear();
+            }
+            WeaponPlatforms.Clear();
             Projectiles = null;
         }
         #endregion

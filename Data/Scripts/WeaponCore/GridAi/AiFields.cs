@@ -19,11 +19,11 @@ namespace WeaponCore.Support
     {
         internal volatile bool Scanning;
         internal volatile bool Ready;
-        internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(25);
+        internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(8);
         internal readonly MyConcurrentPool<List<IMyTerminalBlock>> TmpBlockGroupPool = new MyConcurrentPool<List<IMyTerminalBlock>>();
         internal readonly MyConcurrentPool<HashSet<MyCubeBlock>> BlockGroupPool = new MyConcurrentPool<HashSet<MyCubeBlock>>();
 
-        internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(25);
+        internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);

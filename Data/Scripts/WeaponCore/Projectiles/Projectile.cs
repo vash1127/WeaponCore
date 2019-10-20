@@ -5,7 +5,6 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Platform;
 using WeaponCore.Support;
 using static WeaponCore.Support.AreaDamage;
 using static WeaponCore.Support.Trajectile;

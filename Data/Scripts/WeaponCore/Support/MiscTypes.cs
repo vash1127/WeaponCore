@@ -245,37 +245,16 @@ namespace WeaponCore.Support
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
         public Type EventType;
-        private object _listCache;
-        private object _hashSetCache;
+        //private object _hashSetCache;
 
         public int PoolId = - 1;
 
+        /*
         internal static HashSet<T> SwapSet<T>(object cacheObject, HashSet<T> lst)
         {
             return cacheObject as HashSet<T>;
         }
-
-        internal static List<T> SwapList<T>(object cacheObject, HashSet<T> lst)
-        {
-            return cacheObject as List<T>;
-        }
-
-        internal static List<T> CastOrGetList<T>(HitEntity hitEnt, HashSet<T> lst)
-        {
-            if (hitEnt._listCache == null)
-                hitEnt._listCache = hitEnt.T.Ai.Session.Projectiles.GenericListPool[hitEnt.PoolId].Get();
-            var list = hitEnt._listCache as List<T>;
-            return list;
-        }
-
-        internal static HashSet<T> CastOrGetHashSet<T>(HitEntity hitEnt, HashSet<T> lst)
-        {
-            if (hitEnt._hashSetCache == null)
-                hitEnt._hashSetCache = hitEnt.T.Ai.Session.Projectiles.GenericHashSetPool[hitEnt.PoolId].Get();
-            var hashSet = hitEnt._hashSetCache as HashSet<T>;
-
-            return hashSet;
-        }
+        */
 
         public HitEntity()
         {
@@ -285,20 +264,9 @@ namespace WeaponCore.Support
         {
             Entity = null;
             Projectile = null;
+            /*
             if (PoolId >= 0)
             {
-                /*
-                if (_listCache != null)
-                {
-                    var set = SwapList(_listCache, ((MyCubeGrid)null)?.CubeBlocks);
-                    if (set != null)
-                    {
-                        set.Clear();
-                        Session.Instance.Projectiles.GenericListPool[PoolId].Return(_listCache);
-                    }
-                    _listCache = null;
-                }
-                */
                 if (_hashSetCache != null)
                 {
                     var set = SwapSet(_hashSetCache, ((MyCubeGrid)null)?.CubeBlocks);
@@ -310,6 +278,7 @@ namespace WeaponCore.Support
                     _hashSetCache = null;
                 }
             }
+            */
             PoolId = -1;
             Beam.Length = 0;
             Beam.Direction = Vector3D.Zero;
