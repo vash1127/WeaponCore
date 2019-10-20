@@ -131,13 +131,13 @@ namespace WeaponCore
 
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit || gridAi.MyGrid.MarkedForClose) continue;
+                if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
 
-                if (gridAi.WeaponBase.Count <= 0)
+                if (gridAi.MyGrid.MarkedForClose)
                 {
-                    Log.Line($"AiComps:{gridAi.WeaponBase.Count}");
+                    Log.Line($"gridMarked:{gridAi.MyGrid.DebugName}");
+                    continue;
                 }
-
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
 

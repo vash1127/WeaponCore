@@ -133,6 +133,7 @@ namespace WeaponCore.Support
             RegisterMyGridEvents(false);
             //UpdateBlockGroups(true);
             //WeaponBase.Clear();
+            _possibleTargets.Clear();
             SubGrids.Clear();
             Obstructions.Clear();
             Threats.Clear();

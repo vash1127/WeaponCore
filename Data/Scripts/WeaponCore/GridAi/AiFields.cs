@@ -17,12 +17,13 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
+        internal volatile bool Scanning;
         internal volatile bool Ready;
-        internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(25);
+        internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(8);
         internal readonly MyConcurrentPool<List<IMyTerminalBlock>> TmpBlockGroupPool = new MyConcurrentPool<List<IMyTerminalBlock>>();
         internal readonly MyConcurrentPool<HashSet<MyCubeBlock>> BlockGroupPool = new MyConcurrentPool<HashSet<MyCubeBlock>>();
 
-        internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(25);
+        internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
@@ -46,6 +47,7 @@ namespace WeaponCore.Support
         internal readonly List<IMyBlockGroup> TmpBlockGroups = new List<IMyBlockGroup>();
         internal readonly Dictionary<string, HashSet<MyCubeBlock>> BlockGroups = new Dictionary<string, HashSet<MyCubeBlock>>();
 
+
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
@@ -56,7 +58,6 @@ namespace WeaponCore.Support
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;
 
-        internal CoreTargeting Targeting { get; set; }
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyEntity PrimeTarget;
@@ -108,6 +109,11 @@ namespace WeaponCore.Support
         internal float OptimalDps;
         internal Vector3D GridCenter;
         internal Vector3 GridVel;
+
+        private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
+        private readonly FastResourceLock _scanLock = new FastResourceLock();
+        private uint _lastScan;
+
         internal enum TargetType
         {
             Projectile,
@@ -121,19 +127,6 @@ namespace WeaponCore.Support
             Session = session;
             CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
-
-            Targeting = MyGrid.Components.Get<MyGridTargeting>() as CoreTargeting;
-
-            if (Targeting == null)
-            {
-                Targeting = new CoreTargeting(Session);
-                MyGrid.Components.Remove<MyGridTargeting>();
-
-                var baseTargeting = (MyGridTargeting)Targeting;
-                baseTargeting.AllowScanning = false;
-
-                MyGrid.Components.Add<MyGridTargeting>(Targeting);
-            }
 
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }

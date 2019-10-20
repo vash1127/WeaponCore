@@ -50,7 +50,6 @@ namespace WeaponCore
         internal Projectiles.Projectiles Projectiles;
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
-        internal readonly MyConcurrentDictionary<MyEntity, Dictionary<Vector3I, IMySlimBlock>> SlimSpace = new MyConcurrentDictionary<MyEntity, Dictionary<Vector3I, IMySlimBlock>>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
@@ -66,16 +65,12 @@ namespace WeaponCore
         internal GridAi TrackingAi;
         internal IMyBlockPlacerBase Placer;
 
-        internal List<WeaponHit> WeaponHits = new List<WeaponHit>();
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
         internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
-        internal ConcurrentDictionary<MyCubeGrid, FastResourceLock> GridLocks = new ConcurrentDictionary<MyCubeGrid, FastResourceLock>();
-        internal MyConcurrentList<MyCubeGrid> LockCleanItr = new MyConcurrentList<MyCubeGrid>();
-        internal uint LockClean;
 
-        private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(50);
+        private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
         private readonly CachingList<AfterGlow> _afterGlow = new CachingList<AfterGlow>();
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();

@@ -29,7 +29,7 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 lock (this)
                 {
-                    Log.Line($"OnAddedToScene: mainInit:{MainInit} - {MyCube.DebugName} - {MyCube.CubeGrid.DebugName} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid}");
+                    //Log.Line($"OnAddedToScene: mainInit:{MainInit} - {MyCube.DebugName} - {MyCube.CubeGrid.DebugName} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid}");
                     if (MainInit) ReInitPlatform();
                     else MyAPIGateway.Utilities.InvokeOnGameThread(InitPlatform);
                 }
