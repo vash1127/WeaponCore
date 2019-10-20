@@ -84,6 +84,10 @@ namespace WeaponCore
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
 
+        internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
+        internal readonly MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>>();
+        internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
+
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(25));

@@ -13,6 +13,7 @@ using VRage.Utils;
 using WeaponCore.Platform;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
+using VRage.Collections;
 using VRage.ObjectBuilders;
 
 namespace WeaponCore
@@ -64,7 +65,7 @@ namespace WeaponCore
                         targetInfo.Init(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
                     else
                     {
-                        targetInfo.Init(detectInfo.EntInfo, grid, true, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db);
+                        targetInfo.Init(detectInfo.EntInfo, grid, true, dictTypes, dictTypes[TargetingDefinition.BlockTypes.Any].Count, db.MyGrid, db);
                         targetInfo.TypeDict = dictTypes;
                     }
 
@@ -122,6 +123,7 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
         }
 
+
         internal bool PlayerInAiCockPit()
         {
             if (ActiveCockPit == null || ActiveCockPit.MarkedForClose || ((IMyControllerInfo)ActiveCockPit.ControllerInfo)?.ControllingIdentityId != MyAPIGateway.Session.Player.IdentityId) return false;
@@ -146,8 +148,6 @@ namespace WeaponCore
                 //TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
                 MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
                 MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, Color.Yellow);
-
-
             }
         }
 
@@ -378,6 +378,12 @@ namespace WeaponCore
                     continue;
                 if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
                 {
+                    if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
+                    {
+                        Log.Line($"grid not yet in map");
+                        continue;
+                    }
+
                     Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
                     weaponComp.RemoveComp();
                     InitComp(weaponComp.MyCube, false);
@@ -386,6 +392,11 @@ namespace WeaponCore
                 }
                 else if (weaponComp.Platform == null)
                 {
+                    if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
+                    {
+                        Log.Line($"grid not yet in map");
+                        continue;
+                    }
                     //Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.MyCube.Components.Add(weaponComp);
                     CompsToStart.Remove(weaponComp);
@@ -837,6 +848,13 @@ namespace WeaponCore
                 structure.AmmoToWeaponIds.Clear();
             }
             WeaponPlatforms.Clear();
+
+            //foreach (var map in GridToFatMap)
+                //RemoveGridFromMap(map.Key);
+
+            GridToFatMap.Clear();
+            ConcurrentListPool.Clean();
+
             Projectiles = null;
         }
         #endregion

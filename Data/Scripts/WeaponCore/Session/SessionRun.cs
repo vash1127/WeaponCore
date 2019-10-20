@@ -34,6 +34,8 @@ namespace WeaponCore
 
                 if(!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
 
+                if (!NewGrids.IsEmpty) AddGridToMap();
+
                 if (!CompsToStart.IsEmpty) StartComps();
 
                 if (Tick180)

@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
@@ -52,33 +53,14 @@ namespace WeaponCore.Support
                                     SubGridsTmp.Add(grid);
                                     continue;
                                 }
-                                if (!grid.IsPowered)
+                                MyConcurrentList<MyCubeBlock> someFat;
+                                if (!grid.IsPowered || !Session.GridToFatMap.TryGetValue(grid, out someFat) || someFat.Count <= 1)
                                     continue;
 
                                 var typeDict = BlockTypePool.Get();
                                 var allFat = CubePool.Get();
 
-                                var retries = 1;
-                                var gotFat = false;
-                                while (retries >= 0)
-                                {
-                                    try
-                                    {
-                                        var someFat = grid.GetFatBlocks();
-                                        if (someFat.Count > 1)
-                                        {
-                                            allFat.AddRange(someFat);
-                                            gotFat = true;
-                                        }
-                                        break;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Log.Line($"Exception in CoreTargeting GetFat, retries:{retries}: {ex}");
-                                        retries--;
-                                    }
-                                }
-                                if (!gotFat) continue;
+                                allFat.AddRange(someFat);
                                 typeDict.Add(Any, allFat);
                                 typeDict.Add(Offense, CubePool.Get());
                                 typeDict.Add(Utility,CubePool.Get());

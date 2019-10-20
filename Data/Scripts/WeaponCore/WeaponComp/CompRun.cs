@@ -201,11 +201,18 @@ namespace WeaponCore.Support
             RegisterEvents();
             //Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
-                OnAddedToSceneTasks();
+                MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
         }
 
         private void OnAddedToSceneTasks()
         {
+            if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
+            {
+                Log.Line($"OnAddedToSceneTasks not yet ready");
+                MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
+                return;
+            }
+
             if (MainInit)
                 Platform.ResetParts(this);
 
@@ -222,7 +229,9 @@ namespace WeaponCore.Support
                 if (Ai.MyGrid != MyCube.CubeGrid || Ai.MyGrid.MarkedForClose) Log.Line($"AiGrid Mismatch during OnAddedToScene");
                 Ai.TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(Ai.MyGrid);
 
-                foreach (var cubeBlock in MyCube.CubeGrid.GetFatBlocks())
+                if (Ai.TerminalSystem == null) Log.Line($"on no terminalsystem is null");
+
+                foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid])
                     Ai.FatBlockAdded(cubeBlock);
             }
 
