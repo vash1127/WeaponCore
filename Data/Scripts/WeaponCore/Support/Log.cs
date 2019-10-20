@@ -11,7 +11,7 @@ namespace WeaponCore.Support
         private TextWriter _file = null;
         private string _fileName = "";
 
-        private static ConcurrentQueue<string[]> threadedLineQueue = new ConcurrentQueue<string[]>();
+        private static readonly ConcurrentQueue<string[]> ThreadedLineQueue = new ConcurrentQueue<string[]>();
 
         private Log()
         {
@@ -103,13 +103,13 @@ namespace WeaponCore.Support
 
         public static void ThreadedWrite(string logLine)
         {
-            threadedLineQueue.Enqueue(new string[] { $"Actual Time: {DateTime.Now:MM-dd-yy_HH-mm-ss-fff -} ", logLine });
+            ThreadedLineQueue.Enqueue(new string[] { $"Actual Time: {DateTime.Now:MM-dd-yy_HH-mm-ss-fff -} ", logLine });
             MyAPIGateway.Utilities.InvokeOnGameThread(WriteLog);
         }
 
         private static void WriteLog() {
             string[] line;
-            while (threadedLineQueue.TryDequeue(out line))
+            while (ThreadedLineQueue.TryDequeue(out line))
             {
                 Line(line[0] + line[1]);
             }
@@ -122,7 +122,7 @@ namespace WeaponCore.Support
             {
                 if (GetInstance()._file != null)
                 {
-                    threadedLineQueue.Clear();
+                    ThreadedLineQueue.Clear();
                     GetInstance()._file.Flush();
                     GetInstance()._file.Close();
                 }

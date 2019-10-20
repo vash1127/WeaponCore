@@ -309,6 +309,8 @@ namespace WeaponCore
                 InGridAiCockPit = true;
                 return true;
             }
+
+            if (TrackingAi != null) TrackingAi.PrimeTarget = null;
             TrackingAi = null;
             ActiveCockPit = null;
             RemoveGps();
@@ -573,8 +575,6 @@ namespace WeaponCore
                     resetFakeTick = true;
                 }
 
-
-
                 if (w.Comp.State.Value.Weapons[w.WeaponId].Heat > 0 || ht.Value.Item3)
                 {
                     int fakeTick;
@@ -749,7 +749,7 @@ namespace WeaponCore
             foreach (var basePair in gridAi.WeaponBase)
             {
                 var comp = basePair.Value;
-                if (comp == null || comp.Platform == null) return;
+                if (comp?.Platform == null) return;
 
                 for (int i = 0; i < basePair.Value.Platform.Weapons.Length; i++)
                 {
