@@ -40,8 +40,7 @@ namespace WeaponCore.Support
                 WeaponComponent comp;
                 if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                 {
-                    Log.Line($"removing Comp:{MyCube.DebugName} marked:{MyCube.MarkedForClose} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
-                    //Log.Line($"Removed Comp: remaining:{Ai.WeaponBase.Count}");
+                    //Log.Line($"removing Comp:{MyCube.DebugName} marked:{MyCube.MarkedForClose} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
                     if (Platform != null && Platform.Inited)
                     {
                         GridAi.WeaponCount wCount;

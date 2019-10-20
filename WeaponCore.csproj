@@ -50,7 +50,7 @@
     <None Include="Data\lcd.sbc" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Data\Scripts\WeaponCore\Support\CoreTargeting.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\PartAnimation.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFields.cs" />

@@ -25,18 +25,6 @@ namespace WeaponCore
 
                 if (cube == null) return;
 
-                //replace Targeting on all grids to improve lock speed, and handle grid locking
-                var targeting = cube.CubeGrid?.Components?.Get<MyGridTargeting>() as CoreTargeting;
-
-                if (targeting == null && cube.CubeGrid?.Components != null)
-                {
-                    targeting = new CoreTargeting(this);
-                    cube.CubeGrid.Components.Remove<MyGridTargeting>();
-                    var baseTargeting = (MyGridTargeting)targeting;
-                    baseTargeting.AllowScanning = false;
-                    cube.CubeGrid.Components.Add<MyGridTargeting>(targeting);
-                }
-
                 if (!Inited)
                     lock (InitObj)
                         Init();

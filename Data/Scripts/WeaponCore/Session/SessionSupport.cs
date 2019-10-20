@@ -27,18 +27,7 @@ namespace WeaponCore
 
         private void ProcessDbs()
         {
-            //var dsUtil = new DSUtils();
-            //dsUtil.Start("");
-            foreach (var db in DbsToUpdate)
-            {
-                db.Targeting.Scanning = true;
-                db.Targeting.Scan();
-                db.Targeting.Scanning = false;
-            }
-            //dsUtil.Complete("", false, true);
-
-            //foreach (var db in DbsToUpdate)
-            //db.FinalizeTargetDb();
+            for (int i = 0; i < DbsToUpdate.Count; i++) DbsToUpdate[i].Scan();
         }
 
         private void ProcessDbsCallBack()
