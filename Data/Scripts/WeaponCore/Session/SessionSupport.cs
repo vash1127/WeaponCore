@@ -765,6 +765,23 @@ namespace WeaponCore
             }
         }
 
+        private void WeaponShootOff(object obj)
+        {
+            var gridAi = obj as GridAi;
+            if (gridAi == null) return;
+
+            foreach (var baseValuePair in gridAi.WeaponBase)
+            {
+                var comp = baseValuePair.Value;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    var w = comp.Platform.Weapons[i];
+                    w.StopReloadSound();
+                    w.StopShooting();
+                }
+            }
+        }
+
         internal void TurnWeaponShootOff(object ai)
         {
             var gridAi = ai as GridAi;

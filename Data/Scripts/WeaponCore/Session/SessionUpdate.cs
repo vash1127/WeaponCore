@@ -5,6 +5,7 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using System;
 
 namespace WeaponCore
 {
@@ -139,6 +140,13 @@ namespace WeaponCore
 
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
+
+                if (!gridAi.HasPower)
+                {
+                    if (gridAi.HadPower)
+                        _futureEvents.Schedule(WeaponShootOff, gridAi, 1);
+                    continue;
+                }
 
                 foreach (var basePair in gridAi.WeaponBase)
                 {

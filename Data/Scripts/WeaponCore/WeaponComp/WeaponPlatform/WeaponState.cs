@@ -470,7 +470,7 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
-                    Comp.CurrentDps -= Dps;
+                    Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                     Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
                     Comp.Sink.Update();

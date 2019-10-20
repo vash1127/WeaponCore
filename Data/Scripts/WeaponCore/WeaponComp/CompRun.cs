@@ -113,6 +113,8 @@ namespace WeaponCore.Support
 
                 weapon.Dps = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
 
+                Log.Line($"w.Dps: {weapon.Dps}");
+
                 if (weapon.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
                 {
                     if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)

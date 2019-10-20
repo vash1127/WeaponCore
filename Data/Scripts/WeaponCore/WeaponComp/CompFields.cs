@@ -57,7 +57,7 @@ namespace WeaponCore.Support
         internal float MaxRequiredPower;
         internal float CurrentSinkPowerRequested;
         internal float CompPowerPerc;
-        internal float IdlePower;
+        internal float IdlePower = 0.001f;
         internal bool Overheated;
         internal bool Gunner;
         internal bool NotFailed;
@@ -131,8 +131,7 @@ namespace WeaponCore.Support
 
             MaxInventoryMass = BlockInventory.MaxMass;
 
-            //IdlePower = Turret.ResourceSink.RequiredInputByType(GId);
-            //SinkPower = IdlePower;
+            SinkPower = IdlePower;
             
         }        
     }
