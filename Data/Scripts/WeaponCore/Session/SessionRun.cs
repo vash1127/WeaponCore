@@ -102,9 +102,7 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
 
-                DsUtil.Start("");
                 PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
-                DsUtil.Complete("projectiles", true);
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
@@ -131,17 +129,12 @@ namespace WeaponCore
                 if (!DedicatedServer)//todo client side only
                     ProcessAnimations();
 
-                DsUtil2.Start("taskWaited");
-                var wait = false;
-                if (!PTask.IsComplete)
-                {
-                    PTask.Wait();
-                    wait = true;
-                }
+                DsUtil.Start("");
 
-                if (wait)
-                    DsUtil2.Complete("taskWaited", false, true);
-                else DsUtil2.Complete("taskWaited", false, false);
+                if (!PTask.IsComplete)
+                    PTask.Wait();
+
+                DsUtil.Complete("projectiles", true);
 
                 if (_effectedCubes.Count > 0) ApplyEffect();
                 if (Tick60)
