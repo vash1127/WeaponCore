@@ -32,7 +32,7 @@ namespace WeaponCore
             {
                 Timings();
 
-            if (GridsUpdated) CheckDirtyGrids();
+                if (GridsUpdated) CheckDirtyGrids();
 
                 if (!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
 
@@ -49,8 +49,9 @@ namespace WeaponCore
                     var ammoInv = DsUtil.GetValue("AmmoInventory");
                     var ammoPulltimer = DsUtil.GetValue("AmmoPull");
                     var threshold = Projectiles.Wait.Length * 8;
-                    HighLoad = Load > threshold;
-                    //Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
+                    //HighLoad = Load > threshold;
+                    HighLoad = false;
+                    Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
                     TargetRequests = 0;
                     TargetChecks = 0;
                     BlockChecks = 0;
@@ -102,27 +103,9 @@ namespace WeaponCore
                 DsUtil.Complete("update", true);
 
                 DsUtil.Start("");
-                Projectiles.Update();
+                PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
                 DsUtil.Complete("projectiles", true);
 
-                if (_effectedCubes.Count > 0) ApplyEffect();
-                if (Tick60)
-                {
-                    foreach (var ge in _gridEffects)
-                    {
-                        foreach (var v in ge.Value)
-                        {
-                            GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
-                            ComputeEffects(v.Value.System, ge.Key, v.Value.Damage * v.Value.Hits, float.MaxValue, v.Value.AttackerId, _tmpEffectCubes);
-                            _tmpEffectCubes.Clear();
-                            v.Value.Clean();
-                            GridEffectPool.Return(v.Value);
-                        }
-                        ge.Value.Clear();
-                        GridEffectsPool.Return(ge.Value);
-                    }
-                    _gridEffects.Clear();
-                }
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
 
@@ -147,6 +130,37 @@ namespace WeaponCore
                 if (Placer != null) UpdatePlacer();
                 if (!DedicatedServer)//todo client side only
                     ProcessAnimations();
+
+                DsUtil2.Start("taskWaited");
+                var wait = false;
+                if (!PTask.IsComplete)
+                {
+                    PTask.Wait();
+                    wait = true;
+                }
+
+                if (wait)
+                    DsUtil2.Complete("taskWaited", false, true);
+                else DsUtil2.Complete("taskWaited", false, false);
+
+                if (_effectedCubes.Count > 0) ApplyEffect();
+                if (Tick60)
+                {
+                    foreach (var ge in _gridEffects)
+                    {
+                        foreach (var v in ge.Value)
+                        {
+                            GetCubesForEffect(v.Value.Ai, ge.Key, v.Value.HitPos, v.Key, _tmpEffectCubes);
+                            ComputeEffects(v.Value.System, ge.Key, v.Value.Damage * v.Value.Hits, float.MaxValue, v.Value.AttackerId, _tmpEffectCubes);
+                            _tmpEffectCubes.Clear();
+                            v.Value.Clean();
+                            GridEffectPool.Return(v.Value);
+                        }
+                        ge.Value.Clear();
+                        GridEffectsPool.Return(ge.Value);
+                    }
+                    _gridEffects.Clear();
+                }
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

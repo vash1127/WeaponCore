@@ -515,7 +515,7 @@ namespace WeaponCore.Support
             Sw.Reset();
             if (display)
             {
-                var message = $"ms:{(float)ms} last-ms:{(float)_last}";
+                var message = $"[{name}] ms:{(float)ms} last-ms:{(float)_last}";
                 _last = ms;
                 if (_time) Log.Line(message);
                 else Log.CleanLine(message);
