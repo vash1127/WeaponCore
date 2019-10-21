@@ -49,7 +49,7 @@ namespace WeaponCore
                 for (int i = 0; i < db.SubGridsTmp.Count; i++) db.SubGrids.Add(db.SubGridsTmp[i]);
                 db.SubGridsTmp.Clear();
 
-                for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
+                for (int i = 0; i < db.SortedTargets.Count; i++) db.TargetInfoPool.Return(db.SortedTargets[i]);
                 db.SortedTargets.Clear();
                 db.Targets.Clear();
 

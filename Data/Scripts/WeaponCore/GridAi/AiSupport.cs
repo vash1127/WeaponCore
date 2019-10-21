@@ -335,12 +335,6 @@ namespace WeaponCore.Support
                 }
                 Vector3D.DistanceSquared(ref TargetPos, ref Ai.GridCenter, out DistSqr);
             }
-
-            internal bool Clean()
-            {
-                Ai.TargetInfoPool.Return(this);
-                return true;
-            }
         }
 
         #region Power

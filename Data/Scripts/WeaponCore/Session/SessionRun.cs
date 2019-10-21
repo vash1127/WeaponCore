@@ -32,7 +32,7 @@ namespace WeaponCore
             {
                 Timings();
 
-                if (GridsUpdated) CheckDirtyGrids();
+            if (GridsUpdated) CheckDirtyGrids();
 
                 if (!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
 
