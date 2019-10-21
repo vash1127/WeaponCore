@@ -32,10 +32,9 @@ namespace WeaponCore
             {
                 Timings();
 
-                if(!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
+                if (GridsUpdated) CheckDirtyGrids();
 
-                if (!NewGrids.IsEmpty)
-                    AddGridToMap();
+                if (!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
 
                 if (!CompsToStart.IsEmpty) StartComps();
 
@@ -124,9 +123,9 @@ namespace WeaponCore
                     }
                     _gridEffects.Clear();
                 }
-
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -144,6 +143,7 @@ namespace WeaponCore
         {
             try
             {
+
                 if (Placer != null) UpdatePlacer();
                 if (!DedicatedServer)//todo client side only
                     ProcessAnimations();

@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Input;
 using VRageMath;
@@ -155,7 +157,15 @@ namespace WeaponCore
             {
                 if (target.IsGrid)
                 {
-                    var menuTarget = new MenuTarget { MyEntity = target.Target, OtherArms = target.TypeDict[Offense].Count > 0, Projectile = null, Threat = "High"};
+                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
+                    var armed = false;
+                    if (target.IsGrid && target.Ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)target.Target, out typeDict))
+                    {
+                        MyConcurrentList<MyCubeBlock> fatList;
+                        if (typeDict.TryGetValue(Offense, out fatList) && fatList.Count > 0)
+                            armed = true;
+                    }
+                    var menuTarget = new MenuTarget { MyEntity = target.Target, OtherArms = armed, Projectile = null, Threat = "High"};
                     Grids.Add(menuTarget);
                 }
                 else

@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
@@ -52,60 +53,11 @@ namespace WeaponCore.Support
                                     SubGridsTmp.Add(grid);
                                     continue;
                                 }
-                                if (!grid.IsPowered || !Session.GridToFatMap.ContainsKey(grid))
+
+                                if (!grid.IsPowered)
                                     continue;
 
-                                var typeDict = BlockTypePool.Get();
-                                var allFat = CubePool.Get();
-
-                                var retries = 1;
-                                var gotFat = false;
-                                while (retries >= 0)
-                                {
-                                    try
-                                    {
-                                        var someFat = Session.GridToFatMap[grid];
-                                        if (someFat.Count > 1)
-                                        {
-                                            allFat.AddRange(someFat);
-                                            gotFat = true;
-                                        }
-                                        break;
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        Log.Line($"Exception in CoreTargeting GetFat, retries:{retries}: {ex}");
-                                        retries--;
-                                    }
-                                }
-                                if (!gotFat) continue;
-                                typeDict.Add(Any, allFat);
-                                typeDict.Add(Offense, CubePool.Get());
-                                typeDict.Add(Utility,CubePool.Get());
-                                typeDict.Add(Thrust, CubePool.Get());
-                                typeDict.Add(Steering, CubePool.Get());
-                                typeDict.Add(Jumping, CubePool.Get());
-                                typeDict.Add(Power, CubePool.Get());
-                                typeDict.Add(Production, CubePool.Get());
-
-                                for (int j = 0; j < allFat.Count; j++)
-                                {
-                                    var cube = allFat[j];
-                                    if (cube == null) continue;
-                                    using (cube.Pin())
-                                    {
-                                        if (cube.MarkedForClose || !cube.IsWorking) continue;
-                                        if (cube is IMyProductionBlock) typeDict[Production].Add(cube);
-                                        else if (cube is IMyPowerProducer) typeDict[Power].Add(cube);
-                                        else if (cube is IMyGunBaseUser || cube is IMyWarhead) typeDict[Offense].Add(cube);
-                                        else if (cube is IMyUpgradeModule || cube is IMyRadioAntenna) typeDict[Utility].Add(cube);
-                                        else if (cube is MyThrust) typeDict[Thrust].Add(cube);
-                                        else if (cube is MyGyro) typeDict[Steering].Add(cube);
-                                        else if (cube is MyJumpDrive) typeDict[Jumping].Add(cube);
-                                    }
-                                }
-
-                                NewEntities.Add(new DetectInfo(ent, typeDict, entInfo));
+                                NewEntities.Add(new DetectInfo(ent, entInfo));
                                 ValidGrids.Add(ent);
                                 GridAi targetAi;
                                 if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))
@@ -114,7 +66,7 @@ namespace WeaponCore.Support
                                     TargetAisTmp.Add(targetAi);
                                 }
                             }
-                            else NewEntities.Add(new DetectInfo(ent, null, entInfo));
+                            else NewEntities.Add(new DetectInfo(ent, entInfo));
                         }
                     }
                     FinalizeTargetDb();

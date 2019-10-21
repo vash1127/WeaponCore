@@ -78,10 +78,10 @@ namespace WeaponCore
                 var fatMap = ConcurrentListPool.Get();
                 fatMap.AddRange(grid.GetFatBlocks());
                 GridToFatMap.Add(grid, fatMap);
-
                 grid.OnFatBlockAdded += ToFatMap;
                 grid.OnFatBlockRemoved += FromFatMap;
                 grid.OnClose += RemoveGridFromMap;
+                DirtyGrids.Add(grid);
             }
         }
 
@@ -96,6 +96,7 @@ namespace WeaponCore
                 grid.OnFatBlockAdded -= ToFatMap;
                 grid.OnFatBlockRemoved -= FromFatMap;
                 grid.OnClose -= RemoveGridFromMap;
+                DirtyGrids.Add(grid);
                 //Log.Line("grid removed and list cleaned");
             }
             else Log.Line($"grid not removed and list not cleaned");
@@ -105,12 +106,14 @@ namespace WeaponCore
         {
             //Log.Line("added to fat map");
             GridToFatMap[myCubeBlock.CubeGrid].Add(myCubeBlock);
+            DirtyGrids.Add(myCubeBlock.CubeGrid);
         }
 
         private void FromFatMap(MyCubeBlock myCubeBlock)
         {
             //Log.Line("removed from fat map");
             GridToFatMap[myCubeBlock.CubeGrid].Remove(myCubeBlock);
+            DirtyGrids.Add(myCubeBlock.CubeGrid);
         }
 
         private void MenuOpened(object obj)

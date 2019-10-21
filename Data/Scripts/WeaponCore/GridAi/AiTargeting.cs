@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -206,9 +208,11 @@ namespace WeaponCore.Support
 
                 foreach (var bt in subSystems)
                 {
-                    if (bt != Any && info.TypeDict[bt].Count > 0)
+                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> blockTypeMap;
+                    ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
+                    if (bt != Any && blockTypeMap != null && blockTypeMap[bt].Count > 0)
                     {
-                        var subSystemList = info.TypeDict[bt];
+                        var subSystemList = blockTypeMap[bt];
                         if (system.ClosestFirst)
                         {
                             if (target.Top5.Count > 0 && (bt != target.LastBlockType || target.Top5[0].CubeGrid != subSystemList[0].CubeGrid))
@@ -223,10 +227,12 @@ namespace WeaponCore.Support
                 }
                 if (system.OnlySubSystems) return false;
             }
-            return FindRandomBlock(system, ai, target, weaponPos, info, info.TypeDict[Any], w);
+            MyConcurrentList<MyCubeBlock> fatList;
+            ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatList);
+            return fatList != null && FindRandomBlock(system, ai, target, weaponPos, info, fatList, w);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, List<MyCubeBlock> subSystemList, Weapon w)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, MyConcurrentList<MyCubeBlock> subSystemList, Weapon w)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -313,7 +319,7 @@ namespace WeaponCore.Support
             return foundBlock;
         }
 
-        internal static void GetClosestHitableBlockOfType(List<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null)
+        internal static void GetClosestHitableBlockOfType(MyConcurrentList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
