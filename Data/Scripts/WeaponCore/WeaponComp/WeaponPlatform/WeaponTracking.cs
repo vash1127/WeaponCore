@@ -38,8 +38,8 @@ namespace WeaponCore.Platform
                 double desiredElevation;
                 MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
 
-                var currentAzRadians = MathHelper.ToRadians(weapon.Azimuth);
-                var currentElRadians = MathHelper.ToRadians(weapon.Elevation);
+                var currentAzRadians = MathHelperD.ToRadians(weapon.Azimuth);
+                var currentElRadians = MathHelperD.ToRadians(weapon.Elevation);
                 var newDesiredAz = currentAzRadians + desiredAzimuth;
                 var newDesiredEl = currentElRadians + desiredElevation;
 
@@ -134,8 +134,8 @@ namespace WeaponCore.Platform
             double desiredElevation;
             MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
-            var currentAzRadians = MathHelper.ToRadians(weapon.Azimuth);
-            var currentElRadians = MathHelper.ToRadians(weapon.Elevation);
+            var currentAzRadians = MathHelperD.ToRadians(weapon.Azimuth);
+            var currentElRadians = MathHelperD.ToRadians(weapon.Elevation);
             var newDesiredAz = currentAzRadians + desiredAzimuth;
             var newDesiredEl = currentElRadians + desiredElevation;
 
