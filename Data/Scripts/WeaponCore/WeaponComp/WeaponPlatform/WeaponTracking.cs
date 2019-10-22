@@ -156,8 +156,8 @@ namespace WeaponCore.Platform
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
                
-                var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
-                var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
+                var azLocked = !(azDiff > 0 || azDiff < 0);
+                var elLocked = !(elDiff > 0 || elDiff < 0);
                 var aim = !azLocked || !elLocked;
                 weapon.Comp.AiMoving = aim;
                 if (aim)
