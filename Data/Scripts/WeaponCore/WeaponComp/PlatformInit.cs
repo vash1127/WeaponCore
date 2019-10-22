@@ -138,7 +138,6 @@ namespace WeaponCore.Platform
 
                         if (azimuthPart != null)
                         {
-                            Log.Line("Has Azimuth");
                             var azimuthPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
                             var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
                             var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);
@@ -154,9 +153,7 @@ namespace WeaponCore.Platform
 
                         if (elevationPart != null)
                         {
-                            Log.Line("Has Elevation");
                             var elevationPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
-
 
                             var elPartPosTo = Matrix.CreateTranslation(-elevationPartLocation);
                             var elPartPosFrom = Matrix.CreateTranslation(elevationPartLocation);
@@ -194,7 +191,7 @@ namespace WeaponCore.Platform
                                     MyEntity part;
                                     if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
                                     {
-                                        animation.Part = (MyEntitySubpart) part;
+                                        animation.Part = (MyEntitySubpart)part;
                                         if (!registered)
                                         {
                                             animation.Part.OnClose += comp.SubpartClosed;
@@ -210,8 +207,26 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    if(Weapons[c].MuzzlePart.Item1 != null) Weapons[c].MuzzlePart.Item1.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
-                    if (Weapons[c].MuzzlePart.Item1 != null) Weapons[c].MuzzlePart.Item1.OnMarkForClose += Weapons[c].EntPartClose;
+                    if (m.Key.String != "Designator")
+                    {
+                        Weapons[c].MuzzlePart.Item1.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+                        Weapons[c].MuzzlePart.Item1.OnMarkForClose += Weapons[c].EntPartClose;
+                    }
+                    else
+                    {
+                        if(Weapons[c].ElevationPart.Item1 != null)
+                        {
+                            Weapons[c].ElevationPart.Item1.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+                            Weapons[c].ElevationPart.Item1.OnMarkForClose += Weapons[c].EntPartClose;
+                        }
+                        else
+                        {
+                            Weapons[c].AzimuthPart.Item1.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
+                            Weapons[c].AzimuthPart.Item1.OnMarkForClose += Weapons[c].EntPartClose;
+                        }
+
+                    }
+
                     Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPos;
 
                     for (int i = 0; i < barrelCount; i++)
