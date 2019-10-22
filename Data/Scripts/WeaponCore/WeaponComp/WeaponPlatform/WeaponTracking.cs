@@ -34,11 +34,6 @@ namespace WeaponCore.Platform
             bool canTrack;
             if (weapon == trackingWeapon)
             {
-                Vector3D currentVector;
-                Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
-                currentVector = Vector3D.Rotate(currentVector, azimuthPart.WorldMatrix);
-                currentVector.Normalize();
-
                 double desiredAzimuth;
                 double desiredElevation;
                 MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
