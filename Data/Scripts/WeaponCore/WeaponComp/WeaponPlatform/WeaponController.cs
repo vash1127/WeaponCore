@@ -120,21 +120,21 @@ namespace WeaponCore.Platform
             var center = !FixedOffset ? azimuthComp.WorldAABB.Center : elevationComp.WorldAABB.Center;
             var weaponCenter = weaponMatrix.Translation;
             var weaponForward = weaponMatrix.Forward;
-            var WeaponConstUp = azimuthComp.WorldMatrix.Up;
+            var weaponConstUp = azimuthComp.WorldMatrix.Up;
 
             MyPivotDir = weaponForward;
             MyPivotUp = weaponMatrix.Up;
             MyPivotMatrix = new MatrixD { Forward = MyPivotDir, Left = weaponMatrix.Left, Up = MyPivotUp };
 
-            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, WeaponConstUp, weaponCenter, weaponForward)+ Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);
+            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, weaponConstUp, weaponCenter, weaponForward)+ Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);
             if (Comp.Debug)
             {
                 var cubeleft = azimuthComp.WorldMatrix.Left;
-                MyCenterTestLine = new LineD(center, center + (WeaponConstUp * 20));
-                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 20));
+                MyCenterTestLine = new LineD(center, center + (weaponConstUp * 20));
+                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 18));
                 MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 10), MyPivotPos - (cubeleft * 10));
-                MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (weaponForward*20));
-                MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
+                MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (weaponForward * 20));
+                MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 19));
                 if (!Target.Expired)
                     MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
             }
