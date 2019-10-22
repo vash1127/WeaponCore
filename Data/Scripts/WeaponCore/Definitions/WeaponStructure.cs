@@ -92,6 +92,7 @@ namespace WeaponCore.Support
         public readonly bool Trail;
         public readonly bool IsMine;
         public readonly bool IsField;
+        public readonly bool DesignatorWeapon;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -102,8 +103,8 @@ namespace WeaponCore.Support
         public readonly double DetonateRadiusLarge;
         public readonly double MaxTargetSpeed;
         public readonly double ShieldModifier;
-        public readonly float AzStep;
-        public readonly float ElStep;
+        public readonly double AzStep;
+        public readonly double ElStep;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float WepCooldown;
@@ -141,6 +142,7 @@ namespace WeaponCore.Support
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
+            DesignatorWeapon = muzzlePartName.String == "Designator";
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
             Values = values;

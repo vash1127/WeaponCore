@@ -44,7 +44,13 @@ namespace WeaponCore.Platform
             if (AvCapable && (!PlayTurretAv || session.Tick60))
                 PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos) < System.HardPointAvMaxDistSqr;
 
-            if (System.BarrelAxisRotation) MovePart();
+            if (System.BarrelAxisRotation)
+            {
+                MuzzlePart.PositionComp.LocalMatrix *= BarrelRotationPerShot;
+
+                if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
+                    StartRotateSound();
+            }
 
             if (ShotCounter == 0 && _newCycle)
                 _newCycle = false;
@@ -418,14 +424,6 @@ namespace WeaponCore.Platform
                     }
                 }
             }
-        }
-
-        public void MovePart()
-        {
-            BarrelPart.PositionComp.LocalMatrix *= BarrelRotationPerShot;
-
-            if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-                StartRotateSound();
         }
     }
 }

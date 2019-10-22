@@ -99,8 +99,8 @@ namespace WeaponCore.Support
         [ProtoMember(1)] internal bool TrackTargets;
         [ProtoMember(2)] internal bool TurretAttached;
         [ProtoMember(3)] internal bool TurretController;
-        [ProtoMember(4)] internal float RotateRate;
-        [ProtoMember(5)] internal float ElevateRate;
+        [ProtoMember(4)] internal double RotateRate;
+        [ProtoMember(5)] internal double ElevateRate;
         [ProtoMember(6)] internal Vector3D Offset;
         [ProtoMember(7)] internal bool FixedOffset;
         [ProtoMember(8)] internal bool Debug;

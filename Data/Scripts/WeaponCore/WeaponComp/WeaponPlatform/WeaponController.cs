@@ -25,27 +25,27 @@ namespace WeaponCore.Platform
 
             if (Comp.IsAiOnlyTurret)
             {
-                float absAzChange;
-                float absElChange;
+                double absAzChange;
+                double absElChange;
 
                 bool rAz = false;
                 bool rEl = false;
 
                 if (azimuthChange < 0)
                 {
-                    absAzChange = (float)azimuthChange * -1f;
+                    absAzChange = azimuthChange * -1d;
                     rAz = true;
                 }
                 else
-                    absAzChange = (float)azimuthChange;
+                    absAzChange = azimuthChange;
 
                 if (elevationChange < 0)
                 {
-                    absElChange = (float)elevationChange * -1f;
+                    absElChange = elevationChange * -1d;
                     rEl = true;
                 }
                 else
-                    absElChange = (float)elevationChange;
+                    absElChange = elevationChange;
 
 
                 if (absAzChange >= System.AzStep)
@@ -116,25 +116,27 @@ namespace WeaponCore.Platform
             var elevationComp = ElevationPart.Item1.PositionComp;
             var weaponMatrix = elevationComp.WorldMatrix;
             var azimuthComp = AzimuthPart.Item1.PositionComp;
+            var azMatrix = azimuthComp.WorldMatrix;
 
             var center = !FixedOffset ? azimuthComp.WorldAABB.Center : elevationComp.WorldAABB.Center;
             var weaponCenter = weaponMatrix.Translation;
             var weaponForward = weaponMatrix.Forward;
-            var WeaponConstUp = azimuthComp.WorldMatrix.Up;
+            var weaponConstUp = azimuthComp.WorldMatrix.Up;
 
             MyPivotDir = weaponForward;
-            MyPivotUp = weaponMatrix.Up;
+            MyPivotUp = azMatrix.Up;
+            MyPivotLeft = weaponMatrix.Left;
             MyPivotMatrix = new MatrixD { Forward = MyPivotDir, Left = weaponMatrix.Left, Up = MyPivotUp };
 
-            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, WeaponConstUp, weaponCenter, weaponForward)+ Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);
+            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, weaponConstUp, weaponCenter, weaponForward)+ Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);
             if (Comp.Debug)
             {
                 var cubeleft = azimuthComp.WorldMatrix.Left;
-                MyCenterTestLine = new LineD(center, center + (WeaponConstUp * 20));
-                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 20));
+                MyCenterTestLine = new LineD(center, center + (weaponConstUp * 20));
+                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 18));
                 MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 10), MyPivotPos - (cubeleft * 10));
-                MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (weaponForward*20));
-                MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
+                MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (weaponForward * 20));
+                MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 19));
                 if (!Target.Expired)
                     MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
             }

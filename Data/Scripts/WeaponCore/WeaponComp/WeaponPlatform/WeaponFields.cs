@@ -31,13 +31,14 @@ namespace WeaponCore.Platform
 
         private bool _newCycle;
         //private bool _firstRun = true;
-        internal MyEntity BarrelPart;
+        internal MyEntity MuzzlePart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> AzimuthPart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> ElevationPart;
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
         internal Vector3D AimOffset;
+        internal Vector3D MyPivotLeft;
         internal MatrixD MyPivotMatrix;
         internal LineD MyCenterTestLine;
         internal LineD MyBarrelTestLine;
@@ -180,7 +181,7 @@ namespace WeaponCore.Platform
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, HashSet<PartAnimation>> animationSets)
         {
-            BarrelPart = entity;
+            MuzzlePart = entity;
             AnimationsSet = animationSets;
             System = system;
             Comp = comp;
@@ -222,7 +223,7 @@ namespace WeaponCore.Platform
             TrackTarget = System.Values.HardPoint.Block.TrackTargets;
             HsRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
-            var toleranceInRadians = MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance);
+            var toleranceInRadians = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);
             Prediction = System.Values.HardPoint.AimLeadingPrediction;

@@ -121,6 +121,18 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
         }
 
+        public void UpgradeHandler(object o)
+        {
+            try
+            {
+                var message = o as byte[];
+                if (message == null) return;
+                var slaveDefArray = MyAPIGateway.Utilities.SerializeFromBinary<UpgradeDefinition[]>(message);
+                foreach (var upgDef in slaveDefArray)
+                    _upgradeDefinitions.Add(upgDef);
+            }
+            catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
+        }
 
         internal bool PlayerInAiCockPit()
         {
@@ -641,10 +653,10 @@ namespace WeaponCore
 
                     var color = HeatEmissives[(int)(heatPercent * 100)];
 
-                    w.BarrelPart.SetEmissiveParts("Heating", color, intensity);
+                    w.MuzzlePart.SetEmissiveParts("Heating", color, intensity);
                 }
                 else if (set)
-                    w.BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
+                    w.MuzzlePart.SetEmissiveParts("Heating", Color.Transparent, 0);
 
                 w.LastHeat = currentHeat;
                 //end client side code
@@ -851,6 +863,23 @@ namespace WeaponCore
                 catch (Exception e)
                 {
                     //bad prefab xml
+                }
+            }
+        }
+
+        private void WeaponShootOff(object obj)
+        {
+            var gridAi = obj as GridAi;
+            if (gridAi == null) return;
+
+            foreach (var baseValuePair in gridAi.WeaponBase)
+            {
+                var comp = baseValuePair.Value;
+                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                {
+                    var w = comp.Platform.Weapons[i];
+                    w.StopReloadSound();
+                    w.StopShooting();
                 }
             }
         }

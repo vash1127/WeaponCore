@@ -1,5 +1,4 @@
-﻿using Sandbox.ModAPI;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -42,6 +41,7 @@ namespace WeaponCore
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
 
                         w.TargetWasExpired = w.Target.Expired;
+
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable && !w.ReturnHome) continue;
                         if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
@@ -140,6 +140,13 @@ namespace WeaponCore
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
 
+                if (!gridAi.HasPower)
+                {
+                    if (gridAi.HadPower)
+                        _futureEvents.Schedule(WeaponShootOff, gridAi, 1);
+                    continue;
+                }
+
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -158,12 +165,12 @@ namespace WeaponCore
                             DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
                             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
                             DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.DeepPink, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Orange, 0.05f);
+                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.15f);
+                            DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Cyan, 0.075f);
                             DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
 
                             if(!w.Target.Expired)
-                                DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.CornflowerBlue, 0.05f);
+                                DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
                         }
 
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || !gridAi.Ready)
@@ -250,7 +257,7 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
+                        if (!w.System.DesignatorWeapon && (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight))))
                         {
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {

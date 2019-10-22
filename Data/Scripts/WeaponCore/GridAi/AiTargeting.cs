@@ -40,6 +40,7 @@ namespace WeaponCore.Support
             else if (!attemptReset && targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
             if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType);
 
+
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset(false);
