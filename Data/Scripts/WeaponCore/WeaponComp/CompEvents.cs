@@ -175,7 +175,7 @@ namespace WeaponCore.Support
                 var tick = Ai.Session.Tick;
                 if (Ai.ResetPower && tick != LastUpdateTick)
                 {
-                    if (currentInput < CurrentSinkPowerRequested)
+                    if (currentInput < CurrentSinkPowerRequested && currentInput > IdlePower)
                     {
                         if (Ai.ResetPowerTick != tick)
                         {

@@ -116,6 +116,7 @@ namespace WeaponCore.Platform
             var elevationComp = ElevationPart.Item1.PositionComp;
             var weaponMatrix = elevationComp.WorldMatrix;
             var azimuthComp = AzimuthPart.Item1.PositionComp;
+            var azMatrix = azimuthComp.WorldMatrix;
 
             var center = !FixedOffset ? azimuthComp.WorldAABB.Center : elevationComp.WorldAABB.Center;
             var weaponCenter = weaponMatrix.Translation;
@@ -123,7 +124,8 @@ namespace WeaponCore.Platform
             var weaponConstUp = azimuthComp.WorldMatrix.Up;
 
             MyPivotDir = weaponForward;
-            MyPivotUp = weaponMatrix.Up;
+            MyPivotUp = azMatrix.Up;
+            MyPivotLeft = weaponMatrix.Left;
             MyPivotMatrix = new MatrixD { Forward = MyPivotDir, Left = weaponMatrix.Left, Up = MyPivotUp };
 
             MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, weaponConstUp, weaponCenter, weaponForward)+ Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);

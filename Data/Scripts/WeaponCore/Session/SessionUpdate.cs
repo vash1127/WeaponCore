@@ -5,6 +5,7 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using System;
 
 namespace WeaponCore
 {
@@ -42,6 +43,7 @@ namespace WeaponCore
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
 
                         w.TargetWasExpired = w.Target.Expired;
+
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable && !w.ReturnHome) continue;
                         if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
@@ -139,6 +141,13 @@ namespace WeaponCore
                 }
                 if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
+
+                if (!gridAi.HasPower)
+                {
+                    if (gridAi.HadPower)
+                        _futureEvents.Schedule(WeaponShootOff, gridAi, 1);
+                    continue;
+                }
 
                 foreach (var basePair in gridAi.WeaponBase)
                 {
@@ -250,7 +259,7 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight)))
+                        if (!w.System.DesignatorWeapon && (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight))))
                         {
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {

@@ -195,6 +195,7 @@ namespace WeaponCore
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
+                MyAPIGateway.Utilities.RegisterMessageHandler(7773, UpgradeHandler);
 
                 var weapons = new Weapons();
                 var weaponDefinitions = weapons.ReturnDefs();

@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\PartAnimation.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Definitions\UpgradeDefinitions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiSupport.cs" />

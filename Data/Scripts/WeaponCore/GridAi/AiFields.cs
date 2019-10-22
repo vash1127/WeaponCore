@@ -90,6 +90,8 @@ namespace WeaponCore.Support
         internal bool ShieldNearTmp;
         internal bool ShieldNear;
         internal bool CheckReload;
+        internal bool HasPower;
+        internal bool HadPower;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double GridRadius;

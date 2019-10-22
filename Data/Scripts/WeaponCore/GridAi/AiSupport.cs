@@ -338,7 +338,7 @@ namespace WeaponCore.Support
         }
 
         #region Power
-        internal bool UpdateGridPower(bool updateLast)
+        internal void UpdateGridPower(bool updateLast)
         {
             GridAvailablePower = 0;
             GridMaxPower = 0;
@@ -386,7 +386,9 @@ namespace WeaponCore.Support
                 LastAvailablePower = GridMaxPower - CurrentWeaponsDraw;
                 //Log.Line($"avail power: {gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw}  Last Power: {gridAi.LastAvailablePower} Max: {gridAi.GridMaxPower}  Weapon Draw: {gridAi.CurrentWeaponsDraw} Current Power: {gridAi.GridCurrentPower}");
             }
-            return GridMaxPower > 0;
+            HadPower = HasPower;
+            HasPower = GridMaxPower > 0;
+
         }
         #endregion
     }
