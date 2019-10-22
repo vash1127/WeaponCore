@@ -35,14 +35,18 @@ namespace WeaponCore.Platform
             {
                 double desiredAzimuth;
                 double desiredElevation;
+
+                var matrix = new MatrixD { Forward = weapon.MyPivotDir, Left = weapon.MyPivotLeft, Up = weapon.MyPivotUp, };
+
                 MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
 
-                var currentAzRadians = MathHelper.ToRadians(weapon.Azimuth);
-                var currentElRadians = MathHelper.ToRadians(weapon.Elevation);
-                var newDesiredAz = currentAzRadians + desiredAzimuth;
-                var newDesiredEl = currentElRadians + desiredElevation;
+                
 
-                canTrack = newDesiredAz >= weapon.MinAzimuthRadians && newDesiredAz <= weapon.MaxAzimuthRadians && newDesiredEl >= weapon.MinElevationRadians && newDesiredEl <= weapon.MaxElevationRadians;
+                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
+                var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+                var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
+                canTrack = !azConstrained && !elConstrained;
             }
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
