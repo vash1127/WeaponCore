@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
@@ -13,7 +14,9 @@ using VRage.Utils;
 using WeaponCore.Platform;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
+using VRage.Collections;
 using VRage.ObjectBuilders;
+using static WeaponCore.Support.TargetingDefinition.BlockTypes;
 
 namespace WeaponCore
 {
@@ -46,7 +49,7 @@ namespace WeaponCore
                 for (int i = 0; i < db.SubGridsTmp.Count; i++) db.SubGrids.Add(db.SubGridsTmp[i]);
                 db.SubGridsTmp.Clear();
 
-                for (int i = 0; i < db.SortedTargets.Count; i++) db.SortedTargets[i].Clean();
+                for (int i = 0; i < db.SortedTargets.Count; i++) db.TargetInfoPool.Return(db.SortedTargets[i]);
                 db.SortedTargets.Clear();
                 db.Targets.Clear();
 
@@ -57,16 +60,12 @@ namespace WeaponCore
                     var detectInfo = db.NewEntities[i];
                     var ent = detectInfo.Parent;
                     if (ent.Physics == null) continue;
-                    var dictTypes = detectInfo.DictTypes;
                     var grid = ent as MyCubeGrid;
                     var targetInfo = db.TargetInfoPool.Get();
                     if (grid == null)
-                        targetInfo.Init(detectInfo.EntInfo, ent, false, null, 1, db.MyGrid, db);
+                        targetInfo.Init(detectInfo.EntInfo, ent, false, 1, db.MyGrid, db);
                     else
-                    {
-                        targetInfo.Init(detectInfo.EntInfo, grid, true, dictTypes, grid.GetFatBlocks().Count, db.MyGrid, db);
-                        targetInfo.TypeDict = dictTypes;
-                    }
+                        targetInfo.Init(detectInfo.EntInfo, grid, true, GridToFatMap[grid].Count, db.MyGrid, db);
 
                     db.SortedTargets.Add(targetInfo);
                     db.Targets[ent] = targetInfo;
@@ -159,8 +158,6 @@ namespace WeaponCore
                 //TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
                 MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
                 MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, Color.Yellow);
-
-
             }
         }
 
@@ -217,7 +214,15 @@ namespace WeaponCore
                 foreach (var info in ai.SortedTargets)
                 {
                     if (info.Target != entity) continue;
-                    TargetArmed = info.TypeDict[TargetingDefinition.BlockTypes.Offense].Count > 0;
+                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
+                    if (info.IsGrid && ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict))
+                    {
+                        MyConcurrentList<MyCubeBlock> fatList;
+                        if (typeDict.TryGetValue(Offense, out fatList))
+                            TargetArmed = fatList.Count > 0;
+                        else TargetArmed = false;
+                    }
+                    else TargetArmed = false;
                     break;
                 }
             }
@@ -322,6 +327,8 @@ namespace WeaponCore
                 InGridAiCockPit = true;
                 return true;
             }
+
+            if (TrackingAi != null) TrackingAi.PrimeTarget = null;
             TrackingAi = null;
             ActiveCockPit = null;
             RemoveGps();
@@ -389,6 +396,12 @@ namespace WeaponCore
                     continue;
                 if (weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid)
                 {
+                    if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
+                    {
+                        //Log.Line($"grid not yet in map");
+                        continue;
+                    }
+
                     Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
                     weaponComp.RemoveComp();
                     InitComp(weaponComp.MyCube, false);
@@ -397,6 +410,11 @@ namespace WeaponCore
                 }
                 else if (weaponComp.Platform == null)
                 {
+                    if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
+                    {
+                        //Log.Line($"grid not yet in map");
+                        continue;
+                    }
                     //Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.MyCube.Components.Add(weaponComp);
                     CompsToStart.Remove(weaponComp);
@@ -467,6 +485,94 @@ namespace WeaponCore
             }
         }
 
+        private void UpdateGrids()
+        {
+            //Log.Line($"[UpdateGrids] DirtTmp:{DirtyGridsTmp.Count} - Dirt:{DirtyGrids.Count}");
+            //DsUtil2.Start("UpdateGrids");
+
+            DirtyGridsTmp.Clear();
+            DirtyGridsTmp.AddRange(DirtyGrids);
+            DirtyGrids.Clear();
+
+            for (int i = 0; i < DirtyGridsTmp.Count; i++)
+            {
+                var grid = DirtyGridsTmp[i];
+                MyConcurrentList<MyCubeBlock> allFat;
+                ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> collection;
+                if (GridToFatMap.TryGetValue(grid, out allFat))
+                {
+                    if (GridToBlockTypeMap.TryRemove(grid, out collection))
+                    {
+                        foreach (var item in collection)
+                            item.Value.Clear();
+
+                        for (int j = 0; j < allFat.Count; j++)
+                        {
+                            var fat = allFat[j];
+                            if (fat == null) continue;
+
+                            using (fat.Pin())
+                            {
+                                if (fat.MarkedForClose || !fat.IsWorking) continue;
+                                if (fat is IMyProductionBlock) collection[Production].Add(fat);
+                                else if (fat is IMyPowerProducer) collection[Power].Add(fat);
+                                else if (fat is IMyGunBaseUser || fat is IMyWarhead) collection[Offense].Add(fat);
+                                else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna) collection[Utility].Add(fat);
+                                else if (fat is MyThrust) collection[Thrust].Add(fat);
+                                else if (fat is MyGyro) collection[Steering].Add(fat);
+                                else if (fat is MyJumpDrive) collection[Jumping].Add(fat);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        collection = BlockTypePool.Get();
+
+                        collection[Offense] = ConcurrentListPool.Get();
+                        collection[Utility] = ConcurrentListPool.Get();
+                        collection[Thrust] = ConcurrentListPool.Get();
+                        collection[Steering] = ConcurrentListPool.Get();
+                        collection[Jumping] = ConcurrentListPool.Get();
+                        collection[Power] = ConcurrentListPool.Get();
+                        collection[Production] = ConcurrentListPool.Get();
+
+                        for (int j = 0; j < allFat.Count; j++)
+                        {
+                            var fat = allFat[j];
+                            if (fat == null) continue;
+
+                            using (fat.Pin())
+                            {
+                                if (fat.MarkedForClose || !fat.IsWorking) continue;
+                                if (fat is IMyProductionBlock) collection[Production].Add(fat);
+                                else if (fat is IMyPowerProducer) collection[Power].Add(fat);
+                                else if (fat is IMyGunBaseUser || fat is IMyWarhead) collection[Offense].Add(fat);
+                                else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna) collection[Utility].Add(fat);
+                                else if (fat is MyThrust) collection[Thrust].Add(fat);
+                                else if (fat is MyGyro) collection[Steering].Add(fat);
+                                else if (fat is MyJumpDrive) collection[Jumping].Add(fat);
+                            }
+                        }
+                        GridToBlockTypeMap.Add(grid, collection);
+                    }
+                }
+                else if (GridToBlockTypeMap.TryRemove(grid, out collection))
+                {
+                    foreach (var item in collection)
+                        item.Value.Clear();
+
+                    BlockTypePool.Return(collection);
+                }
+            }
+            DirtyGridsTmp.Clear();
+            //DsUtil2.Complete("UpdateGrids", false, true);
+        }
+
+        private void UpdateGridsCallBack()
+        {
+            GridsUpdated = true;
+        }
+
         #region Events
         private void PlayerConnected(long id)
         {
@@ -476,6 +582,15 @@ namespace WeaponCore
                 MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, id));
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}"); }
+        }
+
+        internal void CheckDirtyGrids()
+        {
+            if (!NewGrids.IsEmpty)
+                AddGridToMap();
+
+            if ((!GameLoaded || Tick20) && DirtyGrids.Count > 0)
+                MyAPIGateway.Parallel.StartBackground(UpdateGrids, UpdateGridsCallBack);
         }
 
         private void PlayerDisconnected(long l)
@@ -585,8 +700,6 @@ namespace WeaponCore
 
                     resetFakeTick = true;
                 }
-
-
 
                 if (w.Comp.State.Value.Weapons[w.WeaponId].Heat > 0 || ht.Value.Item3)
                 {
@@ -779,7 +892,7 @@ namespace WeaponCore
             foreach (var basePair in gridAi.WeaponBase)
             {
                 var comp = basePair.Value;
-                if (comp == null || comp.Platform == null) return;
+                if (comp?.Platform == null) return;
 
                 for (int i = 0; i < basePair.Value.Platform.Weapons.Length; i++)
                 {
@@ -867,6 +980,13 @@ namespace WeaponCore
                 structure.AmmoToWeaponIds.Clear();
             }
             WeaponPlatforms.Clear();
+
+            //foreach (var map in GridToFatMap)
+                //RemoveGridFromMap(map.Key);
+
+            GridToFatMap.Clear();
+            ConcurrentListPool.Clean();
+
             Projectiles = null;
         }
         #endregion

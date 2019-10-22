@@ -285,7 +285,7 @@ namespace WeaponCore
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp != null)
+            if (comp?.Platform?.Weapons != null)
             {
                 var maxTrajectory = 0f;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)

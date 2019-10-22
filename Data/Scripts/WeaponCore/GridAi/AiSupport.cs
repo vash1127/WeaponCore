@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -222,13 +224,11 @@ namespace WeaponCore.Support
         internal struct DetectInfo
         {
             internal MyEntity Parent;
-            internal Dictionary<BlockTypes, List<MyCubeBlock>> DictTypes;
             internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
 
-            public DetectInfo(MyEntity parent, Dictionary<BlockTypes, List<MyCubeBlock>> dictTypes, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
+            public DetectInfo(MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
             {
                 Parent = parent;
-                DictTypes = dictTypes;
                 EntInfo = entInfo;
             }
         }
@@ -294,9 +294,8 @@ namespace WeaponCore.Support
             internal int OffenseRating;
             internal MyCubeGrid MyGrid;
             internal GridAi Ai;
-            internal Dictionary<BlockTypes, List<MyCubeBlock>> TypeDict;
 
-            internal void Init(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, Dictionary<BlockTypes, List<MyCubeBlock>> typeDict, int partCount, MyCubeGrid myGrid, GridAi ai)
+            internal void Init(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, int partCount, MyCubeGrid myGrid, GridAi ai)
             {
                 EntInfo = entInfo;
                 Target = target;
@@ -305,7 +304,6 @@ namespace WeaponCore.Support
                 PartCount = partCount;
                 MyGrid = myGrid;
                 Ai = ai;
-                TypeDict = typeDict;
                 Velocity = target.Physics.LinearVelocity;
                 VelLenSqr = Velocity.LengthSquared();
                 TargetPos = Target.PositionComp.WorldAABB.Center;
@@ -323,25 +321,19 @@ namespace WeaponCore.Support
                     Approaching = false;
                 }
 
-                OffenseRating = TypeDict != null && TypeDict.ContainsKey(BlockTypes.Offense) ? TypeDict[BlockTypes.Offense].Count : 0;
-                Vector3D.DistanceSquared(ref TargetPos, ref Ai.GridCenter, out DistSqr);
-            }
-
-            internal bool Clean()
-            {
-                if (TypeDict != null)
+                ConcurrentDictionary<BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
+                if (IsGrid && ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) Target, out typeDict))
                 {
-                    foreach (var type in TypeDict)
+                    MyConcurrentList<MyCubeBlock> fatList;
+                    if (typeDict.TryGetValue(BlockTypes.Offense, out fatList))
                     {
-                        type.Value.Clear();
-                        Ai.CubePool.Return(type.Value);
+                        if (fatList.Count > ai.WeaponBase.Count) OffenseRating = 2;
+                        else if (fatList.Count > 0) OffenseRating = 1;
+                        else OffenseRating = 0;
                     }
-                    TypeDict.Clear();
-                    Ai.BlockTypePool.Return(TypeDict);
-                    TypeDict = null;
+                    else OffenseRating = 0;
                 }
-                Ai.TargetInfoPool.Return(this);
-                return true;
+                Vector3D.DistanceSquared(ref TargetPos, ref Ai.GridCenter, out DistSqr);
             }
         }
 

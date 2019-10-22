@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -7,7 +6,6 @@ using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 
 namespace WeaponCore.Support
 {
@@ -22,7 +20,6 @@ namespace WeaponCore.Support
                 grid.OnFatBlockRemoved += FatBlockRemoved;
                 grid.OnMarkForClose += GridClose;
                 grid.OnClose += GridClose;
-
             }
             else
             {
@@ -54,7 +51,6 @@ namespace WeaponCore.Support
                     if (myCubeBlock.TryGetInventory(out inventory))
                         inventory.InventoryContentChanged += CheckAmmoInventory;
                 }
-                
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
         }
@@ -119,20 +115,9 @@ namespace WeaponCore.Support
             Session.DsUtil.Complete("AmmoInventory", true, false);
         }
 
-        private void SourceOutputChanged(MyDefinitionId changedResourceId, float oldOutput, MyResourceSourceComponent source)
-        {
-            if (ResetPowerTick != Session.Tick && oldOutput > source.CurrentOutput)
-            {
-                UpdatePowerSources = true;
-                ResetPowerTick = Session.Tick;
-            }
-        }
-
         private void GridClose(MyEntity myEntity)
         { 
             RegisterMyGridEvents(false);
-            //UpdateBlockGroups(true);
-            //WeaponBase.Clear();
             _possibleTargets.Clear();
             SubGrids.Clear();
             Obstructions.Clear();

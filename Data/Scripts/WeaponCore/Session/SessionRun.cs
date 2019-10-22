@@ -32,7 +32,9 @@ namespace WeaponCore
             {
                 Timings();
 
-                if(!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
+                if (GridsUpdated) CheckDirtyGrids();
+
+                if (!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
 
                 if (!CompsToStart.IsEmpty) StartComps();
 
@@ -47,8 +49,9 @@ namespace WeaponCore
                     var ammoInv = DsUtil.GetValue("AmmoInventory");
                     var ammoPulltimer = DsUtil.GetValue("AmmoPull");
                     var threshold = Projectiles.Wait.Length * 8;
-                    HighLoad = Load > threshold;
-                    //Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
+                    //HighLoad = Load > threshold;
+                    HighLoad = false;
+                    Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
                     TargetRequests = 0;
                     TargetChecks = 0;
                     BlockChecks = 0;
@@ -99,8 +102,38 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
 
+                PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
+
+                if (MyAPIGateway.Input.IsNewLeftMouseReleased())
+                    Pointer.SelectTarget();
+
+            }
+            catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
+        }
+
+        public override void UpdatingStopped()
+        {
+            try
+            {
+                Paused();
+            }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }
+        }
+
+        public override void UpdateAfterSimulation()
+        {
+            try
+            {
+
+                if (Placer != null) UpdatePlacer();
+                if (!DedicatedServer)//todo client side only
+                    ProcessAnimations();
+
                 DsUtil.Start("");
-                Projectiles.Update();
+
+                if (!PTask.IsComplete)
+                    PTask.Wait();
+
                 DsUtil.Complete("projectiles", true);
 
                 if (_effectedCubes.Count > 0) ApplyEffect();
@@ -121,29 +154,6 @@ namespace WeaponCore
                     }
                     _gridEffects.Clear();
                 }
-
-                if (MyAPIGateway.Input.IsNewLeftMouseReleased())
-                    Pointer.SelectTarget();
-            }
-            catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
-        }
-
-        public override void UpdatingStopped()
-        {
-            try
-            {
-                Paused();
-            }
-            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }
-        }
-
-        public override void UpdateAfterSimulation()
-        {
-            try
-            {
-                if (Placer != null) UpdatePlacer();
-                if (!DedicatedServer)//todo client side only
-                    ProcessAnimations();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

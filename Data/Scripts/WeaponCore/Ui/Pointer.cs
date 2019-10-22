@@ -20,7 +20,7 @@ namespace WeaponCore
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private readonly List<MyLineSegmentOverlapResult<MyEntity>> _pruneInfo = new List<MyLineSegmentOverlapResult<MyEntity>>();
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
-        private Vector2 _3RdPersonPos;
+        private Vector2 _3RdPersonPos = new Vector2(0, 0.25f);
         private readonly Vector2 _targetDrawPosition = new Vector2(-1f, 1f);
         private readonly Session _session;
         private int _previousWheel;

@@ -34,7 +34,7 @@ namespace WeaponCore
             if (healthPool <= 0) return;
 
             var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
-            GetAndSortBlocksInSphere(t.System, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
+            GetAndSortBlocksInSphere(t.System, hitEnt.T.Ai, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
             ComputeEffects(t.System, grid, t.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
             if (depletable) t.BaseHealthPool -= healthPool;
         }
@@ -284,55 +284,38 @@ namespace WeaponCore
             });
         }
 
-        private static List<MyCubeBlock> QueryBlockCaches(GridAi ai, MyCubeGrid targetGrid, AreaDamage.AreaEffectType effectType)
+        private static MyConcurrentList<MyCubeBlock> QueryBlockCaches(GridAi ai, MyCubeGrid targetGrid, AreaDamage.AreaEffectType effectType)
         {
-            GridAi.TargetInfo targetInfo;
-            List<MyCubeBlock> cubes;
+            ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> blockTypeMap;
+            if (!ai.Session.GridToBlockTypeMap.TryGetValue(targetGrid, out blockTypeMap)) return null;
 
+            MyConcurrentList<MyCubeBlock> cubes;
             switch (effectType)
             {
                 case JumpNullField:
-                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
-                    {
-                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Jumping, out cubes))
-                            return cubes;
-                    }
+                    if (blockTypeMap.TryGetValue(TargetingDefinition.BlockTypes.Jumping, out cubes))
+                        return cubes;
                     break;
                 case EnergySinkField:
-                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
-                    {
-                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Power, out cubes))
-                            return cubes;
-                    }
+                    if (blockTypeMap.TryGetValue(TargetingDefinition.BlockTypes.Power, out cubes))
+                        return cubes;
                     break;
                 case AnchorField:
-                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
-                    {
-                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Thrust, out cubes))
-                            return cubes;
-                    }
+                    if (blockTypeMap.TryGetValue(TargetingDefinition.BlockTypes.Thrust, out cubes))
+                        return cubes;
                     break;
                 case NavField:
-                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
-                    {
-                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Steering, out cubes))
-                            return cubes;
-                    }
+                    if (blockTypeMap.TryGetValue(TargetingDefinition.BlockTypes.Steering, out cubes))
+                        return cubes;
                     break;
                 case OffenseField:
-                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
-                    {
-                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Offense, out cubes))
-                            return cubes;
-                    }
+                    if (blockTypeMap.TryGetValue(TargetingDefinition.BlockTypes.Offense, out cubes))
+                        return cubes;
                     break;
                 case EmpField:
                 case DotField:
-                    if (ai.Targets.TryGetValue(targetGrid, out targetInfo))
-                    {
-                        if (targetInfo.TypeDict.TryGetValue(TargetingDefinition.BlockTypes.Any, out cubes))
-                            return cubes;
-                    }
+                    if (ai.Session.GridToFatMap.TryGetValue(targetGrid, out cubes))
+                        return cubes;
                     break;
             }
 

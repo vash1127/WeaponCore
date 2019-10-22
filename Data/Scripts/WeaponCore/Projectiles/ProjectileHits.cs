@@ -247,7 +247,7 @@ namespace WeaponCore.Projectiles
                                 continue;
 
                             if (!ewarActive)
-                                GetAndSortBlocksInSphere(hitEnt.T.System, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
+                                GetAndSortBlocksInSphere(hitEnt.T.System, hitEnt.T.Ai, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
 
                             if (hitEnt.Blocks.Count > 0 || ewarActive)
                             {
@@ -419,7 +419,7 @@ namespace WeaponCore.Projectiles
             CheckPool[poolId].Return(checkList);
         }
 
-        internal static void GetAndSortBlocksInSphere(WeaponSystem system, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
+        internal static void GetAndSortBlocksInSphere(WeaponSystem system, GridAi ai, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)
         {
             var matrixNormalizedInv = grid.PositionComp.WorldMatrixNormalizedInv;
             Vector3D result;
@@ -429,7 +429,7 @@ namespace WeaponCore.Projectiles
             var hitPos = sphere.Center;
             if (fatOnly)
             {
-                foreach (var cube in grid.GetFatBlocks())
+                foreach (var cube in ai.Session.GridToFatMap[grid])
                 {
                     switch (fieldType)
                     {

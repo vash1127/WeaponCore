@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Sandbox.Common.ObjectBuilders;
-using Sandbox.Common.ObjectBuilders.Definitions;
+using ParallelTasks;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Weapons;
@@ -32,6 +31,7 @@ namespace WeaponCore
         internal readonly double AimDirToleranceCosine;
 
         internal volatile bool Inited;
+        internal volatile bool GridsUpdated = true;
         internal volatile bool TurretControls;
         internal volatile bool SorterControls;
         internal object InitObj = new object();
@@ -85,11 +85,19 @@ namespace WeaponCore
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
 
+        internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
+        internal readonly MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>>();
+        internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
+        internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
+        internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
+
+        internal readonly MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
+        internal readonly MyConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> GridToBlockTypeMap = new MyConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(25));
         internal DSUtils DsUtil { get; set; } = new DSUtils();
-
+        internal DSUtils DsUtil2 { get; set; } = new DSUtils();
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
         internal readonly Wheel Ui;
@@ -128,6 +136,7 @@ namespace WeaponCore
                 return false;
             }
         }
+
 
         internal enum AnimationType
         {
@@ -170,6 +179,7 @@ namespace WeaponCore
         internal Vector3D CameraPos;
         internal MyCockpit ActiveCockPit;
         internal MyEntity ControlledEntity;
+        internal Task PTask;
 
 
         internal ShieldApi SApi = new ShieldApi();
