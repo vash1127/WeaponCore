@@ -31,7 +31,7 @@ namespace WeaponCore.Platform
 
         private bool _newCycle;
         //private bool _firstRun = true;
-        internal MyEntity MuzzlePart;
+        internal MyTuple<MyEntity, Matrix, Matrix> MuzzlePart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> AzimuthPart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> ElevationPart;
         internal Vector3D MyPivotPos;
@@ -181,7 +181,7 @@ namespace WeaponCore.Platform
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, HashSet<PartAnimation>> animationSets)
         {
-            MuzzlePart = entity;
+            MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix> {Item1 = entity };
             AnimationsSet = animationSets;
             System = system;
             Comp = comp;

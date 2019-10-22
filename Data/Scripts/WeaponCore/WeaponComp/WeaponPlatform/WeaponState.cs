@@ -25,9 +25,9 @@ namespace WeaponCore.Platform
 
             if (Comp.PositionUpdateTick <= tick && _posChangedTick != tick)
             {
-                if (MuzzlePart == null || MuzzlePart.MarkedForClose) return;
-                var parentMatrix = MuzzlePart.Parent.PositionComp.WorldMatrix;
-                MuzzlePart.PositionComp.UpdateWorldMatrix(ref parentMatrix);
+                if (MuzzlePart.Item1 == null || MuzzlePart.Item1.MarkedForClose) return;
+                var parentMatrix = MuzzlePart.Item1.Parent.PositionComp.WorldMatrix;
+                MuzzlePart.Item1.PositionComp.UpdateWorldMatrix(ref parentMatrix);
                 Comp.PositionUpdateTick = tick + 1;
             }
         }
@@ -316,25 +316,19 @@ namespace WeaponCore.Platform
 
 
                 var axis = System.Values.HardPoint.RotateBarrelAxis;
-                if (axis != 0 && MuzzlePart != Comp.MyCube)
+                if (axis != 0 && MuzzlePart.Item1 != Comp.MyCube)
                 {
-                    var partPos = (Vector3)Comp.Ai.Session.GetPartLocation("subpart_" + System.MuzzlePartName.String,
-                        ((MyEntitySubpart)MuzzlePart).Parent.Model);
-
-                    var to = Matrix.CreateTranslation(-partPos);
-                    var from = Matrix.CreateTranslation(partPos);
-
                     Matrix rotationMatrix = Matrix.Zero;
                     switch (axis)
                     {
                         case 1:
-                            rotationMatrix = to * Matrix.CreateRotationX(angle) * from;
+                            rotationMatrix = MuzzlePart.Item2 * Matrix.CreateRotationX(angle) * MuzzlePart.Item3;
                             break;
                         case 2:
-                            rotationMatrix = to * Matrix.CreateRotationY(angle) * from;
+                            rotationMatrix = MuzzlePart.Item2 * Matrix.CreateRotationY(angle) * MuzzlePart.Item3;
                             break;
                         case 3:
-                            rotationMatrix = to * Matrix.CreateRotationZ(angle) * from;
+                            rotationMatrix = MuzzlePart.Item2 * Matrix.CreateRotationZ(angle) * MuzzlePart.Item3;
                             break;
                     }
 
@@ -365,9 +359,9 @@ namespace WeaponCore.Platform
                     }
 
                     var pos = dummy.Info.Position;
-                    var entityExists = MuzzlePart?.Parent != null && !MuzzlePart.MarkedForClose;
+                    var entityExists = MuzzlePart.Item1?.Parent != null && !MuzzlePart.Item1.MarkedForClose;
                     var matrix = MatrixD.Zero;
-                    if (entityExists) matrix = MatrixD.CreateWorld(pos, MuzzlePart.WorldMatrix.Forward, MuzzlePart.Parent.WorldMatrix.Up);
+                    if (entityExists) matrix = MatrixD.CreateWorld(pos, MuzzlePart.Item1.WorldMatrix.Forward, MuzzlePart.Item1.Parent.WorldMatrix.Up);
 
                     if (System.BarrelEffect1)
                     {
