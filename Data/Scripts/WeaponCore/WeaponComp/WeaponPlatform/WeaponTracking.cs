@@ -17,8 +17,8 @@ namespace WeaponCore.Platform
             Vector3D targetPos;
             double timeToIntercept;
             double rangeToTarget;
-            if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3.Zero;
-            if (Vector3D.IsZero(targetAccel, 5E-02)) targetAccel = Vector3.Zero;
+            if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
+            if (Vector3D.IsZero(targetAccel, 5E-03)) targetLinVel = Vector3.Zero;
 
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, prediction, out timeToIntercept);
@@ -73,7 +73,8 @@ namespace WeaponCore.Platform
                 targetLinVel = topMostEnt.Physics.LinearVelocity;
                 targetAccel = topMostEnt.Physics.LinearAcceleration;
             }
-            if (Vector3D.IsZero(targetLinVel, 5E-02)) targetLinVel = Vector3D.Zero;
+            if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
+            if (Vector3D.IsZero(targetAccel, 5E-03)) targetLinVel = Vector3.Zero;
 
             if (weapon.Prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
@@ -113,7 +114,8 @@ namespace WeaponCore.Platform
                 targetLinVel = topMostEnt.Physics.LinearVelocity;
                 targetAccel = topMostEnt.Physics.LinearAcceleration;
             }
-            if (Vector3D.IsZero(targetLinVel, 5E-04)) targetLinVel = Vector3D.Zero;
+            if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
+            if (Vector3D.IsZero(targetAccel, 5E-03)) targetLinVel = Vector3.Zero;
 
             if (weapon.Prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
