@@ -101,7 +101,6 @@ namespace WeaponCore.Platform
 
         internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
         {
-            var cube = weapon.Comp.MyCube;
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
@@ -148,7 +147,7 @@ namespace WeaponCore.Platform
             weapon.IsTracking = inRange && newDesiredAz >= weapon.MinAzimuthRadians && newDesiredAz <= weapon.MaxAzimuthRadians && newDesiredEl >= weapon.MinElevationRadians && newDesiredEl <= weapon.MaxElevationRadians;
 
             if (!step) return weapon.IsTracking;
-            if (weapon.IsTracking && maxAzimuthStep > float.MinValue)
+            if (weapon.IsTracking && maxAzimuthStep > double.MinValue)
             {
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;

@@ -1,11 +1,9 @@
-﻿using Sandbox.ModAPI;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
-using System;
 
 namespace WeaponCore
 {

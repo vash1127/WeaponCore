@@ -103,8 +103,8 @@ namespace WeaponCore.Support
         public readonly double DetonateRadiusLarge;
         public readonly double MaxTargetSpeed;
         public readonly double ShieldModifier;
-        public readonly float AzStep;
-        public readonly float ElStep;
+        public readonly double AzStep;
+        public readonly double ElStep;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
         public readonly float WepCooldown;

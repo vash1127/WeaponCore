@@ -134,7 +134,7 @@ namespace WeaponCore.Platform
                             var azimuthPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
                             var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
                             var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);
-                            var fullStepAzRotation = azPartPosTo * Matrix.CreateRotationY(-m.Value.AzStep) * azPrtPosFrom;
+                            var fullStepAzRotation = azPartPosTo * MatrixD.CreateRotationY(-m.Value.AzStep) * azPrtPosFrom;
                             var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
 
                             Weapons[c].AzimuthPart.Item2 = azPartPosTo;
@@ -153,7 +153,7 @@ namespace WeaponCore.Platform
                             var elPartPosTo = Matrix.CreateTranslation(-elevationPartLocation);
                             var elPartPosFrom = Matrix.CreateTranslation(elevationPartLocation);
 
-                            var fullStepElRotation = elPartPosTo * Matrix.CreateRotationX(-m.Value.ElStep) * elPartPosFrom;
+                            var fullStepElRotation = elPartPosTo * MatrixD.CreateRotationX(-m.Value.ElStep) * elPartPosFrom;
 
                             var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
 

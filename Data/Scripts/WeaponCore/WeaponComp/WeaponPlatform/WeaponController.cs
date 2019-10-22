@@ -25,27 +25,27 @@ namespace WeaponCore.Platform
 
             if (Comp.IsAiOnlyTurret)
             {
-                float absAzChange;
-                float absElChange;
+                double absAzChange;
+                double absElChange;
 
                 bool rAz = false;
                 bool rEl = false;
 
                 if (azimuthChange < 0)
                 {
-                    absAzChange = (float)azimuthChange * -1f;
+                    absAzChange = azimuthChange * -1f;
                     rAz = true;
                 }
                 else
-                    absAzChange = (float)azimuthChange;
+                    absAzChange = azimuthChange;
 
                 if (elevationChange < 0)
                 {
-                    absElChange = (float)elevationChange * -1f;
+                    absElChange = elevationChange * -1f;
                     rEl = true;
                 }
                 else
-                    absElChange = (float)elevationChange;
+                    absElChange = elevationChange;
 
 
                 if (absAzChange >= System.AzStep)
