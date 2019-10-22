@@ -223,7 +223,7 @@ namespace WeaponCore.Platform
             TrackTarget = System.Values.HardPoint.Block.TrackTargets;
             HsRate = System.Values.HardPoint.Loading.HeatSinkRate;
             EnergyPriority = System.Values.HardPoint.EnergyPriority;
-            var toleranceInRadians = MathHelper.ToRadians(System.Values.HardPoint.AimingTolerance);
+            var toleranceInRadians = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);
             Prediction = System.Values.HardPoint.AimLeadingPrediction;
