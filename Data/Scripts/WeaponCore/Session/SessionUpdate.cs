@@ -167,12 +167,12 @@ namespace WeaponCore
                             DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
                             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
                             DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.DeepPink, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Orange, 0.05f);
+                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.15f);
+                            DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Cyan, 0.075f);
                             DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
 
                             if(!w.Target.Expired)
-                                DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.CornflowerBlue, 0.05f);
+                                DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
                         }
 
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || !gridAi.Ready)
