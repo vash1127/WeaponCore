@@ -146,7 +146,7 @@ namespace WeaponCore.Platform
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
                 var newAz = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                var newEl = weapon.Elevation + MathHelperD.Clamp(newDesiredEl - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
                 var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
