@@ -114,14 +114,9 @@ namespace WeaponCore.Platform
                 targetLinVel = topMostEnt.Physics.LinearVelocity;
                 targetAccel = topMostEnt.Physics.LinearAcceleration;
             }
-            bool needsPrediction = true;
+            if (Vector3D.IsZero(targetLinVel, 5E-04)) targetLinVel = Vector3D.Zero;
 
-            if (Vector3D.IsZero(targetLinVel, 5E-04))
-            {
-                targetLinVel = Vector3D.Zero;
-                needsPrediction = false;
-            }
-            if (weapon.Prediction != Prediction.Off && needsPrediction)
+            if (weapon.Prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
             else
                 targetPos = targetCenter;
@@ -159,31 +154,8 @@ namespace WeaponCore.Platform
                 var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation, -maxElevationStep, maxElevationStep);
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
-                var azLocked = azDiff < 1E-06d && azDiff > -1E-06d;
-                var elLocked = azDiff < 1E-06d && azDiff > -1E-06d;
-
-                #region Debounce for rapid small movements causing twitch
-
-                if (weapon.LastAzDiff > 0 && azDiff < 0 || azDiff > 0 && weapon.LastAzDiff < 0)
-                    weapon.AzZeroCrossCount++;
-                else
-                    weapon.AzZeroCrossCount = weapon.AzZeroCrossCount - 1 > 0 ? weapon.AzZeroCrossCount - 1 : 0;
-
-                if (weapon.LastElDiff > 0 && elDiff < 0 || elDiff > 0 && weapon.LastElDiff < 0)
-                    weapon.ElZeroCrossCount++;
-                else
-                    weapon.ElZeroCrossCount = weapon.ElZeroCrossCount - 1 > 0 ? weapon.ElZeroCrossCount - 1 : 0;
-
-                if (weapon.AzZeroCrossCount > 2)
-                    azDiff = (azDiff + weapon.LastAzDiff) * .5;
-
-                if (weapon.ElZeroCrossCount > 2)
-                    elDiff = (elDiff + weapon.LastElDiff) * .5;
-
-                weapon.LastAzDiff = azDiff;
-                weapon.LastElDiff = elDiff;
-
-                #endregion
+                var azLocked = azDiff < 1E-04d && azDiff > -1E-04d;
+                var elLocked = azDiff < 1E-04d && azDiff > -1E-04d;
 
                 var aim = (!azLocked || !elLocked) && (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
 
