@@ -25,7 +25,6 @@ namespace WeaponCore.Platform
             else
                 targetPos = targetCenter;
             var targetDir = targetPos - weapon.MyPivotPos;
-            targetDir.Normalize();
 
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
@@ -147,10 +146,9 @@ namespace WeaponCore.Platform
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
                 var newAz = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                var newEl = weapon.Elevation + MathHelperD.Clamp(newDesiredEl - weapon.Elevation, -maxElevationStep, maxElevationStep);
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
-
                 var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
                 var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
                 var aim = !azLocked || !elLocked;
@@ -350,11 +348,11 @@ namespace WeaponCore.Platform
             MaxElevationRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxEl));
 
             if (MinElevationRadians > MaxElevationRadians)
-                MinElevationRadians -= 6.283185f;
+                MinElevationRadians -= 6.283185d;
             MinAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(minAz));
             MaxAzimuthRadians = MathHelperD.ToRadians(MathFuncs.NormalizeAngle(maxAz));
             if (MinAzimuthRadians > MaxAzimuthRadians)
-                MinAzimuthRadians -= 6.283185f;
+                MinAzimuthRadians -= 6.283185d;
         }
     }
 }

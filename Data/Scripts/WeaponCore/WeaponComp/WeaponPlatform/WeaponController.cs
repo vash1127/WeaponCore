@@ -33,7 +33,7 @@ namespace WeaponCore.Platform
 
                 if (azimuthChange < 0)
                 {
-                    absAzChange = azimuthChange * -1f;
+                    absAzChange = azimuthChange * -1d;
                     rAz = true;
                 }
                 else
@@ -41,7 +41,7 @@ namespace WeaponCore.Platform
 
                 if (elevationChange < 0)
                 {
-                    absElChange = elevationChange * -1f;
+                    absElChange = elevationChange * -1d;
                     rEl = true;
                 }
                 else
