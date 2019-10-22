@@ -92,6 +92,7 @@ namespace WeaponCore.Support
         public readonly bool Trail;
         public readonly bool IsMine;
         public readonly bool IsField;
+        public readonly bool DesignatorWeapon;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -141,6 +142,7 @@ namespace WeaponCore.Support
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
+            DesignatorWeapon = muzzlePartName.String == "Designator";
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
             Values = values;

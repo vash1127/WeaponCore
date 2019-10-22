@@ -538,10 +538,10 @@ namespace WeaponCore
 
                     var color = HeatEmissives[(int)(heatPercent * 100)];
 
-                    w.BarrelPart.SetEmissiveParts("Heating", color, intensity);
+                    w.MuzzlePart.SetEmissiveParts("Heating", color, intensity);
                 }
                 else if (set)
-                    w.BarrelPart.SetEmissiveParts("Heating", Color.Transparent, 0);
+                    w.MuzzlePart.SetEmissiveParts("Heating", Color.Transparent, 0);
 
                 w.LastHeat = currentHeat;
                 //end client side code

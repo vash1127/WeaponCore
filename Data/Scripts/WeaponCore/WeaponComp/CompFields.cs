@@ -2,8 +2,8 @@
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
+using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
-using Sandbox.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game;
@@ -117,18 +117,10 @@ namespace WeaponCore.Support
 
             //TODO add to config
             BlockInventory = myCube.GetInventory(0);
-            if (IsAiOnlyTurret)
-            {
-                BlockInventory.SetFlags(MyInventoryFlags.CanSend);
 
-                BlockInventory.ResetVolume();
-
-                if (BlockInventory == null)
-                    Log.Line("Inventory null");
-
-                BlockInventory.Refresh();
-            }
-
+            BlockInventory.SetFlags(MyInventoryFlags.CanReceive);
+            BlockInventory.ResetVolume();
+            BlockInventory.Refresh();
             MaxInventoryMass = BlockInventory.MaxMass;
 
             SinkPower = IdlePower;
