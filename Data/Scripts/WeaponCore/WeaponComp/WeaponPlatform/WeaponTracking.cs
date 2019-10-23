@@ -13,12 +13,11 @@ namespace WeaponCore.Platform
         {
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
-            var azimuthPart = weapon.AzimuthPart.Item1;
             Vector3D targetPos;
             double timeToIntercept;
             double rangeToTarget;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
-            if (Vector3D.IsZero(targetAccel, 5E-03)) targetLinVel = Vector3.Zero;
+            if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
             if (prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, prediction, out timeToIntercept);
@@ -78,7 +77,7 @@ namespace WeaponCore.Platform
                 targetAccel = topMostEnt.Physics.LinearAcceleration;
             }
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
-            if (Vector3D.IsZero(targetAccel, 5E-03)) targetLinVel = Vector3.Zero;
+            if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
             if (weapon.Prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
@@ -100,7 +99,6 @@ namespace WeaponCore.Platform
 
         internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
         {
-            var AzimuthPart = weapon.AzimuthPart.Item1;
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
@@ -119,7 +117,7 @@ namespace WeaponCore.Platform
                 targetAccel = topMostEnt.Physics.LinearAcceleration;
             }
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
-            if (Vector3D.IsZero(targetAccel, 5E-03)) targetLinVel = Vector3.Zero;
+            if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
             if (weapon.Prediction != Prediction.Off)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
