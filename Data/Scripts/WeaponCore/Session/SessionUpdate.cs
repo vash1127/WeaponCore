@@ -82,8 +82,6 @@ namespace WeaponCore
 
                         w.SeekTarget = w.Target.Expired && w.TrackTarget || gridAi.TargetResetTick == Tick;
 
-                        Log.Line($"w.Target.Expired: {w.Target.Expired} w.TrackingAi: {w.TrackingAi} w.TurretTargetLock: {w.TurretTargetLock}");
-
                         if (w.TargetWasExpired != w.Target.Expired)
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
 
@@ -115,8 +113,6 @@ namespace WeaponCore
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
                             gridAi.Reloading = true;
 
-                        Log.Line($"w.AiReady: {w.AiReady} w.SeekTarget: {w.SeekTarget} gunner: {gunner} w.ManualShoot: {w.ManualShoot} gridAi.Reloading: {gridAi.Reloading} w.ReturnHome: {w.ReturnHome}");
-
                         if (comp.Debug)
                         {
                             DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
@@ -131,7 +127,6 @@ namespace WeaponCore
                         }
 
                         if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading || w.ReturnHome) gridAi.Ready = true;
-                        
                     }
                 }
                 gridAi.CheckReload = false;

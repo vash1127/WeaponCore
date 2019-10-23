@@ -440,7 +440,7 @@ namespace WeaponCore
 
                     var rotCenterNames = animation.RotCenterNameSet;
 
-                    var partCenter = GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
+                    var partCenter = (Vector3?)GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
 
 
 
@@ -452,15 +452,12 @@ namespace WeaponCore
                                 rotations[i] = Matrix.CreateTranslation(-(Vector3)partCenter) * (Matrix)rotations[i] *
                                                Matrix.CreateTranslation((Vector3)partCenter);
                         }
-                    }
 
-                    if (partCenter != null)
-                    {
                         for (int i = 0; i < rotCenters.Length; i++)
                         {
                             if (rotCenters[i] != null && rotCenterNames != null)
                             {
-                                var dummyCenter = GetPartLocation(rotCenterNames[i], subpart.Model);
+                                var dummyCenter = (Vector3?)GetPartLocation(rotCenterNames[i], subpart.Model);
                                 if (dummyCenter != null)
                                     rotCenters[i] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * (Matrix)rotCenters[i] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
                             }
@@ -592,6 +589,18 @@ namespace WeaponCore
             IMyModelDummy dummy;
             if (dummyList.TryGetValue(partName, out dummy))
                 return dummy.Matrix.Translation;
+
+            return null;
+        }
+
+        internal IMyModelDummy GetPartDummy(string partName, IMyModel model)
+        {
+            Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
+            model.GetDummies(dummyList);
+
+            IMyModelDummy dummy;
+            if (dummyList.TryGetValue(partName, out dummy))
+                return dummy;
 
             return null;
         }
