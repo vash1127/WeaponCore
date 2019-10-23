@@ -46,7 +46,7 @@ namespace WeaponCore.Platform
 
             if (System.BarrelAxisRotation)
             {
-                MuzzlePart.PositionComp.LocalMatrix *= BarrelRotationPerShot;
+                MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot;
 
                 if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
                     StartRotateSound();

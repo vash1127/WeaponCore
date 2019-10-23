@@ -635,31 +635,32 @@ namespace WeaponCore
             if (ht != null)
             {
                 var w = ht.Value.Item1;
-
-                //todo client side only
                 var currentHeat = w.Comp.State.Value.Weapons[w.WeaponId].Heat;
                 currentHeat = currentHeat - ((float)w.HsRate / 3) > 0 ? currentHeat - ((float)w.HsRate / 3) : 0;
-                var heatPercent = currentHeat / w.System.MaxHeat;
-
                 var set = currentHeat - w.LastHeat > 0.001 || (currentHeat - w.LastHeat) * -1 > 0.001;
 
-                if (set && heatPercent > .33)
+                if (!DedicatedServer)
                 {
-                    if (heatPercent > 1) heatPercent = 1;
+                    
+                    var heatPercent = currentHeat / w.System.MaxHeat;
 
-                    heatPercent -= .33f;
+                    if (set && heatPercent > .33)
+                    {
+                        if (heatPercent > 1) heatPercent = 1;
 
-                    var intensity = .7f * heatPercent;
+                        heatPercent -= .33f;
 
-                    var color = HeatEmissives[(int)(heatPercent * 100)];
+                        var intensity = .7f * heatPercent;
 
-                    w.MuzzlePart.SetEmissiveParts("Heating", color, intensity);
+                        var color = HeatEmissives[(int)(heatPercent * 100)];
+
+                        w.MuzzlePart.Item1.SetEmissiveParts("Heating", color, intensity);
+                    }
+                    else if (set)
+                        w.MuzzlePart.Item1.SetEmissiveParts("Heating", Color.Transparent, 0);
+
+                    w.LastHeat = currentHeat;
                 }
-                else if (set)
-                    w.MuzzlePart.SetEmissiveParts("Heating", Color.Transparent, 0);
-
-                w.LastHeat = currentHeat;
-                //end client side code
 
 
                 if (set && w.System.DegRof && w.Comp.State.Value.Weapons[w.WeaponId].Heat >= (w.System.MaxHeat * .8))

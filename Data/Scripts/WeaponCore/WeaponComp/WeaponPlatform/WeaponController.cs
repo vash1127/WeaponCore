@@ -113,29 +113,30 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            var elevationComp = ElevationPart.Item1.PositionComp;
-            var weaponMatrix = elevationComp.WorldMatrix;
-            var azimuthComp = AzimuthPart.Item1.PositionComp;
-            var azMatrix = azimuthComp.WorldMatrix;
+            var elevationComp = ElevationPart.Item1 != null ? ElevationPart.Item1.PositionComp : null;
+            var azimuthComp = AzimuthPart.Item1 != null ? AzimuthPart.Item1.PositionComp : null;
+            var weaponMatrix = elevationComp != null ? elevationComp.WorldMatrix : azimuthComp.WorldMatrix;
 
-            var center = !FixedOffset ? azimuthComp.WorldAABB.Center : elevationComp.WorldAABB.Center;
+            var center = azimuthComp != null ? !FixedOffset ? azimuthComp.WorldAABB.Center : elevationComp.WorldAABB.Center : weaponMatrix.Translation;
             var weaponCenter = weaponMatrix.Translation;
-            var weaponForward = weaponMatrix.Forward;
-            var weaponConstUp = azimuthComp.WorldMatrix.Up;
 
-            MyPivotDir = weaponForward;
-            MyPivotUp = azMatrix.Up;
+            //single axis weapons may have Elevation or Azimuth parts only, this always get weapon constant up
+            MyPivotUp = weaponCenter - Comp.MyCube.PositionComp.WorldMatrix.Translation;
+            MyPivotUp.X = 0;
+            MyPivotUp.Z = 0;
+
+            MyPivotDir = weaponMatrix.Forward;
             MyPivotLeft = weaponMatrix.Left;
-            MyPivotMatrix = new MatrixD { Forward = MyPivotDir, Left = weaponMatrix.Left, Up = MyPivotUp };
+            MyPivotMatrix = new MatrixD { Forward = MyPivotDir, Left = weaponMatrix.Left, Up = weaponMatrix.Up };
 
-            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, weaponConstUp, weaponCenter, weaponForward)+ Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);
+            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, MyPivotUp, weaponCenter, MyPivotDir) + Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);
+
             if (Comp.Debug)
             {
-                var cubeleft = azimuthComp.WorldMatrix.Left;
-                MyCenterTestLine = new LineD(center, center + (weaponConstUp * 20));
-                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (weaponForward * 18));
-                MyPivotTestLine = new LineD(MyPivotPos + (cubeleft * 10), MyPivotPos - (cubeleft * 10));
-                MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (weaponForward * 20));
+                MyCenterTestLine = new LineD(center, center + (MyPivotUp * 20));
+                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
+                MyPivotTestLine = new LineD(MyPivotPos + (MyPivotLeft * 10), MyPivotPos - (MyPivotLeft * 10));
+                MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
                 MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 19));
                 if (!Target.Expired)
                     MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
