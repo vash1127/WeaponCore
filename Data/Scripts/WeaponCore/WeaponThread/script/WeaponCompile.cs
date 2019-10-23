@@ -128,7 +128,7 @@ namespace WeaponThread
             return new TracerBaseDefinition { Enable = enable, Length = length, Width = width, Color = color};
         }
 
-        internal AimControlDefinition AimControl(bool trackTargets, bool turretAttached, bool turretController, bool primaryTracking, float rotateRate, float elevateRate, int minAzimuth, int maxAzimuth, int minElevation, int maxElevation, Vector3D offset, bool fixedOffset, float inventorySize, bool debug)
+        internal AimControlDefinition AimControl(bool trackTargets, bool turretAttached, bool turretController, bool primaryTracking, float rotateRate, float elevateRate, Vector3D offset, bool fixedOffset, float inventorySize, bool debug, int minAzimuth = -1, int maxAzimuth = -1, int minElevation = -1, int maxElevation = -1)
         {
             return new AimControlDefinition { TrackTargets = trackTargets, TurretAttached = turretAttached, TurretController = turretController, RotateRate = rotateRate, ElevateRate = elevateRate, Offset = offset, Debug = debug, MinAzimuth = minAzimuth, MaxAzimuth = maxAzimuth, MinElevation = minElevation, MaxElevation = maxElevation, FixedOffset = fixedOffset, InventorySize = inventorySize, PrimaryTracking = primaryTracking };
         }
