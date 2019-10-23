@@ -142,10 +142,8 @@ namespace WeaponCore.Platform
             if ((weapon.MinAzimuthRadians != 0 && weapon.MaxAzimuthRadians !=0) && (desiredAzimuth > 1 || desiredAzimuth < -1))
                 desiredElevation = 0;
 
-            var currentAzRadians = MathHelper.ToRadians(weapon.Azimuth);
-            var currentElRadians = MathHelper.ToRadians(weapon.Elevation);
-            var newDesiredAz = currentAzRadians + desiredAzimuth;
-            var newDesiredEl = currentElRadians + desiredElevation;
+            var newDesiredAz = weapon.Azimuth + desiredAzimuth;
+            var newDesiredEl = weapon.Elevation + desiredElevation;
 
             weapon.IsTracking = inRange && newDesiredAz >= weapon.MinAzimuthRadians && newDesiredAz <= weapon.MaxAzimuthRadians && newDesiredEl >= weapon.MinElevationRadians && newDesiredEl <= weapon.MaxElevationRadians;
 
@@ -355,7 +353,7 @@ namespace WeaponCore.Platform
             var minEl = System.MinElevation;
             var maxEl = System.MaxElevation;
 
-            if (!Comp.IsAiOnlyTurret)
+            if (!Comp.IsAiOnlyTurret && minAz == -1)
             {
                 var baseDef = Comp.MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
                 if (baseDef != null)
