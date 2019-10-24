@@ -237,23 +237,12 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
+
                 var compareApproch = x.Approaching.CompareTo(y.Approaching);
-                if (compareApproch != 0 && (x.DistSqr < 640000 || y.DistSqr < 640000)) return -compareApproch;
+                if (compareApproch != 0 && (x.DistSqr < 640000 && x.OffenseRating > 0  && x.VelLenSqr > 3600 || y.DistSqr < 640000 && y.OffenseRating > 0 && y.VelLenSqr > 3600)) return -compareApproch;
 
-                if (x.DistSqr < 1000000 || y.DistSqr < 1000000)
-                {
-                    var compareVelocity = x.VelLenSqr.CompareTo(y.VelLenSqr);
-                    if (compareVelocity != 0 && (x.VelLenSqr > 3600 || y.VelLenSqr > 3600)) return -compareVelocity;
-                }
-
-                var xAdjDist = x.DistSqr > 10000 && x.PartCount < 5 ? double.MaxValue : x.DistSqr;
-                var yAdjDist = y.DistSqr > 10000 && y.PartCount < 5 ? double.MaxValue : y.DistSqr;
-
-                var compareDist = xAdjDist.CompareTo(yAdjDist);
-                if (compareDist != 0 && (xAdjDist < 360000 || yAdjDist < 360000)) return compareDist;
-
-                var compareParts = x.PartCount.CompareTo(y.PartCount);
-                return -compareParts;
+                var compareOffense = x.OffenseRating.CompareTo(y.OffenseRating);
+                return -compareOffense;
             }
         }
 
@@ -293,9 +282,10 @@ namespace WeaponCore.Support
             internal int PartCount;
             internal int OffenseRating;
             internal MyCubeGrid MyGrid;
-            internal GridAi Ai;
+            internal GridAi MyAi;
+            internal GridAi TargetAi;
 
-            internal void Init(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, int partCount, MyCubeGrid myGrid, GridAi ai)
+            internal void Init(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, int partCount, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
                 EntInfo = entInfo;
                 Target = target;
@@ -303,17 +293,16 @@ namespace WeaponCore.Support
 
                 PartCount = partCount;
                 MyGrid = myGrid;
-                Ai = ai;
+                MyAi = myAi;
+                TargetAi = targetAi;
                 Velocity = target.Physics.LinearVelocity;
                 VelLenSqr = Velocity.LengthSquared();
                 TargetPos = Target.PositionComp.WorldAABB.Center;
                 if (!MyUtils.IsZero(Velocity, 1E-02F))
                 {
                     TargetDir = Vector3D.Normalize(Velocity);
-                    var refDir = Vector3D.Normalize(ai.GridCenter - TargetPos);
-                    var dot = Vector3D.Dot(TargetDir, refDir);
-                    var num = TargetDir.LengthSquared() * refDir.LengthSquared() * ai.Session.ApproachDegrees * Math.Abs(ai.Session.ApproachDegrees);
-                    Approaching = Math.Abs(dot) * dot > num;
+                    var refDir = Vector3D.Normalize(myAi.GridCenter - TargetPos);
+                    Approaching = MathFuncs.IsDotProductWithinTolerance(ref TargetDir, ref refDir, myAi.Session.ApproachDegrees);
                 }
                 else
                 {
@@ -321,19 +310,10 @@ namespace WeaponCore.Support
                     Approaching = false;
                 }
 
-                ConcurrentDictionary<BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
-                if (IsGrid && ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) Target, out typeDict))
-                {
-                    MyConcurrentList<MyCubeBlock> fatList;
-                    if (typeDict.TryGetValue(BlockTypes.Offense, out fatList))
-                    {
-                        if (fatList.Count > ai.WeaponBase.Count) OffenseRating = 2;
-                        else if (fatList.Count > 0) OffenseRating = 1;
-                        else OffenseRating = 0;
-                    }
-                    else OffenseRating = 0;
-                }
-                Vector3D.DistanceSquared(ref TargetPos, ref Ai.GridCenter, out DistSqr);
+                if (targetAi != null)
+                    OffenseRating = (int) MathHelper.Clamp(targetAi.OptimalDps / myAi.OptimalDps, 1, 10);
+                else OffenseRating = 0;
+                Vector3D.DistanceSquared(ref TargetPos, ref myAi.GridCenter, out DistSqr);
             }
         }
 
