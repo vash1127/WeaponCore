@@ -34,6 +34,7 @@ namespace WeaponCore.Platform
         internal MyTuple<MyEntity, Matrix, Matrix> MuzzlePart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> AzimuthPart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> ElevationPart;
+        internal Vector3D[] TargetObbCorners = new Vector3D[9];
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
