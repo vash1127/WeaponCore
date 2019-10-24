@@ -238,13 +238,8 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)
-                            {
-                                if (comp.TrackingWeapon.System.DesignatorWeapon && w != comp.TrackingWeapon && !comp.TrackingWeapon.Target.Expired)
-                                    GridAi.AcquireTarget(w, false, true);
-                                else
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)                     
                                     GridAi.AcquireTarget(w);
-                            }
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;
