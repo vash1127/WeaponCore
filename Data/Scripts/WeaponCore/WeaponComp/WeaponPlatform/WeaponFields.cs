@@ -58,6 +58,7 @@ namespace WeaponCore.Platform
         internal Target Target;
         internal Target NewTarget;
         internal Vector3D TargetPos;
+        internal Vector3D[] TestPoints = new Vector3D[5];
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix BarrelRotationPerShot;
         internal MyParticleEffect[] BarrelEffects1;
