@@ -40,13 +40,13 @@ namespace WeaponCore.Platform
 
                 MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
-                //Log.Line($"desiredAzimuth: {desiredAzimuth} desiredElevation: {desiredElevation}");
+                //Log.Line($"Name: {weapon.System.WeaponName} desiredAzimuth: {desiredAzimuth} desiredElevation: {desiredElevation}");
 
-                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
-                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
-                var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
-                var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
-                canTrack = !azConstrained && !elConstrained;
+                var newDesiredAz = weapon.Azimuth + desiredAzimuth;
+                var newDesiredEl = weapon.Elevation + desiredElevation;
+
+                canTrack = inRange && newDesiredAz >= (weapon.MinAzimuthRadians - weapon.AimCone.ConeAngle) && newDesiredAz <= (weapon.MaxAzimuthRadians + weapon.AimCone.ConeAngle) && newDesiredEl >= (weapon.MinElevationRadians - weapon.AimCone.ConeAngle) && newDesiredEl <= (weapon.MaxElevationRadians + weapon.AimCone.ConeAngle);
+                
                 //Log.Line($"azConstrained: {azConstrained} elConstrained: {elConstrained}");
             }
             else
@@ -145,7 +145,7 @@ namespace WeaponCore.Platform
             var newDesiredAz = weapon.Azimuth + desiredAzimuth;
             var newDesiredEl = weapon.Elevation + desiredElevation;
 
-            weapon.IsTracking = inRange && newDesiredAz >= weapon.MinAzimuthRadians && newDesiredAz <= weapon.MaxAzimuthRadians && newDesiredEl >= weapon.MinElevationRadians && newDesiredEl <= weapon.MaxElevationRadians;
+            weapon.IsTracking = inRange && newDesiredAz >= (weapon.MinAzimuthRadians - weapon.AimCone.ConeAngle) && newDesiredAz <= (weapon.MaxAzimuthRadians + weapon.AimCone.ConeAngle) && newDesiredEl >= (weapon.MinElevationRadians - weapon.AimCone.ConeAngle) && newDesiredEl <= (weapon.MaxElevationRadians + weapon.AimCone.ConeAngle);
 
             if (!step) return weapon.IsTracking;
 
@@ -157,10 +157,10 @@ namespace WeaponCore.Platform
                 var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation, -maxElevationStep, maxElevationStep);
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
-                var azLocked = azDiff < 1E-04d && azDiff > -1E-04d;
-                var elLocked = azDiff < 1E-04d && azDiff > -1E-04d;
+                //var azLocked = azDiff < 1E-04d && azDiff > -1E-04d;
+                //var elLocked = azDiff < 1E-05d && azDiff > -1E-05d;
 
-                var aim = (!azLocked || !elLocked) && (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
+                var aim = (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
 
                 if (aim)
                     weapon.AimBarrel(azDiff, elDiff);
@@ -183,11 +183,23 @@ namespace WeaponCore.Platform
             {
                 if (weapon.System.DesignatorWeapon)
                 {
+                    var reset = true;
                     for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
                     {
-                        Log.Line("Designator Aquire");
                         var w = weapon.Comp.Platform.Weapons[i];
-                        if (w.Target.Expired) GridAi.AcquireTarget(w);
+
+                        if (w.Target.Expired && w != weapon)
+                        {
+                            GridAi.AcquireTarget(w, false, true);
+                            if (!w.Target.Expired)
+                                reset = false;
+                        }
+                    }
+                    if (reset)
+                    {
+                        weapon.SeekTarget = true;
+                        weapon.IsAligned = false;
+                        weapon.Target.Expired = true;
                     }
                 }
                 else

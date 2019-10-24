@@ -206,7 +206,6 @@ namespace WeaponCore
                         else comp.Charging = false;
                         
                         if (comp.Charging) continue;
-
                        
                         if (!w.System.EnergyAmmo && w.CurrentAmmo == 0)
                         {
@@ -239,7 +238,13 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick) GridAi.AcquireTarget(w);
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)
+                            {
+                                if (comp.TrackingWeapon.System.DesignatorWeapon && w != comp.TrackingWeapon && !comp.TrackingWeapon.Target.Expired)
+                                    GridAi.AcquireTarget(w, false, true);
+                                else
+                                    GridAi.AcquireTarget(w);
+                            }
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;

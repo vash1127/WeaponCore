@@ -316,7 +316,7 @@ namespace WeaponCore.Support
             FiringCube = firingCube;
         }
 
-        internal void TransferTo(Target target)
+        internal void TransferTo(Target target, bool reset = true)
         {
             target.Entity = Entity;
             target.Projectile = Projectile;
@@ -326,7 +326,7 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             target.Expired = Expired;
-            Reset(false);
+            if(reset)Reset(false);
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null)

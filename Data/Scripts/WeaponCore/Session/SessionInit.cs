@@ -122,7 +122,21 @@ namespace WeaponCore
 
                     if (!_turretDefinitions.ContainsKey(subTypeId))
                     {
-
+                        foreach (var def in AllDefinitions)
+                        {
+                            if (def.Id.SubtypeName == subTypeId && def is MyLargeTurretBaseDefinition)
+                            {
+                                var gunDef = (MyLargeTurretBaseDefinition)def;
+                                var blockDefs = weaponDef.HardPoint.Block;
+                                gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
+                                gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
+                                gunDef.MinElevationDegrees = blockDefs.MinElevation;
+                                gunDef.MaxElevationDegrees = blockDefs.MaxElevation;
+                                gunDef.RotationSpeed = (float)blockDefs.RotateRate;
+                                gunDef.ElevationSpeed = (float)blockDefs.ElevateRate;
+                            }
+                                
+                        }
                         _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string, string>>
                         {
                             [muzzlePartId] = extraInfo

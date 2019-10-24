@@ -15,7 +15,7 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal static void AcquireTarget(Weapon w, bool attemptReset = false)
+        internal static void AcquireTarget(Weapon w, bool attemptReset = false, bool designatorLock = false)
         {
             w.HitOther = false;
             var tick = w.Comp.Ai.Session.Tick;
@@ -36,9 +36,9 @@ namespace WeaponCore.Support
             var shootProjectile = pCount > 0 && w.System.TrackProjectile;
             var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
 
-            if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType, attemptReset);
+            if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType, attemptReset, designatorLock);
             else if (!attemptReset && targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
-            if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType);
+            if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType, designatorLock);
 
             //Log.Line($"targetType: {targetType}");
             if (targetType == TargetType.None)
@@ -101,7 +101,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false)
+        private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false, bool designatorLock = false)
         {
             var ai = w.Comp.Ai;
             ai.Session.TargetRequests++;
@@ -141,7 +141,7 @@ namespace WeaponCore.Support
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     if (!s.TrackGrids) continue;
-                    if (w.SleepTargets)
+                    /*if (w.SleepTargets)
                     {
                         Vector3D oldDir;
                         var newDir = targetCenter - weaponPos;
@@ -159,9 +159,9 @@ namespace WeaponCore.Support
                             w.SleepingTargets.Remove(info.Target);
                         }
                         else w.SleepingTargets.Add(info.Target, newDir);
-                    }
+                    }*/
                     ai.Session.CanShoot++;
-                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
+                    if (!designatorLock && (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel))) continue;
 
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
 
