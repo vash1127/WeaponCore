@@ -121,11 +121,12 @@ namespace WeaponCore.Support
             for (int x = 0; x < adjTargetCount; x++)
             {
                 if (attemptReset && x > 0) break;
-                var info = x < 1 && needOffset ? primeInfo : ai.SortedTargets[x - offset];
+                var primeTarget = x < 1 && needOffset;
+                var info = primeTarget ? primeInfo : ai.SortedTargets[x - offset];
                 if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
-                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
 
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !primeTarget && info.OffenseRating == 0) continue;
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
@@ -161,7 +162,8 @@ namespace WeaponCore.Support
                         else w.SleepingTargets.Add(info.Target, newDir);
                     }
                     ai.Session.CanShoot++;
-                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
+                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
+
 
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
 

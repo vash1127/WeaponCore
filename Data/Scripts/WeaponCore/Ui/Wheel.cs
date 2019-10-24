@@ -159,7 +159,7 @@ namespace WeaponCore
                 {
                     ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
                     var armed = false;
-                    if (target.IsGrid && target.Ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)target.Target, out typeDict))
+                    if (target.IsGrid && target.MyAi.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)target.Target, out typeDict))
                     {
                         MyConcurrentList<MyCubeBlock> fatList;
                         if (typeDict.TryGetValue(Offense, out fatList) && fatList.Count > 0)

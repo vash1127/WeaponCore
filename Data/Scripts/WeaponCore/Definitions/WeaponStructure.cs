@@ -124,6 +124,7 @@ namespace WeaponCore.Support
         public float HardPointAvMaxDistSqr;
         public float AmmoSoundMaxDistSqr;
         public FiringSoundState FiringSound;
+        public TurretType TurretMovement;
         public bool HitSound;
         public bool WeaponReloadSound;
         public bool NoAmmoSound;
@@ -138,6 +139,14 @@ namespace WeaponCore.Support
             WhenDone
         }
 
+        public enum TurretType
+        {
+            Full,
+            AzimuthOnly,
+            ElevationOnly,
+            Fixed //not used yet
+        }
+
         public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
         {
             Session = session;
@@ -145,6 +154,10 @@ namespace WeaponCore.Support
             DesignatorWeapon = muzzlePartName.String == "Designator";
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
+            TurretMovement = TurretType.Full;
+            if (AzimuthPartName.String == "None") TurretMovement = TurretType.ElevationOnly;
+            if (ElevationPartName.String == "None" && TurretMovement != TurretType.Full) TurretMovement = TurretType.Fixed;
+            else if (ElevationPartName.String == "None") TurretMovement = TurretType.AzimuthOnly;
             Values = values;
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;

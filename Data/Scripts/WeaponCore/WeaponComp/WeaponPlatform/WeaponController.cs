@@ -18,8 +18,6 @@ namespace WeaponCore.Platform
     {
         public void AimBarrel(double azimuthChange, double elevationChange)
         {
-            Azimuth -= azimuthChange;
-            Elevation -= elevationChange;
 
             LastTrackedTick = Comp.Ai.Session.Tick;
 
@@ -47,32 +45,43 @@ namespace WeaponCore.Platform
                 else
                     absElChange = elevationChange;
 
-
-                if (absAzChange >= System.AzStep)
+                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
                 {
-                    if (rAz)
-                        AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item5;
+                    if (absAzChange >= System.AzStep)
+                    {
+                        if (rAz)
+                            AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item5;
+                        else
+                            AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
+                    }
                     else
-                        AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
-                }
-                else
-                {
-                    AzimuthPart.Item1.PositionComp.LocalMatrix *= (AzimuthPart.Item2 * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.Item3);
+                    {
+                        AzimuthPart.Item1.PositionComp.LocalMatrix *= (AzimuthPart.Item2 * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.Item3);
+                    }
+                    Azimuth -= azimuthChange;
                 }
 
-                if (absElChange >= System.ElStep)
+
+
+                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
                 {
-                    if (rEl)
-                        ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item5;
+                    if (absElChange >= System.ElStep)
+                    {
+                        if (rEl)
+                            ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item5;
+                        else
+                            ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item4;
+                    }
                     else
-                        ElevationPart.Item1.PositionComp.LocalMatrix *= ElevationPart.Item4;
-                }
-                else
-                {
-                    ElevationPart.Item1.PositionComp.LocalMatrix *= (ElevationPart.Item2 * Matrix.CreateRotationX((float)-elevationChange) * ElevationPart.Item3);
+                    {
+                        ElevationPart.Item1.PositionComp.LocalMatrix *= (ElevationPart.Item2 * Matrix.CreateRotationX((float)-elevationChange) * ElevationPart.Item3);
+                    }
+                    Elevation -= elevationChange;
                 }
             }
             else {
+                Azimuth -= azimuthChange;
+                Elevation -= elevationChange;
                 Comp.ControllableTurret.Azimuth = (float)Azimuth;
                 Comp.ControllableTurret.Elevation = (float)Elevation;
             }
@@ -117,7 +126,7 @@ namespace WeaponCore.Platform
             var azimuthComp = AzimuthPart.Item1 != null ? AzimuthPart.Item1.PositionComp : null;
             var weaponMatrix = elevationComp != null ? elevationComp.WorldMatrix : azimuthComp.WorldMatrix;
 
-            var center = azimuthComp != null ? !FixedOffset ? azimuthComp.WorldAABB.Center : elevationComp.WorldAABB.Center : weaponMatrix.Translation;
+            var center = azimuthComp != null ? azimuthComp.WorldAABB.Center : weaponMatrix.Translation;
             var weaponCenter = weaponMatrix.Translation;
 
             //single axis weapons may have Elevation or Azimuth parts only, this always get weapon constant up
@@ -129,7 +138,7 @@ namespace WeaponCore.Platform
             MyPivotLeft = weaponMatrix.Left;
             MyPivotMatrix = new MatrixD { Forward = MyPivotDir, Left = weaponMatrix.Left, Up = weaponMatrix.Up };
 
-            MyPivotPos = !FixedOffset ? UtilsStatic.GetClosestPointOnLine1(center, MyPivotUp, weaponCenter, MyPivotDir) + Vector3D.Rotate(AimOffset, MyPivotMatrix) : center + Vector3D.Rotate(AimOffset, MyPivotMatrix);
+            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(center, MyPivotUp, weaponCenter, MyPivotDir) + Vector3D.Rotate(AimOffset, MyPivotMatrix);
 
             if (Comp.Debug)
             {

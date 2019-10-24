@@ -63,9 +63,13 @@ namespace WeaponCore
                     var grid = ent as MyCubeGrid;
                     var targetInfo = db.TargetInfoPool.Get();
                     if (grid == null)
-                        targetInfo.Init(detectInfo.EntInfo, ent, false, 1, db.MyGrid, db);
+                        targetInfo.Init(detectInfo.EntInfo, ent, false, 1, db.MyGrid, db, null);
                     else
-                        targetInfo.Init(detectInfo.EntInfo, grid, true, GridToFatMap[grid].Count, db.MyGrid, db);
+                    {
+                        GridAi targetAi;
+                        GridTargetingAIs.TryGetValue(grid, out targetAi);
+                        targetInfo.Init(detectInfo.EntInfo, grid, true, GridToFatMap[grid].Count, db.MyGrid, db, targetAi);
+                    }
 
                     db.SortedTargets.Add(targetInfo);
                     db.Targets[ent] = targetInfo;
