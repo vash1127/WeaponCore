@@ -142,7 +142,7 @@ namespace WeaponCore.Support
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     if (!s.TrackGrids) continue;
-                    /*if (w.SleepTargets)
+                    if (w.SleepTargets)
                     {
                         Vector3D oldDir;
                         var newDir = targetCenter - weaponPos;
@@ -160,9 +160,10 @@ namespace WeaponCore.Support
                             w.SleepingTargets.Remove(info.Target);
                         }
                         else w.SleepingTargets.Add(info.Target, newDir);
-                    }*/
+                    }
                     ai.Session.CanShoot++;
                     if (!designatorLock && (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel))) continue;
+
 
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
 

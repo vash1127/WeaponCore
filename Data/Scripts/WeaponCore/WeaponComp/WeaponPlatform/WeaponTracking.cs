@@ -9,8 +9,10 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal static bool CanShootTarget(Weapon weapon, Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel)
+        internal static bool CanShootTarget(Weapon weapon, Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, BoundingSphereD? targetSphere = null)
         {
+            targetSphere.Value.
+
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
             Vector3D targetPos;
@@ -42,11 +44,13 @@ namespace WeaponCore.Platform
 
                 //Log.Line($"Name: {weapon.System.WeaponName} desiredAzimuth: {desiredAzimuth} desiredElevation: {desiredElevation}");
 
-                var newDesiredAz = weapon.Azimuth + desiredAzimuth;
-                var newDesiredEl = weapon.Elevation + desiredElevation;
+                var tolerance = weapon.AimCone.ConeAngle;
+                var azConstraint = Math.Min(weapon.MaxAzimuthRadians + tolerance, Math.Max(weapon.MinAzimuthRadians - tolerance, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElevationRadians + tolerance, Math.Max(weapon.MinElevationRadians - tolerance, desiredElevation));
+                var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
+                var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+                canTrack = !azConstrained && !elConstrained;
 
-                canTrack = inRange && newDesiredAz >= (weapon.MinAzimuthRadians - weapon.AimCone.ConeAngle) && newDesiredAz <= (weapon.MaxAzimuthRadians + weapon.AimCone.ConeAngle) && newDesiredEl >= (weapon.MinElevationRadians - weapon.AimCone.ConeAngle) && newDesiredEl <= (weapon.MaxElevationRadians + weapon.AimCone.ConeAngle);
-                
                 //Log.Line($"azConstrained: {azConstrained} elConstrained: {elConstrained}");
             }
             else
