@@ -11,7 +11,6 @@ namespace WeaponCore.Platform
     {
         internal static bool CanShootTarget(Weapon weapon, Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, BoundingSphereD? targetSphere = null)
         {
-            targetSphere.Value.
 
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
