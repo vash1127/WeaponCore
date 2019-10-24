@@ -87,22 +87,22 @@ namespace WeaponCore.Platform
             {
                 var radius = targetSphere.Radius;
                 var left = Vector3D.Cross(weapon.MyPivotUp, weapon.MyPivotDir);
-                var testPoints = new Vector3D[4]
-                {
-                    (targetPos + (weapon.MyPivotUp * radius)) - weapon.MyPivotPos,
-                    (targetPos - (weapon.MyPivotUp * radius)) - weapon.MyPivotPos,
-                    (targetPos + (left * radius)) - weapon.MyPivotPos,
-                    (targetPos - (left * radius)) - weapon.MyPivotPos
-                };
+                
                 var matrix = new MatrixD { Forward = weapon.MyPivotDir, Left = weapon.MyPivotLeft, Up = weapon.MyPivotUp, };
                 var tolerance = weapon.AimCone.ConeAngle;
 
-                for (int i = 0; i < 4; i++)
+                weapon.TestPoints[0] = targetPos - weapon.MyPivotPos;
+                weapon.TestPoints[1] = (targetPos + (weapon.MyPivotUp * radius)) - weapon.MyPivotPos;
+                weapon.TestPoints[2] = (targetPos - (weapon.MyPivotUp * radius)) - weapon.MyPivotPos;
+                weapon.TestPoints[3] = (targetPos + (left * radius)) - weapon.MyPivotPos;
+                weapon.TestPoints[4] = (targetPos - (left * radius)) - weapon.MyPivotPos;
+
+                for (int i = 0; i < 5; i++)
                 {
                     double desiredAzimuth;
                     double desiredElevation;
 
-                    MathFuncs.GetRotationAngles(ref testPoints[i], ref matrix, out desiredAzimuth, out desiredElevation);
+                    MathFuncs.GetRotationAngles(ref weapon.TestPoints[i], ref matrix, out desiredAzimuth, out desiredElevation);
 
                     //Log.Line($"Name: {weapon.System.WeaponName} desiredAzimuth: {desiredAzimuth} desiredElevation: {desiredElevation}");
 
@@ -110,7 +110,8 @@ namespace WeaponCore.Platform
                     var elConstraint = Math.Min(weapon.MaxElevationRadians + tolerance, Math.Max(weapon.MinElevationRadians - tolerance, desiredElevation));
                     var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                     var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
-                    canTrack = canTrack || (!azConstrained && !elConstrained);
+                    canTrack = (!azConstrained && !elConstrained);
+                    if (canTrack) break;
                 }
 
                 //Log.Line($"azConstrained: {azConstrained} elConstrained: {elConstrained}");
@@ -249,7 +250,6 @@ namespace WeaponCore.Platform
             {
                 if (weapon.System.DesignatorWeapon)
                 {
-                    var reset = true;
                     for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
                     {
                         var w = weapon.Comp.Platform.Weapons[i];
@@ -257,15 +257,7 @@ namespace WeaponCore.Platform
                         if (w.Target.Expired && w != weapon)
                         {
                             GridAi.AcquireTarget(w);
-                            if (!w.Target.Expired)
-                                reset = false;
                         }
-                    }
-                    if (reset)
-                    {
-                        weapon.SeekTarget = true;
-                        weapon.IsAligned = false;
-                        weapon.Target.Expired = true;
                     }
                 }
                 else
