@@ -206,7 +206,7 @@ namespace WeaponCore.Platform
             double desiredElevation;
             MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
 
-            if ((weapon.MinAzimuthRadians != 0 && weapon.MaxAzimuthRadians !=0) && (desiredAzimuth > 1 || desiredAzimuth < -1))
+            if (desiredAzimuth > 1 || desiredAzimuth < -1)
                 desiredElevation = 0;
 
             var newDesiredAz = weapon.Azimuth + desiredAzimuth;
