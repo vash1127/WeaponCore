@@ -55,6 +55,9 @@ namespace WeaponCore.Platform
 
         internal WeaponFrameCache WeaponCache = new WeaponFrameCache();
 
+        internal MyOrientedBoundingBoxD targetBox;
+        internal LineD limitLine;
+
         internal Target Target;
         internal Target NewTarget;
         internal Vector3D TargetPos;

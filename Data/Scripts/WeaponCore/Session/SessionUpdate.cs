@@ -4,6 +4,7 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using Sandbox.Game.Entities;
 
 namespace WeaponCore
 {
@@ -122,6 +123,12 @@ namespace WeaponCore
                             DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Cyan, 0.075f);
                             DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
 
+                            if(w.targetBox != null)
+                            {
+                                DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
+                                DsDebugDraw.DrawLine(w.limitLine.From, w.limitLine.To, Color.Orange, 0.05f);
+                            }
+
                             if (!w.Target.Expired)
                                 DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
                         }
@@ -238,8 +245,15 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)                     
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)
+                            {
+                                if (comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
+                                {
+                                    GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
+                                }
+                                else
                                     GridAi.AcquireTarget(w);
+                            }
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
                             w.Target = w.Comp.TrackingWeapon.Target;
