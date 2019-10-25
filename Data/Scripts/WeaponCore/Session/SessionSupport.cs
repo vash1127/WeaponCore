@@ -59,7 +59,6 @@ namespace WeaponCore
                 {
                     var detectInfo = db.NewEntities[i];
                     var ent = detectInfo.Parent;
-                    Log.Line($"newEnts:{i} - Me:{db.MyGrid.DebugName} - Target:{ent.DebugName}");
 
                     if (ent.Physics == null) continue;
                     var grid = ent as MyCubeGrid;
@@ -112,6 +111,7 @@ namespace WeaponCore
             DbsToUpdate.Clear();
             DbsUpdating = false;
             DsUtil.Complete("db", true);
+            Log.Line("test test");
         }
 
         public void Handler(object o)
