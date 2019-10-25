@@ -323,7 +323,7 @@ namespace WeaponCore.Platform
                     return;
                 }
             }
-            if (Target.Projectile == null && (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId))
+            if (Target.Projectile == null && (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId) || !Comp.Ai.Targets.ContainsKey(Target.Entity))
             {
                 //Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null/marked/misMatch - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
                 masterWeapon.Target.Expired = true;
