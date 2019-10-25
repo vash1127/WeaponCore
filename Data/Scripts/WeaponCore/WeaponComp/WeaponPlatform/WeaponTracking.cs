@@ -71,7 +71,6 @@ namespace WeaponCore.Platform
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel)
         {
-            weapon.Comp.Ai.Session.DsUtil.Start("CanShootTargetObb");
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
             Vector3D targetPos;
@@ -99,25 +98,18 @@ namespace WeaponCore.Platform
 
             if (weapon == trackingWeapon)
             {
-                Vector3D targetVector;
-                var checkPos = obb.Center;
-                var tolerance = weapon.AimCone.ConeAngle;
                 double desiredAzimuth;
                 double desiredElevation;
-
+                var checkPos = obb.Center;
                 targetDir = checkPos - weapon.MyPivotPos;
-                targetDir.Normalize();
                 MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
-
-                weapon.DesiredAzimuth = desiredAzimuth;
-                weapon.DesiredElevation = desiredElevation;
-
+                var tolerance = weapon.AimCone.ConeAngle;
                 var azConstraint = Math.Min(weapon.MaxAzimuthRadians + tolerance, Math.Max(weapon.MinAzimuthRadians - tolerance, desiredAzimuth));
                 var elConstraint = Math.Min(weapon.MaxElevationRadians + tolerance, Math.Max(weapon.MinElevationRadians - tolerance, desiredElevation));
 
-                var dirMatrix = MatrixD.CreateRotationY(azConstraint) * MatrixD.CreateRotationX(elConstraint) * weapon.MyPivotMatrix;
-                targetVector = Vector3D.Forward;
-                Vector3D.TransformNormal(ref targetVector, ref dirMatrix, out targetVector);
+                Vector3D targetVector;
+                Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out targetVector);
+                targetVector = Vector3D.Rotate(targetVector, weapon.MyPivotMatrix);
 
                 var testLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (targetVector * weapon.System.MaxTrajectory));
                 if (obb.Intersects(ref testLine) != null) canTrack = true;
@@ -128,7 +120,7 @@ namespace WeaponCore.Platform
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             var tracking = inRange && canTrack;
-            weapon.Comp.Ai.Session.DsUtil.Complete("CanShootTargetObb", true, false);
+
             return tracking;
         }
 
@@ -176,11 +168,11 @@ namespace WeaponCore.Platform
 
         internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
         {
-            weapon.Comp.Ai.Session.DsUtil.Start("Tracking");
+            
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
-           
+            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
             double timeToIntercept;
             double rangeToTarget;
             var topMostEnt = target.Entity?.GetTopMostParent();
@@ -196,27 +188,40 @@ namespace WeaponCore.Platform
             }
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
+            
+            if (weapon.Prediction != Prediction.Off)
+                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
+            else
+                targetPos = targetCenter;
 
-            weapon.IsTracking = CanShootTargetObb(weapon, target.Entity, targetLinVel, targetAccel);
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
+            var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
-            if (!step)
+            weapon.TargetPos = targetPos;
+            var targetDir = targetPos - weapon.MyPivotPos;
+
+            var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
+            var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
+
+            double desiredAzimuth;
+            double desiredElevation;
+            MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
+
+            if ((weapon.MinAzimuthRadians != 0 && weapon.MaxAzimuthRadians != 0) && desiredAzimuth > 1 || desiredAzimuth < -1)
+                desiredElevation = 0;
+
+            var newDesiredAz = weapon.Azimuth + desiredAzimuth;
+            var newDesiredEl = weapon.Elevation + desiredElevation;
+            var tolerance = weapon.AimCone.ConeAngle;
+
+            weapon.IsTracking = inRange && newDesiredAz >= (weapon.MinAzimuthRadians - tolerance) && newDesiredAz <= (weapon.MaxAzimuthRadians + tolerance) && newDesiredEl >= (weapon.MinElevationRadians - tolerance) && newDesiredEl <= (weapon.MaxElevationRadians + tolerance);
+
+            //weapon.IsTracking = CanShootTargetObb(weapon, target.Entity, targetLinVel, targetAccel);
+
+            if (!step) return weapon.IsTracking;
+
+            if (weapon.IsTracking && maxAzimuthStep > double.MinValue)
             {
-                weapon.Comp.Ai.Session.DsUtil.Complete("Tracking", true, false);
-                return weapon.IsTracking;
-
-            }
-            var isAligned = false;
-
-            if (weapon.IsTracking)
-            {
-                var desiredAzimuth = weapon.DesiredAzimuth;
-                var desiredElevation =  weapon.DesiredElevation;
-
-                if ((weapon.MinAzimuthRadians != 0 && weapon.MaxAzimuthRadians != 0) && desiredAzimuth > 1 || desiredAzimuth < -1)
-                    desiredElevation = 0;
-
-                var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
-                var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
                 var newAz = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
@@ -228,19 +233,20 @@ namespace WeaponCore.Platform
                 //var aim = !azLocked || !elLocked;
 
                 var aim = (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
+
                 if (aim)
                     weapon.AimBarrel(azDiff, elDiff);
 
-                var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
-                targetPos = targetCenter;
-                weapon.TargetPos = targetPos;
-                var targetDir = targetPos - weapon.MyPivotPos;
-
-                isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             }
+
+
+            var isAligned = false;
+
+            if (weapon.IsTracking)
+                isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             else
                 weapon.SeekTarget = true;
-            
+
             var wasAligned = weapon.IsAligned;
             weapon.IsAligned = isAligned;
 
@@ -275,8 +281,6 @@ namespace WeaponCore.Platform
                 weapon.StopShooting();
 
             weapon.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
-
-            weapon.Comp.Ai.Session.DsUtil.Complete("Tracking", true, false);
             return weapon.IsTracking;
         }
 
