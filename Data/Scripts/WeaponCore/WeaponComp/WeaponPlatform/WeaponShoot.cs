@@ -313,6 +313,12 @@ namespace WeaponCore.Platform
             Comp.LastRayCastTick = Comp.Ai.Session.Tick;
 
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
+            if (true)
+            {
+                masterWeapon.Target.Expired = true;
+                if (masterWeapon != this) Target.Expired = true;
+                return;
+            }
             if (Target.Projectile != null)
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
@@ -328,7 +334,7 @@ namespace WeaponCore.Platform
             {
                 if ((Target.Entity == null || Target.Entity.MarkedForClose))
                 {
-                    //Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null/marked/misMatch - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
+                    Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null/marked/misMatch - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
                     masterWeapon.Target.Expired = true;
                     if (masterWeapon != this) Target.Expired = true;
                     return;
@@ -346,7 +352,7 @@ namespace WeaponCore.Platform
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
             if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > System.MaxTrajectorySqr)
             {
-                //Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
+                Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon !=  this) Target.Expired = true;
                 return;
@@ -366,7 +372,7 @@ namespace WeaponCore.Platform
 
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon != this) Target.Expired = true;
-                //Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit - target:{Target?.Entity?.DebugName} - {Target?.Entity?.MarkedForClose}");
+                Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit - target:{Target?.Entity?.DebugName} - {Target?.Entity?.MarkedForClose}");
                 return;
             }
 
@@ -380,7 +386,7 @@ namespace WeaponCore.Platform
 
                 if (rootAsGrid == null && parentAsGrid == null)
                 {
-                    //Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - junk: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
 
@@ -389,7 +395,7 @@ namespace WeaponCore.Platform
                 {
                     masterWeapon.Target.Expired = true;
                     if (masterWeapon != this) Target.Expired = true;
-                    //Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
+                    Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
                     return;
                 }
 
@@ -397,14 +403,14 @@ namespace WeaponCore.Platform
                 {
                     if (!grid.IsSameConstructAs(Comp.Ai.MyGrid))
                     {
-                        //Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
+                        Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
                         masterWeapon.Target.Expired = true;
                         if (masterWeapon != this) Target.Expired = true;
                     }
-                    //Log.Line($"{System.WeaponName} - ShootRayCheck Success - sameLogicGroup: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                    Log.Line($"{System.WeaponName} - ShootRayCheck Success - sameLogicGroup: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
                 }
-                //Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
+                Log.Line($"{System.WeaponName} - ShootRayCheck Success - non-friendly target in the way of primary target, shoot through: {((MyEntity)hitInfo.HitEntity).DebugName}");
                 return;
             }
             if (System.ClosestFirst)

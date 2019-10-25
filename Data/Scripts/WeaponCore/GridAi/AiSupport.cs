@@ -243,8 +243,8 @@ namespace WeaponCore.Support
                 var imminentThreat = -xIsImminentThreat.CompareTo(yIsImminentThreat);
                 if (imminentThreat != 0) return imminentThreat;
 
-                var compareOffense = -x.OffenseRating.CompareTo(y.OffenseRating);
-                return compareOffense;
+                var compareOffense = x.OffenseRating.CompareTo(y.OffenseRating);
+                return -compareOffense;
             }
         }
 

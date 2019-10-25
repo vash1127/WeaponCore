@@ -275,7 +275,6 @@ namespace WeaponCore.Platform
                 //var aim = !azLocked || !elLocked;
 
                 var aim = (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
-
                 if (aim)
                     weapon.AimBarrel(azDiff, elDiff);
 
@@ -323,6 +322,7 @@ namespace WeaponCore.Platform
                 weapon.StopShooting();
 
             weapon.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
+            Log.Line($"tracking:{weapon.IsTracking} - {weapon.IsAligned}");
             return weapon.IsTracking;
         }
 

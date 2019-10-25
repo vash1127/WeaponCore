@@ -59,6 +59,8 @@ namespace WeaponCore
                 {
                     var detectInfo = db.NewEntities[i];
                     var ent = detectInfo.Parent;
+                    Log.Line($"newEnts:{i} - Me:{db.MyGrid.DebugName} - Target:{ent.DebugName}");
+
                     if (ent.Physics == null) continue;
                     var grid = ent as MyCubeGrid;
                     var targetInfo = db.TargetInfoPool.Get();
@@ -402,7 +404,7 @@ namespace WeaponCore
                 {
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                     {
-                        //Log.Line($"grid not yet in map");
+                        Log.Line($"grid not yet in map1");
                         continue;
                     }
 
@@ -416,10 +418,10 @@ namespace WeaponCore
                 {
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                     {
-                        //Log.Line($"grid not yet in map");
+                        Log.Line($"grid not yet in map2");
                         continue;
                     }
-                    //Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     weaponComp.MyCube.Components.Add(weaponComp);
                     CompsToStart.Remove(weaponComp);
                 }

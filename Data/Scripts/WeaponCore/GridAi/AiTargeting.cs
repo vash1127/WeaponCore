@@ -125,6 +125,7 @@ namespace WeaponCore.Support
             var needOffset = primeInfo != null;
             var offset = needOffset ? 1 : 0;
             var adjTargetCount = needOffset ? targetCount + offset : targetCount;
+
             for (int x = 0; x < adjTargetCount; x++)
             {
                 if (attemptReset && x > 0) break;
@@ -138,7 +139,6 @@ namespace WeaponCore.Support
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
                 w.Comp.Ai.Session.TargetChecks++;
-
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
 
