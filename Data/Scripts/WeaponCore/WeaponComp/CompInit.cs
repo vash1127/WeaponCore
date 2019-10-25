@@ -1,5 +1,4 @@
-﻿using System;
-using Sandbox.Game.EntityComponents;
+﻿using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Utils;
@@ -20,18 +19,8 @@ namespace WeaponCore.Support
             Sink = new MyResourceSinkComponent() { TemporaryConnectedEntity = MyCube};
             Sink.Init(MyStringHash.GetOrCompute("Charging"), resourceInfo);
             Sink.AddType(ref resourceInfo);
-            Sink.BeforeRemovedFromContainer += removeFunc;
             MyCube.Components.Add(Sink);
             Sink.Update();
-        }
-
-        private void removeFunc(MyEntityComponentBase obj)
-        {
-            var sink = obj as MyResourceSinkComponent;
-            if (sink == null) return;
-
-            sink.SetRequiredInputFuncByType(GId, null);
-            sink.BeforeRemovedFromContainer -= removeFunc;
         }
 
         private bool EntityAlive()

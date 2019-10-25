@@ -104,8 +104,12 @@ namespace WeaponCore.Platform
                 var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
 
                 Vector3D targetVector;
-                Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out targetVector);
-                targetVector = Vector3D.Rotate(targetVector, weapon.MyPivotMatrix);
+                //Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out targetVector);
+                //targetVector = Vector3D.Rotate(targetVector, weapon.MyPivotMatrix);
+
+                MatrixD vectorRotMatrix = MatrixD.CreateRotationY(azConstraint) * MatrixD.CreateRotationX(elConstraint) * weapon.MyPivotMatrix;
+                targetVector = Vector3D.Forward;
+                Vector3D.TransformNormal(ref targetVector, ref vectorRotMatrix, out targetVector);
 
                 var testLine = new RayD(weapon.MyPivotPos, targetVector);
                 if (obb.Intersects(ref testLine) != null) canTrack = true;
@@ -210,8 +214,6 @@ namespace WeaponCore.Platform
             var newDesiredEl = weapon.Elevation + desiredElevation;
 
             weapon.IsTracking = inRange && newDesiredAz >= (weapon.MinAzimuthRadians) && newDesiredAz <= (weapon.MaxAzimuthRadians) && newDesiredEl >= (weapon.MinElevationRadians) && newDesiredEl <= (weapon.MaxElevationRadians);
-
-            //weapon.IsTracking = CanShootTargetObb(weapon, target.Entity, targetLinVel, targetAccel);
 
             if (!step) return weapon.IsTracking;
 
