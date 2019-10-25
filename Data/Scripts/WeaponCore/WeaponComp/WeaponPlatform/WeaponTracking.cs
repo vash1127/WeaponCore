@@ -213,7 +213,6 @@ namespace WeaponCore.Platform
 
         internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
         {
-            
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
@@ -252,15 +251,14 @@ namespace WeaponCore.Platform
             double desiredElevation;
             MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
 
-            if ((weapon.MinAzimuthRadians != 0 && weapon.MaxAzimuthRadians != 0) && desiredAzimuth > 1 || desiredAzimuth < -1)
-                desiredElevation = 0;
-
             var newDesiredAz = weapon.Azimuth + desiredAzimuth;
             var newDesiredEl = weapon.Elevation + desiredElevation;
 
             weapon.IsTracking = inRange && newDesiredAz >= (weapon.MinAzimuthRadians) && newDesiredAz <= (weapon.MaxAzimuthRadians) && newDesiredEl >= (weapon.MinElevationRadians) && newDesiredEl <= (weapon.MaxElevationRadians);
-
             if (!step) return weapon.IsTracking;
+
+            if (desiredAzimuth > 1 || desiredAzimuth < -1)
+                desiredElevation = 0;
 
             if (weapon.IsTracking && maxAzimuthStep > double.MinValue)
             {
@@ -272,14 +270,15 @@ namespace WeaponCore.Platform
                 var elDiff = oldEl - newEl;
                 var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
                 var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
-                //var aim = !azLocked || !elLocked;
+                var aim = !azLocked || !elLocked;
 
-                var aim = (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
+
+
+
                 if (aim)
                     weapon.AimBarrel(azDiff, elDiff);
 
             }
-
 
             var isAligned = false;
 
@@ -322,7 +321,6 @@ namespace WeaponCore.Platform
                 weapon.StopShooting();
 
             weapon.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
-            Log.Line($"tracking:{weapon.IsTracking} - {weapon.IsAligned}");
             return weapon.IsTracking;
         }
 
