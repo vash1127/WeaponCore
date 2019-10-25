@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -15,7 +16,7 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal static void AcquireTarget(Weapon w, bool attemptReset = false)
+        internal static void AcquireTarget(Weapon w, bool attemptReset = false, MyEntity targetGrid = null)
         {
             w.HitOther = false;
             var tick = w.Comp.Ai.Session.Tick;
@@ -36,15 +37,15 @@ namespace WeaponCore.Support
             var shootProjectile = pCount > 0 && w.System.TrackProjectile;
             var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
 
-            if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType, attemptReset);
+            if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType, attemptReset, targetGrid);
             else if (!attemptReset && targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
-            if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType);
+            if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType, false, targetGrid);
 
             //Log.Line($"targetType: {targetType}");
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset(false);
-                w.SleepTargets = true;
+                w.SleepTargets = false;
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
                 w.Target.Expired = true;
             }
@@ -101,7 +102,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false)
+        private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
         {
             var ai = w.Comp.Ai;
             ai.Session.TargetRequests++;
@@ -114,6 +115,12 @@ namespace WeaponCore.Support
             if (ai.PrimeTarget != null)
                 ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo);
 
+            TargetInfo gridInfo = null;
+            var forceTarget = false;
+            if (targetGrid != null)
+                if(ai.Targets.TryGetValue(targetGrid, out gridInfo))
+                    forceTarget = true;
+
             var targetCount = ai.SortedTargets.Count;
             var needOffset = primeInfo != null;
             var offset = needOffset ? 1 : 0;
@@ -122,7 +129,7 @@ namespace WeaponCore.Support
             {
                 if (attemptReset && x > 0) break;
                 var primeTarget = x < 1 && needOffset;
-                var info = primeTarget ? primeInfo : ai.SortedTargets[x - offset];
+                var info = !forceTarget ? primeTarget ? primeInfo : ai.SortedTargets[x - offset] : gridInfo;
                 if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
 
@@ -162,6 +169,8 @@ namespace WeaponCore.Support
                         else w.SleepingTargets.Add(info.Target, newDir);
                     }
                     ai.Session.CanShoot++;
+
+
                     if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
 
 
@@ -173,13 +182,14 @@ namespace WeaponCore.Support
                     return;
                 }
 
+
                 var meteor = info.Target as MyMeteor;
                 if (meteor != null && !s.TrackMeteors) continue;
 
                 var character = info.Target as IMyCharacter;
                 if (character != null && !s.TrackCharacters) continue;
-
-                if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
+                //if(!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
+                if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
                 ai.Session.TopRayCasts++;
                 IHitInfo hitInfo;
@@ -196,6 +206,7 @@ namespace WeaponCore.Support
                     target.TransferTo(w.Target);
                     return;
                 }
+                if (forceTarget) break;
             }
             if (!attemptReset || w.Target.Expired) targetType = TargetType.None;
             else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
@@ -273,8 +284,8 @@ namespace WeaponCore.Support
                 if (turretCheck)
                 {
                     ai.Session.CanShoot++;
-                    if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel))
-                        continue;
+                    //if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel)) continue;
+                    if (!Weapon.CanShootTargetObb(w, block, targetLinVel, targetAccel)) continue;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
                         continue;
@@ -364,7 +375,10 @@ namespace WeaponCore.Support
                             ai.Session.CanShoot++;
                             var castRay = false;
 
-                            if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
+                            //if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
+                            //  castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
+
+                            if (Weapon.CanShootTargetObb(w, cube, targetLinVel, targetAccel))
                                 castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
 
                             if (castRay)

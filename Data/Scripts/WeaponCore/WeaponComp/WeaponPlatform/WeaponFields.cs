@@ -26,6 +26,7 @@ namespace WeaponCore.Platform
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
         private uint _reloadedTick;
+        internal uint TargetResetTick;
         internal uint TicksPerShot;
         internal double TimePerShot;
 
@@ -55,10 +56,12 @@ namespace WeaponCore.Platform
 
         internal WeaponFrameCache WeaponCache = new WeaponFrameCache();
 
+        internal MyOrientedBoundingBoxD targetBox;
+        internal LineD limitLine;
+
         internal Target Target;
         internal Target NewTarget;
         internal Vector3D TargetPos;
-        internal Vector3D[] TestPoints = new Vector3D[5];
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix BarrelRotationPerShot;
         internal MyParticleEffect[] BarrelEffects1;
@@ -108,6 +111,8 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
+        internal double DesiredAzimuth;
+        internal double DesiredElevation;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;

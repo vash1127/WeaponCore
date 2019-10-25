@@ -35,7 +35,7 @@ namespace WeaponCore
 
         private void ProcessDbsCallBack()
         {
-            DsUtil.Start("");
+            DsUtil.Start("db");
             for (int d = 0; d < DbsToUpdate.Count; d++)
             {
                 var db = DbsToUpdate[d];
