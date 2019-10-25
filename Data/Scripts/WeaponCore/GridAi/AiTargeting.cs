@@ -45,7 +45,7 @@ namespace WeaponCore.Support
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset(false);
-                w.SleepTargets = false;
+                w.SleepTargets = true;
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
                 w.Target.Expired = true;
             }
