@@ -216,21 +216,21 @@ namespace WeaponCore
 
         protected override void UnloadData()
         {
-            PurgeAll();
-            SApi.Unload();
-            SApi = null;
+
             
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
+            MyAPIGateway.Utilities.UnregisterMessageHandler(7773, UpgradeHandler);
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
-            ProjectileTree.Clear();
-            GridTargetingAIs.Clear();
-            AllDefinitions = null;
-            SoundDefinitions = null;
+
+            PurgeAll();
+
+            //Session.Player.Character.ControllerInfo.ControlReleased -= PlayerControlReleased;
+            //Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
 
             Log.Line("Logging stopped.");
             Log.Close();

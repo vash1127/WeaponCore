@@ -926,6 +926,8 @@ namespace WeaponCore
         internal void PurgeAll()
         {
             _futureEvents.Purge();
+            DsUtil.Purge();
+            DsUtil2.Purge();
 
             foreach (var item in _effectedCubes)
             {
@@ -960,15 +962,17 @@ namespace WeaponCore
             AllArmorBaseDefinitions.Clear();
             HeavyArmorBaseDefinitions.Clear();
             AllArmorBaseDefinitions.Clear();
-            CompsToStart.ClearImmediate();
             _shrinkPool.Clean();
-            _shrinkPool.Clean();
-            _afterGlow.Clear();
             _subTypeIdToWeaponDefs.Clear();
             _weaponDefinitions.Clear();
             _slimsSortedList.Clear();
             _destroyedSlims.Clear();
             _slimsSet.Clear();
+            AnimationsToProcess.Clear();
+            AnimationsToQueue.Clear();
+            _shrinking.ClearImmediate();
+            _afterGlow.ClearImmediate();
+            CompsToStart.ClearImmediate();
             for (int i = 0; i < Projectiles.Wait.Length; i++)
             {
                 Projectiles.CheckPool[i].Clean();
@@ -989,13 +993,25 @@ namespace WeaponCore
             }
             WeaponPlatforms.Clear();
 
-            //foreach (var map in GridToFatMap)
-                //RemoveGridFromMap(map.Key);
-
             GridToFatMap.Clear();
             ConcurrentListPool.Clean();
 
+            _weaponDefinitions = null;
             Projectiles = null;
+            TrackingAi = null;
+            Pointer = null;
+            Ui = null;
+            DbsToUpdate = null;
+            TargetGps = null;
+            SApi.Unload();
+            SApi = null;
+            AnimationsToProcess = null;
+            AnimationsToQueue = null;
+
+            ProjectileTree.Clear();
+            GridTargetingAIs.Clear();
+            AllDefinitions = null;
+            SoundDefinitions = null;
         }
         #endregion
     }

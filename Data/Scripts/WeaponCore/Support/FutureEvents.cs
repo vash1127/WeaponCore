@@ -30,7 +30,7 @@ namespace WeaponCore.Support
 
         private volatile bool Active = true;
         private const int _maxDelay = 1800;
-        private readonly List<FutureAction>[] _callbacks = new List<FutureAction>[_maxDelay]; // and fill with list instances
+        private List<FutureAction>[] _callbacks = new List<FutureAction>[_maxDelay]; // and fill with list instances
         private uint _offset = 0;
         internal void Schedule(Action<object> callback, object arg1, uint delay)
         {
@@ -59,18 +59,17 @@ namespace WeaponCore.Support
 
         internal void Purge()
         {
+            Active = false;
             lock (_callbacks)
             {
-                if (_callbacks.Length > 0 && Active)
+                foreach (var list in _callbacks)
                 {
-                    Active = false;
-                    foreach (var list in _callbacks)
-                    {
-                        foreach (var call in list)
-                            call.Purge();
-                        list.Clear();
-                    }
+                    foreach (var call in list)
+                        call.Purge();
+                    list.Clear();
                 }
+
+                _callbacks = null;
             }
         }
     }

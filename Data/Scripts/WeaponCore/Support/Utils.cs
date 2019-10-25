@@ -450,6 +450,12 @@ namespace WeaponCore.Support
             Sw.Restart();
         }
 
+        public void Purge()
+        {
+            Clean();
+            Clear();
+        }
+
         public void Clear()
         {
             _timings.Clear();
