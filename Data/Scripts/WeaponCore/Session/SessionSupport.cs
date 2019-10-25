@@ -924,6 +924,8 @@ namespace WeaponCore
         }
         internal void PurgeAll()
         {
+            _futureEvents.Purge();
+
             foreach (var item in _effectedCubes)
             {
                 var cubeid = item.Key;

@@ -49,5 +49,21 @@ namespace WeaponCore.Support
                 }
             }
         }
+
+        internal void Purge()
+        {
+            if (_callbacks.Length > 0)
+            {
+                lock (_callbacks)
+                {
+                    foreach (var list in _callbacks)
+                    {
+                        foreach (var call in list)
+                            call.Callback(call.Arg1);
+                        list.Clear();
+                    }
+                }
+            }
+        }
     }
 }

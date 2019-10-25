@@ -218,6 +218,7 @@ namespace WeaponCore
         {
             PurgeAll();
             SApi.Unload();
+            SApi = null;
             
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
