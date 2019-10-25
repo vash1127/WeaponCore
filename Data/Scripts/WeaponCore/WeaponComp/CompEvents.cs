@@ -21,7 +21,6 @@ namespace WeaponCore.Support
                     ControllableTurret.AppendingCustomInfo += AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
-                MyCube.OnClosing += OnClosing;
 
                 IsWorkingChanged(MyCube);
 
@@ -36,13 +35,13 @@ namespace WeaponCore.Support
                     ControllableTurret.AppendingCustomInfo -= AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
-                MyCube.OnClosing -= OnClosing;
                 BlockInventory.ContentsChanged -= OnContentsChanged;
                 //BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 
                 foreach (var w in Platform.Weapons)
                     w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
+
             }
         }
 
@@ -200,10 +199,9 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
         }
 
-        internal void OnClosing(MyEntity myEntity)
+        internal void BeforeRemovedFromContainer(MyEntity myEntity)
         {
-            Log.Line($"cubeclosing");
-            SinkInfo.RequiredInputFunc = null;
+
         }
     }
 }

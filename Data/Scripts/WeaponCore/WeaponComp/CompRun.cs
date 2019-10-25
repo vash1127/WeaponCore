@@ -43,6 +43,10 @@ namespace WeaponCore.Support
             if (Container.Entity.InScene)
             {
             }
+            Log.Line($"BeforeRemovedFromContainer");
+            Sink.RemoveType(ref GId);
+            SinkInfo.RequiredInputFunc = null;
+            Sink = null;
         }
 
         public void InitPlatform()
@@ -243,7 +247,6 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-
                 RemoveComp();
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }

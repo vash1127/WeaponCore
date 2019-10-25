@@ -15,6 +15,12 @@ namespace WeaponCore.Support
                 Callback = callBack;
                 Arg1 = arg1;
             }
+
+            internal void Purge()
+            {
+                Callback = null;
+                Arg1 = null;
+            }
         }
 
         internal FutureEvents()
@@ -32,7 +38,7 @@ namespace WeaponCore.Support
             {
                 //Log.Line($"BeforeEvent offset:{_offset} - delay:{delay}");
                 //Log.Line($"(_offset + delay) % _maxDelay: {(_offset + delay) % _maxDelay}");
-                if (Active) _callbacks[(_offset + delay) % _maxDelay].Add(new FutureAction(callback, arg1));
+                _callbacks[(_offset + delay) % _maxDelay].Add(new FutureAction(callback, arg1));
             }
         }
 
@@ -60,12 +66,11 @@ namespace WeaponCore.Support
                     Active = false;
                     foreach (var list in _callbacks)
                     {
-                        //foreach (var call in list)
-                            //call.Callback(call.Arg1);
+                        foreach (var call in list)
+                            call.Purge();
                         list.Clear();
                     }
                 }
-
             }
         }
     }
