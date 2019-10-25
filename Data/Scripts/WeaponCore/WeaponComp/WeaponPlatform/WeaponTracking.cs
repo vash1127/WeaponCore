@@ -40,19 +40,7 @@ namespace WeaponCore.Platform
                 {
                     double desiredAzimuth;
                     double desiredElevation;
-
-                    Vector3D currentVector;
-                    var up = weapon.MyPivotUp;
-                    Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
-                    currentVector = Vector3D.Rotate(currentVector, weapon.MyWeaponConstMatrix);
-                    var left = Vector3D.Cross(up, currentVector);
-                    if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
-                        left.Normalize();
-                    var forward = Vector3D.Cross(left, up);
-                    var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
-
-                    MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
-
+                    MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
                     var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
                     var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
                     var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
@@ -100,9 +88,8 @@ namespace WeaponCore.Platform
                 var checkPos = obb.Center;
                 targetDir = checkPos - weapon.MyPivotPos;
                 MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
-                var tolerance = weapon.AimCone.ConeAngle;
-                var azConstraint = Math.Min(weapon.MaxAzimuthRadians + tolerance, Math.Max(weapon.MinAzimuthRadians - tolerance, desiredAzimuth));
-                var elConstraint = Math.Min(weapon.MaxElevationRadians + tolerance, Math.Max(weapon.MinElevationRadians - tolerance, desiredElevation));
+                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
 
                 Vector3D targetVector;
                 Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out targetVector);
