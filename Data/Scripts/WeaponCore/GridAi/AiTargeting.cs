@@ -148,7 +148,8 @@ namespace WeaponCore.Support
                     var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, w.Prediction, out intercept) : targetCenter;
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
-                    if (!s.TrackGrids) continue;
+                    var grid = (MyCubeGrid)info.Target;
+                    if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
                     if (w.SleepTargets)
                     {
                         Vector3D oldDir;
@@ -256,8 +257,8 @@ namespace WeaponCore.Support
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
             var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
             var physics = ai.Session.Physics;
-            var grid = topEnt as IMyCubeGrid;
-            var gridPhysics = grid?.Physics;
+            var iGrid = topEnt as IMyCubeGrid;
+            var gridPhysics = iGrid?.Physics;
             Vector3D targetLinVel = gridPhysics?.LinearVelocity ?? Vector3D.Zero;
             Vector3D targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
             var notSelfHit = false;
@@ -272,7 +273,7 @@ namespace WeaponCore.Support
                     next = deck[i];
 
                 var block = subSystemList[next];
-                if (block.MarkedForClose) continue;
+                if (block.MarkedForClose || !block.IsWorking) continue;
 
                 ai.Session.BlockChecks++;
 
@@ -355,8 +356,9 @@ namespace WeaponCore.Support
                 ai.Session.BlockChecks++;
                 var index = i < top5Count ? i : i - top5Count;
                 var cube = i < top5Count ? top5[index] : cubes[index];
-                if (cube.MarkedForClose || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
+
                 var grid = cube.CubeGrid;
+                if (cube.MarkedForClose || !cube.IsWorking || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);

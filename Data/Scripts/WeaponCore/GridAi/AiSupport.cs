@@ -237,12 +237,14 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
+                var xIsImminentThreat = x.Approaching && x.DistSqr < 640000 && x.OffenseRating > 0;
+                var yIsImminentThreat = y.Approaching && y.DistSqr < 640000 && y.OffenseRating > 0;
 
-                var compareApproch = x.Approaching.CompareTo(y.Approaching);
-                if (compareApproch != 0 && (x.DistSqr < 640000 && x.OffenseRating > 0  && x.VelLenSqr > 3600 || y.DistSqr < 640000 && y.OffenseRating > 0 && y.VelLenSqr > 3600)) return -compareApproch;
+                var imminentThreat = -xIsImminentThreat.CompareTo(yIsImminentThreat);
+                if (imminentThreat != 0) return imminentThreat;
 
-                var compareOffense = x.OffenseRating.CompareTo(y.OffenseRating);
-                return -compareOffense;
+                var compareOffense = -x.OffenseRating.CompareTo(y.OffenseRating);
+                return compareOffense;
             }
         }
 
