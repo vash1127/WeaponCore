@@ -24,7 +24,7 @@ namespace WeaponCore
                 if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged && !gridAi.CheckReload) || !gridAi.MyGrid.InScene) continue;
 
                 gridAi.Reloading = false;
-
+                gridAi.ReturnHome = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -34,7 +34,7 @@ namespace WeaponCore
                         continue;
                     }
 
-                    comp.ReturnHome = gridAi.ReturnHome = false;
+                    comp.ReturnHome = false;
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
@@ -44,9 +44,13 @@ namespace WeaponCore
                         w.TargetWasExpired = w.Target.Expired;
 
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable && !w.ReturnHome) continue;
-                        if (w.Target.Entity == null && w.Target.Projectile == null) w.Target.Expired = true;
-                        else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) w.Target.Reset();
-                        else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile)) w.Target.Reset();
+                        if (w.Target.Entity == null && w.Target.Projectile == null)
+                            w.Target.Expired = true;
+                        else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose)
+                            w.Target.Reset();
+                        else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile))
+                            w.Target.Reset();
+
                         else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable)
                         {
                             if (!Weapon.TrackingTarget(w, w.Target, !gunner))
@@ -81,10 +85,14 @@ namespace WeaponCore
                         }
                         else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
-                        w.SeekTarget = w.Target.Expired && w.TrackTarget || gridAi.TargetResetTick == Tick;
+                        w.SeekTarget = w.Target.Expired && w.TrackTarget;
 
                         if (w.TargetWasExpired != w.Target.Expired)
+                        {
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
+                            if (w.Target.Expired)
+                                w.TargetResetTick = Tick + 1;
+                        }
 
                         if (w.TurretMode)
                         {
@@ -105,7 +113,7 @@ namespace WeaponCore
                                     comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }
                             }
-                            w.ReturnHome = w.ReturnHome && w.ManualShoot == ShootOff && !comp.Gunner;
+                            w.ReturnHome = w.ReturnHome && w.ManualShoot == ShootOff && !comp.Gunner && w.Target.Expired;
                             if (w.ReturnHome)
                                 comp.ReturnHome = gridAi.ReturnHome = true;
                         }
@@ -245,8 +253,9 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || (w.TargetResetTick < Tick && w.TargetResetTick > 0))
                             {
+                                w.TargetResetTick = 0;
                                 if (comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
                                 {
                                     GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());

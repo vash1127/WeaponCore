@@ -49,9 +49,10 @@ namespace WeaponCore
                     var ammoInv = DsUtil.GetValue("AmmoInventory");
                     var ammoPulltimer = DsUtil.GetValue("AmmoPull");
                     var threshold = Projectiles.Wait.Length * 8;
+                    var Tracking = DsUtil.GetValue("Tracking");
                     //HighLoad = Load > threshold;
                     HighLoad = false;
-                    Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
+                    Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000} Tracking[{Tracking.Median:0.000000}/{Tracking.Min:0.000000}/{Tracking.Max:0.000000}]");
                     TargetRequests = 0;
                     TargetChecks = 0;
                     BlockChecks = 0;
@@ -70,7 +71,7 @@ namespace WeaponCore
                 }
                 _futureEvents.Tick(Tick);
                 Ui.UpdateInput();
-                DsUtil.Start("");
+                DsUtil.Start("damage");
                 if (!Hits.IsEmpty) ProcessHits();
                 DsUtil.Complete("damage", true);
                 //if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
@@ -94,11 +95,11 @@ namespace WeaponCore
                     ProcessAnimationQueue();
                 }
 
-                DsUtil.Start("");
+                DsUtil.Start("ai");
                 AiLoop();
                 DsUtil.Complete("ai", true);
 
-                DsUtil.Start("");
+                DsUtil.Start("update");
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
 
@@ -129,7 +130,7 @@ namespace WeaponCore
                 if (!DedicatedServer)//todo client side only
                     ProcessAnimations();
 
-                DsUtil.Start("");
+                DsUtil.Start("projectiles");
 
                 if (!PTask.IsComplete)
                     PTask.Wait();
@@ -162,7 +163,7 @@ namespace WeaponCore
         {
             try
             {
-                DsUtil.Start("");
+                DsUtil.Start("draw");
                 if (!DedicatedServer)
                 {
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)

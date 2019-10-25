@@ -45,7 +45,7 @@ namespace WeaponCore.Support
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset(false);
-                w.SleepTargets = true;
+                w.SleepTargets = false;
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
                 w.Target.Expired = true;
             }
@@ -133,7 +133,7 @@ namespace WeaponCore.Support
                 if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
 
-                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !primeTarget && info.OffenseRating == 0) continue;
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
@@ -170,6 +170,7 @@ namespace WeaponCore.Support
                     }
                     ai.Session.CanShoot++;
 
+
                     if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
 
 
@@ -181,13 +182,14 @@ namespace WeaponCore.Support
                     return;
                 }
 
+
                 var meteor = info.Target as MyMeteor;
                 if (meteor != null && !s.TrackMeteors) continue;
 
                 var character = info.Target as IMyCharacter;
                 if (character != null && !s.TrackCharacters) continue;
-
-                if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
+                //if(!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
+                if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
                 ai.Session.TopRayCasts++;
                 IHitInfo hitInfo;
@@ -204,6 +206,7 @@ namespace WeaponCore.Support
                     target.TransferTo(w.Target);
                     return;
                 }
+                if (forceTarget) break;
             }
             if (!attemptReset || w.Target.Expired) targetType = TargetType.None;
             else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
@@ -281,8 +284,8 @@ namespace WeaponCore.Support
                 if (turretCheck)
                 {
                     ai.Session.CanShoot++;
-                    if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel))
-                        continue;
+                    //if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel)) continue;
+                    if (!Weapon.CanShootTargetObb(w, block, targetLinVel, targetAccel)) continue;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
                         continue;
@@ -372,7 +375,10 @@ namespace WeaponCore.Support
                             ai.Session.CanShoot++;
                             var castRay = false;
 
-                            if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
+                            //if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
+                            //  castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
+
+                            if (Weapon.CanShootTargetObb(w, cube, targetLinVel, targetAccel))
                                 castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
 
                             if (castRay)

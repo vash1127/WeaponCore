@@ -117,7 +117,7 @@ namespace WeaponCore.Control
 
                     w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
-                    w.ReturnHome = comp.ReturnHome = comp.Ai.ReturnHome = true;
+                    w.ReturnHome = comp.ReturnHome = comp.Ai.ReturnHome = w.Target.Expired = true;
                 }
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
