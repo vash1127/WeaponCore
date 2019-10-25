@@ -4,7 +4,6 @@ using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
-using VRage.Game.Components;
 using VRage.Game.Entity;
 
 namespace WeaponCore.Support
@@ -21,11 +20,11 @@ namespace WeaponCore.Support
                     ControllableTurret.AppendingCustomInfo += AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
-
                 IsWorkingChanged(MyCube);
 
                 BlockInventory.ContentsChanged += OnContentsChanged;
                 Sink.CurrentInputChanged += CurrentInputChanged;
+
             }
             else
             {
@@ -41,7 +40,6 @@ namespace WeaponCore.Support
 
                 foreach (var w in Platform.Weapons)
                     w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
-
             }
         }
 
@@ -197,11 +195,6 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
-        }
-
-        internal void BeforeRemovedFromContainer(MyEntity myEntity)
-        {
-
         }
     }
 }
