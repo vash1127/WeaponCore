@@ -182,7 +182,7 @@ namespace WeaponCore.Control
             c.Tooltip = MyStringId.GetOrCompute(tooltip);
             c.Getter = getter;
             c.Setter = setter;
-            c.Visible = b => visibleGetter(b, id);
+            c.Visible = b => visibleGetter != null && visibleGetter(b, id);
             c.Enabled = b => true;
 
             MyAPIGateway.TerminalControls.AddControl<T>(c);

@@ -962,17 +962,34 @@ namespace WeaponCore
             AllArmorBaseDefinitions.Clear();
             HeavyArmorBaseDefinitions.Clear();
             AllArmorBaseDefinitions.Clear();
+            LargeBlockSphereDb.Clear();
+            SmallBlockSphereDb.Clear();
+            GridToBlockTypeMap.Clear();
+            AnimationsToProcess.Clear();
+            AnimationsToQueue.Clear();
+            _shrinking.ClearImmediate();
+            _afterGlow.ClearImmediate();
             _shrinkPool.Clean();
             _subTypeIdToWeaponDefs.Clear();
             _weaponDefinitions.Clear();
             _slimsSortedList.Clear();
             _destroyedSlims.Clear();
             _slimsSet.Clear();
-            AnimationsToProcess.Clear();
-            AnimationsToQueue.Clear();
-            _shrinking.ClearImmediate();
-            _afterGlow.ClearImmediate();
+            _turretDefinitions.Clear();
             CompsToStart.ClearImmediate();
+            GridEffectPool.Clean();
+            GridEffectsPool.Clean();
+            BlockTypePool.Clean();
+            ConcurrentListPool.Clean();
+            GridToFatMap.Clear();
+
+            foreach (var structure in WeaponPlatforms.Values)
+            {
+                structure.WeaponSystems.Clear();
+                structure.AmmoToWeaponIds.Clear();
+            }
+            WeaponPlatforms.Clear();
+
             for (int i = 0; i < Projectiles.Wait.Length; i++)
             {
                 Projectiles.CheckPool[i].Clean();
@@ -986,20 +1003,12 @@ namespace WeaponCore
                 Projectiles.CleanUp[i].Clear();
                 Projectiles.TrajectilePool[i].DeallocateAll();
             }
-            foreach (var structure in WeaponPlatforms.Values)
-            {
-                structure.WeaponSystems.Clear();
-                structure.AmmoToWeaponIds.Clear();
-            }
-            WeaponPlatforms.Clear();
-
-            GridToFatMap.Clear();
-            ConcurrentListPool.Clean();
 
             _weaponDefinitions = null;
             Projectiles = null;
             TrackingAi = null;
             Pointer = null;
+            Placer = null;
             Ui = null;
             DbsToUpdate = null;
             TargetGps = null;
@@ -1009,9 +1018,12 @@ namespace WeaponCore
             AnimationsToQueue = null;
 
             ProjectileTree.Clear();
+            ProjectileTree = null;
             GridTargetingAIs.Clear();
             AllDefinitions = null;
             SoundDefinitions = null;
+            ActiveCockPit = null;
+            ControlledEntity = null;
         }
         #endregion
     }

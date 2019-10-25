@@ -11,7 +11,6 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
-using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -65,7 +64,6 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
         internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
-        internal readonly MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
         internal readonly MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>>();
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
@@ -88,6 +86,7 @@ namespace WeaponCore
         internal Queue<PartAnimation> AnimationsToProcess = new Queue<PartAnimation>();
         internal Queue<PartAnimation> AnimationsToQueue = new Queue<PartAnimation>();
         internal List<GridAi> DbsToUpdate = new List<GridAi>();
+        internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
 
         internal IMyPhysics Physics;
         internal IMyCamera Camera;

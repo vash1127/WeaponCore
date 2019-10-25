@@ -221,6 +221,7 @@ namespace WeaponCore
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
             MyAPIGateway.Utilities.UnregisterMessageHandler(7773, UpgradeHandler);
+            MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;

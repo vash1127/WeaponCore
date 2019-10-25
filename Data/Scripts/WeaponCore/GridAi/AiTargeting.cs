@@ -170,7 +170,6 @@ namespace WeaponCore.Support
                     }
                     ai.Session.CanShoot++;
 
-
                     if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
 
 

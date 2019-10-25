@@ -5,14 +5,8 @@ using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using WeaponCore.Support;
 using VRage.Utils;
-using static WeaponCore.Platform.Weapon.TerminalActionState;
-using Sandbox.Game.Entities;
 using WeaponCore.Control;
-using Sandbox.Game;
-using VRage.Input;
-using SpaceEngineers.Game.ModAPI;
-using Sandbox.Definitions;
-using VRage.Game;
+using static WeaponCore.Platform.Weapon.TerminalActionState;
 
 namespace WeaponCore
 {
