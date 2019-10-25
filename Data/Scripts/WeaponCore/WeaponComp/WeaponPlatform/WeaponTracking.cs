@@ -42,9 +42,9 @@ namespace WeaponCore.Platform
                     double desiredElevation;
 
                     Vector3D currentVector;
-                    var up = weapon.Comp.MyCube.WorldMatrix.Up;
+                    var up = weapon.MyPivotUp;
                     Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
-                    currentVector = Vector3D.Rotate(currentVector, weapon.Comp.MyCube.WorldMatrix);
+                    currentVector = Vector3D.Rotate(currentVector, weapon.MyWeaponConstMatrix);
                     var left = Vector3D.Cross(up, currentVector);
                     if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
                         left.Normalize();
@@ -59,8 +59,6 @@ namespace WeaponCore.Platform
                     var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                     var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
                     canTrack = !azConstrained && !elConstrained;
-
-                    Log.Line($"canTrack: {canTrack}");
                 }
                 else
                     canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
