@@ -252,13 +252,18 @@ namespace WeaponCore.Platform
             double desiredElevation;
             MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
 
-            if ((weapon.MinAzimuthRadians != 0 && weapon.MaxAzimuthRadians != 0) && desiredAzimuth > 1 || desiredAzimuth < -1)
-                desiredElevation = 0;
-
             var newDesiredAz = weapon.Azimuth + desiredAzimuth;
             var newDesiredEl = weapon.Elevation + desiredElevation;
 
-            weapon.IsTracking = inRange && newDesiredAz >= (weapon.MinAzimuthRadians) && newDesiredAz <= (weapon.MaxAzimuthRadians) && newDesiredEl >= (weapon.MinElevationRadians) && newDesiredEl <= (weapon.MaxElevationRadians);
+            var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+            var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
+            var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
+            var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+
+            weapon.IsTracking = !azConstrained && !elConstrained;
+
+            if (desiredAzimuth > 1 || desiredAzimuth < -1)
+                desiredElevation = 0;
 
             if (!step) return weapon.IsTracking;
 
