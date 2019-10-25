@@ -277,9 +277,9 @@ namespace WeaponCore.Platform
                 var elDiff = oldEl - newEl;
                 var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
                 var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
-                //var aim = !azLocked || !elLocked;
+                var aim = !azLocked || !elLocked;
 
-                var aim = (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
+                //var aim = (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
                 if (aim)
                     weapon.AimBarrel(azDiff, elDiff);
 
