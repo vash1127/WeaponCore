@@ -922,6 +922,7 @@ namespace WeaponCore
 
             weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
+
         internal void PurgeAll()
         {
             _futureEvents.Purge();

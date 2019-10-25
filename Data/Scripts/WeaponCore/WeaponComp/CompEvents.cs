@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 
 namespace WeaponCore.Support
@@ -21,7 +22,6 @@ namespace WeaponCore.Support
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 MyCube.OnClosing += OnClosing;
-                MyCube.OnMarkForClose += OnMarkedForClose;
 
                 IsWorkingChanged(MyCube);
 
@@ -37,7 +37,6 @@ namespace WeaponCore.Support
 
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 MyCube.OnClosing -= OnClosing;
-                MyCube.OnMarkForClose -= OnMarkedForClose;
                 BlockInventory.ContentsChanged -= OnContentsChanged;
                 //BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
@@ -204,11 +203,7 @@ namespace WeaponCore.Support
         internal void OnClosing(MyEntity myEntity)
         {
             Log.Line($"cubeclosing");
-        }
-        internal void OnMarkedForClose(MyEntity myEntity)
-        {
-            Log.Line($"cubeMarkedForClose");
-            Sink.RemoveType(ref GId);
+            SinkInfo.RequiredInputFunc = null;
         }
     }
 }
