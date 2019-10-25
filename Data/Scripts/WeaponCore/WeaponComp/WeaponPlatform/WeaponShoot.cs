@@ -323,12 +323,24 @@ namespace WeaponCore.Platform
                     return;
                 }
             }
-            if (Target.Projectile == null && (Target.Entity == null || Target.Entity.MarkedForClose || Target.TopEntityId != Target.Entity.GetTopMostParent().EntityId) || !Comp.Ai.Targets.ContainsKey(Target.Entity))
+
+            if (Target.Projectile == null)
             {
-                //Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null/marked/misMatch - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
-                masterWeapon.Target.Expired = true;
-                if (masterWeapon != this) Target.Expired = true;
-                return;
+                if ((Target.Entity == null || Target.Entity.MarkedForClose))
+                {
+                    //Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null/marked/misMatch - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
+                    masterWeapon.Target.Expired = true;
+                    if (masterWeapon != this) Target.Expired = true;
+                    return;
+                }
+                var topMostEnt = Target.Entity.GetTopMostParent();
+                if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
+                {
+                    Log.Line("topmostEnt checks");
+                    masterWeapon.Target.Expired = true;
+                    if (masterWeapon != this) Target.Expired = true;
+                    return;
+                }
             }
 
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
