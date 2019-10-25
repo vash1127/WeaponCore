@@ -1,6 +1,7 @@
 ﻿using System;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.ObjectBuilders.Definitions;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -43,10 +44,14 @@ namespace WeaponCore.Support
             if (Container.Entity.InScene)
             {
             }
-            Log.Line($"BeforeRemovedFromContainer");
-            Sink.RemoveType(ref GId);
-            SinkInfo.RequiredInputFunc = null;
-            Sink = null;
+            else
+            {
+                Log.Line($"BeforeRemovedFromContainer");
+                //Sink.RemoveType(ref GId);
+                //Sink.Container.Clear();
+                SinkInfo.RequiredInputFunc = null;
+                Sink = null;
+            }
         }
 
         public void InitPlatform()
