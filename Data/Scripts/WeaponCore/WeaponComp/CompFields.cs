@@ -7,6 +7,7 @@ using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
 using VRage;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 
@@ -97,6 +98,7 @@ namespace WeaponCore.Support
         internal LogicSettings Set;
         internal LogicState State;
         internal MyResourceSinkComponent Sink;
+        internal MyResourceSinkInfo SinkInfo;
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
         public WeaponComponent(GridAi ai, MyCubeBlock myCube)

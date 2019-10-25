@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 
 namespace WeaponCore.Support
@@ -20,8 +21,6 @@ namespace WeaponCore.Support
                     ControllableTurret.AppendingCustomInfo += AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
-                MyCube.OnClosing += OnClosing;
-                MyCube.OnMarkForClose += OnMarkedForClose;
 
                 IsWorkingChanged(MyCube);
 
@@ -36,14 +35,13 @@ namespace WeaponCore.Support
                     ControllableTurret.AppendingCustomInfo -= AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
-                MyCube.OnClosing -= OnClosing;
-                MyCube.OnMarkForClose -= OnMarkedForClose;
                 BlockInventory.ContentsChanged -= OnContentsChanged;
                 //BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 
                 foreach (var w in Platform.Weapons)
                     w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
+
             }
         }
 
@@ -201,14 +199,9 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
         }
 
-        internal void OnClosing(MyEntity myEntity)
+        internal void BeforeRemovedFromContainer(MyEntity myEntity)
         {
-            Log.Line($"cubeclosing");
-        }
-        internal void OnMarkedForClose(MyEntity myEntity)
-        {
-            Log.Line($"cubeMarkedForClose");
-            Sink.RemoveType(ref GId);
+
         }
     }
 }

@@ -15,6 +15,12 @@ namespace WeaponCore.Support
                 Callback = callBack;
                 Arg1 = arg1;
             }
+
+            internal void Purge()
+            {
+                Callback = null;
+                Arg1 = null;
+            }
         }
 
         internal FutureEvents()
@@ -22,6 +28,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < _maxDelay; i++) _callbacks[i] = new List<FutureAction>();
         }
 
+        private volatile bool Active = true;
         private const int _maxDelay = 1800;
         private readonly List<FutureAction>[] _callbacks = new List<FutureAction>[_maxDelay]; // and fill with list instances
         private uint _offset = 0;
@@ -37,7 +44,7 @@ namespace WeaponCore.Support
 
         internal void Tick(uint tick)
         {
-            if (_callbacks.Length > 0)
+            if (_callbacks.Length > 0 && Active)
             {
                 lock (_callbacks)
                 {
@@ -52,14 +59,15 @@ namespace WeaponCore.Support
 
         internal void Purge()
         {
-            if (_callbacks.Length > 0)
+            lock (_callbacks)
             {
-                lock (_callbacks)
+                if (_callbacks.Length > 0 && Active)
                 {
+                    Active = false;
                     foreach (var list in _callbacks)
                     {
                         foreach (var call in list)
-                            call.Callback(call.Arg1);
+                            call.Purge();
                         list.Clear();
                     }
                 }
