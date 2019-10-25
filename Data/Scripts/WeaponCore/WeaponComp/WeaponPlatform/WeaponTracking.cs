@@ -53,9 +53,8 @@ namespace WeaponCore.Platform
 
                     MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
 
-                    var tolerance = weapon.AimCone.ConeAngle;
-                    var azConstraint = Math.Min(weapon.MaxAzimuthRadians + tolerance, Math.Max(weapon.MinAzimuthRadians - tolerance, desiredAzimuth));
-                    var elConstraint = Math.Min(weapon.MaxElevationRadians + tolerance, Math.Max(weapon.MinElevationRadians - tolerance, desiredElevation));
+                    var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+                    var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
                     var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                     var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
                     canTrack = !azConstrained && !elConstrained;
@@ -101,18 +100,17 @@ namespace WeaponCore.Platform
                 var checkPos = obb.Center;
                 targetDir = checkPos - weapon.MyPivotPos;
                 MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
-                var tolerance = weapon.AimCone.ConeAngle;
-                var azConstraint = Math.Min(weapon.MaxAzimuthRadians + tolerance, Math.Max(weapon.MinAzimuthRadians - tolerance, desiredAzimuth));
-                var elConstraint = Math.Min(weapon.MaxElevationRadians + tolerance, Math.Max(weapon.MinElevationRadians - tolerance, desiredElevation));
+                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
 
                 Vector3D targetVector;
                 Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out targetVector);
                 targetVector = Vector3D.Rotate(targetVector, weapon.MyPivotMatrix);
 
-                var testLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (targetVector * weapon.System.MaxTrajectory));
+                var testLine = new RayD(weapon.MyPivotPos, targetVector);
                 if (obb.Intersects(ref testLine) != null) canTrack = true;
 
-                weapon.limitLine = testLine;
+                if(weapon.Comp.Debug) weapon.limitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (targetVector * weapon.System.MaxTrajectory));
             }
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
@@ -210,9 +208,8 @@ namespace WeaponCore.Platform
 
             var newDesiredAz = weapon.Azimuth + desiredAzimuth;
             var newDesiredEl = weapon.Elevation + desiredElevation;
-            var tolerance = weapon.AimCone.ConeAngle;
 
-            weapon.IsTracking = inRange && newDesiredAz >= (weapon.MinAzimuthRadians - tolerance) && newDesiredAz <= (weapon.MaxAzimuthRadians + tolerance) && newDesiredEl >= (weapon.MinElevationRadians - tolerance) && newDesiredEl <= (weapon.MaxElevationRadians + tolerance);
+            weapon.IsTracking = inRange && newDesiredAz >= (weapon.MinAzimuthRadians) && newDesiredAz <= (weapon.MaxAzimuthRadians) && newDesiredEl >= (weapon.MinElevationRadians) && newDesiredEl <= (weapon.MaxElevationRadians);
 
             //weapon.IsTracking = CanShootTargetObb(weapon, target.Entity, targetLinVel, targetAccel);
 
