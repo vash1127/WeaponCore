@@ -99,7 +99,6 @@ namespace WeaponCore.Platform
 
             if (weapon == trackingWeapon)
             {
-                Vector3D targetVector;
                 var checkPos = obb.Center;
                 var tolerance = weapon.AimCone.ConeAngle;
                 double desiredAzimuth;
@@ -116,7 +115,7 @@ namespace WeaponCore.Platform
                 var elConstraint = Math.Min(weapon.MaxElevationRadians + tolerance, Math.Max(weapon.MinElevationRadians - tolerance, desiredElevation));
 
                 var dirMatrix = MatrixD.CreateRotationY(azConstraint) * MatrixD.CreateRotationX(elConstraint) * weapon.MyPivotMatrix;
-                targetVector = Vector3D.Forward;
+                var targetVector = Vector3D.Forward;
                 Vector3D.TransformNormal(ref targetVector, ref dirMatrix, out targetVector);
 
                 var testLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (targetVector * weapon.System.MaxTrajectory));
