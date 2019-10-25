@@ -14,7 +14,6 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
-        internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         private int _count = -1;
 
         private bool _allInited;
@@ -98,6 +97,8 @@ namespace WeaponCore.Support
         internal LogicSettings Set;
         internal LogicState State;
         internal MyResourceSinkComponent Sink;
+        internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+
         public WeaponComponent(GridAi ai, MyCubeBlock myCube)
         {
             Ai = ai;
