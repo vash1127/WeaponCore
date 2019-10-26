@@ -164,7 +164,7 @@ namespace WeaponCore
                     Log.Line($"gridMarked:{gridAi.MyGrid.DebugName}");
                     continue;
                 }
-                if ((gridAi.SourceCount > 0 && (gridAi.UpdatePowerSources || Tick60)))
+                if ((gridAi.SourceCount > 0 || gridAi.HadPower && (gridAi.UpdatePowerSources || Tick60)))
                     gridAi.UpdateGridPower(true);
 
                 if (!gridAi.HasPower)

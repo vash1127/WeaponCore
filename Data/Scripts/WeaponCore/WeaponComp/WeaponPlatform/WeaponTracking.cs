@@ -151,7 +151,6 @@ namespace WeaponCore.Platform
 
         internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
         {
-            
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
@@ -196,7 +195,6 @@ namespace WeaponCore.Platform
             var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
 
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
-            //weapon.IsTracking = CanShootTargetObb(weapon, target.Entity, targetLinVel, targetAccel);
 
             if (desiredAzimuth > 1 || desiredAzimuth < -1)
                 desiredElevation = 0;
@@ -211,14 +209,12 @@ namespace WeaponCore.Platform
                 var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation, -maxElevationStep, maxElevationStep);
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
-                var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
-                var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
+                var azLocked = azDiff > -1E-06d && azDiff < 1E-06d;
+                var elLocked = elDiff > -1E-06d && elDiff < 1E-06d;
                 var aim = !azLocked || !elLocked;
 
-                //var aim = (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
                 if (aim)
                     weapon.AimBarrel(azDiff, elDiff);
-
             }
 
 
