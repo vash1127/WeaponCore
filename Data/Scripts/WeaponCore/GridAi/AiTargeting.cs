@@ -140,7 +140,6 @@ namespace WeaponCore.Support
                 w.Comp.Ai.Session.TargetChecks++;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-
                 if (info.IsGrid)
                 {
                     double intercept;
