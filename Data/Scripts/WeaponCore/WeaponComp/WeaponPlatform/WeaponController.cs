@@ -126,7 +126,7 @@ namespace WeaponCore.Platform
             var azimuthComp = AzimuthPart.Item1 != null ? AzimuthPart.Item1.PositionComp : null;
             var weaponMatrix = elevationComp != null ? elevationComp.WorldMatrix : azimuthComp.WorldMatrix;
 
-            var center = azimuthComp != null ? azimuthComp.WorldAABB.Center : weaponMatrix.Translation;
+            var center = azimuthComp != null ? azimuthComp.WorldMatrix.Translation : weaponMatrix.Translation;
             var weaponCenter = weaponMatrix.Translation;
 
             //single axis weapons may have Elevation or Azimuth parts only, this always get weapon constant up
