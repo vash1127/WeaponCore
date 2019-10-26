@@ -124,9 +124,8 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
-            var elevationComp =  ElevationPart.Item1.PositionComp;
             var azimuthMatrix = AzimuthPart.Item1.PositionComp.WorldMatrix;
-            var weaponMatrix = elevationComp.WorldMatrix;
+            var weaponMatrix = ElevationPart.Item1.PositionComp.WorldMatrix;
 
             var weaponCenter = weaponMatrix.Translation;
             var azDown = azimuthMatrix.Down;
