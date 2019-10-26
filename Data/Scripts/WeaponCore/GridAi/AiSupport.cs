@@ -237,7 +237,6 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
-                return -x.Approaching.CompareTo(y.Approaching);
                 var xIsImminentThreat = x.Approaching && x.DistSqr < 640000 && x.OffenseRating > 0;
                 var yIsImminentThreat = y.Approaching && y.DistSqr < 640000 && y.OffenseRating > 0;
                 var imminentThreat = -xIsImminentThreat.CompareTo(yIsImminentThreat);

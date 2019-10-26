@@ -518,7 +518,7 @@ namespace WeaponCore
 
                             using (fat.Pin())
                             {
-                                if (fat.MarkedForClose || !fat.IsWorking) continue;
+                                if (fat.MarkedForClose) continue;
                                 if (fat is IMyProductionBlock) collection[Production].Add(fat);
                                 else if (fat is IMyPowerProducer) collection[Power].Add(fat);
                                 else if (fat is IMyGunBaseUser || fat is IMyWarhead) collection[Offense].Add(fat);
@@ -548,7 +548,7 @@ namespace WeaponCore
 
                             using (fat.Pin())
                             {
-                                if (fat.MarkedForClose || !fat.IsWorking) continue;
+                                if (fat.MarkedForClose) continue;
                                 if (fat is IMyProductionBlock) collection[Production].Add(fat);
                                 else if (fat is IMyPowerProducer) collection[Power].Add(fat);
                                 else if (fat is IMyGunBaseUser || fat is IMyWarhead) collection[Offense].Add(fat);

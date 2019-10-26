@@ -147,7 +147,7 @@ namespace WeaponCore.Support
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     var grid = (MyCubeGrid)info.Target;
-                    //Log.Line($"canShoot:{x} - {Weapon.CanShootTarget(w, newCenter, targetLinVel, targetAccel)} - {Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)}");
+                    if (w.TrackingAi) Log.Line($"[Acquire] totalTargets:{adjTargetCount} - priorityTarget:{x} - approach:{info.Approaching} - Offense:{info.OffenseRating} - ObbCheck:{Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)} - CanShoot:{Weapon.CanShootTarget(w, newCenter, targetLinVel, targetAccel)}");
                     if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
                     if (w.SleepTargets)
                     {
@@ -184,7 +184,6 @@ namespace WeaponCore.Support
 
                 var character = info.Target as IMyCharacter;
                 if (character != null && !s.TrackCharacters) continue;
-                //if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
                 if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
                 ai.Session.TopRayCasts++;

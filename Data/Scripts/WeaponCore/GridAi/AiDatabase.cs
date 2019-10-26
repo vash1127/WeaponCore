@@ -1,12 +1,8 @@
-﻿using System;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
+﻿using Sandbox.Game.Entities;
 using VRage;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
-using static WeaponCore.Support.TargetingDefinition.BlockTypes;
 
 namespace WeaponCore.Support
 {
