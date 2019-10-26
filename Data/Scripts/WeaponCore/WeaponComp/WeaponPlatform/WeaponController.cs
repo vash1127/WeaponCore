@@ -46,24 +46,6 @@ namespace WeaponCore.Platform
                 else
                     absElChange = elevationChange;
 
-                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
-                {
-                    if (absAzChange >= System.AzStep)
-                    {
-                        if (rAz)
-                            AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item5;
-                        else
-                            AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
-                    }
-                    else
-                    {
-                        AzimuthPart.Item1.PositionComp.LocalMatrix *= (AzimuthPart.Item2 * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.Item3);
-                    }
-                    Azimuth -= azimuthChange;
-                }
-
-
-
                 if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.ElevationOnly)
                 {
                     if (absElChange >= System.ElStep)
@@ -78,6 +60,22 @@ namespace WeaponCore.Platform
                         ElevationPart.Item1.PositionComp.LocalMatrix *= (ElevationPart.Item2 * Matrix.CreateRotationX((float)-elevationChange) * ElevationPart.Item3);
                     }
                     Elevation -= elevationChange;
+                }
+
+                if (System.TurretMovement == WeaponSystem.TurretType.Full || System.TurretMovement == WeaponSystem.TurretType.AzimuthOnly)
+                {
+                    if (absAzChange >= System.AzStep)
+                    {
+                        if (rAz)
+                            AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item5;
+                        else
+                            AzimuthPart.Item1.PositionComp.LocalMatrix *= AzimuthPart.Item4;
+                    }
+                    else
+                    {
+                        AzimuthPart.Item1.PositionComp.LocalMatrix *= (AzimuthPart.Item2 * Matrix.CreateRotationY((float)-azimuthChange) * AzimuthPart.Item3);
+                    }
+                    Azimuth -= azimuthChange;
                 }
             }
             else
