@@ -37,6 +37,8 @@ namespace WeaponCore.Support
 
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsChanged -= OnContentsChanged;
+                BlockInventory.InventoryContentChanged -= DetailedChanged;
+
                 //BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 
