@@ -168,10 +168,7 @@ namespace WeaponCore.Support
                         else w.SleepingTargets.Add(info.Target, newDir);
                     }
                     ai.Session.CanShoot++;
-
                     if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
-
-
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
 
                     targetType = TargetType.Other;
