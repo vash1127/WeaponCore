@@ -85,8 +85,7 @@ namespace WeaponCore.Platform
             {
                 double desiredAzimuth;
                 double desiredElevation;
-                var checkPos = obb.Center;
-                targetDir = checkPos - weapon.MyPivotPos;
+                targetDir = obb.Center - weapon.MyPivotPos;
                 MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
                 var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
                 var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
@@ -194,9 +193,6 @@ namespace WeaponCore.Platform
             double desiredAzimuth;
             double desiredElevation;
             MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
-
-            var newDesiredAz = weapon.Azimuth + desiredAzimuth;
-            var newDesiredEl = weapon.Elevation + desiredElevation;
 
             var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
             var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
