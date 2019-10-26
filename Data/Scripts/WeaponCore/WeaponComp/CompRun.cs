@@ -1,7 +1,6 @@
 ﻿using System;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
-using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Utils;
 using WeaponCore.Platform;
 
