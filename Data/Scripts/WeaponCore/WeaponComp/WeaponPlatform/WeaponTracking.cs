@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
@@ -139,61 +140,63 @@ namespace WeaponCore.Platform
             double rangeToTarget;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
-
-            var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrix);
-            var obb = new MyOrientedBoundingBoxD(entity.PositionComp.WorldAABB.Center, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+            var entityCenter = entity.PositionComp.WorldAABB.Center;
 
             if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(obb.Center, targetLinVel, targetAccel, prediction, out timeToIntercept);
+                targetPos = weapon.GetPredictedTargetPosition(entityCenter, targetLinVel, targetAccel, prediction, out timeToIntercept);
             else
-                targetPos = obb.Center;
+                targetPos = entityCenter;
 
-            obb.Center = targetPos;
-            weapon.targetBox = obb;
-            obb.GetCorners(weapon.TargetObbCorners, 0);
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
-            var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
-
             bool canTrack = false;
-            var targetDir = targetPos - weapon.MyPivotPos;
-            if (weapon == trackingWeapon)
+            if (rangeToTarget <= weapon.System.MaxTrajectorySqr)
             {
-                for (int i = 9; i-- > 0;)
+                var targetDir = targetPos - weapon.MyPivotPos;
+                if (weapon == trackingWeapon)
                 {
-                    var corner = weapon.TargetObbCorners[i];
-                    targetDir = corner - weapon.MyPivotPos;
+                    for (int i = 9; i-- > 0;)
+                    {
+                        if (i == 7)
+                        {
+                            var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrix);
+                            var obb = new MyOrientedBoundingBoxD(entityCenter, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix) { Center = targetPos };
+                            weapon.targetBox = obb;
+                            obb.GetCorners(weapon.TargetObbCorners, 0);
+                        }
 
-                    Vector3D currentVector;
-                    Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
-                    currentVector = Vector3D.Rotate(currentVector, weapon.Comp.MyCube.WorldMatrix);
+                        var corner = weapon.TargetObbCorners[i];
+                        targetDir = corner - weapon.MyPivotPos;
 
-                    var up = weapon.Comp.MyCube.WorldMatrix.Up;
-                    var left = Vector3D.Cross(up, currentVector);
-                    if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
-                        left.Normalize();
-                    var forward = Vector3D.Cross(left, up);
+                        Vector3D currentVector;
+                        Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
+                        currentVector = Vector3D.Rotate(currentVector, weapon.Comp.MyCube.WorldMatrix);
 
-                    var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
+                        var up = weapon.Comp.MyCube.WorldMatrix.Up;
+                        var left = Vector3D.Cross(up, currentVector);
+                        if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
+                            left.Normalize();
+                        var forward = Vector3D.Cross(left, up);
 
-                    double desiredAzimuth;
-                    double desiredElevation;
-                    MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
+                        var matrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
-                    var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
-                    var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
-                    var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
-                    var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
-                    canTrack = !azConstrained && !elConstrained;
-                    if (canTrack) break;
+                        double desiredAzimuth;
+                        double desiredElevation;
+                        MathFuncs.GetRotationAngles(ref targetDir, ref matrix, out desiredAzimuth, out desiredElevation);
+
+                        var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+                        var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
+                        var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+                        var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
+                        canTrack = !azConstrained && !elConstrained;
+                        if (canTrack) break;
+                    }
                 }
+                else
+                    canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             }
-            else
-                canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            var tracking = inRange && canTrack;
-
-            return tracking;
+            return canTrack;
         }
 
         internal static bool TargetAligned(Weapon weapon, Target target)

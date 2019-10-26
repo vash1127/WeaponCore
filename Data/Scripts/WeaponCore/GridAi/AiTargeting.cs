@@ -147,7 +147,7 @@ namespace WeaponCore.Support
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     var grid = (MyCubeGrid)info.Target;
-                    if (w.TrackingAi) Log.Line($"[Acquire] totalTargets:{adjTargetCount} - priorityTarget:{x} - approach:{info.Approaching} - Offense:{info.OffenseRating} - ObbCheck:{Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)} - CanShoot:{Weapon.CanShootTarget(w, newCenter, targetLinVel, targetAccel)}");
+                    //if (w.TrackingAi) Log.Line($"[Acquire] totalTargets:{adjTargetCount} - priorityTarget:{x} - approach:{info.Approaching} - Offense:{info.OffenseRating} - ObbCheck:{Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)} - CanShoot:{Weapon.CanShootTarget(w, newCenter, targetLinVel, targetAccel)}");
                     if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
                     if (w.SleepTargets)
                     {
@@ -280,7 +280,6 @@ namespace WeaponCore.Support
                 {
                     ai.Session.CanShoot++;
                     if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel)) continue;
-                    //if (!Weapon.CanShootTargetObb(w, block, targetLinVel, targetAccel)) continue;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
                         continue;
