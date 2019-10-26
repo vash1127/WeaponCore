@@ -129,10 +129,10 @@ namespace WeaponCore
                             DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
                             DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.15f);
                             DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Cyan, 0.075f);
-                            DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
+                            //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
                             if (w.targetBox != null)
                             {
-                                DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
+                                //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
                                 DsDebugDraw.DrawLine(w.limitLine.From, w.limitLine.To, Color.Orange, 0.05f);
                             }
 

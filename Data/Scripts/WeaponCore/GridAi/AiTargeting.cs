@@ -147,6 +147,7 @@ namespace WeaponCore.Support
                     var targetSphere = info.Target.PositionComp.WorldVolume;
                     targetSphere.Center = newCenter;
                     var grid = (MyCubeGrid)info.Target;
+                    //Log.Line($"canShoot:{x} - {Weapon.CanShootTarget(w, newCenter, targetLinVel, targetAccel)} - {Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)}");
                     if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
                     if (w.SleepTargets)
                     {

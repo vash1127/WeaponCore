@@ -56,7 +56,6 @@ namespace WeaponCore.Platform
                 var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
                 var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 canTrack = !azConstrained && !elConstrained;
-
             }
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
@@ -480,27 +479,42 @@ namespace WeaponCore.Platform
             weapon.TargetPos = targetPos;
             var targetDir = targetPos - weapon.MyPivotPos;
 
-            var maxAzimuthStep = step ? weapon.System.AzStep : double.MinValue;
-            var maxElevationStep = step ? weapon.System.ElStep : double.MinValue;
+            double checkAzimuth;
+            double checkElevation;
 
-            double desiredAzimuth;
-            double desiredElevation;
-            MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
+            Vector3D currentVector;
+            Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
+            currentVector = Vector3D.Rotate(currentVector, weapon.Comp.MyCube.WorldMatrix);
+            var up = weapon.Comp.MyCube.WorldMatrix.Up;
+            var left = Vector3D.Cross(up, currentVector);
+            if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
+                left.Normalize();
+            var forward = Vector3D.Cross(left, up);
+            var constraintMatrix = new MatrixD { Forward = forward, Left = left, Up = up, };
 
-            var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
-            var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
-            var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
-            var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+            MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out checkAzimuth, out checkElevation);
+
+            var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, checkAzimuth));
+            var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, checkElevation));
+            var azConstrained = Math.Abs(elConstraint - checkElevation) > 0.0000001;
+            var elConstrained = Math.Abs(azConstraint - checkAzimuth) > 0.0000001;
 
             weapon.IsTracking = inRange && !azConstrained && !elConstrained;
 
-            if (desiredAzimuth > 1 || desiredAzimuth < -1)
-                desiredElevation = 0;
-
             if (!step) return weapon.IsTracking;
 
-            if (weapon.IsTracking && maxAzimuthStep > double.MinValue)
+            if (weapon.IsTracking)
             {
+                double desiredAzimuth;
+                double desiredElevation;
+                MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
+
+                if (desiredAzimuth > 1 || desiredAzimuth < -1)
+                    desiredElevation = 0;
+
+                var maxAzimuthStep = weapon.System.AzStep;
+                var maxElevationStep = weapon.System.ElStep;
+
                 var oldAz = weapon.Azimuth;
                 var oldEl = weapon.Elevation;
                 var newAz = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
@@ -510,11 +524,11 @@ namespace WeaponCore.Platform
                 var azLocked = azDiff > -1E-06d && azDiff < 1E-06d;
                 var elLocked = elDiff > -1E-06d && elDiff < 1E-06d;
                 var aim = !azLocked || !elLocked;
+                //Log.Line($"[{weapon.Comp.MyCube.EntityId}] tracking:{weapon.IsTracking} - elConst:{elConstrained} - aim:{aim}");
 
                 if (aim)
                     weapon.AimBarrel(azDiff, elDiff);
             }
-
 
             var isAligned = false;
 

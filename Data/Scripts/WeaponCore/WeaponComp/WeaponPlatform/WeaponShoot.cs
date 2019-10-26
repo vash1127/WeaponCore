@@ -312,14 +312,13 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.Ai.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
-            /*
             if (true)
             {
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon != this) Target.Expired = true;
                 return;
             }
-            */
+            /*
             if (Target.Projectile != null)
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
@@ -330,7 +329,7 @@ namespace WeaponCore.Platform
                     return;
                 }
             }
-
+            */
             if (Target.Projectile == null)
             {
                 if ((Target.Entity == null || Target.Entity.MarkedForClose))
