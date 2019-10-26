@@ -199,7 +199,8 @@ namespace WeaponCore.Platform
             var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
             var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
 
-            weapon.IsTracking = !azConstrained && !elConstrained;
+            weapon.IsTracking = inRange && !azConstrained && !elConstrained;
+            //weapon.IsTracking = CanShootTargetObb(weapon, target.Entity, targetLinVel, targetAccel);
 
             if (desiredAzimuth > 1 || desiredAzimuth < -1)
                 desiredElevation = 0;
