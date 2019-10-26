@@ -140,12 +140,12 @@ namespace WeaponCore.Platform
             double rangeToTarget;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
-            var entityCenter = entity.PositionComp.WorldAABB.Center;
+            var targetCenter = entity.PositionComp.WorldAABB.Center;
 
             if (prediction != Prediction.Off)
-                targetPos = weapon.GetPredictedTargetPosition(entityCenter, targetLinVel, targetAccel, prediction, out timeToIntercept);
+                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, prediction, out timeToIntercept);
             else
-                targetPos = entityCenter;
+                targetPos = targetCenter;
 
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
@@ -160,7 +160,7 @@ namespace WeaponCore.Platform
                         if (i == 7)
                         {
                             var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrix);
-                            var obb = new MyOrientedBoundingBoxD(entityCenter, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix) { Center = targetPos };
+                            var obb = new MyOrientedBoundingBoxD(targetCenter, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix) { Center = targetPos };
                             weapon.targetBox = obb;
                             obb.GetCorners(weapon.TargetObbCorners, 0);
                         }

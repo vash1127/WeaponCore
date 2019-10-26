@@ -142,10 +142,6 @@ namespace WeaponCore.Support
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
                 if (info.IsGrid)
                 {
-                    double intercept;
-                    var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, w.Prediction, out intercept) : targetCenter;
-                    var targetSphere = info.Target.PositionComp.WorldVolume;
-                    targetSphere.Center = newCenter;
                     var grid = (MyCubeGrid)info.Target;
                     //if (w.TrackingAi) Log.Line($"[Acquire] totalTargets:{adjTargetCount} - priorityTarget:{x} - approach:{info.Approaching} - Offense:{info.OffenseRating} - ObbCheck:{Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)} - CanShoot:{Weapon.CanShootTarget(w, newCenter, targetLinVel, targetAccel)}");
                     if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
@@ -168,8 +164,18 @@ namespace WeaponCore.Support
                         }
                         else w.SleepingTargets.Add(info.Target, newDir);
                     }
+
                     ai.Session.CanShoot++;
-                    if (!w.TrackingAi && !MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone) || w.TrackingAi && !Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
+                    if (!w.TrackingAi)
+                    {
+                        double intercept;
+                        var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, w.Prediction, out intercept) : targetCenter;
+                        var targetSphere = info.Target.PositionComp.WorldVolume;
+                        targetSphere.Center = newCenter;
+                        if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
+                    }
+                    else if (!Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)) continue;
+
                     if (!AcquireBlock(s, w.Comp.Ai, target, info, weaponPos, w)) continue;
 
                     targetType = TargetType.Other;
@@ -177,7 +183,6 @@ namespace WeaponCore.Support
 
                     return;
                 }
-
 
                 var meteor = info.Target as MyMeteor;
                 if (meteor != null && !s.TrackMeteors) continue;
