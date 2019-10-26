@@ -114,7 +114,7 @@ namespace WeaponCore.Support
             TargetInfo primeInfo = null;
             if (ai.PrimeTarget != null)
                 ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo);
-
+            Log.Line($"acquireTarget");
             TargetInfo gridInfo = null;
             var forceTarget = false;
             if (targetGrid != null)
