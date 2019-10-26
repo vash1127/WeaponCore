@@ -215,8 +215,8 @@ namespace WeaponCore.Platform
                 var newEl = weapon.Elevation + MathHelperD.Clamp(desiredElevation, -maxElevationStep, maxElevationStep);
                 var azDiff = oldAz - newAz;
                 var elDiff = oldEl - newEl;
-                var azLocked = azDiff > -1E-04d && azDiff < 1E-04d;
-                var elLocked = elDiff > -1E-04d && elDiff < 1E-04d;
+                var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
+                var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
                 var aim = !azLocked || !elLocked;
 
                 //var aim = (azDiff > 0 || azDiff < 0 || elDiff > 0 || elDiff < 0);
