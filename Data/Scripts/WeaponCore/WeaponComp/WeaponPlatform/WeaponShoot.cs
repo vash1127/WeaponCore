@@ -311,7 +311,6 @@ namespace WeaponCore.Platform
         private void ShootRayCheck()
         {
             Comp.LastRayCastTick = Comp.Ai.Session.Tick;
-            return;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
             /*
             if (true)
