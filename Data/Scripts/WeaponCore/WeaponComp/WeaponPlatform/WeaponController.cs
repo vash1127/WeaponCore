@@ -125,13 +125,13 @@ namespace WeaponCore.Platform
         internal void UpdatePivotPos()
         {
             var elevationComp =  ElevationPart.Item1.PositionComp;
-            var azimuthComp = AzimuthPart.Item1.PositionComp;
+            var azimuthMatrix = AzimuthPart.Item1.PositionComp.WorldMatrix;
             var weaponMatrix = elevationComp.WorldMatrix;
 
             var weaponCenter = weaponMatrix.Translation;
-            var azDown = azimuthComp.WorldMatrix.Down;
-            var azUp = azimuthComp.WorldMatrix.Up;
-            var centerTestPos = azimuthComp.WorldAABB.Center + (azDown * 1);
+            var azDown = azimuthMatrix.Down;
+            var azUp = azimuthMatrix.Up;
+            var centerTestPos = azimuthMatrix.Translation + (azDown * 1);
 
             MyPivotUp = azUp;
             MyPivotDir = weaponMatrix.Forward;
