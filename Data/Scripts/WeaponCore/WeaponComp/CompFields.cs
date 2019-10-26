@@ -105,6 +105,7 @@ namespace WeaponCore.Support
         {
             Ai = ai;
             MyCube = myCube;
+            BlockInventory = (MyInventory)MyCube.GetInventoryBase();
 
             if (myCube is IMyLargeMissileTurret)
             {
@@ -116,15 +117,15 @@ namespace WeaponCore.Support
             {
                 AiOnlyTurret = (Sandbox.ModAPI.IMyConveyorSorter) myCube;
                 IsAiOnlyTurret = true;
+                if (IsAiOnlyTurret)
+                    BlockInventory.Constraint = new MyInventoryConstraint("ammo");
             }
 
             //TODO add to config
-            BlockInventory = myCube.GetInventory(0);
-
-            BlockInventory.SetFlags(MyInventoryFlags.CanReceive);
+            
+            BlockInventory.Constraint.m_useDefaultIcon = false;
             BlockInventory.ResetVolume();
             BlockInventory.Refresh();
-            MaxInventoryMass = BlockInventory.MaxMass;
 
             SinkPower = IdlePower;
             

@@ -3,6 +3,7 @@ using System.Text;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 
@@ -23,6 +24,7 @@ namespace WeaponCore.Support
                 IsWorkingChanged(MyCube);
 
                 BlockInventory.ContentsChanged += OnContentsChanged;
+                BlockInventory.InventoryContentChanged += DetailedChanged;
                 Sink.CurrentInputChanged += CurrentInputChanged;
 
             }
@@ -43,6 +45,10 @@ namespace WeaponCore.Support
             }
         }
 
+        private void DetailedChanged(MyInventoryBase arg1, MyPhysicalInventoryItem arg2, MyFixedPoint arg3)
+        {
+            Log.Line($"DefId: {arg2.Content.SubtypeId.String}");
+        }
 
         private void OnContentsChanged(MyInventoryBase obj)
         {

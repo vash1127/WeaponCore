@@ -1,5 +1,7 @@
 ﻿using System;
+using Sandbox.Game;
 using Sandbox.ModAPI;
+using Sandbox.ModAPI.Ingame;
 using VRage.Game.Components;
 using VRage.Utils;
 using WeaponCore.Platform;
@@ -152,25 +154,28 @@ namespace WeaponCore.Support
                 }
 
                 MaxInventoryVolume += weapon.System.MaxAmmoVolume;
+                if (MyCube.HasInventory)
+                {
+
+                }
             }
 
             Ai.OptimalDps += OptimalDps;
 
             if (MyCube.HasInventory)
             {
-                if (!IsAiOnlyTurret)
+                BlockInventory.FixInventoryVolume(MaxInventoryVolume);
+
+                BlockInventory.Constraint.Clear();
+
+                foreach (var w in Platform.Weapons)
                 {
-                    foreach (var w in Platform.Weapons)
-                    {
-                        var otherId = w.System.MagazineDef.AmmoDefinitionId;
-                        //BlockInventory.Constraint.Add(otherId);
-                    }
-                }
-                else
-                {
-                    BlockInventory.FixInventoryVolume(MaxInventoryVolume);
+                    var magId = w.System.MagazineDef.Id;
+                    BlockInventory.Constraint.Add(magId);
                 }
                 BlockInventory.Refresh();
+
+
             }
 
             PowerInit();

@@ -94,10 +94,10 @@ namespace WeaponCore.Platform
                 Vector3D.CreateFromAzimuthAndElevation(azConstraint, elConstraint, out targetVector);
                 targetVector = Vector3D.Rotate(targetVector, weapon.MyPivotMatrix);
 
-                var testLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (targetVector * weapon.System.MaxTrajectory));
+                var testLine = new RayD(weapon.MyPivotPos, targetVector);
                 if (obb.Intersects(ref testLine) != null) canTrack = true;
 
-                weapon.limitLine = testLine;
+                weapon.limitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (targetVector * weapon.System.MaxTrajectory));
             }
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
