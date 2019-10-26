@@ -33,8 +33,8 @@ namespace WeaponCore.Platform
         private bool _newCycle;
         //private bool _firstRun = true;
         internal MyTuple<MyEntity, Matrix, Matrix> MuzzlePart;
-        internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> AzimuthPart;
-        internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> ElevationPart;
+        internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> AzimuthPart;
+        internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> ElevationPart;
         internal Vector3D[] TargetObbCorners = new Vector3D[9];
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;

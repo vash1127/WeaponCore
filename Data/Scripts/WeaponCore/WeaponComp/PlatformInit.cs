@@ -71,8 +71,8 @@ namespace WeaponCore.Platform
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
-                    AzimuthPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix> { Item1 = azimuthPart, Item2 = Matrix.Zero, Item3 = Matrix.Zero, Item4 = Matrix.Zero, Item5 = Matrix.Zero },
-                    ElevationPart = new MyTuple<MyEntity, Matrix, Matrix , Matrix, Matrix> { Item1 = elevationPart, Item2 = Matrix.Zero, Item3 = Matrix.Zero, Item4 = Matrix.Zero, Item5 = Matrix.Zero }
+                    AzimuthPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = azimuthPart},
+                    ElevationPart = new MyTuple<MyEntity, Matrix, Matrix , Matrix, Matrix ,Vector3> { Item1 = elevationPart}
 
                 };
 
@@ -148,6 +148,7 @@ namespace WeaponCore.Platform
                             Weapons[c].AzimuthPart.Item3 = azPrtPosFrom;
                             Weapons[c].AzimuthPart.Item4 = fullStepAzRotation;
                             Weapons[c].AzimuthPart.Item5 = rFullStepAzRotation;
+                            Weapons[c].AzimuthPart.Item6 = azimuthPartLocation;
                         }
 
 
@@ -166,6 +167,7 @@ namespace WeaponCore.Platform
                             Weapons[c].ElevationPart.Item3 = elPartPosFrom;
                             Weapons[c].ElevationPart.Item4 = fullStepElRotation;
                             Weapons[c].ElevationPart.Item5 = rFullStepElRotation;
+                            Weapons[c].ElevationPart.Item6 = elevationPartLocation;
                         }
                     }
 
