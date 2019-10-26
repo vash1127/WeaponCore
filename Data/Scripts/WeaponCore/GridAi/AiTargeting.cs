@@ -45,11 +45,11 @@ namespace WeaponCore.Support
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset(false);
-                //w.SleepTargets = true;
-                //w.LastBlockCount = w.Comp.Ai.BlockCount;
+                w.SleepTargets = true;
+                w.LastBlockCount = w.Comp.Ai.BlockCount;
                 w.Target.Expired = true;
             }
-            //else w.WakeTargets();
+            else w.WakeTargets();
         }
 
         internal static bool ReacquireTarget(Projectile p)

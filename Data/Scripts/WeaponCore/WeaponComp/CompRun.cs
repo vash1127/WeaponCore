@@ -48,7 +48,6 @@ namespace WeaponCore.Support
             }
             else
             {
-                Log.Line($"BeforeRemovedFromContainer");
                 //Sink.RemoveType(ref GId);
                 SinkInfo.RequiredInputFunc = null;
                 Sink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);

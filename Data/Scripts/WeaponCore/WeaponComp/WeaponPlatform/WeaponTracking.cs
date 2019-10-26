@@ -155,12 +155,13 @@ namespace WeaponCore.Platform
                 var targetDir = targetPos - weapon.MyPivotPos;
                 if (weapon == trackingWeapon)
                 {
+                    weapon.TargetObbCorners[8] = targetPos;
                     for (int i = 9; i-- > 0;)
                     {
                         if (i == 7)
                         {
                             var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrix);
-                            var obb = new MyOrientedBoundingBoxD(targetCenter, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix) { Center = targetPos };
+                            var obb = new MyOrientedBoundingBoxD(targetPos, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix) { Center = targetPos };
                             weapon.targetBox = obb;
                             obb.GetCorners(weapon.TargetObbCorners, 0);
                         }
@@ -303,8 +304,10 @@ namespace WeaponCore.Platform
                     double desiredElevation;
                     MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
 
-                    if (desiredAzimuth > 1 || desiredAzimuth < -1)
-                        desiredElevation = 0;
+                    //if (desiredAzimuth > 1 || desiredAzimuth < -1) desiredElevation = 0; 
+                    //that makes 0 fucking sense
+                    //why is he checking if azimuth is greater than a radian
+                    //that sets desired elevation to zero if the azimuth is greater than 57 deg
 
                     var maxAzimuthStep = weapon.System.AzStep;
                     var maxElevationStep = weapon.System.ElStep;

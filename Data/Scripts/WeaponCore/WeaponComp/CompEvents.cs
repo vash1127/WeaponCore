@@ -49,7 +49,7 @@ namespace WeaponCore.Support
 
         private void DetailedChanged(MyInventoryBase arg1, MyPhysicalInventoryItem arg2, MyFixedPoint arg3)
         {
-            Log.Line($"DefId: {arg2.Content.SubtypeId.String}");
+            //Log.Line($"DefId: {arg2.Content.SubtypeId.String}");
         }
 
         private void OnContentsChanged(MyInventoryBase obj)

@@ -4,7 +4,6 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
-using Sandbox.Game.Entities;
 
 namespace WeaponCore
 {
@@ -252,15 +251,12 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || (w.TargetResetTick < Tick && w.TargetResetTick > 0))
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)
                             {
                                 w.TargetResetTick = 0;
                                 if (comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
-                                {
                                     GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
-                                }
-                                else
-                                    GridAi.AcquireTarget(w);
+                                else GridAi.AcquireTarget(w);
                             }
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
