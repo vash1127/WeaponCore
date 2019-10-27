@@ -143,7 +143,7 @@ namespace WeaponCore.Support
                 if (info.IsGrid)
                 {
                     var grid = (MyCubeGrid)info.Target;
-                    //if (w.TrackingAi) Log.Line($"[Acquire] totalTargets:{adjTargetCount} - priorityTarget:{x} - grid:{grid.DebugName} - approach:{info.Approaching} - Offense:{info.OffenseRating} - ObbCheck:{Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)} - CanShoot:{Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)}");
+                    if (w.TrackingAi) Log.Line($"[Acquire] totalTargets:{adjTargetCount} - gridAi:{info.TargetAi != null} - priorityTarget:{x} - grid:{grid.DebugName} - approach:{info.Approaching} - Offense:{info.OffenseRating} - ObbCheck:{Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)} - CanShoot:{Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)}");
                     if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
                     if (w.SleepTargets)
                     {

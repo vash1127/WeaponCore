@@ -280,7 +280,7 @@ namespace WeaponCore
             {
                 var aPos = grid.GridIntegerToWorld(a.Position);
                 var bPos = grid.GridIntegerToWorld(b.Position);
-                return Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
+                return -Vector3D.DistanceSquared(aPos, hitPos).CompareTo(Vector3D.DistanceSquared(bPos, hitPos));
             });
         }
 
