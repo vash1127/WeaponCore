@@ -187,6 +187,8 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
 
+        
+
         public override void LoadData()
         {
             try
