@@ -115,18 +115,18 @@ namespace WeaponCore.Platform
 
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
-            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(centerTestPos, MyPivotUp, weaponCenter, MyPivotDir) + Vector3D.Rotate(AimOffset, new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up });
+            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(centerTestPos, MyPivotUp, weaponCenter, MyPivotDir);
+            if (!Vector3D.IsZero(AimOffset))
+                MyPivotPos += Vector3D.Rotate(AimOffset, new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up })
 
-            if (Comp.Debug)
-            {
-                MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
-                MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
-                MyPivotTestLine = new LineD(MyPivotPos + (elevationMatrix.Left * 10), MyPivotPos - (elevationMatrix.Left * 10));
-                MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
-                MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 19));
-                if (!Target.Expired)
-                    MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
-            }
+            if (!Comp.Debug) return;
+            MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
+            MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
+            MyPivotTestLine = new LineD(MyPivotPos + (elevationMatrix.Left * 10), MyPivotPos - (elevationMatrix.Left * 10));
+            MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
+            MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 19));
+            if (!Target.Expired)
+                MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
         }
     }
 }
