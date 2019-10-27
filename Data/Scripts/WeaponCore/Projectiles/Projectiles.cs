@@ -430,13 +430,15 @@ namespace WeaponCore.Projectiles
                     var p = cleanUp[j];
                     for (int i = 0; i < p.VrTrajectiles.Count; i++)
                         TrajectilePool[poolId].MarkForDeallocate(p.VrTrajectiles[i]);
-                    p.VrTrajectiles.Clear();
-                    p.T.Clean();
-                    ProjectilePool[poolId].MarkForDeallocate(p);
 
                     if (p.DynamicGuidance)
                         DynTrees.UnregisterProjectile(p);
                     p.PruningProxyId = -1;
+
+                    p.VrTrajectiles.Clear();
+
+                    p.T.Clean();
+                    ProjectilePool[poolId].MarkForDeallocate(p);
                 }
                 cleanUp.Clear();
                 if (ModelClosed[poolId])

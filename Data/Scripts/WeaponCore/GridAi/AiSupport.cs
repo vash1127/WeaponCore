@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 using static WeaponCore.Support.TargetingDefinition;
 namespace WeaponCore.Support
 {
@@ -237,6 +234,11 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
+                var xCollision = x.Approaching && x.CollisionDistSqr < 90000 && x.CollisionDistSqr > 100;
+                var yCollision = y.Approaching && y.CollisionDistSqr < 90000 && y.CollisionDistSqr > 100;
+                var collisionRisk = xCollision.CompareTo(yCollision);
+                if (collisionRisk != 0) return collisionRisk;
+
                 var xIsImminentThreat = x.Approaching && x.DistSqr < 640000 && x.OffenseRating > 0;
                 var yIsImminentThreat = y.Approaching && y.DistSqr < 640000 && y.OffenseRating > 0;
                 var imminentThreat = -xIsImminentThreat.CompareTo(yIsImminentThreat);
@@ -277,6 +279,7 @@ namespace WeaponCore.Support
             internal Vector3D TargetPos;
             internal Vector3 Velocity;
             internal double DistSqr;
+            internal double CollisionDistSqr;
             internal float VelLenSqr;
             internal bool IsGrid;
             internal bool Approaching;
@@ -315,6 +318,8 @@ namespace WeaponCore.Support
                     OffenseRating = (int) MathHelper.Clamp(targetAi.OptimalDps / myAi.OptimalDps, 1, 10);
                 else OffenseRating = 0;
                 Vector3D.DistanceSquared(ref TargetPos, ref myAi.GridCenter, out DistSqr);
+                var adjustedDist = DistSqr - (MyAi.GridRadius * MyAi.GridRadius);
+                CollisionDistSqr = adjustedDist > 0 ? adjustedDist : 0;
             }
         }
 
