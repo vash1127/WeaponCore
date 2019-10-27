@@ -409,30 +409,26 @@ namespace WeaponCore.Platform
 
                 var up = weapon.Comp.MyCube.WorldMatrix.Up;
                 var left = Vector3D.Cross(up, currentVector);
-                if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
-                    left.Normalize();
+                if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left)) left.Normalize();
                 var forward = Vector3D.Cross(left, up);
                 var constraintMatrix = new MatrixD {Forward = forward, Left = left, Up = up,};
 
                 double desiredAzimuth;
                 double desiredElevation;
-                MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth,
-                    out desiredElevation);
+                MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth, out desiredElevation);
 
-                var azConstraint = Math.Min(weapon.MaxAzimuthRadians,
-                    Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
-                var elConstraint = Math.Min(weapon.MaxElevationRadians,
-                    Math.Max(weapon.MinElevationRadians, desiredElevation));
+                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
                 var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
                 var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 weapon.IsTracking = !azConstrained && !elConstrained;
+
                 if (weapon.IsTracking && step)
                 {
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;
                     weapon.Azimuth += MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                    weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep,
-                        maxElevationStep);
+                    weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                     var azDiff = oldAz - weapon.Azimuth;
                     var elDiff = oldEl - weapon.Elevation;
                     var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
