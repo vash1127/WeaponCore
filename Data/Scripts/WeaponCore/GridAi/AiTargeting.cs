@@ -143,7 +143,6 @@ namespace WeaponCore.Support
                 if (info.IsGrid)
                 {
                     var grid = (MyCubeGrid)info.Target;
-                    //if (w.TrackingAi) Log.Line($"[Acquire] totalTargets:{adjTargetCount} - gridAi:{info.TargetAi != null} - priorityTarget:{x} - grid:{grid.DebugName} - approach:{info.Approaching} - Offense:{info.OffenseRating} - ObbCheck:{Weapon.CanShootTargetObb(w, info.Target, targetLinVel, targetAccel)} - CanShoot:{Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)}");
                     if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
                     if (w.SleepTargets)
                     {
@@ -256,7 +255,7 @@ namespace WeaponCore.Support
             var turretCheck = w != null;
             var lastBlocks = system.Values.Targeting.TopBlocks > 10 && distToEnt < 1000 ? system.Values.Targeting.TopBlocks : 10;
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, lastBlocks);
+            var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, totalBlocks);
             var physics = ai.Session.Physics;
             var iGrid = topEnt as IMyCubeGrid;
             var gridPhysics = iGrid?.Physics;
@@ -264,17 +263,19 @@ namespace WeaponCore.Support
             Vector3D targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
             var notSelfHit = false;
             var foundBlock = false;
+            var blocksChecked = 0;
             for (int i = 0; i < totalBlocks; i++)
             {
-                if (turretCheck && i > lastBlocks)
+                if (turretCheck && blocksChecked > lastBlocks)
                     break;
 
                 var next = i;
-                if (i < lastBlocks)
+                if (blocksChecked < lastBlocks)
                     next = deck[i];
 
                 var block = subSystemList[next];
                 if (block.MarkedForClose || !block.IsWorking) continue;
+                blocksChecked++;
 
                 ai.Session.BlockChecks++;
 
