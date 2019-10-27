@@ -435,10 +435,7 @@ namespace WeaponCore.Platform
                     var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
                     var aim = !azLocked || !elLocked;
                     if (aim)
-                    {
                         weapon.AimBarrel(azDiff, elDiff);
-                        Log.Line("test");
-                    }
                 }
             }
             else weapon.IsTracking = false;
