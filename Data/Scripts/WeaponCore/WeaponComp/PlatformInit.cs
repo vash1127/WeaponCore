@@ -128,7 +128,7 @@ namespace WeaponCore.Platform
                         var muzzlePartPosTo = Matrix.CreateTranslation(-muzzlePartLocation);
                         var muzzlePartPosFrom = Matrix.CreateTranslation(muzzlePartLocation);
 
-                        Weapons[c].MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix> { Item1 = muzzlePart, Item2 = muzzlePartPosTo, Item3 = muzzlePartPosFrom };
+                        Weapons[c].MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> { Item1 = muzzlePart, Item2 = muzzlePartPosTo, Item3 = muzzlePartPosFrom, Item4 = muzzlePartLocation };
                     }
 
                     if (comp.IsAiOnlyTurret)

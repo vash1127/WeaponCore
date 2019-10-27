@@ -113,7 +113,7 @@ namespace WeaponCore.Platform
             var azimuthMatrix = AzimuthPart.Item1.PositionComp.WorldMatrix;
             var weaponMatrix = ElevationPart.Item1.PositionComp.WorldMatrix;
 
-            var weaponCenter = MuzzlePart.Item1.PositionComp.WorldMatrix.Translation;
+            var weaponCenter = weaponMatrix.Translation - MuzzlePart.Item4;
             var azDown = azimuthMatrix.Down;
             var azUp = azimuthMatrix.Up;
             var centerTestPos = azimuthMatrix.Translation + (azDown * 1);
