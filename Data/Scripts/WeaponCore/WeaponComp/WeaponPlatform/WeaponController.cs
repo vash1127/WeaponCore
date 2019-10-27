@@ -109,19 +109,19 @@ namespace WeaponCore.Platform
         internal void UpdatePivotPos()
         {
             var azimuthMatrix = AzimuthPart.Item1.PositionComp.WorldMatrix;
-            var weaponMatrix = ElevationPart.Item1.PositionComp.WorldMatrix;
+            var elevationMatrix = ElevationPart.Item1.PositionComp.WorldMatrix;
             var weaponCenter = MuzzlePart.Item1.PositionComp.WorldMatrix.Translation;
             var centerTestPos = azimuthMatrix.Translation + (azimuthMatrix.Down * 1);
 
             MyPivotUp = azimuthMatrix.Up;
-            MyPivotDir = weaponMatrix.Forward;
-            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(centerTestPos, MyPivotUp, weaponCenter, MyPivotDir) + Vector3D.Rotate(AimOffset, new MatrixD { Forward = MyPivotDir, Left = weaponMatrix.Left, Up = weaponMatrix.Up });
+            MyPivotDir = elevationMatrix.Forward;
+            MyPivotPos = UtilsStatic.GetClosestPointOnLine1(centerTestPos, MyPivotUp, weaponCenter, MyPivotDir) + Vector3D.Rotate(AimOffset, new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up });
 
             if (Comp.Debug)
             {
                 MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
                 MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
-                MyPivotTestLine = new LineD(MyPivotPos + (weaponMatrix.Left * 10), MyPivotPos - (weaponMatrix.Left * 10));
+                MyPivotTestLine = new LineD(MyPivotPos + (elevationMatrix.Left * 10), MyPivotPos - (elevationMatrix.Left * 10));
                 MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
                 MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 19));
                 if (!Target.Expired)
