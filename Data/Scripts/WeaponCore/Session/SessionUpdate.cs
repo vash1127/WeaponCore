@@ -249,14 +249,14 @@ namespace WeaponCore
                             }
                             w.Reloading = false;
                         }
-                        if (w.SeekTarget)
+                        if (w.SeekTarget || gridAi.TargetResetTick == Tick)
                         {
                             if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)
                             {
                                 w.TargetResetTick = 0;
                                 if (comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
                                     GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
-                                else GridAi.AcquireTarget(w);
+                                else GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
                             }
                         }
                         else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)

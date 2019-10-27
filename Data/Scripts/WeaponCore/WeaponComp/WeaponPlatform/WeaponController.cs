@@ -68,8 +68,6 @@ namespace WeaponCore.Platform
             }
             else
             {
-                Azimuth -= azimuthChange;
-                Elevation -= elevationChange;
                 Comp.ControllableTurret.Elevation = (float)Elevation;
                 Comp.ControllableTurret.Azimuth = (float)Azimuth;
             }

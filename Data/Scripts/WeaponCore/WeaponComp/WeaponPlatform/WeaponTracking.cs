@@ -241,7 +241,7 @@ namespace WeaponCore.Platform
 
             return isAligned;
         }
-
+        /*
         internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
         {
             Vector3D targetPos;
@@ -268,8 +268,6 @@ namespace WeaponCore.Platform
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
             else
                 targetPos = targetCenter;
-
-            weapon.TargetPos = targetPos;
 
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var targetDir = targetPos - weapon.MyPivotPos;
@@ -304,11 +302,6 @@ namespace WeaponCore.Platform
                     double desiredElevation;
                     MathFuncs.GetRotationAngles(ref targetDir, ref weapon.MyPivotMatrix, out desiredAzimuth, out desiredElevation);
 
-                    //if (desiredAzimuth > 1 || desiredAzimuth < -1) desiredElevation = 0; 
-                    //that makes 0 fucking sense
-                    //why is he checking if azimuth is greater than a radian
-                    //that sets desired elevation to zero if the azimuth is greater than 57 deg
-
                     var maxAzimuthStep = weapon.System.AzStep;
                     var maxElevationStep = weapon.System.ElStep;
 
@@ -322,6 +315,123 @@ namespace WeaponCore.Platform
                     var elLocked = elDiff > -1E-06d && elDiff < 1E-06d;
                     var aim = !azLocked || !elLocked;
 
+                    if (aim)
+                        weapon.AimBarrel(azDiff, elDiff);
+                }
+            }
+
+            if (!step) return weapon.IsTracking;
+
+            var isAligned = false;
+
+            if (weapon.IsTracking)
+                isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            else
+                weapon.SeekTarget = true;
+
+            var wasAligned = weapon.IsAligned;
+            weapon.IsAligned = isAligned;
+
+            var alignedChange = wasAligned != isAligned;
+            if (alignedChange && isAligned)
+            {
+                if (weapon.System.DesignatorWeapon)
+                {
+                    var reset = false;
+                    for (int i = 0; i < weapon.Comp.Platform.Weapons.Length; i++)
+                    {
+                        var w = weapon.Comp.Platform.Weapons[i];
+
+                        if (w.Target.Expired && w != weapon)
+                        {
+                            GridAi.AcquireTarget(w, false, weapon.Target.Entity.GetTopMostParent());
+                            if (!w.Target.Expired)
+                                reset = false;
+                        }
+                    }
+                    if (reset)
+                    {
+                        weapon.SeekTarget = true;
+                        weapon.IsAligned = false;
+                        weapon.Target.Expired = true;
+                    }
+                }
+                else
+                    weapon.StartShooting();
+            }
+            else if (alignedChange && !weapon.DelayCeaseFire)
+                weapon.StopShooting();
+
+            weapon.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
+            return weapon.IsTracking;
+        }
+        */
+
+        internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
+        {
+            Vector3D targetPos;
+            Vector3 targetLinVel = Vector3.Zero;
+            Vector3 targetAccel = Vector3.Zero;
+            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            double timeToIntercept;
+            double rangeToTarget;
+            var topMostEnt = target.Entity?.GetTopMostParent();
+            if (target.Projectile != null)
+            {
+                targetLinVel = target.Projectile.Velocity;
+                targetAccel = target.Projectile.AccelVelocity;
+            }
+            else if (topMostEnt?.Physics != null)
+            {
+                targetLinVel = topMostEnt.Physics.LinearVelocity;
+                targetAccel = topMostEnt.Physics.LinearAcceleration;
+            }
+            if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
+            if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
+            if (weapon.Prediction != Prediction.Off)
+                targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
+            else
+                targetPos = targetCenter;
+            
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
+            var targetDir = targetPos - weapon.MyPivotPos;
+
+            if (rangeToTarget <= weapon.System.MaxTrajectorySqr)
+            {
+                var maxAzimuthStep = weapon.System.AzStep;
+                var maxElevationStep = weapon.System.ElStep;
+
+                Vector3D currentVector;
+                Vector3D.CreateFromAzimuthAndElevation(weapon.Azimuth, weapon.Elevation, out currentVector);
+                currentVector = Vector3D.Rotate(currentVector, weapon.Comp.MyCube.WorldMatrix);
+
+                var up = weapon.Comp.MyCube.WorldMatrix.Up;
+                var left = Vector3D.Cross(up, currentVector);
+                if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
+                    left.Normalize();
+                var forward = Vector3D.Cross(left, up);
+                var constraintMatrix = new MatrixD { Forward = forward, Left = left, Up = up, };
+
+                double desiredAzimuth;
+                double desiredElevation;
+                MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth, out desiredElevation);
+
+                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
+                var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+                var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
+                weapon.IsTracking = !azConstrained && !elConstrained;
+                if (weapon.IsTracking && step)
+                {
+                    var oldAz = weapon.Azimuth;
+                    var oldEl = weapon.Elevation;
+                    weapon.Azimuth += MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
+                    weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                    var azDiff = oldAz - weapon.Azimuth;
+                    var elDiff = oldEl - weapon.Elevation;
+                    var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
+                    var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
+                    var aim = !azLocked || !elLocked;
                     if (aim)
                         weapon.AimBarrel(azDiff, elDiff);
                 }

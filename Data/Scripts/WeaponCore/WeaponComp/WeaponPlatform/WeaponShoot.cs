@@ -1,5 +1,4 @@
-﻿using System;
-using Sandbox.Game.Entities;
+﻿using Sandbox.Game.Entities;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.Entity;

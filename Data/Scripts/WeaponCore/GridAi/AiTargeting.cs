@@ -16,7 +16,7 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        internal static void AcquireTarget(Weapon w, bool attemptReset = false, MyEntity targetGrid = null)
+        internal static void AcquireTarget(Weapon w, bool attemptReset, MyEntity targetGrid = null)
         {
             w.HitOther = false;
             var tick = w.Comp.Ai.Session.Tick;
