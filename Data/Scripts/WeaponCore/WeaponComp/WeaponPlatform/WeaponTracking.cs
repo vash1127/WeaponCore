@@ -419,8 +419,8 @@ namespace WeaponCore.Platform
 
                 var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
                 var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
-                var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
-                var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
+                var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
+                var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 weapon.IsTracking = !azConstrained && !elConstrained;
 
                 if (weapon.IsTracking && step)
@@ -435,7 +435,10 @@ namespace WeaponCore.Platform
                     var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
                     var aim = !azLocked || !elLocked;
                     if (aim)
+                    {
                         weapon.AimBarrel(azDiff, elDiff);
+                        Log.Line("test");
+                    }
                 }
             }
             else weapon.IsTracking = false;
