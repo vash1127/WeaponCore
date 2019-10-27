@@ -82,7 +82,7 @@ namespace WeaponCore.Platform
                 _newCycle = true;
             }
             var userControlled = Comp.Gunner || ManualShoot != TerminalActionState.ShootOff;
-            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 89 && Target != null && !DelayCeaseFire) ShootRayCheck();
+            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null && !DelayCeaseFire) ShootRayCheck();
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
@@ -312,12 +312,14 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.Ai.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
+            /*
             if (true)
             {
                 masterWeapon.Target.Expired = true;
                 if (masterWeapon != this) Target.Expired = true;
                 return;
             }
+            */
             if (Target.Projectile != null)
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
