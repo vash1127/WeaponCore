@@ -53,7 +53,7 @@ namespace WeaponCore.Support
                                 if (!grid.IsPowered)
                                     continue;
 
-                                NewEntities.Add(new DetectInfo(ent, entInfo));
+                                NewEntities.Add(new DetectInfo(Session, ent, entInfo));
                                 ValidGrids.Add(ent);
                                 GridAi targetAi;
                                 if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))
@@ -62,7 +62,7 @@ namespace WeaponCore.Support
                                     TargetAisTmp.Add(targetAi);
                                 }
                             }
-                            else NewEntities.Add(new DetectInfo(ent, entInfo));
+                            else NewEntities.Add(new DetectInfo(Session, ent, entInfo));
                         }
                     }
                     FinalizeTargetDb();

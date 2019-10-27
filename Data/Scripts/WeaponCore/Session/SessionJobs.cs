@@ -18,7 +18,9 @@ namespace WeaponCore
         public void UpdateDbsInQueue()
         {
             DbsUpdating = true;
-            MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            //MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            ProcessDbs();
+            ProcessDbsCallBack();
         }
 
         private void ProcessDbs()
@@ -57,12 +59,12 @@ namespace WeaponCore
                     var grid = ent as MyCubeGrid;
                     var targetInfo = db.TargetInfoPool.Get();
                     if (grid == null)
-                        targetInfo.Init(detectInfo.EntInfo, ent, false, 1, db.MyGrid, db, null);
+                        targetInfo.Init(ref detectInfo, false, 1, db.MyGrid, db, null);
                     else
                     {
                         GridAi targetAi;
                         GridTargetingAIs.TryGetValue(grid, out targetAi);
-                        targetInfo.Init(detectInfo.EntInfo, grid, true, GridToFatMap[grid].Count, db.MyGrid, db, targetAi);
+                        targetInfo.Init(ref detectInfo, true, GridToFatMap[grid].Count, db.MyGrid, db, targetAi);
                     }
 
                     db.SortedTargets.Add(targetInfo);

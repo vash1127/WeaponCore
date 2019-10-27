@@ -1,13 +1,9 @@
 using System;
-using Sandbox.Common.ObjectBuilders;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
-using VRageMath;
 using WeaponCore.Support;
 using WeaponThread;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -216,8 +212,6 @@ namespace WeaponCore
 
         protected override void UnloadData()
         {
-
-            
             MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
             MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
             MyAPIGateway.Utilities.UnregisterMessageHandler(7773, UpgradeHandler);

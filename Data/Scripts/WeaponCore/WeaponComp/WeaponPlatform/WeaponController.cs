@@ -1,16 +1,4 @@
-﻿using Sandbox.Common.ObjectBuilders;
-using Sandbox.Game;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using VRage.Input;
-using VRage.Utils;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform

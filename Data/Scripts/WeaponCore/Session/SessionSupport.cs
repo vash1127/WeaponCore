@@ -70,7 +70,7 @@ namespace WeaponCore
                 {
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                     {
-                        Log.Line($"grid not yet in map2: {weaponComp.MyCube.MarkedForClose} - {weaponComp.MyCube.InScene} - {weaponComp.MyCube.IsWorking} - {weaponComp.MyCube.IsFunctional} - {weaponComp.MyCube.CubeGrid.DebugName} - {weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid}");
+                        Log.Line($"grid not in map2: marked:{weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - working:{weaponComp.MyCube.IsWorking} - functional:{weaponComp.MyCube.IsFunctional} - {weaponComp.MyCube.CubeGrid.DebugName} - gridMisMatch:{weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid}");
                         continue;
                     }
                     //Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");

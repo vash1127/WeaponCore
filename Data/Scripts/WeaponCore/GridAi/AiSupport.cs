@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -222,11 +224,24 @@ namespace WeaponCore.Support
         {
             internal MyEntity Parent;
             internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
+            internal bool Armed;
 
-            public DetectInfo(MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
+            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
             {
                 Parent = parent;
                 EntInfo = entInfo;
+                var armed = false;
+                if (parent is MyCubeGrid)
+                {
+                    ConcurrentDictionary<BlockTypes, MyConcurrentList<MyCubeBlock>> blockTypeMap;
+                    if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
+                    {
+                        MyConcurrentList<MyCubeBlock> weaponBlocks;
+                        if (blockTypeMap.TryGetValue(BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
+                            armed = true;
+                    }
+                }
+                Armed = armed;
             }
         }
 
@@ -234,8 +249,8 @@ namespace WeaponCore.Support
         {
             public int Compare(TargetInfo x, TargetInfo y)
             {
-                var xCollision = x.Approaching && x.CollisionDistSqr < 90000 && x.CollisionDistSqr > 100;
-                var yCollision = y.Approaching && y.CollisionDistSqr < 90000 && y.CollisionDistSqr > 100;
+                var xCollision = x.Approaching && x.CollisionDistSqr < 90000 && x.VelLenSqr > 100;
+                var yCollision = y.Approaching && y.CollisionDistSqr < 90000 && y.VelLenSqr > 100;
                 var collisionRisk = xCollision.CompareTo(yCollision);
                 if (collisionRisk != 0) return collisionRisk;
 
@@ -289,17 +304,17 @@ namespace WeaponCore.Support
             internal GridAi MyAi;
             internal GridAi TargetAi;
 
-            internal void Init(Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, MyEntity target, bool isGrid, int partCount, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
+            internal void Init(ref DetectInfo detectInfo, bool isGrid, int partCount, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
-                EntInfo = entInfo;
-                Target = target;
+                EntInfo = detectInfo.EntInfo;
+                Target = detectInfo.Parent;
                 IsGrid = isGrid;
 
                 PartCount = partCount;
                 MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;
-                Velocity = target.Physics.LinearVelocity;
+                Velocity = Target.Physics.LinearVelocity;
                 VelLenSqr = Velocity.LengthSquared();
                 TargetPos = Target.PositionComp.WorldAABB.Center;
                 if (!MyUtils.IsZero(Velocity, 1E-02F))
@@ -316,6 +331,7 @@ namespace WeaponCore.Support
 
                 if (targetAi != null)
                     OffenseRating = (int) MathHelper.Clamp(targetAi.OptimalDps / myAi.OptimalDps, 1, 10);
+                else if (detectInfo.Armed) OffenseRating = 1;
                 else OffenseRating = 0;
                 Vector3D.DistanceSquared(ref TargetPos, ref myAi.GridCenter, out DistSqr);
                 var adjustedDist = DistSqr - (MyAi.GridRadius * MyAi.GridRadius);
