@@ -1,14 +1,11 @@
 ﻿using System;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Utils;
-using VRageRender;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -126,6 +123,61 @@ namespace WeaponCore
 
             if (remote != null)
                 _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
+        }
+
+        private void PlayerControlReleased(IMyEntityController myEntityController)
+        {
+            MyAPIGateway.Utilities.InvokeOnGameThread(PlayerReleasedControl);
+        }
+
+        private void PlayerControlAcquired(IMyEntityController myEntityController)
+        {
+            var cockpit = ControlledEntity as MyCockpit;
+            var remote = ControlledEntity as MyRemoteControl;
+
+            if (cockpit != null && UpdateLocalAiAndCockpit())
+                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
+
+            if (remote != null)
+                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
+
+            MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
+        }
+
+        private void PlayerConnected(long id)
+        {
+            try
+            {
+                if (Players.ContainsKey(id)) return;
+                MyAPIGateway.Multiplayer.Players.GetPlayers(null, myPlayer => FindPlayer(myPlayer, id));
+            }
+            catch (Exception ex) { Log.Line($"Exception in PlayerConnected: {ex}"); }
+        }
+
+        private void PlayerDisconnected(long l)
+        {
+            try
+            {
+                IMyPlayer removedPlayer;
+                Players.TryRemove(l, out removedPlayer);
+                PlayerEventId++;
+                if (removedPlayer.SteamUserId == AuthorSteamId)
+                {
+                    AuthorPlayerId = 0;
+                }
+            }
+            catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}"); }
+        }
+
+        private bool FindPlayer(IMyPlayer player, long id)
+        {
+            if (player.IdentityId == id)
+            {
+                Players[id] = player;
+                PlayerEventId++;
+                if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
+            }
+            return false;
         }
     }
 }
