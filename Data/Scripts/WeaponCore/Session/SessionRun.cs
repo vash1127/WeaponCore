@@ -103,7 +103,8 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
 
-                PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
+                //PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
+                Projectiles.Update();
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                     Pointer.SelectTarget();
@@ -132,8 +133,8 @@ namespace WeaponCore
 
                 DsUtil.Start("projectiles");
 
-                if (!PTask.IsComplete)
-                    PTask.Wait();
+                //if (!PTask.IsComplete)
+                    //PTask.Wait();
 
                 DsUtil.Complete("projectiles", true);
 
