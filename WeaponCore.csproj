@@ -70,6 +70,8 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponDefinitions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponStructure.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionJobs.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionLocalPlayer.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\CustomController.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MathFuncs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
