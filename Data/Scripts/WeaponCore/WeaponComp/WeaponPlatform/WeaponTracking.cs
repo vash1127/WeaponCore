@@ -392,7 +392,9 @@ namespace WeaponCore.Platform
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction, out timeToIntercept);
             else
                 targetPos = targetCenter;
-            
+
+            weapon.TargetPos = targetPos;
+
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var targetDir = targetPos - weapon.MyPivotPos;
 
@@ -410,14 +412,17 @@ namespace WeaponCore.Platform
                 if (!Vector3D.IsUnit(ref left) && !Vector3D.IsZero(left))
                     left.Normalize();
                 var forward = Vector3D.Cross(left, up);
-                var constraintMatrix = new MatrixD { Forward = forward, Left = left, Up = up, };
+                var constraintMatrix = new MatrixD {Forward = forward, Left = left, Up = up,};
 
                 double desiredAzimuth;
                 double desiredElevation;
-                MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth, out desiredElevation);
+                MathFuncs.GetRotationAngles(ref targetDir, ref constraintMatrix, out desiredAzimuth,
+                    out desiredElevation);
 
-                var azConstraint = Math.Min(weapon.MaxAzimuthRadians, Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
-                var elConstraint = Math.Min(weapon.MaxElevationRadians, Math.Max(weapon.MinElevationRadians, desiredElevation));
+                var azConstraint = Math.Min(weapon.MaxAzimuthRadians,
+                    Math.Max(weapon.MinAzimuthRadians, desiredAzimuth));
+                var elConstraint = Math.Min(weapon.MaxElevationRadians,
+                    Math.Max(weapon.MinElevationRadians, desiredElevation));
                 var azConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
                 var elConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 weapon.IsTracking = !azConstrained && !elConstrained;
@@ -426,7 +431,8 @@ namespace WeaponCore.Platform
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;
                     weapon.Azimuth += MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                    weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                    weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep,
+                        maxElevationStep);
                     var azDiff = oldAz - weapon.Azimuth;
                     var elDiff = oldEl - weapon.Elevation;
                     var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
@@ -436,6 +442,7 @@ namespace WeaponCore.Platform
                         weapon.AimBarrel(azDiff, elDiff);
                 }
             }
+            else weapon.IsTracking = false;
 
             if (!step) return weapon.IsTracking;
 
