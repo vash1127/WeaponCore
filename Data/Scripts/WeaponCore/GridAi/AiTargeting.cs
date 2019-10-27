@@ -375,9 +375,6 @@ namespace WeaponCore.Support
                             ai.Session.CanShoot++;
                             var castRay = false;
 
-                            //if (Weapon.CanShootTargetObb(w, cube, targetLinVel, targetAccel))
-                             //   castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
-
                             if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
                               castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
 
@@ -474,7 +471,7 @@ namespace WeaponCore.Support
             if (newEntity2 != null) top5.Add(newEntity2);   
             if (newEntity3 != null) top5.Add(newEntity3);
 
-            if (!notSelfHit) w.HitOther = true;
+            if (!notSelfHit && w != null) w.HitOther = true;
         }
 
         private static void AcquireProjectile(Weapon w, out TargetType targetType)
