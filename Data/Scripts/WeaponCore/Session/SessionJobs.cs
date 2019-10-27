@@ -18,9 +18,7 @@ namespace WeaponCore
         public void UpdateDbsInQueue()
         {
             DbsUpdating = true;
-            //MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
-            ProcessDbs();
-            ProcessDbsCallBack();
+            MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
         }
 
         private void ProcessDbs()
