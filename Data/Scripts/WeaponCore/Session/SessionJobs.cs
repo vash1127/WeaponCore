@@ -136,70 +136,69 @@ namespace WeaponCore
             {
                 var grid = DirtyGridsTmp[i];
                 MyConcurrentList<MyCubeBlock> allFat;
-                ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> collection;
+                var newTypeMap = BlockTypePool.Get();
+                newTypeMap[Offense] = ConcurrentListPool.Get();
+                newTypeMap[Utility] = ConcurrentListPool.Get();
+                newTypeMap[Thrust] = ConcurrentListPool.Get();
+                newTypeMap[Steering] = ConcurrentListPool.Get();
+                newTypeMap[Jumping] = ConcurrentListPool.Get();
+                newTypeMap[Power] = ConcurrentListPool.Get();
+                newTypeMap[Production] = ConcurrentListPool.Get();
+
+                ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> noFatTypeMap;
                 if (GridToFatMap.TryGetValue(grid, out allFat))
                 {
-                    if (GridToBlockTypeMap.TryRemove(grid, out collection))
+                    for (int j = 0; j < allFat.Count; j++)
                     {
-                        foreach (var item in collection)
-                            item.Value.Clear();
+                        var fat = allFat[j];
+                        if (fat == null) continue;
 
-                        for (int j = 0; j < allFat.Count; j++)
+                        using (fat.Pin())
                         {
-                            var fat = allFat[j];
-                            if (fat == null) continue;
-
-                            using (fat.Pin())
-                            {
-                                if (fat.MarkedForClose) continue;
-                                if (fat is IMyProductionBlock) collection[Production].Add(fat);
-                                else if (fat is IMyPowerProducer) collection[Power].Add(fat);
-                                else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId)) collection[Offense].Add(fat);
-                                else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna) collection[Utility].Add(fat);
-                                else if (fat is MyThrust) collection[Thrust].Add(fat);
-                                else if (fat is MyGyro) collection[Steering].Add(fat);
-                                else if (fat is MyJumpDrive) collection[Jumping].Add(fat);
-                            }
+                            if (fat.MarkedForClose) continue;
+                            if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
+                            else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
+                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId)) newTypeMap[Offense].Add(fat);
+                            else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna) newTypeMap[Utility].Add(fat);
+                            else if (fat is MyThrust) newTypeMap[Thrust].Add(fat);
+                            else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
+                            else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);
                         }
+                    }
+
+                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> oldTypeMap; 
+                    if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
+                    {
+                        GridToBlockTypeMap[grid] = newTypeMap;
+                        //if (GridToBlockTypeMap.ContainsKey(grid)) GridToBlockTypeMap[grid] = newTypeMap;
+                        //else Log.Line("readd failed");
+
+                        foreach (var item in oldTypeMap)
+                            item.Value.Clear();
                     }
                     else
                     {
-                        collection = BlockTypePool.Get();
-
-                        collection[Offense] = ConcurrentListPool.Get();
-                        collection[Utility] = ConcurrentListPool.Get();
-                        collection[Thrust] = ConcurrentListPool.Get();
-                        collection[Steering] = ConcurrentListPool.Get();
-                        collection[Jumping] = ConcurrentListPool.Get();
-                        collection[Power] = ConcurrentListPool.Get();
-                        collection[Production] = ConcurrentListPool.Get();
-
-                        for (int j = 0; j < allFat.Count; j++)
+                        if (!GridToBlockTypeMap.TryAdd(grid, newTypeMap))
                         {
-                            var fat = allFat[j];
-                            if (fat == null) continue;
-
-                            using (fat.Pin())
-                            {
-                                if (fat.MarkedForClose) continue;
-                                if (fat is IMyProductionBlock) collection[Production].Add(fat);
-                                else if (fat is IMyPowerProducer) collection[Power].Add(fat);
-                                else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId)) collection[Offense].Add(fat);
-                                else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna) collection[Utility].Add(fat);
-                                else if (fat is MyThrust) collection[Thrust].Add(fat);
-                                else if (fat is MyGyro) collection[Steering].Add(fat);
-                                else if (fat is MyJumpDrive) collection[Jumping].Add(fat);
-                            }
+                            Log.Line("failed to add");
+                            ConcurrentListPool.Return(newTypeMap[Offense]);
+                            ConcurrentListPool.Return(newTypeMap[Offense]);
+                            ConcurrentListPool.Return(newTypeMap[Utility]);
+                            ConcurrentListPool.Return(newTypeMap[Thrust]);
+                            ConcurrentListPool.Return(newTypeMap[Steering]);
+                            ConcurrentListPool.Return(newTypeMap[Jumping]);
+                            ConcurrentListPool.Return(newTypeMap[Power]);
+                            ConcurrentListPool.Return(newTypeMap[Production]);
+                            BlockTypePool.Return(newTypeMap);
                         }
-                        GridToBlockTypeMap.Add(grid, collection);
+
                     }
                 }
-                else if (GridToBlockTypeMap.TryRemove(grid, out collection))
+                else if (GridToBlockTypeMap.TryRemove(grid, out noFatTypeMap))
                 {
-                    foreach (var item in collection)
+                    foreach (var item in noFatTypeMap)
                         item.Value.Clear();
-
-                    BlockTypePool.Return(collection);
+                    BlockTypePool.Return(noFatTypeMap);
                 }
             }
             DirtyGridsTmp.Clear();
