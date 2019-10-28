@@ -137,6 +137,7 @@ namespace WeaponCore.Support
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
+
                 w.Comp.Ai.Session.TargetChecks++;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
@@ -144,7 +145,7 @@ namespace WeaponCore.Support
                 {
                     var grid = (MyCubeGrid)info.Target;
                     if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
-                    if (w.SleepTargets)
+                    if (w.SleepTargets && !primeTarget)
                     {
                         Vector3D oldDir;
                         var newDir = targetCenter - weaponPos;
@@ -232,12 +233,12 @@ namespace WeaponCore.Support
                                 target.Top5.Clear();
 
                             target.LastBlockType = bt;
-                            GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w);
-                            if (target.Entity != null) return true;
+                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w)) return true;
                         }
                         else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w)) return true;
                     }
                 }
+
                 if (system.OnlySubSystems) return false;
             }
             MyConcurrentList<MyCubeBlock> fatList;
@@ -264,8 +265,16 @@ namespace WeaponCore.Support
             var notSelfHit = false;
             var foundBlock = false;
             var blocksChecked = 0;
+            var blocksStarted = 0;
+
+            TargetInfo primeInfo = null;
+
+            if (ai.PrimeTarget != null)
+                ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo);
+
             for (int i = 0; i < totalBlocks; i++)
             {
+                blocksStarted++;
                 if (turretCheck && blocksChecked > lastBlocks)
                     break;
 
@@ -275,7 +284,6 @@ namespace WeaponCore.Support
 
                 var block = subSystemList[next];
                 if (block.MarkedForClose || !block.IsWorking) continue;
-                blocksChecked++;
 
                 ai.Session.BlockChecks++;
 
@@ -284,6 +292,7 @@ namespace WeaponCore.Support
                 double rayDist;
                 if (turretCheck)
                 {
+                    blocksChecked++;
                     ai.Session.CanShoot++;
                     if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel)) continue;
 
@@ -297,7 +306,8 @@ namespace WeaponCore.Support
                     if (hitInfo == null || hitInfo.HitEntity != ai.MyGrid)
                         notSelfHit = true;
 
-                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase || hitInfo.HitEntity == ai.MyGrid)
+                    if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase ||
+                        hitInfo.HitEntity == ai.MyGrid)
                         continue;
 
                     var hitGrid = hitInfo.HitEntity as MyCubeGrid;
@@ -311,11 +321,14 @@ namespace WeaponCore.Support
                         else
                         {
                             var relationship = target.FiringCube.GetUserRelationToOwner(hitGrid.BigOwners[0]);
-                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
+                            enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner &&
+                                    relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
                         }
+
                         if (!enemy)
                             continue;
                     }
+
                     Vector3D.Distance(ref weaponPos, ref blockPos, out rayDist);
                     var shortDist = rayDist * (1 - hitInfo.Fraction);
                     var origDist = rayDist * hitInfo.Fraction;
@@ -324,16 +337,18 @@ namespace WeaponCore.Support
                     foundBlock = true;
                     break;
                 }
+
                 Vector3D.Distance(ref weaponPos, ref blockPos, out rayDist);
                 target.Set(block, block.PositionComp.WorldAABB.Center, rayDist, rayDist, block.GetTopMostParent().EntityId);
                 foundBlock = true;
                 break;
             }
             if (turretCheck && !notSelfHit) w.HitOther = true;
+            if (!foundBlock && primeInfo != null && primeInfo.Target?.GetTopMostParent() == info.Target?.GetTopMostParent()) Log.Line($"completed without block total:{totalBlocks} - started:{blocksStarted} - tried:{blocksChecked} - last:{lastBlocks}");
             return foundBlock;
         }
 
-        internal static void GetClosestHitableBlockOfType(MyConcurrentList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null)
+        internal static bool GetClosestHitableBlockOfType(MyConcurrentList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -473,6 +488,8 @@ namespace WeaponCore.Support
             if (newEntity3 != null) top5.Add(newEntity3);
 
             if (!notSelfHit && w != null) w.HitOther = true;
+
+            return hitInfo != null;
         }
 
         private static void AcquireProjectile(Weapon w, out TargetType targetType)

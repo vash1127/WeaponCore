@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -338,6 +339,14 @@ namespace WeaponCore.Platform
                     if (masterWeapon != this) Target.Expired = true;
                     return;
                 }
+                var cube = Target.Entity as MyCubeBlock;
+                if (cube != null && !cube.IsWorking)
+                {
+                    //Log.Line($"{System.WeaponName} - ShootRayCheckFail - block is no longer working - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
+                    masterWeapon.Target.Expired = true;
+                    if (masterWeapon != this) Target.Expired = true;
+                    return;
+                }  
                 var topMostEnt = Target.Entity.GetTopMostParent();
                 if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
                 {
