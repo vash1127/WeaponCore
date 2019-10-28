@@ -292,9 +292,9 @@ namespace WeaponCore.Support
                 double rayDist;
                 if (turretCheck)
                 {
-                    blocksChecked++;
                     ai.Session.CanShoot++;
                     if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel)) continue;
+                    blocksChecked++;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
                         continue;
@@ -344,7 +344,7 @@ namespace WeaponCore.Support
                 break;
             }
             if (turretCheck && !notSelfHit) w.HitOther = true;
-            if (!foundBlock && primeInfo != null && primeInfo.Target?.GetTopMostParent() == info.Target?.GetTopMostParent()) Log.Line($"completed without block total:{totalBlocks} - started:{blocksStarted} - tried:{blocksChecked} - last:{lastBlocks}");
+            if (!foundBlock && primeInfo != null && primeInfo.Target?.GetTopMostParent() == topEnt) Log.Line($"completed without block total:{totalBlocks} - started:{blocksStarted} - tried:{blocksChecked} - last:{lastBlocks}");
             return foundBlock;
         }
 
