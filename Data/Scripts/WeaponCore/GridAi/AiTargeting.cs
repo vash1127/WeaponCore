@@ -145,7 +145,7 @@ namespace WeaponCore.Support
                 {
                     var grid = (MyCubeGrid)info.Target;
                     if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
-                    if (w.SleepTargets && !primeTarget)
+                    if (w.SleepTargets && !attemptReset)
                     {
                         Vector3D oldDir;
                         var newDir = targetCenter - weaponPos;
@@ -164,7 +164,6 @@ namespace WeaponCore.Support
                         }
                         else w.SleepingTargets.Add(info.Target, newDir);
                     }
-
                     ai.Session.CanShoot++;
                     if (!w.TrackingAi)
                     {
@@ -251,10 +250,23 @@ namespace WeaponCore.Support
             var totalBlocks = subSystemList.Count;
 
             var topEnt = info.Target.GetTopMostParent();
+
             var entSphere = topEnt.PositionComp.WorldVolume;
             var distToEnt = MyUtils.GetSmallestDistanceToSphere(ref weaponPos, ref entSphere);
             var turretCheck = w != null;
             var lastBlocks = system.Values.Targeting.TopBlocks > 10 && distToEnt < 1000 ? system.Values.Targeting.TopBlocks : 10;
+
+            var isPrime = false;
+            TargetInfo primeInfo = null;
+            if (ai.PrimeTarget != null && lastBlocks < 250)
+            {
+                if (ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo) && primeInfo.Target?.GetTopMostParent() == topEnt)
+                {
+                    isPrime = true;
+                    lastBlocks = totalBlocks < 250 ? totalBlocks : 250;
+                }
+            }
+
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
             var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, totalBlocks);
             var physics = ai.Session.Physics;
@@ -265,24 +277,20 @@ namespace WeaponCore.Support
             var notSelfHit = false;
             var foundBlock = false;
             var blocksChecked = 0;
+            var blocksSighted = 0;
             var blocksStarted = 0;
-
-            TargetInfo primeInfo = null;
-
-            if (ai.PrimeTarget != null)
-                ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo);
 
             for (int i = 0; i < totalBlocks; i++)
             {
                 blocksStarted++;
-                if (turretCheck && blocksChecked > lastBlocks)
+                if (turretCheck && (blocksChecked > lastBlocks || isPrime && blocksSighted > 100))
                     break;
 
-                var next = i;
-                if (blocksChecked < lastBlocks)
-                    next = deck[i];
+                //var next = i;
+                //if (blocksChecked < lastBlocks)
+                    //next = deck[i];
 
-                var block = subSystemList[next];
+                var block = subSystemList[deck[i]];
                 if (block.MarkedForClose || !block.IsWorking) continue;
 
                 ai.Session.BlockChecks++;
@@ -292,9 +300,11 @@ namespace WeaponCore.Support
                 double rayDist;
                 if (turretCheck)
                 {
+                    blocksChecked++;
                     ai.Session.CanShoot++;
                     if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel)) continue;
-                    blocksChecked++;
+
+                    blocksSighted++;
 
                     if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
                         continue;
@@ -344,7 +354,7 @@ namespace WeaponCore.Support
                 break;
             }
             if (turretCheck && !notSelfHit) w.HitOther = true;
-            if (!foundBlock && primeInfo != null && primeInfo.Target?.GetTopMostParent() == topEnt) Log.Line($"completed without block total:{totalBlocks} - started:{blocksStarted} - tried:{blocksChecked} - last:{lastBlocks}");
+            //if (!foundBlock && primeInfo != null && primeInfo.Target?.GetTopMostParent() == topEnt) Log.Line($"completed without block total:{totalBlocks} - started:{blocksStarted} - tried:{blocksChecked} - last:{lastBlocks}");
             return foundBlock;
         }
 
