@@ -70,8 +70,7 @@ namespace WeaponCore
             MyCubeGrid grid;
             while (NewGrids.TryDequeue(out grid))
             {
-                //Log.Line($"added to grid");
-
+                //Log.Line($"added grid");
                 var fatMap = ConcurrentListPool.Get();
                 fatMap.AddRange(grid.GetFatBlocks());
                 GridToFatMap.Add(grid, fatMap);

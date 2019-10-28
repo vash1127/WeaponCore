@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -28,7 +29,10 @@ namespace WeaponCore
             {
                 Timings();
 
-                if (GridsUpdated) CheckDirtyGrids();
+                //if (GridsUpdated) CheckDirtyGrids();
+                if (GridTask.IsComplete)
+                    CheckDirtyGrids();
+                else Log.Line($"gridTask not complete");
 
                 if (!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
 
@@ -48,7 +52,7 @@ namespace WeaponCore
                     var Tracking = DsUtil.GetValue("Tracking");
                     //HighLoad = Load > threshold;
                     HighLoad = false;
-                    Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
+                    //Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
                     TargetRequests = 0;
                     TargetChecks = 0;
                     BlockChecks = 0;
@@ -130,6 +134,9 @@ namespace WeaponCore
 
                 if (!PTask.IsComplete)
                     PTask.Wait();
+
+                if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
+                    TaskHasErrors(ref PTask, "PTask");
 
                 DsUtil.Complete("projectiles", true);
 

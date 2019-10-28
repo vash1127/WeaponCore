@@ -1,4 +1,5 @@
 ﻿using System;
+using ParallelTasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -200,7 +201,22 @@ namespace WeaponCore
                 foreach (var p in Projectiles.ProjectilePool[i].Active)
                     p.PauseAv();
         }
-      
+
+        public bool TaskHasErrors(ref Task task, string taskName)
+        {
+            if (task.Exceptions != null && task.Exceptions.Length > 0)
+            {
+                foreach (var e in task.Exceptions)
+                {
+                    Log.Line($"{taskName} thread!\n{e}");
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
         internal void UpdateWeaponHeat(object heatTracker)
         {
 

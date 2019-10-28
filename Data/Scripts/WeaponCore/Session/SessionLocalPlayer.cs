@@ -136,6 +136,31 @@ namespace WeaponCore
                 return false;
             }
 
+            if (Tick300)
+            {
+                var grid = ai.PrimeTarget as MyCubeGrid;
+                if (grid != null)
+                {
+                    GridAi primeAi;
+                    GridTargetingAIs.TryGetValue(grid, out primeAi);
+                    MyConcurrentList<MyCubeBlock> fatMap;
+                    if (GridToFatMap.TryGetValue(grid, out fatMap))
+                    {
+                        var working = 0;
+                        foreach (var block in fatMap)
+                            if (block.IsWorking) working++;
+
+                        Log.Line($"fatCount:{fatMap.Count} - working:{working} - hasAi:{primeAi != null} - gridMatch:{primeAi?.MyGrid == grid} - isDirt:{DirtyGrids.Contains(grid)}");
+                    }
+
+                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> typeMap;
+                    if (GridToBlockTypeMap.TryGetValue(grid, out typeMap))
+                    {
+                        foreach (var type in typeMap)
+                            Log.Line($"blockType:{type.Key.ToString()} - count:{type.Value.Count}");
+                    }
+                }
+            }
             return true;
         }
 

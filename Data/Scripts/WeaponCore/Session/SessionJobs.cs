@@ -10,6 +10,7 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using WeaponCore.Support;
 using static WeaponCore.Support.TargetingDefinition.BlockTypes;
+using Task = ParallelTasks.Task;
 
 namespace WeaponCore
 {
@@ -18,7 +19,10 @@ namespace WeaponCore
         public void UpdateDbsInQueue()
         {
             DbsUpdating = true;
-            MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
+            if (DbTask.IsComplete && DbTask.valid && DbTask.Exceptions != null)
+                TaskHasErrors(ref DbTask, "DbTask");
+
+            DbTask = MyAPIGateway.Parallel.Start(ProcessDbs, ProcessDbsCallBack);
         }
 
         private void ProcessDbs()
@@ -112,7 +116,12 @@ namespace WeaponCore
                 AddGridToMap();
 
             if ((!GameLoaded || Tick20) && DirtyGrids.Count > 0)
-                MyAPIGateway.Parallel.StartBackground(UpdateGrids, UpdateGridsCallBack);
+            {
+                if (GridTask.valid && GridTask.Exceptions != null)
+                    TaskHasErrors(ref GridTask, "GridTask");
+
+                GridTask = MyAPIGateway.Parallel.StartBackground(UpdateGrids, UpdateGridsCallBack);
+            }
         }
 
         private void UpdateGrids()
@@ -123,7 +132,6 @@ namespace WeaponCore
             DirtyGridsTmp.Clear();
             DirtyGridsTmp.AddRange(DirtyGrids);
             DirtyGrids.Clear();
-
             for (int i = 0; i < DirtyGridsTmp.Count; i++)
             {
                 var grid = DirtyGridsTmp[i];
@@ -200,7 +208,6 @@ namespace WeaponCore
 
         private void UpdateGridsCallBack()
         {
-            GridsUpdated = true;
         }
     }
 }

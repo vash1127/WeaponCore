@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Sandbox.Common.ObjectBuilders;
 using Sandbox.Definitions;
 using Sandbox.Game;
@@ -63,7 +64,7 @@ namespace WeaponCore
                 MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
             }
 
-            if (GridsUpdated) CheckDirtyGrids();
+            CheckDirtyGrids();
         }
 
         internal void Init()

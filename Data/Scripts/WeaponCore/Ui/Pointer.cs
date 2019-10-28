@@ -110,7 +110,7 @@ namespace WeaponCore
         internal void DrawSelector()
         {
             if (!_session.UpdateLocalAiAndCockpit() || _session.Ui.WheelActive) return;
-            if (_session.CheckTarget(_session.TrackingAi)) UpdateTarget();
+            UpdateTarget();
 
             _altPressed = false;
             var firstPerson = MyAPIGateway.Session.CameraController.IsInFirstPersonView;

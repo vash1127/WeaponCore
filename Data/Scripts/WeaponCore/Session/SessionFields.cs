@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using ParallelTasks;
+using System.Threading.Tasks;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Weapons;
@@ -16,6 +16,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
+using Task = ParallelTasks.Task;
 
 namespace WeaponCore
 {
@@ -27,7 +28,6 @@ namespace WeaponCore
         internal const double AimDirToleranceAngle = 5; //in degrees
 
         internal volatile bool Inited;
-        internal volatile bool GridsUpdated = true;
         internal volatile bool TurretControls;
         internal volatile bool SorterControls;
 
@@ -128,6 +128,7 @@ namespace WeaponCore
         internal int TargetResets;
         internal int AmmoMoveTriggered;
         internal int AmmoPulls;
+        internal int GridsUpdated;
 
         internal bool ExplosionReady
         {
@@ -183,7 +184,10 @@ namespace WeaponCore
         internal Vector3D CameraPos;
         internal MyCockpit ActiveCockPit;
         internal MyEntity ControlledEntity;
-        internal Task PTask;
+        internal Task PTask = new Task();
+        internal Task GridTask = new Task();
+        internal Task DbTask = new Task();
+
         internal ShieldApi SApi = new ShieldApi();
 
         public Session()
