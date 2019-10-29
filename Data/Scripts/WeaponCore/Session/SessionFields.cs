@@ -36,7 +36,7 @@ namespace WeaponCore
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
         private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
-
+        private readonly List<MyTuple<MyInventory, int>> _inventoriesToPull = new List<MyTuple<MyInventory, int>>();
         private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
         private readonly List<Vector3D> _offsetList = new List<Vector3D>();
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
