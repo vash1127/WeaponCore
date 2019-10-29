@@ -598,7 +598,10 @@ namespace WeaponCore.Support
                         var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
 
                         if (obb.Intersects(ref lineTest) != null)
-                            voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                            using (voxel.Pin())
+                            {
+                                voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                            }
 
                         obstruction = voxelHit.HasValue;
                         if (obstruction)
