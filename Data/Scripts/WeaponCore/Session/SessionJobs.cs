@@ -119,8 +119,8 @@ namespace WeaponCore
             {
                 if (GridTask.valid && GridTask.Exceptions != null)
                     TaskHasErrors(ref GridTask, "GridTask");
-
-                GridTask = MyAPIGateway.Parallel.StartBackground(UpdateGrids, UpdateGridsCallBack);
+                if (!GameLoaded) UpdateGrids();
+                else GridTask = MyAPIGateway.Parallel.StartBackground(UpdateGrids);
             }
         }
 
@@ -170,43 +170,27 @@ namespace WeaponCore
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
                     {
                         GridToBlockTypeMap[grid] = newTypeMap;
-                        //if (GridToBlockTypeMap.ContainsKey(grid)) GridToBlockTypeMap[grid] = newTypeMap;
-                        //else Log.Line("readd failed");
-
                         foreach (var item in oldTypeMap)
-                            item.Value.Clear();
-                    }
-                    else
-                    {
-                        if (!GridToBlockTypeMap.TryAdd(grid, newTypeMap))
                         {
-                            Log.Line("failed to add");
-                            ConcurrentListPool.Return(newTypeMap[Offense]);
-                            ConcurrentListPool.Return(newTypeMap[Offense]);
-                            ConcurrentListPool.Return(newTypeMap[Utility]);
-                            ConcurrentListPool.Return(newTypeMap[Thrust]);
-                            ConcurrentListPool.Return(newTypeMap[Steering]);
-                            ConcurrentListPool.Return(newTypeMap[Jumping]);
-                            ConcurrentListPool.Return(newTypeMap[Power]);
-                            ConcurrentListPool.Return(newTypeMap[Production]);
-                            BlockTypePool.Return(newTypeMap);
+                            item.Value.Clear();
+                            ConcurrentListPool.Return(item.Value);
                         }
-
+                        BlockTypePool.Return(oldTypeMap);
                     }
+                    else GridToBlockTypeMap[grid] = newTypeMap;
                 }
                 else if (GridToBlockTypeMap.TryRemove(grid, out noFatTypeMap))
                 {
                     foreach (var item in noFatTypeMap)
+                    {
                         item.Value.Clear();
+                        ConcurrentListPool.Return(item.Value);
+                    }
                     BlockTypePool.Return(noFatTypeMap);
                 }
             }
             DirtyGridsTmp.Clear();
             //DsUtil2.Complete("UpdateGrids", false, true);
-        }
-
-        private void UpdateGridsCallBack()
-        {
         }
     }
 }

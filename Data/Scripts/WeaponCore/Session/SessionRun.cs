@@ -29,11 +29,6 @@ namespace WeaponCore
             {
                 Timings();
 
-                //if (GridsUpdated) CheckDirtyGrids();
-                if (GridTask.IsComplete)
-                    CheckDirtyGrids();
-                else Log.Line($"gridTask not complete");
-
                 if (!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
 
                 if (!CompsToStart.IsEmpty) StartComps();
@@ -158,6 +153,9 @@ namespace WeaponCore
                     }
                     _gridEffects.Clear();
                 }
+
+                if (GridTask.IsComplete)
+                    CheckDirtyGrids();
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }
