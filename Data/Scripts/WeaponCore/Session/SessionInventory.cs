@@ -216,7 +216,6 @@ namespace WeaponCore
                 _inventoriesToPull.Clear();
                 weapon.Comp.Ai.Session.AmmoPulls++;
             }
-            MyAPIGateway.Utilities.InvokeOnGameThread(MoveAmmo);
             DsUtil.Complete("AmmoPull", true, false);
         }
 

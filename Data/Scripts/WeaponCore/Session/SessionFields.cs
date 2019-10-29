@@ -187,6 +187,7 @@ namespace WeaponCore
         internal Task PTask = new Task();
         internal Task GridTask = new Task();
         internal Task DbTask = new Task();
+        internal Task ITask = new Task();
 
         internal ShieldApi SApi = new ShieldApi();
 

@@ -29,7 +29,13 @@ namespace WeaponCore
             {
                 Timings();
 
-                if (!WeaponAmmoPullQueue.IsEmpty) MyAPIGateway.Parallel.StartBackground(AmmoPull);
+                if (!WeaponAmmoPullQueue.IsEmpty && ITask.IsComplete)
+                {
+                    if (ITask.valid && ITask.Exceptions != null)
+                        TaskHasErrors(ref ITask, "ITask");
+
+                    ITask = MyAPIGateway.Parallel.StartBackground(AmmoPull, MoveAmmo);
+                }
 
                 if (!CompsToStart.IsEmpty) StartComps();
 
