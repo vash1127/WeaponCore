@@ -160,6 +160,8 @@ namespace WeaponCore
                             Log.Line($"blockType:{type.Key.ToString()} - count:{type.Value.Count}");
                     }
                 }
+
+                Log.Line($"blockTypePool:{BlockTypePool.Count}({BlockTypePool.Allocated}) - MyListPool:{ConcurrentListPool.Count}({ConcurrentListPool.Allocated}) - shrinking:{_shrinkPool.Count}({_shrinkPool.Allocated})");
             }
             return true;
         }

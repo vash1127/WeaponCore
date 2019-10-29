@@ -3,6 +3,7 @@ using Sandbox.Game;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Ingame;
 using VRage.Game.Components;
+using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
 
@@ -60,7 +61,7 @@ namespace WeaponCore.Support
             _isServer = Ai.Session.IsServer;
             _isDedicated = Ai.Session.DedicatedServer;
             _mpActive = Ai.Session.MpActive;
-
+            Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
             Ai.FirstRun = true;
             Platform = new MyWeaponPlatform(this);
             if (!Platform.Inited)

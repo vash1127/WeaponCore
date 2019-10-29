@@ -2,6 +2,7 @@
 using Sandbox.ModAPI;
 using System.Collections.Generic;
 using VRage;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
 
@@ -216,6 +217,7 @@ namespace WeaponCore
                 _inventoriesToPull.Clear();
                 weapon.Comp.Ai.Session.AmmoPulls++;
             }
+            MyAPIGateway.Utilities.InvokeOnGameThread(MoveAmmo);
             DsUtil.Complete("AmmoPull", true, false);
         }
 

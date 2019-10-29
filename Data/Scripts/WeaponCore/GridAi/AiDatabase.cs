@@ -23,7 +23,6 @@ namespace WeaponCore.Support
                     _lastScan = Session.Tick;
                     var boundingSphereD = MyGrid.PositionComp.WorldVolume;
                     boundingSphereD.Radius = MaxTargetingRange;
-                    _possibleTargets.Clear();
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, _possibleTargets);
                     for (int i = 0; i < _possibleTargets.Count; i++)
                     {
@@ -109,6 +108,7 @@ namespace WeaponCore.Support
                 ObstructionsTmp.Add(ent);
             }
             ValidGrids.Clear();
+            _possibleTargets.Clear();
         }
     }
 }
