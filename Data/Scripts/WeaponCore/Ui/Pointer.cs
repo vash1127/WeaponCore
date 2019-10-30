@@ -17,6 +17,40 @@ namespace WeaponCore
     internal class Pointer
     {
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
+        private readonly MyStringId _targetSpeedLow = MyStringId.GetOrCompute("TargetSpeedLow");
+        private readonly Dictionary<string, MyStringId[]> _targetTextures = new Dictionary<string, MyStringId[]>()
+        {
+            {"speed", new[] {
+                MyStringId.GetOrCompute("TargetSpeedLow"),
+                MyStringId.GetOrCompute("TargetSpeedMed"),
+                MyStringId.GetOrCompute("TargetSpeedHigh")
+            }},
+            {"size", new[] {
+                MyStringId.GetOrCompute("TargetSpeedLow"),
+                MyStringId.GetOrCompute("TargetSpeedMed"),
+                MyStringId.GetOrCompute("TargetSpeedHigh"),
+            }},
+            {"threat", new[] {
+                MyStringId.GetOrCompute("TargetThreat1"),
+                MyStringId.GetOrCompute("TargetThreat2"),
+                MyStringId.GetOrCompute("TargetThreat3"),
+                MyStringId.GetOrCompute("TargetThreat4"),
+                MyStringId.GetOrCompute("TargetThreat5"),
+
+            }},
+            {"shield", new[] {
+                MyStringId.GetOrCompute("TargetShieldLow"),
+                MyStringId.GetOrCompute("TargetShieldMed"),
+                MyStringId.GetOrCompute("TargetShieldHigh"),
+            }},
+            {"distance", new[] {
+                MyStringId.GetOrCompute("TargetDistanceNear"),
+                MyStringId.GetOrCompute("TargetDistanceNearMid"),
+                MyStringId.GetOrCompute("TargetDistanceFarMid"),
+                MyStringId.GetOrCompute("TargetDistanceFar"),
+
+            }},
+        };
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private readonly List<MyLineSegmentOverlapResult<MyEntity>> _pruneInfo = new List<MyLineSegmentOverlapResult<MyEntity>>();
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
@@ -185,6 +219,10 @@ namespace WeaponCore
             var cockPitCenter = _session.ActiveCockPit.PositionComp.WorldAABB.Center;
             var distance = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref cockPitCenter, ref targetSphere);
             _session.SetGpsInfo(offetPosition, gpsName, distance);
+
+            var left = cameraWorldMatrix.Left;
+            var up = cameraWorldMatrix.Up;
+            MyTransparentGeometry.AddBillboardOriented(_targetTextures["speed"][1], Color.White, offetPosition, left, up, (float)AdjScale, BlendTypeEnum.PostPP);
         }
 
         private void InitPointerOffset(double adjust)

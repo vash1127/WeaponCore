@@ -270,22 +270,6 @@ namespace WeaponCore.Support
             internal int Max;
         }
 
-        internal struct ShieldInfo
-        {
-            internal IMyTerminalBlock ShieldBlock;
-            internal bool WasOnline;
-            internal MyCubeGrid AttachedGrid;
-            internal MyOrientedBoundingBoxD ShieldObb;
-            internal float Charge;
-
-            internal MyOrientedBoundingBoxD GetObb()
-            {
-                var rotMatrix = Quaternion.CreateFromRotationMatrix(AttachedGrid.PositionComp.WorldMatrix);
-                ShieldObb = new MyOrientedBoundingBoxD(AttachedGrid.PositionComp.WorldAABB.Center, AttachedGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                return ShieldObb;
-            }
-        }
-
         internal class TargetInfo
         {
             internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
