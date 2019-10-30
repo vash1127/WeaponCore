@@ -50,6 +50,9 @@ namespace WeaponCore.Support
         public readonly int BarrelsPerShot;
         public readonly int HeatPerShot;
         public readonly int RateOfFire;
+        public readonly TurretType TurretMovement;
+        public readonly bool ElevationOnly;
+        public readonly bool LimitedAxisTurret;
         public readonly bool BurstMode;
         public readonly bool AmmoParticle;
         public readonly bool HitParticle;
@@ -124,7 +127,6 @@ namespace WeaponCore.Support
         public float HardPointAvMaxDistSqr;
         public float AmmoSoundMaxDistSqr;
         public FiringSoundState FiringSound;
-        public TurretType TurretMovement;
         public bool HitSound;
         public bool WeaponReloadSound;
         public bool NoAmmoSound;
@@ -155,9 +157,7 @@ namespace WeaponCore.Support
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
             TurretMovement = TurretType.Full;
-            if (AzimuthPartName.String == "None") TurretMovement = TurretType.ElevationOnly;
-            if (ElevationPartName.String == "None" && TurretMovement != TurretType.Full) TurretMovement = TurretType.Fixed;
-            else if (ElevationPartName.String == "None") TurretMovement = TurretType.AzimuthOnly;
+            
             Values = values;
             Barrels = values.Assignments.Barrels;
             WeaponName = weaponName;
@@ -178,6 +178,24 @@ namespace WeaponCore.Support
             MaxAzimuth = Values.HardPoint.Block.MaxAzimuth;
             MinElevation = Values.HardPoint.Block.MinElevation;
             MaxElevation = Values.HardPoint.Block.MaxElevation;
+
+            if (MinAzimuth == MaxAzimuth)
+            {
+                TurretMovement = TurretType.ElevationOnly;
+                ElevationOnly = true;
+                LimitedAxisTurret = true;
+            }
+            if (MinElevation == MaxElevation && TurretMovement != TurretType.Full)
+            {
+                TurretMovement = TurretType.Fixed;
+                LimitedAxisTurret = true;
+            }
+            else if (MinElevation == MaxElevation)
+            {
+                TurretMovement = TurretType.AzimuthOnly;
+                ElevationOnly = false;
+                LimitedAxisTurret = true;
+            }
             MaxAmmoVolume = Values.HardPoint.Block.InventorySize;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;

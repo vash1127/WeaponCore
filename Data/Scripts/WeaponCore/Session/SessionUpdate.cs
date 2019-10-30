@@ -126,8 +126,7 @@ namespace WeaponCore
                             DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
                             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
                             DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.15f);
-                            DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Cyan, 0.075f);
+                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.07f);
                             //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
                             if (w.targetBox != null)
                             {

@@ -45,7 +45,14 @@ namespace WeaponCore.Platform
                     comp.Ai.Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
 
                 MyEntity muzzlePartEntity = null;
-                if (!Parts.NameToEntity.TryGetValue(Structure.MuzzlePartNames[i].String, out muzzlePartEntity) && Structure.MuzzlePartNames[i].String != "Designator")
+                WeaponSystem system;
+
+                if(!Structure.WeaponSystems.TryGetValue(Structure.MuzzlePartNames[i], out system)) return;
+
+                var muzzlePartName = Structure.MuzzlePartNames[i].String != "Designator" ? Structure.MuzzlePartNames[i].String : system.ElevationPartName.String;
+
+
+                if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                 {
                     Log.Line($"Invalid barrelPart!!!!!!!!!!!!!!!!!");
                     return;
@@ -55,8 +62,6 @@ namespace WeaponCore.Platform
                     part.Value.OnClose += comp.SubpartClosed;
                     break;
                 }
-
-                var system = Structure.WeaponSystems[Structure.MuzzlePartNames[i]];
 
                 //compatability with old configs of converted turrets
                 var azimuthPartName = !comp.IsAiOnlyTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
@@ -121,15 +126,20 @@ namespace WeaponCore.Platform
                             Weapons[c].ElevationPart.Item1 = elevationPartEntity;
                     }
 
-                    if (muzzlePart != null)
+                    var muzzlePartName  = m.Key.String;
+                    if (m.Value.DesignatorWeapon)
                     {
-                        var muzzlePartLocation = comp.Ai.Session.GetPartLocation("subpart_" + m.Key.String, muzzlePart.Parent.Model).Value;
-
-                        var muzzlePartPosTo = Matrix.CreateTranslation(-muzzlePartLocation);
-                        var muzzlePartPosFrom = Matrix.CreateTranslation(muzzlePartLocation);
-
-                        Weapons[c].MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> { Item1 = muzzlePart, Item2 = muzzlePartPosTo, Item3 = muzzlePartPosFrom, Item4 = muzzlePartLocation };
+                        muzzlePart = Weapons[c].ElevationPart.Item1;
+                        muzzlePartName = elevationPartName;
                     }
+
+                    var muzzlePartLocation = comp.Ai.Session.GetPartLocation("subpart_" + muzzlePartName, muzzlePart.Parent.Model).Value;
+
+                    var muzzlePartPosTo = Matrix.CreateTranslation(-muzzlePartLocation);
+                    var muzzlePartPosFrom = Matrix.CreateTranslation(muzzlePartLocation);
+
+                    Weapons[c].MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> { Item1 = muzzlePart, Item2 = muzzlePartPosTo, Item3 = muzzlePartPosFrom, Item4 = muzzlePartLocation };
+                    
 
                     if (comp.IsAiOnlyTurret)
                     {

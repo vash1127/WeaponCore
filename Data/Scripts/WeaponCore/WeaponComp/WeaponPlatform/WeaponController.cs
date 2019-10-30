@@ -105,6 +105,12 @@ namespace WeaponCore.Platform
 
         internal void UpdatePivotPos()
         {
+            if (Comp.MatrixUpdateTick < Comp.Ai.Session.Tick)
+            {
+                Comp.MatrixUpdateTick = Comp.Ai.Session.Tick;
+                Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrix;
+            }
+
             var azimuthMatrix = AzimuthPart.Item1.PositionComp.WorldMatrix;
             var elevationMatrix = ElevationPart.Item1.PositionComp.WorldMatrix;
             var weaponCenter = MuzzlePart.Item1.PositionComp.WorldMatrix.Translation;
@@ -113,6 +119,17 @@ namespace WeaponCore.Platform
 
             MyPivotUp = azimuthMatrix.Up;
             MyPivotDir = elevationMatrix.Forward;
+            var forward = Comp.CubeMatrix.Forward;
+            var left = Vector3D.Cross(MyPivotUp, forward);
+
+            if (System.ElevationOnly)//turrets limited to elevation only, makes constraints check whats in front of weapon not cube forward within elevation limits
+            {
+                forward = Vector3D.Cross(elevationMatrix.Left, MyPivotUp);
+                WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = elevationMatrix.Left };
+            }
+            else // azimuth only and full turret already have the right matrix
+                WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
+
             MyPivotPos = UtilsStatic.GetClosestPointOnLine1(centerTestPos, MyPivotUp, weaponCenter, MyPivotDir);
             if (!Vector3D.IsZero(AimOffset))
                 MyPivotPos += Vector3D.Rotate(AimOffset, new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up });
@@ -120,9 +137,8 @@ namespace WeaponCore.Platform
             if (!Comp.Debug) return;
             MyCenterTestLine = new LineD(centerTestPos, centerTestPos + (MyPivotUp * 20));
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
-            MyPivotTestLine = new LineD(MyPivotPos + (elevationMatrix.Left * 10), MyPivotPos - (elevationMatrix.Left * 10));
+            MyPivotTestLine = new LineD(MyPivotPos + (left * 10), MyPivotPos - (left * 10));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
-            MyPivotDirLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 19));
             if (!Target.Expired)
                 MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
         }
