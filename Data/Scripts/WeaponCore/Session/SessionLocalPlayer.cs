@@ -221,5 +221,47 @@ namespace WeaponCore
             threatStr = threat > 0 ? "T" + threat : "__";
             speed = Math.Round(target.Physics?.Speed ?? 0, 1);
         }
+
+        internal void GetTargetInfo2(GridAi ai, out double speed, out bool intercept, out int shield, out int threat)
+        {
+            var target = ai.PrimeTarget;
+            var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
+            if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
+            var targetDir = Vector3D.Normalize(targetVel);
+            var targetPos = target.PositionComp.WorldAABB.Center;
+            var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
+            var myHeading = Vector3D.Normalize(myPos - targetPos);
+
+            intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
+
+            speed = Math.Round(target.Physics?.Speed ?? 0, 1);
+
+            IMyTerminalBlock shieldBlock = null;
+            if (ShieldApiLoaded) shieldBlock = SApi.GetShieldBlock(target);
+            if (shieldBlock != null)
+            {
+                var shieldPercent = SApi.GetShieldPercent(shieldBlock);
+                if (shieldPercent > 66) shield = 0;
+                else if (shieldPercent > 33) shield = 1;
+                else if (shieldPercent > 0) shield = 2;
+                else shield = -1;
+            }
+            else shield = -1;
+
+            var grid = target as MyCubeGrid;
+            var friend = false;
+            if (grid != null && grid.BigOwners.Count != 0)
+            {
+                var relation = MyIDModule.GetRelationPlayerBlock(ai.MyOwner, grid.BigOwners[0], MyOwnershipShareModeEnum.Faction);
+                if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
+            }
+
+            if (friend) threat = -1;
+            else
+            {
+                var offenseRating = ai.Targets[target].OffenseRating;
+                threat = offenseRating / 2;
+            }
+        }
     }
 }
