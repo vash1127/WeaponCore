@@ -9,6 +9,7 @@ using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -37,6 +38,7 @@ namespace WeaponCore.Support
 
         internal HashSet<string> GroupNames = new HashSet<string>();
         internal MyFixedPoint MaxInventoryMass;
+        internal MatrixD CubeMatrix;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
         internal uint LastInventoryChangedTick;
@@ -44,6 +46,7 @@ namespace WeaponCore.Support
         internal uint DelayTicks = 0;
         internal uint IsWorkingChangedTick;
         internal uint PositionUpdateTick;
+        internal uint MatrixUpdateTick;
         internal float MaxInventoryVolume;
         internal float OptimalDps;
         internal float CurrentDps;

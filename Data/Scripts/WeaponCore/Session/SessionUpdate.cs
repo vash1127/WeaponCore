@@ -90,7 +90,7 @@ namespace WeaponCore
                         {
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
                             if (w.Target.Expired)
-                                w.TargetResetTick = Tick + 1;
+                                w.TargetReset = true;
                         }
 
                         if (w.TurretMode)
@@ -126,8 +126,7 @@ namespace WeaponCore
                             DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
                             DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
                             DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.15f);
-                            DsDebugDraw.DrawLine(w.MyPivotDirLine, Color.Cyan, 0.075f);
+                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.07f);
                             //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
                             if (w.targetBox != null)
                             {
@@ -251,9 +250,9 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget || gridAi.TargetResetTick == Tick)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset)
                             {
-                                w.TargetResetTick = 0;
+                                w.TargetReset = false;
                                 if (comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
                                     GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
                                 else GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
