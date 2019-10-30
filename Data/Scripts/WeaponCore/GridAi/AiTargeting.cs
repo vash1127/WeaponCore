@@ -29,7 +29,6 @@ namespace WeaponCore.Support
                 if (w.Comp.Ai.BlockCount != w.LastBlockCount && tick - w.LastTargetTick > 300)
                     w.SleepingTargets.Clear();
             }
-
             w.UpdatePivotPos();
             w.AimCone.ConeDir = w.MyPivotDir;
             w.AimCone.ConeTip = w.MyPivotPos;

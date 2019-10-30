@@ -17,40 +17,6 @@ namespace WeaponCore
     internal class Pointer
     {
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
-        private readonly MyStringId _targetSpeedLow = MyStringId.GetOrCompute("TargetSpeedLow");
-        private readonly Dictionary<string, MyStringId[]> _targetTextures = new Dictionary<string, MyStringId[]>()
-        {
-            {"speed", new[] {
-                MyStringId.GetOrCompute("TargetSpeedLow"),
-                MyStringId.GetOrCompute("TargetSpeedMed"),
-                MyStringId.GetOrCompute("TargetSpeedHigh")
-            }},
-            {"size", new[] {
-                MyStringId.GetOrCompute("TargetSpeedLow"),
-                MyStringId.GetOrCompute("TargetSpeedMed"),
-                MyStringId.GetOrCompute("TargetSpeedHigh"),
-            }},
-            {"threat", new[] {
-                MyStringId.GetOrCompute("TargetThreat1"),
-                MyStringId.GetOrCompute("TargetThreat2"),
-                MyStringId.GetOrCompute("TargetThreat3"),
-                MyStringId.GetOrCompute("TargetThreat4"),
-                MyStringId.GetOrCompute("TargetThreat5"),
-
-            }},
-            {"shield", new[] {
-                MyStringId.GetOrCompute("TargetShieldLow"),
-                MyStringId.GetOrCompute("TargetShieldMed"),
-                MyStringId.GetOrCompute("TargetShieldHigh"),
-            }},
-            {"distance", new[] {
-                MyStringId.GetOrCompute("TargetDistanceNear"),
-                MyStringId.GetOrCompute("TargetDistanceNearMid"),
-                MyStringId.GetOrCompute("TargetDistanceFarMid"),
-                MyStringId.GetOrCompute("TargetDistanceFar"),
-
-            }},
-        };
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private readonly List<MyLineSegmentOverlapResult<MyEntity>> _pruneInfo = new List<MyLineSegmentOverlapResult<MyEntity>>();
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
@@ -72,6 +38,92 @@ namespace WeaponCore
         {
             _session = session;
         }
+
+        public struct TargetState
+        {
+            public int ShieldHealth;
+            public int ThreatLvl;
+            public int Size;
+            public int Speed;
+            public int Distance;
+            public bool Intercept;
+        }
+
+        public class IconInfo
+        {
+            private readonly MyStringId _textureName;
+            private readonly Vector2D _screenPosition;
+            private readonly double _definedScale;
+            private float _adjustedScale;
+            private bool _inited;
+            private Vector3D _positionOffset;
+
+            public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition)
+            {
+                _textureName = textureName;
+                _definedScale = definedScale;
+                _screenPosition = screenPosition;
+            }
+
+            public void GetTextureInfo(out MyStringId textureName, out float scale, out Vector3D offset, out Vector3D cameraLeft, out Vector3D cameraUp)
+            {
+                if (!_inited) InitOffset();
+                textureName = _textureName;
+                scale = _adjustedScale;
+                var cameraMatrix = MyAPIGateway.Session.Camera.WorldMatrix;
+                cameraLeft = cameraMatrix.Left;
+                cameraUp = cameraMatrix.Up;
+                offset = Vector3D.Transform(_positionOffset, cameraMatrix);
+            }
+
+            private void InitOffset()
+            {
+                var position = new Vector3D(_screenPosition.X, _screenPosition.Y, 0);
+                var fov = MyAPIGateway.Session.Camera.FovWithZoom;
+                double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
+                var screenScale = 0.075 * Math.Tan(fov * 0.5);
+
+                position.X *= screenScale * aspectratio;
+                position.Y *= screenScale;
+
+                _adjustedScale = (float) (_definedScale * screenScale);
+
+                _positionOffset = new Vector3D(position.X, position.Y, -.1);
+                _inited = true;
+            }
+        }
+
+        private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()
+        {
+            {"size", new[] {
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetCapital"), 0.1, new Vector2D(0, 1f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetCruiser"), 0.1, new Vector2D(0, 1f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDestroyer"), 0.1, new Vector2D(0, 1f)),
+            }},
+            {"threat", new[] {
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat1"), 0.05, new Vector2D(-0.05, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat2"), 0.05, new Vector2D(-0.05, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat3"), 0.05, new Vector2D(-0.05, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat4"), 0.05, new Vector2D(-0.05, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat5"), 0.05, new Vector2D(-0.05, 0.85f)),
+            }},
+            {"distance", new[] {
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceNear"), 0.05, new Vector2D(-0.1, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceNearMid"), 0.05, new Vector2D(-0.1, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceFarMid"), 0.05, new Vector2D(-0.1, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceFar"), 0.05, new Vector2D(-0.1, 0.85f)),
+            }},
+            {"speed", new[] {
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeedLow"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeedMed"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeedHigh"), 0.05, new Vector2D(-0.15, 0.85f)),
+            }},
+            {"shield", new[] {
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(-0.2, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldMed"), 0.05, new Vector2D(-0.2, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldHigh"), 0.05, new Vector2D(-0.2, 0.85f)),
+            }},
+        };
 
         internal void SelectTarget()
         {
@@ -205,7 +257,8 @@ namespace WeaponCore
         {
             var ai = _session.TrackingAi;
             if (ai == null || !_session.CheckTarget(ai) || _session.TargetGps == null) return;
-
+            
+            /*
             var cameraWorldMatrix = _session.Camera.WorldMatrix;
             var offetPosition = Vector3D.Transform(TargetOffset, cameraWorldMatrix);
             double speed;
@@ -219,10 +272,140 @@ namespace WeaponCore
             var cockPitCenter = _session.ActiveCockPit.PositionComp.WorldAABB.Center;
             var distance = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref cockPitCenter, ref targetSphere);
             _session.SetGpsInfo(offetPosition, gpsName, distance);
+            */
 
-            var left = cameraWorldMatrix.Left;
-            var up = cameraWorldMatrix.Up;
-            MyTransparentGeometry.AddBillboardOriented(_targetTextures["speed"][1], Color.White, offetPosition, left, up, (float)AdjScale, BlendTypeEnum.PostPP);
+            DrawTarget();
+        }
+
+        private void DrawTarget()
+        {
+            var targetState = new TargetState();
+            GetTargetState(ref targetState);
+            foreach (var icon in _targetIcons.Keys)
+            {
+                bool displayIcon;
+                int iconLevel;
+                int iconSlot;
+                IconStatus(icon, targetState, out displayIcon, out iconLevel, out iconSlot);
+                if (!displayIcon) continue;
+
+                Vector3D offset;
+                float scale;
+                MyStringId textureName;
+                Vector3D cameraUp;
+                Vector3D cameraLeft;
+
+                var iconInfo = _targetIcons[icon];
+                iconInfo[iconLevel].GetTextureInfo(out textureName, out scale, out offset, out cameraLeft, out cameraUp);
+
+                MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, cameraLeft, cameraUp, scale, BlendTypeEnum.PostPP);
+            }
+        }
+
+        private void GetTargetState(ref TargetState targetState)
+        {
+            var ai = _session.TrackingAi;
+            var target = ai.PrimeTarget;
+            var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
+            if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
+            var targetDir = Vector3D.Normalize(targetVel);
+            var targetPos = target.PositionComp.WorldAABB.Center;
+            var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
+            var myHeading = Vector3D.Normalize(myPos - targetPos);
+
+            targetState.Intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, _session.ApproachDegrees);
+
+            var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
+
+            var distanceFromCenters = Vector3D.Distance(ai.GridCenter, target.PositionComp.WorldAABB.Center);
+            distanceFromCenters -= ai.GridRadius;
+            distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
+            distanceFromCenters = distanceFromCenters <= 0 ? 1 : distanceFromCenters;
+            distanceFromCenters = ai.MaxTargetingRange / distanceFromCenters;
+            if (distanceFromCenters > 3)
+                targetState.Distance = 0;
+            else if (distanceFromCenters > 2) targetState.Distance = 1;
+            else targetState.Distance = 0;
+
+            if (speed <= 0) targetState.Speed = - 1;
+            else
+            {
+                var fracOfMax = _session.MaxEntitySpeed / speed;
+                if (fracOfMax >= 3) targetState.Speed = 2;
+                else if (fracOfMax >= 2) targetState.Speed = 1;
+                else targetState.Speed = 0;
+            }
+
+            IMyTerminalBlock shieldBlock = null;
+            if (_session.ShieldApiLoaded) shieldBlock = _session.SApi.GetShieldBlock(target);
+            if (shieldBlock != null)
+            {
+                var shieldPercent = _session.SApi.GetShieldPercent(shieldBlock);
+                if (shieldPercent > 66) targetState.ShieldHealth = 0;
+                else if (shieldPercent > 33) targetState.ShieldHealth = 1;
+                else if (shieldPercent > 0) targetState.ShieldHealth = 2;
+                else targetState.ShieldHealth = -1;
+            }
+            else targetState.ShieldHealth = -1;
+
+            var grid = target as MyCubeGrid;
+            var friend = false;
+            if (grid != null && grid.BigOwners.Count != 0)
+            {
+                var relation = MyIDModule.GetRelationPlayerBlock(ai.MyOwner, grid.BigOwners[0], MyOwnershipShareModeEnum.Faction);
+                if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
+            }
+
+            if (friend) targetState.ThreatLvl = -1;
+            else
+            {
+                var offenseRating = ai.Targets[target].OffenseRating;
+                targetState.ThreatLvl = offenseRating / 2;
+            }
+        }
+
+        private void IconStatus(string icon, TargetState targetState, out bool displayIcon, out int iconLevel, out int iconSlot)
+        {
+            bool disable;
+            switch (icon)
+            {
+                case "speed":
+                    disable = targetState.Speed == -1;
+                    displayIcon = !disable;
+                    iconLevel = disable ? 0 : targetState.Speed;
+                    iconSlot = 0;
+                    break;
+                case "size":
+                    disable = targetState.Size == -1;
+                    displayIcon = !disable;
+                    iconLevel = disable ? 0 : targetState.Size;
+                    iconSlot = 0;
+                    break;
+                case "threat":
+                    disable = targetState.ThreatLvl == -1;
+                    displayIcon = !disable;
+                    iconLevel = disable ? 0 : targetState.ThreatLvl;
+                    iconSlot = 0;
+                    break;
+                case "shield":
+                    disable = targetState.ShieldHealth == -1;
+                    displayIcon = !disable;
+                    iconLevel = disable ? 0 : targetState.ShieldHealth;
+                    iconSlot = 0;
+                    break;
+                case "distance":
+                    disable = targetState.Size == -1;
+                    displayIcon = !disable;
+                    iconLevel = disable ? 0 : targetState.Distance;
+                    iconSlot = 0;
+                    break;
+                default:
+                    disable = targetState.Size == -1;
+                    displayIcon = !disable;
+                    iconLevel = 0;
+                    iconSlot = 0;
+                    break;
+            }
         }
 
         private void InitPointerOffset(double adjust)
