@@ -90,7 +90,7 @@ namespace WeaponCore
                         {
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
                             if (w.Target.Expired)
-                                w.TargetResetTick = Tick + 1;
+                                w.TargetReset = true;
                         }
 
                         if (w.TurretMode)
@@ -250,9 +250,9 @@ namespace WeaponCore
                         }
                         if (w.SeekTarget || gridAi.TargetResetTick == Tick)
                         {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick)
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset)
                             {
-                                w.TargetResetTick = 0;
+                                w.TargetReset = false;
                                 if (comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
                                     GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
                                 else GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);

@@ -26,7 +26,6 @@ namespace WeaponCore.Platform
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
         private uint _reloadedTick;
-        internal uint TargetResetTick;
         internal uint TicksPerShot;
         internal double TimePerShot;
 
@@ -107,6 +106,7 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
+        internal bool TargetReset;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
