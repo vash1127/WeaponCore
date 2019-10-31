@@ -51,6 +51,7 @@ namespace WeaponCore.Support
                     _tmp.Clear();
                     ((IMyEntity)query).Model.GetDummies(_tmp);
                     foreach (var kv in _tmp)
+                    {
                         if (kv.Key.StartsWith("subpart_"))
                         {
                             var name = kv.Key.Substring("subpart_".Length);
@@ -63,6 +64,8 @@ namespace WeaponCore.Support
                                 NameToEntity[name] = res;
                             }
                         }
+                    }
+                    NameToEntity["None"] = Entity; 
                 }
             }
         }
