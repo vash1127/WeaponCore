@@ -133,13 +133,28 @@ namespace WeaponCore.Platform
                         muzzlePartName = elevationPartName;
                     }
 
-                    var muzzlePartLocation = comp.Ai.Session.GetPartLocation("subpart_" + muzzlePartName, muzzlePart.Parent.Model).Value;
+                    Weapons[c].MuzzlePart.Item1 = muzzlePart;
 
-                    var muzzlePartPosTo = Matrix.CreateTranslation(-muzzlePartLocation);
-                    var muzzlePartPosFrom = Matrix.CreateTranslation(muzzlePartLocation);
+                    if (muzzlePartName != "None")
+                    {
+                        var muzzlePartLocation = comp.Ai.Session.GetPartLocation("subpart_" + muzzlePartName, muzzlePart.Parent.Model).Value;
 
-                    Weapons[c].MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> { Item1 = muzzlePart, Item2 = muzzlePartPosTo, Item3 = muzzlePartPosFrom, Item4 = muzzlePartLocation };
-                    
+                        var muzzlePartPosTo = Matrix.CreateTranslation(-muzzlePartLocation);
+                        var muzzlePartPosFrom = Matrix.CreateTranslation(muzzlePartLocation);
+
+                        Weapons[c].MuzzlePart.Item2 = muzzlePartPosTo;
+                        Weapons[c].MuzzlePart.Item3 = muzzlePartPosFrom;
+                        Weapons[c].MuzzlePart.Item4 = muzzlePartLocation;
+
+                        try
+                        {
+                            Weapons[c].MuzzlePart.Item1.SetEmissiveParts("Heating", Color.Transparent, 0);
+                        }
+                        catch (Exception e)
+                        {
+                            // no emissive parts for barrel
+                        }
+                    }
 
                     if (comp.IsAiOnlyTurret)
                     {
@@ -179,15 +194,6 @@ namespace WeaponCore.Platform
                             Weapons[c].ElevationPart.Item5 = rFullStepElRotation;
                             Weapons[c].ElevationPart.Item6 = elevationPartLocation;
                         }
-                    }
-
-                    try
-                    {
-                        Weapons[c].MuzzlePart.Item1.SetEmissiveParts("Heating", Color.Transparent, 0);
-                    }
-                    catch (Exception e)
-                    {
-                        // no emissive parts for barrel
                     }
 
                     var barrelCount = m.Value.Barrels.Length;
