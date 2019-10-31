@@ -86,7 +86,7 @@ namespace WeaponCore
             if (TargetGps == null)
             {
                 Log.Line("resetgps");
-                MyVisualScriptLogicProvider.AddGPS("WEAPONCORE", "", Vector3D.Zero, Color.Red);
+                MyVisualScriptLogicProvider.AddGPS("WEAPONCORE", "", Vector3D.MaxValue, Color.Red);
                 var gpsList = MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId);
                 foreach (var t in gpsList)
                 {
