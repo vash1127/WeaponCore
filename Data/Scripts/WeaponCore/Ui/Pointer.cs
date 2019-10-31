@@ -326,18 +326,18 @@ namespace WeaponCore
             distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
             distanceFromCenters = distanceFromCenters <= 0 ? 1 : distanceFromCenters;
             distanceFromCenters = ai.MaxTargetingRange / distanceFromCenters;
-            if (distanceFromCenters > 3)
-                targetState.Distance = 0;
-            else if (distanceFromCenters > 2) targetState.Distance = 1;
+            if (distanceFromCenters < 1)
+                targetState.Distance = 2;
+            else if (distanceFromCenters < 2) targetState.Distance = 1;
             else targetState.Distance = 0;
 
             if (speed <= 0) targetState.Speed = - 1;
             else
             {
                 var fracOfMax = _session.MaxEntitySpeed / speed;
-                if (fracOfMax >= 3) targetState.Speed = 2;
+                if (fracOfMax >= 3) targetState.Speed = 0;
                 else if (fracOfMax >= 2) targetState.Speed = 1;
-                else targetState.Speed = 0;
+                else targetState.Speed = 2;
             }
 
             IMyTerminalBlock shieldBlock = null;
@@ -345,9 +345,9 @@ namespace WeaponCore
             if (shieldBlock != null)
             {
                 var shieldPercent = _session.SApi.GetShieldPercent(shieldBlock);
-                if (shieldPercent > 66) targetState.ShieldHealth = 0;
+                if (shieldPercent > 66) targetState.ShieldHealth = 2;
                 else if (shieldPercent > 33) targetState.ShieldHealth = 1;
-                else if (shieldPercent > 0) targetState.ShieldHealth = 2;
+                else if (shieldPercent > 0) targetState.ShieldHealth = 0;
                 else targetState.ShieldHealth = -1;
             }
             else targetState.ShieldHealth = -1;
@@ -364,7 +364,12 @@ namespace WeaponCore
             else
             {
                 var offenseRating = targetInfo.OffenseRating;
-                targetState.ThreatLvl = offenseRating / 2;
+                if (offenseRating > 8) targetState.ThreatLvl = 5;
+                else if (offenseRating > 6) targetState.ThreatLvl = 4;
+                else if (offenseRating > 4) targetState.ThreatLvl = 3;
+                else if (offenseRating > 2) targetState.ThreatLvl = 2;
+                else if (offenseRating > 0) targetState.ThreatLvl = 1;
+                else targetState.ThreatLvl = -1;
             }
 
             return true;
