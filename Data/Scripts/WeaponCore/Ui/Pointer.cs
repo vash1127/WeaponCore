@@ -280,7 +280,8 @@ namespace WeaponCore
         private void DrawTarget()
         {
             var targetState = new TargetState();
-            GetTargetState(ref targetState);
+            if (!GetTargetState(ref targetState)) return;
+
             foreach (var icon in _targetIcons.Keys)
             {
                 bool displayIcon;
@@ -302,10 +303,13 @@ namespace WeaponCore
             }
         }
 
-        private void GetTargetState(ref TargetState targetState)
+        private bool GetTargetState(ref TargetState targetState)
         {
             var ai = _session.TrackingAi;
             var target = ai.PrimeTarget;
+            GridAi.TargetInfo targetInfo;
+            if (!ai.Targets.TryGetValue(target, out targetInfo)) return false;
+
             var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
             var targetDir = Vector3D.Normalize(targetVel);
@@ -359,9 +363,11 @@ namespace WeaponCore
             if (friend) targetState.ThreatLvl = -1;
             else
             {
-                var offenseRating = ai.Targets[target].OffenseRating;
+                var offenseRating = targetInfo.OffenseRating;
                 targetState.ThreatLvl = offenseRating / 2;
             }
+
+            return true;
         }
 
         private void IconStatus(string icon, TargetState targetState, out bool displayIcon, out int iconLevel, out int iconSlot)
