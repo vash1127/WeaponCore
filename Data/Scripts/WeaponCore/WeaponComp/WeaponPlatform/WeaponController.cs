@@ -81,9 +81,6 @@ namespace WeaponCore.Platform
             var oldAz = Azimuth;
             var oldEl = Elevation;
 
-            double newAz = 0;
-            double newEl = 0;
-
             if (oldAz > 0)
                 Azimuth = oldAz - azStep > 0 ? oldAz - azStep : 0;
             else if (oldAz < 0)
@@ -95,7 +92,7 @@ namespace WeaponCore.Platform
                 Elevation = oldEl + elStep < 0 ? oldEl + elStep : 0;
 
 
-            AimBarrel(oldAz - newAz, oldEl - newEl);
+            AimBarrel(oldAz - Azimuth, oldEl - Elevation);
 
 
             if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return true;
