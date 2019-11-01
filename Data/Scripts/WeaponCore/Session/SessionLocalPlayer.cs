@@ -221,7 +221,7 @@ namespace WeaponCore
             speed = Math.Round(target.Physics?.Speed ?? 0, 1);
         }
 
-        internal void GetTargetInfo2(GridAi ai, out double speed, out bool intercept, out int shield, out int threat)
+        internal void GetTargetInfo2(GridAi ai, out double speed, out bool intercept, out int shield, out float threat)
         {
             var target = ai.PrimeTarget;
             var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;

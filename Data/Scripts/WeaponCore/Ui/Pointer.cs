@@ -382,11 +382,11 @@ namespace WeaponCore
             else
             {
                 var offenseRating = targetInfo.OffenseRating;
-                if (offenseRating > 8) targetState.ThreatLvl = 5;
-                else if (offenseRating > 6) targetState.ThreatLvl = 4;
-                else if (offenseRating > 4) targetState.ThreatLvl = 3;
-                else if (offenseRating > 2) targetState.ThreatLvl = 2;
-                else if (offenseRating > 0) targetState.ThreatLvl = 1;
+                if (offenseRating > 2.5) targetState.ThreatLvl = 4;
+                else if (offenseRating > 1.25) targetState.ThreatLvl = 3;
+                else if (offenseRating > 0.5) targetState.ThreatLvl = 2;
+                else if (offenseRating > 0.25) targetState.ThreatLvl = 1;
+                else if (offenseRating > 0) targetState.ThreatLvl = 0;
                 else targetState.ThreatLvl = -1;
             }
 

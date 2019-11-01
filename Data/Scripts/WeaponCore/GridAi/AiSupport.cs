@@ -283,7 +283,7 @@ namespace WeaponCore.Support
             internal bool IsGrid;
             internal bool Approaching;
             internal int PartCount;
-            internal int OffenseRating;
+            internal float OffenseRating;
             internal MyCubeGrid MyGrid;
             internal GridAi MyAi;
             internal GridAi TargetAi;
@@ -314,7 +314,9 @@ namespace WeaponCore.Support
                 }
 
                 if (targetAi != null)
-                    OffenseRating = (int) MathHelper.Clamp(targetAi.OptimalDps / myAi.OptimalDps, 1, 10);
+                {
+                    OffenseRating = targetAi.OptimalDps / myAi.OptimalDps;
+                }
                 else if (detectInfo.Armed) OffenseRating = 1;
                 else OffenseRating = 0;
                 Vector3D.DistanceSquared(ref TargetPos, ref myAi.GridCenter, out DistSqr);

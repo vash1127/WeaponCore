@@ -132,7 +132,7 @@ namespace WeaponCore.Support
                 if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
 
-                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !primeTarget && info.OffenseRating == 0) continue;
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !primeTarget && info.OffenseRating <= 0) continue;
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
 
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
