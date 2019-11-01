@@ -332,27 +332,29 @@ namespace WeaponCore
             var distanceFromCenters = Vector3D.Distance(ai.GridCenter, target.PositionComp.WorldAABB.Center);
             distanceFromCenters -= ai.GridRadius;
             distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
-            distanceFromCenters = distanceFromCenters <= 0 ? 1 : distanceFromCenters;
-            distanceFromCenters = ai.MaxTargetingRange / distanceFromCenters;
-            if (distanceFromCenters < 1)
+            distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
+            var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
+
+            if (distPercent < 100 && distPercent > 66)
                 targetState.Distance = 2;
-            else if (distanceFromCenters < 2) targetState.Distance = 1;
-            else targetState.Distance = 0;
+            else if (distPercent > 33) targetState.Distance = 1;
+            else if (distPercent >= 0) targetState.Distance = 0;
+            else targetState.Distance = -1;
 
             if (speed <= 0) targetState.Speed = - 1;
             else
             {
-                var percent = (speed / _session.MaxEntitySpeed) * 10;
-                if (percent > 9.5) targetState.Speed = 9;
-                else if (percent > 9) targetState.Speed = 8;
-                else if (percent > 8) targetState.Speed = 7;
-                else if (percent > 7) targetState.Speed = 6;
-                else if (percent > 6) targetState.Speed = 5;
-                else if (percent > 5) targetState.Speed = 4;
-                else if (percent > 4) targetState.Speed = 3;
-                else if (percent > 3) targetState.Speed = 2;
-                else if (percent > 2) targetState.Speed = 1;
-                else if (percent > 0) targetState.Speed = 0;
+                var speedPercent = (speed / _session.MaxEntitySpeed) * 100;
+                if (speedPercent > 95) targetState.Speed = 9;
+                else if (speedPercent > 90) targetState.Speed = 8;
+                else if (speedPercent > 80) targetState.Speed = 7;
+                else if (speedPercent > 70) targetState.Speed = 6;
+                else if (speedPercent > 60) targetState.Speed = 5;
+                else if (speedPercent > 50) targetState.Speed = 4;
+                else if (speedPercent > 40) targetState.Speed = 3;
+                else if (speedPercent > 30) targetState.Speed = 2;
+                else if (speedPercent > 20) targetState.Speed = 1;
+                else if (speedPercent > 0) targetState.Speed = 0;
                 else targetState.Speed = -1;
             }
 
