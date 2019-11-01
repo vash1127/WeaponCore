@@ -115,9 +115,16 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceFar"), 0.05, new Vector2D(-0.1, 0.85f)),
             }},
             {"speed", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeedLow"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeedMed"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeedHigh"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed10"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed20"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed30"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed40"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed50"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed60"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed70"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed80"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed90"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed100"), 0.05, new Vector2D(-0.15, 0.85f)),
             }},
             {"shield", new[] {
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(-0.2, 0.85f)),
@@ -335,10 +342,18 @@ namespace WeaponCore
             if (speed <= 0) targetState.Speed = - 1;
             else
             {
-                var fracOfMax = _session.MaxEntitySpeed / speed;
-                if (fracOfMax >= 3) targetState.Speed = 0;
-                else if (fracOfMax >= 2) targetState.Speed = 1;
-                else targetState.Speed = 2;
+                var percent = (speed / _session.MaxEntitySpeed) * 10;
+                if (percent > 9.5) targetState.Speed = 9;
+                else if (percent > 9) targetState.Speed = 8;
+                else if (percent > 8) targetState.Speed = 7;
+                else if (percent > 7) targetState.Speed = 6;
+                else if (percent > 6) targetState.Speed = 5;
+                else if (percent > 5) targetState.Speed = 4;
+                else if (percent > 4) targetState.Speed = 3;
+                else if (percent > 3) targetState.Speed = 2;
+                else if (percent > 2) targetState.Speed = 1;
+                else if (percent > 0) targetState.Speed = 0;
+                else targetState.Speed = -1;
             }
 
             MyTuple<bool, bool, float, float, float, int> shieldInfo = new MyTuple<bool, bool, float, float, float, int>();
