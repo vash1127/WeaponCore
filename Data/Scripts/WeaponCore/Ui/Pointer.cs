@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -340,11 +341,11 @@ namespace WeaponCore
                 else targetState.Speed = 2;
             }
 
-            IMyTerminalBlock shieldBlock = null;
-            if (_session.ShieldApiLoaded) shieldBlock = _session.SApi.GetShieldBlock(target);
-            if (shieldBlock != null)
+            MyTuple<bool, bool, float, float, float, int> shieldInfo = new MyTuple<bool, bool, float, float, float, int>();
+            if (_session.ShieldApiLoaded) shieldInfo = _session.SApi.GetShieldInfo(target);
+            if (shieldInfo.Item1)
             {
-                var shieldPercent = _session.SApi.GetShieldPercent(shieldBlock);
+                var shieldPercent = shieldInfo.Item5;
                 if (shieldPercent > 66) targetState.ShieldHealth = 2;
                 else if (shieldPercent > 33) targetState.ShieldHealth = 1;
                 else if (shieldPercent > 0) targetState.ShieldHealth = 0;

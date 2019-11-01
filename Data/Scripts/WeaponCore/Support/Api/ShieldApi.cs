@@ -4,6 +4,9 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRageMath;
 using System.Collections.Generic;
+using VRage;
+using VRage.Game.Entity;
+
 namespace WeaponCore.Support
 {
     internal class ShieldApi
@@ -39,6 +42,7 @@ namespace WeaponCore.Support
         private Func<Vector3D, IMyTerminalBlock> _getClosestShield;
         private Func<IMyTerminalBlock, Vector3D, double> _getDistanceToShield;
         private Func<IMyTerminalBlock, Vector3D, Vector3D?> _getClosestShieldPoint;
+        private Func<MyEntity, MyTuple<bool, bool, float, float, float, int>> _getShieldInfo;
 
         private const long Channel = 1365616918;
 
@@ -111,6 +115,7 @@ namespace WeaponCore.Support
             _getClosestShield = (Func<Vector3D, IMyTerminalBlock>)delegates["GetClosestShield"];
             _getDistanceToShield = (Func<IMyTerminalBlock, Vector3D, double>)delegates["GetDistanceToShield"];
             _getClosestShieldPoint = (Func<IMyTerminalBlock, Vector3D, Vector3D?>)delegates["GetClosestShieldPoint"];
+            _getShieldInfo = (Func<MyEntity, MyTuple<bool, bool, float, float, float, int>>)delegates["GetShieldInfo"];
         }
 
         public Vector3D? RayAttackShield(IMyTerminalBlock block, RayD ray, long attackerId, float damage, bool energy, bool drawParticle) =>
@@ -146,5 +151,6 @@ namespace WeaponCore.Support
         public IMyTerminalBlock GetClosestShield(Vector3D pos) => _getClosestShield?.Invoke(pos) ?? null;
         public double GetDistanceToShield(IMyTerminalBlock block, Vector3D pos) => _getDistanceToShield?.Invoke(block, pos) ?? -1;
         public Vector3D? GetClosestShieldPoint(IMyTerminalBlock block, Vector3D pos) => _getClosestShieldPoint?.Invoke(block, pos) ?? null;
+        public MyTuple<bool, bool, float, float, float, int> GetShieldInfo(MyEntity entity) => _getShieldInfo?.Invoke(entity) ?? new MyTuple<bool, bool, float, float, float, int>();
     }
 }
