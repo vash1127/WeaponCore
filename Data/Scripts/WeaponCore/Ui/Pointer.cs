@@ -33,6 +33,7 @@ namespace WeaponCore
         private bool _3RdPersonDraw;
         internal Vector3D PointerOffset;
         internal Vector3D TargetOffset;
+        internal double PointerAdjScale = 0.05f;
         internal double AdjScale;
 
         internal Pointer(Session session)
@@ -143,7 +144,7 @@ namespace WeaponCore
 
         internal void SelectTarget()
         {
-            if (!_cachedPointerPos) InitPointerOffset(0.125);
+            if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             if (!_session.UpdateLocalAiAndCockpit()) return;
             var ai = _session.TrackingAi;
@@ -225,7 +226,7 @@ namespace WeaponCore
             var controlledPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
 
             if (!_3RdPersonDraw && !controlledPressed && !_altPressed) return;
-            if (!_cachedPointerPos) InitPointerOffset(0.125);
+            if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var cameraWorldMatrix = _session.Camera.WorldMatrix;
             var offetPosition = Vector3D.Transform(PointerOffset, cameraWorldMatrix);
@@ -237,7 +238,7 @@ namespace WeaponCore
                 if (!MyUtils.IsZero(_pointerPosition.Y))
                 {
                     _pointerPosition.Y = 0f;
-                    InitPointerOffset(0.1);
+                    InitPointerOffset(0.05);
                     Log.Line("reset cursor");
                 }
             }
@@ -252,21 +253,21 @@ namespace WeaponCore
                     else currentPos -= 0.1f;
                     var clampPos = MathHelper.Clamp(currentPos, -1.25f, 1.25f);
                     _3RdPersonPos.Y = clampPos;
-                    InitPointerOffset(0.125);
+                    InitPointerOffset(0.05);
                 }
                 if (!MyUtils.IsEqual(_pointerPosition, _3RdPersonPos))
                 {
                     _pointerPosition = _3RdPersonPos;
-                    InitPointerOffset(0.125);
+                    InitPointerOffset(0.05);
                 }
             }
             else if (!MyUtils.IsEqual(_pointerPosition, _3RdPersonPos))
             {
                 _pointerPosition = _3RdPersonPos;
-                InitPointerOffset(0.125);
+                InitPointerOffset(0.05);
             }
 
-            MyTransparentGeometry.AddBillboardOriented(_cross, Color.White, offetPosition, left, up, (float)AdjScale, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddBillboardOriented(_cross, Color.White, offetPosition, left, up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
         }
 
         private void UpdateTarget()
@@ -442,7 +443,7 @@ namespace WeaponCore
             position.X *= scale * aspectratio;
             position.Y *= scale;
 
-            AdjScale = adjust * scale;
+            PointerAdjScale = adjust * scale;
 
             PointerOffset = new Vector3D(position.X, position.Y, -.1);
             _cachedPointerPos = true;
