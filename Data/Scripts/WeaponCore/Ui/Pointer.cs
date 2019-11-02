@@ -48,7 +48,7 @@ namespace WeaponCore
             public int Size;
             public int Speed;
             public int Distance;
-            public bool Intercept;
+            public int Engagement;
         }
 
         public class IconInfo
@@ -135,10 +135,15 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed90"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed100"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
             }},
+            {"engagement", new[] {
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetIntercept"), 0.05,  new Vector2D(0.15, 0.85f), 3, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetRetreat"), 0.05, new Vector2D(0.15, 0.85f), 3, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetEngaged"), 0.05, new Vector2D(0.15, 0.85f), 3, true),
+            }},
             {"shield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(0.15, 0.85f), 3, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldMed"), 0.05, new Vector2D(0.15, 0.85f), 3, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldHigh"), 0.05, new Vector2D(0.15, 0.85f), 3, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(0.15, 0.85f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldMed"), 0.05, new Vector2D(0.15, 0.85f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldHigh"), 0.05, new Vector2D(0.15, 0.85f), 4, true),
             }},
         };
 
@@ -339,6 +344,10 @@ namespace WeaponCore
                     display = targetState.ShieldHealth > -1;
                     iconLevel = !display ? 0 : targetState.ShieldHealth;
                     break;
+                case "engagement":
+                    display = targetState.Engagement > -1;
+                    iconLevel = !display ? 0 : targetState.Engagement;
+                    break;
                 case "distance":
                     display = targetState.Size > -1;
                     iconLevel = !display ? 0 : targetState.Distance;
@@ -362,12 +371,17 @@ namespace WeaponCore
             var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
             var targetDir = Vector3D.Normalize(targetVel);
+            var targetRevDir = -targetDir;
             var targetPos = target.PositionComp.WorldAABB.Center;
             var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
             var myHeading = Vector3D.Normalize(myPos - targetPos);
-            var iconCount = 0;
 
-            targetState.Intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, _session.ApproachDegrees);
+            var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, _session.ApproachDegrees);
+            var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, _session.ApproachDegrees);
+            if (intercept)targetState.Engagement = 0;
+            else if (retreat) targetState.Engagement = 1;
+            else targetState.Engagement = -1;
+
             var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
 
             var distanceFromCenters = Vector3D.Distance(ai.GridCenter, target.PositionComp.WorldAABB.Center);
