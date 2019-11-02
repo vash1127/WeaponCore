@@ -55,81 +55,89 @@ namespace WeaponCore
             private readonly MyStringId _textureName;
             private readonly Vector2D _screenPosition;
             private readonly double _definedScale;
+            private readonly int _slotId;
+            private readonly bool _shift;
             private float _adjustedScale;
-            private bool _inited;
             private Vector3D _positionOffset;
+            private int _prevSlotId = -1;
 
-            public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition)
+            public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition, int slotId, bool shift)
             {
                 _textureName = textureName;
                 _definedScale = definedScale;
                 _screenPosition = screenPosition;
+                _slotId = slotId;
+                _shift = shift;
             }
 
-            public void GetTextureInfo(out MyStringId textureName, out float scale, out Vector3D offset, out Vector3D cameraLeft, out Vector3D cameraUp)
+            public void GetTextureInfo(int displayCount, out MyStringId textureName, out float scale, out Vector3D offset, out Vector3D cameraLeft, out Vector3D cameraUp)
             {
-                if (!_inited) InitOffset();
+                if (displayCount != _prevSlotId) InitOffset(displayCount);
                 textureName = _textureName;
                 scale = _adjustedScale;
                 var cameraMatrix = MyAPIGateway.Session.Camera.WorldMatrix;
                 cameraLeft = cameraMatrix.Left;
                 cameraUp = cameraMatrix.Up;
                 offset = Vector3D.Transform(_positionOffset, cameraMatrix);
+
+                _prevSlotId = displayCount;
             }
 
-            private void InitOffset()
+            private void InitOffset(int displayCount)
             {
-                var position = new Vector3D(_screenPosition.X, _screenPosition.Y, 0);
                 var fov = MyAPIGateway.Session.Camera.FovWithZoom;
-                double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
                 var screenScale = 0.075 * Math.Tan(fov * 0.5);
+                const float slotSpacing = 0.05f;
+                var shiftSlots = (_slotId - displayCount) * -1;
+                var shiftSize = _shift && shiftSlots > 0 ? slotSpacing * shiftSlots : 0;
+
+                var position = new Vector3D(_screenPosition.X + shiftSize, _screenPosition.Y, 0);
+                double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
 
                 position.X *= screenScale * aspectratio;
                 position.Y *= screenScale;
-
-                _adjustedScale = (float) (_definedScale * screenScale);
+                _adjustedScale = (float) (_definedScale  * screenScale);
 
                 _positionOffset = new Vector3D(position.X, position.Y, -.1);
-                _inited = true;
             }
         }
 
         private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()
         {
             {"size", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetCapital"), 0.1, new Vector2D(0, 1f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetCruiser"), 0.1, new Vector2D(0, 1f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDestroyer"), 0.1, new Vector2D(0, 1f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetCapital"), 0.1, new Vector2D(0, 1f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetCruiser"), 0.1, new Vector2D(0, 1f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDestroyer"), 0.1, new Vector2D(0, 1f), -1, false),
             }},
             {"threat", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat1"), 0.05, new Vector2D(-0.05, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat2"), 0.05, new Vector2D(-0.05, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat3"), 0.05, new Vector2D(-0.05, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat4"), 0.05, new Vector2D(-0.05, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat5"), 0.05, new Vector2D(-0.05, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat1"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat2"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat3"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat4"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat5"), 0.05, new Vector2D(0, 0.85f), 0, true),
             }},
             {"distance", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceNear"), 0.05, new Vector2D(-0.1, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceNearMid"), 0.05, new Vector2D(-0.1, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceFarMid"), 0.05, new Vector2D(-0.1, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceFar"), 0.05, new Vector2D(-0.1, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceNear"), 0.05, new Vector2D(0.05, 0.85f), 1, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceNearMid"), 0.05, new Vector2D(0.05, 0.85f), 1, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceFarMid"), 0.05, new Vector2D(0.05, 0.85f), 1, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceFar"), 0.05, new Vector2D(0.05, 0.85f), 1, true),
             }},
             {"speed", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed10"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed20"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed30"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed40"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed50"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed60"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed70"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed80"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed90"), 0.05, new Vector2D(-0.15, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed100"), 0.05, new Vector2D(-0.15, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed10"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed20"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed30"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed40"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed50"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed60"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed70"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed80"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed90"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetSpeed100"), 0.05, new Vector2D(0.1, 0.85f), 2, true),
             }},
             {"shield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(-0.2, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldMed"), 0.05, new Vector2D(-0.2, 0.85f)),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldHigh"), 0.05, new Vector2D(-0.2, 0.85f)),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(0.15, 0.85f), 3, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldMed"), 0.05, new Vector2D(0.15, 0.85f), 3, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldHigh"), 0.05, new Vector2D(0.15, 0.85f), 3, true),
             }},
         };
 
@@ -290,13 +298,11 @@ namespace WeaponCore
             var targetState = new TargetState();
             if (!GetTargetState(ref targetState)) return;
 
+            var displayCount = 0;
             foreach (var icon in _targetIcons.Keys)
             {
-                bool displayIcon;
                 int iconLevel;
-                int iconSlot;
-                IconStatus(icon, targetState, out displayIcon, out iconLevel, out iconSlot);
-                if (!displayIcon) continue;
+                if (!IconStatus(icon, targetState, out iconLevel)) continue;
 
                 Vector3D offset;
                 float scale;
@@ -305,10 +311,46 @@ namespace WeaponCore
                 Vector3D cameraLeft;
 
                 var iconInfo = _targetIcons[icon];
-                iconInfo[iconLevel].GetTextureInfo(out textureName, out scale, out offset, out cameraLeft, out cameraUp);
+                iconInfo[iconLevel].GetTextureInfo(displayCount, out textureName, out scale, out offset, out cameraLeft, out cameraUp);
 
                 MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, cameraLeft, cameraUp, scale, BlendTypeEnum.PostPP);
+
+                displayCount++;
             }
+        }
+
+        private static bool IconStatus(string icon, TargetState targetState, out int iconLevel)
+        {
+            bool display;
+            switch (icon)
+            {
+                case "speed":
+                    display = targetState.Speed > -1;
+                    iconLevel = !display ? 0 : targetState.Speed;
+                    break;
+                case "size":
+                    display = targetState.Size > -1;
+                    iconLevel = !display ? 0 : targetState.Size;
+                    break;
+                case "threat":
+                    display = targetState.ThreatLvl > -1;
+                    iconLevel = !display ? 0 : targetState.ThreatLvl;
+                    break;
+                case "shield":
+                    display = targetState.ShieldHealth > -1;
+                    iconLevel = !display ? 0 : targetState.ShieldHealth;
+                    break;
+                case "distance":
+                    display = targetState.Size > -1;
+                    iconLevel = !display ? 0 : targetState.Distance;
+                    break;
+                default:
+                    display = false;
+                    iconLevel = 0;
+                    break;
+            }
+
+            return display;
         }
 
         private bool GetTargetState(ref TargetState targetState)
@@ -324,9 +366,9 @@ namespace WeaponCore
             var targetPos = target.PositionComp.WorldAABB.Center;
             var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
             var myHeading = Vector3D.Normalize(myPos - targetPos);
+            var iconCount = 0;
 
             targetState.Intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, _session.ApproachDegrees);
-
             var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
 
             var distanceFromCenters = Vector3D.Distance(ai.GridCenter, target.PositionComp.WorldAABB.Center);
@@ -389,52 +431,7 @@ namespace WeaponCore
                 else if (offenseRating > 0) targetState.ThreatLvl = 0;
                 else targetState.ThreatLvl = -1;
             }
-
             return true;
-        }
-
-        private void IconStatus(string icon, TargetState targetState, out bool displayIcon, out int iconLevel, out int iconSlot)
-        {
-            bool disable;
-            switch (icon)
-            {
-                case "speed":
-                    disable = targetState.Speed == -1;
-                    displayIcon = !disable;
-                    iconLevel = disable ? 0 : targetState.Speed;
-                    iconSlot = 0;
-                    break;
-                case "size":
-                    disable = targetState.Size == -1;
-                    displayIcon = !disable;
-                    iconLevel = disable ? 0 : targetState.Size;
-                    iconSlot = 0;
-                    break;
-                case "threat":
-                    disable = targetState.ThreatLvl == -1;
-                    displayIcon = !disable;
-                    iconLevel = disable ? 0 : targetState.ThreatLvl;
-                    iconSlot = 0;
-                    break;
-                case "shield":
-                    disable = targetState.ShieldHealth == -1;
-                    displayIcon = !disable;
-                    iconLevel = disable ? 0 : targetState.ShieldHealth;
-                    iconSlot = 0;
-                    break;
-                case "distance":
-                    disable = targetState.Size == -1;
-                    displayIcon = !disable;
-                    iconLevel = disable ? 0 : targetState.Distance;
-                    iconSlot = 0;
-                    break;
-                default:
-                    disable = targetState.Size == -1;
-                    displayIcon = !disable;
-                    iconLevel = 0;
-                    iconSlot = 0;
-                    break;
-            }
         }
 
         private void InitPointerOffset(double adjust)
