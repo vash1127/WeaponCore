@@ -141,9 +141,9 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetEngaged"), 0.05, new Vector2D(0.15, 0.85f), 3, true),
             }},
             {"shield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(0.15, 0.85f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldMed"), 0.05, new Vector2D(0.15, 0.85f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldHigh"), 0.05, new Vector2D(0.15, 0.85f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(0.2, 0.85f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldMed"), 0.05, new Vector2D(0.2, 0.85f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldHigh"), 0.05, new Vector2D(0.2, 0.85f), 4, true),
             }},
         };
 
