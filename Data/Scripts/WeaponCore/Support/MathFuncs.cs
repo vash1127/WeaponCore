@@ -37,7 +37,6 @@ namespace WeaponCore.Support
             return Math.Abs(dot) * dot > num;
         }
 
-
         //Relative velocity proportional navigation
         //aka: Whip-Nav
         internal static Vector3D CalculateMissileIntercept(Vector3D targetPosition, Vector3D targetVelocity, Vector3D missilePos, Vector3D missileVelocity, double missileAcceleration, double compensationFactor = 1, double maxLateralThrustProportion = 0.5)

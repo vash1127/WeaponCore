@@ -310,11 +310,9 @@ namespace WeaponCore
                 Vector3D cameraUp;
                 Vector3D cameraLeft;
 
-                var iconInfo = _targetIcons[icon];
-                iconInfo[iconLevel].GetTextureInfo(displayCount, out textureName, out scale, out offset, out cameraLeft, out cameraUp);
+                _targetIcons[icon][iconLevel].GetTextureInfo(displayCount, out textureName, out scale, out offset, out cameraLeft, out cameraUp);
 
                 MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, cameraLeft, cameraUp, scale, BlendTypeEnum.PostPP);
-
                 displayCount++;
             }
         }
