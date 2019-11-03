@@ -96,7 +96,7 @@ namespace WeaponCore
             }
         }
 
-        private MyEntity RayCheckTargets(Vector3D origin, Vector3D dir, bool reColorRectile = false)
+        private MyEntity RayCheckTargets(Vector3D origin, Vector3D dir, bool reColorRectile = false, bool checkOthers = false)
         {
             var ai = _session.TrackingAi;
             var closestDist = double.MaxValue;
@@ -104,11 +104,9 @@ namespace WeaponCore
             foreach (var info in ai.Targets.Keys)
             {
                 var hit = info as MyCubeGrid;
-                if (hit == null || hit.IsSameConstructAs(ai.MyGrid)) continue;
-                var entWorldBox = info.PositionComp.WorldAABB;
+                if (hit == null) continue;
                 var ray = new RayD(origin, dir);
-                double? dist;
-                ray.Intersects(ref entWorldBox, out dist);
+                var dist = ray.Intersects(info.PositionComp.WorldVolume);
                 if (dist.HasValue)
                 {
                     if (dist.Value < closestDist)
@@ -119,8 +117,34 @@ namespace WeaponCore
                 }
             }
 
+            var foundOther = false;
+            if (checkOthers)
+            {
+                for (int i = 0; i < ai.Obstructions.Count; i++)
+                {
+                    var otherEnt = ai.Obstructions[i];
+                    if (otherEnt is MyCubeGrid)
+                    {
+                        var ray = new RayD(origin, dir);
+                        var dist = ray.Intersects(otherEnt.PositionComp.WorldVolume);
+                        if (dist.HasValue)
+                        {
+                            if (dist.Value < closestDist)
+                            {
+                                closestDist = dist.Value;
+                                closestEnt = otherEnt;
+                                foundOther = true;
+                            }
+                        }
+                    }
+                }
+            }
+
             if (reColorRectile)
-                _reticleColor = closestEnt != null ? Color.Red : Color.White;
+            {
+                var activeColor = foundOther ? Color.Blue : Color.Red;
+                _reticleColor = closestEnt != null ? activeColor : Color.White;
+            }
             return closestEnt;
         }
     }
