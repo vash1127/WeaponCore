@@ -52,7 +52,6 @@ namespace WeaponCore
         private int _eCount;
         private double _syncDistSqr;
 
-
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal Projectiles.Projectiles Projectiles;
@@ -65,7 +64,8 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
         internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
-        internal readonly MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>>();
+        internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>();
+        internal readonly MyConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, FatMap>();
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();

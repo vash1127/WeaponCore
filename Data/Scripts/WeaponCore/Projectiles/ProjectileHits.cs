@@ -429,8 +429,9 @@ namespace WeaponCore.Projectiles
             var hitPos = sphere.Center;
             if (fatOnly)
             {
-                foreach (var cube in ai.Session.GridToFatMap[grid])
+                foreach (var cube in ai.Session.GridToFatMap[grid].MyCubeBocks)
                 {
+                    if (!(cube is IMyTerminalBlock)) continue;
                     switch (fieldType)
                     {
                         case JumpNullField:

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Concurrent;
 using System.Threading;
-using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using WeaponCore.Support;
 using static WeaponCore.Support.TargetingDefinition.BlockTypes;
-using Task = ParallelTasks.Task;
 
 namespace WeaponCore
 {
@@ -56,18 +50,17 @@ namespace WeaponCore
                 {
                     var detectInfo = db.NewEntities[i];
                     var ent = detectInfo.Parent;
-
                     if (ent.Physics == null) continue;
+
                     var grid = ent as MyCubeGrid;
-                    var targetInfo = db.TargetInfoPool.Get();
-                    if (grid == null)
-                        targetInfo.Init(ref detectInfo, false, 1, db.MyGrid, db, null);
-                    else
-                    {
-                        GridAi targetAi;
+                    var isGrid = grid != null;
+                    GridAi targetAi = null;
+
+                    if (isGrid)
                         GridTargetingAIs.TryGetValue(grid, out targetAi);
-                        targetInfo.Init(ref detectInfo, true, GridToFatMap[grid].Count, db.MyGrid, db, targetAi);
-                    }
+
+                    var targetInfo = db.TargetInfoPool.Get();
+                    targetInfo.Init(ref detectInfo, isGrid, db.MyGrid, db, targetAi);
 
                     db.SortedTargets.Add(targetInfo);
                     db.Targets[ent] = targetInfo;
@@ -135,7 +128,6 @@ namespace WeaponCore
             for (int i = 0; i < DirtyGridsTmp.Count; i++)
             {
                 var grid = DirtyGridsTmp[i];
-                MyConcurrentList<MyCubeBlock> allFat;
                 var newTypeMap = BlockTypePool.Get();
                 newTypeMap[Offense] = ConcurrentListPool.Get();
                 newTypeMap[Utility] = ConcurrentListPool.Get();
@@ -146,12 +138,17 @@ namespace WeaponCore
                 newTypeMap[Production] = ConcurrentListPool.Get();
 
                 ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> noFatTypeMap;
-                if (GridToFatMap.TryGetValue(grid, out allFat))
+
+                FatMap fatMap;
+                if (GridToFatMap.TryGetValue(grid, out fatMap))
                 {
+                    var allFat = fatMap.MyCubeBocks;
+                    var terminals = 0;
                     for (int j = 0; j < allFat.Count; j++)
                     {
                         var fat = allFat[j];
-                        if (fat == null) continue;
+                        if (!(fat is IMyTerminalBlock)) continue;
+                        terminals++;
 
                         using (fat.Pin())
                         {
@@ -164,8 +161,8 @@ namespace WeaponCore
                             else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
                             else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);
                         }
-                    }
-
+                    }   
+                    fatMap.Trash = terminals == 0;
                     ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
                     {

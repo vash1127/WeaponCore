@@ -239,9 +239,9 @@ namespace WeaponCore.Support
 
                 if (system.OnlySubSystems) return false;
             }
-            MyConcurrentList<MyCubeBlock> fatList;
-            ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatList);
-            return fatList != null && FindRandomBlock(system, ai, target, weaponPos, info, fatList, w);
+            FatMap fatMap;
+            ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap);
+            return fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w);
         }
 
         private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, MyConcurrentList<MyCubeBlock> subSystemList, Weapon w)
@@ -256,9 +256,9 @@ namespace WeaponCore.Support
             var lastBlocks = system.Values.Targeting.TopBlocks > 10 && distToEnt < 1000 ? system.Values.Targeting.TopBlocks : 10;
 
             var isPrime = false;
-            TargetInfo primeInfo = null;
             if (ai.PrimeTarget != null && lastBlocks < 250)
             {
+                TargetInfo primeInfo = null;
                 if (ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo) && primeInfo.Target?.GetTopMostParent() == topEnt)
                 {
                     isPrime = true;
@@ -290,7 +290,7 @@ namespace WeaponCore.Support
                     //next = deck[i];
 
                 var block = subSystemList[deck[i]];
-                if (block.MarkedForClose || !block.IsWorking) continue;
+                if (!(block is IMyTerminalBlock) || block.MarkedForClose || !block.IsWorking) continue;
 
                 ai.Session.BlockChecks++;
 

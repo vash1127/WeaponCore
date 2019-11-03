@@ -24,9 +24,12 @@ namespace WeaponCore
         private Vector2 _3RdPersonPos = new Vector2(0, 0.25f);
         private readonly Vector2 _targetDrawPosition = new Vector2(-1f, 1f);
         private readonly Session _session;
+
+        private TargetState _targetState;
+
+        internal long _prevTargetId;
         private int _previousWheel;
         private int _currentWheel;
-
         private bool _cachedPointerPos;
         private bool _cachedTargetPos;
         private bool _altPressed;
@@ -184,7 +187,7 @@ namespace WeaponCore
             for (int i = 0; i < _hitInfo.Count; i++)
             {
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;
-                if (hit == null || hit.IsSameConstructAs(ai.MyGrid)) continue;
+                if (hit == null || hit.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hit)) continue;
                 _session.SetTarget(hit, ai);
                 _session.ResetGps();
                 break;
@@ -200,7 +203,7 @@ namespace WeaponCore
             {
                 var info = _pruneInfo[i];
                 var hit = info.Element as MyCubeGrid;
-                if (hit == null || hit.IsSameConstructAs(ai.MyGrid)) continue;
+                if (hit == null || hit.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hit)) continue;
                 if (info.Distance < closestDist)
                 {
                     closestDist = info.Distance;
@@ -301,14 +304,12 @@ namespace WeaponCore
 
         private void DrawTarget()
         {
-            var targetState = new TargetState();
-            if (!GetTargetState(ref targetState)) return;
-
+            if (!GetTargetState()) return;
             var displayCount = 0;
             foreach (var icon in _targetIcons.Keys)
             {
                 int iconLevel;
-                if (!IconStatus(icon, targetState, out iconLevel)) continue;
+                if (!IconStatus(icon, _targetState, out iconLevel)) continue;
 
                 Vector3D offset;
                 float scale;
@@ -361,12 +362,15 @@ namespace WeaponCore
             return display;
         }
 
-        private bool GetTargetState(ref TargetState targetState)
+        private bool GetTargetState()
         {
             var ai = _session.TrackingAi;
             var target = ai.PrimeTarget;
             GridAi.TargetInfo targetInfo;
             if (!ai.Targets.TryGetValue(target, out targetInfo)) return false;
+            if (!_session.Tick20 || _prevTargetId == targetInfo.EntInfo.EntityId) return true;
+            Log.Line($"primeTarget: oRating:{targetInfo.OffenseRating} - blocks:{targetInfo.PartCount} - {targetInfo.Target.DebugName}");
+            _prevTargetId = targetInfo.EntInfo.EntityId;
 
             var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
@@ -378,9 +382,9 @@ namespace WeaponCore
 
             var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, _session.ApproachDegrees);
             var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, _session.ApproachDegrees);
-            if (intercept)targetState.Engagement = 0;
-            else if (retreat) targetState.Engagement = 1;
-            else targetState.Engagement = -1;
+            if (intercept)_targetState.Engagement = 0;
+            else if (retreat) _targetState.Engagement = 1;
+            else _targetState.Engagement = -1;
 
             var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
 
@@ -391,26 +395,26 @@ namespace WeaponCore
             var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
 
             if (distPercent < 100 && distPercent > 66)
-                targetState.Distance = 2;
-            else if (distPercent > 33) targetState.Distance = 1;
-            else if (distPercent >= 0) targetState.Distance = 0;
-            else targetState.Distance = -1;
+                _targetState.Distance = 2;
+            else if (distPercent > 33) _targetState.Distance = 1;
+            else if (distPercent >= 0) _targetState.Distance = 0;
+            else _targetState.Distance = -1;
 
-            if (speed <= 0) targetState.Speed = - 1;
+            if (speed <= 0) _targetState.Speed = - 1;
             else
             {
                 var speedPercent = (speed / _session.MaxEntitySpeed) * 100;
-                if (speedPercent > 95) targetState.Speed = 9;
-                else if (speedPercent > 90) targetState.Speed = 8;
-                else if (speedPercent > 80) targetState.Speed = 7;
-                else if (speedPercent > 70) targetState.Speed = 6;
-                else if (speedPercent > 60) targetState.Speed = 5;
-                else if (speedPercent > 50) targetState.Speed = 4;
-                else if (speedPercent > 40) targetState.Speed = 3;
-                else if (speedPercent > 30) targetState.Speed = 2;
-                else if (speedPercent > 20) targetState.Speed = 1;
-                else if (speedPercent > 0) targetState.Speed = 0;
-                else targetState.Speed = -1;
+                if (speedPercent > 95) _targetState.Speed = 9;
+                else if (speedPercent > 90) _targetState.Speed = 8;
+                else if (speedPercent > 80) _targetState.Speed = 7;
+                else if (speedPercent > 70) _targetState.Speed = 6;
+                else if (speedPercent > 60) _targetState.Speed = 5;
+                else if (speedPercent > 50) _targetState.Speed = 4;
+                else if (speedPercent > 40) _targetState.Speed = 3;
+                else if (speedPercent > 30) _targetState.Speed = 2;
+                else if (speedPercent > 20) _targetState.Speed = 1;
+                else if (speedPercent > 0) _targetState.Speed = 0;
+                else _targetState.Speed = -1;
             }
 
             MyTuple<bool, bool, float, float, float, int> shieldInfo = new MyTuple<bool, bool, float, float, float, int>();
@@ -418,12 +422,12 @@ namespace WeaponCore
             if (shieldInfo.Item1)
             {
                 var shieldPercent = shieldInfo.Item5;
-                if (shieldPercent > 66) targetState.ShieldHealth = 2;
-                else if (shieldPercent > 33) targetState.ShieldHealth = 1;
-                else if (shieldPercent > 0) targetState.ShieldHealth = 0;
-                else targetState.ShieldHealth = -1;
+                if (shieldPercent > 66) _targetState.ShieldHealth = 2;
+                else if (shieldPercent > 33) _targetState.ShieldHealth = 1;
+                else if (shieldPercent > 0) _targetState.ShieldHealth = 0;
+                else _targetState.ShieldHealth = -1;
             }
-            else targetState.ShieldHealth = -1;
+            else _targetState.ShieldHealth = -1;
 
             var grid = target as MyCubeGrid;
             var friend = false;
@@ -433,16 +437,16 @@ namespace WeaponCore
                 if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
             }
 
-            if (friend) targetState.ThreatLvl = -1;
+            if (friend) _targetState.ThreatLvl = -1;
             else
             {
                 var offenseRating = targetInfo.OffenseRating;
-                if (offenseRating > 2.5) targetState.ThreatLvl = 4;
-                else if (offenseRating > 1.25) targetState.ThreatLvl = 3;
-                else if (offenseRating > 0.5) targetState.ThreatLvl = 2;
-                else if (offenseRating > 0.25) targetState.ThreatLvl = 1;
-                else if (offenseRating > 0) targetState.ThreatLvl = 0;
-                else targetState.ThreatLvl = -1;
+                if (offenseRating > 2.5) _targetState.ThreatLvl = 4;
+                else if (offenseRating > 1.25) _targetState.ThreatLvl = 3;
+                else if (offenseRating > 0.5) _targetState.ThreatLvl = 2;
+                else if (offenseRating > 0.25) _targetState.ThreatLvl = 1;
+                else if (offenseRating > 0) _targetState.ThreatLvl = 0;
+                else _targetState.ThreatLvl = -1;
             }
             return true;
         }

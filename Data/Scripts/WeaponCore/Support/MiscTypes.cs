@@ -611,4 +611,9 @@ namespace WeaponCore.Support
         public Vector3I Position;
     }
 
+    public class FatMap
+    {
+        public MyConcurrentList<MyCubeBlock> MyCubeBocks;
+        public volatile bool Trash;
+    }
 }

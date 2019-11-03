@@ -71,8 +71,11 @@ namespace WeaponCore
             while (NewGrids.TryDequeue(out grid))
             {
                 //Log.Line($"added grid");
-                var fatMap = ConcurrentListPool.Get();
-                fatMap.AddRange(grid.GetFatBlocks());
+                var allFat = ConcurrentListPool.Get();
+                allFat.AddRange(grid.GetFatBlocks());
+                var fatMap = FatMapPool.Get();
+                fatMap.Trash = true;
+                fatMap.MyCubeBocks = allFat;
                 GridToFatMap.Add(grid, fatMap);
                 grid.OnFatBlockAdded += ToFatMap;
                 grid.OnFatBlockRemoved += FromFatMap;
@@ -84,11 +87,13 @@ namespace WeaponCore
         private void RemoveGridFromMap(MyEntity myEntity)
         {
             var grid = (MyCubeGrid)myEntity;
-            MyConcurrentList<MyCubeBlock> list;
-            if (GridToFatMap.TryRemove(grid, out list))
+            FatMap fatMap;
+            if (GridToFatMap.TryRemove(grid, out fatMap))
             {
-                list.Clear();
-                ConcurrentListPool.Return(list);
+                fatMap.MyCubeBocks.Clear();
+                ConcurrentListPool.Return(fatMap.MyCubeBocks);
+                fatMap.Trash = true;
+                FatMapPool.Return(fatMap);
                 grid.OnFatBlockAdded -= ToFatMap;
                 grid.OnFatBlockRemoved -= FromFatMap;
                 grid.OnClose -= RemoveGridFromMap;
@@ -101,14 +106,14 @@ namespace WeaponCore
         private void ToFatMap(MyCubeBlock myCubeBlock)
         {
             //Log.Line("added to fat map");
-            GridToFatMap[myCubeBlock.CubeGrid].Add(myCubeBlock);
+            GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Add(myCubeBlock);
             DirtyGrids.Add(myCubeBlock.CubeGrid);
         }
 
         private void FromFatMap(MyCubeBlock myCubeBlock)
         {
             //Log.Line("removed from fat map");
-            GridToFatMap[myCubeBlock.CubeGrid].Remove(myCubeBlock);
+            GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock);
             DirtyGrids.Add(myCubeBlock.CubeGrid);
         }
 
