@@ -3,7 +3,6 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Weapons;
 using SpaceEngineers.Game.ModAPI;
-using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Support;
@@ -71,10 +70,15 @@ namespace WeaponCore
             while (NewGrids.TryDequeue(out grid))
             {
                 //Log.Line($"added grid");
+
                 var allFat = ConcurrentListPool.Get();
                 allFat.AddRange(grid.GetFatBlocks());
                 var fatMap = FatMapPool.Get();
+
+                if (grid.Components.TryGet(out fatMap.Targeting))
+                    fatMap.Targeting.AllowScanning = false;
                 fatMap.Trash = true;
+
                 fatMap.MyCubeBocks = allFat;
                 GridToFatMap.Add(grid, fatMap);
                 grid.OnFatBlockAdded += ToFatMap;

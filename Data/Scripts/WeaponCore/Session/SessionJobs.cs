@@ -3,6 +3,7 @@ using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Utils;
 using WeaponCore.Support;
 using static WeaponCore.Support.TargetingDefinition.BlockTypes;
 
@@ -144,6 +145,7 @@ namespace WeaponCore
                 {
                     var allFat = fatMap.MyCubeBocks;
                     var terminals = 0;
+                    var tStatus = fatMap.Targeting == null || fatMap.Targeting.AllowScanning;
                     for (int j = 0; j < allFat.Count; j++)
                     {
                         var fat = allFat[j];
@@ -155,7 +157,13 @@ namespace WeaponCore
                             if (fat.MarkedForClose) continue;
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
                             else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
-                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId)) newTypeMap[Offense].Add(fat);
+                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId))
+                            {
+                                if (!tStatus && fat is IMyGunBaseUser && !WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId))
+                                    tStatus = fatMap.Targeting.AllowScanning = true;
+
+                                newTypeMap[Offense].Add(fat);
+                            }
                             else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna) newTypeMap[Utility].Add(fat);
                             else if (fat is MyThrust) newTypeMap[Thrust].Add(fat);
                             else if (fat is MyGyro) newTypeMap[Steering].Add(fat);

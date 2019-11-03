@@ -90,7 +90,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            lock (session.Projectiles.Wait[session.ProCounter])
+            //lock (session.Projectiles.Wait[session.ProCounter])
             {
                 Projectile vProjectile = null;
                 var targetAiCnt = Comp.Ai.TargetAis.Count;

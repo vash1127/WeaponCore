@@ -91,8 +91,8 @@ namespace WeaponCore
                     ControlledEntity = (MyEntity)MyAPIGateway.Session.ControlledObject;
                     WeaponComponent notNeeded;
                     ControlChanged = lastControlledEnt != ControlledEntity && ControlledEntity.Components.TryGet(out notNeeded);
-                    
-                    CameraPos = Session.Camera.Position;
+                    CameraMatrix = Session.Camera.WorldMatrix;
+                    CameraPos = CameraMatrix.Translation;
                     ProcessAnimationQueue();
                 }
 
@@ -173,14 +173,17 @@ namespace WeaponCore
                 DsUtil.Start("draw");
                 if (!DedicatedServer)
                 {
+                    CameraMatrix = Session.Camera.WorldMatrix;
+                    CameraPos = CameraMatrix.Translation;
+
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                         Ui.DrawWheel();
 
                     Pointer.DrawSelector();
 
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
-                        lock (Projectiles.Wait[i])
-                            DrawLists(Projectiles.DrawProjectiles[i]);
+                        //lock (Projectiles.Wait[i])
+                        DrawLists(Projectiles.DrawProjectiles[i]);
 
                     if (_shrinking.Count > 0)
                         Shrink();

@@ -74,7 +74,6 @@ namespace WeaponCore
             }
         }
 
-
         internal bool PlayerInAiCockPit()
         {
             if (ActiveCockPit == null || ActiveCockPit.MarkedForClose || ((IMyControllerInfo)ActiveCockPit.ControllerInfo)?.ControllingIdentityId != MyAPIGateway.Session.Player.IdentityId) return false;
@@ -87,8 +86,7 @@ namespace WeaponCore
             {
                 Log.Line("resetgps");
                 MyVisualScriptLogicProvider.AddGPS("WEAPONCORE", "", Vector3D.MaxValue, Color.Red);
-                var gpsList = MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId);
-                foreach (var t in gpsList)
+                foreach (var t in MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId))
                 {
                     if (t.Name == "WEAPONCORE")
                     {

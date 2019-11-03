@@ -841,11 +841,11 @@ namespace WeaponCore.Projectiles
             if (!T.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
             else T.IsShrapnel = false;
 
-            if (Watchers.Count > 0 && !(State == ProjectileState.Ending || State == ProjectileState.Ending))
-            {
+            //if (Watchers.Count > 0 && State != ProjectileState.Ending))
+            //{
                 for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Enqueue(this);
                 Watchers.Clear();
-            }
+            //}
 
             if (!EnableAv && T.System.PrimeModelId == -1 && T.System.TriggerModelId == -1)
             {

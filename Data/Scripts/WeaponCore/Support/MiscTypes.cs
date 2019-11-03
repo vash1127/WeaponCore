@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
@@ -614,6 +615,7 @@ namespace WeaponCore.Support
     public class FatMap
     {
         public MyConcurrentList<MyCubeBlock> MyCubeBocks;
+        public MyGridTargeting Targeting;
         public volatile bool Trash;
     }
 }

@@ -74,15 +74,12 @@ namespace WeaponCore
                 _shift = shift;
             }
 
-            public void GetTextureInfo(int displayCount, out MyStringId textureName, out float scale, out Vector3D offset, out Vector3D cameraLeft, out Vector3D cameraUp)
+            public void GetTextureInfo(int displayCount, Session session, out MyStringId textureName, out float scale, out Vector3D offset)
             {
                 if (displayCount != _prevSlotId) InitOffset(displayCount);
                 textureName = _textureName;
                 scale = _adjustedScale;
-                var cameraMatrix = MyAPIGateway.Session.Camera.WorldMatrix;
-                cameraLeft = cameraMatrix.Left;
-                cameraUp = cameraMatrix.Up;
-                offset = Vector3D.Transform(_positionOffset, cameraMatrix);
+                offset = Vector3D.Transform(_positionOffset, session.CameraMatrix);
 
                 _prevSlotId = displayCount;
             }
@@ -161,8 +158,7 @@ namespace WeaponCore
             Vector3D end;
             if (!MyAPIGateway.Session.CameraController.IsInFirstPersonView)
             {
-                var cameraWorldMatrix = _session.Camera.WorldMatrix;
-                var offetPosition = Vector3D.Transform(PointerOffset, cameraWorldMatrix);
+                var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
                 start = offetPosition;
                 var dir = Vector3D.Normalize(start - _session.CameraPos);
                 end = offetPosition + (dir * ai.MaxTargetingRange);
@@ -176,8 +172,7 @@ namespace WeaponCore
                 }
                 else
                 {
-                    var cameraWorldMatrix = _session.Camera.WorldMatrix;
-                    var offetPosition = Vector3D.Transform(PointerOffset, cameraWorldMatrix);
+                    var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
                     start = offetPosition;
                     var dir = Vector3D.Normalize(start - _session.CameraPos);
                     end = offetPosition + (dir * ai.MaxTargetingRange);
@@ -236,10 +231,7 @@ namespace WeaponCore
             if (!_3RdPersonDraw && !controlledPressed && !_altPressed) return;
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
-            var cameraWorldMatrix = _session.Camera.WorldMatrix;
-            var offetPosition = Vector3D.Transform(PointerOffset, cameraWorldMatrix);
-            var left = cameraWorldMatrix.Left;
-            var up = cameraWorldMatrix.Up;
+            var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
 
             if (firstPerson)
             {
@@ -275,7 +267,7 @@ namespace WeaponCore
                 InitPointerOffset(0.05);
             }
 
-            MyTransparentGeometry.AddBillboardOriented(_cross, Color.White, offetPosition, left, up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddBillboardOriented(_cross, Color.White, offetPosition, _session.CameraMatrix.Left, _session.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
         }
 
         private void UpdateTarget()
@@ -304,7 +296,8 @@ namespace WeaponCore
 
         private void DrawTarget()
         {
-            if (!GetTargetState()) return;
+            GridAi.TargetInfo targetInfo;
+            if (!GetTargetState(out targetInfo)) return;
             var displayCount = 0;
             foreach (var icon in _targetIcons.Keys)
             {
@@ -314,14 +307,13 @@ namespace WeaponCore
                 Vector3D offset;
                 float scale;
                 MyStringId textureName;
-                Vector3D cameraUp;
-                Vector3D cameraLeft;
 
-                _targetIcons[icon][iconLevel].GetTextureInfo(displayCount, out textureName, out scale, out offset, out cameraLeft, out cameraUp);
+                _targetIcons[icon][iconLevel].GetTextureInfo(displayCount, _session, out textureName, out scale, out offset);
 
-                MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, cameraLeft, cameraUp, scale, BlendTypeEnum.PostPP);
+                MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, _session.CameraMatrix.Left, _session.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
                 displayCount++;
             }
+            MyTransparentGeometry.AddBillboardOriented(_cross, Color.White, targetInfo.Target.PositionComp.WorldAABB.Center, _session.CameraMatrix.Left, _session.CameraMatrix.Up, targetInfo.Target.PositionComp.LocalVolume.Radius, BlendTypeEnum.PostPP);
         }
 
         private static bool IconStatus(string icon, TargetState targetState, out int iconLevel)
@@ -362,16 +354,14 @@ namespace WeaponCore
             return display;
         }
 
-        private bool GetTargetState()
+        private bool GetTargetState(out GridAi.TargetInfo info)
         {
             var ai = _session.TrackingAi;
             var target = ai.PrimeTarget;
-            GridAi.TargetInfo targetInfo;
-            if (!ai.Targets.TryGetValue(target, out targetInfo)) return false;
-            if (!_session.Tick20 || _prevTargetId == targetInfo.EntInfo.EntityId) return true;
-            Log.Line($"primeTarget: oRating:{targetInfo.OffenseRating} - blocks:{targetInfo.PartCount} - {targetInfo.Target.DebugName}");
-            _prevTargetId = targetInfo.EntInfo.EntityId;
-
+            if (!ai.Targets.TryGetValue(target, out info)) return false;
+            if (!_session.Tick20 || _prevTargetId == info.EntInfo.EntityId) return true;
+            Log.Line($"primeTarget: oRating:{info.OffenseRating} - blocks:{info.PartCount} - {info.Target.DebugName}");
+            _prevTargetId = info.EntInfo.EntityId;
             var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
             var targetDir = Vector3D.Normalize(targetVel);
@@ -440,7 +430,7 @@ namespace WeaponCore
             if (friend) _targetState.ThreatLvl = -1;
             else
             {
-                var offenseRating = targetInfo.OffenseRating;
+                var offenseRating = info.OffenseRating;
                 if (offenseRating > 2.5) _targetState.ThreatLvl = 4;
                 else if (offenseRating > 1.25) _targetState.ThreatLvl = 3;
                 else if (offenseRating > 0.5) _targetState.ThreatLvl = 2;
