@@ -106,8 +106,8 @@ namespace WeaponCore
 
                 PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
 
-                if (MyAPIGateway.Input.IsNewLeftMouseReleased())
-                    Pointer.SelectTarget();
+                if (MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
+                    TargetUi.SelectTarget();
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -179,7 +179,7 @@ namespace WeaponCore
                     if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                         Ui.DrawWheel();
 
-                    Pointer.DrawSelector();
+                    TargetUi.DrawTargetUi();
 
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         //lock (Projectiles.Wait[i])

@@ -439,7 +439,7 @@ namespace WeaponCore
             _weaponDefinitions = null;
             Projectiles = null;
             TrackingAi = null;
-            Pointer = null;
+            TargetUi = null;
             Placer = null;
             Ui = null;
             DbsToUpdate = null;

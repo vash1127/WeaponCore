@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -19,7 +20,6 @@ namespace WeaponCore
 {
     public partial class Session
     {
-
         internal bool UpdateLocalAiAndCockpit()
         {
             ActiveCockPit = ControlledEntity as MyCockpit;
@@ -191,31 +191,72 @@ namespace WeaponCore
             speed = Math.Round(target.Physics?.Speed ?? 0, 1);
         }
 
-        internal void GetTargetInfo2(GridAi ai, out double speed, out bool intercept, out int shield, out float threat)
+
+        internal bool GetTargetState()
         {
+            var ai = TrackingAi;
             var target = ai.PrimeTarget;
+            GridAi.TargetInfo info;
+            if (!ai.Targets.TryGetValue(target, out info)) return false;
+            if (!Tick20 || _prevTargetId == info.EntInfo.EntityId) return true;
+            Log.Line($"primeTarget: oRating:{info.OffenseRating} - blocks:{info.PartCount} - {info.Target.DebugName}");
+            _prevTargetId = info.EntInfo.EntityId;
             var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
             var targetDir = Vector3D.Normalize(targetVel);
+            var targetRevDir = -targetDir;
             var targetPos = target.PositionComp.WorldAABB.Center;
             var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
             var myHeading = Vector3D.Normalize(myPos - targetPos);
 
-            intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
+            var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
+            var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, ApproachDegrees);
+            if (intercept) TargetState.Engagement = 0;
+            else if (retreat) TargetState.Engagement = 1;
+            else TargetState.Engagement = -1;
 
-            speed = Math.Round(target.Physics?.Speed ?? 0, 1);
+            var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
 
-            IMyTerminalBlock shieldBlock = null;
-            if (ShieldApiLoaded) shieldBlock = SApi.GetShieldBlock(target);
-            if (shieldBlock != null)
+            var distanceFromCenters = Vector3D.Distance(ai.GridCenter, target.PositionComp.WorldAABB.Center);
+            distanceFromCenters -= ai.GridRadius;
+            distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
+            distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
+            var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
+
+            if (distPercent < 100 && distPercent > 66)
+                TargetState.Distance = 2;
+            else if (distPercent > 33) TargetState.Distance = 1;
+            else if (distPercent >= 0) TargetState.Distance = 0;
+            else TargetState.Distance = -1;
+
+            if (speed <= 0) TargetState.Speed = -1;
+            else
             {
-                var shieldPercent = SApi.GetShieldPercent(shieldBlock);
-                if (shieldPercent > 66) shield = 0;
-                else if (shieldPercent > 33) shield = 1;
-                else if (shieldPercent > 0) shield = 2;
-                else shield = -1;
+                var speedPercent = (speed / MaxEntitySpeed) * 100;
+                if (speedPercent > 95) TargetState.Speed = 9;
+                else if (speedPercent > 90) TargetState.Speed = 8;
+                else if (speedPercent > 80) TargetState.Speed = 7;
+                else if (speedPercent > 70) TargetState.Speed = 6;
+                else if (speedPercent > 60) TargetState.Speed = 5;
+                else if (speedPercent > 50) TargetState.Speed = 4;
+                else if (speedPercent > 40) TargetState.Speed = 3;
+                else if (speedPercent > 30) TargetState.Speed = 2;
+                else if (speedPercent > 20) TargetState.Speed = 1;
+                else if (speedPercent > 0) TargetState.Speed = 0;
+                else TargetState.Speed = -1;
             }
-            else shield = -1;
+
+            MyTuple<bool, bool, float, float, float, int> shieldInfo = new MyTuple<bool, bool, float, float, float, int>();
+            if (ShieldApiLoaded) shieldInfo = SApi.GetShieldInfo(target);
+            if (shieldInfo.Item1)
+            {
+                var shieldPercent = shieldInfo.Item5;
+                if (shieldPercent > 66) TargetState.ShieldHealth = 2;
+                else if (shieldPercent > 33) TargetState.ShieldHealth = 1;
+                else if (shieldPercent > 0) TargetState.ShieldHealth = 0;
+                else TargetState.ShieldHealth = -1;
+            }
+            else TargetState.ShieldHealth = -1;
 
             var grid = target as MyCubeGrid;
             var friend = false;
@@ -225,12 +266,18 @@ namespace WeaponCore
                 if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
             }
 
-            if (friend) threat = -1;
+            if (friend) TargetState.ThreatLvl = -1;
             else
             {
-                var offenseRating = ai.Targets[target].OffenseRating;
-                threat = offenseRating / 2;
+                var offenseRating = info.OffenseRating;
+                if (offenseRating > 2.5) TargetState.ThreatLvl = 4;
+                else if (offenseRating > 1.25) TargetState.ThreatLvl = 3;
+                else if (offenseRating > 0.5) TargetState.ThreatLvl = 2;
+                else if (offenseRating > 0.25) TargetState.ThreatLvl = 1;
+                else if (offenseRating > 0) TargetState.ThreatLvl = 0;
+                else TargetState.ThreatLvl = -1;
             }
+            return true;
         }
     }
 }

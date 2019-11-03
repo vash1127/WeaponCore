@@ -47,10 +47,12 @@ namespace WeaponCore
 
         private List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
 
+        private long _prevTargetId;
         private int _count = -1;
         private int _lCount;
         private int _eCount;
         private double _syncDistSqr;
+
 
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
@@ -94,7 +96,8 @@ namespace WeaponCore
         internal DSUtils DsUtil { get; set; } = new DSUtils();
         internal DSUtils DsUtil2 { get; set; } = new DSUtils();
         internal Wheel Ui;
-        internal Pointer Pointer;
+        internal TargetUi TargetUi;
+        internal TargetStatus TargetState;
         internal IMyBlockPlacerBase Placer;
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
@@ -191,9 +194,19 @@ namespace WeaponCore
 
         internal ShieldApi SApi = new ShieldApi();
 
+        public struct TargetStatus
+        {
+            public int ShieldHealth;
+            public int ThreatLvl;
+            public int Size;
+            public int Speed;
+            public int Distance;
+            public int Engagement;
+        }
+
         public Session()
         {
-            Pointer = new Pointer(this);
+            TargetUi = new TargetUi(this);
             Ui = new Wheel(this);
             Projectiles = new Projectiles.Projectiles(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
