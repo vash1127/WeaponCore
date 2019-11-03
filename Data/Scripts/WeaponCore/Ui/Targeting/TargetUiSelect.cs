@@ -86,6 +86,19 @@ namespace WeaponCore
 
             // If Raycast misses, we will accept the closest entitySphere in its place.
             //var line = new LineD(start, end);
+
+
+            var closestEnt = RayCheckTargets(start, dir);
+            if (closestEnt != null)
+            {
+                s.SetTarget(closestEnt, ai);
+                s.ResetGps();
+            }
+        }
+
+        private MyEntity RayCheckTargets(Vector3D origin, Vector3D dir, bool reColorRectile = false)
+        {
+            var ai = _session.TrackingAi;
             var closestDist = double.MaxValue;
             MyEntity closestEnt = null;
             foreach (var info in ai.Targets.Keys)
@@ -93,7 +106,7 @@ namespace WeaponCore
                 var hit = info as MyCubeGrid;
                 if (hit == null || hit.IsSameConstructAs(ai.MyGrid)) continue;
                 var entWorldBox = info.PositionComp.WorldAABB;
-                var ray = new RayD(start, dir);
+                var ray = new RayD(origin, dir);
                 double? dist;
                 ray.Intersects(ref entWorldBox, out dist);
                 if (dist.HasValue)
@@ -106,11 +119,9 @@ namespace WeaponCore
                 }
             }
 
-            if (closestEnt != null)
-            {
-                s.SetTarget(closestEnt, ai);
-                s.ResetGps();
-            }
+            if (reColorRectile)
+                _reticleColor = closestEnt != null ? Color.Red : Color.White;
+            return closestEnt;
         }
     }
 }

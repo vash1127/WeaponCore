@@ -59,7 +59,12 @@ namespace WeaponCore
                 InitPointerOffset(0.05);
             }
 
-            MyTransparentGeometry.AddBillboardOriented(_cross, Color.White, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
+            if (s.Tick10)
+            {
+                var dir = Vector3D.Normalize(offetPosition - s.CameraPos);
+                RayCheckTargets(offetPosition, dir, true);
+            }
+            MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
         }
 
         private void DrawTarget()

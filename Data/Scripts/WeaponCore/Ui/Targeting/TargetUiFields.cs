@@ -19,6 +19,7 @@ namespace WeaponCore
         private readonly List<MyLineSegmentOverlapResult<MyEntity>> _pruneInfo = new List<MyLineSegmentOverlapResult<MyEntity>>();
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.25f);
+        private Color _reticleColor = Color.White;
         private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly Session _session;
         private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()
