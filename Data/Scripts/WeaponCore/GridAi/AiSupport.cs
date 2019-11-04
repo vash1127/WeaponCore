@@ -318,7 +318,7 @@ namespace WeaponCore.Support
                 {
                     OffenseRating = targetAi.OptimalDps / myAi.OptimalDps;
                 }
-                else if (detectInfo.Armed) OffenseRating = 1;
+                else if (detectInfo.Armed) OffenseRating = 0.01f;
                 else OffenseRating = 0;
                 Vector3D.DistanceSquared(ref TargetPos, ref myAi.GridCenter, out DistSqr);
                 var adjustedDist = DistSqr - (MyAi.GridRadius * MyAi.GridRadius);

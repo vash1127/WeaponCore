@@ -16,7 +16,6 @@ namespace WeaponCore
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
-        private readonly List<MyLineSegmentOverlapResult<MyEntity>> _pruneInfo = new List<MyLineSegmentOverlapResult<MyEntity>>();
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.25f);
         private Color _reticleColor = Color.White;
