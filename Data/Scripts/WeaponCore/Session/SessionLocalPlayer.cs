@@ -269,12 +269,29 @@ namespace WeaponCore
             if (friend) TargetState.ThreatLvl = -1;
             else
             {
+                int shieldBonus = 0;
+                if (ShieldApiLoaded)
+                {
+                    var myShieldInfo = SApi.GetShieldInfo(ai.MyGrid);
+                    if (shieldInfo.Item1 && myShieldInfo.Item1)
+                        shieldBonus = shieldInfo.Item5 > myShieldInfo.Item5 ? 1 : -1;
+                    else if (shieldInfo.Item1) shieldBonus = 1;
+                    else if (myShieldInfo.Item1) shieldBonus = -1;
+                }
+
                 var offenseRating = info.OffenseRating;
-                if (offenseRating > 2.5) TargetState.ThreatLvl = 4;
-                else if (offenseRating > 1.25) TargetState.ThreatLvl = 3;
-                else if (offenseRating > 0.5) TargetState.ThreatLvl = 2;
-                else if (offenseRating > 0.25) TargetState.ThreatLvl = 1;
-                else if (offenseRating > 0) TargetState.ThreatLvl = 0;
+                if (offenseRating > 5) TargetState.ThreatLvl = shieldBonus < 0 ? 9 : 10;
+                else if (offenseRating > 4) TargetState.ThreatLvl = 9 + shieldBonus;
+                else if (offenseRating > 3) TargetState.ThreatLvl = 8 + shieldBonus;
+                else if (offenseRating > 2) TargetState.ThreatLvl = 7 + shieldBonus;
+                else if (offenseRating > 1) TargetState.ThreatLvl = 6 + shieldBonus;
+                else if (offenseRating > 0.5) TargetState.ThreatLvl = 5 + shieldBonus;
+                else if (offenseRating > 0.25) TargetState.ThreatLvl = 4 + shieldBonus;
+
+                else if (offenseRating > 0.125) TargetState.ThreatLvl = 3 + shieldBonus;
+                else if (offenseRating > 0.0625) TargetState.ThreatLvl = 2 + shieldBonus;
+                else if (offenseRating > 0.03125) TargetState.ThreatLvl = 1 + shieldBonus;
+                else if (offenseRating > 0) TargetState.ThreatLvl = shieldBonus > 0 ? 1 : 0;
                 else TargetState.ThreatLvl = -1;
             }
             return true;
