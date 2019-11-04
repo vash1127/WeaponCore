@@ -35,6 +35,11 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat3"), 0.05, new Vector2D(0, 0.85f), 0, true),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat4"), 0.05, new Vector2D(0, 0.85f), 0, true),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat5"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat6"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat7"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat8"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat9"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat10"), 0.05, new Vector2D(0, 0.85f), 0, true),
             }},
             {"distance", new[] {
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceNear"), 0.05, new Vector2D(0.05, 0.85f), 1, true),
