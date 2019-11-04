@@ -142,7 +142,7 @@ namespace WeaponCore
 
             if (reColorRectile)
             {
-                var activeColor = foundOther ? Color.Blue : Color.Red;
+                var activeColor = foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null ? activeColor : Color.White;
             }
             return closestEnt;
