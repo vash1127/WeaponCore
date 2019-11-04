@@ -21,7 +21,8 @@ namespace WeaponCore
 
             _ctrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
 
-            return _3RdPersonDraw || _ctrlPressed || _altPressed;
+            var enableActivator = _3RdPersonDraw || _ctrlPressed || _altPressed;
+            return enableActivator;
         }
 
         private void InitPointerOffset(double adjust)

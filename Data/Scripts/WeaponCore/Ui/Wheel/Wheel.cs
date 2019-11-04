@@ -53,9 +53,9 @@ namespace WeaponCore
                     else if (menu.Name == "Main") CloseWheel();
                 }
 
-                if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel && s.UiInput.CurrentWheel > s.UiInput.PreviousWheel)
+                if (s.UiInput.WheelForward)
                     GetCurrentMenu().Move(Movement.Forward);
-                else if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel)
+                else if (s.UiInput.WheelBackward)
                     GetCurrentMenu().Move(Movement.Backward);
 
                 if (previousMenu != _currentMenu) SetCurrentMessage();
@@ -170,6 +170,5 @@ namespace WeaponCore
             var menu = Menus[_currentMenu];
             if (menu.ItemCount <= 1) menu.LoadInfo();
         }
-
     }
 }

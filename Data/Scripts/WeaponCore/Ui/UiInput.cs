@@ -11,6 +11,9 @@ namespace WeaponCore
         internal bool MouseButtonLeft;
         internal bool MouseButtonMiddle;
         internal bool MouseButtonRight;
+        internal bool WheelForward;
+        internal bool WheelBackward;
+
         private readonly Session _session;
 
         internal UiInput(Session session)
@@ -22,6 +25,8 @@ namespace WeaponCore
         {
             var s = _session;
             MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
+            WheelForward = false;
+            WheelBackward = false;
             if (MouseButtonPressed)
             {
                 MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
@@ -40,6 +45,10 @@ namespace WeaponCore
                 PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                 CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
             }
+            if (CurrentWheel != PreviousWheel && CurrentWheel > PreviousWheel)
+                WheelForward = true;
+            else if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel)
+                WheelBackward = true;
         }
     }
 }
