@@ -12,10 +12,10 @@ namespace WeaponCore.Support
     {
         internal void TerminalRefresh(bool update = true)
         {
-            if (IsAiOnlyTurret)
-                AiOnlyTurret.RefreshCustomInfo();
+            if (IsSorterTurret)
+                SorterBase.RefreshCustomInfo();
             else
-                ControllableTurret.RefreshCustomInfo();
+                MissileBase.RefreshCustomInfo();
 
             if (update && InControlPanel)
             {

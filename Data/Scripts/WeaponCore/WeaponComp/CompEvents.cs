@@ -15,10 +15,10 @@ namespace WeaponCore.Support
         {
             if (register)
             {
-                if(IsAiOnlyTurret)
-                    AiOnlyTurret.AppendingCustomInfo += AppendingCustomInfo;
+                if(IsSorterTurret)
+                    SorterBase.AppendingCustomInfo += AppendingCustomInfo;
                 else
-                    ControllableTurret.AppendingCustomInfo += AppendingCustomInfo;
+                    MissileBase.AppendingCustomInfo += AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
@@ -30,10 +30,10 @@ namespace WeaponCore.Support
             }
             else
             {
-                if (IsAiOnlyTurret)
-                    AiOnlyTurret.AppendingCustomInfo -= AppendingCustomInfo;
+                if (IsSorterTurret)
+                    SorterBase.AppendingCustomInfo -= AppendingCustomInfo;
                 else
-                    ControllableTurret.AppendingCustomInfo -= AppendingCustomInfo;
+                    MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
                 BlockInventory.ContentsChanged -= OnContentsChanged;

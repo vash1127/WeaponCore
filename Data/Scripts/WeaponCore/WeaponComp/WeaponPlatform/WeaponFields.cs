@@ -128,6 +128,7 @@ namespace WeaponCore.Platform
         internal bool HitOther;
         internal bool FixedOffset;
         internal bool TurretTargetLock;
+        internal bool AiOnlyWeapon;
         internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 

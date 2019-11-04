@@ -9,7 +9,7 @@ namespace WeaponCore.Platform
         {
             LastTrackedTick = Comp.Ai.Session.Tick;
 
-            if (Comp.IsAiOnlyTurret)
+            if (AiOnlyWeapon)
             {
                 double absAzChange;
                 double absElChange;
@@ -65,15 +65,15 @@ namespace WeaponCore.Platform
             }
             else
             {
-                Comp.ControllableTurret.Elevation = (float)Elevation;
-                Comp.ControllableTurret.Azimuth = (float)Azimuth;
+                Comp.MissileBase.Elevation = (float)Elevation;
+                Comp.MissileBase.Azimuth = (float)Azimuth;
             }
 
         }
 
         public bool TurretHomePosition()
         {
-            if (Comp.AiOnlyTurret == null && Comp.ControllableTurret == null) return false;
+            if (Comp.SorterBase == null && Comp.MissileBase == null) return false;
 
             var azStep = System.AzStep;
             var elStep = System.ElStep;

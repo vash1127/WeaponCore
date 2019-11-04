@@ -60,9 +60,9 @@ namespace WeaponCore.Support
                 State = new LogicState(this);
             }
 
-            if (IsAiOnlyTurret)
+            if (IsSorterTurret)
             {
-                if (AiOnlyTurret.Storage == null)
+                if (SorterBase.Storage == null)
                 {
                     //Log.Line("Storage null");
                     State.StorageInit();
@@ -70,7 +70,7 @@ namespace WeaponCore.Support
             }
             else
             {
-                if (ControllableTurret.Storage == null)
+                if (MissileBase.Storage == null)
                 {
                     //Log.Line("Storage null");
                     State.StorageInit();

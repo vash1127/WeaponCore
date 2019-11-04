@@ -182,16 +182,16 @@ namespace WeaponCore.Support
             RegisterEvents();
             OnAddedToSceneTasks();
 
-            if (IsAiOnlyTurret)
+            if (IsSorterTurret)
             {
-                if (!AiOnlyTurret.Enabled)
+                if (!SorterBase.Enabled)
                 {
                     foreach (var w in Platform.Weapons)
                         w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                 }
             }
             else {
-                if (!ControllableTurret.Enabled)
+                if (!MissileBase.Enabled)
                 {
                     foreach (var w in Platform.Weapons)
                         w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
@@ -266,9 +266,9 @@ namespace WeaponCore.Support
         {
             if (MyAPIGateway.Multiplayer.IsServer)
             {
-                if (IsAiOnlyTurret)
+                if (IsSorterTurret)
                 {
-                    if (AiOnlyTurret.Storage != null)
+                    if (SorterBase.Storage != null)
                     {
                         State.SaveState();
                         Set.SaveSettings();
@@ -276,7 +276,7 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-                    if (ControllableTurret.Storage != null)
+                    if (MissileBase.Storage != null)
                     {
                         State.SaveState();
                         Set.SaveSettings();

@@ -64,8 +64,8 @@ namespace WeaponCore.Platform
                 }
 
                 //compatability with old configs of converted turrets
-                var azimuthPartName = !comp.IsAiOnlyTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
-                var elevationPartName = !comp.IsAiOnlyTurret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
+                var azimuthPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
+                var elevationPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
 
                 MyEntity azimuthPart = null;
                 MyEntity elevationPart = null;
@@ -76,9 +76,9 @@ namespace WeaponCore.Platform
                 {
                     Muzzles = new Weapon.Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
-                    AzimuthPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = azimuthPart},
-                    ElevationPart = new MyTuple<MyEntity, Matrix, Matrix , Matrix, Matrix ,Vector3> { Item1 = elevationPart}
-
+                    AzimuthPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = azimuthPart },
+                    ElevationPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = elevationPart },
+                    AiOnlyWeapon = comp.IsSorterTurret || (!comp.IsSorterTurret && (azimuthPartName != "MissileTurretBase1" || elevationPartName != "MissileTurretBarrels"))
                 };
 
                 var weapon = Weapons[i];
@@ -112,8 +112,8 @@ namespace WeaponCore.Platform
                 MyEntity muzzlePart = null;
                 if (Parts.NameToEntity.TryGetValue(m.Key.String, out muzzlePart) || m.Value.DesignatorWeapon)
                 {
-                    var azimuthPartName = !comp.IsAiOnlyTurret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
-                    var elevationPartName = !comp.IsAiOnlyTurret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
+                    var azimuthPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
+                    var elevationPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
 
                     if (reset)
                     {
@@ -156,7 +156,7 @@ namespace WeaponCore.Platform
                         }
                     }
 
-                    if (comp.IsAiOnlyTurret)
+                    if (Weapons[c].AiOnlyWeapon)
                     {
                         var azimuthPart = Weapons[c].AzimuthPart.Item1;
                         var elevationPart = Weapons[c].ElevationPart.Item1;

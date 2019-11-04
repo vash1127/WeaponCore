@@ -3,6 +3,7 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
