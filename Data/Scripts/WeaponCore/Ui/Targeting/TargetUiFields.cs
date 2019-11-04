@@ -28,6 +28,9 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetCapital"), 0.1, new Vector2D(0, 1f), -1, false),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetCruiser"), 0.1, new Vector2D(0, 1f), -1, false),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetDestroyer"), 0.1, new Vector2D(0, 1f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetFrigate"), 0.1, new Vector2D(0, 1f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetFighter"), 0.1, new Vector2D(0, 1f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetScout"), 0.1, new Vector2D(0, 1f), -1, false),
             }},
             {"threat", new[] {
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat1"), 0.05, new Vector2D(0, 0.85f), 0, true),
@@ -35,6 +38,11 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat3"), 0.05, new Vector2D(0, 0.85f), 0, true),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat4"), 0.05, new Vector2D(0, 0.85f), 0, true),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat5"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat6"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat7"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat8"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat9"), 0.05, new Vector2D(0, 0.85f), 0, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat10"), 0.05, new Vector2D(0, 0.85f), 0, true),
             }},
             {"distance", new[] {
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetDistanceNear"), 0.05, new Vector2D(0.05, 0.85f), 1, true),

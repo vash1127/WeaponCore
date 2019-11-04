@@ -60,12 +60,8 @@ namespace WeaponCore
             }
 
             if (s.Tick10)
-            {
-                s.DsUtil2.Start("");
-                var dir = Vector3D.Normalize(offetPosition - s.CameraPos);
-                RayCheckTargets(offetPosition, dir, true, true);
-                s.DsUtil2.Complete("", false, true);
-            }
+                RayCheckTargets(offetPosition, Vector3D.Normalize(offetPosition - s.CameraPos), true, true);
+
             MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
         }
 
