@@ -101,7 +101,7 @@ namespace WeaponCore
             dotpos.X *= (float)(screenScale * aspectratio);
             dotpos.Y *= (float)screenScale;
             screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
-            MyTransparentGeometry.AddBillboardOriented(_cross, Color.Red, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)0.0075, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddBillboardOriented(_cross, Color.Red, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.1f, BlendTypeEnum.PostPP);
         }
 
         private static bool IconStatus(string icon, Session.TargetStatus targetState, out int iconLevel)
