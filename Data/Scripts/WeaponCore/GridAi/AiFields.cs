@@ -61,6 +61,7 @@ namespace WeaponCore.Support
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyEntity PrimeTarget;
+        internal MyOrientedBoundingBoxD PrimeTargetObb;
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
         internal Vector3D PlanetClosestPoint;

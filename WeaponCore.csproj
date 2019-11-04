@@ -76,7 +76,9 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\MathFuncs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VoxelIntersect.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Pointer.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiDraw.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiSelect.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompInit.cs" />
@@ -117,9 +119,9 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\Utils.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompState.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompSupport.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Menu.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\WheelFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\Menu.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\Wheel.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\WheelFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponThread\InteriorTurret.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponThread\LargeGatlingTurret.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponThread\LargeMissileLauncher.cs" />
@@ -244,6 +246,7 @@
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.XmlSerializers.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />

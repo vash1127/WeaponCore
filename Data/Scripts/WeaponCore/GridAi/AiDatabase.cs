@@ -1,7 +1,10 @@
 ﻿using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRageMath;
 
 namespace WeaponCore.Support
@@ -48,11 +51,41 @@ namespace WeaponCore.Support
                                     SubGridsTmp.Add(grid);
                                     continue;
                                 }
+                                FatMap fatMap;
+                                if (!Session.GridToFatMap.TryGetValue(grid, out fatMap) || fatMap.Trash)
+                                {
+                                    //Log.Line($"fatmap not count for: {grid.DebugName} - isTrash:{fatMap.Trash} - count:{fatMap.MyCubeBocks.Count}");
+                                    continue;
+                                }
 
-                                if (!grid.IsPowered)
+                                if (fatMap.Trash)
+                                {
+                                    Log.Line($"gridIsTrash:{grid.DebugName}");
+                                    continue;
+                                }
+                                var allFat = fatMap.MyCubeBocks;
+                                var fatCount = allFat.Count;
+
+                                if (fatCount <= 0 || !grid.IsPowered)
                                     continue;
 
-                                NewEntities.Add(new DetectInfo(Session, ent, entInfo));
+                                if (fatCount <= 20) // possible debris
+                                {
+                                    var valid = false;
+                                    for (int j = 0; j < fatCount; j++)
+                                    {
+                                        var fat = allFat[j];
+                                        if (fat is IMyTerminalBlock && fat.IsWorking)
+                                        {
+                                            valid = true;
+                                            break;
+                                        }
+                                        //Log.Line($"invalidBlock:{fat.DebugName} - of:{fatCount} - isWorking:{fat.IsWorking} - blockId:{((IMySlimBlock)fat.SlimBlock).BlockDefinition.Id.SubtypeName}");
+                                    }
+                                    if (!valid) continue;
+                                }
+
+                                NewEntities.Add(new DetectInfo(Session, ent, entInfo, fatCount));
                                 ValidGrids.Add(ent);
                                 GridAi targetAi;
                                 if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))
@@ -61,7 +94,7 @@ namespace WeaponCore.Support
                                     TargetAisTmp.Add(targetAi);
                                 }
                             }
-                            else NewEntities.Add(new DetectInfo(Session, ent, entInfo));
+                            else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1));
                         }
                     }
                     FinalizeTargetDb();

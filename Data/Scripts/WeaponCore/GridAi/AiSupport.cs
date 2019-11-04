@@ -222,14 +222,16 @@ namespace WeaponCore.Support
 
         internal struct DetectInfo
         {
-            internal MyEntity Parent;
-            internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal bool Armed;
+            internal readonly MyEntity Parent;
+            internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
+            internal readonly int PartCount;
+            internal readonly bool Armed;
 
-            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
+            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount)
             {
                 Parent = parent;
                 EntInfo = entInfo;
+                PartCount = partCount;
                 var armed = false;
                 if (parent is MyCubeGrid)
                 {
@@ -288,13 +290,12 @@ namespace WeaponCore.Support
             internal GridAi MyAi;
             internal GridAi TargetAi;
 
-            internal void Init(ref DetectInfo detectInfo, bool isGrid, int partCount, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
+            internal void Init(ref DetectInfo detectInfo, bool isGrid, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
                 EntInfo = detectInfo.EntInfo;
                 Target = detectInfo.Parent;
+                PartCount = detectInfo.PartCount;
                 IsGrid = isGrid;
-
-                PartCount = partCount;
                 MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;

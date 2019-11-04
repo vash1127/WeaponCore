@@ -47,6 +47,7 @@ namespace WeaponCore
 
         private List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
 
+        private long _prevTargetId;
         private int _count = -1;
         private int _lCount;
         private int _eCount;
@@ -65,11 +66,11 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
         internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
-        internal readonly MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, MyConcurrentList<MyCubeBlock>>();
+        internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>();
+        internal readonly MyConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, FatMap>();
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
-
         internal readonly MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
@@ -95,11 +96,13 @@ namespace WeaponCore
         internal DSUtils DsUtil { get; set; } = new DSUtils();
         internal DSUtils DsUtil2 { get; set; } = new DSUtils();
         internal Wheel Ui;
-        internal Pointer Pointer;
+        internal TargetUi TargetUi;
+        internal TargetStatus TargetState;
         internal IMyBlockPlacerBase Placer;
-
+        internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
+        internal List<IMyGps> GpsList = new List<IMyGps>();
         internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal Color[] HeatEmissives;
@@ -191,9 +194,19 @@ namespace WeaponCore
 
         internal ShieldApi SApi = new ShieldApi();
 
+        public struct TargetStatus
+        {
+            public int ShieldHealth;
+            public int ThreatLvl;
+            public int Size;
+            public int Speed;
+            public int Distance;
+            public int Engagement;
+        }
+
         public Session()
         {
-            Pointer = new Pointer(this);
+            TargetUi = new TargetUi(this);
             Ui = new Wheel(this);
             Projectiles = new Projectiles.Projectiles(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));

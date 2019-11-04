@@ -314,8 +314,9 @@ namespace WeaponCore
                     break;
                 case EmpField:
                 case DotField:
-                    if (ai.Session.GridToFatMap.TryGetValue(targetGrid, out cubes))
-                        return cubes;
+                    FatMap fatMap;
+                    if (ai.Session.GridToFatMap.TryGetValue(targetGrid, out fatMap))
+                        return fatMap.MyCubeBocks;
                     break;
             }
 
