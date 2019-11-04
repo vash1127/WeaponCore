@@ -220,12 +220,18 @@ namespace WeaponCore
             distanceFromCenters -= ai.GridRadius;
             distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
             distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
-            var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
 
-            if (distPercent < 100 && distPercent > 66)
-                TargetState.Distance = 2;
-            else if (distPercent > 33) TargetState.Distance = 1;
-            else if (distPercent >= 0) TargetState.Distance = 0;
+            var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
+            if (distPercent > 95) TargetState.Distance = 9;
+            else if (distPercent > 90) TargetState.Distance = 8;
+            else if (distPercent > 80) TargetState.Distance = 7;
+            else if (distPercent > 70) TargetState.Distance = 6;
+            else if (distPercent > 60) TargetState.Distance = 5;
+            else if (distPercent > 50) TargetState.Distance = 4;
+            else if (distPercent > 40) TargetState.Distance = 3;
+            else if (distPercent > 30) TargetState.Distance = 2;
+            else if (distPercent > 20) TargetState.Distance = 1;
+            else if (distPercent > 0) TargetState.Distance = 0;
             else TargetState.Distance = -1;
 
             if (speed <= 0) TargetState.Speed = -1;
