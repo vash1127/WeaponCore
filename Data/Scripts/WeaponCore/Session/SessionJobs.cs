@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Concurrent;
 using System.Threading;
-using System.Threading.Tasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Utils;
 using WeaponCore.Support;
 using static WeaponCore.Support.TargetingDefinition.BlockTypes;
-using Task = ParallelTasks.Task;
 
 namespace WeaponCore
 {
@@ -56,18 +51,17 @@ namespace WeaponCore
                 {
                     var detectInfo = db.NewEntities[i];
                     var ent = detectInfo.Parent;
-
                     if (ent.Physics == null) continue;
+
                     var grid = ent as MyCubeGrid;
-                    var targetInfo = db.TargetInfoPool.Get();
-                    if (grid == null)
-                        targetInfo.Init(ref detectInfo, false, 1, db.MyGrid, db, null);
-                    else
-                    {
-                        GridAi targetAi;
+                    var isGrid = grid != null;
+                    GridAi targetAi = null;
+
+                    if (isGrid)
                         GridTargetingAIs.TryGetValue(grid, out targetAi);
-                        targetInfo.Init(ref detectInfo, true, GridToFatMap[grid].Count, db.MyGrid, db, targetAi);
-                    }
+
+                    var targetInfo = db.TargetInfoPool.Get();
+                    targetInfo.Init(ref detectInfo, isGrid, db.MyGrid, db, targetAi);
 
                     db.SortedTargets.Add(targetInfo);
                     db.Targets[ent] = targetInfo;
@@ -135,7 +129,6 @@ namespace WeaponCore
             for (int i = 0; i < DirtyGridsTmp.Count; i++)
             {
                 var grid = DirtyGridsTmp[i];
-                MyConcurrentList<MyCubeBlock> allFat;
                 var newTypeMap = BlockTypePool.Get();
                 newTypeMap[Offense] = ConcurrentListPool.Get();
                 newTypeMap[Utility] = ConcurrentListPool.Get();
@@ -146,26 +139,38 @@ namespace WeaponCore
                 newTypeMap[Production] = ConcurrentListPool.Get();
 
                 ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> noFatTypeMap;
-                if (GridToFatMap.TryGetValue(grid, out allFat))
+
+                FatMap fatMap;
+                if (GridToFatMap.TryGetValue(grid, out fatMap))
                 {
+                    var allFat = fatMap.MyCubeBocks;
+                    var terminals = 0;
+                    var tStatus = fatMap.Targeting == null || fatMap.Targeting.AllowScanning;
                     for (int j = 0; j < allFat.Count; j++)
                     {
                         var fat = allFat[j];
-                        if (fat == null) continue;
+                        if (!(fat is IMyTerminalBlock)) continue;
+                        terminals++;
 
                         using (fat.Pin())
                         {
                             if (fat.MarkedForClose) continue;
                             if (fat is IMyProductionBlock) newTypeMap[Production].Add(fat);
                             else if (fat is IMyPowerProducer) newTypeMap[Power].Add(fat);
-                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId)) newTypeMap[Offense].Add(fat);
+                            else if (fat is IMyGunBaseUser || fat is IMyWarhead || fat is MyConveyorSorter && WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId))
+                            {
+                                if (!tStatus && fat is IMyGunBaseUser && !WeaponPlatforms.ContainsKey(fat.BlockDefinition.Id.SubtypeId))
+                                    tStatus = fatMap.Targeting.AllowScanning = true;
+
+                                newTypeMap[Offense].Add(fat);
+                            }
                             else if (fat is IMyUpgradeModule || fat is IMyRadioAntenna) newTypeMap[Utility].Add(fat);
                             else if (fat is MyThrust) newTypeMap[Thrust].Add(fat);
                             else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
                             else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);
                         }
-                    }
-
+                    }   
+                    fatMap.Trash = terminals == 0;
                     ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
                     {

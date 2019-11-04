@@ -16,7 +16,7 @@ namespace WeaponCore.Projectiles
     public partial class Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal const int PoolCount = 4;
+        internal const int PoolCount = 1;
         internal readonly Session Session;
         internal readonly MyConcurrentPool<Fragments>[] ShrapnelPool = new MyConcurrentPool<Fragments>[PoolCount];
         internal readonly MyConcurrentPool<Fragment>[] FragmentPool = new MyConcurrentPool<Fragment>[PoolCount];
@@ -40,15 +40,15 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Wait.Length; i++)
             {
                 Wait[i] = new object();
-                ShrapnelToSpawn[i] = new List<Fragments>(10);
-                ShrapnelPool[i] = new MyConcurrentPool<Fragments>(10);
-                FragmentPool[i] = new MyConcurrentPool<Fragment>(50);
-                CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(25);
-                ProjectilePool[i] = new ObjectsPool<Projectile>(50);
-                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(25);
-                DrawProjectiles[i] = new List<Trajectile>(50);
-                CleanUp[i] = new List<Projectile>(50);
-                TrajectilePool[i] = new ObjectsPool<Trajectile>(50);
+                ShrapnelToSpawn[i] = new List<Fragments>(30);
+                ShrapnelPool[i] = new MyConcurrentPool<Fragments>(30);
+                FragmentPool[i] = new MyConcurrentPool<Fragment>(150);
+                CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(75);
+                ProjectilePool[i] = new ObjectsPool<Projectile>(150);
+                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(75);
+                DrawProjectiles[i] = new List<Trajectile>(150);
+                CleanUp[i] = new List<Projectile>(150);
+                TrajectilePool[i] = new ObjectsPool<Trajectile>(150);
             }
         }
 
@@ -72,7 +72,7 @@ namespace WeaponCore.Projectiles
             {
                 MyAPIGateway.Parallel.For(0, Wait.Length, i =>
                 {
-                    lock (Wait[i])
+                    //lock (Wait[i])
                     {
                         UpdateState(i);
                         CheckHits(i);
@@ -84,7 +84,7 @@ namespace WeaponCore.Projectiles
             {
                 for (int i = 0; i < Wait.Length; i++)
                 {
-                    lock (Wait[i])
+                    //lock (Wait[i])
                     {
                         UpdateState(i);
                         CheckHits(i);
@@ -94,8 +94,8 @@ namespace WeaponCore.Projectiles
             }
 
             for (int i = 0; i < Wait.Length; i++)
-                lock (Wait[i])
-                    Clean(i);
+                //lock (Wait[i])
+                Clean(i);
         }
 
         private void UpdateState(int i)
@@ -422,7 +422,7 @@ namespace WeaponCore.Projectiles
 
         private void Clean(int poolId)
         {
-            lock (Wait[poolId])
+            //lock (Wait[poolId])
             {
                 var cleanUp = CleanUp[poolId];
                 for (int j = 0; j < cleanUp.Count; j++)

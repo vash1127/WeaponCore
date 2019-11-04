@@ -159,7 +159,7 @@ namespace WeaponCore
 
                 if (gridAi.MyGrid.MarkedForClose)
                 {
-                    Log.Line($"gridMarked:{gridAi.MyGrid.DebugName}");
+                    //Log.Line($"gridMarked:{gridAi.MyGrid.DebugName}");
                     continue;
                 }
                 if ((gridAi.SourceCount > 0 || gridAi.HadPower && (gridAi.UpdatePowerSources || Tick60)))

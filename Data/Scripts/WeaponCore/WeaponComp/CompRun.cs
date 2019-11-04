@@ -206,11 +206,11 @@ namespace WeaponCore.Support
             GridAi gridAi;
             if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
             {
-                Log.Line($"reinit, new gridAi");
+                // Log.Line($"reinit, new gridAi");
                 gridAi = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
                 Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
             }
-            else Log.Line($"reinit valid gridAi");
+            //else Log.Line($"reinit valid gridAi");
             Ai = gridAi;
             RegisterEvents();
             //Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
@@ -245,7 +245,7 @@ namespace WeaponCore.Support
 
                 if (Ai.TerminalSystem == null) Log.Line($"on no terminalsystem is null");
 
-                foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid])
+                foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
                     Ai.FatBlockAdded(cubeBlock);
             }
 

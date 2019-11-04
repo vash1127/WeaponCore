@@ -82,9 +82,9 @@ namespace WeaponCore.Support
                     GridAi gridAi;
                     if (Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
                     {
-                        Log.Line($"remove gridAi: {Ai.MyGrid.DebugName} - gridMismatch:{Ai.MyGrid != MyCube.CubeGrid}");
+                        //Log.Line($"remove gridAi: {Ai.MyGrid.DebugName} - gridMismatch:{Ai.MyGrid != MyCube.CubeGrid}");
                     }
-                    else Log.Line($"no gridAi found for:{Ai.MyGrid.DebugName}({Ai.MyGrid.MarkedForClose}) - {MyCube.DebugName}({MyCube.CubeGrid.MarkedForClose})");
+                   // else Log.Line($"no gridAi found for:{Ai.MyGrid.DebugName}({Ai.MyGrid.MarkedForClose}) - {MyCube.DebugName}({MyCube.CubeGrid.MarkedForClose})");
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
