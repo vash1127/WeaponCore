@@ -71,7 +71,8 @@ namespace WeaponCore
                     DsUtil.Clean();
                 }
                 _futureEvents.Tick(Tick);
-                Ui.UpdateInput();
+                UiInput.UpdateInputState();
+                WheelUi.UpdatePosition();
                 DsUtil.Start("damage");
                 if (!Hits.IsEmpty) ProcessHits();
                 DsUtil.Complete("damage", true);
@@ -176,8 +177,8 @@ namespace WeaponCore
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
 
-                    if (Ui.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
-                        Ui.DrawWheel();
+                    if (WheelUi.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                        WheelUi.DrawWheel();
 
                     TargetUi.DrawTargetUi();
 

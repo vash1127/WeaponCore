@@ -13,7 +13,9 @@ namespace WeaponCore
         internal void DrawTargetUi()
         {
             var s = _session;
-            if (s.Ui.WheelActive  || !s.UpdateLocalAiAndCockpit() || s.TrackingAi == null) return;
+            TargetDrawing = false;
+
+            if (s.WheelUi.WheelActive || !s.UpdateLocalAiAndCockpit() || s.TrackingAi == null) return;
             if (ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && s.GetTargetState()) DrawTarget();
         }
@@ -63,6 +65,7 @@ namespace WeaponCore
                 RayCheckTargets(offetPosition, Vector3D.Normalize(offetPosition - s.CameraPos), true, true);
 
             MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
+            TargetDrawing = true;
         }
 
         private void DrawTarget()

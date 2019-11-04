@@ -95,8 +95,9 @@ namespace WeaponCore
         internal GridAi TrackingAi;
         internal DSUtils DsUtil { get; set; } = new DSUtils();
         internal DSUtils DsUtil2 { get; set; } = new DSUtils();
-        internal Wheel Ui;
+        internal Wheel WheelUi;
         internal TargetUi TargetUi;
+        internal UiInput UiInput;
         internal TargetStatus TargetState;
         internal IMyBlockPlacerBase Placer;
         internal MatrixD CameraMatrix;
@@ -206,8 +207,9 @@ namespace WeaponCore
 
         public Session()
         {
+            UiInput = new UiInput(this);
             TargetUi = new TargetUi(this);
-            Ui = new Wheel(this);
+            WheelUi = new Wheel(this);
             Projectiles = new Projectiles.Projectiles(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));

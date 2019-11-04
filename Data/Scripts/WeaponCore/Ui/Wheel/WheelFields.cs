@@ -15,13 +15,7 @@ namespace WeaponCore
         private readonly Vector2D _wheelPosition = new Vector2D(0, 0);
 
         private string _currentMenu = "Main";
-        private int _previousWheel;
-        private int _currentWheel;
         internal bool WheelActive;
-        internal bool MouseButtonPressed;
-        internal bool MouseButtonLeft;
-        internal bool MouseButtonMiddle;
-        internal bool MouseButtonRight;
         internal readonly List<MenuTarget> Grids = new List<MenuTarget>();
         internal readonly List<MenuTarget> Characters = new List<MenuTarget>();
         internal readonly List<MenuTarget> Projectiles = new List<MenuTarget>();

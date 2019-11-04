@@ -16,36 +16,20 @@ namespace WeaponCore
 {
     internal partial class Wheel
     {
-        internal void UpdateInput()
+        internal void UpdatePosition()
         {
-            MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
-            if (MouseButtonPressed)
+            var s = Session;
+            if (s.UiInput.MouseButtonPressed)
             {
-                MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
-                MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
-                MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
-
-                if (MouseButtonMiddle && ChangeState == State.Open) OpenWheel();
-                else if (MouseButtonMiddle && ChangeState == State.Close) CloseWheel();
+                if (s.UiInput.MouseButtonMiddle && ChangeState == State.Open) OpenWheel();
+                else if (s.UiInput.MouseButtonMiddle && ChangeState == State.Close) CloseWheel();
             }
             else
             {
-                MouseButtonLeft = false;
-                MouseButtonMiddle = false;
-                MouseButtonRight = false;
                 if (WheelActive && !(Session.Session.ControlledObject is MyCockpit)) CloseWheel();
             }
-
-            UpdatePosition();
-        }
-
-        internal void UpdatePosition()
-        {
             if (WheelActive)
             {
-                _previousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
-                _currentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
-
                 var previousMenu = _currentMenu;
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased())
                 {
@@ -69,9 +53,9 @@ namespace WeaponCore
                     else if (menu.Name == "Main") CloseWheel();
                 }
 
-                if (_currentWheel != _previousWheel && _currentWheel > _previousWheel)
+                if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel && s.UiInput.CurrentWheel > s.UiInput.PreviousWheel)
                     GetCurrentMenu().Move(Movement.Forward);
-                else if (_currentWheel != _previousWheel)
+                else if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel)
                     GetCurrentMenu().Move(Movement.Backward);
 
                 if (previousMenu != _currentMenu) SetCurrentMessage();

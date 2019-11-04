@@ -13,6 +13,7 @@ namespace WeaponCore
         internal Vector3D TargetOffset;
         internal double PointerAdjScale = 0.05f;
         internal double AdjScale;
+        internal bool TargetDrawing;
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();

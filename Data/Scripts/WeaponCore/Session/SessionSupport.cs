@@ -439,9 +439,10 @@ namespace WeaponCore
             _weaponDefinitions = null;
             Projectiles = null;
             TrackingAi = null;
+            UiInput = null;
             TargetUi = null;
             Placer = null;
-            Ui = null;
+            WheelUi = null;
             DbsToUpdate = null;
             TargetGps = null;
             SApi.Unload();
