@@ -68,9 +68,16 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetEngaged"), 0.05, new Vector2D(0.0, 1f), 3, true),
             }},
             {"shield", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldLow"), 0.05,  new Vector2D(0.05, 1f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldMed"), 0.05, new Vector2D(0.05, 1f), 4, true),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetShieldHigh"), 0.05, new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield10"), 0.05,  new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield20"), 0.05, new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield30"), 0.05, new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield40"), 0.05,  new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield50"), 0.05, new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield60"), 0.05, new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield70"), 0.05,  new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield80"), 0.05, new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield90"), 0.05, new Vector2D(0.05, 1f), 4, true),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetShield100"), 0.05, new Vector2D(0.05, 1f), 4, true),
             }},
         };
 

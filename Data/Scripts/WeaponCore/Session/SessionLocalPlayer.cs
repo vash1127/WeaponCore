@@ -198,8 +198,7 @@ namespace WeaponCore
             var target = ai.PrimeTarget;
             GridAi.TargetInfo info;
             if (!ai.Targets.TryGetValue(target, out info)) return false;
-            if (!Tick20 || _prevTargetId == info.EntInfo.EntityId) return true;
-            Log.Line($"primeTarget: oRating:{info.OffenseRating} - blocks:{info.PartCount} - {info.Target.DebugName}");
+            if (!Tick20 && _prevTargetId == info.EntInfo.EntityId) return true;
             _prevTargetId = info.EntInfo.EntityId;
             var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
             if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
@@ -251,8 +250,15 @@ namespace WeaponCore
             if (shieldInfo.Item1)
             {
                 var shieldPercent = shieldInfo.Item5;
-                if (shieldPercent > 66) TargetState.ShieldHealth = 2;
-                else if (shieldPercent > 33) TargetState.ShieldHealth = 1;
+                if (shieldPercent > 95) TargetState.ShieldHealth = 9;
+                else if (shieldPercent > 90) TargetState.ShieldHealth = 8;
+                else if (shieldPercent > 80) TargetState.ShieldHealth = 7;
+                else if (shieldPercent > 70) TargetState.ShieldHealth = 6;
+                else if (shieldPercent > 60) TargetState.ShieldHealth = 5;
+                else if (shieldPercent > 50) TargetState.ShieldHealth = 4;
+                else if (shieldPercent > 40) TargetState.ShieldHealth = 3;
+                else if (shieldPercent > 30) TargetState.ShieldHealth = 2;
+                else if (shieldPercent > 20) TargetState.ShieldHealth = 1;
                 else if (shieldPercent > 0) TargetState.ShieldHealth = 0;
                 else TargetState.ShieldHealth = -1;
             }
