@@ -40,7 +40,7 @@ namespace WeaponCore
                 MouseButtonRight = false;
             }
 
-            if (s.WheelUi.WheelActive || s.TargetUi.TargetDrawing)
+            if (s.WheelUi.WheelActive || s.TargetUi.DrawReticle)
             {
                 PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                 CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();

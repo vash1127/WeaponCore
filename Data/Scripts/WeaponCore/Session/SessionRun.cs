@@ -109,6 +109,8 @@ namespace WeaponCore
 
                 if (MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
                     TargetUi.SelectTarget();
+                else if (TargetUi.DrawReticle && UiInput.CurrentWheel != UiInput.PreviousWheel && UpdateLocalAiAndCockpit())
+                    TargetUi.SelectNext();
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }

@@ -13,7 +13,7 @@ namespace WeaponCore
         internal void DrawTargetUi()
         {
             var s = _session;
-            TargetDrawing = false;
+            DrawReticle = false;
 
             if (s.WheelUi.WheelActive || !s.UpdateLocalAiAndCockpit() || s.TrackingAi == null) return;
             if (ActivateSelector()) DrawSelector();
@@ -65,7 +65,7 @@ namespace WeaponCore
                 RayCheckTargets(offetPosition, Vector3D.Normalize(offetPosition - s.CameraPos), true, true);
 
             MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
-            TargetDrawing = true;
+            DrawReticle = true;
         }
 
         private void DrawTarget()
@@ -133,7 +133,7 @@ namespace WeaponCore
                     iconLevel = !display ? 0 : targetState.Engagement;
                     break;
                 case "distance":
-                    display = targetState.Size > -1;
+                    display = targetState.Distance > -1;
                     iconLevel = !display ? 0 : targetState.Distance;
                     break;
                 default:

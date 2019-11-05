@@ -13,7 +13,7 @@ namespace WeaponCore
         internal Vector3D TargetOffset;
         internal double PointerAdjScale = 0.05f;
         internal double AdjScale;
-        internal bool TargetDrawing;
+        internal bool DrawReticle;
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
@@ -22,6 +22,7 @@ namespace WeaponCore
         private Color _reticleColor = Color.White;
         private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly Session _session;
+        private readonly List<MyEntity> _targetCache = new List<MyEntity>();
         private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()
         {
             {"size", new[] {
@@ -87,6 +88,10 @@ namespace WeaponCore
             }},
         };
 
+        private uint _cacheIdleTicks;
+
+        private int _currentIdx;
+        private int _endIdx = -1;
         private int _previousWheel;
         private int _currentWheel;
         private bool _cachedPointerPos;

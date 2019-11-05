@@ -97,6 +97,62 @@ namespace WeaponCore
             }
         }
 
+        internal void SelectNext()
+        {
+            var s = _session;
+            var ai = s.TrackingAi;
+
+            if (!_cachedPointerPos) InitPointerOffset(0.05);
+            if (!_cachedTargetPos) InitTargetOffset();
+
+            var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1;
+            if (updateTick && !UpdateCache()) return;
+
+            _cacheIdleTicks = s.Tick;
+
+            Log.Line($"{_targetCache.Count - 1} - {_currentIdx}");
+
+            if (s.UiInput.WheelForward)
+                if (_currentIdx + 1 <= _endIdx)
+                    _currentIdx += 1;
+                else _currentIdx = 0;
+            else if (s.UiInput.WheelBackward)
+                if (_currentIdx - 1 >= 0)
+                    _currentIdx -= 1;
+                else _currentIdx = _endIdx;
+
+            var ent = _targetCache[_currentIdx];
+            if (!updateTick && ent.MarkedForClose)
+            {
+                _endIdx = -1;
+                return;
+            } 
+
+            if (ent != null)
+            {
+                s.SetTarget(ent, ai);
+                s.ResetGps();
+            }
+        }
+
+        private bool UpdateCache()
+        {
+            var s = _session;
+            var ai = s.TrackingAi;
+            _targetCache.Clear();
+            _currentIdx = 0;
+            for (int i = 0; i < ai.SortedTargets.Count; i++)
+            {
+                var target = ai.SortedTargets[i].Target;
+                if (target.MarkedForClose) continue;
+
+                _targetCache.Add(target);
+                if (ai.PrimeTarget == target) _currentIdx = i;
+            }
+            _endIdx = _targetCache.Count - 1;
+            return _endIdx >= 0;
+        }
+
         private MyEntity RayCheckTargets(Vector3D origin, Vector3D dir, bool reColorRectile = false, bool checkOthers = false)
         {
             var ai = _session.TrackingAi;

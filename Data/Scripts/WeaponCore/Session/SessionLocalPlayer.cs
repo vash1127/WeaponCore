@@ -165,33 +165,6 @@ namespace WeaponCore
             }
         }
 
-        internal void GetTargetInfo(GridAi ai, out double speed, out string armedStr, out string interceptStr, out string shieldedStr, out string threatStr)
-        {
-            var target = ai.PrimeTarget;
-            var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
-            if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
-            var targetDir = Vector3D.Normalize(targetVel);
-            var targetPos = target.PositionComp.WorldAABB.Center;
-            var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
-            var myHeading = Vector3D.Normalize(myPos - targetPos);
-            var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
-            var shielded = ShieldApiLoaded && SApi.ProtectedByShield(target);
-            var grid = target as MyCubeGrid;
-            var friend = false;
-            if (grid != null && grid.BigOwners.Count != 0)
-            {
-                var relation = MyIDModule.GetRelationPlayerBlock(ai.MyOwner, grid.BigOwners[0], MyOwnershipShareModeEnum.Faction);
-                if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
-            }
-            var threat = friend ? 0 : 1;
-            shieldedStr = shielded ? "S" : "_";
-            armedStr = TargetArmed ? "A" : "_";
-            interceptStr = intercept ? "I" : "_";
-            threatStr = threat > 0 ? "T" + threat : "__";
-            speed = Math.Round(target.Physics?.Speed ?? 0, 1);
-        }
-
-
         internal bool GetTargetState()
         {
             var ai = TrackingAi;
@@ -292,17 +265,16 @@ namespace WeaponCore
                 }
 
                 var offenseRating = info.OffenseRating;
-                if (offenseRating > 5) TargetState.ThreatLvl = shieldBonus < 0 ? 9 : 10;
-                else if (offenseRating > 4) TargetState.ThreatLvl = 9 + shieldBonus;
-                else if (offenseRating > 3) TargetState.ThreatLvl = 8 + shieldBonus;
-                else if (offenseRating > 2) TargetState.ThreatLvl = 7 + shieldBonus;
-                else if (offenseRating > 1) TargetState.ThreatLvl = 6 + shieldBonus;
-                else if (offenseRating > 0.5) TargetState.ThreatLvl = 5 + shieldBonus;
-                else if (offenseRating > 0.25) TargetState.ThreatLvl = 4 + shieldBonus;
+                if (offenseRating > 5) TargetState.ThreatLvl = shieldBonus < 0 ? 8 : 9;
+                else if (offenseRating > 4) TargetState.ThreatLvl = 8 + shieldBonus;
+                else if (offenseRating > 3) TargetState.ThreatLvl = 7 + shieldBonus;
+                else if (offenseRating > 2) TargetState.ThreatLvl = 6 + shieldBonus;
+                else if (offenseRating > 1) TargetState.ThreatLvl = 5 + shieldBonus;
+                else if (offenseRating > 0.5) TargetState.ThreatLvl = 4 + shieldBonus;
+                else if (offenseRating > 0.25) TargetState.ThreatLvl = 3 + shieldBonus;
 
-                else if (offenseRating > 0.125) TargetState.ThreatLvl = 3 + shieldBonus;
-                else if (offenseRating > 0.0625) TargetState.ThreatLvl = 2 + shieldBonus;
-                else if (offenseRating > 0.03125) TargetState.ThreatLvl = 1 + shieldBonus;
+                else if (offenseRating > 0.125) TargetState.ThreatLvl = 2 + shieldBonus;
+                else if (offenseRating > 0.0625) TargetState.ThreatLvl = 1 + shieldBonus;
                 else if (offenseRating > 0) TargetState.ThreatLvl = shieldBonus > 0 ? 1 : 0;
                 else TargetState.ThreatLvl = -1;
             }
