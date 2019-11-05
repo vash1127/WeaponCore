@@ -54,14 +54,13 @@ namespace WeaponCore
                     if (ent.Physics == null) continue;
 
                     var grid = ent as MyCubeGrid;
-                    var isGrid = grid != null;
                     GridAi targetAi = null;
 
-                    if (isGrid)
+                    if (grid != null)
                         GridTargetingAIs.TryGetValue(grid, out targetAi);
 
                     var targetInfo = db.TargetInfoPool.Get();
-                    targetInfo.Init(ref detectInfo, isGrid, db.MyGrid, db, targetAi);
+                    targetInfo.Init(ref detectInfo, db.MyGrid, db, targetAi);
 
                     db.SortedTargets.Add(targetInfo);
                     db.Targets[ent] = targetInfo;
@@ -171,6 +170,9 @@ namespace WeaponCore
                         }
                     }   
                     fatMap.Trash = terminals == 0;
+                    var gridBlocks = grid.BlocksCount;
+                    if (gridBlocks > fatMap.MostBlocks) fatMap.MostBlocks = gridBlocks;
+
                     ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
                     {

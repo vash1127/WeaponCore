@@ -181,6 +181,13 @@ namespace WeaponCore
             var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
             var myHeading = Vector3D.Normalize(myPos - targetPos);
 
+            if (info.LargeGrid && info.PartCount > 18000) TargetState.Size = 5;
+            else if (info.LargeGrid && info.PartCount > 9000) TargetState.Size = 4;
+            else if (info.LargeGrid && info.PartCount > 4500) TargetState.Size = 3;
+            else if (info.LargeGrid) TargetState.Size = 2;
+            else if (info.PartCount > 2000) TargetState.Size = 1;
+            else TargetState.Size = 0;
+
             var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
             var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, ApproachDegrees);
             if (intercept) TargetState.Engagement = 0;

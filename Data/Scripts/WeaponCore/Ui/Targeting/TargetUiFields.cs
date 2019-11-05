@@ -26,12 +26,12 @@ namespace WeaponCore
         private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()
         {
             {"size", new[] {
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetCapital"), 0.1, new Vector2D(0, 1.15f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetCruiser"), 0.1, new Vector2D(0, 1.15f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetDestroyer"), 0.1, new Vector2D(0, 1.15f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetFrigate"), 0.1, new Vector2D(0, 1.15f), -1, false),
-                new IconInfo(MyStringId.GetOrCompute("DS_TargetFighter"), 0.1, new Vector2D(0, 1.15f), -1, false),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetScout"), 0.1, new Vector2D(0, 1.15f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetFighter"), 0.1, new Vector2D(0, 1.15f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetFrigate"), 0.1, new Vector2D(0, 1.15f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetDestroyer"), 0.1, new Vector2D(0, 1.15f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetCruiser"), 0.1, new Vector2D(0, 1.15f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetCapital"), 0.1, new Vector2D(0, 1.15f), -1, false),
             }},
             {"threat", new[] {
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetThreat1"), 0.05, new Vector2D(-0.15, 1f), 0, true),

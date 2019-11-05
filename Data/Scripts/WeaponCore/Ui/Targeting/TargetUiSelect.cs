@@ -110,7 +110,7 @@ namespace WeaponCore
 
             _cacheIdleTicks = s.Tick;
 
-            Log.Line($"{_targetCache.Count - 1} - {_currentIdx}");
+            //Log.Line($"{_targetCache.Count - 1} - {_currentIdx}");
 
             if (s.UiInput.WheelForward)
                 if (_currentIdx + 1 <= _endIdx)

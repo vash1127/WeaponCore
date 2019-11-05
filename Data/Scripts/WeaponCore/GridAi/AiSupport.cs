@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -226,6 +225,8 @@ namespace WeaponCore.Support
             internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
             internal readonly int PartCount;
             internal readonly bool Armed;
+            internal readonly bool IsGrid;
+            internal readonly bool LargeGrid;
 
             public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount)
             {
@@ -233,8 +234,13 @@ namespace WeaponCore.Support
                 EntInfo = entInfo;
                 PartCount = partCount;
                 var armed = false;
-                if (parent is MyCubeGrid)
+                var isGrid = false;
+                var largeGrid = false;
+                var grid = parent as MyCubeGrid;
+                if (grid != null)
                 {
+                    isGrid = true;
+                    largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
                     ConcurrentDictionary<BlockTypes, MyConcurrentList<MyCubeBlock>> blockTypeMap;
                     if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
                     {
@@ -244,6 +250,8 @@ namespace WeaponCore.Support
                     }
                 }
                 Armed = armed;
+                IsGrid = isGrid;
+                LargeGrid = largeGrid;
             }
         }
 
@@ -283,6 +291,7 @@ namespace WeaponCore.Support
             internal double CollisionDistSqr;
             internal float VelLenSqr;
             internal bool IsGrid;
+            internal bool LargeGrid;
             internal bool Approaching;
             internal int PartCount;
             internal float OffenseRating;
@@ -290,12 +299,13 @@ namespace WeaponCore.Support
             internal GridAi MyAi;
             internal GridAi TargetAi;
 
-            internal void Init(ref DetectInfo detectInfo, bool isGrid, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
+            internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
                 EntInfo = detectInfo.EntInfo;
                 Target = detectInfo.Parent;
                 PartCount = detectInfo.PartCount;
-                IsGrid = isGrid;
+                IsGrid = detectInfo.IsGrid;
+                LargeGrid = detectInfo.LargeGrid;
                 MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;

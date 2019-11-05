@@ -617,6 +617,7 @@ namespace WeaponCore.Support
         public MyConcurrentList<MyCubeBlock> MyCubeBocks;
         public MyGridTargeting Targeting;
         public volatile bool Trash;
+        public int MostBlocks;
     }
 
 
