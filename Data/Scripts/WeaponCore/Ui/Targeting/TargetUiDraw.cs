@@ -15,8 +15,8 @@ namespace WeaponCore
             var s = _session;
             DrawReticle = false;
 
-            if (s.WheelUi.WheelActive || !s.UpdateLocalAiAndCockpit() || s.TrackingAi == null) return;
-            if (ActivateSelector()) DrawSelector();
+            if (!s.UpdateLocalAiAndCockpit() || s.TrackingAi == null) return;
+            if (!s.WheelUi.WheelActive && ActivateSelector()) DrawSelector();
             if (s.CheckTarget(s.TrackingAi) && s.GetTargetState()) DrawTarget();
         }
 
@@ -82,7 +82,7 @@ namespace WeaponCore
                 float scale;
                 MyStringId textureName;
 
-                _targetIcons[icon][iconLevel].GetTextureInfo(displayCount, s, out textureName, out scale, out offset);
+                _targetIcons[icon][iconLevel].GetTextureInfo(displayCount, s.WheelUi.WheelActive, s, out textureName, out scale, out offset);
 
                 MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
                 displayCount++;

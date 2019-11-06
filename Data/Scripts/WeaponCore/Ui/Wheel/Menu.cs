@@ -179,6 +179,7 @@ namespace WeaponCore
                 Wheel.Session.SetGpsInfo(targetPos, gpsName);
                 Message = message;
             }
+
             internal void FormatProjectileMessage()
             {
                 if (Projectile == null || Projectile.State == Projectile.ProjectileState.Dead)

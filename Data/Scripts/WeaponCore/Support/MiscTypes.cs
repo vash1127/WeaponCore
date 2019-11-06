@@ -630,6 +630,8 @@ namespace WeaponCore.Support
         private readonly bool _shift;
         private float _adjustedScale;
         private Vector3D _positionOffset;
+        private Vector3D _altPositionOffset;
+
         private int _prevSlotId = -1;
 
         public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition, int slotId, bool shift)
@@ -641,13 +643,12 @@ namespace WeaponCore.Support
             _shift = shift;
         }
 
-        public void GetTextureInfo(int displayCount, Session session, out MyStringId textureName, out float scale, out Vector3D offset)
+        public void GetTextureInfo(int displayCount, bool altPosition, Session session, out MyStringId textureName, out float scale, out Vector3D offset)
         {
             if (displayCount != _prevSlotId) InitOffset(displayCount);
             textureName = _textureName;
             scale = _adjustedScale;
-            offset = Vector3D.Transform(_positionOffset, session.CameraMatrix);
-
+            offset = !altPosition ? Vector3D.Transform(_positionOffset, session.CameraMatrix) : Vector3D.Transform(_altPositionOffset, session.CameraMatrix);
             _prevSlotId = displayCount;
         }
 
@@ -660,13 +661,18 @@ namespace WeaponCore.Support
             var shiftSize = _shift && shiftSlots > 0 ? slotSpacing * shiftSlots : 0;
 
             var position = new Vector3D(_screenPosition.X + shiftSize, _screenPosition.Y, 0);
+            var altPosition = new Vector3D(_screenPosition.X + shiftSize, _screenPosition.Y - 1.25, 0);
+
             double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
 
             position.X *= screenScale * aspectratio;
             position.Y *= screenScale;
+            altPosition.X *= screenScale * aspectratio;
+            altPosition.Y *= screenScale;
             _adjustedScale = (float)(_definedScale * screenScale);
 
             _positionOffset = new Vector3D(position.X, position.Y, -.1);
+            _altPositionOffset = new Vector3D(altPosition.X, altPosition.Y, -.1);
         }
     }
 }
