@@ -26,7 +26,7 @@ namespace WeaponCore
 
         internal readonly Item[] GroupItems =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Assign Weapons]", ParentName = "WeaponGroups", SubName = "Assign"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Assign Subsystem]", ParentName = "WeaponGroups", SubName = "SubSystems"},
             new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Remove Weapons]", ParentName = "WeaponGroups", SubName = "Remove"},
             new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Add Weapons]", ParentName = "WeaponGroups", SubName = "Add"},
         };
@@ -41,25 +41,14 @@ namespace WeaponCore
             new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Remove]", ParentName = "Group"},
         };
 
-        internal readonly Item[] AssignItems =
-        {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Targets]", ParentName = "Group", SubName = "Targets"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "SubSystems]", ParentName = "Group", SubName = "SubSystems"},
-        };
-
-        internal readonly Item[] TargetsItems =
-        {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Targets]", ParentName = "Assign", SubName = "SubSystems"},
-        };
-
         internal readonly Item[] SubSystemItems =
         {
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Comms"), ItemMessage = "Production]", ParentName = "Assign"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"), ItemMessage = "Navigation]", ParentName = "Assign"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Engines"), ItemMessage = "Engines]", ParentName = "Assign"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Weapons"), ItemMessage = "Weapons]", ParentName = "Assign"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Power"), ItemMessage = "Power]", ParentName = "Assign"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"), ItemMessage = "Ordinance]", ParentName = "Assign"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Comms"), ItemMessage = "Production]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"), ItemMessage = "Navigation]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Engines"), ItemMessage = "Engines]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Weapons"), ItemMessage = "Weapons]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Power"), ItemMessage = "Power]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"), ItemMessage = "Ordinance]", ParentName = "Group"},
         };
 
         internal readonly Item[] WeaponGroupItems =
@@ -100,19 +89,15 @@ namespace WeaponCore
             Session = session;
             var add = new Menu(this, "Add", AddItems, AddItems.Length);
             var remove = new Menu(this, "Remove", RemoveItems, RemoveItems.Length);
-            var assign = new Menu(this, "Assign", AssignItems, AssignItems.Length);
             var group = new Menu(this, "Group", GroupItems, GroupItems.Length);
-            var targets = new Menu(this, "Targets", TargetsItems, TargetsItems.Length);
             var subSystems = new Menu(this, "SubSystems", SubSystemItems, SubSystemItems.Length);
 
             var weaponGroups = new Menu(this, "WeaponGroups", WeaponGroupItems, WeaponGroupItems.Length);
 
             Menus.Add(add.Name, add);
             Menus.Add(remove.Name, remove);
-            Menus.Add(assign.Name, assign);
             Menus.Add(weaponGroups.Name, weaponGroups);
             Menus.Add(group.Name, group);
-            Menus.Add(targets.Name, targets);
             Menus.Add(subSystems.Name, subSystems);
         }
 
