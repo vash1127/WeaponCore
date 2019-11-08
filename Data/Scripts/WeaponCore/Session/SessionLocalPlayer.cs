@@ -30,7 +30,11 @@ namespace WeaponCore
                 return true;
             }
 
-            if (TrackingAi != null) TrackingAi.PrimeTarget = null;
+            if (TrackingAi != null)
+            {
+                TrackingAi.Focus.Target[0] = null;
+                TrackingAi.Focus.Target[1] = null;
+            }
             TrackingAi = null;
             ActiveCockPit = null;
             RemoveGps();
@@ -121,23 +125,27 @@ namespace WeaponCore
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (ai.PrimeTarget == null)
+            if (ai.Focus.Target[0] == null && ai.Focus.Target[1] == null)
                 return false;
 
-            if (ai.PrimeTarget.MarkedForClose || ai != TrackingAi)
+            if (ai.Focus.Target[0] != null && ai.Focus.Target[0].MarkedForClose) ai.Focus.Target[0] = null;
+            if (ai.Focus.Target[1] != null && ai.Focus.Target[1].MarkedForClose) ai.Focus.Target[1] = null;
+
+            if (ai != TrackingAi || ai.Focus.Target[0] == null && ai.Focus.Target[1] == null)
             {
                 Log.Line("resetting target");
-                ai.PrimeTarget = null;
+                ai.Focus.Target[0] = null;
+                ai.Focus.Target[1] = null;
                 TrackingAi = null;
                 RemoveGps();
                 return false;
             }
-            return true;
+            return ai.Focus.Target[ai.Focus.ActiveId] != null;
         }
 
         internal void SetTarget(MyEntity entity, GridAi ai)
         {
-            ai.PrimeTarget = entity;
+            ai.Focus.Target[ai.Focus.ActiveId] = entity;
             TrackingAi = ai;
             ai.TargetResetTick = Tick + 1;
             GridAi gridAi;
@@ -168,8 +176,8 @@ namespace WeaponCore
         internal bool GetTargetState()
         {
             var ai = TrackingAi;
-            var target = ai.PrimeTarget;
             GridAi.TargetInfo info;
+            var target = ai.Focus.Target[ai.Focus.ActiveId];
             if (!ai.Targets.TryGetValue(target, out info)) return false;
             if (!Tick20 && _prevTargetId == info.EntInfo.EntityId) return true;
             _prevTargetId = info.EntInfo.EntityId;

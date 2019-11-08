@@ -1,4 +1,5 @@
-﻿using Sandbox.ModAPI;
+﻿using System.Diagnostics;
+using Sandbox.ModAPI;
 using VRage.Input;
 
 namespace WeaponCore
@@ -13,6 +14,7 @@ namespace WeaponCore
         internal bool MouseButtonRight;
         internal bool WheelForward;
         internal bool WheelBackward;
+        internal bool ShiftReleased;
 
         private readonly Session _session;
 
@@ -44,6 +46,7 @@ namespace WeaponCore
             {
                 PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                 CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
+                ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
             }
             if (CurrentWheel != PreviousWheel && CurrentWheel > PreviousWheel)
                 WheelForward = true;

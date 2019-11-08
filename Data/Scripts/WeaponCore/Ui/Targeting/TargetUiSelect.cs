@@ -147,7 +147,7 @@ namespace WeaponCore
                 if (target.MarkedForClose) continue;
 
                 _targetCache.Add(target);
-                if (ai.PrimeTarget == target) _currentIdx = i;
+                if (ai.Focus.Target[ai.Focus.ActiveId] == target) _currentIdx = i;
             }
             _endIdx = _targetCache.Count - 1;
             return _endIdx >= 0;

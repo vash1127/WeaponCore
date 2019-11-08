@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
-using VRage.Utils;
-using VRageMath;
-using WeaponCore.Projectiles;
+﻿using VRage.Utils;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -34,10 +28,6 @@ namespace WeaponCore
             internal readonly Item[] Items;
             internal readonly int ItemCount;
             internal int CurrentSlot;
-            internal bool OtherArms;
-            internal string Threat;
-            internal Projectile Projectile;
-            internal List<MenuTarget> Targets;
 
             private string _message;
             public string Message
@@ -82,7 +72,6 @@ namespace WeaponCore
                                         Log.Line("weapon group forward");
                                         break;
                                     default:
-                                        GetTargetInfo(item);
                                         break;
                                 }
                             }
@@ -107,7 +96,6 @@ namespace WeaponCore
                                     Log.Line("weapon group backward");
                                     break;
                                 default:
-                                    GetTargetInfo(item);
                                     break;
                             }
                         }
@@ -115,134 +103,10 @@ namespace WeaponCore
                 }
             }
 
-            internal void GetTargetInfo(Item item)
-            {
-                switch (Name)
-                {
-                    case "Grids":
-                    case "Characters":
-                        if (Targets.Count > 0)
-                        {
-                            var target = Targets[item.SubSlot];
-                            if (target.MyEntity == null) break;
-                            OtherArms = target.OtherArms;
-                            Threat = target.Threat;
-                            Wheel.Session.SetTarget(target.MyEntity, Wheel.Ai);
-                            FormatGridMessage();
-                        }
-                        break;
-                    case "Ordinance":
-                        if (Targets.Count > 0)
-                        {
-                            var target = Targets[item.SubSlot];
-                            if (target.Projectile == null) break;
-                            OtherArms = target.OtherArms;
-                            Threat = target.Threat;
-                            Projectile = target.Projectile;
-                            FormatProjectileMessage();
-                        }
-                        break;
-                }
-            }
-
-            internal void FormatGridMessage()
-            {
-                if (!Wheel.Session.CheckTarget(Wheel.Ai))
-                {
-                    Message = string.Empty;
-                    return;
-                }
-
-                var target = Wheel.Ai.PrimeTarget;
-                var targetDir = Vector3D.Normalize(target.Physics?.LinearVelocity ?? Vector3.Zero);
-                var targetPos = target.PositionComp.WorldAABB.Center;
-
-                var myPos = Wheel.Ai.MyGrid.PositionComp.WorldAABB.Center;
-                var myHeading = Vector3D.Normalize(myPos - targetPos);
-                var degrees = Math.Cos(MathHelper.ToRadians(25));
-                var name = target.DisplayName;
-                var speed = Math.Round(target.Physics?.Speed ?? 0, 2);
-                var nameLen = 30;
-                var armed = OtherArms || Wheel.Session.GridTargetingAIs.ContainsKey((MyCubeGrid)target);
-                var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
-                var armedStr = armed ? "Yes" : "No";
-                var interceptStr = intercept ? "Yes" : "No";
-                name = name.Replace("[", "(");
-                name = name.Replace("]", ")");
-                if (name.Length > nameLen) name = name.Substring(0, nameLen);
-                var message = $"[Target:  {name}\n"
-                              + $"Speed:  {speed} m/s\n"
-                              + $"Armed:  {armedStr}\n"
-                              + $"Threat:  {Threat}\n"
-                              + $"Intercept:  {interceptStr}]";
-                var gpsName = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
-                Wheel.Session.SetGpsInfo(targetPos, gpsName);
-                Message = message;
-            }
-
-            internal void FormatProjectileMessage()
-            {
-                if (Projectile == null || Projectile.State == Projectile.ProjectileState.Dead)
-                {
-                    Message = string.Empty;
-                    return;
-                }
-
-                var target = Wheel.Ai.PrimeTarget;
-                var targetDir = Vector3D.Normalize(target.Physics?.LinearVelocity ?? Vector3.Zero);
-                var targetPos = target.PositionComp.WorldAABB.Center;
-
-                var myPos = Wheel.Ai.MyGrid.PositionComp.WorldAABB.Center;
-                var myHeading = Vector3D.Normalize(myPos - targetPos);
-                var degrees = Math.Cos(MathHelper.ToRadians(25));
-                var name = target.DisplayName;
-                var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
-                var nameLen = 30;
-                var armed = Wheel.Session.GridTargetingAIs.ContainsKey((MyCubeGrid)target);
-                var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, degrees);
-                var armedStr = armed ? "Yes" : "No";
-                var interceptStr = intercept ? "Yes" : "No";
-                name = name.Replace("[", "(");
-                name = name.Replace("]", ")");
-                if (name.Length > nameLen) name = name.Substring(0, nameLen);
-                var message = $"[Target:  {name}\n"
-                              + $"Speed:  {speed} m/s\n"
-                              + $"Armed:  {armedStr}\n"
-                              + $"Threat:  {Threat}\n"  
-                              + $"Intercept:  {interceptStr}]";
-                var gpsName = $"Speed:  {speed} m/s\n Armed:  {armedStr}\n Threat:  {Threat}\n Intercept:  {interceptStr}";
-                Wheel.Session.SetGpsInfo(targetPos, gpsName);
-                Message = message;
-            }
-
             internal void LoadInfo()
             {
                 var item = Items[0];
                 item.SubSlot = 0;
-                switch (Name)
-                {
-                    case "Grids":
-                        Targets = Wheel.Grids;
-                        item.SubSlotCount = Targets.Count;
-                        break;
-                    case "Characters":
-                        Targets = Wheel.Characters;
-                        item.SubSlotCount = Targets.Count;
-                        break;
-                    case "Ordinance":
-                        Targets = Wheel.Projectiles;
-                        item.SubSlotCount = Targets.Count;
-                        break;
-                }
-
-                Wheel.Session.ResetGps();
-                GetTargetInfo(item);
-            }
-
-            internal void CleanUp()
-            {
-                Wheel.Session.RemoveGps();
-                Targets?.Clear();
             }
         }
     }

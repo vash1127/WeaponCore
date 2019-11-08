@@ -47,7 +47,6 @@ namespace WeaponCore.Support
         internal readonly List<IMyBlockGroup> TmpBlockGroups = new List<IMyBlockGroup>();
         internal readonly Dictionary<string, HashSet<MyCubeBlock>> BlockGroups = new Dictionary<string, HashSet<MyCubeBlock>>();
 
-
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
@@ -58,12 +57,12 @@ namespace WeaponCore.Support
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;
 
+        internal Focus Focus = new Focus(2);
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
-        internal MyEntity PrimeTarget;
-        internal MyOrientedBoundingBoxD PrimeTargetObb;
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
+
         internal Vector3D PlanetClosestPoint;
         internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;

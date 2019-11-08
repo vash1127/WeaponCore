@@ -17,6 +17,7 @@ namespace WeaponCore
 
             if (!s.UpdateLocalAiAndCockpit() || s.TrackingAi == null) return;
             if (!s.WheelUi.WheelActive && ActivateSelector()) DrawSelector();
+            if (s.UiInput.ShiftReleased) s.TrackingAi.Focus.NextActive();
             if (s.CheckTarget(s.TrackingAi) && s.GetTargetState()) DrawTarget();
         }
 
@@ -87,7 +88,7 @@ namespace WeaponCore
                 MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
                 displayCount++;
             }
-            var targetSphere = ai.PrimeTarget.PositionComp.WorldVolume;
+            var targetSphere = ai.Focus.Target[ai.Focus.ActiveId].PositionComp.WorldVolume;
             var targetCenter = targetSphere.Center;
             var screenPos = s.Camera.WorldToScreen(ref targetCenter);
             var fov = MyAPIGateway.Session.Camera.FovWithZoom;

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -110,27 +111,48 @@ namespace WeaponCore.Support
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
-            TargetInfo primeInfo = null;
-            if (ai.PrimeTarget != null)
-                ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo);
+            TargetInfo alphaInfo = null;
+            TargetInfo betaInfo = null;
+            int offset = 0;
+
+            if (ai.Focus.Target[0] != null)
+                if (ai.Targets.TryGetValue(ai.Focus.Target[0], out alphaInfo)) offset++;
+            if (ai.Focus.Target[1] != null)
+                if (ai.Targets.TryGetValue(ai.Focus.Target[1], out betaInfo)) offset++;
+
             TargetInfo gridInfo = null;
             var forceTarget = false;
             if (targetGrid != null)
                 if(ai.Targets.TryGetValue(targetGrid, out gridInfo))
                     forceTarget = true;
 
-            var targetCount = ai.SortedTargets.Count;
-            var needOffset = primeInfo != null;
-            var offset = needOffset ? 1 : 0;
-            var adjTargetCount = needOffset ? targetCount + offset : targetCount;
-
+            var adjTargetCount = ai.SortedTargets.Count + offset;
+            var hasOffset = offset > 0;
             for (int x = 0; x < adjTargetCount; x++)
             {
-                if (attemptReset && x > 0) break;
-                var primeTarget = x < 1 && needOffset;
-                var info = !forceTarget ? primeTarget ? primeInfo : ai.SortedTargets[x - offset] : gridInfo;
-                if (info?.Target == null || needOffset && x > 0 && info.Target == primeInfo.Target || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
+                var primeTarget = hasOffset && x < offset;
+                var lastOffset = offset - 1;
+                if (attemptReset && !primeTarget) break;
+                TargetInfo info = null;
+                if (forceTarget && !primeTarget) info = gridInfo;
+                else
+                {
+                    if (primeTarget)
+                    {
+                        if (x == 0 && alphaInfo != null) info = alphaInfo;
+                        else if (x == 0 && betaInfo != null) info = betaInfo;
+                        else if (x == 1) info = betaInfo;
+                    }
+                    else info = ai.SortedTargets[x - offset];
+                }
+
+                //var info = !forceTarget ? primeTarget ? alphaInfo : ai.SortedTargets[x - offset] : gridInfo;
+                if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue; //|| (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
+
+                if (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) Log.Line("test");
+
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
+
 
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !primeTarget && info.OffenseRating <= 0) continue;
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
@@ -255,13 +277,18 @@ namespace WeaponCore.Support
             var turretCheck = w != null;
             var lastBlocks = system.Values.Targeting.TopBlocks > 10 && distToEnt < 1000 ? system.Values.Targeting.TopBlocks : 10;
 
-            var isPrime = false;
-            if (ai.PrimeTarget != null && lastBlocks < 250)
+            var isPriroity = false;
+            if (lastBlocks < 250)
             {
-                TargetInfo primeInfo = null;
-                if (ai.Targets.TryGetValue(ai.PrimeTarget, out primeInfo) && primeInfo.Target?.GetTopMostParent() == topEnt)
+                TargetInfo priorityInfo = null;
+                if (ai.Focus.Target[0] != null && ai.Targets.TryGetValue(ai.Focus.Target[0], out priorityInfo) && priorityInfo.Target?.GetTopMostParent() == topEnt)
                 {
-                    isPrime = true;
+                    isPriroity = true;
+                    lastBlocks = totalBlocks < 250 ? totalBlocks : 250;
+                }
+                else if (ai.Focus.Target[1] != null && ai.Targets.TryGetValue(ai.Focus.Target[1], out priorityInfo) && priorityInfo.Target?.GetTopMostParent() == topEnt)
+                {
+                    isPriroity = true;
                     lastBlocks = totalBlocks < 250 ? totalBlocks : 250;
                 }
             }
@@ -282,7 +309,7 @@ namespace WeaponCore.Support
             for (int i = 0; i < totalBlocks; i++)
             {
                 blocksStarted++;
-                if (turretCheck && (blocksChecked > lastBlocks || isPrime && blocksSighted > 100))
+                if (turretCheck && (blocksChecked > lastBlocks || isPriroity && blocksSighted > 100))
                     break;
 
                 //var next = i;

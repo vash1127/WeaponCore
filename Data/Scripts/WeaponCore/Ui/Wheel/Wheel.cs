@@ -98,8 +98,6 @@ namespace WeaponCore
 
         internal void CloseWheel()
         {
-            GetCurrentMenu().CleanUp();
-
             _currentMenu = "WeaponGroups";
             WheelActive = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
@@ -114,9 +112,10 @@ namespace WeaponCore
         {
             var currentMessage = GetCurrentMenu().Message;
             string name = string.Empty;
-            if (Session.TrackingAi?.PrimeTarget != null)
+            var ai = Session.TrackingAi;
+            if (ai?.Focus.Target[ai.Focus.ActiveId] != null)
             {
-                name = Session.TrackingAi.PrimeTarget.DisplayName;
+                name = Session.TrackingAi.Focus.Target[ai.Focus.ActiveId].DisplayName;
                 var nameLen = 30;
                 name = name.Replace("[", "(");
                 name = name.Replace("]", ")");
@@ -147,41 +146,6 @@ namespace WeaponCore
 
         internal void UpdateState(Menu oldMenu)
         {
-            oldMenu.CleanUp();
-
-            Grids.Clear();
-            Characters.Clear();
-            Projectiles.Clear();
-            foreach (var target in Ai.SortedTargets)
-            {
-                if (target.IsGrid)
-                {
-                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
-                    var armed = false;
-                    if (target.IsGrid && target.MyAi.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)target.Target, out typeDict))
-                    {
-                        MyConcurrentList<MyCubeBlock> fatList;
-                        if (typeDict.TryGetValue(Offense, out fatList) && fatList.Count > 0)
-                            armed = true;
-                    }
-                    var menuTarget = new MenuTarget { MyEntity = target.Target, OtherArms = armed, Projectile = null, Threat = "High"};
-                    Grids.Add(menuTarget);
-                }
-                else
-                {
-                    var menuTarget = new MenuTarget { MyEntity = target.Target, OtherArms = false, Projectile = null, Threat = "Low" };
-                    Characters.Add(menuTarget);
-                }
-            }
-
-            foreach (var lp in Ai.LiveProjectile)
-            {
-                var menuTarget = new MenuTarget { MyEntity = null, OtherArms = false, Projectile = lp, Threat = "Medium" };
-                Projectiles.Add(menuTarget);
-            }
-
-            Projectiles.Sort((a, b) => Vector3D.DistanceSquared(a.Projectile.Position, Ai.MyGrid.PositionComp.WorldAABB.Center).CompareTo(Vector3D.DistanceSquared(b.Projectile.Position, Ai.MyGrid.PositionComp.WorldAABB.Center)));
-
             var menu = Menus[_currentMenu];
             if (menu.ItemCount <= 1) menu.LoadInfo();
         }

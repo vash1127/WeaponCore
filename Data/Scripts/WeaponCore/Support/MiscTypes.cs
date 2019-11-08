@@ -620,6 +620,24 @@ namespace WeaponCore.Support
         public int MostBlocks;
     }
 
+    public class Focus
+    {
+        internal Focus(int count)
+        {
+            Target = new MyEntity[count];
+            SubSystem = new TargetingDefinition.BlockTypes[count];
+        }
+
+        internal MyEntity[] Target;
+        internal TargetingDefinition.BlockTypes[] SubSystem;
+        internal int ActiveId;
+
+        internal void NextActive()
+        {
+            if (ActiveId + 1 > Target.Length - 1) ActiveId -= 1;
+            else ActiveId += 1;
+        }
+    }
 
     public class IconInfo
     {
