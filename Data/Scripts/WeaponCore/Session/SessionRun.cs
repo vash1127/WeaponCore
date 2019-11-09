@@ -107,10 +107,7 @@ namespace WeaponCore
 
                 PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
 
-                if (MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
-                    TargetUi.SelectTarget();
-                else if (TargetUi.DrawReticle && UiInput.CurrentWheel != UiInput.PreviousWheel && UpdateLocalAiAndCockpit())
-                    TargetUi.SelectNext();
+                TargetSelection();
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -179,10 +176,11 @@ namespace WeaponCore
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
 
-                    if (WheelUi.WheelActive && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
-                        WheelUi.DrawWheel();
-
-                    TargetUi.DrawTargetUi();
+                    if (!MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                    {
+                        if (WheelUi.WheelActive) WheelUi.DrawWheel();
+                        TargetUi.DrawTargetUi();
+                    }
 
                     for (int i = 0; i < Projectiles.Wait.Length; i++)
                         //lock (Projectiles.Wait[i])

@@ -7,12 +7,9 @@ using System.Threading.Tasks;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage;
 using VRage.Collections;
-using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 
@@ -30,11 +27,8 @@ namespace WeaponCore
                 return true;
             }
 
-            if (TrackingAi != null)
-            {
-                TrackingAi.Focus.Target[0] = null;
-                TrackingAi.Focus.Target[1] = null;
-            }
+            TrackingAi?.Focus.IsFocused();
+
             TrackingAi = null;
             ActiveCockPit = null;
             RemoveGps();
@@ -75,6 +69,19 @@ namespace WeaponCore
                         }
                     }
                 }
+            }
+        }
+
+        internal void TargetSelection()
+        {
+            if (MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
+                TargetUi.SelectTarget();
+            else if (UpdateLocalAiAndCockpit())
+            {
+                if (UiInput.CurrentWheel != UiInput.PreviousWheel)
+                    TargetUi.SelectNext();
+
+                if (UiInput.ShiftReleased) TrackingAi.Focus.NextActive();
             }
         }
 
@@ -125,23 +132,17 @@ namespace WeaponCore
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (ai.Focus.Target[0] == null && ai.Focus.Target[1] == null) return false;
+            if (!ai.Focus.IsFocused()) return false;
 
-            if (ai.Focus.Target[0] != null && ai.Focus.Target[0].MarkedForClose) ai.Focus.Target[0] = null;
-            if (ai.Focus.Target[1] != null && ai.Focus.Target[1].MarkedForClose) ai.Focus.Target[1] = null;
-
-            if (ai != TrackingAi || ai.Focus.Target[0] == null && ai.Focus.Target[1] == null)
+            if (ai != TrackingAi)
             {
                 Log.Line("resetting target");
-                ai.Focus.Target[0] = null;
-                ai.Focus.Target[1] = null;
                 TrackingAi = null;
                 RemoveGps();
                 return false;
             }
 
-            var targetFocus = ai.Focus.Target[0] != null || ai.Focus.Target[1] != null;
-            return targetFocus;
+            return ai.Focus.HasFocus;
         }
 
         internal void SetTarget(MyEntity entity, GridAi ai)

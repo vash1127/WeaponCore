@@ -14,10 +14,9 @@ namespace WeaponCore
         {
             var s = _session;
             DrawReticle = false;
-            if (!s.UpdateLocalAiAndCockpit() || s.TrackingAi == null) return;
+            if (!s.UpdateLocalAiAndCockpit()) return;
 
             if (!s.WheelUi.WheelActive && ActivateSelector()) DrawSelector();
-            if (s.UiInput.ShiftReleased) s.TrackingAi.Focus.NextActive();
             if (s.CheckTarget(s.TrackingAi) && s.TrackingAi.GetTargetState()) DrawTarget();
         }
 
@@ -95,7 +94,6 @@ namespace WeaponCore
 
                     displayCount++;
                 }
-
                 if (i == focus.ActiveId)
                 {
                     var targetSphere = focus.Target[focus.ActiveId].PositionComp.WorldVolume;

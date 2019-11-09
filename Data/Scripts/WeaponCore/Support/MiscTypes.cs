@@ -637,11 +637,28 @@ namespace WeaponCore.Support
         internal TargetStatus[] TargetState;
         internal long[] PrevTargetId;
         internal int ActiveId;
+        internal bool HasFocus;
 
         internal void NextActive()
         {
+            var prevId = ActiveId;
             if (ActiveId + 1 > Target.Length - 1) ActiveId -= 1;
             else ActiveId += 1;
+            if (Target[ActiveId] == null) Target[ActiveId] = Target[prevId];
+        }
+
+        internal bool IsFocused()
+        {
+            HasFocus = false;
+            for (int i = 0; i < Target.Length; i++)
+            {
+                if (Target[i] != null)
+                {
+                    if (!Target[i].MarkedForClose) HasFocus = true;
+                    else Target[i] = null;
+                }
+            }
+            return HasFocus;
         }
     }
 

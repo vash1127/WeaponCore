@@ -107,10 +107,7 @@ namespace WeaponCore
 
             var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1;
             if (updateTick && !UpdateCache()) return;
-
             _cacheIdleTicks = s.Tick;
-
-            //Log.Line($"{_targetCache.Count - 1} - {_currentIdx}");
 
             if (s.UiInput.WheelForward)
                 if (_currentIdx + 1 <= _endIdx)
