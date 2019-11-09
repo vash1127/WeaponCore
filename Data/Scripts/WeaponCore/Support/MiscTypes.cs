@@ -626,10 +626,16 @@ namespace WeaponCore.Support
         {
             Target = new MyEntity[count];
             SubSystem = new TargetingDefinition.BlockTypes[count];
+            TargetState = new TargetStatus[count];
+            PrevTargetId = new long[count];
+            for (int i = 0; i < TargetState.Length; i++)
+                TargetState[i] = new TargetStatus();
         }
 
         internal MyEntity[] Target;
         internal TargetingDefinition.BlockTypes[] SubSystem;
+        internal TargetStatus[] TargetState;
+        internal long[] PrevTargetId;
         internal int ActiveId;
 
         internal void NextActive()
@@ -639,6 +645,16 @@ namespace WeaponCore.Support
         }
     }
 
+    public class TargetStatus
+    {
+        public int ShieldHealth;
+        public int ThreatLvl;
+        public int Size;
+        public int Speed;
+        public int Distance;
+        public int Engagement;
+    }
+
     public class IconInfo
     {
         private readonly MyStringId _textureName;
@@ -646,11 +662,10 @@ namespace WeaponCore.Support
         private readonly double _definedScale;
         private readonly int _slotId;
         private readonly bool _shift;
-        private float _adjustedScale;
-        private Vector3D _positionOffset;
-        private Vector3D _altPositionOffset;
-
-        private int _prevSlotId = -1;
+        private readonly float[] _adjustedScale;
+        private readonly Vector3D[] _positionOffset;
+        private readonly Vector3D[] _altPositionOffset;
+        private readonly int[] _prevSlotId;
 
         public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition, int slotId, bool shift)
         {
@@ -659,27 +674,33 @@ namespace WeaponCore.Support
             _screenPosition = screenPosition;
             _slotId = slotId;
             _shift = shift;
+            _prevSlotId = new int[2];
+            for (int i = 0; i < _prevSlotId.Length; i++)
+                _prevSlotId[i] = -1;
+
+            _adjustedScale = new float[2];
+            _positionOffset = new Vector3D[2];
+            _altPositionOffset = new Vector3D[2];
         }
 
-        public void GetTextureInfo(int displayCount, bool altPosition, Session session, out MyStringId textureName, out float scale, out Vector3D offset)
+        public void GetTextureInfo(int index, int displayCount, bool altPosition, Session session, out MyStringId textureName, out float scale, out Vector3D offset)
         {
-            if (displayCount != _prevSlotId) InitOffset(displayCount);
+            if (displayCount != _prevSlotId[index]) InitOffset(index, displayCount);
             textureName = _textureName;
-            scale = _adjustedScale;
-            offset = !altPosition ? Vector3D.Transform(_positionOffset, session.CameraMatrix) : Vector3D.Transform(_altPositionOffset, session.CameraMatrix);
-            _prevSlotId = displayCount;
+            scale = _adjustedScale[index];
+            offset = !altPosition ? Vector3D.Transform(_positionOffset[index], session.CameraMatrix) : Vector3D.Transform(_altPositionOffset[index], session.CameraMatrix);
+            _prevSlotId[index] = displayCount;
         }
 
-        private void InitOffset(int displayCount)
+        private void InitOffset(int index, int displayCount)
         {
             var fov = MyAPIGateway.Session.Camera.FovWithZoom;
             var screenScale = 0.075 * Math.Tan(fov * 0.5);
             const float slotSpacing = 0.05f;
             var shiftSlots = (_slotId - displayCount) * -1;
             var shiftSize = _shift && shiftSlots > 0 ? slotSpacing * shiftSlots : 0;
-
-            var position = new Vector3D(_screenPosition.X + shiftSize, _screenPosition.Y, 0);
-            var altPosition = new Vector3D(_screenPosition.X + shiftSize, _screenPosition.Y - 1.25, 0);
+            var position = new Vector3D(_screenPosition.X + shiftSize - (index * 0.35), _screenPosition.Y, 0);
+            var altPosition = new Vector3D(_screenPosition.X + shiftSize - (index * 0.35), _screenPosition.Y - 1.25, 0);
 
             double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
 
@@ -687,10 +708,9 @@ namespace WeaponCore.Support
             position.Y *= screenScale;
             altPosition.X *= screenScale * aspectratio;
             altPosition.Y *= screenScale;
-            _adjustedScale = (float)(_definedScale * screenScale);
-
-            _positionOffset = new Vector3D(position.X, position.Y, -.1);
-            _altPositionOffset = new Vector3D(altPosition.X, altPosition.Y, -.1);
+            _adjustedScale[index] = (float)(_definedScale * screenScale);
+            _positionOffset[index] = new Vector3D(position.X, position.Y, -.1);
+            _altPositionOffset[index] = new Vector3D(altPosition.X, altPosition.Y, -.1);
         }
     }
 }

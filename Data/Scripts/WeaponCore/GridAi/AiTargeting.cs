@@ -149,10 +149,7 @@ namespace WeaponCore.Support
                 //var info = !forceTarget ? primeTarget ? alphaInfo : ai.SortedTargets[x - offset] : gridInfo;
                 if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue; //|| (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
 
-                if (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) Log.Line("test");
-
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
-
 
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !primeTarget && info.OffenseRating <= 0) continue;
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;

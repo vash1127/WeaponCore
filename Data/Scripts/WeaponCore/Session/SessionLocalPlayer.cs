@@ -125,8 +125,7 @@ namespace WeaponCore
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (ai.Focus.Target[0] == null && ai.Focus.Target[1] == null)
-                return false;
+            if (ai.Focus.Target[0] == null && ai.Focus.Target[1] == null) return false;
 
             if (ai.Focus.Target[0] != null && ai.Focus.Target[0].MarkedForClose) ai.Focus.Target[0] = null;
             if (ai.Focus.Target[1] != null && ai.Focus.Target[1].MarkedForClose) ai.Focus.Target[1] = null;
@@ -140,7 +139,9 @@ namespace WeaponCore
                 RemoveGps();
                 return false;
             }
-            return ai.Focus.Target[ai.Focus.ActiveId] != null;
+
+            var targetFocus = ai.Focus.Target[0] != null || ai.Focus.Target[1] != null;
+            return targetFocus;
         }
 
         internal void SetTarget(MyEntity entity, GridAi ai)
@@ -171,129 +172,6 @@ namespace WeaponCore
                     break;
                 }
             }
-        }
-
-        internal bool GetTargetState()
-        {
-            var ai = TrackingAi;
-            GridAi.TargetInfo info;
-            var target = ai.Focus.Target[ai.Focus.ActiveId];
-            if (!ai.Targets.TryGetValue(target, out info)) return false;
-            if (!Tick20 && _prevTargetId == info.EntInfo.EntityId) return true;
-            _prevTargetId = info.EntInfo.EntityId;
-            var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
-            if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
-            var targetDir = Vector3D.Normalize(targetVel);
-            var targetRevDir = -targetDir;
-            var targetPos = target.PositionComp.WorldAABB.Center;
-            var myPos = ai.MyGrid.PositionComp.WorldAABB.Center;
-            var myHeading = Vector3D.Normalize(myPos - targetPos);
-
-            if (info.LargeGrid && info.PartCount > 18000) TargetState.Size = 5;
-            else if (info.LargeGrid && info.PartCount > 9000) TargetState.Size = 4;
-            else if (info.LargeGrid && info.PartCount > 4500) TargetState.Size = 3;
-            else if (info.LargeGrid) TargetState.Size = 2;
-            else if (info.PartCount > 2000) TargetState.Size = 1;
-            else TargetState.Size = 0;
-
-            var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, ApproachDegrees);
-            var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, ApproachDegrees);
-            if (intercept) TargetState.Engagement = 0;
-            else if (retreat) TargetState.Engagement = 1;
-            else TargetState.Engagement = -1;
-
-            var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
-
-            var distanceFromCenters = Vector3D.Distance(ai.GridCenter, target.PositionComp.WorldAABB.Center);
-            distanceFromCenters -= ai.GridRadius;
-            distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
-            distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
-
-            var distPercent = (distanceFromCenters / ai.MaxTargetingRange) * 100;
-            if (distPercent > 95) TargetState.Distance = 9;
-            else if (distPercent > 90) TargetState.Distance = 8;
-            else if (distPercent > 80) TargetState.Distance = 7;
-            else if (distPercent > 70) TargetState.Distance = 6;
-            else if (distPercent > 60) TargetState.Distance = 5;
-            else if (distPercent > 50) TargetState.Distance = 4;
-            else if (distPercent > 40) TargetState.Distance = 3;
-            else if (distPercent > 30) TargetState.Distance = 2;
-            else if (distPercent > 20) TargetState.Distance = 1;
-            else if (distPercent > 0) TargetState.Distance = 0;
-            else TargetState.Distance = -1;
-
-            if (speed <= 0) TargetState.Speed = -1;
-            else
-            {
-                var speedPercent = (speed / MaxEntitySpeed) * 100;
-                if (speedPercent > 95) TargetState.Speed = 9;
-                else if (speedPercent > 90) TargetState.Speed = 8;
-                else if (speedPercent > 80) TargetState.Speed = 7;
-                else if (speedPercent > 70) TargetState.Speed = 6;
-                else if (speedPercent > 60) TargetState.Speed = 5;
-                else if (speedPercent > 50) TargetState.Speed = 4;
-                else if (speedPercent > 40) TargetState.Speed = 3;
-                else if (speedPercent > 30) TargetState.Speed = 2;
-                else if (speedPercent > 20) TargetState.Speed = 1;
-                else if (speedPercent > 0) TargetState.Speed = 0;
-                else TargetState.Speed = -1;
-            }
-
-            MyTuple<bool, bool, float, float, float, int> shieldInfo = new MyTuple<bool, bool, float, float, float, int>();
-            if (ShieldApiLoaded) shieldInfo = SApi.GetShieldInfo(target);
-            if (shieldInfo.Item1)
-            {
-                var shieldPercent = shieldInfo.Item5;
-                if (shieldPercent > 95) TargetState.ShieldHealth = 9;
-                else if (shieldPercent > 90) TargetState.ShieldHealth = 8;
-                else if (shieldPercent > 80) TargetState.ShieldHealth = 7;
-                else if (shieldPercent > 70) TargetState.ShieldHealth = 6;
-                else if (shieldPercent > 60) TargetState.ShieldHealth = 5;
-                else if (shieldPercent > 50) TargetState.ShieldHealth = 4;
-                else if (shieldPercent > 40) TargetState.ShieldHealth = 3;
-                else if (shieldPercent > 30) TargetState.ShieldHealth = 2;
-                else if (shieldPercent > 20) TargetState.ShieldHealth = 1;
-                else if (shieldPercent > 0) TargetState.ShieldHealth = 0;
-                else TargetState.ShieldHealth = -1;
-            }
-            else TargetState.ShieldHealth = -1;
-
-            var grid = target as MyCubeGrid;
-            var friend = false;
-            if (grid != null && grid.BigOwners.Count != 0)
-            {
-                var relation = MyIDModule.GetRelationPlayerBlock(ai.MyOwner, grid.BigOwners[0], MyOwnershipShareModeEnum.Faction);
-                if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
-            }
-
-            if (friend) TargetState.ThreatLvl = -1;
-            else
-            {
-                int shieldBonus = 0;
-                if (ShieldApiLoaded)
-                {
-                    var myShieldInfo = SApi.GetShieldInfo(ai.MyGrid);
-                    if (shieldInfo.Item1 && myShieldInfo.Item1)
-                        shieldBonus = shieldInfo.Item5 > myShieldInfo.Item5 ? 1 : -1;
-                    else if (shieldInfo.Item1) shieldBonus = 1;
-                    else if (myShieldInfo.Item1) shieldBonus = -1;
-                }
-
-                var offenseRating = info.OffenseRating;
-                if (offenseRating > 5) TargetState.ThreatLvl = shieldBonus < 0 ? 8 : 9;
-                else if (offenseRating > 4) TargetState.ThreatLvl = 8 + shieldBonus;
-                else if (offenseRating > 3) TargetState.ThreatLvl = 7 + shieldBonus;
-                else if (offenseRating > 2) TargetState.ThreatLvl = 6 + shieldBonus;
-                else if (offenseRating > 1) TargetState.ThreatLvl = 5 + shieldBonus;
-                else if (offenseRating > 0.5) TargetState.ThreatLvl = 4 + shieldBonus;
-                else if (offenseRating > 0.25) TargetState.ThreatLvl = 3 + shieldBonus;
-
-                else if (offenseRating > 0.125) TargetState.ThreatLvl = 2 + shieldBonus;
-                else if (offenseRating > 0.0625) TargetState.ThreatLvl = 1 + shieldBonus;
-                else if (offenseRating > 0) TargetState.ThreatLvl = shieldBonus > 0 ? 1 : 0;
-                else TargetState.ThreatLvl = -1;
-            }
-            return true;
         }
     }
 }

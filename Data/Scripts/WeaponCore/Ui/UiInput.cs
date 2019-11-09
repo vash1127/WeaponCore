@@ -4,7 +4,7 @@ using VRage.Input;
 
 namespace WeaponCore
 {
-    class UiInput
+    internal class UiInput
     {
         internal int PreviousWheel;
         internal int CurrentWheel;

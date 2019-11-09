@@ -56,7 +56,6 @@ namespace WeaponCore
 
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
-        internal Projectiles.Projectiles Projectiles;
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
@@ -88,6 +87,7 @@ namespace WeaponCore
         internal Queue<PartAnimation> AnimationsToQueue = new Queue<PartAnimation>();
         internal List<GridAi> DbsToUpdate = new List<GridAi>();
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
+        internal Projectiles.Projectiles Projectiles;
 
         internal IMyPhysics Physics;
         internal IMyCamera Camera;
@@ -98,12 +98,10 @@ namespace WeaponCore
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
         internal UiInput UiInput;
-        internal TargetStatus TargetState;
         internal IMyBlockPlacerBase Placer;
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
-        internal List<IMyGps> GpsList = new List<IMyGps>();
         internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal Color[] HeatEmissives;
@@ -194,16 +192,6 @@ namespace WeaponCore
         internal Task ITask = new Task();
 
         internal ShieldApi SApi = new ShieldApi();
-
-        public struct TargetStatus
-        {
-            public int ShieldHealth;
-            public int ThreatLvl;
-            public int Size;
-            public int Speed;
-            public int Distance;
-            public int Engagement;
-        }
 
         public Session()
         {

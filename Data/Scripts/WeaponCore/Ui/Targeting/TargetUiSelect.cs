@@ -137,8 +137,8 @@ namespace WeaponCore
 
         private bool UpdateCache()
         {
-            var s = _session;
-            var ai = s.TrackingAi;
+            var ai = _session.TrackingAi;
+            var focus = ai.Focus;
             _targetCache.Clear();
             _currentIdx = 0;
             for (int i = 0; i < ai.SortedTargets.Count; i++)
@@ -147,7 +147,7 @@ namespace WeaponCore
                 if (target.MarkedForClose) continue;
 
                 _targetCache.Add(target);
-                if (ai.Focus.Target[ai.Focus.ActiveId] == target) _currentIdx = i;
+                if (focus.Target[focus.ActiveId] == target) _currentIdx = i;
             }
             _endIdx = _targetCache.Count - 1;
             return _endIdx >= 0;
