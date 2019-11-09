@@ -16,6 +16,8 @@ namespace WeaponCore
         internal bool DrawReticle;
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
+        private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
+
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.25f);

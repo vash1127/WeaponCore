@@ -89,6 +89,10 @@ namespace WeaponCore
                     MyStringId textureName;
                     _targetIcons[icon][iconLevel].GetTextureInfo(i, displayCount, s.WheelUi.WheelActive, s, out textureName, out scale, out offset);
                     MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+
+                    if (focus.ActiveId == i && displayCount == 0)
+                        MyTransparentGeometry.AddBillboardOriented(_focus, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+
                     displayCount++;
                 }
 
