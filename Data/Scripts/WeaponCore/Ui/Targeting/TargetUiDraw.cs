@@ -113,7 +113,7 @@ namespace WeaponCore
                     dotpos.X *= (float)(screenScale * aspectratio);
                     dotpos.Y *= (float)screenScale;
                     screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
-                    MyTransparentGeometry.AddBillboardOriented(_cross, Color.Red, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.1f, BlendTypeEnum.PostPP);
+                    MyTransparentGeometry.AddBillboardOriented(_active, Color.Red, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.1f, BlendTypeEnum.PostPP);
                 }
             }
         }

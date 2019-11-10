@@ -17,6 +17,7 @@ namespace WeaponCore
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
+        private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
 
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
