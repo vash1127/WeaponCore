@@ -2,10 +2,8 @@
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
-using Sandbox.Game.Weapons;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
-using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
@@ -17,16 +15,11 @@ namespace WeaponCore.Support
     public partial class WeaponComponent
     {
         private int _count = -1;
-
         private bool _allInited;
-        private bool _clientOn;
         private bool _isServer;
         private bool _isDedicated;
         private bool _mpActive;
         private bool _clientNotReady;
-        private bool _firstRun = true;
-        private bool _firstLoop = true;
-        private bool _readyToSync;
         private bool _firstSync;
 
         internal GridAi Ai { get; set; }
@@ -37,7 +30,6 @@ namespace WeaponCore.Support
         internal bool InThisTerminal => Ai.Session.LastTerminalId == MyCube.EntityId;
 
         internal HashSet<string> GroupNames = new HashSet<string>();
-        internal MyFixedPoint MaxInventoryMass;
         internal MatrixD CubeMatrix;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
@@ -54,8 +46,6 @@ namespace WeaponCore.Support
         internal float MaxHeat;
         internal float HeatPerSecond;
         internal float HeatSinkRate;
-        internal float MaxAmmoVolume;
-        internal float MaxAmmoMass;
         internal float SinkPower;
         internal float MaxRequiredPower;
         internal float CurrentSinkPowerRequested;
@@ -63,10 +53,7 @@ namespace WeaponCore.Support
         internal float IdlePower = 0.001f;
         internal bool Overheated;
         internal bool Gunner;
-        internal bool NotFailed;
-        internal bool WarmedUp;
         internal bool Starting;
-        internal bool Sync = true;
         internal int Shooting;
         internal bool Charging;
         internal bool ReturnHome;
@@ -84,7 +71,7 @@ namespace WeaponCore.Support
         internal MyCubeBlock MyCube;
         internal MyWeaponPlatform Platform;
         internal IMyLargeMissileTurret ControllableTurret;
-        internal Sandbox.ModAPI.IMyConveyorSorter AiOnlyTurret;
+        internal IMyConveyorSorter AiOnlyTurret;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
         internal bool MainInit;
@@ -92,11 +79,9 @@ namespace WeaponCore.Support
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
         internal bool IsWorking;
-        internal bool FullInventory;
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
         internal bool IsAiOnlyTurret;
-        internal bool HasInventory;
         internal bool IgnoreInvChange;
         internal LogicSettings Set;
         internal LogicState State;
@@ -116,9 +101,9 @@ namespace WeaponCore.Support
                 IsAiOnlyTurret = false;
             }
 
-            else if (myCube is Sandbox.ModAPI.IMyConveyorSorter)
+            else if (myCube is IMyConveyorSorter)
             {
-                AiOnlyTurret = (Sandbox.ModAPI.IMyConveyorSorter) myCube;
+                AiOnlyTurret = (IMyConveyorSorter) myCube;
                 IsAiOnlyTurret = true;
                 if (IsAiOnlyTurret)
                     BlockInventory.Constraint = new MyInventoryConstraint("ammo");
