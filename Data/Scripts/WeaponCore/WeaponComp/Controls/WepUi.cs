@@ -27,14 +27,14 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp?.Platform == null || !comp.Platform.Inited) return 0;
-            return comp.Set.Value.DPSModifier;
+            return comp.Set.Value.DpsModifier;
         }
 
         internal static void SetDps(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp?.Platform == null || !comp.Platform.Inited) return;
-            comp.Set.Value.DPSModifier = newValue;
+            comp.Set.Value.DpsModifier = newValue;
 
             comp.MaxRequiredPower = 0;
             comp.HeatPerSecond = 0;
@@ -121,14 +121,14 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp?.Platform == null || !comp.Platform.Inited) return 0;
-            return comp.Set.Value.ROFModifier;
+            return comp.Set.Value.RofModifier;
         }
 
         internal static void SetRof(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp?.Platform == null || !comp.Platform.Inited) return;
-            comp.Set.Value.ROFModifier = newValue;
+            comp.Set.Value.RofModifier = newValue;
 
             comp.MaxRequiredPower = 0;
             comp.HeatPerSecond = 0;
@@ -138,7 +138,7 @@ namespace WeaponCore
             {
                 var w = comp.Platform.Weapons[i];
 
-                var newRate = (int)(w.System.RateOfFire * comp.Set.Value.ROFModifier);
+                var newRate = (int)(w.System.RateOfFire * comp.Set.Value.RofModifier);
 
                 if (newRate < 1)
                     newRate = 1;
@@ -215,20 +215,20 @@ namespace WeaponCore
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 if(comp.Platform.Weapons[i].System.IsBeamWeapon)
-                    SetDps(block, comp.Set.Value.DPSModifier);
+                    SetDps(block, comp.Set.Value.DpsModifier);
             }
         }
 
         internal static float GetRange(IMyTerminalBlock block) {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp?.Platform == null || !comp.Platform.Inited) return 100;
-            return comp.Set.Value.range;
+            return comp.Set.Value.Range;
         }
 
         internal static void SetRange(IMyTerminalBlock block, float range) {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp?.Platform == null || !comp.Platform.Inited) return;
-            comp.Set.Value.range = range;
+            comp.Set.Value.Range = range;
         }
 
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)

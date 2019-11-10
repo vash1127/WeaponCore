@@ -85,10 +85,10 @@ namespace WeaponCore.Support
                 Session.ComputeStorage(weapon);
 
                 MaxHeat += weapon.System.MaxHeat;
-                weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.ROFModifier);
+                weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
 
                 if (weapon.System.EnergyAmmo)
-                    weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DPSModifier;
+                    weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DpsModifier;
                 else
                     weapon.BaseDamage = weapon.System.BaseDamage;
 

@@ -108,6 +108,7 @@ namespace WeaponCore.Support
             ai.Session.TargetRequests++;
             var physics = ai.Session.Physics;
             var weaponPos = w.MyPivotPos;
+            var weaponRangeSqr = w.Comp.Set.Value.Range * w.Comp.Set.Value.Range;
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
@@ -153,8 +154,7 @@ namespace WeaponCore.Support
 
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !primeTarget && info.OffenseRating <= 0) continue;
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
-
-                if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > s.MaxTrajectorySqr) continue;
+                if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > weaponRangeSqr) continue;
 
                 w.Comp.Ai.Session.TargetChecks++;
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;

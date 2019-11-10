@@ -254,7 +254,7 @@ namespace WeaponCore
 
                 if (set && w.System.DegRof && w.Comp.State.Value.Weapons[w.WeaponId].Heat >= (w.System.MaxHeat * .8))
                 {
-                    var systemRate = w.System.RateOfFire * w.Comp.Set.Value.ROFModifier;
+                    var systemRate = w.System.RateOfFire * w.Comp.Set.Value.RofModifier;
                     var newRate = (int)MathHelper.Lerp(systemRate, systemRate/4, w.Comp.State.Value.Weapons[w.WeaponId].Heat/ w.System.MaxHeat);
 
                     if (newRate < 1)
@@ -268,7 +268,7 @@ namespace WeaponCore
                 else if (set && w.CurrentlyDegrading)
                 {
                     w.CurrentlyDegrading = false;
-                    w.RateOfFire = (int)(w.System.RateOfFire * w.Comp.Set.Value.ROFModifier);
+                    w.RateOfFire = (int)(w.System.RateOfFire * w.Comp.Set.Value.RofModifier);
                     w.TicksPerShot = (uint)(3600f / w.RateOfFire);
                     w.UpdateBarrelRotation();
                 }

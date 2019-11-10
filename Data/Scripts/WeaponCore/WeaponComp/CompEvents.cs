@@ -204,5 +204,14 @@ namespace WeaponCore.Support
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
         }
+
+        internal void UpdateTerminal(object o)
+        {
+            var turretBase = MyCube as IMyLargeTurretBase;
+            if (turretBase != null)
+            {
+                Set.Value.Range = turretBase.Range;
+            }
+        }
     }
 }
