@@ -15,7 +15,7 @@ namespace WeaponCore
         internal bool WheelForward;
         internal bool WheelBackward;
         internal bool ShiftReleased;
-
+        internal bool AltPressed;
         private readonly Session _session;
 
         internal UiInput(Session session)
@@ -47,6 +47,7 @@ namespace WeaponCore
                 PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                 CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
+                AltPressed = MyAPIGateway.Input.IsAnyAltKeyPressed();
             }
             if (CurrentWheel != PreviousWheel && CurrentWheel > PreviousWheel)
                 WheelForward = true;

@@ -106,7 +106,7 @@ namespace WeaponCore
             if (!_cachedTargetPos) InitTargetOffset();
 
             var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1;
-            if (updateTick && !UpdateCache()) return;
+            if (s.UiInput.AltPressed || updateTick && !UpdateCache()) return;
             _cacheIdleTicks = s.Tick;
 
             if (s.UiInput.WheelForward)
