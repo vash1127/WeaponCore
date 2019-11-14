@@ -318,7 +318,7 @@
       <DamagedSound>ParticleWeapExpl</DamagedSound>
       <ResourceSinkGroup>Defense</ResourceSinkGroup>
       <MinElevationDegrees>-10</MinElevationDegrees>
-      <MaxElevationDegrees>180</MaxElevationDegrees>
+      <MaxElevationDegrees>90</MaxElevationDegrees>
       <MinAzimuthDegrees>-180</MinAzimuthDegrees>
       <MaxAzimuthDegrees>180</MaxAzimuthDegrees>
       <RotationSpeed>0.01</RotationSpeed>
@@ -396,7 +396,7 @@
       <DamagedSound>ParticleWeapExpl</DamagedSound>
       <ResourceSinkGroup>Defense</ResourceSinkGroup>
       <MinElevationDegrees>-8</MinElevationDegrees>
-      <MaxElevationDegrees>180</MaxElevationDegrees>
+      <MaxElevationDegrees>90</MaxElevationDegrees>
       <MinAzimuthDegrees>-180</MinAzimuthDegrees>
       <MaxAzimuthDegrees>180</MaxAzimuthDegrees>
       <IdleRotation>false</IdleRotation>
@@ -533,6 +533,14 @@
       <DamagedSound>ParticleWeapExpl</DamagedSound>
       <DestroyEffect>BlockDestroyedExplosion_Small</DestroyEffect>
       <DestroySound>WepSmallWarheadExpl</DestroySound>
+      <MinElevationDegrees>0</MinElevationDegrees>
+      <MaxElevationDegrees>0</MaxElevationDegrees>
+      <MinAzimuthDegrees>0</MinAzimuthDegrees>
+      <MaxAzimuthDegrees>0</MaxAzimuthDegrees>
+      <IdleRotation>false</IdleRotation>
+      <MaxRangeMeters>800</MaxRangeMeters>
+      <RotationSpeed>0.00</RotationSpeed>
+      <ElevationSpeed>0.00</ElevationSpeed>
       <PCU>425</PCU>
        <AiEnabled>false</AiEnabled>       
     </Definition> 
@@ -585,6 +593,14 @@
       <DamagedSound>ParticleWeapExpl</DamagedSound>
       <DestroyEffect>BlockDestroyedExplosion_Small</DestroyEffect>
       <DestroySound>WepSmallWarheadExpl</DestroySound>
+      <MinElevationDegrees>0</MinElevationDegrees>
+      <MaxElevationDegrees>0</MaxElevationDegrees>
+      <MinAzimuthDegrees>0</MinAzimuthDegrees>
+      <MaxAzimuthDegrees>0</MaxAzimuthDegrees>
+      <IdleRotation>false</IdleRotation>
+      <MaxRangeMeters>800</MaxRangeMeters>
+      <RotationSpeed>0.00</RotationSpeed>
+      <ElevationSpeed>0.00</ElevationSpeed>
       <PCU>825</PCU>
        <AiEnabled>false</AiEnabled>       
     </Definition>
@@ -636,6 +652,14 @@
       <DamagedSound>ParticleWeapExpl</DamagedSound>
       <DestroyEffect>BlockDestroyedExplosion_Small</DestroyEffect>
       <DestroySound>WepSmallWarheadExpl</DestroySound>
+      <MinElevationDegrees>0</MinElevationDegrees>
+      <MaxElevationDegrees>0</MaxElevationDegrees>
+      <MinAzimuthDegrees>0</MinAzimuthDegrees>
+      <MaxAzimuthDegrees>0</MaxAzimuthDegrees>
+      <IdleRotation>false</IdleRotation>
+      <MaxRangeMeters>800</MaxRangeMeters>
+      <RotationSpeed>0.00</RotationSpeed>
+      <ElevationSpeed>0.00</ElevationSpeed>
       <PCU>425</PCU>
       <MirroringZ>Y</MirroringZ>
        <AiEnabled>false</AiEnabled>       
@@ -701,12 +725,12 @@
       <DamageEffectName>Damage_WeapExpl_Damaged</DamageEffectName>
       <DamagedSound>ParticleWeapExpl</DamagedSound>
       <ResourceSinkGroup>Defense</ResourceSinkGroup>
-      <MinElevationDegrees>-30</MinElevationDegrees>
-      <MaxElevationDegrees>30</MaxElevationDegrees>
-      <MinAzimuthDegrees>-30</MinAzimuthDegrees>
-      <MaxAzimuthDegrees>30</MaxAzimuthDegrees>
-      <RotationSpeed>0.01</RotationSpeed>
-      <ElevationSpeed>0.01</ElevationSpeed>
+      <MinElevationDegrees>0</MinElevationDegrees>
+      <MaxElevationDegrees>0</MaxElevationDegrees>
+      <MinAzimuthDegrees>0</MinAzimuthDegrees>
+      <MaxAzimuthDegrees>0</MaxAzimuthDegrees>
+      <RotationSpeed>0.00</RotationSpeed>
+      <ElevationSpeed>0.00</ElevationSpeed>
       <IdleRotation>false</IdleRotation>
       <MaxRangeMeters>800</MaxRangeMeters>
       <MinFov>0.1</MinFov>
