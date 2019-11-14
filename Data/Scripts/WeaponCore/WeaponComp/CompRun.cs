@@ -85,10 +85,10 @@ namespace WeaponCore.Support
                 Session.ComputeStorage(weapon);
 
                 MaxHeat += weapon.System.MaxHeat;
-                weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.ROFModifier);
+                weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
 
                 if (weapon.System.EnergyAmmo)
-                    weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DPSModifier;
+                    weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DpsModifier;
                 else
                     weapon.BaseDamage = weapon.System.BaseDamage;
 
@@ -290,37 +290,5 @@ namespace WeaponCore.Support
         {
             get { return "Shield"; }
         }
-
-        /*
-        public void Run()
-        {
-            try
-            {
-                if (!EntityAlive()) return;
-
-                var state = WeaponState();
-                if (state != Start.Online)
-                {
-                    if (NotFailed) FailWeapon(state);
-                    else if (State.Value.Message) UpdateNetworkState();
-                    return;
-                }
-
-                if (!_isServer || !State.Value.Online) return;
-                if (Starting) ComingOnline();
-                if (_mpActive && (Sync || _count == 29))
-                {
-                    if (Sync)
-                    {
-                        UpdateNetworkState();
-                        Sync = false;
-                    }
-                    else if (Session.Instance.Tick1800) UpdateNetworkState();
-                }
-                _firstRun = false;
-            }
-            catch (Exception ex) { Log.Line($"Exception in UpdateBeforeSimulation: {ex}"); }
-        }
-        */
     }
 }

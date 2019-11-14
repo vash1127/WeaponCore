@@ -71,7 +71,7 @@ namespace WeaponCore
                                 w.Target.Expired = true;
                         }
 
-                        if (gunner && Ui.MouseButtonPressed)
+                        if (gunner && UiInput.MouseButtonPressed)
                             w.TargetPos = Vector3D.Zero;
 
                         if (w.DelayCeaseFire)
@@ -274,7 +274,7 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (!w.System.DesignatorWeapon && (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && Ui.MouseButtonLeft || j == 1 && Ui.MouseButtonRight))))
+                        if (!w.System.DesignatorWeapon && (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
                             w.Shoot();
                             if (w.ManualShoot == ShootOnce) {

@@ -131,7 +131,7 @@ namespace WeaponCore.Support
             CubePool.Clean();
             MyShieldTmp = null;
             MyShield = null;
-            PrimeTarget = null;
+            Focus = null;
             MyPlanetTmp = null;
             MyPlanet = null;
         }

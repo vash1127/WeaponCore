@@ -58,11 +58,6 @@ namespace WeaponCore.Support
                                     continue;
                                 }
 
-                                if (fatMap.Trash)
-                                {
-                                    Log.Line($"gridIsTrash:{grid.DebugName}");
-                                    continue;
-                                }
                                 var allFat = fatMap.MyCubeBocks;
                                 var fatCount = allFat.Count;
 
@@ -85,7 +80,7 @@ namespace WeaponCore.Support
                                     if (!valid) continue;
                                 }
 
-                                NewEntities.Add(new DetectInfo(Session, ent, entInfo, fatCount));
+                                NewEntities.Add(new DetectInfo(Session, ent, entInfo, fatMap.MostBlocks));
                                 ValidGrids.Add(ent);
                                 GridAi targetAi;
                                 if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))

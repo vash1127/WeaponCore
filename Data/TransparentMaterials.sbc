@@ -1687,14 +1687,14 @@
      <TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetDistanceNear</SubtypeId>
+        <SubtypeId>DS_TargetDistance10</SubtypeId>
       </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\TargetDistanceNear.dds</Texture>
+      <Texture>Textures\GUI\TargetDistance10.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <NeedSort>true</NeedSort>
       <UVOffset>
@@ -1741,14 +1741,14 @@
      <TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetDistanceNearMid</SubtypeId>
+        <SubtypeId>DS_TargetDistance20</SubtypeId>
       </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\TargetDistanceNearMid.dds</Texture>
+      <Texture>Textures\GUI\TargetDistance20.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <NeedSort>true</NeedSort>
       <UVOffset>
@@ -1795,14 +1795,14 @@
      <TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetDistanceFarMid</SubtypeId>
+        <SubtypeId>DS_TargetDistance30</SubtypeId>
       </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\TargetDistanceFarMid.dds</Texture>
+      <Texture>Textures\GUI\TargetDistance30.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <NeedSort>true</NeedSort>
       <UVOffset>
@@ -1849,14 +1849,340 @@
      <TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetDistanceFar</SubtypeId>
+        <SubtypeId>DS_TargetDistance40</SubtypeId>
       </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\TargetDistanceFar.dds</Texture>
+      <Texture>Textures\GUI\TargetDistance40.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+     <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetDistance50</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetDistance50.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+
+     <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetDistance60</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetDistance60.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+     <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetDistance70</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetDistance70.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+
+     <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetDistance80</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetDistance80.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+     <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetDistance90</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetDistance90.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+     <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetDistance100</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetDistance100.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <NeedSort>true</NeedSort>
       <UVOffset>
@@ -3308,14 +3634,14 @@
 	<TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetShieldLow</SubtypeId>
+        <SubtypeId>DS_TargetShield10</SubtypeId>
       </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\TargetShieldLow.dds</Texture>
+      <Texture>Textures\GUI\TargetShield10.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <NeedSort>true</NeedSort>
       <UVOffset>
@@ -3359,71 +3685,17 @@
       <IsFlareOccluder>false</IsFlareOccluder>
     </TransparentMaterial>
 	
-     <TransparentMaterial>
+	<TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetShieldMed</SubtypeId>
+        <SubtypeId>DS_TargetShield20</SubtypeId>
       </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\TargetShieldMed.dds</Texture>
-      <UseAtlas>false</UseAtlas>
-      <NeedSort>true</NeedSort>
-      <UVOffset>
-        <X>1</X>
-        <Y>1</Y>
-      </UVOffset>
-      <UVSize>
-        <X>1</X>
-        <Y>1</Y>
-      </UVSize>
-      <Color>
-        <X>.95</X>
-        <Y>.95</Y>
-        <Z>.95</Z>
-        <W>1</W>
-      </Color>
-      <ColorAdd>
-        <X>0</X>
-        <Y>0</Y>
-        <Z>0</Z>
-        <W>0.1</W>
-      </ColorAdd>
-      <ShadowMultiplier>
-        <X>0</X>
-        <Y>0</Y>
-        <Z>0</Z>
-        <W>0</W>
-      </ShadowMultiplier>
-      <LightMultiplier>
-        <X>0</X>
-        <Y>0</Y>
-        <Z>0</Z>
-        <W>0</W>
-      </LightMultiplier>
-      <Reflectivity>0</Reflectivity>
-      <Fresnel>0</Fresnel>
-      <ReflectionShadow>0</ReflectionShadow>
-      <Gloss>0</Gloss>
-      <GlossTextureAdd>0</GlossTextureAdd>
-      <SpecularColorFactor>0</SpecularColorFactor>
-      <IsFlareOccluder>false</IsFlareOccluder>
-    </TransparentMaterial>
-	
-     <TransparentMaterial>
-      <Id>
-        <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetShieldHigh</SubtypeId>
-      </Id>
-      <AlphaMistingEnable>false</AlphaMistingEnable>
-      <AlphaSaturation>1</AlphaSaturation>
-      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
-      <IgnoreDepth>false</IgnoreDepth>
-      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\TargetShieldHigh.dds</Texture>
+      <Texture>Textures\GUI\TargetShield20.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <NeedSort>true</NeedSort>
       <UVOffset>
@@ -3467,6 +3739,440 @@
       <IsFlareOccluder>false</IsFlareOccluder>
     </TransparentMaterial>
 
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetShield30</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetShield30.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+	
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetShield40</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetShield40.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>	
+	
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetShield50</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetShield50.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>	
+
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetShield60</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetShield60.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+	
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetShield70</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetShield70.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetShield80</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetShield80.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetShield90</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetShield90.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetShield100</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetShield100.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+
+	
 	<TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
@@ -3578,14 +4284,122 @@
      <TransparentMaterial>
       <Id>
         <TypeId>TransparentMaterialDefinition</TypeId>
-        <SubtypeId>DS_TargetShieldHigh</SubtypeId>
+        <SubtypeId>DS_TargetEngaged</SubtypeId>
       </Id>
       <AlphaMistingEnable>false</AlphaMistingEnable>
       <AlphaSaturation>1</AlphaSaturation>
       <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
       <IgnoreDepth>false</IgnoreDepth>
       <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
-      <Texture>Textures\GUI\TargetShieldHigh.dds</Texture>
+      <Texture>Textures\GUI\Target_Engagement.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+	
+	     <TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_TargetFocus</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\TargetFocus.dds</Texture>
+      <UseAtlas>false</UseAtlas>
+      <NeedSort>true</NeedSort>
+      <UVOffset>
+        <X>1</X>
+        <Y>1</Y>
+      </UVOffset>
+      <UVSize>
+        <X>1</X>
+        <Y>1</Y>
+      </UVSize>
+      <Color>
+        <X>.95</X>
+        <Y>.95</Y>
+        <Z>.95</Z>
+        <W>1</W>
+      </Color>
+      <ColorAdd>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0.1</W>
+      </ColorAdd>
+      <ShadowMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </ShadowMultiplier>
+      <LightMultiplier>
+        <X>0</X>
+        <Y>0</Y>
+        <Z>0</Z>
+        <W>0</W>
+      </LightMultiplier>
+      <Reflectivity>0</Reflectivity>
+      <Fresnel>0</Fresnel>
+      <ReflectionShadow>0</ReflectionShadow>
+      <Gloss>0</Gloss>
+      <GlossTextureAdd>0</GlossTextureAdd>
+      <SpecularColorFactor>0</SpecularColorFactor>
+      <IsFlareOccluder>false</IsFlareOccluder>
+    </TransparentMaterial>
+	
+	<TransparentMaterial>
+      <Id>
+        <TypeId>TransparentMaterialDefinition</TypeId>
+        <SubtypeId>DS_ActiveTarget</SubtypeId>
+      </Id>
+      <AlphaMistingEnable>false</AlphaMistingEnable>
+      <AlphaSaturation>1</AlphaSaturation>
+      <CanBeAffectedByOtherLights>false</CanBeAffectedByOtherLights>
+      <IgnoreDepth>false</IgnoreDepth>
+      <SoftParticleDistanceScale>1</SoftParticleDistanceScale>
+      <Texture>Textures\GUI\SelectedReticle.dds</Texture>
       <UseAtlas>false</UseAtlas>
       <NeedSort>true</NeedSort>
       <UVOffset>

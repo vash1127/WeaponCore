@@ -31,7 +31,6 @@ namespace WeaponCore
                 {
                     TerminalHelpers.AddSlider<T>(0, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, WepUi.CoreWeaponEnableCheck);
                     currentType = "Sorter";
-                    
                 }
 
                 TerminalHelpers.AlterControls<T>();
@@ -282,18 +281,17 @@ namespace WeaponCore
             if (comp?.Platform?.Weapons != null)
             {
                 var maxTrajectory = 0f;
+                _futureEvents.Schedule(comp.UpdateTerminal, null, 1);
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var curMax = comp.Platform.Weapons[i].System.MaxTrajectory;
                     if (curMax > maxTrajectory)
                         maxTrajectory = (float)curMax;
-
                 }
                 comp.TerminalRefresh();
                 for (int i = 0; i < controls.Count; i++)
                 {
                     var c = controls[i];
-
                     if (c.Id.Contains("WC_Range"))
                         ((IMyTerminalControlSlider)c).SetLimits(0, maxTrajectory);
                 }

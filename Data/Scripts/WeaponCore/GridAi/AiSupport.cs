@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
+using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -226,6 +226,8 @@ namespace WeaponCore.Support
             internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
             internal readonly int PartCount;
             internal readonly bool Armed;
+            internal readonly bool IsGrid;
+            internal readonly bool LargeGrid;
 
             public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount)
             {
@@ -233,8 +235,13 @@ namespace WeaponCore.Support
                 EntInfo = entInfo;
                 PartCount = partCount;
                 var armed = false;
-                if (parent is MyCubeGrid)
+                var isGrid = false;
+                var largeGrid = false;
+                var grid = parent as MyCubeGrid;
+                if (grid != null)
                 {
+                    isGrid = true;
+                    largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
                     ConcurrentDictionary<BlockTypes, MyConcurrentList<MyCubeBlock>> blockTypeMap;
                     if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
                     {
@@ -244,6 +251,8 @@ namespace WeaponCore.Support
                     }
                 }
                 Armed = armed;
+                IsGrid = isGrid;
+                LargeGrid = largeGrid;
             }
         }
 
@@ -283,6 +292,7 @@ namespace WeaponCore.Support
             internal double CollisionDistSqr;
             internal float VelLenSqr;
             internal bool IsGrid;
+            internal bool LargeGrid;
             internal bool Approaching;
             internal int PartCount;
             internal float OffenseRating;
@@ -290,12 +300,13 @@ namespace WeaponCore.Support
             internal GridAi MyAi;
             internal GridAi TargetAi;
 
-            internal void Init(ref DetectInfo detectInfo, bool isGrid, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
+            internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
             {
                 EntInfo = detectInfo.EntInfo;
                 Target = detectInfo.Parent;
                 PartCount = detectInfo.PartCount;
-                IsGrid = isGrid;
+                IsGrid = detectInfo.IsGrid;
+                LargeGrid = detectInfo.LargeGrid;
                 MyGrid = myGrid;
                 MyAi = myAi;
                 TargetAi = targetAi;
@@ -326,6 +337,131 @@ namespace WeaponCore.Support
             }
         }
 
+        internal bool GetTargetState()
+        {
+            var validFocus = false;
+            for (int i = 0; i < Focus.Target.Length; i++)
+            {
+                var target = Focus.Target[i];
+                TargetInfo info;
+                if (target == null || !Targets.TryGetValue(target, out info)) continue;
+                validFocus = true;
+                if (!Session.Tick20 && Focus.PrevTargetId[i] == info.EntInfo.EntityId) continue;
+                Focus.PrevTargetId[i] = info.EntInfo.EntityId;
+                var targetVel = target.Physics?.LinearVelocity ?? Vector3.Zero;
+                if (MyUtils.IsZero(targetVel, 1E-02F)) targetVel = Vector3.Zero;
+                var targetDir = Vector3D.Normalize(targetVel);
+                var targetRevDir = -targetDir;
+                var targetPos = target.PositionComp.WorldAABB.Center;
+                var myPos = MyGrid.PositionComp.WorldAABB.Center;
+                var myHeading = Vector3D.Normalize(myPos - targetPos);
+
+                if (info.LargeGrid && info.PartCount > 18000) Focus.TargetState[i].Size = 5;
+                else if (info.LargeGrid && info.PartCount > 9000) Focus.TargetState[i].Size = 4;
+                else if (info.LargeGrid && info.PartCount > 4500) Focus.TargetState[i].Size = 3;
+                else if (info.LargeGrid) Focus.TargetState[i].Size = 2;
+                else if (info.PartCount > 2000) Focus.TargetState[i].Size = 1;
+                else Focus.TargetState[i].Size = 0;
+                var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, Session.ApproachDegrees);
+                var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, Session.ApproachDegrees);
+                if (intercept) Focus.TargetState[i].Engagement = 0;
+                else if (retreat) Focus.TargetState[i].Engagement = 1;
+                else Focus.TargetState[i].Engagement = -1;
+
+                var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
+
+                var distanceFromCenters = Vector3D.Distance(GridCenter, target.PositionComp.WorldAABB.Center);
+                distanceFromCenters -= GridRadius;
+                distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
+                distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
+
+                var distPercent = (distanceFromCenters / MaxTargetingRange) * 100;
+                if (distPercent > 95) Focus.TargetState[i].Distance = 9;
+                else if (distPercent > 90) Focus.TargetState[i].Distance = 8;
+                else if (distPercent > 80) Focus.TargetState[i].Distance = 7;
+                else if (distPercent > 70) Focus.TargetState[i].Distance = 6;
+                else if (distPercent > 60) Focus.TargetState[i].Distance = 5;
+                else if (distPercent > 50) Focus.TargetState[i].Distance = 4;
+                else if (distPercent > 40) Focus.TargetState[i].Distance = 3;
+                else if (distPercent > 30) Focus.TargetState[i].Distance = 2;
+                else if (distPercent > 20) Focus.TargetState[i].Distance = 1;
+                else if (distPercent > 0) Focus.TargetState[i].Distance = 0;
+                else Focus.TargetState[i].Distance = -1;
+
+                if (speed <= 0) Focus.TargetState[i].Speed = -1;
+                else
+                {
+                    var speedPercent = (speed / Session.MaxEntitySpeed) * 100;
+                    if (speedPercent > 95) Focus.TargetState[i].Speed = 9;
+                    else if (speedPercent > 90) Focus.TargetState[i].Speed = 8;
+                    else if (speedPercent > 80) Focus.TargetState[i].Speed = 7;
+                    else if (speedPercent > 70) Focus.TargetState[i].Speed = 6;
+                    else if (speedPercent > 60) Focus.TargetState[i].Speed = 5;
+                    else if (speedPercent > 50) Focus.TargetState[i].Speed = 4;
+                    else if (speedPercent > 40) Focus.TargetState[i].Speed = 3;
+                    else if (speedPercent > 30) Focus.TargetState[i].Speed = 2;
+                    else if (speedPercent > 20) Focus.TargetState[i].Speed = 1;
+                    else if (speedPercent > 0) Focus.TargetState[i].Speed = 0;
+                    else Focus.TargetState[i].Speed = -1;
+                }
+
+                MyTuple<bool, bool, float, float, float, int> shieldInfo = new MyTuple<bool, bool, float, float, float, int>();
+                if (Session.ShieldApiLoaded) shieldInfo = Session.SApi.GetShieldInfo(target);
+                if (shieldInfo.Item1)
+                {
+                    var shieldPercent = shieldInfo.Item5;
+                    if (shieldPercent > 95) Focus.TargetState[i].ShieldHealth = 9;
+                    else if (shieldPercent > 90) Focus.TargetState[i].ShieldHealth = 8;
+                    else if (shieldPercent > 80) Focus.TargetState[i].ShieldHealth = 7;
+                    else if (shieldPercent > 70) Focus.TargetState[i].ShieldHealth = 6;
+                    else if (shieldPercent > 60) Focus.TargetState[i].ShieldHealth = 5;
+                    else if (shieldPercent > 50) Focus.TargetState[i].ShieldHealth = 4;
+                    else if (shieldPercent > 40) Focus.TargetState[i].ShieldHealth = 3;
+                    else if (shieldPercent > 30) Focus.TargetState[i].ShieldHealth = 2;
+                    else if (shieldPercent > 20) Focus.TargetState[i].ShieldHealth = 1;
+                    else if (shieldPercent > 0) Focus.TargetState[i].ShieldHealth = 0;
+                    else Focus.TargetState[i].ShieldHealth = -1;
+                }
+                else Focus.TargetState[i].ShieldHealth = -1;
+
+                var grid = target as MyCubeGrid;
+                var friend = false;
+                if (grid != null && grid.BigOwners.Count != 0)
+                {
+                    var relation = MyIDModule.GetRelationPlayerBlock(MyOwner, grid.BigOwners[0], MyOwnershipShareModeEnum.Faction);
+                    if (relation == MyRelationsBetweenPlayerAndBlock.FactionShare || relation == MyRelationsBetweenPlayerAndBlock.Owner || relation == MyRelationsBetweenPlayerAndBlock.Friends) friend = true;
+                }
+
+                if (friend) Focus.TargetState[i].ThreatLvl = -1;
+                else
+                {
+                    int shieldBonus = 0;
+                    if (Session.ShieldApiLoaded)
+                    {
+                        var myShieldInfo = Session.SApi.GetShieldInfo(MyGrid);
+                        if (shieldInfo.Item1 && myShieldInfo.Item1)
+                            shieldBonus = shieldInfo.Item5 > myShieldInfo.Item5 ? 1 : -1;
+                        else if (shieldInfo.Item1) shieldBonus = 1;
+                        else if (myShieldInfo.Item1) shieldBonus = -1;
+                    }
+
+                    var offenseRating = info.OffenseRating;
+                    if (offenseRating > 5) Focus.TargetState[i].ThreatLvl = shieldBonus < 0 ? 8 : 9;
+                    else if (offenseRating > 4) Focus.TargetState[i].ThreatLvl = 8 + shieldBonus;
+                    else if (offenseRating > 3) Focus.TargetState[i].ThreatLvl = 7 + shieldBonus;
+                    else if (offenseRating > 2) Focus.TargetState[i].ThreatLvl = 6 + shieldBonus;
+                    else if (offenseRating > 1) Focus.TargetState[i].ThreatLvl = 5 + shieldBonus;
+                    else if (offenseRating > 0.5) Focus.TargetState[i].ThreatLvl = 4 + shieldBonus;
+                    else if (offenseRating > 0.25) Focus.TargetState[i].ThreatLvl = 3 + shieldBonus;
+
+                    else if (offenseRating > 0.125) Focus.TargetState[i].ThreatLvl = 2 + shieldBonus;
+                    else if (offenseRating > 0.0625) Focus.TargetState[i].ThreatLvl = 1 + shieldBonus;
+                    else if (offenseRating > 0) Focus.TargetState[i].ThreatLvl = shieldBonus > 0 ? 1 : 0;
+                    else Focus.TargetState[i].ThreatLvl = -1;
+                }
+            }
+            return validFocus;
+        }
         #region Power
         internal void UpdateGridPower(bool updateLast)
         {

@@ -21,7 +21,8 @@ namespace WeaponCore
 
             _ctrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
 
-            return _3RdPersonDraw || _ctrlPressed || _altPressed;
+            var enableActivator = _3RdPersonDraw || _ctrlPressed || _altPressed;
+            return enableActivator;
         }
 
         private void InitPointerOffset(double adjust)
@@ -94,6 +95,59 @@ namespace WeaponCore
                 s.SetTarget(closestEnt, ai);
                 s.ResetGps();
             }
+        }
+
+        internal void SelectNext()
+        {
+            var s = _session;
+            var ai = s.TrackingAi;
+
+            if (!_cachedPointerPos) InitPointerOffset(0.05);
+            if (!_cachedTargetPos) InitTargetOffset();
+
+            var updateTick = s.Tick - _cacheIdleTicks > 600 || _endIdx == -1;
+            if (s.UiInput.AltPressed || updateTick && !UpdateCache()) return;
+            _cacheIdleTicks = s.Tick;
+
+            if (s.UiInput.WheelForward)
+                if (_currentIdx + 1 <= _endIdx)
+                    _currentIdx += 1;
+                else _currentIdx = 0;
+            else if (s.UiInput.WheelBackward)
+                if (_currentIdx - 1 >= 0)
+                    _currentIdx -= 1;
+                else _currentIdx = _endIdx;
+
+            var ent = _targetCache[_currentIdx];
+            if (!updateTick && ent.MarkedForClose)
+            {
+                _endIdx = -1;
+                return;
+            } 
+
+            if (ent != null)
+            {
+                s.SetTarget(ent, ai);
+                s.ResetGps();
+            }
+        }
+
+        private bool UpdateCache()
+        {
+            var ai = _session.TrackingAi;
+            var focus = ai.Focus;
+            _targetCache.Clear();
+            _currentIdx = 0;
+            for (int i = 0; i < ai.SortedTargets.Count; i++)
+            {
+                var target = ai.SortedTargets[i].Target;
+                if (target.MarkedForClose) continue;
+
+                _targetCache.Add(target);
+                if (focus.Target[focus.ActiveId] == target) _currentIdx = i;
+            }
+            _endIdx = _targetCache.Count - 1;
+            return _endIdx >= 0;
         }
 
         private MyEntity RayCheckTargets(Vector3D origin, Vector3D dir, bool reColorRectile = false, bool checkOthers = false)

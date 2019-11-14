@@ -13,9 +13,11 @@ namespace WeaponCore
         internal void DrawTargetUi()
         {
             var s = _session;
-            if (s.Ui.WheelActive  || !s.UpdateLocalAiAndCockpit() || s.TrackingAi == null) return;
-            if (ActivateSelector()) DrawSelector();
-            if (s.CheckTarget(s.TrackingAi) && s.GetTargetState()) DrawTarget();
+            DrawReticle = false;
+            if (!s.UpdateLocalAiAndCockpit()) return;
+
+            if (!s.WheelUi.WheelActive && ActivateSelector()) DrawSelector();
+            if (s.CheckTarget(s.TrackingAi) && s.TrackingAi.GetTargetState()) DrawTarget();
         }
 
         private void DrawSelector()
@@ -63,48 +65,60 @@ namespace WeaponCore
                 RayCheckTargets(offetPosition, Vector3D.Normalize(offetPosition - s.CameraPos), true, true);
 
             MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
+            DrawReticle = true;
         }
 
         private void DrawTarget()
         {
             var s = _session;
-            var ai = s.TrackingAi;
-            var displayCount = 0;
-            foreach (var icon in _targetIcons.Keys)
+            var focus = s.TrackingAi.Focus;
+            for (int i = 0; i < focus.TargetState.Length; i++)
             {
-                int iconLevel;
-                if (!IconStatus(icon, s.TargetState, out iconLevel)) continue;
+                var displayCount = 0;   
+                if (focus.Target[i] == null || s.WheelUi.WheelActive && i > 0) continue;
 
-                Vector3D offset;
-                float scale;
-                MyStringId textureName;
+                var targetState = focus.TargetState[i];
+                foreach (var icon in _targetIcons.Keys)
+                {
+                    int iconLevel;
+                    if (!IconStatus(icon, targetState, out iconLevel)) continue;
 
-                _targetIcons[icon][iconLevel].GetTextureInfo(displayCount, s, out textureName, out scale, out offset);
+                    Vector3D offset;
+                    float scale;
+                    MyStringId textureName;
+                    _targetIcons[icon][iconLevel].GetTextureInfo(i, displayCount, s.WheelUi.WheelActive, s, out textureName, out scale, out offset);
+                    MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
 
-                MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
-                displayCount++;
+                    if (focus.ActiveId == i && displayCount == 0)
+                        MyTransparentGeometry.AddBillboardOriented(_focus, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+
+                    displayCount++;
+                }
+                if (i == focus.ActiveId)
+                {
+                    var targetSphere = focus.Target[focus.ActiveId].PositionComp.WorldVolume;
+                    var targetCenter = targetSphere.Center;
+                    var screenPos = s.Camera.WorldToScreen(ref targetCenter);
+                    var fov = MyAPIGateway.Session.Camera.FovWithZoom;
+                    double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
+                    var screenScale = 0.1 * Math.Tan(fov * 0.5);
+                    if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
+                    {
+                        screenPos.X *= -1;
+                        screenPos.Y = -1;
+                    }
+
+                    var dotpos = new Vector2D(MathHelper.Clamp(screenPos.X, -0.98, 0.98), MathHelper.Clamp(screenPos.Y, -0.98, 0.98));
+
+                    dotpos.X *= (float)(screenScale * aspectratio);
+                    dotpos.Y *= (float)screenScale;
+                    screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
+                    MyTransparentGeometry.AddBillboardOriented(_active, Color.White, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.075f, BlendTypeEnum.PostPP);
+                }
             }
-            var targetSphere = ai.PrimeTarget.PositionComp.WorldVolume;
-            var targetCenter = targetSphere.Center;
-            var screenPos = s.Camera.WorldToScreen(ref targetCenter);
-            var fov = MyAPIGateway.Session.Camera.FovWithZoom;
-            double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
-            var screenScale = 0.1 * Math.Tan(fov * 0.5);
-            if (Vector3D.Transform(targetCenter, s.Camera.ViewMatrix).Z > 0)
-            {
-                screenPos.X *= -1;
-                screenPos.Y = -1;
-            }
-
-            var dotpos = new Vector2D(MathHelper.Clamp(screenPos.X, -0.98, 0.98), MathHelper.Clamp(screenPos.Y, -0.98, 0.98));
-
-            dotpos.X *= (float)(screenScale * aspectratio);
-            dotpos.Y *= (float)screenScale;
-            screenPos = Vector3D.Transform(new Vector3D(dotpos.X, dotpos.Y, -0.1), s.CameraMatrix);
-            MyTransparentGeometry.AddBillboardOriented(_cross, Color.Red, screenPos, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)screenScale * 0.1f, BlendTypeEnum.PostPP);
         }
 
-        private static bool IconStatus(string icon, Session.TargetStatus targetState, out int iconLevel)
+        private static bool IconStatus(string icon, TargetStatus targetState, out int iconLevel)
         {
             bool display;
             switch (icon)
@@ -130,7 +144,7 @@ namespace WeaponCore
                     iconLevel = !display ? 0 : targetState.Engagement;
                     break;
                 case "distance":
-                    display = targetState.Size > -1;
+                    display = targetState.Distance > -1;
                     iconLevel = !display ? 0 : targetState.Distance;
                     break;
                 default:

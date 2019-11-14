@@ -56,7 +56,6 @@ namespace WeaponCore
 
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
-        internal Projectiles.Projectiles Projectiles;
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
@@ -88,6 +87,7 @@ namespace WeaponCore
         internal Queue<PartAnimation> AnimationsToQueue = new Queue<PartAnimation>();
         internal List<GridAi> DbsToUpdate = new List<GridAi>();
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
+        internal Projectiles.Projectiles Projectiles;
 
         internal IMyPhysics Physics;
         internal IMyCamera Camera;
@@ -95,14 +95,13 @@ namespace WeaponCore
         internal GridAi TrackingAi;
         internal DSUtils DsUtil { get; set; } = new DSUtils();
         internal DSUtils DsUtil2 { get; set; } = new DSUtils();
-        internal Wheel Ui;
+        internal Wheel WheelUi;
         internal TargetUi TargetUi;
-        internal TargetStatus TargetState;
+        internal UiInput UiInput;
         internal IMyBlockPlacerBase Placer;
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
-        internal List<IMyGps> GpsList = new List<IMyGps>();
         internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal Color[] HeatEmissives;
@@ -194,20 +193,11 @@ namespace WeaponCore
 
         internal ShieldApi SApi = new ShieldApi();
 
-        public struct TargetStatus
-        {
-            public int ShieldHealth;
-            public int ThreatLvl;
-            public int Size;
-            public int Speed;
-            public int Distance;
-            public int Engagement;
-        }
-
         public Session()
         {
+            UiInput = new UiInput(this);
             TargetUi = new TargetUi(this);
-            Ui = new Wheel(this);
+            WheelUi = new Wheel(this);
             Projectiles = new Projectiles.Projectiles(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));

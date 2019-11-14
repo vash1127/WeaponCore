@@ -28,10 +28,10 @@ namespace WeaponCore
         [ProtoMember(2)] public bool Guidance = true;
         [ProtoMember(3)] public int Overload = 1;
         [ProtoMember(4)] public long Modes;
-        [ProtoMember(5)] public float DPSModifier = 1;
-        [ProtoMember(6)] public float ROFModifier = 1;
+        [ProtoMember(5)] public float DpsModifier = 1;
+        [ProtoMember(6)] public float RofModifier = 1;
         [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
-        [ProtoMember(8)] public float range = 100;
+        [ProtoMember(8)] public float Range = 100;
     }
 
     [ProtoContract]

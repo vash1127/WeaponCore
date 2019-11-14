@@ -14,14 +14,8 @@ namespace WeaponCore
     {
         private readonly Vector2D _wheelPosition = new Vector2D(0, 0);
 
-        private string _currentMenu = "Main";
-        private int _previousWheel;
-        private int _currentWheel;
+        private string _currentMenu = "WeaponGroups";
         internal bool WheelActive;
-        internal bool MouseButtonPressed;
-        internal bool MouseButtonLeft;
-        internal bool MouseButtonMiddle;
-        internal bool MouseButtonRight;
         internal readonly List<MenuTarget> Grids = new List<MenuTarget>();
         internal readonly List<MenuTarget> Characters = new List<MenuTarget>();
         internal readonly List<MenuTarget> Projectiles = new List<MenuTarget>();
@@ -30,55 +24,45 @@ namespace WeaponCore
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
 
-        internal readonly Item[] GridItems =
+        internal readonly Item[] GroupItems =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "[Grids]", ParentName = "Main", SubName = "SubSystems"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Assign Subsystem]", ParentName = "WeaponGroups", SubName = "SubSystems"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Remove Weapons]", ParentName = "WeaponGroups", SubName = "Remove"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Add Weapons]", ParentName = "WeaponGroups", SubName = "Add"},
         };
 
-        internal readonly Item[] CharacterItems =
+        internal readonly Item[] AddItems =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "[Characters]", ParentName = "Main", SubName = "WeaponGroups"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Add]", ParentName = "Group"},
         };
 
-        internal readonly Item[] OrdinanceItems =
+        internal readonly Item[] RemoveItems =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "[Ordinance]", ParentName = "Main", SubName = "WeaponGroups"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Remove]", ParentName = "Group"},
         };
 
         internal readonly Item[] SubSystemItems =
         {
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Comms"), ItemMessage = "[Production]", ParentName = "Grids"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"), ItemMessage = "[Navigation]", ParentName = "Grids"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Engines"), ItemMessage = "[Engines]", ParentName = "Grids"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Weapons"), ItemMessage = "[Weapons]", ParentName = "Grids"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Power"), ItemMessage = "[Power]", ParentName = "Grids"},
-           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"), ItemMessage = "[Ordinance]", ParentName = "Grids"},
-        };
-
-        internal readonly Item[] MainItems =
-        {
-            //new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_NoSelect"), Message = "Main" },
-            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Grids"), ItemMessage = "[Grids]", SubName = "Grids"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Players"), ItemMessage = "[Characters]", SubName = "Characters"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_WeaponGroups"), ItemMessage = "[Weapon Groups]", SubName = "WeaponGroups"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_MainWheel_Ordinance"), ItemMessage = "[Ordinance]", SubName = "Ordinance"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Comms"), ItemMessage = "Production]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_JumpDrive"), ItemMessage = "Navigation]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Engines"), ItemMessage = "Engines]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Weapons"), ItemMessage = "Weapons]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Power"), ItemMessage = "Power]", ParentName = "Group"},
+           new Item { Texture = MyStringId.GetOrCompute("DS_TargetWheel_Ordinance"), ItemMessage = "Ordinance]", ParentName = "Group"},
         };
 
         internal readonly Item[] WeaponGroupItems =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "[Weapon Groups]", ParentName = "Main", SubName = "Main"},
-            /*
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_0"), ItemMessage = "[Group 0]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_1"), ItemMessage = "[Group 1]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_2"), ItemMessage = "[Group 2]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_3"), ItemMessage = "[Group 3]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_4"), ItemMessage = "[Group 4]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_5"), ItemMessage = "[Group 5]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_6"), ItemMessage = "[Group 6]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_7"), ItemMessage = "[Group 7]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_8"), ItemMessage = "[Group 8]", ParentName = "Main"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_9"), ItemMessage = "[Group 9]", ParentName = "Main"},
-       */
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_0"), ItemMessage = "Group 1]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_1"), ItemMessage = "Group 2]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_2"), ItemMessage = "Group 3]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_3"), ItemMessage = "Group 4]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_4"), ItemMessage = "Group 5]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_5"), ItemMessage = "Group 6]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_6"), ItemMessage = "Group 7]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_7"), ItemMessage = "Group 8]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_8"), ItemMessage = "Group 9]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_9"), ItemMessage = "Group 10]", SubName = "Group"},
         };
 
         internal enum State
@@ -103,19 +87,18 @@ namespace WeaponCore
         internal Wheel(Session session)
         {
             Session = session;
-            var main = new Menu(this, "Main", MainItems, MainItems.Length);
+            var add = new Menu(this, "Add", AddItems, AddItems.Length);
+            var remove = new Menu(this, "Remove", RemoveItems, RemoveItems.Length);
+            var group = new Menu(this, "Group", GroupItems, GroupItems.Length);
             var subSystems = new Menu(this, "SubSystems", SubSystemItems, SubSystemItems.Length);
-            var grids = new Menu(this, "Grids", GridItems, GridItems.Length);
-            var characters = new Menu(this, "Characters", CharacterItems, CharacterItems.Length);
-            var ordinance = new Menu(this, "Ordinance", OrdinanceItems, OrdinanceItems.Length);
+
             var weaponGroups = new Menu(this, "WeaponGroups", WeaponGroupItems, WeaponGroupItems.Length);
 
-            Menus.Add(main.Name, main);
-            Menus.Add(subSystems.Name, subSystems);
-            Menus.Add(grids.Name, grids);
-            Menus.Add(characters.Name, characters);
-            Menus.Add(ordinance.Name, ordinance);
+            Menus.Add(add.Name, add);
+            Menus.Add(remove.Name, remove);
             Menus.Add(weaponGroups.Name, weaponGroups);
+            Menus.Add(group.Name, group);
+            Menus.Add(subSystems.Name, subSystems);
         }
 
         internal struct MenuTarget
