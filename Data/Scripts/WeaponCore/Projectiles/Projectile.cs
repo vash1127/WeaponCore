@@ -604,8 +604,13 @@ namespace WeaponCore.Projectiles
                 if (ZombieLifeTime++ > T.System.TargetLossTime) DistanceToTravelSqr = T.DistanceTraveled * T.DistanceTraveled;
                 if (Age - LastOffsetTime > 300)
                 {
-                    OffSetTarget(out TargetOffSet, true);
-                    PrevTargetPos += TargetOffSet;
+                    double dist;
+                    Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);
+                    if (dist < OffsetSqr && Vector3.Dot(Direction, Position - PrevTargetPos) > 0)
+                    {
+                        OffSetTarget(out TargetOffSet, true);
+                        PrevTargetPos += TargetOffSet;
+                    }
                 }
             }
         }
