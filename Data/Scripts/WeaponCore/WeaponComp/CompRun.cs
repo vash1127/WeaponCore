@@ -245,7 +245,6 @@ namespace WeaponCore.Support
                 Platform.ResetParts(this);
 
             Entity.NeedsWorldMatrix = true;
-            //Turret.EnableIdleRotation = false;
 
             Ai.TotalSinkPower += MaxRequiredPower;
             Ai.MinSinkPower += IdlePower;
