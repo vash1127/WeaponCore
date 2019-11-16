@@ -83,7 +83,6 @@ namespace WeaponCore.Support
                 var weapon = Platform.Weapons[i];
                 weapon.InitTracking();
 
-                Log.Line($"currentMags: {State.Value.Weapons[weapon.WeaponId].CurrentMags} currentAmmo: {State.Value.Weapons[weapon.WeaponId].CurrentAmmo}");
                 Session.ComputeStorage(weapon);
 
                 MaxHeat += weapon.System.MaxHeat;
