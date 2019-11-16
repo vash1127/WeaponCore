@@ -20,8 +20,6 @@ namespace WeaponCore.Support
         internal volatile bool Scanning;
         internal volatile bool Ready;
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(8);
-        internal readonly MyConcurrentPool<List<IMyTerminalBlock>> TmpBlockGroupPool = new MyConcurrentPool<List<IMyTerminalBlock>>();
-        internal readonly MyConcurrentPool<HashSet<MyCubeBlock>> BlockGroupPool = new MyConcurrentPool<HashSet<MyCubeBlock>>();
 
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
@@ -30,7 +28,7 @@ namespace WeaponCore.Support
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventories;
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
-        internal readonly HashSet<MyResourceSourceComponent> Sources = new HashSet<MyResourceSourceComponent>();
+        internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
         internal readonly List<MyCubeGrid> SubGridsTmp = new List<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
@@ -44,8 +42,6 @@ namespace WeaponCore.Support
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
-        internal readonly List<IMyBlockGroup> TmpBlockGroups = new List<IMyBlockGroup>();
-        internal readonly Dictionary<string, HashSet<MyCubeBlock>> BlockGroups = new Dictionary<string, HashSet<MyCubeBlock>>();
 
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
@@ -62,7 +58,7 @@ namespace WeaponCore.Support
         internal MyEntity MyShield;
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
-
+        internal MyShipController FakeShipController = new MyShipController();
         internal Vector3D PlanetClosestPoint;
         internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
@@ -127,7 +123,7 @@ namespace WeaponCore.Support
             Session = session;
             CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
-
+            FakeShipController.SlimBlock = MyGrid.CubeBlocks.FirstElement();
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }
     }

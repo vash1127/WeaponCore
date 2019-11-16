@@ -68,69 +68,6 @@ namespace WeaponCore.Support
             }
         }
 
-        public void UpdateBlockGroups(bool clear = false)
-        {
-            if (BlockGroups == null)
-            {
-                Log.Line($"BlockGroups null");
-                return;
-            }
-            if (BlockGroupPool == null)
-            {
-                Log.Line($"BlockGroupPool null");
-                return;
-            }
-            if (MyGrid == null || MyGrid.MarkedForClose)
-            {
-                Log.Line($"MyGrid Null:{MyGrid == null} - Marked:{MyGrid?.MarkedForClose} - Age:{Session.Tick - CreatedTick}");
-                return;
-            }
-            if (TmpBlockGroups == null)
-            {
-                Log.Line($"TmpBlockGroups null");
-                return;
-            }
-            if (TerminalSystem == null)
-            {
-                Log.Line($"TerminalSystem null: Age:{Session.Tick - CreatedTick}");
-                return;
-            }
-            foreach (var bg in BlockGroups)
-            {
-                bg.Value.Clear();
-                BlockGroupPool.Return(bg.Value);
-            }
-            BlockGroups.Clear();
-
-            if (clear) return;
-
-            TerminalSystem.GetBlockGroups(TmpBlockGroups);
-            foreach (var b in TmpBlockGroups)
-            {
-                var groupList = TmpBlockGroupPool.Get();
-                b.GetBlocks(groupList);
-                var name = b.Name;
-                var groupSet = BlockGroupPool.Get();
-                foreach (var terminal in groupList)
-                {
-                    var cube = terminal as MyCubeBlock;
-                    if (cube != null)
-                    {
-                        WeaponComponent weaponComp;
-                        if (WeaponBase.TryGetValue(cube, out weaponComp))
-                        {
-                            weaponComp.GroupNames.Add(name);
-                            groupSet.Add(cube);
-                        }
-                    }
-                }
-                groupList.Clear();
-                TmpBlockGroupPool.Return(groupList);
-                BlockGroups.Add(name, groupSet);
-            }
-            TmpBlockGroups.Clear();
-        }
-
         public static bool GridEnemy(MyCubeBlock myCube, MyCubeGrid grid, List<long> owners = null)
         {
             if (owners == null) owners = grid.BigOwners;
@@ -463,7 +400,7 @@ namespace WeaponCore.Support
             return validFocus;
         }
         #region Power
-        internal void UpdateGridPower(bool updateLast)
+        internal void UpdateGridPower()
         {
             GridAvailablePower = 0;
             GridMaxPower = 0;
@@ -472,47 +409,45 @@ namespace WeaponCore.Support
             BatteryCurrentOutput = 0;
             BatteryCurrentInput = 0;
 
-            foreach (var source in Sources)
+            if (FakeShipController.GridResourceDistributor != null)
             {
-                var battery = source.Entity as MyBatteryBlock;
-                if (battery != null)
+                if (Session.Tick60)
                 {
-                    if (!battery.IsWorking) continue;
-                    var currentInput = battery.CurrentInput;
-                    var currentOutput = battery.CurrentOutput;
-                    var maxOutput = battery.MaxOutput;
-                    if (currentInput > 0)
+                    foreach (var battery in Batteries)
                     {
-                        BatteryCurrentInput += currentInput;
-                        if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
-                        else BatteryCurrentOutput -= currentInput;
+                        if (!battery.IsWorking) continue;
+                        var currentInput = battery.CurrentInput;
+                        var currentOutput = battery.CurrentOutput;
+                        var maxOutput = battery.MaxOutput;
+                        if (currentInput > 0)
+                        {
+                            BatteryCurrentInput += currentInput;
+                            if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
+                            else BatteryCurrentOutput -= currentInput;
+                        }
+                        BatteryMaxPower += maxOutput;
+                        BatteryCurrentOutput += currentOutput;
                     }
-                    BatteryMaxPower += maxOutput;
-                    BatteryCurrentOutput += currentOutput;
                 }
-                else
-                {
-                    GridMaxPower += source.MaxOutputByType(GId);
-                    GridCurrentPower += source.CurrentOutputByType(GId);
-                }
+                GridMaxPower = FakeShipController.GridResourceDistributor.MaxAvailableResourceByType(GId);
+                GridCurrentPower = FakeShipController.GridResourceDistributor.TotalRequiredInputByType(GId);
+                GridAvailablePower = GridMaxPower - GridCurrentPower;
+
+                GridCurrentPower += BatteryCurrentInput;
+                GridAvailablePower -= BatteryCurrentInput;
             }
-            GridMaxPower += BatteryMaxPower;
-            GridCurrentPower += BatteryCurrentOutput;
 
-            GridAvailablePower = GridMaxPower - GridCurrentPower;
-
-            GridCurrentPower += BatteryCurrentInput;
-            GridAvailablePower -= BatteryCurrentInput;
             UpdatePowerSources = false;
-            if (updateLast)
-            {
-                if (GridMaxPower - CurrentWeaponsDraw > LastAvailablePower && CurrentWeaponsDraw > MinSinkPower) AvailablePowerIncrease = true;
 
-                LastAvailablePower = GridMaxPower - CurrentWeaponsDraw;
-                //Log.Line($"avail power: {gridAi.GridMaxPower - gridAi.CurrentWeaponsDraw}  Last Power: {gridAi.LastAvailablePower} Max: {gridAi.GridMaxPower}  Weapon Draw: {gridAi.CurrentWeaponsDraw} Current Power: {gridAi.GridCurrentPower}");
-            }
+            if (GridMaxPower - CurrentWeaponsDraw > LastAvailablePower && CurrentWeaponsDraw > MinSinkPower) AvailablePowerIncrease = true;
+            LastAvailablePower = GridMaxPower - CurrentWeaponsDraw;
+
             HadPower = HasPower;
             HasPower = GridMaxPower > 0;
+
+            if (HasPower) return;
+            if (HadPower)
+                Session.FutureEvents.Schedule(Session.WeaponShootOff, this, 1);
         }
         #endregion
     }

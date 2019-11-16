@@ -34,16 +34,11 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (myCubeBlock is IMyPowerProducer)
+                var battery = myCubeBlock as MyBatteryBlock;
+                if (battery != null)
                 {
-                    var source = myCubeBlock.Components.Get<MyResourceSourceComponent>();
-                    if (source != null)
-                    {
-                        var type = source.ResourceTypes[0];
-                        if (type != MyResourceDistributorComponent.ElectricityId) return;
-                        if (Sources.Add(source)) SourceCount++;
-                        UpdatePowerSources = true;
-                    }
+                    if (Batteries.Add(battery)) SourceCount++;
+                    UpdatePowerSources = true;
                 }
                 if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler)
                 {
@@ -59,16 +54,10 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (myCubeBlock is IMyPowerProducer)
+                var battery = myCubeBlock as MyBatteryBlock;
+                if (battery != null)
                 {
-                    var source = myCubeBlock.Components.Get<MyResourceSourceComponent>();
-                    if (source != null)
-                    {
-                        var type = source.ResourceTypes[0];
-                        if (type != MyResourceDistributorComponent.ElectricityId) return;
-                        if (Sources.Remove(source)) SourceCount--;
-                        UpdatePowerSources = true;
-                    }
+                    if (Batteries.Remove(battery)) SourceCount--;
                     UpdatePowerSources = true;
                 }
                 if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler)
@@ -124,7 +113,7 @@ namespace WeaponCore.Support
             Threats.Clear();
             TargetAis.Clear();
             EntitiesInRange.Clear();
-            Sources.Clear();
+            Batteries.Clear();
             Targets.Clear();
             SortedTargets.Clear();
             BlockTypePool.Clean();

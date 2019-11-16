@@ -20,7 +20,7 @@ namespace WeaponCore
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                 }
-                if ((!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged && !gridAi.CheckReload) || !gridAi.MyGrid.InScene) continue;
+                if (!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !ControlChanged && !gridAi.CheckReload || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
 
                 gridAi.Reloading = false;
                 gridAi.ReturnHome = false;
@@ -99,7 +99,7 @@ namespace WeaponCore
                             {
                                 if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) ||
                                      (gunner != lastGunner && !gunner)))
-                                    _futureEvents.Schedule(ReturnHome, w, Tick + 240);
+                                    FutureEvents.Schedule(ReturnHome, w, Tick + 240);
 
                                 if (gunner != lastGunner && gunner)
                                 {
@@ -152,25 +152,12 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-
                 if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
 
-                if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit) continue;
+                if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit || gridAi.MyGrid.MarkedForClose) continue;
 
-                if (gridAi.MyGrid.MarkedForClose)
-                {
-                    //Log.Line($"gridMarked:{gridAi.MyGrid.DebugName}");
-                    continue;
-                }
-                if ((gridAi.SourceCount > 0 || gridAi.HadPower && (gridAi.UpdatePowerSources || Tick60)))
-                    gridAi.UpdateGridPower(true);
-
-                if (!gridAi.HasPower)
-                {
-                    if (gridAi.HadPower)
-                        _futureEvents.Schedule(WeaponShootOff, gridAi, 1);
-                    continue;
-                }
+                if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180) gridAi.UpdateGridPower();
+                if (!gridAi.HasPower) continue;
 
                 foreach (var basePair in gridAi.WeaponBase)
                 {
