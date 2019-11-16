@@ -610,6 +610,7 @@ namespace WeaponCore.Projectiles
                     {
                         OffSetTarget(out TargetOffSet, true);
                         PrevTargetPos += TargetOffSet;
+                        PredictedTargetPos = PrevTargetPos;
                     }
                 }
             }
