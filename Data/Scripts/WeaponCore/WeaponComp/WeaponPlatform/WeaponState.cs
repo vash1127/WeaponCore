@@ -338,7 +338,7 @@ namespace WeaponCore.Platform
             }
         }
 
-        public void ShootGraphics()
+        public void ShootGraphics(bool stop = false)
         {
             if (System.BarrelEffect1 || System.BarrelEffect2)
             {
@@ -366,7 +366,7 @@ namespace WeaponCore.Platform
 
                     if (System.BarrelEffect1)
                     {
-                        if (entityExists && ticksAgo <= System.Barrel1AvTicks)
+                        if (entityExists && ticksAgo <= System.Barrel1AvTicks && !stop)
                         {
                             if (BarrelEffects1[id] == null)
                             {
@@ -399,7 +399,7 @@ namespace WeaponCore.Platform
 
                     if (System.BarrelEffect2)
                     {
-                        if (entityExists && ticksAgo <= System.Barrel2AvTicks)
+                        if (entityExists && ticksAgo <= System.Barrel2AvTicks && !stop)
                         {
                             if (BarrelEffects2[id] == null)
                             {
@@ -459,7 +459,7 @@ namespace WeaponCore.Platform
             EventTriggerStateChanged(EventTriggers.Firing, false);
             StopFiringSound(false);
             StopRotateSound();
-            ShootGraphics();
+            ShootGraphics(true);
             if (!avOnly)
             {
                 _ticksUntilShoot = 0;
