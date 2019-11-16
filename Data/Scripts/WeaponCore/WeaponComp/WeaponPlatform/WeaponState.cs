@@ -313,27 +313,28 @@ namespace WeaponCore.Platform
             {
                 var rof = RateOfFire < 3599 ? RateOfFire : 3599;
 
-                var angle = MathHelper.ToRadians((360f / System.Barrels.Length) / (3600f / rof));
-
-
                 var axis = System.Values.HardPoint.RotateBarrelAxis;
                 if (axis != 0 && MuzzlePart.Item1 != Comp.MyCube)
                 {
-                    Matrix rotationMatrix = Matrix.Zero;
-                    switch (axis)
+                    for (int i = 0; i < 10; i++)
                     {
-                        case 1:
-                            rotationMatrix = MuzzlePart.Item2 * Matrix.CreateRotationX(angle) * MuzzlePart.Item3;
-                            break;
-                        case 2:
-                            rotationMatrix = MuzzlePart.Item2 * Matrix.CreateRotationY(angle) * MuzzlePart.Item3;
-                            break;
-                        case 3:
-                            rotationMatrix = MuzzlePart.Item2 * Matrix.CreateRotationZ(angle) * MuzzlePart.Item3;
-                            break;
-                    }
+                        var multi = ((float)(i + 1))/10;
 
-                    BarrelRotationPerShot = rotationMatrix;
+                        var angle = MathHelper.ToRadians(((360f / System.Barrels.Length) / (3600f / rof)) * multi);
+
+                        switch (axis)
+                        {
+                            case 1:
+                                BarrelRotationPerShot[i] = MuzzlePart.Item2 * Matrix.CreateRotationX(angle) * MuzzlePart.Item3;
+                                break;
+                            case 2:
+                                BarrelRotationPerShot[i] = MuzzlePart.Item2 * Matrix.CreateRotationY(angle) * MuzzlePart.Item3;
+                                break;
+                            case 3:
+                                BarrelRotationPerShot[i] = MuzzlePart.Item2 * Matrix.CreateRotationZ(angle) * MuzzlePart.Item3;
+                                break;
+                        }
+                    }
                 }
             }
         }
@@ -460,6 +461,7 @@ namespace WeaponCore.Platform
             StopFiringSound(false);
             StopRotateSound();
             ShootGraphics(true);
+            _barrelRate = 0;
             if (!avOnly)
             {
                 _ticksUntilShoot = 0;

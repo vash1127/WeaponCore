@@ -22,6 +22,7 @@ namespace WeaponCore.Platform
         private int _shotsInCycle;
         private int _shots = 1;
         private int _nextVirtual;
+        private int _barrelRate;
         private uint _ticksUntilShoot;
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
@@ -60,7 +61,7 @@ namespace WeaponCore.Platform
         internal Target NewTarget;
         internal Vector3D TargetPos;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
-        internal Matrix BarrelRotationPerShot;
+        internal Matrix[] BarrelRotationPerShot = new Matrix[10];
         internal MyParticleEffect[] BarrelEffects1;
         internal MyParticleEffect[] BarrelEffects2;
         internal MyParticleEffect[] HitEffects;
@@ -145,7 +146,6 @@ namespace WeaponCore.Platform
             {
                 if (value && _reloadedTick <= Comp.Ai.Session.Tick)
                 {
-                    Log.Line($"_reloadedTick: {_reloadedTick} Comp.Ai.Session.Tick: {Comp.Ai.Session.Tick}");
                     Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
                     AmmoMagTimer = System.ReloadTime;
                     _reloadedTick = Comp.Ai.Session.Tick + (uint)AmmoMagTimer;
