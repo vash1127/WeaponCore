@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using ProtoBuf;
+using VRage;
 using VRageMath;
 namespace WeaponCore
 {
@@ -19,6 +20,8 @@ namespace WeaponCore
     public class WeaponStateValues
     {
         [ProtoMember(1)] public float Heat;
+        [ProtoMember(2)] public int CurrentAmmo;
+        [ProtoMember(3)] public MyFixedPoint CurrentMags;
     }
 
     [ProtoContract]

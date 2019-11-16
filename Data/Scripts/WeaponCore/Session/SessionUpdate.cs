@@ -118,7 +118,7 @@ namespace WeaponCore
                         }
 
                         if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType) ComputeStorage(w);
-                        if (!w.System.EnergyAmmo && w.CurrentAmmo == 0 && w.CurrentMags > 0)
+                        if (!w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 && comp.State.Value.Weapons[w.WeaponId].CurrentMags > 0)
                             gridAi.Reloading = true;
 
                         if (comp.Debug)
@@ -219,7 +219,7 @@ namespace WeaponCore
                         
                         if (comp.Charging) continue;
                        
-                        if (!w.System.EnergyAmmo && w.CurrentAmmo == 0)
+                        if (!w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0)
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
                             {
@@ -229,7 +229,7 @@ namespace WeaponCore
                                     if (w.IsShooting)
                                         w.StopShooting(true);
                                 }
-                                if (w.CurrentMags != 0)
+                                if (comp.State.Value.Weapons[w.WeaponId].CurrentMags != 0)
                                     w.StartReload();
                                 else if(!w.Reloading)
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, true);

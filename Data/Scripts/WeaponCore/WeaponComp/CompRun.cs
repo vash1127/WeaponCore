@@ -82,6 +82,8 @@ namespace WeaponCore.Support
             {
                 var weapon = Platform.Weapons[i];
                 weapon.InitTracking();
+
+                Log.Line($"currentMags: {State.Value.Weapons[weapon.WeaponId].CurrentMags} currentAmmo: {State.Value.Weapons[weapon.WeaponId].CurrentAmmo}");
                 Session.ComputeStorage(weapon);
 
                 MaxHeat += weapon.System.MaxHeat;
@@ -147,11 +149,8 @@ namespace WeaponCore.Support
 
                 weapon.UpdateBarrelRotation();
 
-                if (weapon.CurrentMags == 0)
-                {
+                if (State.Value.Weapons[weapon.WeaponId].CurrentMags == 0)
                     weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
-                    weapon.FirstLoad = false;
-                }
 
                 MaxInventoryVolume += weapon.System.MaxAmmoVolume;
                 if (MyCube.HasInventory)

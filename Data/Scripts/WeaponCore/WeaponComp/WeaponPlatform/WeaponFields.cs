@@ -87,7 +87,7 @@ namespace WeaponCore.Platform
         internal uint LastTrackedTick;
         internal uint OffDelay;
         internal int RateOfFire;
-        internal int CurrentAmmo;
+        //internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
         internal int WeaponId;
@@ -96,7 +96,7 @@ namespace WeaponCore.Platform
         internal int LastBlockCount;
         internal float HeatPShot;
         internal float CurrentAmmoVolume;
-        internal MyFixedPoint CurrentMags;
+        //internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
         internal double AimingTolerance;
@@ -121,7 +121,6 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool TargetWasExpired = true;
         internal bool Reloading;
-        internal bool FirstLoad = true;
         internal bool ReturnHome;
         internal bool CurrentlyDegrading;
         internal bool SleepTargets;
@@ -144,12 +143,12 @@ namespace WeaponCore.Platform
         {
             set
             {
-                if (value)
+                if (value && _reloadedTick <= Comp.Ai.Session.Tick)
                 {
+                    Log.Line($"_reloadedTick: {_reloadedTick} Comp.Ai.Session.Tick: {Comp.Ai.Session.Tick}");
                     Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
-                    AmmoMagTimer = FirstLoad ? 1 : System.ReloadTime;
+                    AmmoMagTimer = System.ReloadTime;
                     _reloadedTick = Comp.Ai.Session.Tick + (uint)AmmoMagTimer;
-                    FirstLoad = false;
                 }
             }
         }
@@ -159,7 +158,7 @@ namespace WeaponCore.Platform
             get
             {
                 if (_reloadedTick > Comp.Ai.Session.Tick) return false;
-                CurrentAmmo = System.MagazineDef.Capacity;
+                Comp.State.Value.Weapons[WeaponId].CurrentAmmo = System.MagazineDef.Capacity;
                 AmmoMagTimer = int.MaxValue;
                 return true;
             }
