@@ -123,8 +123,8 @@ namespace WeaponCore.Support
             Session = session;
             CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
-            FakeShipController.SlimBlock = MyGrid.CubeBlocks.FirstElement();
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
+            MyAPIGateway.Utilities.InvokeOnGameThread(InitFakeShipController);
         }
     }
 }

@@ -274,6 +274,11 @@ namespace WeaponCore.Support
             }
         }
 
+        internal void InitFakeShipController()
+        {
+            FakeShipController.SlimBlock = MyGrid.CubeBlocks.FirstElement();
+        }
+
         internal bool GetTargetState()
         {
             var validFocus = false;
