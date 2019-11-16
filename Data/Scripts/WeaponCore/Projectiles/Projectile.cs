@@ -447,18 +447,17 @@ namespace WeaponCore.Projectiles
             T.Ai.Session.Projectiles.ShrapnelToSpawn[PoolId].Add(shrapnel);
         }
 
-        internal bool EndChase()
+        internal bool NewTarget()
         {
             ChaseAge = Age;
             PickTarget = false;
-            var reaquire = GridAi.ReacquireTarget(this);
-            if (!reaquire)
+            if (!GridAi.ReacquireTarget(this))
             {
                 T.Target.Entity = null;
                 T.Target.IsProjectile = false;
+                return false;
             }
-
-            return reaquire;
+            return true;
         }
 
         internal void ForceNewTarget()
@@ -544,11 +543,11 @@ namespace WeaponCore.Projectiles
             Vector3D newVel;
             if ((AccelLength <= 0 || Vector3D.DistanceSquared(T.Origin, Position) >= SmartsDelayDistSqr))
             {
-                var giveUpChase = Age - ChaseAge > MaxChaseAge;
-                var newChase = (giveUpChase || PickTarget);
-
+                var gaveUpChase = Age - ChaseAge > MaxChaseAge;
                 var validTarget = T.Target.IsProjectile || T.Target.Entity != null && !T.Target.Entity.MarkedForClose;
-                if (newChase && EndChase() || validTarget || !T.System.IsMine && ZombieLifeTime % 30 == 0 && GridAi.ReacquireTarget(this))
+                var isZombie = !T.System.IsMine && ZombieLifeTime % 30 == 0;
+
+                if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)
                 {
                     if (ZombieLifeTime > 0) UpdateZombie(true);
                     var targetPos = Vector3D.Zero;
@@ -603,6 +602,11 @@ namespace WeaponCore.Projectiles
             {
                 PrevTargetPos = PredictedTargetPos;
                 if (ZombieLifeTime++ > T.System.TargetLossTime) DistanceToTravelSqr = T.DistanceTraveled * T.DistanceTraveled;
+                if (Age - LastOffsetTime > 300)
+                {
+                    OffSetTarget(out TargetOffSet, true);
+                    PrevTargetPos += TargetOffSet;
+                }
             }
         }
 
@@ -713,14 +717,15 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal void OffSetTarget(out Vector3D targetOffset)
+        internal void OffSetTarget(out Vector3D targetOffset, bool roam = false)
         {
             var randAzimuth = MyUtils.GetRandomDouble(0, 1) * 2 * Math.PI;
             var randElevation = (MyUtils.GetRandomDouble(0, 1) * 2 - 1) * 0.5 * Math.PI;
 
+            var offsetAmount = roam ? 100 : T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
             Vector3D randomDirection;
             Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out randomDirection); // this is already normalized
-            targetOffset = (randomDirection * T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy);
+            targetOffset = (randomDirection * offsetAmount);
             VisualStep = 0;
             if (Age != 0) LastOffsetTime = Age;
         }

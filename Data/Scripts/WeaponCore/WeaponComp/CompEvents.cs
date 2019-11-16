@@ -39,7 +39,6 @@ namespace WeaponCore.Support
                 BlockInventory.ContentsChanged -= OnContentsChanged;
                 BlockInventory.InventoryContentChanged -= DetailedChanged;
 
-                //BlockInventory.ContentsRemoved -= OnContentsRemoved;
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 
                 foreach (var w in Platform.Weapons)
@@ -58,8 +57,6 @@ namespace WeaponCore.Support
             {
                 if (LastInventoryChangedTick < Ai.Session.Tick && !IgnoreInvChange)
                 {
-                    //BlockInventory.Refresh();
-
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                         Session.ComputeStorage(Platform.Weapons[i]);
                     
@@ -71,45 +68,6 @@ namespace WeaponCore.Support
                 Log.Line($"Exception in OnContentsChanged: {ex}");
             }
         }
-
-        /*internal void OnContentsAdded(MyPhysicalInventoryItem item, MyFixedPoint amount)
-        {
-            try
-            {
-                Log.Line("InventoryAdded");
-                var defId = item.Content.GetId();
-
-                List<int> weaponIds;
-                if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponIds)) return;
-
-                foreach (var id in weaponIds)
-                {
-                    var weapon = Platform.Weapons[id];
-                    Session.ComputeStorage(weapon);
-                }
-                Ai.Session.InventoryEvent.Enqueue(new InventoryChange(Platform.Weapons[0], item, amount, InventoryChange.ChangeType.Add));
-            }
-            catch (Exception ex) { Log.Line($"Exception in OnContentsAdded: {ex}"); }
-        }
-
-        internal void OnContentsRemoved(MyPhysicalInventoryItem item, MyFixedPoint amount)
-        {
-            try
-            {
-                var defId = item.Content.GetId();
-
-                List<int> weaponIds;
-                if (!Platform.Structure.AmmoToWeaponIds.TryGetValue(defId, out weaponIds)) return;
-                foreach (var id in weaponIds)
-                {
-                    var weapon = Platform.Weapons[id];
-                    Session.ComputeStorage(weapon);
-                }
-                //weapon.SuspendAmmoTick = 0;
-                //weapon.UnSuspendAmmoTick = 0;
-            }
-            catch (Exception ex) { Log.Line($"Exception in OnContentsRemoved: {ex}"); }
-        }*/
 
         private void IsWorkingChanged(MyCubeBlock myCubeBlock)
         {
@@ -127,7 +85,6 @@ namespace WeaponCore.Support
                 {
                     foreach (var w in Platform.Weapons)
                     {
-                        //WepUi.SetEnable((IMyTerminalBlock)MyCube, w.WeaponId, false);
                         w.StopShooting();
                     }
                 }
@@ -193,7 +150,6 @@ namespace WeaponCore.Support
 
                         LastUpdateTick = tick;
                         Ai.CurrentWeaponsDraw += currentInput;
-                        //Log.Line($"curent Input: {sink.CurrentInputByType(changedResourceTypeId)} SinkRequested: {CurrentSinkPowerRequested} ratio: {sink.SuppliedRatioByType(changedResourceTypeId)} Current Weapon Draw: {Ai.CurrentWeaponsDraw} Current Tick: {Ai.MySession.Tick}");
                     }
                     else
                     {

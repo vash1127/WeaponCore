@@ -123,6 +123,7 @@ namespace WeaponCore.Support
             Focus = null;
             MyPlanetTmp = null;
             MyPlanet = null;
+            FakeShipController = null;
         }
     }
 }
