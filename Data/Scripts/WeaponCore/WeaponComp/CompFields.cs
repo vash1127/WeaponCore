@@ -29,7 +29,6 @@ namespace WeaponCore.Support
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Ai.Session.LastTerminalId == MyCube.EntityId;
 
-        internal HashSet<string> GroupNames = new HashSet<string>();
         internal MatrixD CubeMatrix;
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;

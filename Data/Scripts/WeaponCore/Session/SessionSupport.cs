@@ -299,12 +299,12 @@ namespace WeaponCore
                     else
                         fakeTick = ht.Value.Item2 + 1;
 
-                    _futureEvents.Schedule(UpdateWeaponHeat, MyTuple.Create(w, fakeTick, false), 20);
+                    FutureEvents.Schedule(UpdateWeaponHeat, MyTuple.Create(w, fakeTick, false), 20);
                 }
             }
         }
 
-        private void WeaponShootOff(object obj)
+        internal void WeaponShootOff(object obj)
         {
             var gridAi = obj as GridAi;
             if (gridAi == null) return;
@@ -357,7 +357,7 @@ namespace WeaponCore
 
         internal void PurgeAll()
         {
-            _futureEvents.Purge();
+            FutureEvents.Purge();
             DsUtil.Purge();
             DsUtil2.Purge();
 

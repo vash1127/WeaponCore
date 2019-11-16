@@ -281,7 +281,7 @@ namespace WeaponCore
             if (comp?.Platform?.Weapons != null)
             {
                 var maxTrajectory = 0f;
-                _futureEvents.Schedule(comp.UpdateTerminal, null, 1);
+                FutureEvents.Schedule(comp.UpdateTerminal, null, 1);
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var curMax = comp.Platform.Weapons[i].System.MaxTrajectory;

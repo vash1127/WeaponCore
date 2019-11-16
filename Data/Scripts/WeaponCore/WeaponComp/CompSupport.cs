@@ -52,10 +52,6 @@ namespace WeaponCore.Support
                         StopAllSounds();
                         Platform.RemoveParts(this);
 
-                        foreach (var groupName in GroupNames)
-                            Ai.BlockGroups[groupName].Remove(MyCube);
-
-                        GroupNames.Clear();
                         Ai.TotalSinkPower -= MaxRequiredPower;
                         Ai.OptimalDps -= OptimalDps;
                     }

@@ -42,7 +42,6 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
-        private readonly FutureEvents _futureEvents = new FutureEvents();
         private readonly CachingList<AfterGlow> _afterGlow = new CachingList<AfterGlow>();
 
         private List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
@@ -75,6 +74,7 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
+        internal readonly FutureEvents FutureEvents = new FutureEvents();
 
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");

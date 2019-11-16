@@ -92,9 +92,6 @@ namespace WeaponCore
                 db.ShieldNear = db.ShieldNearTmp;
                 db.BlockCount = db.MyGrid.BlocksCount;
 
-                if (db.FirstRun)
-                    db.UpdateBlockGroups();
-
                 db.FirstRun = false;
                 Interlocked.Exchange(ref db.DbUpdating, 0);
             }

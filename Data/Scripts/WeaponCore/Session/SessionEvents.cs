@@ -127,10 +127,10 @@ namespace WeaponCore
             var remote = ControlledEntity as MyRemoteControl;
 
             if (cockpit != null && UpdateLocalAiAndCockpit())
-                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
+                FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
 
             if (remote != null)
-                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
+                FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
         }
 
         private void PlayerControlReleased(IMyEntityController myEntityController)
@@ -144,10 +144,10 @@ namespace WeaponCore
             var remote = ControlledEntity as MyRemoteControl;
 
             if (cockpit != null && UpdateLocalAiAndCockpit())
-                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
+                FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
 
             if (remote != null)
-                _futureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
+                FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
 
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }

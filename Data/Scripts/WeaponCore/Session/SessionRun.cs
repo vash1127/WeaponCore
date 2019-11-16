@@ -70,7 +70,7 @@ namespace WeaponCore
                     Load = 0d;
                     DsUtil.Clean();
                 }
-                _futureEvents.Tick(Tick);
+                FutureEvents.Tick(Tick);
                 UiInput.UpdateInputState();
                 WheelUi.UpdatePosition();
                 DsUtil.Start("damage");
