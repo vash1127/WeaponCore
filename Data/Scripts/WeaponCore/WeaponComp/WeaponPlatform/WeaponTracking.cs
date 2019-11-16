@@ -86,7 +86,7 @@ namespace WeaponCore.Platform
                 targetPos = obb.Center;
 
             obb.Center = targetPos;
-            weapon.targetBox = obb;
+            weapon.TargetBox = obb;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
             bool canTrack = false;
@@ -111,7 +111,7 @@ namespace WeaponCore.Platform
                     if (obb.Intersects(ref testRay) != null) canTrack = true;
 
                     if (weapon.Comp.Debug)
-                        weapon.limitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.System.MaxTrajectory));
+                        weapon.LimitLine = new LineD(weapon.MyPivotPos, weapon.MyPivotPos + (constraintVector * weapon.System.MaxTrajectory));
                 }
                 else
                     canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);

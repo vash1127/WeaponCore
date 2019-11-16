@@ -186,7 +186,7 @@ namespace WeaponCore.Platform
                         Session.ComputeStorage(this);
                         if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         {
-                            var OnAnimations = true;
+                            var onAnimations = true;
 
                             if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                             {
@@ -194,13 +194,13 @@ namespace WeaponCore.Platform
                                 {
                                     if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                     {
-                                        OnAnimations = false;
+                                        onAnimations = false;
                                         animation.Reverse = true;
                                     }
                                 }
                             }
 
-                            if (OnAnimations)
+                            if (onAnimations)
                             {
                                 foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
                                 {

@@ -2,10 +2,12 @@
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Ingame;
+using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
+using IMyConveyorSorter = Sandbox.ModAPI.IMyConveyorSorter;
 
 namespace WeaponCore.Support
 {
@@ -33,7 +35,6 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 lock (this)
                 {
-                    //Log.Line($"OnAddedToScene: mainInit:{MainInit} - {MyCube.DebugName} - {MyCube.CubeGrid.DebugName} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid}");
                     if (MainInit) ReInitPlatform();
                     else MyAPIGateway.Utilities.InvokeOnGameThread(InitPlatform);
                 }
@@ -49,7 +50,6 @@ namespace WeaponCore.Support
             }
             else
             {
-                //Sink.RemoveType(ref GId);
                 SinkInfo.RequiredInputFunc = null;
                 Sink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
                 Sink = null;
@@ -71,6 +71,26 @@ namespace WeaponCore.Support
                 Log.Line("init platform returned");
                 return;
             }
+
+            if (MyCube is IMyLargeMissileTurret)
+            {
+                MissileBase = (IMyLargeMissileTurret)MyCube;
+                IsSorterTurret = false;
+                MissileBase.EnableIdleRotation = false;
+            }
+
+            else if (MyCube is IMyConveyorSorter)
+            {
+                SorterBase = (IMyConveyorSorter)MyCube;
+                IsSorterTurret = true;
+                BlockInventory.Constraint = new MyInventoryConstraint("ammo");
+            }
+
+            //TODO add to config
+
+            BlockInventory.Constraint.m_useDefaultIcon = false;
+            BlockInventory.ResetVolume();
+            BlockInventory.Refresh();
 
             StorageSetup();
 
@@ -204,14 +224,11 @@ namespace WeaponCore.Support
             GridAi gridAi;
             if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
             {
-                // Log.Line($"reinit, new gridAi");
                 gridAi = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
                 Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
             }
-            //else Log.Line($"reinit valid gridAi");
             Ai = gridAi;
             RegisterEvents();
-            //Log.Line($"reinit comp: grid:{MyCube.CubeGrid.DebugName} - Weapon:{MyCube.DebugName}");
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
                 MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
         }
@@ -220,7 +237,6 @@ namespace WeaponCore.Support
         {
             if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
             {
-                //Log.Line($"OnAddedToSceneTasks not yet ready");
                 MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
                 return;
             }
@@ -238,11 +254,6 @@ namespace WeaponCore.Support
             if (!Ai.GridInit)
             {
                 Ai.GridInit = true;
-                if (Ai.MyGrid != MyCube.CubeGrid || Ai.MyGrid.MarkedForClose) Log.Line($"AiGrid Mismatch during OnAddedToScene");
-                Ai.TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(Ai.MyGrid);
-
-                if (Ai.TerminalSystem == null) Log.Line($"on no terminalsystem is null");
-
                 foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
                     Ai.FatBlockAdded(cubeBlock);
             }

@@ -35,7 +35,6 @@ namespace WeaponCore.Platform
         internal MyTuple<MyEntity, Matrix, Matrix, Vector3> MuzzlePart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> AzimuthPart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> ElevationPart;
-        internal Vector3D[] TargetObbCorners = new Vector3D[9];
         internal Vector3D MyPivotPos;
         internal Vector3D MyPivotDir;
         internal Vector3D MyPivotUp;
@@ -54,8 +53,8 @@ namespace WeaponCore.Platform
 
         internal WeaponFrameCache WeaponCache = new WeaponFrameCache();
 
-        internal MyOrientedBoundingBoxD targetBox;
-        internal LineD limitLine;
+        internal MyOrientedBoundingBoxD TargetBox;
+        internal LineD LimitLine;
 
         internal Target Target;
         internal Target NewTarget;
@@ -88,7 +87,6 @@ namespace WeaponCore.Platform
         internal uint LastTrackedTick;
         internal uint OffDelay;
         internal int RateOfFire;
-        //internal int CurrentAmmo;
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
         internal int WeaponId;
@@ -97,7 +95,6 @@ namespace WeaponCore.Platform
         internal int LastBlockCount;
         internal float HeatPShot;
         internal float CurrentAmmoVolume;
-        //internal MyFixedPoint CurrentMags;
         internal double Azimuth;
         internal double Elevation;
         internal double AimingTolerance;

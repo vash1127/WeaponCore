@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Sandbox.Game;
+﻿using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
@@ -70,7 +69,7 @@ namespace WeaponCore.Support
         internal MyCubeBlock MyCube;
         internal MyWeaponPlatform Platform;
         internal IMyLargeMissileTurret MissileBase;
-        internal Sandbox.ModAPI.IMyConveyorSorter SorterBase;
+        internal IMyConveyorSorter SorterBase;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
         internal bool MainInit;
@@ -81,7 +80,6 @@ namespace WeaponCore.Support
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
         internal bool IsSorterTurret;
-        internal bool HasInventory;
         internal bool IgnoreInvChange;
         internal LogicSettings Set;
         internal LogicState State;
@@ -95,27 +93,7 @@ namespace WeaponCore.Support
             MyCube = myCube;
             BlockInventory = (MyInventory)MyCube.GetInventoryBase();
 
-            if (myCube is IMyLargeMissileTurret)
-            {
-                MissileBase = (IMyLargeMissileTurret) myCube;
-                IsSorterTurret = false;
-            }
-
-            else if (myCube is IMyConveyorSorter)
-            {
-                SorterBase = (Sandbox.ModAPI.IMyConveyorSorter) myCube;
-                IsSorterTurret = true;
-                BlockInventory.Constraint = new MyInventoryConstraint("ammo");
-            }
-
-            //TODO add to config
-            
-            BlockInventory.Constraint.m_useDefaultIcon = false;
-            BlockInventory.ResetVolume();
-            BlockInventory.Refresh();
-
             SinkPower = IdlePower;
-            
         }        
     }
 }

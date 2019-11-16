@@ -49,7 +49,6 @@ namespace WeaponCore.Support
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
         internal readonly Session Session;
         internal readonly MyCubeGrid MyGrid;
-        internal IMyGridTerminalSystem TerminalSystem;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;
 
