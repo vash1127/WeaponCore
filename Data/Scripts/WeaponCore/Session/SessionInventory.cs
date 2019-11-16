@@ -152,16 +152,16 @@ namespace WeaponCore
 
             MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
 
-            var lastMags = weapon.CurrentMags;
+            var lastMags = comp.State.Value.Weapons[weapon.WeaponId].CurrentMags;
             var invMagsAvailable = comp.Ai.AmmoInventories[def];
 
-            weapon.CurrentMags = comp.BlockInventory.GetItemAmount(def);
-            weapon.CurrentAmmoVolume = (float)weapon.CurrentMags * itemVolume;
+            comp.State.Value.Weapons[weapon.WeaponId].CurrentMags = comp.BlockInventory.GetItemAmount(def);
+            weapon.CurrentAmmoVolume = (float)comp.State.Value.Weapons[weapon.WeaponId].CurrentMags * itemVolume;
 
             if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invMagsAvailable.Count > 0)
                 weapon.Comp.Ai.Session.WeaponAmmoPullQueue.Enqueue(weapon);
             
-            if (lastMags == 0 && weapon.CurrentMags > 0)
+            if (lastMags == 0 && comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0)
                 weapon.Comp.Ai.Reloading = true;
 
             //Log.Line($"[computed storage] AmmoDef:{def.SubtypeId.String}({weapon.CurrentMags.ToIntSafe()}) - Full:{weapon.AmmoFull} - Mass:<{itemMass}>{ammoMass}({comp.MaxAmmoMass})[{comp.MaxAmmoMass}] - Volume:<{itemVolume}>{ammoVolume}({comp.MaxAmmoVolume})[{comp.MaxInventoryVolume}]");

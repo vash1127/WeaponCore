@@ -114,8 +114,8 @@ namespace WeaponCore.Platform
 
                     if (!System.EnergyAmmo)
                     {
-                        if (CurrentAmmo == 0) continue;
-                        CurrentAmmo--;
+                        if (Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0) continue;
+                        Comp.State.Value.Weapons[WeaponId].CurrentAmmo--;
                     }
 
                     if (System.HasBackKickForce && !isStatic)
