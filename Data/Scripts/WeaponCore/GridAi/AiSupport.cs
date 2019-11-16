@@ -274,11 +274,6 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void InitFakeShipController()
-        {
-            FakeShipController.SlimBlock = MyGrid.CubeBlocks.FirstElement();
-        }
-
         internal bool GetTargetState()
         {
             var validFocus = false;
@@ -405,6 +400,12 @@ namespace WeaponCore.Support
             return validFocus;
         }
         #region Power
+
+        internal void InitFakeShipController()
+        {
+            FakeShipController.SlimBlock = MyGrid.CubeBlocks.FirstElement();
+        }
+
         internal void UpdateGridPower()
         {
             GridAvailablePower = 0;
@@ -414,7 +415,7 @@ namespace WeaponCore.Support
             BatteryCurrentOutput = 0;
             BatteryCurrentInput = 0;
 
-            if (FakeShipController.GridResourceDistributor != null)
+            if (FakeShipController?.GridResourceDistributor != null)
             {
                 if (Session.Tick60)
                 {
