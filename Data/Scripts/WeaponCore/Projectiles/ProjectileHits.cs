@@ -43,21 +43,26 @@ namespace WeaponCore.Projectiles
                 if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
-                    var shieldBlock = p.T.Ai.Session.SApi?.MatchEntToShieldFast(ent, true);
-                    if (shieldBlock != null)
+                    var shieldInfo = p.T.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
+                    if (shieldInfo != null)
                     {
-                        if (ent.Physics == null && !p.T.Ai.MyGrid.IsSameConstructAs(shieldBlock.CubeGrid))
+                        double? dist = null;
+                        if (ent.Physics == null)
+                            dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
+
+                        if (dist != null && dist.Value < beam.Length && !p.T.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
                         {
                             var hitEntity = HitEntityPool[poolId].Get();
                             hitEntity.Clean();
                             hitEntity.T = p.T;
                             hitEntity.PoolId = poolId;
-                            hitEntity.Entity = (MyEntity)shieldBlock;
+                            hitEntity.Entity = (MyEntity)shieldInfo.Value.Item1;
                             hitEntity.Beam = beam;
-
                             hitEntity.EventType = Shield;
                             hitEntity.SphereCheck = !lineCheck;
                             hitEntity.PruneSphere = p.PruneSphere;
+                            hitEntity.HitPos = beam.From + (beam.Direction * dist.Value);
+                            hitEntity.HitDist = dist;
                             found = true;
                             p.T.HitList.Add(hitEntity);
                         }
@@ -106,7 +111,15 @@ namespace WeaponCore.Projectiles
                     hitEntity.SphereCheck = !lineCheck;
                     hitEntity.PruneSphere = p.PruneSphere;
 
-                    if (voxelHit != null) hitEntity.HitPos = voxelHit;
+                    if (voxelHit != null)
+                    {
+                        var hitPos = voxelHit.Value;
+                        hitEntity.HitPos = hitPos;
+
+                        double dist;
+                        Vector3D.Distance(ref beam.From, ref hitPos, out dist);
+                        hitEntity.HitDist = dist;
+                    }
 
                     if (grid != null)
                     {
@@ -225,13 +238,8 @@ namespace WeaponCore.Projectiles
                 if (hitEnt.Projectile != null) dist = Vector3D.Distance(hitEnt.HitPos.Value, beam.From);
                 else if (shield != null)
                 {
-                    var hitPos = hitEnt.T.Ai.Session.SApi.LineIntersectShield(shield, beam);
-                    if (hitPos != null)
-                    {
-                        dist = Vector3D.Distance(hitPos.Value, beam.From);
-                        hitEnt.Hit = true;
-                        hitEnt.HitPos = hitPos.Value;
-                    }
+                    hitEnt.Hit = true;
+                    dist = hitEnt.HitDist.Value;
                 }
                 else if (grid != null)
                 {
@@ -301,10 +309,8 @@ namespace WeaponCore.Projectiles
                 }
                 else if (voxel != null)
                 {
-                    var hitPos = hitEnt.HitPos.Value;
                     hitEnt.Hit = true;
-                    Vector3D.Distance(ref beam.From, ref hitPos, out dist);
-                    hitEnt.HitPos = beam.From + (beam.Direction * dist);
+                    dist = hitEnt.HitDist.Value;
                 }
                 else if (ent is IMyDestroyableObject)
                 {

@@ -30,6 +30,24 @@ namespace WeaponCore.Support
             return true;
         }
 
+        internal static float? IntersectEllipsoid(MatrixD ellipsoidMatrixInv, MatrixD ellipsoidMatrix, RayD ray)
+        {
+            var normSphere = new BoundingSphereD(Vector3.Zero, 1f);
+            var kRay = new RayD(Vector3D.Zero, Vector3D.Forward);
+
+            var krayPos = Vector3D.Transform(ray.Position, ellipsoidMatrixInv);
+            var krayDir = Vector3D.Normalize(Vector3D.TransformNormal(ray.Direction, ellipsoidMatrixInv));
+
+            kRay.Direction = krayDir;
+            kRay.Position = krayPos;
+            var nullDist = normSphere.Intersects(kRay);
+            if (!nullDist.HasValue) return null;
+
+            var hitPos = krayPos + (krayDir * -nullDist.Value);
+            var worldHitPos = Vector3D.Transform(hitPos, ellipsoidMatrix);
+            return Vector3.Distance(worldHitPos, ray.Position);
+        }
+
         internal static bool IsDotProductWithinTolerance(ref Vector3D targetDir, ref Vector3D refDir, double tolerance)
         {
             double dot = Vector3D.Dot(targetDir, refDir);

@@ -403,7 +403,8 @@ namespace WeaponCore.Support
 
         internal void InitFakeShipController()
         {
-            FakeShipController.SlimBlock = MyGrid.CubeBlocks.FirstElement();
+            if (FakeShipController != null && MyGrid?.CubeBlocks != null)
+                FakeShipController.SlimBlock = MyGrid.CubeBlocks.FirstElement();
         }
 
         internal void UpdateGridPower()

@@ -245,17 +245,10 @@ namespace WeaponCore.Support
         public bool DamageOverTime;
         public BoundingSphereD PruneSphere;
         public Vector3D? HitPos;
+        public double? HitDist;
         public Type EventType;
-        //private object _hashSetCache;
 
         public int PoolId = - 1;
-
-        /*
-        internal static HashSet<T> SwapSet<T>(object cacheObject, HashSet<T> lst)
-        {
-            return cacheObject as HashSet<T>;
-        }
-        */
 
         public HitEntity()
         {
@@ -288,6 +281,7 @@ namespace WeaponCore.Support
             Blocks.Clear();
             Hit = false;
             HitPos = null;
+            HitDist = null;
             T = null;
             EventType = Stale;
             PruneSphere = new BoundingSphereD();

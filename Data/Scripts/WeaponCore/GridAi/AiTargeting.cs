@@ -679,6 +679,5 @@ namespace WeaponCore.Support
             }
             return obstruction;
         }
-
     }
 }

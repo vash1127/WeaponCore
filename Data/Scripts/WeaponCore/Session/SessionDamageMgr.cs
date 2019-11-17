@@ -85,13 +85,15 @@ namespace WeaponCore
             var areaEffect = t.System.Values.Ammo.AreaEffect;
 
             var scaledDamage = ((t.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier;
-            var objHp = SApi.GetCharge(shield) * 100;
-
-            if (scaledDamage < objHp) t.BaseDamagePool = 0;
-            else t.BaseDamagePool -= objHp;
-            SApi.PointAttackShield(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, (float)scaledDamage, energy, t.System.Values.Graphics.ShieldHitDraw);
-            if (system.Values.Ammo.Mass > 0)
+            var hit = SApi.PointAttackShieldExt(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, (float)scaledDamage, energy, t.System.Values.Graphics.ShieldHitDraw);
+            if (hit.HasValue)
             {
+                var objHp = hit.Value;
+                if (scaledDamage < objHp) t.BaseDamagePool = 0;
+                else if (objHp > 0) t.BaseDamagePool -= (float)scaledDamage - objHp;
+                else t.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
+                if (system.Values.Ammo.Mass <= 0) return;
+
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
                 ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, t.Direction, system.Values.Ammo.Mass * speed);
             }
