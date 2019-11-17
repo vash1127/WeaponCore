@@ -100,7 +100,7 @@ namespace WeaponThread
                     AreaEffectRadius = 4f,
                     Pulse = Options(interval: 30, pulseChance: 0), // interval measured in game ticks (60 == 1 second)
                     Explosions = Options(noVisuals: false, noSound: false, scale: 1, customParticle: "", customSound: ""),
-                    Detonation = Options(detonateOnEnd: true, armOnlyOnHit: false, detonationDamage: 0, detonationRadius: 0),
+                    Detonation = Options(detonateOnEnd: false, armOnlyOnHit: false, detonationDamage: 0, detonationRadius: 0),
                 },
                 Beams = new BeamDefinition
                 {

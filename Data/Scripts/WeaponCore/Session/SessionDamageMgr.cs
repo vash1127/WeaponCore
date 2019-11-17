@@ -254,6 +254,7 @@ namespace WeaponCore
                     {
                         var damage = detonateOnEnd && theEnd ? detonateDmg : areaEffectDmg;
                         var radius = detonateOnEnd && theEnd ? detonateRadius : areaRadius;
+                        Log.Line($"test: {damage} - {radius} - {detonateDmg} - {areaEffectDmg}");
                         UtilsStatic.CreateMissileExplosion(this, damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, grid, system, true);
                     }
                     else if (!nova)
