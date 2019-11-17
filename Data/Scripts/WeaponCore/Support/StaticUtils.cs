@@ -290,6 +290,7 @@ namespace WeaponCore.Support
         {
             var af = weaponSystem.Values.Ammo.AreaEffect;
             var eInfo = af.Explosions;
+            var playSound = !eInfo.NoSound && !forceNoDraw;
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
             cullSphere.Radius = radius * 5;
@@ -315,7 +316,7 @@ namespace WeaponCore.Support
                 VoxelExplosionCenter = sphere.Center + radius * direction * 0.25,
                 ExplosionFlags = eFlags,
                 VoxelCutoutScale = 0.3f,
-                PlaySound = !eInfo.NoSound,
+                PlaySound = playSound,
                 ApplyForceAndDamage = true,
                 KeepAffectedBlocks = true,
                 CustomEffect = eInfo.CustomParticle,
