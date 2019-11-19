@@ -710,8 +710,8 @@ namespace WeaponCore.Support
             const float slotSpacing = 0.06f;
             var shiftSlots = (_slotId - displayCount) * -1;
             var shiftSize = _shift && shiftSlots > 0 ? slotSpacing * shiftSlots : 0;
-            var position = new Vector3D(_screenPosition.X + shiftSize - (index * 0.35), _screenPosition.Y, 0);
-            var altPosition = new Vector3D(_screenPosition.X + shiftSize - (index * 0.35), _screenPosition.Y - 1.5625, 0);
+            var position = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y, 0);
+            var altPosition = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y - 1.25, 0);
 
             double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
 
