@@ -40,7 +40,6 @@ namespace WeaponCore.Support
                 WeaponComponent comp;
                 if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                 {
-                    //Log.Line($"removing Comp:{MyCube.DebugName} marked:{MyCube.MarkedForClose} - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
                     if (Platform != null && Platform.Inited)
                     {
                         GridAi.WeaponCount wCount;
@@ -64,23 +63,14 @@ namespace WeaponCore.Support
                     if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
                     {
                         Log.Line($"cube matches different grid: marked:{MyCube.MarkedForClose}({gridAi.MyGrid.MarkedForClose}) - gridMisMatch: {gridAi.MyGrid != MyCube.CubeGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
-                        if (gridAi.WeaponBase.TryRemove(MyCube, out comp))
-                        {
-                            Log.Line($"cube removed from old grid");
-                        }
-                        else Log.Line($"cube not found in old grid: marked:{MyCube.MarkedForClose} - inScene:{MyCube.InScene}");
+                        gridAi.WeaponBase.TryRemove(MyCube, out comp);
                     }
-                    else Log.Line($"cube doesn't match any grid: grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
                 }
 
                 if (Ai.WeaponBase.Count == 0)
                 {
                     GridAi gridAi;
-                    if (Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi))
-                    {
-                        //Log.Line($"remove gridAi: {Ai.MyGrid.DebugName} - gridMismatch:{Ai.MyGrid != MyCube.CubeGrid}");
-                    }
-                   // else Log.Line($"no gridAi found for:{Ai.MyGrid.DebugName}({Ai.MyGrid.MarkedForClose}) - {MyCube.DebugName}({MyCube.CubeGrid.MarkedForClose})");
+                    Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }

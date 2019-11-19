@@ -219,9 +219,8 @@ namespace WeaponCore
 
         internal void UpdateWeaponHeat(object heatTracker)
         {
-
             var ht = heatTracker as MyTuple<Weapon, int, bool>?;
-            if (ht != null)
+            if (ht != null && ht.Value.Item1.Comp.Status == WeaponComponent.Start.Started)
             {
                 var w = ht.Value.Item1;
                 var currentHeat = w.Comp.State.Value.Weapons[w.WeaponId].Heat;
@@ -230,7 +229,6 @@ namespace WeaponCore
 
                 if (!DedicatedServer)
                 {
-                    
                     var heatPercent = currentHeat / w.System.MaxHeat;
 
                     if (set && heatPercent > .33)
