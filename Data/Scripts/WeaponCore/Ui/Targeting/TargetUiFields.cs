@@ -17,6 +17,8 @@ namespace WeaponCore
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
+        private readonly MyStringId _focusSecondary = MyStringId.GetOrCompute("DS_TargetFocusSecondary");
+
         private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
 
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
@@ -34,6 +36,7 @@ namespace WeaponCore
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetFrigate"), 0.1, new Vector2D(0, 1.2f), -1, false),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetDestroyer"), 0.1, new Vector2D(0, 1.2f), -1, false),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetCruiser"), 0.1, new Vector2D(0, 1.2f), -1, false),
+                new IconInfo(MyStringId.GetOrCompute("DS_TargetBattleCruiser"), 0.1, new Vector2D(0, 1.2f), -1, false),
                 new IconInfo(MyStringId.GetOrCompute("DS_TargetCapital"), 0.1, new Vector2D(0, 1.2f), -1, false),
             }},
             {"threat", new[] {

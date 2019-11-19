@@ -293,9 +293,10 @@ namespace WeaponCore.Support
                 var myPos = MyGrid.PositionComp.WorldAABB.Center;
                 var myHeading = Vector3D.Normalize(myPos - targetPos);
 
-                if (info.LargeGrid && info.PartCount > 18000) Focus.TargetState[i].Size = 5;
-                else if (info.LargeGrid && info.PartCount > 9000) Focus.TargetState[i].Size = 4;
-                else if (info.LargeGrid && info.PartCount > 4500) Focus.TargetState[i].Size = 3;
+                if (info.LargeGrid && info.PartCount > 24000) Focus.TargetState[i].Size = 6;
+                else if (info.LargeGrid && info.PartCount > 12000) Focus.TargetState[i].Size = 5;
+                else if (info.LargeGrid && info.PartCount > 6000) Focus.TargetState[i].Size = 4;
+                else if (info.LargeGrid && info.PartCount > 3000) Focus.TargetState[i].Size = 3;
                 else if (info.LargeGrid) Focus.TargetState[i].Size = 2;
                 else if (info.PartCount > 2000) Focus.TargetState[i].Size = 1;
                 else Focus.TargetState[i].Size = 0;

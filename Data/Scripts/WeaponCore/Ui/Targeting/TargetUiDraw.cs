@@ -90,7 +90,10 @@ namespace WeaponCore
                     MyTransparentGeometry.AddBillboardOriented(textureName, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
 
                     if (focus.ActiveId == i && displayCount == 0)
-                        MyTransparentGeometry.AddBillboardOriented(_focus, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+                    {
+                        var focusTexture = focus.ActiveId == 0 && displayCount == 0 ? _focus : _focusSecondary;
+                        MyTransparentGeometry.AddBillboardOriented(focusTexture, Color.White, offset, s.CameraMatrix.Left, s.CameraMatrix.Up, scale, BlendTypeEnum.PostPP);
+                    }
 
                     displayCount++;
                 }
