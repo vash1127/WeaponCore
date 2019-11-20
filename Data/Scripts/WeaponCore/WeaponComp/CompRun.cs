@@ -2,7 +2,6 @@
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
-using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.ModAPI;
@@ -168,37 +167,6 @@ namespace WeaponCore.Support
                 foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
                 {
                     Ai.FatBlockAdded(cubeBlock);
-                    if (cubeBlock is IMyCargoContainer || cubeBlock is IMyAssembler)
-                    {
-                        var currentInventory = cubeBlock.GetInventoryBase() as MyInventory;
-
-                        if (currentInventory != null)
-                        {
-                            var inventoryItems = currentInventory.GetItems();
-                            for (int i = 0; i < inventoryItems.Count; i++)
-                            {
-                                var item = inventoryItems[i];
-
-                                if (item.Content is MyObjectBuilder_AmmoMagazine)
-                                {
-                                    var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
-                                    if (ammoMag != null)
-                                    {
-                                        var magId = ammoMag.GetObjectId();
-                                        if (Ai.AmmoInventories.ContainsKey(magId))
-                                        {
-                                            MyFixedPoint magAmnt;
-                                            if (!Ai.AmmoInventories[magId].TryGetValue(currentInventory, out magAmnt))
-                                                Ai.AmmoInventories[magId].Add(currentInventory, 1);
-                                            else
-                                                Ai.AmmoInventories[magId][currentInventory] += 1;
-                                        }
-                                    }
-
-                                }
-                            }
-                        }
-                    }
                 }
             }
 
