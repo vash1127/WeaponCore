@@ -710,7 +710,6 @@ namespace WeaponCore.Support
             const float slotSpacing = 0.06f;
             var needShift = _slotId != displayCount;
             var shiftSize = _canShift && needShift ? -(slotSpacing * (_slotId - displayCount)) : 0;
-            if (_canShift && needShift) Log.Line($"{_slotId} - {displayCount} - {_slotId - displayCount} - {shiftSize}");
             var position = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y, 0);
             var altPosition = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y - 1.25, 0);
 
