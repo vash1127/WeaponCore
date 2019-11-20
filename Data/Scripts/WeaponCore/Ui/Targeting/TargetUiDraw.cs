@@ -74,10 +74,11 @@ namespace WeaponCore
             var focus = s.TrackingAi.Focus;
             for (int i = 0; i < focus.TargetState.Length; i++)
             {
-                var displayCount = 0;   
                 if (focus.Target[i] == null || s.WheelUi.WheelActive && i > 0) continue;
 
                 var targetState = focus.TargetState[i];
+
+                var displayCount = 0;
                 foreach (var icon in _targetIcons.Keys)
                 {
                     int iconLevel;
@@ -155,7 +156,6 @@ namespace WeaponCore
                     iconLevel = 0;
                     break;
             }
-
             return display;
         }
 

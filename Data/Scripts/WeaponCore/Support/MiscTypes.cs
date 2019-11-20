@@ -672,19 +672,19 @@ namespace WeaponCore.Support
         private readonly Vector2D _screenPosition;
         private readonly double _definedScale;
         private readonly int _slotId;
-        private readonly bool _shift;
+        private readonly bool _canShift;
         private readonly float[] _adjustedScale;
         private readonly Vector3D[] _positionOffset;
         private readonly Vector3D[] _altPositionOffset;
         private readonly int[] _prevSlotId;
 
-        public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition, int slotId, bool shift)
+        public IconInfo(MyStringId textureName, double definedScale, Vector2D screenPosition, int slotId, bool canShift)
         {
             _textureName = textureName;
             _definedScale = definedScale;
             _screenPosition = screenPosition;
             _slotId = slotId;
-            _shift = shift;
+            _canShift = canShift;
             _prevSlotId = new int[2];
             for (int i = 0; i < _prevSlotId.Length; i++)
                 _prevSlotId[i] = -1;
@@ -708,8 +708,9 @@ namespace WeaponCore.Support
             var fov = MyAPIGateway.Session.Camera.FovWithZoom;
             var screenScale = 0.075 * Math.Tan(fov * 0.5);
             const float slotSpacing = 0.06f;
-            var shiftSlots = (_slotId - displayCount) * -1;
-            var shiftSize = _shift && shiftSlots > 0 ? slotSpacing * shiftSlots : 0;
+            var needShift = _slotId != displayCount;
+            var shiftSize = _canShift && needShift ? -(slotSpacing * (_slotId - displayCount)) : 0;
+            if (_canShift && needShift) Log.Line($"{_slotId} - {displayCount} - {_slotId - displayCount} - {shiftSize}");
             var position = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y, 0);
             var altPosition = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y - 1.25, 0);
 

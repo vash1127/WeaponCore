@@ -300,13 +300,12 @@ namespace WeaponCore.Support
                 else if (info.LargeGrid) Focus.TargetState[i].Size = 2;
                 else if (info.PartCount > 2000) Focus.TargetState[i].Size = 1;
                 else Focus.TargetState[i].Size = 0;
+
                 var intercept = MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref myHeading, Session.ApproachDegrees);
                 var retreat = MathFuncs.IsDotProductWithinTolerance(ref targetRevDir, ref myHeading, Session.ApproachDegrees);
                 if (intercept) Focus.TargetState[i].Engagement = 0;
                 else if (retreat) Focus.TargetState[i].Engagement = 1;
-                else Focus.TargetState[i].Engagement = -1;
-
-                var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
+                else Focus.TargetState[i].Engagement = 2;
 
                 var distanceFromCenters = Vector3D.Distance(GridCenter, target.PositionComp.WorldAABB.Center);
                 distanceFromCenters -= GridRadius;
@@ -326,6 +325,7 @@ namespace WeaponCore.Support
                 else if (distPercent > 0) Focus.TargetState[i].Distance = 0;
                 else Focus.TargetState[i].Distance = -1;
 
+                var speed = Math.Round(target.Physics?.Speed ?? 0, 1);
                 if (speed <= 0) Focus.TargetState[i].Speed = -1;
                 else
                 {

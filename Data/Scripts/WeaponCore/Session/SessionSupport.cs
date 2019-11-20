@@ -249,7 +249,6 @@ namespace WeaponCore
                     w.LastHeat = currentHeat;
                 }
 
-
                 if (set && w.System.DegRof && w.Comp.State.Value.Weapons[w.WeaponId].Heat >= (w.System.MaxHeat * .8))
                 {
                     var systemRate = w.System.RateOfFire * w.Comp.Set.Value.RofModifier;
