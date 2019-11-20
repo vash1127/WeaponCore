@@ -47,8 +47,11 @@ namespace WeaponCore.Support
                     {
                         inventory.InventoryContentChanged += CheckAmmoInventory;
                         foreach (var item in inventory.GetItems())
-                            if (item.Content is MyObjectBuilder_AmmoMagazine)
+                        {
+                            var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
+                            if (ammoMag != null && AmmoInventories.ContainsKey(ammoMag.GetObjectId()))
                                 CheckAmmoInventory(inventory, item, item.Amount);
+                        }
                     }
                 }
             }
@@ -94,7 +97,7 @@ namespace WeaponCore.Support
                 {
                     var hasIntentory = AmmoInventories[magId].ContainsKey(myInventory);
                     if (!hasIntentory && amount > 0)
-                        AmmoInventories[ammoMag.GetObjectId()][myInventory] = amount;
+                        AmmoInventories[magId][myInventory] = amount;
 
                     else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
                         AmmoInventories[magId][myInventory] += amount;
