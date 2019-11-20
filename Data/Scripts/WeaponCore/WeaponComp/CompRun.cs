@@ -76,7 +76,6 @@ namespace WeaponCore.Support
                 IsSorterTurret = false;
                 MissileBase.EnableIdleRotation = false;
             }
-
             else if (MyCube is IMyConveyorSorter)
             {
                 SorterBase = (IMyConveyorSorter)MyCube;

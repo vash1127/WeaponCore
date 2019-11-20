@@ -1,10 +1,8 @@
 ﻿using Sandbox.Game;
-using Sandbox.ModAPI;
-using System.Collections.Generic;
 using VRage;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
+using WeaponCore.Support;
 
 namespace WeaponCore
 {
@@ -14,7 +12,6 @@ namespace WeaponCore
         {
             var comp = weapon.Comp;
             if (!comp.MyCube.HasInventory) return;
-
             var def = weapon.System.AmmoDefId;
             float itemMass;
             float itemVolume;
@@ -26,10 +23,13 @@ namespace WeaponCore
 
             comp.State.Value.Weapons[weapon.WeaponId].CurrentMags = comp.BlockInventory.GetItemAmount(def);
             weapon.CurrentAmmoVolume = (float)comp.State.Value.Weapons[weapon.WeaponId].CurrentMags * itemVolume;
-
+            Log.Line($"lmag:{lastMags} - invMagAv:{invMagsAvailable.Count} - cmag: {comp.State.Value.Weapons[weapon.WeaponId].CurrentMags} - cVol:{weapon.CurrentAmmoVolume}");
             if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invMagsAvailable.Count > 0)
+            {
                 weapon.Comp.Ai.Session.WeaponAmmoPullQueue.Enqueue(weapon);
-            
+                Log.Line("enqueue mags");
+            }
+
             if (lastMags == 0 && comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0)
                 weapon.Comp.Ai.Reloading = true;
         }
@@ -93,7 +93,6 @@ namespace WeaponCore
             {
                 var weapon = weaponAmmoToPull.Item1;
                 if (!weapon.Comp.InventoryInited) continue;
-
                 var inventoriesToPull = weaponAmmoToPull.Item2;
                 var def = weapon.System.AmmoDefId;
                 var magItem = weapon.System.AmmoItem;
