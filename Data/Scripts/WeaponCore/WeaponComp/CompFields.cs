@@ -92,7 +92,6 @@ namespace WeaponCore.Support
         {
             Ai = ai;
             MyCube = myCube;
-            BlockInventory = (MyInventory)MyCube.GetInventoryBase();
 
             SinkPower = IdlePower;
         }        

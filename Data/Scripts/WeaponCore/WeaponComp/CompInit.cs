@@ -156,6 +156,7 @@ namespace WeaponCore.Support
 
         private void InventoryInit()
         {
+            BlockInventory = (MyInventory)MyCube.GetInventoryBase();
             if (MyCube is IMyConveyorSorter) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
             BlockInventory.Constraint.m_useDefaultIcon = false;
             BlockInventory.ResetVolume();

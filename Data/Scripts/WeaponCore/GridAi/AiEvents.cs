@@ -44,7 +44,15 @@ namespace WeaponCore.Support
                 {
                     MyInventory inventory;
                     if (myCubeBlock.TryGetInventory(out inventory))
+                    {
                         inventory.InventoryContentChanged += CheckAmmoInventory;
+                        foreach (var item in inventory.GetItems())
+                        {
+                            var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
+                            if (ammoMag != null && AmmoInventories.ContainsKey(ammoMag.GetObjectId()))
+                                CheckAmmoInventory(inventory, item, item.Amount);
+                        }
+                    }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
@@ -79,17 +87,17 @@ namespace WeaponCore.Support
         private void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
             Session.DsUtil.Start("AmmoInventory");
-            if (item.Content is MyObjectBuilder_AmmoMagazine)
+            var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
+            if (ammoMag != null)
             {
                 var myInventory = inventory as MyInventory;
                 if (myInventory == null) return;
-                var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
                 var magId = ammoMag.GetObjectId();
                 if (AmmoInventories.ContainsKey(magId))
                 {
                     var hasIntentory = AmmoInventories[magId].ContainsKey(myInventory);
                     if (!hasIntentory && amount > 0)
-                        AmmoInventories[ammoMag.GetObjectId()][myInventory] = amount;
+                        AmmoInventories[magId][myInventory] = amount;
 
                     else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
                         AmmoInventories[magId][myInventory] += amount;
