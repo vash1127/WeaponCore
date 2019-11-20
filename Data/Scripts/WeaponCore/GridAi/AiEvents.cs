@@ -86,7 +86,6 @@ namespace WeaponCore.Support
 
         private void CheckAmmoInventory(MyInventoryBase inventory, MyPhysicalInventoryItem item, MyFixedPoint amount)
         {
-            Session.DsUtil.Start("AmmoInventory");
             var ammoMag = item.Content as MyObjectBuilder_AmmoMagazine;
             if (ammoMag != null)
             {
@@ -104,12 +103,12 @@ namespace WeaponCore.Support
 
                     else if (hasIntentory)
                         AmmoInventories[magId].Remove(myInventory);
+
                     CheckReload = true;
                     NewAmmoType = magId;
                 }
             }
             Session.AmmoMoveTriggered++;
-            Session.DsUtil.Complete("AmmoInventory", true, false);
         }
 
         private void GridClose(MyEntity myEntity)

@@ -19,16 +19,13 @@ namespace WeaponCore
             MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
 
             var lastMags = comp.State.Value.Weapons[weapon.WeaponId].CurrentMags;
-            var invMagsAvailable = comp.Ai.AmmoInventories[def];
+            var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
 
             comp.State.Value.Weapons[weapon.WeaponId].CurrentMags = comp.BlockInventory.GetItemAmount(def);
             weapon.CurrentAmmoVolume = (float)comp.State.Value.Weapons[weapon.WeaponId].CurrentMags * itemVolume;
-            Log.Line($"lmag:{lastMags} - invMagAv:{invMagsAvailable.Count} - cmag: {comp.State.Value.Weapons[weapon.WeaponId].CurrentMags} - cVol:{weapon.CurrentAmmoVolume}");
-            if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invMagsAvailable.Count > 0)
-            {
+
+            if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                 weapon.Comp.Ai.Session.WeaponAmmoPullQueue.Enqueue(weapon);
-                Log.Line("enqueue mags");
-            }
 
             if (lastMags == 0 && comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0)
                 weapon.Comp.Ai.Reloading = true;
