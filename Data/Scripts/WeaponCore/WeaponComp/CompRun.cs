@@ -1,7 +1,5 @@
 ﻿using System;
-using Sandbox.Game;
 using Sandbox.ModAPI;
-using Sandbox.ModAPI.Ingame;
 using SpaceEngineers.Game.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
@@ -83,14 +81,9 @@ namespace WeaponCore.Support
             {
                 SorterBase = (IMyConveyorSorter)MyCube;
                 IsSorterTurret = true;
-                BlockInventory.Constraint = new MyInventoryConstraint("ammo");
             }
 
             //TODO add to config
-
-            BlockInventory.Constraint.m_useDefaultIcon = false;
-            BlockInventory.ResetVolume();
-            BlockInventory.Refresh();
 
             StorageSetup();
 
@@ -102,8 +95,6 @@ namespace WeaponCore.Support
             {
                 var weapon = Platform.Weapons[i];
                 weapon.InitTracking();
-
-                Session.ComputeStorage(weapon);
 
                 MaxHeat += weapon.System.MaxHeat;
                 weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
@@ -128,17 +119,15 @@ namespace WeaponCore.Support
                 var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage : 1;
 
                 if (weapon.BaseDamage > weapon.System.BaseDamage)
-                    mulitplier = mulitplier * mulitplier;
+                    mulitplier *= mulitplier;
 
                 weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
                 weapon.AreaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
                 weapon.DetonateDmg = weapon.System.DetonationDamage * mulitplier;
 
-
                 MaxRequiredPower -= weapon.RequiredPower;
                 weapon.RequiredPower *= mulitplier;
                 MaxRequiredPower += weapon.RequiredPower;
-
 
                 weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
                 weapon.TimePerShot = (3600d / weapon.RateOfFire);
@@ -163,7 +152,6 @@ namespace WeaponCore.Support
                 HeatPerSecond += (60 / (float)weapon.TicksPerShot) * weapon.HeatPShot * weapon.System.BarrelsPerShot;
                 OptimalDps += weapon.Dps;
 
-
                 HeatSinkRate += weapon.HsRate;
 
                 weapon.UpdateBarrelRotation();
@@ -171,31 +159,11 @@ namespace WeaponCore.Support
                 if (State.Value.Weapons[weapon.WeaponId].CurrentMags == 0)
                     weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
 
-                MaxInventoryVolume += weapon.System.MaxAmmoVolume;
-                if (MyCube.HasInventory)
-                {
-
-                }
             }
 
             Ai.OptimalDps += OptimalDps;
 
-            if (MyCube.HasInventory)
-            {
-                BlockInventory.FixInventoryVolume(MaxInventoryVolume);
-
-                BlockInventory.Constraint.Clear();
-
-                foreach (var w in Platform.Weapons)
-                {
-                    var magId = w.System.MagazineDef.Id;
-                    BlockInventory.Constraint.Add(magId);
-                }
-                BlockInventory.Refresh();
-
-
-            }
-
+            InventoryInit();
             PowerInit();
             RegisterEvents();
             OnAddedToSceneTasks();

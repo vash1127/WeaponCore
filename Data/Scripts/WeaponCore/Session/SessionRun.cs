@@ -41,17 +41,6 @@ namespace WeaponCore
 
                 if (Tick180)
                 {
-                    var projectileTime = DsUtil.GetValue("projectiles");
-                    var updateTime = DsUtil.GetValue("update");
-                    var damageTime = DsUtil.GetValue("damage");
-                    var drawTime = DsUtil.GetValue("draw");
-                    var db = DsUtil.GetValue("db");
-                    var ai = DsUtil.GetValue("ai");
-                    var ammoInv = DsUtil.GetValue("AmmoInventory");
-                    var ammoPulltimer = DsUtil.GetValue("AmmoPull");
-                    var threshold = Projectiles.Wait.Length * 8;
-                    var Tracking = DsUtil.GetValue("Tracking");
-                    //HighLoad = Load > threshold;
                     HighLoad = false;
                     //Log.Line($"Load:[{Load:0.0}({threshold})] AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] Projectiles:[{ProjectileChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
                     TargetRequests = 0;

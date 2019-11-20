@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.EntityComponents;
+﻿using Sandbox.Game;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Utils;
@@ -89,6 +90,34 @@ namespace WeaponCore.Support
                     w.Heat = 0;
                 }
             }
+        }
+
+        private void InventoryInit()
+        {
+            if (MyCube is IMyConveyorSorter) BlockInventory.Constraint = new MyInventoryConstraint("ammo");
+            BlockInventory.Constraint.m_useDefaultIcon = false;
+            BlockInventory.ResetVolume();
+            BlockInventory.Refresh();
+            foreach (var weapon in Platform.Weapons)
+            {
+                Session.ComputeStorage(weapon);
+                MaxInventoryVolume += weapon.System.MaxAmmoVolume;
+            }
+
+            if (MyCube.HasInventory)
+            {
+                BlockInventory.FixInventoryVolume(MaxInventoryVolume);
+
+                BlockInventory.Constraint.Clear();
+
+                foreach (var w in Platform.Weapons)
+                {
+                    var magId = w.System.MagazineDef.Id;
+                    BlockInventory.Constraint.Add(magId);
+                }
+                BlockInventory.Refresh();
+            }
+            InventoryInited = true;
         }
     }
 }

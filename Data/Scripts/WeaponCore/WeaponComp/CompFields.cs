@@ -21,6 +21,7 @@ namespace WeaponCore.Support
         private bool _clientNotReady;
         private bool _firstSync;
 
+        internal volatile bool InventoryInited;
         internal GridAi Ai { get; set; }
         internal MySoundPair RotationSound;
         internal MyEntity3DSoundEmitter RotationEmitter; 
