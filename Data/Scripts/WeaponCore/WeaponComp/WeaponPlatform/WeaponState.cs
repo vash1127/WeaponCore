@@ -309,7 +309,7 @@ namespace WeaponCore.Platform
 
         internal void UpdateBarrelRotation()
         {
-            if (!Comp.MyCube.MarkedForClose && Comp.MyCube != null)
+            if (Comp.MyCube != null && !Comp.MyCube.MarkedForClose)
             {
                 var rof = RateOfFire < 3599 ? RateOfFire : 3599;
 

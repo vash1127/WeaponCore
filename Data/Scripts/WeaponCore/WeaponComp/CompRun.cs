@@ -95,65 +95,7 @@ namespace WeaponCore.Support
             {
                 var weapon = Platform.Weapons[i];
                 weapon.InitTracking();
-
-                MaxHeat += weapon.System.MaxHeat;
-                weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
-
-                if (weapon.System.EnergyAmmo)
-                    weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DpsModifier;
-                else
-                    weapon.BaseDamage = weapon.System.BaseDamage;
-
-                if (weapon.System.IsBeamWeapon)
-                    weapon.BaseDamage *= Set.Value.Overload;
-
-                if (weapon.BaseDamage < 0)
-                    weapon.BaseDamage = 0;
-
-                if (weapon.RateOfFire < 1)
-                    weapon.RateOfFire = 1;
-
-                weapon.UpdateShotEnergy();
-                weapon.UpdateRequiredPower();
-
-                var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage : 1;
-
-                if (weapon.BaseDamage > weapon.System.BaseDamage)
-                    mulitplier *= mulitplier;
-
-                weapon.HeatPShot = weapon.System.HeatPerShot * mulitplier;
-                weapon.AreaEffectDmg = weapon.System.AreaEffectDamage * mulitplier;
-                weapon.DetonateDmg = weapon.System.DetonationDamage * mulitplier;
-
-                MaxRequiredPower -= weapon.RequiredPower;
-                weapon.RequiredPower *= mulitplier;
-                MaxRequiredPower += weapon.RequiredPower;
-
-                weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
-                weapon.TimePerShot = (3600d / weapon.RateOfFire);
-
-                weapon.Dps = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
-
-                if (weapon.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
-                {
-                    if (weapon.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
-                        weapon.Dps += (weapon.DetonateDmg / 2) * (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
-                                            ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
-                                            weapon.System.Values.Ammo.Trajectory.DesiredSpeed
-                                            : 1);
-                    else
-                        weapon.Dps += (weapon.AreaEffectDmg / 2) *
-                                        (weapon.System.Values.Ammo.Trajectory.DesiredSpeed > 0
-                                            ? weapon.System.Values.Ammo.Trajectory.AccelPerSec /
-                                            weapon.System.Values.Ammo.Trajectory.DesiredSpeed
-                                            : 1);
-                }
-
-                HeatPerSecond += (60 / (float)weapon.TicksPerShot) * weapon.HeatPShot * weapon.System.BarrelsPerShot;
-                OptimalDps += weapon.Dps;
-
-                HeatSinkRate += weapon.HsRate;
-
+                DpsAndHeatInit(weapon);
                 weapon.UpdateBarrelRotation();
 
                 if (State.Value.Weapons[weapon.WeaponId].CurrentMags == 0)

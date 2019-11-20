@@ -147,7 +147,6 @@ namespace WeaponCore
                 var oldRequired = w.RequiredPower;
                 w.UpdateRequiredPower();
 
-
                 w.TicksPerShot = (uint)(3600f / w.RateOfFire);
                 w.TimePerShot = (3600d / w.RateOfFire);
 
