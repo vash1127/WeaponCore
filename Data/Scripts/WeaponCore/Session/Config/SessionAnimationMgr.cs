@@ -416,7 +416,7 @@ namespace WeaponCore
             
         }
 
-        internal Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> CreateWeaponAnimationSet(Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> systemAnimations, RecursiveSubparts parts)
+        internal Dictionary<Weapon.EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> systemAnimations, RecursiveSubparts parts)
         {
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
             WeaponSystem system = null;
@@ -489,8 +489,16 @@ namespace WeaponCore
             {
                 //cant check for emissives so may be null ref
             }
+            var returnAnimations = new Dictionary<Weapon.EventTriggers, PartAnimation[]>();
 
-            return allAnimationSet;
+            foreach (var animationKV in allAnimationSet)
+            {
+                var set = animationKV.Value;
+                returnAnimations[animationKV.Key] = new PartAnimation[set.Count];
+                set.CopyTo(returnAnimations[animationKV.Key]);
+            }
+
+            return returnAnimations;
         }
 
         internal Matrix CreateRotation(double x, double y, double z)

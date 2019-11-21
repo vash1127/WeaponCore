@@ -71,7 +71,7 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
-        internal readonly Dictionary<EventTriggers, HashSet<PartAnimation>> AnimationsSet;
+        internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
         internal readonly Dictionary<MyEntity, Vector3D> SleepingTargets = new Dictionary<MyEntity, Vector3D>();
         internal float RequiredPower;
         internal float BaseDamage;
@@ -175,7 +175,7 @@ namespace WeaponCore.Platform
             EmptyOnGameLoad
         }
 
-        public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, HashSet<PartAnimation>> animationSets)
+        public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
         {
             MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> {Item1 = entity };
             AnimationsSet = animationSets;

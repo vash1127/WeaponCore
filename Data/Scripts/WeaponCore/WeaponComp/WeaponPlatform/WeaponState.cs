@@ -64,8 +64,9 @@ namespace WeaponCore.Platform
                     case EventTriggers.Firing:
                         if (AnimationsSet.ContainsKey(EventTriggers.Firing))
                         {
-                            foreach (var animation in AnimationsSet[EventTriggers.Firing])
+                            for (int i = 0; i < AnimationsSet[EventTriggers.Firing].Length; i++)
                             {
+                                var animation = AnimationsSet[EventTriggers.Firing][i];
                                 if (active && animation.Looping != true && !pause)
                                 {
                                     if (!Comp.Ai.Session.AnimationsToProcess.Contains(animation) && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
@@ -96,14 +97,15 @@ namespace WeaponCore.Platform
                         else
                             Log.Line($"Done Reloading");
 
-                        var canReload = true;
+                        var canReload = !Reloading;
 
                         if (AnimationsSet.ContainsKey(EventTriggers.Reloading))
                         {
                             if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                             {
-                                foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
+                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i++)
                                 {
+                                    var animation = AnimationsSet[EventTriggers.TurnOn][i];
                                     if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                         canReload = false;
                                 }
@@ -111,8 +113,9 @@ namespace WeaponCore.Platform
 
                             if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                             {
-                                foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
+                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
                                 {
+                                    var animation = AnimationsSet[EventTriggers.TurnOff][i];
                                     if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                         canReload = false;
                                 }
@@ -120,8 +123,9 @@ namespace WeaponCore.Platform
 
                             if (canReload)
                             {
-                                foreach (var animation in AnimationsSet[EventTriggers.Reloading])
+                                for (int i = 0; i < AnimationsSet[EventTriggers.Reloading].Length; i++)
                                 {
+                                    var animation = AnimationsSet[EventTriggers.Reloading][i];
                                     if (active && animation.Looping != true && !pause && !Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                     {
                                         Comp.Ai.Session.AnimationsToProcess.Add(animation);
@@ -148,8 +152,9 @@ namespace WeaponCore.Platform
 
                         if (AnimationsSet.ContainsKey(EventTriggers.Tracking))
                         {
-                            foreach (var animation in AnimationsSet[EventTriggers.Tracking])
+                            for (int i = 0; i < AnimationsSet[EventTriggers.Tracking].Length; i++)
                             {
+                                var animation = AnimationsSet[EventTriggers.Tracking][i];
                                 if (active)
                                 {
                                     if (animation.CurrentMove == 0 && !animation.Looping)
@@ -172,8 +177,9 @@ namespace WeaponCore.Platform
                     case EventTriggers.Overheated:
                         if (AnimationsSet.ContainsKey(EventTriggers.Overheated))
                         {
-                            foreach (var animation in AnimationsSet[EventTriggers.Overheated])
+                            for (int i = 0; i < AnimationsSet[EventTriggers.Overheated].Length; i++)
                             {
+                                var animation = AnimationsSet[EventTriggers.Overheated][i];
                                 if (active && animation.Looping != true)
                                 {
                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
@@ -195,8 +201,9 @@ namespace WeaponCore.Platform
 
                             if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                             {
-                                foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
+                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
                                 {
+                                    var animation = AnimationsSet[EventTriggers.TurnOff][i];
                                     if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                     {
                                         onAnimations = false;
@@ -207,8 +214,9 @@ namespace WeaponCore.Platform
 
                             if (onAnimations)
                             {
-                                foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
+                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
                                 {
+                                    var animation = AnimationsSet[EventTriggers.TurnOn][i];
                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
@@ -226,8 +234,9 @@ namespace WeaponCore.Platform
                             if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                             {
 
-                                foreach (var animation in AnimationsSet[EventTriggers.TurnOn])
+                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i++)
                                 {
+                                    var animation = AnimationsSet[EventTriggers.TurnOn][i];
                                     if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                     {
                                         offAnimations = false;
@@ -238,8 +247,9 @@ namespace WeaponCore.Platform
                             if (offAnimations)
                             {
 
-                                foreach (var animation in AnimationsSet[EventTriggers.TurnOff])
+                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
                                 {
+                                    var animation = AnimationsSet[EventTriggers.TurnOff][i];
                                     animation.StartTick = OffDelay > 0
                                         ? Comp.Ai.Session.Tick + animation.MotionDelay + OffDelay
                                         : 0;
@@ -247,8 +257,9 @@ namespace WeaponCore.Platform
                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                     foreach (var set in AnimationsSet)
                                     {
-                                        foreach (var anim in set.Value)
+                                        for (int j = 0; j < set.Value.Length; j++)
                                         {
+                                            var anim = set.Value[i];
                                             anim.PauseAnimation = false;
                                             anim.Looping = false;
                                         }
@@ -262,12 +273,11 @@ namespace WeaponCore.Platform
                     case EventTriggers.EmptyOnGameLoad:
                         if (AnimationsSet.ContainsKey(EventTriggers.EmptyOnGameLoad))
                         {
-                            foreach (var animation in AnimationsSet[EventTriggers.EmptyOnGameLoad])
+                            for (int i = 0; i < AnimationsSet[EventTriggers.EmptyOnGameLoad].Length; i ++)
                             {
-                                if (active)
-                                {
+                                var animation = AnimationsSet[EventTriggers.EmptyOnGameLoad][i];
+                                if (active && !Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                }
                             }
                         }
 
@@ -278,8 +288,9 @@ namespace WeaponCore.Platform
                     case EventTriggers.PreFire:
                         if (AnimationsSet.ContainsKey(state))
                         {
-                            foreach (var animation in AnimationsSet[state])
+                            for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
+                                var animation = AnimationsSet[state][i];
                                 if (active && animation.Looping != true)
                                 {
                                     if (!Comp.Ai.Session.AnimationsToProcess.Contains(animation))
