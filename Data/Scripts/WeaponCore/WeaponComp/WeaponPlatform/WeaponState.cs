@@ -92,10 +92,6 @@ namespace WeaponCore.Platform
 
                         break;
                     case EventTriggers.Reloading:
-                        if(active)
-                            Log.Line($"Reloading");
-                        else
-                            Log.Line($"Done Reloading");
 
                         var canReload = !Reloading;
 
