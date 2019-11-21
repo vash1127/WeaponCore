@@ -395,7 +395,6 @@ namespace WeaponCore
             SmallBlockSphereDb.Clear();
             GridToBlockTypeMap.Clear();
             AnimationsToProcess.Clear();
-            AnimationsToQueue.Clear();
             _shrinking.ClearImmediate();
             _afterGlow.ClearImmediate();
             _shrinkPool.Clean();
@@ -445,7 +444,6 @@ namespace WeaponCore
             SApi.Unload();
             SApi = null;
             AnimationsToProcess = null;
-            AnimationsToQueue = null;
 
             ProjectileTree.Clear();
             ProjectileTree = null;

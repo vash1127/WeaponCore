@@ -84,7 +84,6 @@ namespace WeaponCore
 
 
         internal DsUniqueListFastRemove<PartAnimation> AnimationsToProcess = new DsUniqueListFastRemove<PartAnimation>();
-        internal Queue<PartAnimation> AnimationsToQueue = new Queue<PartAnimation>();
         internal List<GridAi> DbsToUpdate = new List<GridAi>();
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         internal Projectiles.Projectiles Projectiles;
