@@ -608,40 +608,21 @@ namespace WeaponCore
         //todo client side only
         internal void ProcessAnimations()
         {
-            PartAnimation animation;
-            while (AnimationsToProcess.TryDequeue(out animation))
+            for(int i = 0; i < AnimationsToProcess.Count; i++)
             {
-
+                var animation = AnimationsToProcess[i];
                 //var data = new AnimationParallelData(ref animation);
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null)
                 {
-                    if ((animation.DoesLoop && animation.Looping && !animation.PauseAnimation) || animation.MotionDelay <= 0 || animation.CurrentMove > 0 || (animation.MotionDelay > 0 && animation.StartTick <= Tick && animation.StartTick > 0 && animation.CurrentMove == 0))
+                    if (!animation.PauseAnimation && (animation.MotionDelay == 0 || animation.CurrentMove > 0 || (animation.MotionDelay > 0 && animation.StartTick <= Tick && animation.StartTick > 0)))
                     {
-                        //MyAPIGateway.Parallel.StartBackground(AnimateParts, DoAnimation, data);
                         AnimateParts(animation);
                         animation.StartTick = 0;
                     }
                     else if (animation.MotionDelay > 0 && animation.StartTick == 0)
-                    {
                         animation.StartTick = Tick + animation.MotionDelay;
-                        AnimationsToQueue.Enqueue(animation);
-                    }
-                    else
-                    {
-                        AnimationsToQueue.Enqueue(animation);
-                    }
 
                 }
-            }
-        }
-
-        internal void ProcessAnimationQueue()
-        {
-            PartAnimation animation;
-            while (AnimationsToQueue.TryDequeue(out animation))
-            {
-                if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null)
-                    AnimationsToProcess.Enqueue(animation);
             }
         }
 
@@ -731,108 +712,8 @@ namespace WeaponCore
                 }
             }
 
-            if (animation.Reverse || animation.Looping || animation.CurrentMove > 0)
-            {
-                AnimationsToQueue.Enqueue(animation);
-            }
-        }
-
-        #region Threaded animation code
-
-        internal void AnimateParts(WorkData data)
-        {
-            var animationData = data as AnimationParallelData;
-
-            var localMatrix = animationData.Animation.Part.PositionComp.LocalMatrix;
-            MatrixD? rotation;
-            MatrixD? rotAroundCenter;
-            Vector3D translation;
-            AnimationType animationType;
-
-            PartAnimation.EmissiveState? currentEmissive;
-
-            animationData.Animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
-
-            if (animationData.Animation.Reverse)
-            {
-                localMatrix.Translation = localMatrix.Translation - translation;
-
-                animationData.Animation.Previous();
-                if (animationData.Animation.Previous(false) == animationData.Animation.NumberOfMoves - 1)
-                {
-                    animationData.Animation.Reverse = false;
-                }
-            }
-            else
-            {
-                localMatrix.Translation = localMatrix.Translation + translation;
-
-                animationData.Animation.Next();
-                if (animationData.Animation.DoesReverse && animationData.Animation.Next(false) == 0)
-                {
-                    animationData.Animation.Reverse = true;
-                }
-            }
-
-            if (rotation != null)
-            {
-                localMatrix *= (Matrix)rotation;
-            }
-
-            if (rotAroundCenter != null)
-            {
-                localMatrix *= (Matrix)rotAroundCenter;
-            }
-
-
-            animationData.NewMatrix = localMatrix;
-            animationData.Type = animationType;
-
-        }
-
-        internal void DoAnimation(WorkData data)
-        {
-            var animationData = data as AnimationParallelData;
-            var animationType = animationData.Type;
-
-            if (animationType == AnimationType.Movement)
-            {
-                animationData.Animation.Part.PositionComp.SetLocalMatrix(ref animationData.NewMatrix,
-                    animationData.Animation.MainEnt, true);
-            }
-
-            else if (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade)
-            {
-                animationData.Animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
-                animationData.Animation.Part.Render.AddRenderObjects();
-            }
-            else if (animationType == AnimationType.HideInstant || animationType == AnimationType.HideFade)
-            {
-                animationData.Animation.Part.Render.FadeOut = animationType == AnimationType.HideFade;
-                animationData.Animation.Part.Render.RemoveRenderObjects();
-            }
-
-            var animation = animationData.Animation;
-
-            if (animation.Reverse || animation.DoesLoop || animation.CurrentMove > 0)
-            {
-                AnimationsToQueue.Enqueue(animationData.Animation);
-            }
-
-            //animationData.timer.Complete();
-        }
-        #endregion
-    }
-
-    public class AnimationParallelData : WorkData
-    {
-        internal PartAnimation Animation;
-        internal Matrix NewMatrix;
-        internal Session.AnimationType Type;
-
-        public AnimationParallelData(ref PartAnimation animation)
-        {
-            Animation = animation;
+            if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
+                AnimationsToProcess.Remove(animation);
         }
     }
 }

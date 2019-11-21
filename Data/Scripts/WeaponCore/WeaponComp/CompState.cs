@@ -47,6 +47,22 @@ namespace WeaponCore.Support
             if (ent != null && MyCube != null && !MyCube.MarkedForClose && Platform != null)
             {
                 ReInit();
+                if (IsSorterTurret)
+                {
+                    if (!SorterBase.Enabled)
+                    {
+                        foreach (var w in Platform.Weapons)
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                    }
+                }
+                else
+                {
+                    if (!MissileBase.Enabled)
+                    {
+                        foreach (var w in Platform.Weapons)
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                    }
+                }
             }
         }
 

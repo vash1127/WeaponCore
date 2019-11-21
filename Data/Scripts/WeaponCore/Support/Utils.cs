@@ -74,7 +74,6 @@ namespace WeaponCore.Support
     {
         private List<T> _list = new List<T>();
         private Dictionary<T, int> _dictionary = new Dictionary<T, int>();
-        private int _index;
 
         /// <summary>O(1)</summary>
         public int Count
@@ -99,8 +98,8 @@ namespace WeaponCore.Support
         {
             if (_dictionary.ContainsKey(item))
                 return false;
-            _dictionary.Add(item, _index);
             _list.Add(item);
+            _dictionary.Add(item, _list.Count - 1);
             return true;
         }
 
@@ -111,11 +110,11 @@ namespace WeaponCore.Support
             if (_dictionary.TryGetValue(item, out oldPos))
             {
                 _dictionary.Remove(item);
+                _list.RemoveAtFast(oldPos);
 
-                int lastPos = _list.Count - 1;
-                _list[oldPos] = _list[lastPos];
-                _list.RemoveAt(lastPos);
-                _dictionary[_list[oldPos]] = oldPos;
+                if(_list.Count > 0)
+                    _dictionary[_list[oldPos]] = oldPos;
+
                 return true;
             }
             return false;

@@ -83,7 +83,6 @@ namespace WeaponCore
                     ControlChanged = lastControlledEnt != ControlledEntity && ControlledEntity.Components.TryGet(out notNeeded);
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
-                    ProcessAnimationQueue();
                 }
 
                 DsUtil.Start("ai");
