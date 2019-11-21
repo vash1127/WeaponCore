@@ -404,6 +404,8 @@ namespace WeaponCore.Support
 
         public void SubGridDetect()
         {
+            if (PrevSubGrids.Count == 0) return;
+
             AddSubGrids.Clear();
             foreach (var sub in PrevSubGrids)
             {
@@ -442,10 +444,7 @@ namespace WeaponCore.Support
         {
             FatMap fatMap;
             if (FakeShipController != null && Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && !fatMap.MyCubeBocks.Empty)
-            {
                 FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
-            }
-            else Log.Line($"InitFakeShipController Failed!!!!! - {FakeShipController == null} - {MyGrid == null} - {Session.GridToFatMap.ContainsKey(MyGrid)} - {MyGrid}");
         }
 
         internal void UpdateGridPower()
