@@ -1,6 +1,8 @@
 ﻿using System;
+using Sandbox.Game;
 using Sandbox.ModAPI;
 using SpaceEngineers.Game.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.Utils;
@@ -150,7 +152,9 @@ namespace WeaponCore.Support
             {
                 Ai.GridInit = true;
                 foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
+                {
                     Ai.FatBlockAdded(cubeBlock);
+                }
             }
 
             Status = !IsWorking ? Start.Starting : Start.ReInit;
