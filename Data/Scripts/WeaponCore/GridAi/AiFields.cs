@@ -29,8 +29,8 @@ namespace WeaponCore.Support
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
-        internal readonly List<MyCubeGrid> SubGridsTmp = new List<MyCubeGrid>();
-        internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> SubGridsTmp = new HashSet<MyCubeGrid>();
+        internal HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
@@ -104,7 +104,6 @@ namespace WeaponCore.Support
         internal float OptimalDps;
         internal Vector3D GridCenter;
         internal Vector3 GridVel;
-
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private readonly FastResourceLock _scanLock = new FastResourceLock();
         private uint _lastScan;

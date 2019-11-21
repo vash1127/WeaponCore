@@ -27,6 +27,7 @@ namespace WeaponCore.Support
                     var boundingSphereD = MyGrid.PositionComp.WorldVolume;
                     boundingSphereD.Radius = MaxTargetingRange;
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, _possibleTargets);
+                    SubGridsTmp.Clear();
                     for (int i = 0; i < _possibleTargets.Count; i++)
                     {
                         var ent = _possibleTargets[i];
@@ -46,11 +47,6 @@ namespace WeaponCore.Support
                             var grid = ent as MyCubeGrid;
                             if (grid != null)
                             {
-                                if (MyGrid.IsSameConstructAs(grid))
-                                {
-                                    SubGridsTmp.Add(grid);
-                                    continue;
-                                }
                                 FatMap fatMap;
                                 if (!Session.GridToFatMap.TryGetValue(grid, out fatMap) || fatMap.Trash)
                                 {
@@ -132,7 +128,17 @@ namespace WeaponCore.Support
                         continue;
                     StaticsInRangeTmp.Add(ent);
                 }
-                if (grid != null && grid.IsSameConstructAs(MyGrid) || ValidGrids.Contains(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
+
+                if (grid != null)
+                {
+                    if (MyGrid.IsSameConstructAs(grid))
+                    {
+                        Log.Line("test");
+                        SubGridsTmp.Add(grid);
+                        continue;
+                    }
+                    if (ValidGrids.Contains(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
+                }
                 ObstructionsTmp.Add(ent);
             }
             ValidGrids.Clear();

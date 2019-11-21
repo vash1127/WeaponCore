@@ -1,13 +1,9 @@
 ﻿using System;
-using Sandbox.Game;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
-using IMyConveyorSorter = Sandbox.ModAPI.IMyConveyorSorter;
 
 namespace WeaponCore.Support
 {
