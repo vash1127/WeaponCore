@@ -71,9 +71,10 @@ namespace WeaponCore.Platform
 
         }
 
-        public bool TurretHomePosition()
+        public void TurretHomePosition()
         {
-            if (Comp.SorterBase == null && Comp.MissileBase == null) return false;
+            ReturnHome = false;
+            if (Comp.SorterBase == null && Comp.MissileBase == null) return;
 
             var azStep = System.AzStep;
             var elStep = System.ElStep;
@@ -95,9 +96,8 @@ namespace WeaponCore.Platform
             AimBarrel(oldAz - Azimuth, oldEl - Elevation);
 
 
-            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) return true;
+            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) ReturnHome = true;
 
-            return false;
         }
 
         internal void UpdatePivotPos()

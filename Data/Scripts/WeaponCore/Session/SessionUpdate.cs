@@ -214,7 +214,7 @@ namespace WeaponCore
                                 {
                                     w.EventTriggerStateChanged(state: Weapon.EventTriggers.Firing, active: true, pause: true);
                                     if (w.IsShooting)
-                                        w.StopShooting(true);
+                                        w.StopShooting();
                                 }
                                 if (comp.State.Value.Weapons[w.WeaponId].CurrentMags != 0)
                                     w.StartReload();
