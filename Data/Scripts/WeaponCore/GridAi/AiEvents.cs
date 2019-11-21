@@ -42,7 +42,7 @@ namespace WeaponCore.Support
                     if (Batteries.Add(battery)) SourceCount++;
                     UpdatePowerSources = true;
                 }
-                if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler)
+                if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler || myCubeBlock is IMyShipConnector)
                 {
                     MyInventory inventory;
                     if (myCubeBlock.TryGetInventory(out inventory))

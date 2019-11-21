@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -425,13 +426,23 @@ namespace WeaponCore.Support
         {
             foreach (var grid in AddSubGrids)
             {
-                Log.Line($"gridAdd:{grid.DebugName}");
+                grid.OnFatBlockAdded += FatBlockAdded;
+                grid.OnFatBlockRemoved += FatBlockRemoved;
+
+                var blocks = Session.GridToFatMap[grid].MyCubeBocks;
+                for (int i = 0; i < blocks.Count; i++)
+                    FatBlockAdded(blocks[i]);
             }
             AddSubGrids.Clear();
 
             foreach (var grid in RemSubGrids)
             {
-                Log.Line($"gridRemove:{grid.DebugName}");
+                grid.OnFatBlockAdded -= FatBlockAdded;
+                grid.OnFatBlockRemoved -= FatBlockRemoved;
+
+                var blocks = Session.GridToFatMap[grid].MyCubeBocks;
+                for (int i = 0; i < blocks.Count; i++)
+                    FatBlockRemoved(blocks[i]);
             }
             RemSubGrids.Clear();
         }
