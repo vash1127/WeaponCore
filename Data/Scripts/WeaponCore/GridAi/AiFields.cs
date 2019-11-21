@@ -19,6 +19,7 @@ namespace WeaponCore.Support
     {
         internal volatile bool Scanning;
         internal volatile bool Ready;
+        internal volatile bool SubGridsChanged;
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(8);
 
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
@@ -29,19 +30,23 @@ namespace WeaponCore.Support
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
-        internal readonly List<MyCubeGrid> SubGridsTmp = new List<MyCubeGrid>();
-        internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> PrevSubGrids = new HashSet<MyCubeGrid>();
+        internal HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
+        internal HashSet<MyCubeGrid> RemSubGrids = new HashSet<MyCubeGrid>();
+        internal HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
+        internal HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
+
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
-        internal readonly List<GridAi> TargetAis = new List<GridAi>();
+        internal List<GridAi> TargetAis = new List<GridAi>();
         internal readonly List<GridAi> ThreatsTmp = new List<GridAi>();
-        internal readonly List<GridAi> Threats = new List<GridAi>();
+        internal List<GridAi> Threats = new List<GridAi>();
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
-        internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
+        internal List<MyEntity> Obstructions = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
-        internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
+        internal List<MyEntity> StaticsInRange = new List<MyEntity>();
 
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
@@ -104,7 +109,6 @@ namespace WeaponCore.Support
         internal float OptimalDps;
         internal Vector3D GridCenter;
         internal Vector3 GridVel;
-
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private readonly FastResourceLock _scanLock = new FastResourceLock();
         private uint _lastScan;
@@ -123,7 +127,6 @@ namespace WeaponCore.Support
             CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
-            MyAPIGateway.Utilities.InvokeOnGameThread(InitFakeShipController);
         }
     }
 }

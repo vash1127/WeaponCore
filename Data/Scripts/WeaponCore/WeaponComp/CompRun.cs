@@ -1,13 +1,9 @@
 ﻿using System;
-using Sandbox.Game;
 using Sandbox.ModAPI;
-using SpaceEngineers.Game.ModAPI;
-using VRage.Game;
 using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
-using IMyConveyorSorter = Sandbox.ModAPI.IMyConveyorSorter;
 
 namespace WeaponCore.Support
 {
@@ -72,18 +68,6 @@ namespace WeaponCore.Support
                 return;
             }
 
-            if (MyCube is IMyLargeMissileTurret)
-            {
-                MissileBase = (IMyLargeMissileTurret)MyCube;
-                IsSorterTurret = false;
-                MissileBase.EnableIdleRotation = false;
-            }
-            else if (MyCube is IMyConveyorSorter)
-            {
-                SorterBase = (IMyConveyorSorter)MyCube;
-                IsSorterTurret = true;
-            }
-
             //TODO add to config
 
             StorageSetup();
@@ -110,7 +94,6 @@ namespace WeaponCore.Support
             PowerInit();
             RegisterEvents();
             OnAddedToSceneTasks();
-
             if (IsSorterTurret)
             {
                 if (!SorterBase.Enabled)
@@ -164,6 +147,7 @@ namespace WeaponCore.Support
             if (!Ai.GridInit)
             {
                 Ai.GridInit = true;
+                Ai.InitFakeShipController();
                 foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
                 {
                     Ai.FatBlockAdded(cubeBlock);

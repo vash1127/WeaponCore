@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
@@ -400,12 +401,47 @@ namespace WeaponCore.Support
             }
             return validFocus;
         }
-        #region Power
 
+        public void SubGridDetect()
+        {
+            if (PrevSubGrids.Count == 0) return;
+
+            AddSubGrids.Clear();
+            foreach (var sub in PrevSubGrids)
+            {
+                AddSubGrids.Add(sub);
+                TmpSubGrids.Add(sub);
+            }
+
+            TmpSubGrids.IntersectWith(RemSubGrids);
+            RemSubGrids.ExceptWith(AddSubGrids);
+            AddSubGrids.ExceptWith(TmpSubGrids);
+            TmpSubGrids.Clear();
+
+            SubGridsChanged =  AddSubGrids.Count != 0 || RemSubGrids.Count != 0;
+        }
+
+        public void SubGridChanges()
+        {
+            foreach (var grid in AddSubGrids)
+            {
+                Log.Line($"gridAdd:{grid.DebugName}");
+            }
+            AddSubGrids.Clear();
+
+            foreach (var grid in RemSubGrids)
+            {
+                Log.Line($"gridRemove:{grid.DebugName}");
+            }
+            RemSubGrids.Clear();
+        }
+
+        #region Power
         internal void InitFakeShipController()
         {
-            if (FakeShipController != null && MyGrid?.CubeBlocks != null)
-                FakeShipController.SlimBlock = MyGrid.CubeBlocks.FirstElement();
+            FatMap fatMap;
+            if (FakeShipController != null && Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && !fatMap.MyCubeBocks.Empty)
+                FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
         }
 
         internal void UpdateGridPower()
