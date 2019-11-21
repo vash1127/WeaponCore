@@ -3,6 +3,7 @@ using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using WeaponCore.Support;
 using static WeaponCore.Support.TargetingDefinition.BlockTypes;
@@ -38,7 +39,12 @@ namespace WeaponCore
                     else if (db.MyPlanet != null) db.MyPlanetInfo(clear: true);
                 }
 
-                Interlocked.Exchange(ref db.SubGrids, db.SubGridsTmp);
+                Interlocked.Exchange(ref db.SubGrids, db.PrevSubGrids);
+                if (db.SubGridsChanged)
+                {
+                    db.SubGridsAdded();
+                    db.SubGridRemoved();
+                }
                 //for (int i = 0; i < db.SubGridsTmp.Count; i++) db.SubGrids.Add(db.SubGridsTmp[i]);
                 //db.SubGridsTmp.Clear();
                 for (int i = 0; i < db.SortedTargets.Count; i++) db.TargetInfoPool.Return(db.SortedTargets[i]);

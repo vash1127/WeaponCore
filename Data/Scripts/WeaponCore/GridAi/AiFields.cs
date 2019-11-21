@@ -19,6 +19,7 @@ namespace WeaponCore.Support
     {
         internal volatile bool Scanning;
         internal volatile bool Ready;
+        internal volatile bool SubGridsChanged;
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(8);
 
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
@@ -29,8 +30,12 @@ namespace WeaponCore.Support
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
-        internal readonly HashSet<MyCubeGrid> SubGridsTmp = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> PrevSubGrids = new HashSet<MyCubeGrid>();
         internal HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
+        internal HashSet<MyCubeGrid> RemSubGrids = new HashSet<MyCubeGrid>();
+        internal HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
+        internal HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
+
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();

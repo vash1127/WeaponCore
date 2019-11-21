@@ -27,7 +27,11 @@ namespace WeaponCore.Support
                     var boundingSphereD = MyGrid.PositionComp.WorldVolume;
                     boundingSphereD.Radius = MaxTargetingRange;
                     MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, _possibleTargets);
-                    SubGridsTmp.Clear();
+
+                    foreach (var grid in PrevSubGrids)
+                        RemSubGrids.Add(grid);
+
+                    PrevSubGrids.Clear();
                     for (int i = 0; i < _possibleTargets.Count; i++)
                     {
                         var ent = _possibleTargets[i];
@@ -89,6 +93,7 @@ namespace WeaponCore.Support
                         }
                     }
                     FinalizeTargetDb();
+                    SubGridDetect();
                 }
                 Scanning = false;
             }
@@ -131,10 +136,9 @@ namespace WeaponCore.Support
 
                 if (grid != null)
                 {
-                    if (MyGrid.IsSameConstructAs(grid))
+                    if (grid != MyGrid && MyGrid.IsSameConstructAs(grid))
                     {
-                        Log.Line("test");
-                        SubGridsTmp.Add(grid);
+                        PrevSubGrids.Add(grid);
                         continue;
                     }
                     if (ValidGrids.Contains(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;

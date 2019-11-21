@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
@@ -400,8 +401,43 @@ namespace WeaponCore.Support
             }
             return validFocus;
         }
-        #region Power
 
+        public void SubGridDetect()
+        {
+            AddSubGrids.Clear();
+            foreach (var sub in PrevSubGrids)
+            {
+                AddSubGrids.Add(sub);
+                TmpSubGrids.Add(sub);
+            }
+
+            TmpSubGrids.IntersectWith(RemSubGrids);
+            RemSubGrids.ExceptWith(AddSubGrids);
+            AddSubGrids.ExceptWith(TmpSubGrids);
+            TmpSubGrids.Clear();
+
+            SubGridsChanged =  AddSubGrids.Count != 0 || RemSubGrids.Count != 0;
+        }
+
+        public void SubGridsAdded()
+        {
+            foreach (var grid in AddSubGrids)
+            {
+                Log.Line($"gridAdd:{grid.DebugName}");
+            }
+            AddSubGrids.Clear();
+        }
+
+        public void SubGridRemoved()
+        {
+            foreach (var grid in RemSubGrids)
+            {
+                Log.Line($"gridRemove:{grid.DebugName}");
+            }
+            RemSubGrids.Clear();
+        }
+
+        #region Power
         internal void InitFakeShipController()
         {
             FatMap fatMap;
