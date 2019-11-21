@@ -32,6 +32,8 @@ namespace WeaponCore.Support
                         RemSubGrids.Add(grid);
 
                     PrevSubGrids.Clear();
+                    ThreatsTmp.Clear();
+                    TargetAisTmp.Clear();
                     for (int i = 0; i < _possibleTargets.Count; i++)
                     {
                         var ent = _possibleTargets[i];
@@ -103,6 +105,8 @@ namespace WeaponCore.Support
         {
             MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(GridCenter);
             ShieldNearTmp = false;
+            ObstructionsTmp.Clear();
+            StaticsInRangeTmp.Clear();
             for (int i = 0; i < _possibleTargets.Count; i++)
             {
                 var ent = _possibleTargets[i];

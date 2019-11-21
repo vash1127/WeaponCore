@@ -74,25 +74,28 @@ namespace WeaponCore
                 db.NewEntities.Clear();
                 db.SortedTargets.Sort(db.TargetCompare1);
 
-                db.Threats.Clear();
-                db.Threats.AddRange(db.TargetAisTmp);
-                db.ThreatsTmp.Clear();
+                Interlocked.Exchange(ref db.Threats, db.ThreatsTmp);
+                //db.Threats.Clear();
+                //db.Threats.AddRange(db.TargetAisTmp);
+                //db.ThreatsTmp.Clear();
 
-                db.TargetAis.Clear();
-                db.TargetAis.AddRange(db.TargetAisTmp);
-                db.TargetAisTmp.Clear();
+                Interlocked.Exchange(ref db.TargetAis, db.TargetAisTmp);
+                //db.TargetAis.Clear();
+                //db.TargetAis.AddRange(db.TargetAisTmp);
+                //db.TargetAisTmp.Clear();
 
-                db.Obstructions.Clear();
-                db.Obstructions.AddRange(db.ObstructionsTmp);
-                db.ObstructionsTmp.Clear();
+                Interlocked.Exchange(ref db.Obstructions, db.ObstructionsTmp);
+                //db.Obstructions.Clear();
+                //db.Obstructions.AddRange(db.ObstructionsTmp);
+                //db.ObstructionsTmp.Clear();
 
-                db.StaticsInRange.Clear();
+                //db.StaticsInRange.Clear();
+                //db.StaticsInRange.AddRange(db.StaticsInRangeTmp);
+                //db.StaticsInRangeTmp.Clear();
+
                 if (db.PlanetSurfaceInRange) db.StaticsInRangeTmp.Add(db.MyPlanet);
-                var staticCount = db.StaticsInRangeTmp.Count;
-                db.StaticsInRange.AddRange(db.StaticsInRangeTmp);
-                db.StaticEntitiesInRange = staticCount > 0;
-                db.StaticsInRangeTmp.Clear();
-
+                Interlocked.Exchange(ref db.StaticsInRange, db.StaticsInRangeTmp);
+                db.StaticEntitiesInRange = db.StaticsInRange.Count > 0;
                 db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || db.FirstRun;
                 db.MyShield = db.MyShieldTmp;
                 db.ShieldNear = db.ShieldNearTmp;
