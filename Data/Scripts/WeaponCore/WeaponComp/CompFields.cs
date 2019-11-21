@@ -22,6 +22,8 @@ namespace WeaponCore.Support
         private bool _firstSync;
 
         internal volatile bool InventoryInited;
+        internal volatile bool IsSorterTurret;
+
         internal GridAi Ai { get; set; }
         internal MySoundPair RotationSound;
         internal MyEntity3DSoundEmitter RotationEmitter; 
@@ -80,7 +82,6 @@ namespace WeaponCore.Support
         internal bool IsWorking;
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
-        internal bool IsSorterTurret;
         internal bool IgnoreInvChange;
         internal LogicSettings Set;
         internal LogicState State;
@@ -92,6 +93,19 @@ namespace WeaponCore.Support
         {
             Ai = ai;
             MyCube = myCube;
+
+            var cube = MyCube as IMyLargeMissileTurret;
+            if (cube != null)
+            {
+                MissileBase = cube;
+                IsSorterTurret = false;
+                MissileBase.EnableIdleRotation = false;
+            }
+            else if (MyCube is IMyConveyorSorter)
+            {
+                SorterBase = (IMyConveyorSorter)MyCube;
+                IsSorterTurret = true;
+            }
 
             SinkPower = IdlePower;
         }        

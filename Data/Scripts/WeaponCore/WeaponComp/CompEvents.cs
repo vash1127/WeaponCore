@@ -23,8 +23,12 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
 
-                BlockInventory.ContentsChanged += OnContentsChanged;
-                BlockInventory.InventoryContentChanged += DetailedChanged;
+                if (InventoryInited)
+                {
+                    BlockInventory.ContentsChanged += OnContentsChanged;
+                    BlockInventory.InventoryContentChanged += DetailedChanged;
+                }
+
                 Sink.CurrentInputChanged += CurrentInputChanged;
 
             }
@@ -36,8 +40,12 @@ namespace WeaponCore.Support
                     MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
-                BlockInventory.ContentsChanged -= OnContentsChanged;
-                BlockInventory.InventoryContentChanged -= DetailedChanged;
+
+                if (InventoryInited)
+                {
+                    BlockInventory.ContentsChanged -= OnContentsChanged;
+                    BlockInventory.InventoryContentChanged -= DetailedChanged;
+                }
 
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 

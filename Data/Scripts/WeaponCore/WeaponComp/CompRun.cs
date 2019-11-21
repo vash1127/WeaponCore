@@ -70,18 +70,6 @@ namespace WeaponCore.Support
                 return;
             }
 
-            if (MyCube is IMyLargeMissileTurret)
-            {
-                MissileBase = (IMyLargeMissileTurret)MyCube;
-                IsSorterTurret = false;
-                MissileBase.EnableIdleRotation = false;
-            }
-            else if (MyCube is IMyConveyorSorter)
-            {
-                SorterBase = (IMyConveyorSorter)MyCube;
-                IsSorterTurret = true;
-            }
-
             //TODO add to config
 
             StorageSetup();
@@ -108,7 +96,6 @@ namespace WeaponCore.Support
             PowerInit();
             RegisterEvents();
             OnAddedToSceneTasks();
-
             if (IsSorterTurret)
             {
                 if (!SorterBase.Enabled)
