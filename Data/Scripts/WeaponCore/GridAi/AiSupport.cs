@@ -421,17 +421,14 @@ namespace WeaponCore.Support
             SubGridsChanged =  AddSubGrids.Count != 0 || RemSubGrids.Count != 0;
         }
 
-        public void SubGridsAdded()
+        public void SubGridChanges()
         {
             foreach (var grid in AddSubGrids)
             {
                 Log.Line($"gridAdd:{grid.DebugName}");
             }
             AddSubGrids.Clear();
-        }
 
-        public void SubGridRemoved()
-        {
             foreach (var grid in RemSubGrids)
             {
                 Log.Line($"gridRemove:{grid.DebugName}");
