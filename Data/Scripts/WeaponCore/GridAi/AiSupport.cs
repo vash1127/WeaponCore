@@ -441,10 +441,11 @@ namespace WeaponCore.Support
         internal void InitFakeShipController()
         {
             FatMap fatMap;
-            if (FakeShipController != null && MyGrid?.CubeBlocks != null && Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && !fatMap.MyCubeBocks.Empty)
+            if (FakeShipController != null && Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && !fatMap.MyCubeBocks.Empty)
             {
                 FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
             }
+            else Log.Line($"InitFakeShipController Failed!!!!! - {FakeShipController == null} - {MyGrid == null} - {Session.GridToFatMap.ContainsKey(MyGrid)} - {MyGrid}");
         }
 
         internal void UpdateGridPower()

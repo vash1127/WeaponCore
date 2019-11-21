@@ -127,7 +127,6 @@ namespace WeaponCore.Support
             CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
-            MyAPIGateway.Utilities.InvokeOnGameThread(InitFakeShipController);
         }
     }
 }

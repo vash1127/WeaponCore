@@ -147,6 +147,7 @@ namespace WeaponCore.Support
             if (!Ai.GridInit)
             {
                 Ai.GridInit = true;
+                Ai.InitFakeShipController();
                 foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
                 {
                     Ai.FatBlockAdded(cubeBlock);
