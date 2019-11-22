@@ -616,7 +616,7 @@ namespace WeaponCore
         //todo client side only
         internal void ProcessAnimations()
         {
-            for(int i = 0; i < AnimationsToProcess.Count; i++)
+            for(int i = AnimationsToProcess.Count - 1; i >= 0 ; i--)
             {
                 var animation = AnimationsToProcess[i];
                 //var data = new AnimationParallelData(ref animation);
