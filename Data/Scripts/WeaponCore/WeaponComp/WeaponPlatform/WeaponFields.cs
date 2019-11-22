@@ -87,6 +87,7 @@ namespace WeaponCore.Platform
         internal uint LastTrackedTick;
         internal uint OffDelay;
         internal int RateOfFire;
+        internal int BarrelSpinRate;
         internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
         internal int WeaponId;

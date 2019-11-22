@@ -97,7 +97,7 @@ namespace WeaponCore.Support
         {
             MaxHeat += weapon.System.MaxHeat;
             weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
-
+            weapon.BarrelSpinRate = (int)(weapon.System.BarrelSpinRate * Set.Value.RofModifier);
             if (weapon.System.EnergyAmmo)
                 weapon.BaseDamage = weapon.System.BaseDamage * Set.Value.DpsModifier;
             else
