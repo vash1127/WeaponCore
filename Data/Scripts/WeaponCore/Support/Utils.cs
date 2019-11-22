@@ -112,12 +112,15 @@ namespace WeaponCore.Support
                 
                 _dictionary.Remove(item);
                 _list.RemoveAtFast(oldPos);
-                var count = _list.Count;
+                var count  = _list.Count;
                 if (count > 0)
-                    if(oldPos <= count)
+                {
+                    count--;
+                    if (oldPos <= count)
                         _dictionary[_list[oldPos]] = oldPos;
                     else
                         _dictionary[_list[count]] = count;
+                }
 
                 return true;
             }
