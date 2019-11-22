@@ -426,6 +426,7 @@ namespace WeaponCore.Support
         {
             foreach (var grid in AddSubGrids)
             {
+                if (grid == MyGrid) continue;
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
 
@@ -437,6 +438,7 @@ namespace WeaponCore.Support
 
             foreach (var grid in RemSubGrids)
             {
+                if (grid == MyGrid) continue;
                 grid.OnFatBlockAdded -= FatBlockAdded;
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
 

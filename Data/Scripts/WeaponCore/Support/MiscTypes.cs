@@ -654,6 +654,11 @@ namespace WeaponCore.Support
             }
             return HasFocus;
         }
+
+        internal void ReleaseActive()
+        {
+            Target[ActiveId] = null;
+        }
     }
 
     public class TargetStatus

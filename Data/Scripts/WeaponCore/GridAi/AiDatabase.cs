@@ -39,9 +39,18 @@ namespace WeaponCore.Support
                         var ent = _possibleTargets[i];
                         using (ent.Pin())
                         {
+                            if (ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject
+                                || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom) continue;
+
+                            var grid = ent as MyCubeGrid;
+                            if (grid != null && MyGrid.IsSameConstructAs(grid))
+                            {
+                                PrevSubGrids.Add(grid);
+                                continue;
+                            }
+
                             Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                            if (ent == MyGrid || ent is MyVoxelBase || ent.Physics == null || ent is MyFloatingObject
-                                || ent.MarkedForClose || !ent.InScene || ent.IsPreview || ent.Physics.IsPhantom || !CreateEntInfo(ent, MyOwner, out entInfo)) continue;
+                            if (!CreateEntInfo(ent, MyOwner, out entInfo)) continue;
 
                             switch (entInfo.Relationship)
                             {
@@ -50,7 +59,6 @@ namespace WeaponCore.Support
                                 case MyRelationsBetweenPlayerAndBlock.FactionShare:
                                     continue;
                             }
-                            var grid = ent as MyCubeGrid;
                             if (grid != null)
                             {
                                 FatMap fatMap;
@@ -138,15 +146,7 @@ namespace WeaponCore.Support
                     StaticsInRangeTmp.Add(ent);
                 }
 
-                if (grid != null)
-                {
-                    if (grid != MyGrid && MyGrid.IsSameConstructAs(grid))
-                    {
-                        PrevSubGrids.Add(grid);
-                        continue;
-                    }
-                    if (ValidGrids.Contains(ent) || ent.PositionComp.LocalVolume.Radius < 6) continue;
-                }
+                if (grid != null && (PrevSubGrids.Contains(grid) || ValidGrids.Contains(ent) || grid.PositionComp.LocalVolume.Radius < 6)) continue;
                 ObstructionsTmp.Add(ent);
             }
             ValidGrids.Clear();
