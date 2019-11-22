@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -222,39 +223,44 @@ namespace WeaponCore.Platform
                         break;
 
                     case EventTriggers.TurnOff:
-                        if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                        string currentAnimation = "";
+                        try
                         {
-                            var offAnimations = true;
-
-                            if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                            if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                             {
+                                var offAnimations = true;
 
-                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i++)
+                                if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                                 {
-                                    var animation = AnimationsSet[EventTriggers.TurnOn][i];
-                                    if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
+
+                                    for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i++)
                                     {
-                                        offAnimations = false;
-                                        animation.Reverse = true;
+                                        var animation = AnimationsSet[EventTriggers.TurnOn][i];
+                                        if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
+                                        {
+                                            offAnimations = false;
+                                            animation.Reverse = true;
+                                        }
                                     }
                                 }
-                            }
-                            if (offAnimations)
-                            {
-
-                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
+                                if (offAnimations)
                                 {
-                                    var animation = AnimationsSet[EventTriggers.TurnOff][i];
-                                    animation.StartTick = OffDelay > 0
-                                        ? Comp.Ai.Session.Tick + animation.MotionDelay + OffDelay
-                                        : 0;
 
-                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                    for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
+                                    {
+                                        var animation = AnimationsSet[EventTriggers.TurnOff][i];
+                                        currentAnimation = animation.AnimationId;
+                                        animation.StartTick = OffDelay > 0
+                                            ? Comp.Ai.Session.Tick + animation.MotionDelay + OffDelay
+                                            : 0;
+
+                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                    }
                                     foreach (var set in AnimationsSet)
                                     {
                                         for (int j = 0; j < set.Value.Length; j++)
                                         {
-                                            var anim = set.Value[i];
+                                            var anim = set.Value[j];
                                             anim.PauseAnimation = false;
                                             anim.Looping = false;
                                         }
@@ -262,7 +268,10 @@ namespace WeaponCore.Platform
                                 }
                             }
                         }
-
+                        catch (Exception e)
+                        {
+                            Log.Line($"Exception in {currentAnimation} Off {e}");
+                        }
                         break;
 
                     case EventTriggers.EmptyOnGameLoad:

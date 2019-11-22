@@ -47,27 +47,23 @@ namespace WeaponCore.Support
             if (ent != null && MyCube != null && !MyCube.MarkedForClose && Platform != null)
             {
                 ReInit();
-                if (IsSorterTurret)
+
+                foreach (var w in Platform.Weapons)
                 {
-                    if (!SorterBase.Enabled)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                    }
-                }
-                else
-                {
-                    if (!MissileBase.Enabled)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                    }
+                    if (IsSorterTurret && !SorterBase.Enabled)
+                        w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                    else if(!MissileBase.Enabled)
+                        w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+
+                    if (State.Value.Weapons[w.WeaponId].CurrentMags == 0)
+                        w.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
                 }
             }
         }
 
         private bool ReInit()
         {
+            //Log.Line($"ReInit");
             Platform.ResetParts(this);
             Status = Start.Started;
             return true;

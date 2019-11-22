@@ -440,7 +440,7 @@ namespace WeaponCore
 
                     var rotCenterNames = animation.RotCenterNameSet;
 
-                    var partCenter = (Vector3?)GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
+                    var partCenter = GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
 
 
 
@@ -457,7 +457,7 @@ namespace WeaponCore
                         {
                             if (rotCenters[i] != null && rotCenterNames != null)
                             {
-                                var dummyCenter = (Vector3?)GetPartLocation(rotCenterNames[i], subpart.Model);
+                                var dummyCenter = GetPartLocation(rotCenterNames[i], subpart.Model);
                                 if (dummyCenter != null)
                                     rotCenters[i] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * (Matrix)rotCenters[i] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
                             }

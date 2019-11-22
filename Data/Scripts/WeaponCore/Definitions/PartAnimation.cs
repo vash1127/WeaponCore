@@ -190,7 +190,7 @@ namespace WeaponCore.Support {
 
         public override int GetHashCode()
         {
-            return (SubpartId != null ? SubpartId.GetHashCode() : 0);
+            return (SubpartId != null ? SubpartId.GetHashCode() + AnimationId.GetHashCode() : 0);
         }
     }
 }
