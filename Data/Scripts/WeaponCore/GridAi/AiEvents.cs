@@ -117,6 +117,13 @@ namespace WeaponCore.Support
         { 
             RegisterMyGridEvents(false);
             _possibleTargets.Clear();
+            foreach (var grid in SubGrids)
+            {
+                if (grid == MyGrid) continue;
+                RemSubGrids.Add(grid);
+            }
+            AddSubGrids.Clear();
+            SubGridChanges();
             SubGrids.Clear();
             Obstructions.Clear();
             Threats.Clear();
