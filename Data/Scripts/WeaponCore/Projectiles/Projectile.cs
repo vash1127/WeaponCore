@@ -255,7 +255,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (T.System.PrimeModelId == -1 && T.System.TriggerModelId == -1) ModelState = EntityState.None;
+            if (T.System.PrimeModelId == -1 && T.System.TriggerModelId == -1 || T.IsShrapnel) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)

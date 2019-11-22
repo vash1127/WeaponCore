@@ -164,11 +164,6 @@ namespace WeaponCore.Platform
                             {
                                 MyEntity ent;
                                 session.Projectiles.EntityPool[session.ProCounter][System.TriggerModelId].AllocateOrCreate(out ent);
-                                if (!ent.InScene)
-                                {
-                                    //ent.InScene = false;
-                                    //ent.Render.AddRenderObjects();
-                                }
                                 triggerE = ent;
                             }
 
