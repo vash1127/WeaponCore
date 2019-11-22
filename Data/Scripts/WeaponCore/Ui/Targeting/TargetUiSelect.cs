@@ -15,10 +15,9 @@ namespace WeaponCore
 
             if (_firstPerson && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
-
             _ctrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
 
-            var enableActivator = _3RdPersonDraw || _ctrlPressed || _session.UiInput.AltPressed;
+            var enableActivator = _3RdPersonDraw || _ctrlPressed || _firstPerson && _session.UiInput.AltPressed;
             return enableActivator;
         }
 
