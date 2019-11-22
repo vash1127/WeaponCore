@@ -613,7 +613,6 @@ namespace WeaponCore
             return null;
         }
 
-        //todo client side only
         internal void ProcessAnimations()
         {
             for(int i = AnimationsToProcess.Count - 1; i >= 0 ; i--)

@@ -116,7 +116,7 @@ namespace WeaponCore
             {
 
                 if (Placer != null) UpdatePlacer();
-                if (!DedicatedServer)//todo client side only
+                if (!DedicatedServer)
                     ProcessAnimations();
 
                 DsUtil.Start("projectiles");
