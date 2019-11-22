@@ -74,6 +74,9 @@ namespace WeaponCore
 
         internal void TargetSelection()
         {
+            if ((UiInput.AltPressed && UiInput.ShiftReleased) || (TargetUi.DrawReticle && UiInput.MouseButtonRight) && UpdateLocalAiAndCockpit())
+                TrackingAi.Focus.ReleaseActive();
+
             if (MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
                 TargetUi.SelectTarget();
             else if (UpdateLocalAiAndCockpit())

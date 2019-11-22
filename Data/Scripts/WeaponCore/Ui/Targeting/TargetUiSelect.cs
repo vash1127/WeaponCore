@@ -11,17 +11,14 @@ namespace WeaponCore
     {
         internal bool ActivateSelector()
         {
-            _altPressed = false;
             _firstPerson = MyAPIGateway.Session.CameraController.IsInFirstPersonView;
-            if (_firstPerson)
-                _altPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Alt);
 
-            if (_firstPerson && !_altPressed) return false;
+            if (_firstPerson && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
 
             _ctrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
 
-            var enableActivator = _3RdPersonDraw || _ctrlPressed || _altPressed;
+            var enableActivator = _3RdPersonDraw || _ctrlPressed || _session.UiInput.AltPressed;
             return enableActivator;
         }
 
@@ -61,7 +58,7 @@ namespace WeaponCore
             }
             else
             {
-                if (!_altPressed)
+                if (!_session.UiInput.AltPressed)
                 {
                     dir = Vector3D.Normalize(cockPit.PositionComp.WorldMatrix.Forward);
                     start = cockPit.PositionComp.WorldAABB.Center;
