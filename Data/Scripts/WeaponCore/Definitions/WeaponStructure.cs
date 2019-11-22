@@ -50,7 +50,9 @@ namespace WeaponCore.Support
         public readonly int BarrelsPerShot;
         public readonly int HeatPerShot;
         public readonly int RateOfFire;
+        public readonly int BarrelSpinRate;
         public readonly TurretType TurretMovement;
+        public readonly bool HasBarrelRate;
         public readonly bool ElevationOnly;
         public readonly bool LimitedAxisTurret;
         public readonly bool BurstMode;
@@ -223,6 +225,9 @@ namespace WeaponCore.Support
             HeatPerShot = values.HardPoint.Loading.HeatPerShot;
             BaseDamage = values.Ammo.BaseDamage;
             RateOfFire = values.HardPoint.Loading.RateOfFire;
+            BarrelSpinRate = values.HardPoint.Loading.BarrelSpinRate;
+            HasBarrelRate = BarrelSpinRate > 0;
+
             AreaEffectDamage = Values.Ammo.AreaEffect.AreaEffectDamage;
             AreaEffectSize = Values.Ammo.AreaEffect.AreaEffectRadius;
             DetonationDamage = Values.Ammo.AreaEffect.Detonation.DetonationDamage;

@@ -136,6 +136,7 @@ namespace WeaponCore.Support
         [ProtoMember(11)] internal int ShotsInBurst;
         [ProtoMember(12)] internal int DelayAfterBurst;
         [ProtoMember(13)] internal bool DegradeRof;
+        [ProtoMember(14)] internal int BarrelSpinRate;
     }
 
     [ProtoContract]

@@ -68,8 +68,6 @@ namespace WeaponCore.Support
                 return;
             }
 
-            //TODO add to config
-
             StorageSetup();
 
             MaxRequiredPower = 0;
