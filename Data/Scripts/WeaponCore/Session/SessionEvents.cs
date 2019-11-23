@@ -138,18 +138,18 @@ namespace WeaponCore
             MyAPIGateway.Utilities.InvokeOnGameThread(PlayerReleasedControl);
         }
 
-        private void PlayerControlAcquired(IMyEntityController myEntityController)
+        private void PlayerControlAcquired(MyEntity lastEnt)
         {
-            var cockpit = ControlledEntity as MyCockpit;
-            var remote = ControlledEntity as MyRemoteControl;
+            var cockpit = lastEnt as MyCockpit;
+            var remote = lastEnt as MyRemoteControl;
 
-            if (cockpit != null && UpdateLocalAiAndCockpit())
+            if (cockpit != null)
                 FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
 
             if (remote != null)
                 FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
 
-            MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
+            //MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
         }
 
         private void PlayerConnected(long id)

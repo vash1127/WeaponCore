@@ -5,6 +5,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using WeaponCore.Support;
 using WeaponThread;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -79,8 +80,11 @@ namespace WeaponCore
                 {
                     var lastControlledEnt = ControlledEntity;
                     ControlledEntity = (MyEntity)MyAPIGateway.Session.ControlledObject;
-                    WeaponComponent notNeeded;
-                    ControlChanged = lastControlledEnt != ControlledEntity && ControlledEntity.Components.TryGet(out notNeeded);
+                    
+                    if (lastControlledEnt != null && lastControlledEnt != ControlledEntity && (lastControlledEnt is MyCockpit || lastControlledEnt is MyRemoteControl))
+                        PlayerControlAcquired(lastControlledEnt);
+                    //WeaponComponent notNeeded;
+                    //ControlChanged = lastControlledEnt != ControlledEntity && ControlledEntity.Components.TryGet(out notNeeded);
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                 }
@@ -230,7 +234,7 @@ namespace WeaponCore
             PurgeAll();
 
             //Session.Player.Character.ControllerInfo.ControlReleased -= PlayerControlReleased;
-            //Session.Player.Character.ControllerInfo.ControlAcquired -= PlayerControlAcquired;
+            //Session.Player.Character.ControllerInfo.ControlAcquired -= ~PlayerContr~olAcquired;
 
             Log.Line("Logging stopped.");
             Log.Close();

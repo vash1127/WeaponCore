@@ -180,7 +180,7 @@ namespace WeaponCore
         internal bool ShieldApiLoaded;
         internal bool TargetArmed;
         internal bool InGridAiCockPit;
-        internal bool ControlChanged;
+        //internal bool ControlChanged;
 
         internal Vector3D CameraPos;
         internal MyCockpit ActiveCockPit;

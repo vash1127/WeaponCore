@@ -52,7 +52,7 @@ namespace WeaponCore
                         List<Matrix?> rotationSet = new List<Matrix?>();
                         List<Matrix?> rotCenterSet = new List<Matrix?>();
                         List<string> rotCenterNameSet = new List<string>();
-                        var id = $"{(int)moves.Key}{animationSet.SubpartId[t]}";
+                        var id = $"{(int)moves.Key}{system.WeaponName}{animationSet.SubpartId[t]}";
                         AnimationType[] typeSet = new[]
                         {
                             AnimationType.Movement,
@@ -527,6 +527,7 @@ namespace WeaponCore
         internal void createEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> allEmissivesSet, ref List<int> currentEmissivePart)
         {
             var setColor = (Color)emissive.Colors[0];
+            Log.Line($"id: {id}");
 
             if (emissive.Colors.Length > 1)
             {
