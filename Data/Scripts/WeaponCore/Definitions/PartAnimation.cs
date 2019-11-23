@@ -30,7 +30,7 @@ namespace WeaponCore.Support {
             EmissiveIndex,
         }
 
-        internal struct EmissiveState
+        public struct EmissiveState
         {
             internal string[] EmissiveParts;
             internal int CurrentPart;
@@ -49,7 +49,7 @@ namespace WeaponCore.Support {
         internal uint StartTick;
 
         private int _currentMove;
-        private EmissiveState? LastEmissive;
+        private EmissiveState LastEmissive;
 
         internal int CurrentMove
         {
@@ -82,7 +82,7 @@ namespace WeaponCore.Support {
         }
 
         
-        internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out MatrixD? rotAroundCenter, out Session.AnimationType type, out EmissiveState? emissiveState)
+        internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out MatrixD? rotAroundCenter, out Session.AnimationType type, out EmissiveState emissiveState)
         {
             type = TypeSet[MoveToSetIndexer[_currentMove][(int)indexer.TypeIndex]];
             var moveSet = System.WeaponLinearMoveSet[AnimationId];
@@ -96,29 +96,6 @@ namespace WeaponCore.Support {
 
                 rotation = RotationSet[MoveToSetIndexer[_currentMove][(int)indexer.RotationIndex]];
                 rotAroundCenter = RotCenterSet[MoveToSetIndexer[_currentMove][(int)indexer.RotCenterIndex]];
-                emissiveState = null;
-
-                MyTuple<string[], Color, bool, bool, float>? emissive;
-                System.WeaponEmissiveSet.TryGetValue(AnimationId + _currentMove, out emissive);
-
-                if (emissive == null || emissive != null && LastEmissive != null && 
-                    emissive.Value.Item1[CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]]] ==
-                    LastEmissive.Value.EmissiveParts[LastEmissive.Value.CurrentPart] &&
-                    emissive.Value.Item2 == LastEmissive.Value.CurrentColor &&
-                    emissive.Value.Item5 == LastEmissive.Value.CurrentIntensity)
-                    emissiveState = null;
-                else
-                {
-                    emissiveState = LastEmissive = new EmissiveState()
-                    {
-                        EmissiveParts = emissive.Value.Item1,
-                        CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]],
-                        CurrentColor = emissive.Value.Item2,
-                        CurrentIntensity = emissive.Value.Item5,
-                        CycleParts = emissive.Value.Item3,
-                        LeavePreviousOn = emissive.Value.Item4
-                    };
-                }
 
             }
             else
@@ -126,30 +103,20 @@ namespace WeaponCore.Support {
                 translation = Vector3D.Zero;
                 rotation = null;
                 rotAroundCenter = null;
-
-                MyTuple<string[], Color, bool, bool, float>? emissive;
-                var key = AnimationId + _currentMove;
-                System.WeaponEmissiveSet.TryGetValue(key, out emissive);
-
-                if (emissive == null || emissive != null && LastEmissive != null &&
-                    emissive.Value.Item1[CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]]] ==
-                    LastEmissive.Value.EmissiveParts[LastEmissive.Value.CurrentPart] &&
-                    emissive.Value.Item2 == LastEmissive.Value.CurrentColor &&
-                    emissive.Value.Item5 == LastEmissive.Value.CurrentIntensity)
-                    emissiveState = null;
-                else
-                {
-                    emissiveState = LastEmissive = new EmissiveState()
-                    {
-                        EmissiveParts = emissive.Value.Item1,
-                        CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]],
-                        CurrentColor = emissive.Value.Item2,
-                        CurrentIntensity = emissive.Value.Item5,
-                        CycleParts = emissive.Value.Item3,
-                        LeavePreviousOn = emissive.Value.Item4
-                    };
-                }
             }
+
+            if (System.WeaponEmissiveSet.TryGetValue(AnimationId + _currentMove, out emissiveState))
+            {
+                emissiveState.CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]];
+
+                if (emissiveState.EmissiveParts != null && LastEmissive.EmissiveParts != null && emissiveState.CurrentPart == LastEmissive.CurrentPart && emissiveState.CurrentColor == LastEmissive.CurrentColor && Math.Abs(emissiveState.CurrentIntensity - LastEmissive.CurrentIntensity) < 0.001)
+                    emissiveState = new EmissiveState();
+
+                LastEmissive = emissiveState;
+
+            }
+            else
+                emissiveState = LastEmissive = new EmissiveState();
 
         }
 
