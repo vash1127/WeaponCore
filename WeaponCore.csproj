@@ -47,7 +47,6 @@
     <None Include="Data\Data_VanillaReplace\Blueprints.sbc" />
     <None Include="Data\Data_VanillaReplace\Weapons_Framework.sbc" />
     <None Include="Data\EntityComponents.sbc" />
-    <None Include="Data\lcd.sbc" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />

@@ -210,7 +210,7 @@ namespace WeaponCore
                 ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm");
                 ModelCount++;
 
-                FixPrefabs();
+                //FixPrefabs();
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }
