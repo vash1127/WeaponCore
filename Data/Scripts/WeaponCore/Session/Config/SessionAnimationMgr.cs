@@ -7,16 +7,17 @@ using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
+using static WeaponCore.Support.PartAnimation;
 
 namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> weaponEmissivesSet, out Dictionary<string,Matrix?[]> weaponLinearMoveSet)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string,Matrix?[]> weaponLinearMoveSet)
         {
 
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
-            var allEmissivesSet = new Dictionary<string, MyTuple<string[], Color, bool, bool, float>?>();
+            var allEmissivesSet = new Dictionary<string, EmissiveState>();
 
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
@@ -52,7 +53,7 @@ namespace WeaponCore
                         List<Matrix?> rotationSet = new List<Matrix?>();
                         List<Matrix?> rotCenterSet = new List<Matrix?>();
                         List<string> rotCenterNameSet = new List<string>();
-                        var id = $"{(int)moves.Key}{system.WeaponName}{animationSet.SubpartId[t]}";
+                        var id = $"{(int)moves.Key}{animationSet.SubpartId[t]}";
                         AnimationType[] typeSet = new[]
                         {
                             AnimationType.Movement,
@@ -100,11 +101,11 @@ namespace WeaponCore
                                     WeaponEmissive emissive;
                                     if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                     {
-                                        CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j /  (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                        createEmissiveStep(emissive, id + moveIndexer.Count, (float)j /  (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                     }
                                     else
                                     {
-                                        allEmissivesSet.Add(id + moveIndexer.Count, null);
+                                        allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                         currentEmissivePart.Add(-1);
                                     }
 
@@ -211,11 +212,11 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
-                                                allEmissivesSet.Add(id + moveIndexer.Count, null);
+                                                allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -279,11 +280,11 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
-                                                allEmissivesSet.Add(id + moveIndexer.Count, null);
+                                                allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -328,11 +329,11 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
-                                                allEmissivesSet.Add(id + moveIndexer.Count, null);
+                                                allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -352,11 +353,11 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
-                                                allEmissivesSet.Add(id + moveIndexer.Count, null);
+                                                allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -375,11 +376,11 @@ namespace WeaponCore
                                         WeaponEmissive emissive;
                                         if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                         {
-                                            CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                            createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                         }
                                         else
                                         {
-                                            allEmissivesSet.Add(id + moveIndexer.Count, null);
+                                            allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                             currentEmissivePart.Add(-1);
                                         }
 
@@ -477,9 +478,9 @@ namespace WeaponCore
             {
                 foreach (var emissive in system.WeaponEmissiveSet)
                 {
-                    if (emissive.Value == null) continue;
+                    if (emissive.Value.EmissiveParts == null) continue;
 
-                    foreach (var part in emissive.Value.Value.Item1)
+                    foreach (var part in emissive.Value.EmissiveParts)
                     {
                         parts.SetEmissiveParts(part, Color.Transparent, 0);
                     }
@@ -524,7 +525,7 @@ namespace WeaponCore
             return rotation;
         }
 
-        internal void CreateEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> allEmissivesSet, ref List<int> currentEmissivePart)
+        internal void createEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, EmissiveState> allEmissivesSet, ref List<int> currentEmissivePart)
         {
             var setColor = (Color)emissive.Colors[0];
             if (emissive.Colors.Length > 1)
@@ -546,7 +547,7 @@ namespace WeaponCore
 
             var currPart =  (int)Math.Round(MathHelper.Lerp(0, emissive.EmissivePartNames.Length - 1, progress));
 
-            allEmissivesSet.Add(id, MyTuple.Create(emissive.EmissivePartNames, setColor, emissive.CycleEmissivesParts, emissive.LeavePreviousOn, intensity));
+            allEmissivesSet.Add(id, new EmissiveState { CurrentColor = setColor, CurrentIntensity = intensity, EmissiveParts = emissive.EmissivePartNames, CycleParts = emissive.CycleEmissivesParts, LeavePreviousOn = emissive.LeavePreviousOn });
             currentEmissivePart.Add(currPart);
         }
 
@@ -639,7 +640,7 @@ namespace WeaponCore
             MatrixD? rotAroundCenter;
             Vector3D translation;
             AnimationType animationType;
-            PartAnimation.EmissiveState? currentEmissive;
+            EmissiveState currentEmissive;
 
             animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
 
@@ -692,28 +693,26 @@ namespace WeaponCore
                 animation.Part.Render.RemoveRenderObjects();
             }
 
-            if (currentEmissive != null)
+            if (currentEmissive.EmissiveParts != null)
             {
-                var emissive = currentEmissive.Value;
-
-                if (emissive.CycleParts)
+                if (currentEmissive.CycleParts)
                 {
-                    animation.Part.SetEmissiveParts(emissive.EmissiveParts[emissive.CurrentPart], emissive.CurrentColor,
-                        emissive.CurrentIntensity);
-                    if (!emissive.LeavePreviousOn)
+                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[currentEmissive.CurrentPart], currentEmissive.CurrentColor,
+                        currentEmissive.CurrentIntensity);
+                    if (!currentEmissive.LeavePreviousOn)
                     {
-                        var prev = emissive.CurrentPart - 1 >= 0 ? emissive.CurrentPart - 1 : emissive.EmissiveParts
+                        var prev = currentEmissive.CurrentPart - 1 >= 0 ? currentEmissive.CurrentPart - 1 : currentEmissive.EmissiveParts
                             .Length - 1;
-                        animation.Part.SetEmissiveParts(emissive.EmissiveParts[prev],
+                        animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev],
                             Color.Transparent,
-                            emissive.CurrentIntensity);
+                            currentEmissive.CurrentIntensity);
                     }
                 }
                 else
                 {
-                    for (int i = 0; i < emissive.EmissiveParts.Length; i++)
+                    for (int i = 0; i < currentEmissive.EmissiveParts.Length; i++)
                     {
-                        animation.Part.SetEmissiveParts(emissive.EmissiveParts[i], emissive.CurrentColor, emissive.CurrentIntensity);
+                        animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[i], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
                     }
                 }
             }

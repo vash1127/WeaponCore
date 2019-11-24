@@ -11,6 +11,7 @@ using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using static WeaponCore.Support.PartAnimation;
 
 namespace WeaponCore.Support
 {
@@ -29,7 +30,7 @@ namespace WeaponCore.Support
         public readonly Session Session;
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
-        public readonly Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> WeaponEmissiveSet;
+        public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix?[]> WeaponLinearMoveSet;
         public readonly MyPhysicalInventoryItem AmmoItem;
         public readonly string WeaponName;
