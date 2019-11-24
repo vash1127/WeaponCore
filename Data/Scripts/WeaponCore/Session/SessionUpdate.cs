@@ -22,7 +22,6 @@ namespace WeaponCore
                 }
                 if (!gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !gridAi.CheckReload || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
 
-                gridAi.Reloading = false;
                 gridAi.ReturnHome = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
@@ -118,8 +117,8 @@ namespace WeaponCore
                         }
 
                         if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType) ComputeStorage(w);
-                        if (!w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 && comp.State.Value.Weapons[w.WeaponId].CurrentMags > 0)
-                            gridAi.Reloading = true;
+
+                        gridAi.Reloading = !w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 && comp.State.Value.Weapons[w.WeaponId].CurrentMags > 0;
 
                         if (comp.Debug)
                         {

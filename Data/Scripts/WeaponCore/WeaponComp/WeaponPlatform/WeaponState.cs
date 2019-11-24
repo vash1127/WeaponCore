@@ -93,7 +93,7 @@ namespace WeaponCore.Platform
                         break;
                     case EventTriggers.Reloading:
 
-                        var canReload = !Reloading;
+                        var canReload = true;
 
                         if (AnimationsSet.ContainsKey(EventTriggers.Reloading))
                         {
@@ -499,7 +499,6 @@ namespace WeaponCore.Platform
 
         public void StartReload()
         {
-            if (Reloading) return;
             EventTriggerStateChanged(EventTriggers.Reloading, true);
             EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
             LoadAmmoMag = true;

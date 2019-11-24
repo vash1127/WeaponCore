@@ -24,10 +24,7 @@ namespace WeaponCore.Support
                 IsWorkingChanged(MyCube);
 
                 if (InventoryInited)
-                {
                     BlockInventory.ContentsChanged += OnContentsChanged;
-                    BlockInventory.InventoryContentChanged += DetailedChanged;
-                }
 
                 Sink.CurrentInputChanged += CurrentInputChanged;
 
@@ -42,21 +39,13 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
 
                 if (InventoryInited)
-                {
                     BlockInventory.ContentsChanged -= OnContentsChanged;
-                    BlockInventory.InventoryContentChanged -= DetailedChanged;
-                }
 
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 
                 foreach (var w in Platform.Weapons)
                     w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
             }
-        }
-
-        private void DetailedChanged(MyInventoryBase arg1, MyPhysicalInventoryItem arg2, MyFixedPoint arg3)
-        {
-            //Log.Line($"DefId: {arg2.Content.SubtypeId.String}");
         }
 
         private void OnContentsChanged(MyInventoryBase obj)
