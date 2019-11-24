@@ -88,7 +88,7 @@ namespace WeaponCore.Support
                                     if (!valid) continue;
                                 }
 
-                                NewEntities.Add(new DetectInfo(Session, ent, entInfo, fatMap.MostBlocks));
+                                NewEntities.Add(new DetectInfo(Session, ent, entInfo, fatMap.MostBlocks, fatCount));
                                 ValidGrids.Add(ent);
                                 GridAi targetAi;
                                 if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))
@@ -97,7 +97,7 @@ namespace WeaponCore.Support
                                     TargetAisTmp.Add(targetAi);
                                 }
                             }
-                            else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1));
+                            else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
                         }
                     }
                     FinalizeTargetDb();

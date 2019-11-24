@@ -545,8 +545,7 @@ namespace WeaponCore.Projectiles
             {
                 var gaveUpChase = Age - ChaseAge > MaxChaseAge;
                 var validTarget = T.Target.IsProjectile || T.Target.Entity != null && !T.Target.Entity.MarkedForClose;
-                var isZombie = !T.System.IsMine && ZombieLifeTime % 30 == 0;
-
+                var isZombie = !T.System.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)
                 {
                     if (ZombieLifeTime > 0) UpdateZombie(true);

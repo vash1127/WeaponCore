@@ -143,13 +143,11 @@ namespace WeaponCore
             var cockpit = lastEnt as MyCockpit;
             var remote = lastEnt as MyRemoteControl;
 
-            if (cockpit != null)
-                FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
-
-            if (remote != null)
-                FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
-
-            //MyAPIGateway.Utilities.InvokeOnGameThread(PlayerAcquiredControl);
+            GridAi gridAi;
+            if (cockpit != null && GridTargetingAIs.TryGetValue(cockpit.CubeGrid, out gridAi))
+                FutureEvents.Schedule(TurnWeaponShootOff, gridAi, 1);
+            else if (remote != null && GridTargetingAIs.TryGetValue(remote.CubeGrid, out gridAi))
+                FutureEvents.Schedule(TurnWeaponShootOff, gridAi, 1);
         }
 
         private void PlayerConnected(long id)

@@ -55,25 +55,45 @@ namespace WeaponCore.Support
         internal static bool ReacquireTarget(Projectile p)
         {
             p.ChaseAge = p.Age;
-            var physics = p.T.Ai.Session.Physics;
             var s = p.T.System;
             var ai = p.T.Ai;
             var weaponPos = p.Position;
 
-            for (int i = 0; i < ai.SortedTargets.Count; i++)
+            TargetInfo alphaInfo = null;
+            TargetInfo betaInfo = null;
+            int offset = 0;
+
+            if (ai.Focus.Target[0] != null)
+                if (ai.Targets.TryGetValue(ai.Focus.Target[0], out alphaInfo)) offset++;
+            if (ai.Focus.Target[1] != null)
+                if (ai.Targets.TryGetValue(ai.Focus.Target[1], out betaInfo)) offset++;
+
+            var adjTargetCount = ai.SortedTargets.Count + offset;
+            var hasOffset = offset > 0;
+
+            for (int i = 0; i < adjTargetCount; i++)
             {
                 var info = ai.SortedTargets[i];
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
+                var focusTarget = hasOffset && i < offset;
+                var lastOffset = offset - 1;
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && i > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue;
 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
-                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius) continue;
-
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
-                if (Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr || Obstruction(ref info, ref targetPos, p))
+
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr) continue;
+
+                if (i == 0 && alphaInfo != null) info = alphaInfo;
+                else if (i <= lastOffset && betaInfo != null) info = betaInfo;
+                else info = ai.SortedTargets[i - offset];
+
+                if (!focusTarget && info.OffenseRating <= 0 || Obstruction(ref info, ref targetPos, p))
                     continue;
 
                 if (info.IsGrid && s.TrackGrids)
                 {
+                    if (!focusTarget && info.FatCount < 2) continue;
+
                     if (!AcquireBlock(p.T.System, p.T.Ai, p.T.Target, info, weaponPos)) continue;
                     return true;
                 }
@@ -92,7 +112,6 @@ namespace WeaponCore.Support
                 p.T.Target.Set(info.Target, targetPos, shortDist, origDist, topEntId);
                 return true;
             }
-            //Log.Line($"{p.T.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
             p.T.Target.Reset(false);
             return false;
         }
@@ -126,14 +145,14 @@ namespace WeaponCore.Support
             var hasOffset = offset > 0;
             for (int x = 0; x < adjTargetCount; x++)
             {
-                var primeTarget = hasOffset && x < offset;
+                var focusTarget = hasOffset && x < offset;
                 var lastOffset = offset - 1;
-                if (attemptReset && !primeTarget) break;
+                if (attemptReset && !focusTarget) break;
                 TargetInfo info = null;
-                if (forceTarget && !primeTarget) info = gridInfo;
+                if (forceTarget && !focusTarget) info = gridInfo;
                 else
                 {
-                    if (primeTarget)
+                    if (focusTarget)
                     {
                         if (x == 0 && alphaInfo != null) info = alphaInfo;
                         else if (x == 0 && betaInfo != null) info = betaInfo;
@@ -142,12 +161,11 @@ namespace WeaponCore.Support
                     else info = ai.SortedTargets[x - offset];
                 }
 
-                //var info = !forceTarget ? primeTarget ? alphaInfo : ai.SortedTargets[x - offset] : gridInfo;
-                if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue; //|| (info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral && !s.TrackNeutrals)) continue;
+                if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue; 
 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
 
-                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !primeTarget && info.OffenseRating <= 0) continue;
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > weaponRangeSqr) continue;
 
@@ -156,8 +174,7 @@ namespace WeaponCore.Support
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
                 if (info.IsGrid)
                 {
-                    var grid = (MyCubeGrid)info.Target;
-                    if (!s.TrackGrids || !primeTarget && grid.GetFatBlocks().Count < 2) continue;
+                    if (!s.TrackGrids || !focusTarget && info.FatCount < 2) continue;
                     if (w.SleepTargets && !attemptReset)
                     {
                         Vector3D oldDir;
@@ -267,12 +284,12 @@ namespace WeaponCore.Support
             var entSphere = topEnt.PositionComp.WorldVolume;
             var distToEnt = MyUtils.GetSmallestDistanceToSphere(ref weaponPos, ref entSphere);
             var turretCheck = w != null;
-            var lastBlocks = system.Values.Targeting.TopBlocks > 10 && distToEnt < 1000 ? system.Values.Targeting.TopBlocks : 10;
-
+            var topBlocks = system.Values.Targeting.TopBlocks;
+            var lastBlocks = topBlocks > 10 && distToEnt < 1000 ? topBlocks : 10;
             var isPriroity = false;
             if (lastBlocks < 250)
             {
-                TargetInfo priorityInfo = null;
+                TargetInfo priorityInfo;
                 if (ai.Focus.Target[0] != null && ai.Targets.TryGetValue(ai.Focus.Target[0], out priorityInfo) && priorityInfo.Target?.GetTopMostParent() == topEnt)
                 {
                     isPriroity = true;
@@ -286,7 +303,7 @@ namespace WeaponCore.Support
             }
 
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, totalBlocks);
+            var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, totalBlocks, topBlocks);
             var physics = ai.Session.Physics;
             var iGrid = topEnt as IMyCubeGrid;
             var gridPhysics = iGrid?.Physics;
@@ -296,19 +313,15 @@ namespace WeaponCore.Support
             var foundBlock = false;
             var blocksChecked = 0;
             var blocksSighted = 0;
-            var blocksStarted = 0;
 
             for (int i = 0; i < totalBlocks; i++)
             {
-                blocksStarted++;
                 if (turretCheck && (blocksChecked > lastBlocks || isPriroity && blocksSighted > 100))
                     break;
 
-                //var next = i;
-                //if (blocksChecked < lastBlocks)
-                    //next = deck[i];
+                var card = deck[i];
+                var block = subSystemList[card];
 
-                var block = subSystemList[deck[i]];
                 if (!(block is IMyTerminalBlock) || block.MarkedForClose || !block.IsWorking) continue;
 
                 ai.Session.BlockChecks++;

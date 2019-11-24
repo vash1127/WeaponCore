@@ -79,7 +79,7 @@ namespace WeaponCore.Support
             return enemy;
         }
 
-        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort)
+        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle)
         {
             var count = cardsToSort - firstCard;
             if (prevDeckLen != count)
@@ -90,7 +90,7 @@ namespace WeaponCore.Support
 
             for (int i = 0; i < count; i++)
             {
-                var j = MyUtils.GetRandomInt(0, i + 1);
+                var j = i < cardsToShuffle ? MyUtils.GetRandomInt(0, i + 1) : i;
 
                 deck[i] = deck[j];
                 deck[j] = firstCard + i;
@@ -164,15 +164,17 @@ namespace WeaponCore.Support
             internal readonly MyEntity Parent;
             internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
             internal readonly int PartCount;
+            internal readonly int FatCount;
             internal readonly bool Armed;
             internal readonly bool IsGrid;
             internal readonly bool LargeGrid;
 
-            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount)
+            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount)
             {
                 Parent = parent;
                 EntInfo = entInfo;
                 PartCount = partCount;
+                FatCount = fatCount;
                 var armed = false;
                 var isGrid = false;
                 var largeGrid = false;
@@ -234,6 +236,7 @@ namespace WeaponCore.Support
             internal bool LargeGrid;
             internal bool Approaching;
             internal int PartCount;
+            internal int FatCount;
             internal float OffenseRating;
             internal MyCubeGrid MyGrid;
             internal GridAi MyAi;
@@ -244,6 +247,7 @@ namespace WeaponCore.Support
                 EntInfo = detectInfo.EntInfo;
                 Target = detectInfo.Parent;
                 PartCount = detectInfo.PartCount;
+                FatCount = detectInfo.FatCount;
                 IsGrid = detectInfo.IsGrid;
                 LargeGrid = detectInfo.LargeGrid;
                 MyGrid = myGrid;
