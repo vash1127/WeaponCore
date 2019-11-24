@@ -39,13 +39,6 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
-    <None Include="Data\Ammo.sbc" />
-    <None Include="Data\CubeBlocks_ReplaceVanillaWeapons.sbc" />
-    <None Include="Data\Data_VanillaReplace\AmmoMagazines_Framework.sbc" />
-    <None Include="Data\Data_VanillaReplace\BlockCategories.sbc" />
-    <None Include="Data\Data_VanillaReplace\BlueprintClasses.sbc" />
-    <None Include="Data\Data_VanillaReplace\Blueprints.sbc" />
-    <None Include="Data\Data_VanillaReplace\Weapons_Framework.sbc" />
     <None Include="Data\EntityComponents.sbc" />
   </ItemGroup>
   <ItemGroup>

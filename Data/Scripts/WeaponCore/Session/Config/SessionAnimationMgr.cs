@@ -100,7 +100,7 @@ namespace WeaponCore
                                     WeaponEmissive emissive;
                                     if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                     {
-                                        createEmissiveStep(emissive, id + moveIndexer.Count, (float)j /  (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                        CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j /  (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                     }
                                     else
                                     {
@@ -211,7 +211,7 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -279,7 +279,7 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -328,7 +328,7 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -352,7 +352,7 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -375,7 +375,7 @@ namespace WeaponCore
                                         WeaponEmissive emissive;
                                         if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                         {
-                                            createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                            CreateEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                         }
                                         else
                                         {
@@ -524,11 +524,9 @@ namespace WeaponCore
             return rotation;
         }
 
-        internal void createEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> allEmissivesSet, ref List<int> currentEmissivePart)
+        internal void CreateEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, MyTuple<string[], Color, bool, bool, float>?> allEmissivesSet, ref List<int> currentEmissivePart)
         {
             var setColor = (Color)emissive.Colors[0];
-            Log.Line($"id: {id}");
-
             if (emissive.Colors.Length > 1)
             {
                 if (progress < 1)
