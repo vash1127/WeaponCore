@@ -427,24 +427,34 @@ namespace WeaponCore.Support
             foreach (var grid in AddSubGrids)
             {
                 if (grid == MyGrid) continue;
-                grid.OnFatBlockAdded += FatBlockAdded;
-                grid.OnFatBlockRemoved += FatBlockRemoved;
 
-                var blocks = Session.GridToFatMap[grid].MyCubeBocks;
-                for (int i = 0; i < blocks.Count; i++)
-                    FatBlockAdded(blocks[i]);
+                FatMap fatMap;
+                if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
+                {
+                    grid.OnFatBlockAdded += FatBlockAdded;
+                    grid.OnFatBlockRemoved += FatBlockRemoved;
+
+                    var blocks = fatMap.MyCubeBocks;
+                    for (int i = 0; i < blocks.Count; i++)
+                        FatBlockAdded(blocks[i]);
+                }
             }
             AddSubGrids.Clear();
 
             foreach (var grid in RemSubGrids)
             {
                 if (grid == MyGrid) continue;
-                grid.OnFatBlockAdded -= FatBlockAdded;
-                grid.OnFatBlockRemoved -= FatBlockRemoved;
 
-                var blocks = Session.GridToFatMap[grid].MyCubeBocks;
-                for (int i = 0; i < blocks.Count; i++)
-                    FatBlockRemoved(blocks[i]);
+                FatMap fatMap;
+                if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
+                {
+                    grid.OnFatBlockAdded -= FatBlockAdded;
+                    grid.OnFatBlockRemoved -= FatBlockRemoved;
+
+                    var blocks = fatMap.MyCubeBocks;
+                    for (int i = 0; i < blocks.Count; i++)
+                        FatBlockRemoved(blocks[i]);
+                }
             }
             RemSubGrids.Clear();
         }
