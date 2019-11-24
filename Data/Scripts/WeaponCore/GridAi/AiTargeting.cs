@@ -84,18 +84,13 @@ namespace WeaponCore.Support
                 var meteor = info.Target as IMyMeteor;
                 if (meteor != null && !s.TrackMeteors) continue;
 
-                IHitInfo hitInfo;
-                physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
-                if (hitInfo.HitEntity == info.Target)
-                {
-                    double rayDist;
-                    Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
-                    var shortDist = rayDist * (1 - hitInfo.Fraction);
-                    var origDist = rayDist * hitInfo.Fraction;
-                    var topEntId = info.Target.GetTopMostParent().EntityId;
-                    p.T.Target.Set(info.Target, hitInfo.Position, shortDist, origDist, topEntId);
-                    return true;
-                }
+                double rayDist;
+                Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
+                var shortDist = rayDist;
+                var origDist = rayDist;
+                var topEntId = info.Target.GetTopMostParent().EntityId;
+                p.T.Target.Set(info.Target, targetPos, shortDist, origDist, topEntId);
+                return true;
             }
             //Log.Line($"{p.T.System.WeaponName} - no valid target returned - oldTargetNull:{target.Entity == null} - oldTargetMarked:{target.Entity?.MarkedForClose} - checked: {p.Ai.SortedTargets.Count} - Total:{p.Ai.Targeting.TargetRoots.Count}");
             p.T.Target.Reset(false);
@@ -651,17 +646,6 @@ namespace WeaponCore.Support
             {
                 var dir = (targetPos - p.Position);
                 var ray = new RayD(ref p.Position, ref dir);
-                var dist = ai.MyGrid.PositionComp.WorldVolume.Intersects(ray);
-                if (dist.HasValue)
-                {
-                    var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
-                    var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                    if (obb.Intersects(ref ray) != null)
-                        obstruction = ai.MyGrid.RayCastBlocks(p.Position, targetPos) != null;
-                }
-
-                if (!obstruction)
-                {
                     foreach (var sub in ai.SubGrids)
                     {
                         var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
@@ -675,7 +659,6 @@ namespace WeaponCore.Support
 
                         if (obstruction) break;
                     }
-                }
             }
             return obstruction;
         }
