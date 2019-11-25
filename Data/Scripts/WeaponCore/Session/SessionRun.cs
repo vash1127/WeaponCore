@@ -203,6 +203,7 @@ namespace WeaponCore
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 MyAPIGateway.Utilities.RegisterMessageHandler(7773, UpgradeHandler);
+                IsCreative = MyAPIGateway.Session.CreativeMode;
 
                 var weapons = new Weapons();
                 var weaponDefinitions = weapons.ReturnDefs();
