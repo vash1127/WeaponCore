@@ -70,11 +70,11 @@ namespace WeaponCore.Support
             }
         }
 
-        public static bool GridEnemy(MyCubeBlock myCube, MyCubeGrid grid, List<long> owners = null)
+        public static bool GridEnemy(long gridOwner, MyCubeGrid grid, List<long> owners = null)
         {
             if (owners == null) owners = grid.BigOwners;
             if (owners.Count == 0) return true;
-            var relationship = myCube.GetUserRelationToOwner(owners[0]);
+            var relationship = MyIDModule.GetRelationPlayerBlock(gridOwner, owners[0], MyOwnershipShareModeEnum.Faction);
             var enemy = relationship != MyRelationsBetweenPlayerAndBlock.Owner && relationship != MyRelationsBetweenPlayerAndBlock.FactionShare;
             return enemy;
         }

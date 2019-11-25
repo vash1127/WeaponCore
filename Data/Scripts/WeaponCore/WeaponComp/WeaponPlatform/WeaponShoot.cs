@@ -403,7 +403,7 @@ namespace WeaponCore.Platform
                     return;
                 }
 
-                if (!GridAi.GridEnemy(Comp.MyCube, grid))
+                if (!GridAi.GridEnemy(Comp.Ai.MyOwner, grid))
                 {
                     if (!grid.IsSameConstructAs(Comp.Ai.MyGrid))
                     {
