@@ -16,8 +16,6 @@ namespace WeaponCore.Platform
     {
         internal void Shoot()
         {
-            if (Comp.Ai.MyGrid.MarkedForClose) Log.Line("grid marked");
-
             var session = Comp.Ai.Session;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;

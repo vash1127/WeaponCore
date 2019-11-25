@@ -123,19 +123,7 @@ namespace WeaponCore
 
         private void MenuOpened(object obj)
         {
-            var cockpit = ControlledEntity as MyCockpit;
-            var remote = ControlledEntity as MyRemoteControl;
-
-            if (cockpit != null && UpdateLocalAiAndCockpit())
-                FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[cockpit.CubeGrid], 1);
-
-            if (remote != null)
-                FutureEvents.Schedule(TurnWeaponShootOff, GridTargetingAIs[remote.CubeGrid], 1);
-        }
-
-        private void PlayerControlReleased(IMyEntityController myEntityController)
-        {
-            MyAPIGateway.Utilities.InvokeOnGameThread(PlayerReleasedControl);
+            PlayerControlAcquired(ControlledEntity);
         }
 
         private void PlayerControlAcquired(MyEntity lastEnt)
