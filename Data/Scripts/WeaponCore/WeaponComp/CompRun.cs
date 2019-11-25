@@ -81,7 +81,7 @@ namespace WeaponCore.Support
                 DpsAndHeatInit(weapon);
                 weapon.UpdateBarrelRotation();
 
-                if (State.Value.Weapons[weapon.WeaponId].CurrentMags == 0)
+                if (State.Value.Weapons[weapon.WeaponId].CurrentAmmo == 0)
                     weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
 
             }

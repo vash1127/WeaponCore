@@ -118,7 +118,7 @@ namespace WeaponCore
 
                         if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType) ComputeStorage(w);
 
-                        gridAi.Reloading = !w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 && comp.State.Value.Weapons[w.WeaponId].CurrentMags > 0;
+                        gridAi.Reloading = !w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 && (comp.State.Value.Weapons[w.WeaponId].CurrentMags > 0 || IsCreative);
 
                         if (comp.Debug)
                         {
@@ -215,7 +215,7 @@ namespace WeaponCore
                                     if (w.IsShooting)
                                         w.StopShooting();
                                 }
-                                if (comp.State.Value.Weapons[w.WeaponId].CurrentMags != 0)
+                                if (comp.State.Value.Weapons[w.WeaponId].CurrentMags != 0 || IsCreative)
                                     w.StartReload();
                                 else if(!w.Reloading)
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, true);
