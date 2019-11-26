@@ -74,7 +74,7 @@ namespace WeaponCore
                 action.Name = new StringBuilder($"Activate Mouse Shoot");
                 action.Action = delegate (IMyTerminalBlock blk) {
                     var comp = blk?.Components?.Get<WeaponComponent>();
-                    if (comp == null) return;
+                    if (comp == null || !comp.Platform.Inited) return;
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
                         var w = comp.Platform.Weapons[i];
@@ -153,7 +153,7 @@ namespace WeaponCore
             action.Name = new StringBuilder($"{name} Shoot On/Off");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null) return;
+                if (comp == null || !comp.Platform.Inited) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
@@ -188,7 +188,7 @@ namespace WeaponCore
             action.Name = new StringBuilder($"{name} Shoot On");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null) return;
+                if (comp == null || !comp.Platform.Inited) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
@@ -216,7 +216,7 @@ namespace WeaponCore
             action.Name = new StringBuilder($"{name} Shoot Off");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null) return;
+                if (comp == null || !comp.Platform.Inited) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
@@ -244,7 +244,7 @@ namespace WeaponCore
             action.Name = new StringBuilder($"{name} Shoot Once");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null) return;
+                if (comp == null || comp.Platform.Inited) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
@@ -265,7 +265,7 @@ namespace WeaponCore
         internal static bool CheckWeaponManualState(IMyTerminalBlock blk, int id)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null) return false;
+            if (comp == null || !comp.Platform.Inited) return false;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -280,7 +280,7 @@ namespace WeaponCore
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp?.Platform?.Weapons != null)
+            if (comp != null && comp.Platform.Inited)
             {
                 var maxTrajectory = 0f;
                 FutureEvents.Schedule(comp.UpdateTerminal, null, 1);
