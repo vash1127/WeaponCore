@@ -22,7 +22,6 @@ namespace WeaponCore.Platform
         private EventTriggers _lastState;
         private HashSet<MyEntitySubpart> _partsAnimated;
         private int _shotsInCycle;
-        private int _shots = 1;
         private int _nextVirtual;
         private int _barrelRate;
         private uint _ticksUntilShoot;

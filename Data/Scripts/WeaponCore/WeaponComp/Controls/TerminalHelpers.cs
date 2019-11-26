@@ -22,57 +22,28 @@ namespace WeaponCore.Control
             {
                 var c = actions[i];
                 //Log.Line($"Count: {i} ID:{c.Id}");
+
                 if (!c.Id.Contains("OnOff") && !c.Id.Equals("Shoot") && !c.Id.Equals("ShootOnce"))
-                    c.Enabled = b => !WepUi.CoreWeaponEnableCheck(b, 0);
+                    c.Enabled = b => WepUi.CoreWeaponEnableCheck(b, -6);
+
+                if(c.Id.Contains("Control"))
+                    c.Enabled = b => WepUi.CoreWeaponEnableCheck(b, -5);
 
                 if (c.Id.Equals("ShootOnce"))
                 {
+                    var oldAction = c.Action;
                     c.Action = blk =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
-                        if (comp == null) return;
-                        for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                        {
-                            comp.Platform.Weapons[j].ManualShoot = ShootOnce;
-                            comp.Ai.ManualComps++;
-                        }
-
-                    };
-                }
-                else if (c.Id.Equals("Shoot"))
-                {
-                    c.Action = blk =>
-                    {
-                        var comp = blk?.Components?.Get<WeaponComponent>();
-                        if (comp == null) return;
+                        oldAction(blk);
+                        if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
                             var w = comp.Platform.Weapons[j];
-                            if (w.ManualShoot == ShootOn)
-                            {
-                                w.ManualShoot = ShootOff;
-                                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                                comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
-                            }
-                            else if (w.ManualShoot != ShootOff)
-                                w.ManualShoot = ShootOn;
-                            else
-                            {
-                                w.ManualShoot = ShootOn;
-                                comp.Ai.ManualComps++;
-                                comp.Shooting++;
-                            }
+                            w.ManualShoot = ShootOnce;
+                            comp.Ai.ManualComps++;
+                            comp.Shooting++;
                         }
-                    };
-
-                    c.Writer = (b, v) =>
-                    {
-                        var comp = b?.Components?.Get<WeaponComponent>();
-                        if (comp == null) return;
-                        if (comp.Shooting > 0)
-                            v.Append("On");
-                        else
-                            v.Append("Off");
                     };
                 }
             }
@@ -89,9 +60,56 @@ namespace WeaponCore.Control
                 //Log.Line($"Count: {i} ID:{c.Id}");
 
                 if(!c.Id.Contains("OnOff") && !string.IsNullOrEmpty(c.Id) && !c.Id.Contains("ShowInTerminal") && !c.Id.Contains("ShowInInventory") && !c.Id.Contains("ShowInToolbarConfig") && !c.Id.Contains("Name") && !c.Id.Contains("ShowOnHUD") && !c.Id.Contains("CustomData") && !c.Id.Contains("ShootOnce") && !c.Id.Contains("Shoot") && !c.Id.Contains("Control") && !c.Id.Contains("Range"))
-                    c.Visible = b => !WepUi.CoreWeaponEnableCheck(b, 0);
+                    c.Visible = b => WepUi.CoreWeaponEnableCheck(b, -6);
 
-                if (c.Id.Equals("OnOff"))
+                if (c.Id.Contains("Control"))
+                    c.Visible = b => WepUi.CoreWeaponEnableCheck(b, -5);
+
+                if (c.Id.Equals("ShootOnce"))
+                {
+                    
+                    ((IMyTerminalControlButton)c).Action += blk =>
+                    {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+                        for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                        {
+                            var w = comp.Platform.Weapons[j];
+                            w.ManualShoot = ShootOnce;
+                            comp.Ai.ManualComps++;
+                            comp.Shooting++;
+                        }
+
+                    };
+                }
+                else if (c.Id.Equals("Shoot"))
+                {
+                    ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, On) =>
+                    {
+                        var comp = blk?.Components?.Get<WeaponComponent>();
+                        if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+                        for (int j = 0; j < comp.Platform.Weapons.Length; j++)
+                        {
+                            var w = comp.Platform.Weapons[j];
+                            if (!On && w.ManualShoot == ShootOn)
+                            {
+                                w.ManualShoot = ShootOff;
+                                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                                comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
+                            }
+                            else if (On && w.ManualShoot != ShootOff)
+                                w.ManualShoot = ShootOn;
+                            else if(On)
+                            {
+                                w.ManualShoot = ShootOn;
+                                comp.Ai.ManualComps++;
+                                comp.Shooting++;
+                            }
+                        }
+                    };
+                }
+
+                    if (c.Id.Equals("OnOff"))
                     ((IMyTerminalControlOnOffSwitch) c).Setter += OnOffAnimations;
 
             }
@@ -284,7 +302,7 @@ namespace WeaponCore.Control
         internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp?.Platform == null || !comp.Platform.Inited) return false;
+            if (comp?.Platform == null || comp.Platform == null || !comp.Platform.Inited) return false;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {

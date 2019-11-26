@@ -18,14 +18,15 @@ namespace WeaponCore.Platform
         {
             var session = Comp.Ai.Session;
             var tick = session.Tick;
+            var state = Comp.State.Value.Weapons[WeaponId];
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
             if (System.BurstMode)
             {
-                if (_shots > System.Values.HardPoint.Loading.ShotsInBurst)
+                if (state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     if (tick - _lastShotTick > System.Values.HardPoint.Loading.DelayAfterBurst)
                     {
-                        _shots = 1;
+                        state.ShotsFired = 1;
                         EventTriggerStateChanged(EventTriggers.BurstReload,false);
                     }
 
@@ -75,7 +76,7 @@ namespace WeaponCore.Platform
             if (System.DelayToFire > 0)
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
 
-            _shots++;
+            state.ShotsFired++;
 
             if (_shotsInCycle++ == _numOfBarrels - 1)
             {
@@ -115,7 +116,7 @@ namespace WeaponCore.Platform
 
                     if (!System.EnergyAmmo)
                     {
-                        if (Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0) continue;
+                        if (Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0) break;
                         Comp.State.Value.Weapons[WeaponId].CurrentAmmo--;
                     }
 
@@ -260,6 +261,11 @@ namespace WeaponCore.Platform
                 }
 
                 EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+                if (ManualShoot == TerminalActionState.ShootOnce)
+                {
+                    ManualShoot = TerminalActionState.ShootOff;
+                    Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
+                }
                 _muzzlesToFire.Clear();
 
                 _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;

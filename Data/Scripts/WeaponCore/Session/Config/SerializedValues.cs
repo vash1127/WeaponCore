@@ -22,6 +22,7 @@ namespace WeaponCore
         [ProtoMember(1)] public float Heat;
         [ProtoMember(2)] public int CurrentAmmo;
         [ProtoMember(3)] public MyFixedPoint CurrentMags;
+        [ProtoMember(4)] public int ShotsFired = 1;
     }
 
     [ProtoContract]

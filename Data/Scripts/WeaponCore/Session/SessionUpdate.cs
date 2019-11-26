@@ -204,7 +204,7 @@ namespace WeaponCore
                         else comp.Charging = false;
                         
                         if (comp.Charging) continue;
-                       
+
                         if (!w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0)
                         {
                             if (w.AmmoMagTimer == int.MaxValue)
@@ -219,8 +219,6 @@ namespace WeaponCore
                                     w.StartReload();
                                 else if(!w.Reloading)
                                     w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, true);
-
-                                w.Reloading = true;
                                 continue;
                             }
                             if (!w.AmmoMagLoaded) continue;
@@ -234,6 +232,7 @@ namespace WeaponCore
                             }
                             w.Reloading = false;
                         }
+
                         if (w.SeekTarget || gridAi.TargetResetTick == Tick)
                         {
                             if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset)
@@ -261,13 +260,7 @@ namespace WeaponCore
                         }
 
                         if (!w.System.DesignatorWeapon && (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
-                        {
                             w.Shoot();
-                            if (w.ManualShoot == ShootOnce) {
-                                w.ManualShoot = ShootOff;
-                                gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
-                            }
-                        }
                         else if (w.IsShooting)
                             w.StopShooting();
 

@@ -491,6 +491,7 @@ namespace WeaponCore.Platform
 
         public void StartReload()
         {
+            Reloading = true;
             EventTriggerStateChanged(EventTriggers.Reloading, true);
             EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
             LoadAmmoMag = true;
