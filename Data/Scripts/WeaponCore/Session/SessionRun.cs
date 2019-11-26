@@ -97,9 +97,10 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
 
+                TargetSelection();
+
                 PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
 
-                TargetSelection();
 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
