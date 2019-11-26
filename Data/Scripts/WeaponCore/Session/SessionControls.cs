@@ -71,7 +71,7 @@ namespace WeaponCore
 
                 var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
                 action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-                action.Name = new StringBuilder($"Activate Mouse Shoot");
+                action.Name = new StringBuilder($"Toggle Mouse Shoot");
                 action.Action = delegate (IMyTerminalBlock blk) {
                     var comp = blk?.Components?.Get<WeaponComponent>();
                     if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
@@ -81,20 +81,32 @@ namespace WeaponCore
                         if (w.ManualShoot == ShootClick)
                         {
                             w.ManualShoot = ShootOff;
+                            comp.MouseShoot = false;
                             comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                             comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                         }
-                        else if(w.ManualShoot != ShootOff)
+                        else if (w.ManualShoot != ShootOff)
+                        {
                             w.ManualShoot = ShootClick;
+                            comp.MouseShoot = true;
+                        }
                         else
                         {
                             w.ManualShoot = ShootClick;
+                            comp.MouseShoot = true;
                             comp.Ai.ManualComps++;
                             comp.Shooting++;
                         }
                     }
                 };
-                action.Writer = (b, t) => t.Append("");
+                action.Writer = (blk, t) => 
+                {
+                    var comp = blk?.Components?.Get<WeaponComponent>();
+                    if (comp != null && comp.MouseShoot)
+                        t.Append("On");
+                    else
+                        t.Append("Off");
+                };
                 action.Enabled = (b) => WepUi.CoreWeaponEnableCheck(b, 0);
                 action.ValidForGroups = true;
 

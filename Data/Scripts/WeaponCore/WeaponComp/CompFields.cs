@@ -59,6 +59,7 @@ namespace WeaponCore.Support
         internal bool Charging;
         internal bool ReturnHome;
         internal bool Debug;
+        internal bool MouseShoot;
         internal Start Status;
         internal enum Start
         {
