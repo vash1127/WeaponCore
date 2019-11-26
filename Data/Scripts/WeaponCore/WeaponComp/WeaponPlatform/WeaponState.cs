@@ -224,52 +224,45 @@ namespace WeaponCore.Platform
                         break;
 
                     case EventTriggers.TurnOff:
-                        string currentAnimation = "";
-                        try
+
+                        if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                         {
-                            if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                            var onRunning = new HashSet<MyEntitySubpart>();
+
+                            if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                             {
-                                var onRunning = new HashSet<MyEntitySubpart>();
 
-                                if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i++)
                                 {
-
-                                    for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i++)
+                                    var animation = AnimationsSet[EventTriggers.TurnOn][i];
+                                    if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                     {
-                                        var animation = AnimationsSet[EventTriggers.TurnOn][i];
-                                        if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
-                                        {
-                                            onRunning.Add(animation.Part);
-                                            animation.Reverse = true;
-                                        }
-                                    }
-                                }
-                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.TurnOff][i];
-                                    currentAnimation = animation.AnimationId;
-                                    animation.StartTick = OffDelay > 0
-                                        ? Comp.Ai.Session.Tick + animation.MotionDelay + OffDelay
-                                        : 0;
-                                    if(!Comp.Ai.Session.AnimationsToProcess.Contains(animation) && !onRunning.Contains(animation.Part))
-                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                    else if (animation.Reverse == true)
-                                        animation.Reverse = false;
-                                }
-                                foreach (var set in AnimationsSet)
-                                {
-                                    for (int j = 0; j < set.Value.Length; j++)
-                                    {
-                                        var anim = set.Value[j];
-                                        anim.PauseAnimation = false;
-                                        anim.Looping = false;
+                                        onRunning.Add(animation.Part);
+                                        animation.Reverse = true;
                                     }
                                 }
                             }
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Line($"Exception in {currentAnimation} Off {e}");
+                            for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
+                            {
+                                var animation = AnimationsSet[EventTriggers.TurnOff][i];
+
+                                animation.StartTick = OffDelay > 0
+                                    ? Comp.Ai.Session.Tick + animation.MotionDelay + OffDelay
+                                    : 0;
+                                if(!Comp.Ai.Session.AnimationsToProcess.Contains(animation) && !onRunning.Contains(animation.Part))
+                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                else if (animation.Reverse == true)
+                                    animation.Reverse = false;
+                            }
+                            foreach (var set in AnimationsSet)
+                            {
+                                for (int j = 0; j < set.Value.Length; j++)
+                                {
+                                    var anim = set.Value[j];
+                                    anim.PauseAnimation = false;
+                                    anim.Looping = false;
+                                }
+                            }
                         }
                         break;
 
