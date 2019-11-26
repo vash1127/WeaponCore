@@ -19,6 +19,8 @@ namespace WeaponCore.Platform
         private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
 
+        private EventTriggers _lastState;
+        private HashSet<MyEntitySubpart> _partsAnimated;
         private int _shotsInCycle;
         private int _shots = 1;
         private int _nextVirtual;

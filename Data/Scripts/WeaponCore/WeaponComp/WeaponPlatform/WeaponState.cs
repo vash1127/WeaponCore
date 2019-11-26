@@ -193,7 +193,7 @@ namespace WeaponCore.Platform
                         Session.ComputeStorage(this);
                         if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         {
-                            var onAnimations = true;
+                            var offRunning = new HashSet<MyEntitySubpart>();
 
                             if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                             {
@@ -202,21 +202,22 @@ namespace WeaponCore.Platform
                                     var animation = AnimationsSet[EventTriggers.TurnOff][i];
                                     if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                     {
-                                        onAnimations = false;
+                                        offRunning.Add(animation.Part);
                                         animation.Reverse = true;
                                     }
                                 }
                             }
-
-                            if (onAnimations)
+                            for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
                             {
-                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.TurnOn][i];
+                                var animation = AnimationsSet[EventTriggers.TurnOn][i];
+
+                                if (!Comp.Ai.Session.AnimationsToProcess.Contains(animation) && !offRunning.Contains(animation.Part))
                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                    if (animation.DoesLoop)
-                                        animation.Looping = true;
-                                }
+                                else if (animation.Reverse == true)
+                                    animation.Reverse = false;
+
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
                             }
                         }
 
@@ -228,7 +229,7 @@ namespace WeaponCore.Platform
                         {
                             if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                             {
-                                var offAnimations = true;
+                                var onRunning = new HashSet<MyEntitySubpart>();
 
                                 if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                                 {
@@ -238,32 +239,30 @@ namespace WeaponCore.Platform
                                         var animation = AnimationsSet[EventTriggers.TurnOn][i];
                                         if (Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                         {
-                                            offAnimations = false;
+                                            onRunning.Add(animation.Part);
                                             animation.Reverse = true;
                                         }
                                     }
                                 }
-                                if (offAnimations)
+                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
                                 {
-
-                                    for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
-                                    {
-                                        var animation = AnimationsSet[EventTriggers.TurnOff][i];
-                                        currentAnimation = animation.AnimationId;
-                                        animation.StartTick = OffDelay > 0
-                                            ? Comp.Ai.Session.Tick + animation.MotionDelay + OffDelay
-                                            : 0;
-
+                                    var animation = AnimationsSet[EventTriggers.TurnOff][i];
+                                    currentAnimation = animation.AnimationId;
+                                    animation.StartTick = OffDelay > 0
+                                        ? Comp.Ai.Session.Tick + animation.MotionDelay + OffDelay
+                                        : 0;
+                                    if(!Comp.Ai.Session.AnimationsToProcess.Contains(animation) && !onRunning.Contains(animation.Part))
                                         Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                    }
-                                    foreach (var set in AnimationsSet)
+                                    else if (animation.Reverse == true)
+                                        animation.Reverse = false;
+                                }
+                                foreach (var set in AnimationsSet)
+                                {
+                                    for (int j = 0; j < set.Value.Length; j++)
                                     {
-                                        for (int j = 0; j < set.Value.Length; j++)
-                                        {
-                                            var anim = set.Value[j];
-                                            anim.PauseAnimation = false;
-                                            anim.Looping = false;
-                                        }
+                                        var anim = set.Value[j];
+                                        anim.PauseAnimation = false;
+                                        anim.Looping = false;
                                     }
                                 }
                             }
