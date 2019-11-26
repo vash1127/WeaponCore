@@ -319,9 +319,10 @@ namespace WeaponCore.Projectiles
                         var check = State == ProjectileState.OneAndDone;
                         if (!check)
                         {
-                            Vector3D? voxelHit;
-                            using (voxel.Pin()) voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
-                            check = voxelHit.HasValue;
+                            //Vector3D? voxelHit;
+                            //using (voxel.Pin()) voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                            //check = voxelHit.HasValue;
+                            check = true;
                         }
 
                         if (check)
@@ -341,17 +342,15 @@ namespace WeaponCore.Projectiles
             }
         }
 
-
         internal bool Intersected(Projectile p, List<Trajectile> drawList, HitEntity hitEntity)
         {
             if (hitEntity?.HitPos == null) return false;
-
             if (p.EnableAv && (p.DrawLine || p.T.System.PrimeModelId != -1 || p.T.System.TriggerModelId != -1))
             {
                 var hitPos = hitEntity.HitPos.Value;
                 p.TestSphere.Center = hitPos;
                 if (!p.T.OnScreen) CameraCheck(p);
-
+                    
                 if (p.T.MuzzleId != -1)
                 {
                     var length = Vector3D.Distance(p.LastPosition, hitPos);
