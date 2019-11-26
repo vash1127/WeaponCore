@@ -125,17 +125,22 @@ namespace WeaponCore.Control
             {
                 var w = comp.Platform.Weapons[i];
                 
-                if (!On && w.TurretMode)
+                if (!On)
                 {
-                    var azSteps = w.Azimuth / w.System.AzStep;
-                    var elSteps = w.Elevation / w.System.ElStep;
+                    if (w.TurretMode)
+                    {
+                        var azSteps = w.Azimuth / w.System.AzStep;
+                        var elSteps = w.Elevation / w.System.ElStep;
 
-                    if (azSteps < 0) azSteps = azSteps * -1;
-                    if (azSteps < 0) azSteps = azSteps * -1;
+                        if (azSteps < 0) azSteps = azSteps * -1;
+                        if (azSteps < 0) azSteps = azSteps * -1;
 
-                    w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
+                        w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
-                    w.ReturnHome = comp.ReturnHome = comp.Ai.ReturnHome = w.Target.Expired = true;
+                        w.ReturnHome = comp.ReturnHome = comp.Ai.ReturnHome = w.Target.Expired = true;
+                    }
+
+                    w.StopShooting();
                 }
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
