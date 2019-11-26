@@ -291,7 +291,7 @@ namespace WeaponCore.Platform
                                 {
                                     if (!Comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                         Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                    else
+                                    else if(animation.DoesLoop)
                                         animation.Looping = true;
                                 }
                                 else
