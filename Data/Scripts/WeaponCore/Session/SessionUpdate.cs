@@ -195,7 +195,7 @@ namespace WeaponCore
                             else
                             {
                                 if (w.IsShooting)
-                                    w.StopShooting(true);
+                                    w.StopShooting();
 
                                 comp.Charging = true;
                             }

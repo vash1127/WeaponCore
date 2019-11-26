@@ -237,7 +237,7 @@ namespace WeaponCore
                         if (w.ManualShoot != ShootOff)
                         {
                             w.ManualShoot = ShootOff;
-                            w.StopShooting(true);
+                            w.StopShooting();
                             comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                             comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                         }

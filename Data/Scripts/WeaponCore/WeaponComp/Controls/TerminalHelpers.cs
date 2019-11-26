@@ -94,6 +94,7 @@ namespace WeaponCore.Control
                             if (!On && w.ManualShoot == ShootOn)
                             {
                                 w.ManualShoot = ShootOff;
+                                w.StopShooting();
                                 comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                                 comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                             }
