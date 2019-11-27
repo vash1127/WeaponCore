@@ -28,6 +28,8 @@ namespace WeaponCore.Support
 
                 Sink.CurrentInputChanged += CurrentInputChanged;
 
+                //MyCube.PositionComp.OnPositionChanged += UpdatePartPos;
+
             }
             else
             {
@@ -43,8 +45,7 @@ namespace WeaponCore.Support
 
                 Sink.CurrentInputChanged -= CurrentInputChanged;
 
-                foreach (var w in Platform.Weapons)
-                    w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
+                //MyCube.PositionComp.OnPositionChanged -= UpdatePartPos;
             }
         }
 

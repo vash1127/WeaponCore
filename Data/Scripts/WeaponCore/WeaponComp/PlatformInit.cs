@@ -210,6 +210,9 @@ namespace WeaponCore.Platform
                                     if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
                                     {
                                         animation.Part = (MyEntitySubpart)part;
+                                        animation.ResetMove();
+                                        animation.StartTick = 0;
+
                                         if (!registered)
                                         {
                                             animation.Part.OnClose += comp.SubpartClosed;
@@ -244,8 +247,6 @@ namespace WeaponCore.Platform
                         }
 
                     }
-
-                    Weapons[c].Comp.MyCube.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPos;
 
                     for (int i = 0; i < barrelCount; i++)
                     {
@@ -284,9 +285,6 @@ namespace WeaponCore.Platform
                 if (w.MuzzlePart.Item1 == null) continue;
 
                 w.MuzzlePart.Item1.PositionComp.OnPositionChanged -= w.PositionChanged;
-                w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;
-
-                w.MuzzlePart.Item1 = null;
             }
             Parts.Reset(comp.Entity as MyEntity);
             comp.Status = Stopped;

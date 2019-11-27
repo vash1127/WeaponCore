@@ -18,22 +18,6 @@ namespace WeaponCore.Platform
             _posChangedTick = Comp.Ai.Session.Tick;
         }
 
-        internal void UpdatePartPos(MyPositionComponentBase pComp)
-        {
-            var tick = Comp.Ai.Session.Tick;
-
-            if (_posChangedTick != Comp.Ai.Session.Tick)
-                UpdatePivotPos();
-
-            if (Comp.PositionUpdateTick <= tick && _posChangedTick != tick)
-            {
-                if (MuzzlePart.Item1 == null || MuzzlePart.Item1.MarkedForClose) return;
-                var parentMatrix = MuzzlePart.Item1.Parent.PositionComp.WorldMatrix;
-                MuzzlePart.Item1.PositionComp.UpdateWorldMatrix(ref parentMatrix);
-                Comp.PositionUpdateTick = tick + 1;
-            }
-        }
-
         internal void EntPartClose(MyEntity obj)
         {
             obj.PositionComp.OnPositionChanged -= PositionChanged;
