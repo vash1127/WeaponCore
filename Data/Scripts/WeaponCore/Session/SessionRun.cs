@@ -7,7 +7,6 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using WeaponCore.Support;
-using WeaponThread;
 using static Sandbox.Definitions.MyDefinitionManager;
 
 namespace WeaponCore
@@ -205,13 +204,14 @@ namespace WeaponCore
                 MyAPIGateway.Utilities.RegisterMessageHandler(7773, UpgradeHandler);
                 IsCreative = MyAPIGateway.Session.CreativeMode;
 
+                /* //Weapon Thread
                 var weapons = new Weapons();
                 var weaponDefinitions = weapons.ReturnDefs();
                 for (int i = 0; i < weaponDefinitions.Length; i++)
                 {
                     weaponDefinitions[i].ModPath = ModContext.ModPath;
                     _weaponDefinitions.Add(weaponDefinitions[i]);
-                }
+                }*/
 
                 ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm");
                 ModelCount++;
