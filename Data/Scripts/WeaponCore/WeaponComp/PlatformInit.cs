@@ -213,6 +213,9 @@ namespace WeaponCore.Platform
                                         animation.ResetMove();
                                         animation.StartTick = 0;
 
+                                        if (comp.Ai.Session.AnimationsToProcess.Contains(animation))
+                                            comp.Ai.Session.AnimationsToProcess.Remove(animation);
+
                                         if (!registered)
                                         {
                                             animation.Part.OnClose += comp.SubpartClosed;

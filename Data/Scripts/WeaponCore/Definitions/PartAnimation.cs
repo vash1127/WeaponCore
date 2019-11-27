@@ -50,6 +50,7 @@ namespace WeaponCore.Support {
 
         private int _currentMove;
         private EmissiveState LastEmissive;
+        private string _uid;
 
         internal int CurrentMove
         {
@@ -62,6 +63,10 @@ namespace WeaponCore.Support {
             RotCenterSet = rotCeterSet;
             CurrentEmissivePart = currentEmissivePart;
             AnimationId = animationId;
+
+            //Unique Animation ID
+            Guid guid = Guid.NewGuid();
+            _uid = Convert.ToBase64String(guid.ToByteArray());
 
             TypeSet = typeSet;
             Muzzle = muzzle;
@@ -149,20 +154,20 @@ namespace WeaponCore.Support {
 
         protected bool Equals(PartAnimation other)
         {
-            return Equals(Part, other.Part) && Equals(AnimationId, other.AnimationId);
+            return Equals(_uid, other._uid);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((PartAnimation)obj);
         }
 
         public override int GetHashCode()
         {
-            return (SubpartId != null ? SubpartId.GetHashCode() + AnimationId.GetHashCode() : 0);
+            return _uid.GetHashCode();
         }
     }
 }
