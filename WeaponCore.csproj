@@ -115,17 +115,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\Menu.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\Wheel.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\WheelFields.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\InteriorTurret.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\LargeGatlingTurret.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\LargeMissileLauncher.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\LargeMissileTurret.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\MasterConfig.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\ReloadableRocketLauncher.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\script\WeaponCompile.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\SmallGatlingGun.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\SmallGatlingTurret.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\SmallMissileLauncher.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\WeaponThread\SmallMissileTurret.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="HavokWrapper, Version=0.1.1.0, Culture=neutral, processorArchitecture=AMD64">
