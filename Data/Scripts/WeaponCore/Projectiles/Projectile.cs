@@ -95,6 +95,7 @@ namespace WeaponCore.Projectiles
         internal bool Miss;
         internal bool Active;
         internal bool HitParticleActive;
+        internal bool MarkedForClose;
         internal Trajectile T = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -131,6 +132,7 @@ namespace WeaponCore.Projectiles
             ZombieLifeTime = 0;
             LastOffsetTime = 0;
             Colliding = false;
+            MarkedForClose = false;
             ParticleStopped = false;
             ParticleLateStart = false;
             T.OnScreen = true;
@@ -867,13 +869,12 @@ namespace WeaponCore.Projectiles
 
         internal void Stop()
         {
-            if (EndStep++ >= EndSteps)
+            //if (EndStep++ >= EndSteps)
             {
                 if (EnableAv)
                 {
                     if (T.System.AmmoParticle) DisposeAmmoEffect(false, false);
                     HitEffects();
-                    //if (AmmoSound) TravelEmitter.StopSound(false, true);
                 }
                 State = ProjectileState.Dead;
                 T.Target.IsProjectile = false;

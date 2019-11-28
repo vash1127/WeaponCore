@@ -88,9 +88,12 @@ namespace WeaponCore.Projectiles
                             var planetCenter = ai.MyPlanet.PositionComp.WorldAABB.Center;
                             double cDistToCenter;
                             Vector3D.DistanceSquared(ref closestPos, ref planetCenter, out cDistToCenter);
-                            double pDistTocenter;
-                            Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistTocenter);
-                            if (cDistToCenter > pDistTocenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition)) check = true;
+                            double pDistToCenter;
+                            Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistToCenter);
+                            double mDistToCenter;
+                            Vector3D.DistanceSquared(ref p.T.Origin, ref planetCenter, out mDistToCenter);
+
+                            if (cDistToCenter > pDistToCenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition) || pDistToCenter > mDistToCenter) check = true;
                             if (check)
                             {
                                 using (voxel.Pin())
