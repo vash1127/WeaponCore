@@ -41,7 +41,7 @@ namespace WeaponCore.Support
                 WeaponComponent comp;
                 if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                 {
-                    if (Platform != null && Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     {
                         GridAi.WeaponCount wCount;
 
@@ -125,11 +125,6 @@ namespace WeaponCore.Support
         public void StopAllSounds()
         {
             RotationEmitter?.StopSound(true, true);
-            if (Platform == null)
-            {
-                Log.Line($"[StopAllSounds] MyCubeId:{MyCube.EntityId} - Grid:{MyCube.CubeGrid.DebugName} - WeaponName:{MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!MyCube.MarkedForClose} - inScene:{MyCube.InScene} - gridMatch:{MyCube.CubeGrid == Ai.MyGrid}");
-                return;
-            }
             foreach (var w in Platform.Weapons)
             {
                 w.StopReloadSound();
@@ -172,6 +167,7 @@ namespace WeaponCore.Support
 
         public void StopAllAv()
         {
+            if (Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             StopAllSounds();
             StopAllGraphics();
         }

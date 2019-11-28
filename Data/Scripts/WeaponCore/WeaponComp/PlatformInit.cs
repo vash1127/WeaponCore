@@ -20,6 +20,7 @@ namespace WeaponCore.Platform
             Invalid,
             Delay,
             Valid,
+            Inited,
             Ready,
         }
 
@@ -136,7 +137,7 @@ namespace WeaponCore.Platform
                 weapon.UpdatePivotPos();
             }
             CompileTurret(comp);
-            State = PlatformState.Ready;
+            State = PlatformState.Inited;
 
             return State;
         }
