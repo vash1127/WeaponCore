@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 
@@ -155,6 +156,7 @@ namespace WeaponCore.Platform
 
                         break;
                     case EventTriggers.Overheated:
+
                         if (AnimationsSet.ContainsKey(EventTriggers.Overheated))
                         {
                             for (int i = 0; i < AnimationsSet[EventTriggers.Overheated].Length; i++)

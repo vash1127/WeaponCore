@@ -147,9 +147,12 @@ namespace WeaponCore.Support {
             return _currentMove - 1 >= 0 ? _currentMove - 1 : NumberOfMoves - 1; 
         }
 
-        internal void ResetMove()
+        internal void Reset()
         {
             _currentMove = 0;
+            Looping = false;
+            Reverse = false;
+            LastEmissive = new EmissiveState();
         }
 
         protected bool Equals(PartAnimation other)

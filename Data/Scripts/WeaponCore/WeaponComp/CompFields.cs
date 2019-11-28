@@ -52,6 +52,7 @@ namespace WeaponCore.Support
         internal float CurrentSinkPowerRequested;
         internal float CompPowerPerc;
         internal float IdlePower = 0.001f;
+        internal float MaxIntegrity;
         internal bool Overheated;
         internal bool Gunner;
         internal bool Starting;
@@ -94,6 +95,8 @@ namespace WeaponCore.Support
         {
             Ai = ai;
             MyCube = myCube;
+
+            MaxIntegrity = myCube.SlimBlock.MaxIntegrity;
 
             var cube = MyCube as IMyLargeMissileTurret;
             if (cube != null)

@@ -210,8 +210,7 @@ namespace WeaponCore.Platform
                                     if (Parts.NameToEntity.TryGetValue(animation.SubpartId, out part))
                                     {
                                         animation.Part = (MyEntitySubpart)part;
-                                        animation.ResetMove();
-                                        animation.StartTick = 0;
+                                        animation.Reset();
 
                                         if (comp.Ai.Session.AnimationsToProcess.Contains(animation))
                                             comp.Ai.Session.AnimationsToProcess.Remove(animation);
