@@ -131,7 +131,7 @@ namespace WeaponCore.Support
                             w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                     }
                 }
-                Log.Line($"Comp Inited");
+                //Log.Line($"Comp Inited");
                 Platform.State = MyWeaponPlatform.PlatformState.Ready;
             }
         }
