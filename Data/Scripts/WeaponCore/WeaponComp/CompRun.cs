@@ -17,8 +17,10 @@ namespace WeaponCore.Support
                 if (Container.Entity.InScene)
                 {
                     lock (this)
+                    {
                         if (Platform.State == MyWeaponPlatform.PlatformState.Refresh)
                             PreInit();
+                    }
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
@@ -31,7 +33,7 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 lock (this)
                 {
-                    if (MainInit) ReInitPlatform();
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Inited) ReInitPlatform();
                     else MyAPIGateway.Utilities.InvokeOnGameThread(PreInit);
                 }
             }
@@ -58,73 +60,80 @@ namespace WeaponCore.Support
 
         public void PreInit()
         {
-            switch (Platform.PreInit(this))
+            lock (this)
             {
-                case MyWeaponPlatform.PlatformState.Invalid:
-                    Platform = null;
-                    break;
-                case MyWeaponPlatform.PlatformState.Valid:
-                    Log.Line($"Something went wrong with Platform PreInit");
-                    break;
-                case MyWeaponPlatform.PlatformState.Delay:
-                    Ai.Session.FutureEvents.Schedule(RePreInit, null, 120);
-                    break;
-                case MyWeaponPlatform.PlatformState.Ready:
-                    InitPlatform();
-                    break;
+                switch (Platform.PreInit(this))
+                {
+                    case MyWeaponPlatform.PlatformState.Invalid:
+                        Platform = null;
+                        break;
+                    case MyWeaponPlatform.PlatformState.Valid:
+                        Log.Line($"Something went wrong with Platform PreInit");
+                        break;
+                    case MyWeaponPlatform.PlatformState.Delay:
+                        Ai.Session.FutureEvents.Schedule(RePreInit, null, 120);
+                        break;
+                    case MyWeaponPlatform.PlatformState.Inited:
+                        InitPlatform();
+                        break;
+                }
             }
         }
 
         public void InitPlatform()
         {
-            _isServer = Ai.Session.IsServer;
-            _isDedicated = Ai.Session.DedicatedServer;
-            _mpActive = Ai.Session.MpActive;
-
-            Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
-            Ai.FirstRun = true;
-
-            StorageSetup();
-
-            MaxRequiredPower = 0;
-            HeatPerSecond = 0;
-            OptimalDps = 0;
-
-            for (int i  = 0; i< Platform.Weapons.Length; i++)
+            lock (this)
             {
-                var weapon = Platform.Weapons[i];
-                weapon.InitTracking();
-                DpsAndHeatInit(weapon);
-                weapon.UpdateBarrelRotation();
+                _isServer = Ai.Session.IsServer;
+                _isDedicated = Ai.Session.DedicatedServer;
+                _mpActive = Ai.Session.MpActive;
 
-                if (State.Value.Weapons[weapon.WeaponId].CurrentAmmo == 0)
-                    weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+                Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
+                Ai.FirstRun = true;
 
-            }
+                StorageSetup();
 
-            Ai.OptimalDps += OptimalDps;
+                MaxRequiredPower = 0;
+                HeatPerSecond = 0;
+                OptimalDps = 0;
 
-            InventoryInit();
-            PowerInit();
-            RegisterEvents();
-            OnAddedToSceneTasks();
-            if (IsSorterTurret)
-            {
-                if (!SorterBase.Enabled)
+                for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
-                    foreach (var w in Platform.Weapons)
-                        w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                    var weapon = Platform.Weapons[i];
+                    weapon.InitTracking();
+                    DpsAndHeatInit(weapon);
+                    weapon.UpdateBarrelRotation();
+
+                    if (State.Value.Weapons[weapon.WeaponId].CurrentAmmo == 0)
+                        weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+
                 }
-            }
-            else {
-                if (!MissileBase.Enabled)
+
+                Ai.OptimalDps += OptimalDps;
+
+                InventoryInit();
+                PowerInit();
+                RegisterEvents();
+                OnAddedToSceneTasks();
+                if (IsSorterTurret)
                 {
-                    foreach (var w in Platform.Weapons)
-                        w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                    if (!SorterBase.Enabled)
+                    {
+                        foreach (var w in Platform.Weapons)
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                    }
                 }
+                else
+                {
+                    if (!MissileBase.Enabled)
+                    {
+                        foreach (var w in Platform.Weapons)
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                    }
+                }
+                Log.Line($"Comp Inited");
+                Platform.State = MyWeaponPlatform.PlatformState.Ready;
             }
-            //Log.Line($"Comp Inited");
-            MainInit = true;
         }
 
         public void ReInitPlatform()
@@ -149,7 +158,7 @@ namespace WeaponCore.Support
                 return;
             }
 
-            if (MainInit)
+            if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                 Platform.ResetParts(this);
 
             Entity.NeedsWorldMatrix = true;

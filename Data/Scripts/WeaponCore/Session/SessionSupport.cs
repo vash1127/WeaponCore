@@ -331,7 +331,7 @@ namespace WeaponCore
             foreach (var basePair in gridAi.WeaponBase)
             {
                 var comp = basePair.Value;
-                if (comp?.Platform == null) return;
+                if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
                 for (int i = 0; i < basePair.Value.Platform.Weapons.Length; i++)
                 {

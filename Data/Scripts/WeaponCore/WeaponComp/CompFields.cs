@@ -76,7 +76,6 @@ namespace WeaponCore.Support
         internal IMyConveyorSorter SorterBase;
         internal Weapon TrackingWeapon;
         internal MyInventory BlockInventory;
-        internal bool MainInit;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;

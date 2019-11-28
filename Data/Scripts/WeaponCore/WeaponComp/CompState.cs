@@ -44,7 +44,7 @@ namespace WeaponCore.Support
 
         internal void SubpartClosed(MyEntity ent)
         {
-            if (ent != null && MyCube != null && !MyCube.MarkedForClose && Platform != null)
+            if (ent != null && MyCube != null && !MyCube.MarkedForClose && Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
                 ent.OnClose -= SubpartClosed;
                 ReInit();

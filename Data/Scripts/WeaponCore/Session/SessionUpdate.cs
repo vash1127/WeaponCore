@@ -26,7 +26,10 @@ namespace WeaponCore
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
-                    if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || comp.Status != Started)
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
+                        continue;
+
+                    if (!comp.State.Value.Online && !comp.ReturnHome || comp.Status != Started)
                     {
                         if (comp.Status != Started) comp.HealthCheck();
                         continue;
@@ -163,7 +166,7 @@ namespace WeaponCore
                     var comp = basePair.Value;
                     if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
-                    if (!comp.MainInit || (!comp.State.Value.Online && !comp.ReturnHome) || !gridAi.Ready || comp.MyCube.MarkedForClose) continue;
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || (!comp.State.Value.Online && !comp.ReturnHome) || !gridAi.Ready || comp.MyCube.MarkedForClose) continue;
 
                     if ((gridAi.RecalcLowPowerTick != 0 && gridAi.RecalcLowPowerTick <= Tick) || gridAi.AvailablePowerIncrease)
                         comp.UpdateCompPower();
