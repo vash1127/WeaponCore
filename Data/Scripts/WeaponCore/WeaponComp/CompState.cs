@@ -46,6 +46,7 @@ namespace WeaponCore.Support
         {
             if (ent != null && MyCube != null && !MyCube.MarkedForClose && Platform != null)
             {
+                ent.OnClose -= SubpartClosed;
                 ReInit();
 
                 foreach (var w in Platform.Weapons)

@@ -13,7 +13,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string,Matrix?[]> weaponLinearMoveSet)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string,Matrix[]> weaponLinearMoveSet)
         {
 
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
@@ -22,7 +22,7 @@ namespace WeaponCore
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
 
-            weaponLinearMoveSet = new Dictionary<string,Matrix?[]>();
+            weaponLinearMoveSet = new Dictionary<string,Matrix[]>();
 
             var emissiveLookup = new Dictionary<string, WeaponEmissive>();
 
@@ -49,9 +49,9 @@ namespace WeaponCore
                             allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
                         }
 
-                        List<Matrix?> moveSet = new List<Matrix?>();
-                        List<Matrix?> rotationSet = new List<Matrix?>();
-                        List<Matrix?> rotCenterSet = new List<Matrix?>();
+                        List<Matrix> moveSet = new List<Matrix>();
+                        List<Matrix> rotationSet = new List<Matrix>();
+                        List<Matrix> rotCenterSet = new List<Matrix>();
                         List<string> rotCenterNameSet = new List<string>();
                         var id = $"{(int)moves.Key}{animationSet.SubpartId[t]}";
                         AnimationType[] typeSet = new[]
@@ -77,9 +77,9 @@ namespace WeaponCore
                             move.MovementType == RelMove.MoveType.Show ||
                             move.MovementType == RelMove.MoveType.Hide)
                             {
-                                moveSet.Add(null);
-                                rotationSet.Add(null);
-                                rotCenterSet.Add(null);
+                                moveSet.Add(Matrix.Zero);
+                                rotationSet.Add(Matrix.Zero);
+                                rotCenterSet.Add(Matrix.Zero);
                                 for (var j = 0; j < move.TicksToMove; j++)
                                 {
                                     var type = 5;
@@ -128,7 +128,7 @@ namespace WeaponCore
                                 else
                                 {
                                     rotCenterNameSet.Add(null);
-                                    rotCenterSet.Add(null);
+                                    rotCenterSet.Add(Matrix.Zero);
                                 }
 
                                 if (move.Rotation.x > 0 || move.Rotation.y > 0 || move.Rotation.z > 0 ||
@@ -137,7 +137,7 @@ namespace WeaponCore
                                     rotationSet.Add(CreateRotation(move.Rotation.x / move.TicksToMove, move.Rotation.y / move.TicksToMove, move.Rotation.z / move.TicksToMove));
                                 }
                                 else
-                                    rotationSet.Add(null);
+                                    rotationSet.Add(Matrix.Zero);
 
                                 if (move.LinearPoints != null && move.LinearPoints.Length > 0)
                                 {
@@ -346,7 +346,7 @@ namespace WeaponCore
                                     }
                                     else
                                     {
-                                        moveSet.Add(null);
+                                        moveSet.Add(Matrix.Zero);
 
                                         for (int j = 0; j < move.TicksToMove; j++)
                                         {
@@ -369,7 +369,7 @@ namespace WeaponCore
                                 }
                                 else
                                 {
-                                    moveSet.Add(null);
+                                    moveSet.Add(Matrix.Zero);
 
                                     for (int j = 0; j < move.TicksToMove; j++)
                                     {
@@ -434,8 +434,8 @@ namespace WeaponCore
                     var subpart = part as MyEntitySubpart;
                     if (subpart == null) continue;
 
-                    var rotations = new Matrix?[animation.RotationSet.Length];
-                    var rotCenters = new Matrix?[animation.RotCenterSet.Length];
+                    var rotations = new Matrix[animation.RotationSet.Length];
+                    var rotCenters = new Matrix[animation.RotCenterSet.Length];
                     animation.RotationSet.CopyTo(rotations, 0);
                     animation.RotCenterSet.CopyTo(rotCenters, 0);
 
@@ -449,25 +449,25 @@ namespace WeaponCore
                     {
                         for (int i = 0; i < rotations.Length; i++)
                         {
-                            if (rotations[i] != null)
-                                rotations[i] = Matrix.CreateTranslation(-(Vector3)partCenter) * (Matrix)rotations[i] *
+                            if (rotations[i] != Matrix.Zero)
+                                rotations[i] = Matrix.CreateTranslation(-(Vector3)partCenter) * rotations[i] *
                                                Matrix.CreateTranslation((Vector3)partCenter);
                         }
 
                         for (int i = 0; i < rotCenters.Length; i++)
                         {
-                            if (rotCenters[i] != null && rotCenterNames != null)
+                            if (rotCenters[i] != Matrix.Zero && rotCenterNames != null)
                             {
                                 var dummyCenter = GetPartLocation(rotCenterNames[i], subpart.Model);
                                 if (dummyCenter != null)
-                                    rotCenters[i] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * (Matrix)rotCenters[i] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
+                                    rotCenters[i] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * rotCenters[i] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
                             }
 
 
                         }
                     }
 
-                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.AnimationId,rotations, rotCenters,
+                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.AnimationId, rotations, rotCenters,
                         animation.TypeSet, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
                         animation.Muzzle, animation.FireDelay, animation.MotionDelay, system, animation.DoesLoop,
                         animation.DoesReverse));
@@ -636,8 +636,8 @@ namespace WeaponCore
         internal void AnimateParts(PartAnimation animation)
         {
             var localMatrix = animation.Part.PositionComp.LocalMatrix;
-            MatrixD? rotation;
-            MatrixD? rotAroundCenter;
+            Matrix rotation;
+            Matrix rotAroundCenter;
             Vector3D translation;
             AnimationType animationType;
             EmissiveState currentEmissive;
@@ -666,14 +666,14 @@ namespace WeaponCore
                 }
             }
 
-            if (rotation != null)
+            if (rotation != Matrix.Zero)
             {
-                localMatrix *= animation.Reverse ? Matrix.Invert((Matrix)rotation) : (Matrix)rotation;
+                localMatrix *= animation.Reverse ? Matrix.Invert(rotation) : rotation;
             }
 
-            if (rotAroundCenter != null)
+            if (rotAroundCenter != Matrix.Zero)
             {
-                localMatrix *= animation.Reverse ? Matrix.Invert((Matrix)rotAroundCenter) : (Matrix)rotAroundCenter;
+                localMatrix *= animation.Reverse ? Matrix.Invert(rotAroundCenter) : rotAroundCenter;
             }
 
             if (animationType == AnimationType.Movement)

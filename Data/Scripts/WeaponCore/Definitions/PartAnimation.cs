@@ -7,8 +7,8 @@ namespace WeaponCore.Support {
     public class PartAnimation
     {
         internal readonly string AnimationId;
-        internal readonly Matrix?[] RotationSet;
-        internal readonly Matrix?[] RotCenterSet;
+        internal readonly Matrix[] RotationSet;
+        internal readonly Matrix[] RotCenterSet;
         internal readonly Session.AnimationType[] TypeSet;
         internal readonly int[] CurrentEmissivePart;
         internal readonly int[][] MoveToSetIndexer;
@@ -50,18 +50,23 @@ namespace WeaponCore.Support {
 
         private int _currentMove;
         private EmissiveState LastEmissive;
+        private string _uid;
 
         internal int CurrentMove
         {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(string animationId, Matrix?[] rotationSet, Matrix?[] rotCeterSet, Session.AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false)
+        internal PartAnimation(string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, Session.AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false)
         {
             RotationSet = rotationSet;
             RotCenterSet = rotCeterSet;
             CurrentEmissivePart = currentEmissivePart;
             AnimationId = animationId;
+
+            //Unique Animation ID
+            Guid guid = Guid.NewGuid();
+            _uid = Convert.ToBase64String(guid.ToByteArray());
 
             TypeSet = typeSet;
             Muzzle = muzzle;
@@ -82,15 +87,15 @@ namespace WeaponCore.Support {
         }
 
         
-        internal void GetCurrentMove(out Vector3D translation, out MatrixD? rotation, out MatrixD? rotAroundCenter, out Session.AnimationType type, out EmissiveState emissiveState)
+        internal void GetCurrentMove(out Vector3D translation, out Matrix rotation, out Matrix rotAroundCenter, out Session.AnimationType type, out EmissiveState emissiveState)
         {
             type = TypeSet[MoveToSetIndexer[_currentMove][(int)indexer.TypeIndex]];
             var moveSet = System.WeaponLinearMoveSet[AnimationId];
 
             if (type == Session.AnimationType.Movement)
             {
-                if (moveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]] != null)
-                    translation = moveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]].Value.Translation;
+                if (moveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]] != Matrix.Zero)
+                    translation = moveSet[MoveToSetIndexer[_currentMove][(int)indexer.MoveIndex]].Translation;
                 else
                     translation = Vector3D.Zero;
 
@@ -101,8 +106,8 @@ namespace WeaponCore.Support {
             else
             {
                 translation = Vector3D.Zero;
-                rotation = null;
-                rotAroundCenter = null;
+                rotation = Matrix.Zero;
+                rotAroundCenter = Matrix.Zero;
             }
 
             if (System.WeaponEmissiveSet.TryGetValue(AnimationId + _currentMove, out emissiveState))
@@ -142,22 +147,27 @@ namespace WeaponCore.Support {
             return _currentMove - 1 >= 0 ? _currentMove - 1 : NumberOfMoves - 1; 
         }
 
+        internal void ResetMove()
+        {
+            _currentMove = 0;
+        }
+
         protected bool Equals(PartAnimation other)
         {
-            return Equals(Part, other.Part) && Equals(AnimationId, other.AnimationId);
+            return Equals(_uid, other._uid);
         }
 
         public override bool Equals(object obj)
         {
             if (ReferenceEquals(null, obj)) return false;
             if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
+            if (obj.GetType() != GetType()) return false;
             return Equals((PartAnimation)obj);
         }
 
         public override int GetHashCode()
         {
-            return (SubpartId != null ? SubpartId.GetHashCode() + AnimationId.GetHashCode() : 0);
+            return _uid.GetHashCode();
         }
     }
 }

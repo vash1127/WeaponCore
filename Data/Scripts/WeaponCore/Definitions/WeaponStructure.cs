@@ -31,7 +31,7 @@ namespace WeaponCore.Support
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
-        public readonly Dictionary<string, Matrix?[]> WeaponLinearMoveSet;
+        public readonly Dictionary<string, Matrix[]> WeaponLinearMoveSet;
         public readonly MyPhysicalInventoryItem AmmoItem;
         public readonly string WeaponName;
         public readonly string[] Barrels;

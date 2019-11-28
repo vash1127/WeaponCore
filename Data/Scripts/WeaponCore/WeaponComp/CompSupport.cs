@@ -1,6 +1,7 @@
 ﻿using System;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.VisualScripting;
 using VRageMath;
