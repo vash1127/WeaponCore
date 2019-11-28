@@ -36,8 +36,6 @@ namespace WeaponCore.Support
         {
             lock (_callbacks)
             {
-                //Log.Line($"BeforeEvent offset:{_offset} - delay:{delay}");
-                //Log.Line($"(_offset + delay) % _maxDelay: {(_offset + delay) % _maxDelay}");
                 _callbacks[(_offset + delay) % _maxDelay].Add(new FutureAction(callback, arg1));
             }
         }

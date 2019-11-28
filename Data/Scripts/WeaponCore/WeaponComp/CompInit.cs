@@ -17,9 +17,8 @@ namespace WeaponCore.Support
                 MaxRequiredInput = 0f,
                 RequiredInputFunc = () => SinkPower,
             };
-            MyCube.Components.TryGet(out Sink);
-            Sink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
-            Sink.Update();
+            MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
+            MyCube.ResourceSink.Update();
         }
 
         private bool EntityAlive()

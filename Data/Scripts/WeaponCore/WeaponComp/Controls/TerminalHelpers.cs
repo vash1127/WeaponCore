@@ -36,7 +36,7 @@ namespace WeaponCore.Control
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
                         oldAction(blk);
-                        if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+                        if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
                             var w = comp.Platform.Weapons[j];
@@ -71,7 +71,7 @@ namespace WeaponCore.Control
                     ((IMyTerminalControlButton)c).Action += blk =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
-                        if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+                        if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
                             var w = comp.Platform.Weapons[j];
@@ -87,7 +87,7 @@ namespace WeaponCore.Control
                     ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, On) =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
-                        if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+                        if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
                             var w = comp.Platform.Weapons[j];
@@ -120,7 +120,7 @@ namespace WeaponCore.Control
         private static void OnOffAnimations(IMyTerminalBlock blk, bool On)
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || !comp.Platform.Inited) return;
+            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
@@ -308,7 +308,7 @@ namespace WeaponCore.Control
         internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp?.Platform == null || comp.Platform == null || !comp.Platform.Inited) return false;
+            if (comp?.Platform == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
 
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {

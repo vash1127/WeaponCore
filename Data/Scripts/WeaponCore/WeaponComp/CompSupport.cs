@@ -41,7 +41,7 @@ namespace WeaponCore.Support
                 WeaponComponent comp;
                 if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                 {
-                    if (Platform != null && Platform.Inited)
+                    if (Platform != null && Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     {
                         GridAi.WeaponCount wCount;
 
@@ -107,7 +107,7 @@ namespace WeaponCore.Support
                     Ai.ResetPower = true;
                 }
 
-                Sink.Update();
+                MyCube.ResourceSink.Update();
                 TerminalRefresh();
             }            
         }

@@ -72,7 +72,7 @@ namespace WeaponCore.Support
         }
         
         internal MyCubeBlock MyCube;
-        internal MyWeaponPlatform Platform;
+        internal MyWeaponPlatform Platform = new MyWeaponPlatform();
         internal IMyLargeMissileTurret MissileBase;
         internal IMyConveyorSorter SorterBase;
         internal Weapon TrackingWeapon;
@@ -87,7 +87,6 @@ namespace WeaponCore.Support
         internal bool IgnoreInvChange;
         internal LogicSettings Set;
         internal LogicState State;
-        internal MyResourceSinkComponent Sink;
         internal MyResourceSinkInfo SinkInfo;
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 

@@ -1,7 +1,4 @@
-﻿using Sandbox.Definitions;
-using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
-using SpaceEngineers.Game.ModAPI;
+﻿using Sandbox.Game.Entities;
 using System;
 using VRage;
 using VRage.Game.Entity;
@@ -12,32 +9,64 @@ namespace WeaponCore.Platform
 {
     public class MyWeaponPlatform
     {
-        internal readonly Weapon[] Weapons;
-        internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
-        internal readonly WeaponStructure Structure;
-        internal readonly bool Inited;
-        internal MyWeaponPlatform(WeaponComponent comp)
+        internal Weapon[] Weapons;
+        internal RecursiveSubparts Parts;
+        internal WeaponStructure Structure;
+        internal PlatformState State;
+
+        internal enum PlatformState
         {
-            Structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
+            Refresh,
+            Invalid,
+            Delay,
+            Valid,
+            Ready,
+        }
+
+        internal PlatformState PreInit(WeaponComponent comp)
+        {
+            var structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
 
             var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
-            wCounter.Max = Structure.GridWeaponCap;
+            wCounter.Max = structure.GridWeaponCap;
             if (wCounter.Max > 0)
             {
                 if (wCounter.Current + 1 <= wCounter.Max)
                 {
                     wCounter.Current++;
-                    Inited = true;
+                    State = PlatformState.Valid;
                 }
-                else return;
+                else
+                {
+                    State = PlatformState.Invalid;
+                    WeaponComponent removed;
+                    comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed);
+                    Log.Line("init platform invalid");
+                    return State;
+                }
             }
-            else Inited = true;
+            else State = PlatformState.Valid; 
+
+            Structure = structure;
+            Parts = new RecursiveSubparts();
 
             var partCount = Structure.MuzzlePartNames.Length;
             Weapons = new Weapon[partCount];
             Parts.Entity = comp.Entity as MyEntity;
+
+            if (!comp.MyCube.IsFunctional)
+            {
+                State = PlatformState.Delay;
+                return State;
+            }
+
+            return GetParts(comp);
+        }
+
+        private PlatformState GetParts(WeaponComponent comp)
+        {
             Parts.CheckSubparts();
-            for (int i = 0; i < partCount; i++)
+            for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
             {
                 var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;
 
@@ -47,7 +76,11 @@ namespace WeaponCore.Platform
                 MyEntity muzzlePartEntity = null;
                 WeaponSystem system;
 
-                if(!Structure.WeaponSystems.TryGetValue(Structure.MuzzlePartNames[i], out system)) return;
+                if (!Structure.WeaponSystems.TryGetValue(Structure.MuzzlePartNames[i], out system))
+                {
+                    State = PlatformState.Invalid;
+                    return State;
+                }
 
                 var muzzlePartName = Structure.MuzzlePartNames[i].String != "Designator" ? Structure.MuzzlePartNames[i].String : system.ElevationPartName.String;
 
@@ -55,7 +88,8 @@ namespace WeaponCore.Platform
                 if (!Parts.NameToEntity.TryGetValue(muzzlePartName, out muzzlePartEntity))
                 {
                     Log.Line($"Invalid barrelPart!!!!!!!!!!!!!!!!!");
-                    return;
+                    State = PlatformState.Invalid;
+                    return State;
                 }
                 foreach (var part in Parts.NameToEntity)
                 {
@@ -89,7 +123,7 @@ namespace WeaponCore.Platform
                     weapon.AimOffset = weapon.System.Values.HardPoint.Block.Offset;
                     weapon.FixedOffset = weapon.System.Values.HardPoint.Block.FixedOffset;
 
-                    if(weapon.System.Values.HardPoint.Block.PrimaryTracking && comp.TrackingWeapon == null)
+                    if (weapon.System.Values.HardPoint.Block.PrimaryTracking && comp.TrackingWeapon == null)
                         comp.TrackingWeapon = weapon;
 
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
@@ -102,6 +136,9 @@ namespace WeaponCore.Platform
                 weapon.UpdatePivotPos();
             }
             CompileTurret(comp);
+            State = PlatformState.Ready;
+
+            return State;
         }
 
         private void CompileTurret(WeaponComponent comp, bool reset = false)
