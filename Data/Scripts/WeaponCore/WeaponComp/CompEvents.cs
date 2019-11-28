@@ -26,7 +26,7 @@ namespace WeaponCore.Support
                 if (InventoryInited)
                     BlockInventory.ContentsChanged += OnContentsChanged;
 
-                Sink.CurrentInputChanged += CurrentInputChanged;
+                MyCube.ResourceSink.CurrentInputChanged += CurrentInputChanged;
 
             }
             else
@@ -41,7 +41,7 @@ namespace WeaponCore.Support
                 if (InventoryInited)
                     BlockInventory.ContentsChanged -= OnContentsChanged;
 
-                Sink.CurrentInputChanged -= CurrentInputChanged;
+                MyCube.ResourceSink.CurrentInputChanged -= CurrentInputChanged;
 
                 foreach (var w in Platform.Weapons)
                     w.Comp.MyCube.PositionComp.OnPositionChanged -= w.UpdatePartPos;

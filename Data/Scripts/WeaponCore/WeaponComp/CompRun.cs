@@ -17,8 +17,8 @@ namespace WeaponCore.Support
                 if (Container.Entity.InScene)
                 {
                     lock (this)
-                        if (Platform == null)
-                            InitPlatform();
+                        if (Platform.State == MyWeaponPlatform.PlatformState.Refresh)
+                            PreInit();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
@@ -32,7 +32,7 @@ namespace WeaponCore.Support
                 lock (this)
                 {
                     if (MainInit) ReInitPlatform();
-                    else MyAPIGateway.Utilities.InvokeOnGameThread(InitPlatform);
+                    else MyAPIGateway.Utilities.InvokeOnGameThread(PreInit);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
@@ -47,8 +47,31 @@ namespace WeaponCore.Support
             else
             {
                 SinkInfo.RequiredInputFunc = null;
-                Sink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
-                Sink = null;
+                MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
+            }
+        }
+
+        public void RePreInit(object o)
+        {
+            PreInit();
+        }
+
+        public void PreInit()
+        {
+            switch (Platform.PreInit(this))
+            {
+                case MyWeaponPlatform.PlatformState.Invalid:
+                    Platform = null;
+                    break;
+                case MyWeaponPlatform.PlatformState.Valid:
+                    Log.Line($"Something went wrong with Platform PreInit");
+                    break;
+                case MyWeaponPlatform.PlatformState.Delay:
+                    Ai.Session.FutureEvents.Schedule(RePreInit, null, 120);
+                    break;
+                case MyWeaponPlatform.PlatformState.Ready:
+                    InitPlatform();
+                    break;
             }
         }
 
@@ -57,16 +80,9 @@ namespace WeaponCore.Support
             _isServer = Ai.Session.IsServer;
             _isDedicated = Ai.Session.DedicatedServer;
             _mpActive = Ai.Session.MpActive;
+
             Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
             Ai.FirstRun = true;
-            Platform = new MyWeaponPlatform(this);
-            if (!Platform.Inited)
-            {
-                WeaponComponent removed;
-                Ai.WeaponBase.TryRemove(MyCube, out removed);
-                Log.Line("init platform returned");
-                return;
-            }
 
             StorageSetup();
 

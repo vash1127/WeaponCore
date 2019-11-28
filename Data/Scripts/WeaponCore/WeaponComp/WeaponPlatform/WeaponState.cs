@@ -461,7 +461,7 @@ namespace WeaponCore.Platform
                 Comp.CurrentDps += Dps;
                 Comp.SinkPower += RequiredPower;
                 Comp.CurrentSinkPowerRequested += RequiredPower;
-                Comp.Sink.Update();
+                Comp.MyCube.ResourceSink.Update();
                 Comp.TerminalRefresh();
             }
             IsShooting = true;
@@ -482,7 +482,7 @@ namespace WeaponCore.Platform
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                     Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
-                    Comp.Sink.Update();
+                    Comp.MyCube.ResourceSink.Update();
                     Comp.TerminalRefresh();
                 }
                 IsShooting = false;

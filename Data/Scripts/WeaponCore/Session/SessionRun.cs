@@ -1,13 +1,10 @@
 using System;
-using System.Threading;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Game.ModAPI;
 using WeaponCore.Support;
-using WeaponThread;
 using static Sandbox.Definitions.MyDefinitionManager;
 
 namespace WeaponCore
@@ -204,7 +201,7 @@ namespace WeaponCore
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 MyAPIGateway.Utilities.RegisterMessageHandler(7773, UpgradeHandler);
                 IsCreative = MyAPIGateway.Session.CreativeMode;
-
+                /*
                 var weapons = new Weapons();
                 var weaponDefinitions = weapons.ReturnDefs();
                 for (int i = 0; i < weaponDefinitions.Length; i++)
@@ -212,11 +209,12 @@ namespace WeaponCore
                     weaponDefinitions[i].ModPath = ModContext.ModPath;
                     _weaponDefinitions.Add(weaponDefinitions[i]);
                 }
+                
+                FixPrefabs();
+                */
 
                 ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm");
                 ModelCount++;
-
-                //FixPrefabs();
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }

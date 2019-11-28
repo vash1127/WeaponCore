@@ -67,7 +67,7 @@ namespace WeaponCore
                     reassign = true;
                     CompsToStart.Remove(weaponComp);
                 }
-                else if (weaponComp.Platform == null)
+                else if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Refresh)
                 {
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                     {
