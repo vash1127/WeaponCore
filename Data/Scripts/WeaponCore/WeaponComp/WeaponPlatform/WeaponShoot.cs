@@ -126,6 +126,7 @@ namespace WeaponCore.Platform
 
                     muzzle.LastShot = tick;
                     if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
+
                     for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++)
                     {
                         if (System.Values.HardPoint.DeviateShotAngle > 0)

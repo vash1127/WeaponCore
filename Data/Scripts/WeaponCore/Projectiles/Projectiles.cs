@@ -104,7 +104,6 @@ namespace WeaponCore.Projectiles
             ModelClosed[i] = false;
             var pool = ProjectilePool[i];
             var spawnShrapnel = ShrapnelToSpawn[i];
-
             if (spawnShrapnel.Count > 0) {
                 for (int j = 0; j < spawnShrapnel.Count; j++)
                     spawnShrapnel[j].Spawn(i);
@@ -115,7 +114,6 @@ namespace WeaponCore.Projectiles
                 p.Age++;
                 p.T.OnScreen = false;
                 p.Active = false;
-
                 switch (p.State)
                 {
                     case ProjectileState.Dead:
@@ -244,8 +242,10 @@ namespace WeaponCore.Projectiles
             var pool = ProjectilePool[poolId];
             foreach (var p in pool.Active)
             {
+
                 p.Miss = false;
-                if (!p.Active) continue;
+                if (!p.Active || p.State == ProjectileState.Dead) continue;
+
                 var beam = new LineD(p.LastPosition, p.Position);
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
@@ -306,6 +306,7 @@ namespace WeaponCore.Projectiles
                 if (p.SegmentList.Count > 0)
                 {
                     var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId);
+
                     if (nearestHitEnt != null && p.Intersected(p, DrawProjectiles[poolId], nearestHitEnt))
                         continue;
                 }
@@ -324,8 +325,7 @@ namespace WeaponCore.Projectiles
             var pool = ProjectilePool[poolId];
             foreach (var p in pool.Active)
             {
-                if (!p.EnableAv || !p.Miss) continue;
-
+                if (!p.EnableAv || !p.Miss || p.State == ProjectileState.Dead) continue;
                 if (p.SmartsOn)
                 {
                     if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)

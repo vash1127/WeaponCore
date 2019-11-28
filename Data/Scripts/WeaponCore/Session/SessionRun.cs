@@ -97,8 +97,6 @@ namespace WeaponCore
                 TargetSelection();
 
                 PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
-
-
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
