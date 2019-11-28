@@ -251,9 +251,9 @@ namespace WeaponCore.Platform
                     Comp.CurrentHeat += HeatPShot;
                     if (Comp.State.Value.Weapons[WeaponId].Heat > System.MaxHeat)
                     {
-                        var dmg = .05f * Comp.MaxIntegrity;
+                        var dmg = .02f * Comp.MaxIntegrity;
 
-                        Comp.MyCube.SlimBlock.DoDamage(dmg, MyDamageType.Bullet, true, null, Comp.Ai.MyGrid.EntityId);
+                        Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
 
                         EventTriggerStateChanged(EventTriggers.Overheated, true);
                         Comp.Overheated = true;

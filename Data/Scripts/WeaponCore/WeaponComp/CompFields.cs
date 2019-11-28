@@ -72,6 +72,7 @@ namespace WeaponCore.Support
         }
         
         internal MyCubeBlock MyCube;
+        internal IMySlimBlock Slim;
         internal MyWeaponPlatform Platform = new MyWeaponPlatform();
         internal IMyLargeMissileTurret MissileBase;
         internal IMyConveyorSorter SorterBase;
@@ -94,8 +95,9 @@ namespace WeaponCore.Support
         {
             Ai = ai;
             MyCube = myCube;
+            Slim = myCube.SlimBlock as IMySlimBlock;
 
-            MaxIntegrity = myCube.SlimBlock.MaxIntegrity;
+            MaxIntegrity = Slim.MaxIntegrity;
 
             var cube = MyCube as IMyLargeMissileTurret;
             if (cube != null)
