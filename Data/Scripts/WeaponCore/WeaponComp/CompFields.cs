@@ -52,6 +52,7 @@ namespace WeaponCore.Support
         internal float CurrentSinkPowerRequested;
         internal float CompPowerPerc;
         internal float IdlePower = 0.001f;
+        internal float MaxIntegrity;
         internal bool Overheated;
         internal bool Gunner;
         internal bool Starting;
@@ -71,6 +72,7 @@ namespace WeaponCore.Support
         }
         
         internal MyCubeBlock MyCube;
+        internal IMySlimBlock Slim;
         internal MyWeaponPlatform Platform = new MyWeaponPlatform();
         internal IMyLargeMissileTurret MissileBase;
         internal IMyConveyorSorter SorterBase;
@@ -92,6 +94,10 @@ namespace WeaponCore.Support
         {
             Ai = ai;
             MyCube = myCube;
+            Slim = myCube.SlimBlock as IMySlimBlock;
+
+            MaxIntegrity = Slim.MaxIntegrity;
+
             var cube = MyCube as IMyLargeMissileTurret;
             if (cube != null)
             {

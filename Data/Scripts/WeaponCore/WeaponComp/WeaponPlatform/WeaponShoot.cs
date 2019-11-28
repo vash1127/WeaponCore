@@ -1,6 +1,7 @@
 ﻿using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -250,6 +251,10 @@ namespace WeaponCore.Platform
                     Comp.CurrentHeat += HeatPShot;
                     if (Comp.State.Value.Weapons[WeaponId].Heat > System.MaxHeat)
                     {
+                        var dmg = .02f * Comp.MaxIntegrity;
+
+                        Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
+
                         EventTriggerStateChanged(EventTriggers.Overheated, true);
                         Comp.Overheated = true;
                         StopShooting();
