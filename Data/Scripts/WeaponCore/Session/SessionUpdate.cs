@@ -95,6 +95,8 @@ namespace WeaponCore
                                 w.TargetReset = true;
                         }
 
+                        var wState = comp.State.Value.Weapons[w.WeaponId];
+
                         if (w.TurretMode)
                         {
                             if (comp.State.Value.Online)
@@ -114,7 +116,7 @@ namespace WeaponCore
                                     comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }
                             }
-                            w.ReturnHome = w.ReturnHome && w.ManualShoot == ShootOff && !comp.Gunner && w.Target.Expired;
+                            w.ReturnHome = w.ReturnHome && wState.ManualShoot == ShootOff && !comp.Gunner && w.Target.Expired;
                             if (w.ReturnHome)
                                 comp.ReturnHome = gridAi.ReturnHome = true;
                         }
@@ -140,7 +142,7 @@ namespace WeaponCore
                                 DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
                         }
 
-                        if (w.AiReady || w.SeekTarget || gunner || w.ManualShoot != ShootOff || gridAi.Reloading || w.ReturnHome) gridAi.Ready = true;
+                        if (w.AiReady || w.SeekTarget || gunner || wState.ManualShoot != ShootOff || gridAi.Reloading || w.ReturnHome) gridAi.Ready = true;
                     }
                 }
                 gridAi.CheckReload = false;
@@ -262,7 +264,9 @@ namespace WeaponCore
                                 comp.StopRotSound(false);
                         }
 
-                        if (!w.System.DesignatorWeapon && (w.ManualShoot == ShootOn || w.ManualShoot == ShootOnce || (w.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((w.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
+                        var wState = comp.State.Value.Weapons[w.WeaponId];
+
+                        if (!w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick ||comp.Gunner) && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                             w.Shoot();
                         else if (w.IsShooting)
                             w.StopShooting();

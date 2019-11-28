@@ -84,7 +84,7 @@ namespace WeaponCore.Platform
                 _shotsInCycle = 0;
                 _newCycle = true;
             }
-            var userControlled = Comp.Gunner || ManualShoot != TerminalActionState.ShootOff;
+            var userControlled = Comp.Gunner || state.ManualShoot != TerminalActionState.ShootOff;
             if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null && !DelayCeaseFire) ShootRayCheck();
 
             if (Comp.Ai.VelocityUpdateTick != tick)
@@ -267,9 +267,9 @@ namespace WeaponCore.Platform
                 }
 
                 EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
-                if (ManualShoot == TerminalActionState.ShootOnce)
+                if (state.ManualShoot == TerminalActionState.ShootOnce)
                 {
-                    ManualShoot = TerminalActionState.ShootOff;
+                    state.ManualShoot = TerminalActionState.ShootOff;
                     StopShooting();
                     Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
                     Comp.Shooting = Comp.Shooting - 1 > 0 ? Comp.Shooting - 1 : 0;

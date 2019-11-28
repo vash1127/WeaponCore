@@ -2,6 +2,8 @@
 using ProtoBuf;
 using VRage;
 using VRageMath;
+using static WeaponCore.Platform.Weapon;
+
 namespace WeaponCore
 {
     [ProtoContract]
@@ -23,6 +25,7 @@ namespace WeaponCore
         [ProtoMember(2)] public int CurrentAmmo;
         [ProtoMember(3)] public MyFixedPoint CurrentMags;
         [ProtoMember(4)] public int ShotsFired = 1;
+        [ProtoMember(5)] public TerminalActionState ManualShoot = TerminalActionState.ShootOff;
     }
 
     [ProtoContract]

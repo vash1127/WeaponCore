@@ -39,8 +39,7 @@ namespace WeaponCore.Control
                         if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
-                            var w = comp.Platform.Weapons[j];
-                            w.ManualShoot = ShootOnce;
+                            comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                             comp.Ai.ManualComps++;
                             comp.Shooting++;
                         }
@@ -74,8 +73,7 @@ namespace WeaponCore.Control
                         if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
-                            var w = comp.Platform.Weapons[j];
-                            w.ManualShoot = ShootOnce;
+                            comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                             comp.Ai.ManualComps++;
                             comp.Shooting++;
                         }
@@ -91,18 +89,20 @@ namespace WeaponCore.Control
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
                             var w = comp.Platform.Weapons[j];
-                            if (!On && w.ManualShoot == ShootOn)
+                            var wState = comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId];
+
+                            if (!On && wState.ManualShoot == ShootOn)
                             {
-                                w.ManualShoot = ShootOff;
+                                wState.ManualShoot = ShootOff;
                                 w.StopShooting();
                                 comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                                 comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                             }
-                            else if (On && w.ManualShoot != ShootOff)
-                                w.ManualShoot = ShootOn;
+                            else if (On && wState.ManualShoot != ShootOff)
+                                wState.ManualShoot = ShootOn;
                             else if(On)
                             {
-                                w.ManualShoot = ShootOn;
+                                wState.ManualShoot = ShootOn;
                                 comp.Ai.ManualComps++;
                                 comp.Shooting++;
                             }

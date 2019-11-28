@@ -335,12 +335,11 @@ namespace WeaponCore
 
                 for (int i = 0; i < basePair.Value.Platform.Weapons.Length; i++)
                 {
-                    var w = basePair.Value.Platform.Weapons[i];
-                    if (w == null) return;
+                    var wState = comp.State.Value.Weapons[basePair.Value.Platform.Weapons[i].WeaponId];
 
-                    if (w.ManualShoot == Weapon.TerminalActionState.ShootClick)
+                    if (wState.ManualShoot == Weapon.TerminalActionState.ShootClick)
                     {
-                        w.ManualShoot = Weapon.TerminalActionState.ShootOff;
+                        wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
                         gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
                         comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                     }

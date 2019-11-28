@@ -100,12 +100,22 @@ namespace WeaponCore.Support
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var weapon = Platform.Weapons[i];
+                    var state = State.Value.Weapons[weapon.WeaponId];
+
                     weapon.InitTracking();
                     DpsAndHeatInit(weapon);
                     weapon.UpdateBarrelRotation();
 
-                    if (State.Value.Weapons[weapon.WeaponId].CurrentAmmo == 0)
+
+
+                    if (state.CurrentAmmo == 0)
                         weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+
+                    if(state.ManualShoot != Weapon.TerminalActionState.ShootOff)
+                    {
+                        Ai.ManualComps++;
+                        Shooting++;
+                    }
 
                 }
 

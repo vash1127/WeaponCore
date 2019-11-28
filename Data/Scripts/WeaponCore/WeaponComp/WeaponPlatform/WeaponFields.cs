@@ -128,10 +128,9 @@ namespace WeaponCore.Platform
         internal bool FixedOffset;
         internal bool TurretTargetLock;
         internal bool AiOnlyWeapon;
-        internal TerminalActionState ManualShoot = TerminalActionState.ShootOff;
         internal HardPointDefinition.Prediction Prediction;
 
-        internal enum TerminalActionState
+        public enum TerminalActionState
         {
             ShootOn,
             ShootOff,
