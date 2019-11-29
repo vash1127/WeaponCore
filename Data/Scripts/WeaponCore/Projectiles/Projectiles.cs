@@ -109,17 +109,10 @@ namespace WeaponCore.Projectiles
                         if (p.ModelState == EntityState.NoDraw)
                             ModelClosed = p.CloseModel();
                         break;
-                    case ProjectileState.Ending:
                     case ProjectileState.OneAndDone:
                     case ProjectileState.Depleted:
-                        if (p.State == ProjectileState.Depleted)
-                            p.ProjectileClose();
-                        if (p.ModelState != EntityState.Exists) p.Stop();
-                        else
-                        {
-                            ModelClosed = p.CloseModel();
-                            p.Stop();
-                        }
+                        if (p.ModelState != EntityState.Exists) ModelClosed = p.CloseModel();
+                        p.ProjectileClose();
                         continue;
                     case ProjectileState.Alive:
                         p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
@@ -336,10 +329,12 @@ namespace WeaponCore.Projectiles
                         p.DisposeAmmoEffect(false, true);
                 }
 
-                if (p.DrawLine)
+                if (p.DrawLine || p.ModelState == EntityState.None && p.T.System.AmmoParticle)
                 {
                     if (p.State == ProjectileState.OneAndDone)
                         p.T.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
+                    else if (p.ModelState == EntityState.None && p.T.System.AmmoParticle)
+                        p.T.UpdateShape(p.Position, p.Direction, p.T.System.CollisionSize, ReSize.None);
                     else
                     {
                         p.T.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Direction, (p.Velocity - p.StartSpeed) * StepConst));
@@ -373,7 +368,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if (!p.T.OnScreen && p.DrawLine)
+                if (!p.T.OnScreen && (p.DrawLine || p.ModelState == EntityState.None && p.T.System.AmmoParticle))
                 {
                     if (p.T.System.Trail)
                     {

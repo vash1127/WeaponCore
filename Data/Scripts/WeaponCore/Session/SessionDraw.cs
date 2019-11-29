@@ -91,8 +91,9 @@ namespace WeaponCore
                         t.TriggerEntity.InScene = false;
                         t.TriggerEntity.Render.RemoveRenderObjects();
                     }
-                    if (!t.System.Values.Graphics.Line.Tracer.Enable) continue;
                 }
+
+                if (!t.System.Values.Graphics.Line.Tracer.Enable) continue;
 
                 var color = t.Color;
                 var thickness = t.LineWidth;

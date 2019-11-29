@@ -109,6 +109,7 @@ namespace WeaponCore.Support
         public readonly double DetonateRadiusLarge;
         public readonly double MaxTargetSpeed;
         public readonly double ShieldModifier;
+        public readonly double TracerLength;
         public readonly double AzStep;
         public readonly double ElStep;
         public readonly float Barrel1AvTicks;
@@ -255,7 +256,7 @@ namespace WeaponCore.Support
             Sound();
 
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
-            CollisionShape(out CollisionIsLine, out CollisionSize);
+            CollisionShape(out CollisionIsLine, out CollisionSize, out TracerLength);
             Models(out PrimeModelId, out TriggerModelId);
             Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
@@ -381,14 +382,15 @@ namespace WeaponCore.Support
             offsetEffect = Values.Graphics.Line.OffsetEffect.MaxOffset > 0;
         }
 
-        private void CollisionShape(out bool collisionIsLine, out double collisionSize)
+        private void CollisionShape(out bool collisionIsLine, out double collisionSize, out double tracerLength)
         {
             var isLine = Values.Ammo.Shape.Shape == ShapeDefinition.Shapes.Line;
             var size = Values.Ammo.Shape.Diameter;
+            tracerLength = Values.Graphics.Line.Tracer.Length > 0 ? Values.Graphics.Line.Tracer.Length : 0.1;
             if (size <= 0)
             {
                 if (!isLine) isLine = true;
-                size = Values.Graphics.Line.Tracer.Length;
+                size = tracerLength;
             }
             else if (!isLine) size = size * 0.5;
 

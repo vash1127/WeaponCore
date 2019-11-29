@@ -134,7 +134,6 @@ namespace WeaponCore.Projectiles
             CachedPlanetHit = false;
             ParticleStopped = false;
             ParticleLateStart = false;
-            T.OnScreen = true;
             FirstOffScreen = true;
             PositionChecked = false;
             EwarActive = false;
@@ -195,7 +194,7 @@ namespace WeaponCore.Projectiles
             PrevTargetVel = Vector3D.Zero;
             T.ObjectsHit = 0;
             T.BaseHealthPool = T.System.Values.Ammo.Health;
-            TracerLength = T.System.Values.Graphics.Line.Tracer.Length;
+            TracerLength = T.System.TracerLength;
 
             if (T.IsShrapnel)
             {
@@ -297,6 +296,7 @@ namespace WeaponCore.Projectiles
             FieldTime = T.System.Values.Ammo.Trajectory.FieldTime;
 
             State = !T.System.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
+            T.OnScreen = State != ProjectileState.OneAndDone;
 
             if (T.System.AmmoParticle && EnableAv && !T.System.IsBeamWeapon) PlayAmmoParticle();
         }
@@ -375,6 +375,7 @@ namespace WeaponCore.Projectiles
                     var length = Vector3D.Distance(p.LastPosition, hitPos);
                     var shrink = !p.T.System.IsBeamWeapon;
                     var reSize = shrink ? ReSize.Shrink : ReSize.None;
+
                     p.T.UpdateShape(hitPos, p.Direction, length, reSize);
                     p.T.Complete(hitEntity, DrawState.Hit);
                     drawList.Add(p.T);
@@ -875,28 +876,14 @@ namespace WeaponCore.Projectiles
                 Watchers.Clear();
             //}
 
-            if (!EnableAv && T.System.PrimeModelId == -1 && T.System.TriggerModelId == -1)
+            if (EnableAv)
             {
-                State = ProjectileState.Dead;
-                T.Target.IsProjectile = false;
-                Manager.CleanUp.Add(this);
+                if (T.System.AmmoParticle) DisposeAmmoEffect(false, false);
+                HitEffects();
             }
-            else State = ProjectileState.Ending;
-        }
-
-        internal void Stop()
-        {
-            //if (EndStep++ >= EndSteps)
-            {
-                if (EnableAv)
-                {
-                    if (T.System.AmmoParticle) DisposeAmmoEffect(false, false);
-                    HitEffects();
-                }
-                State = ProjectileState.Dead;
-                T.Target.IsProjectile = false;
-                Manager.CleanUp.Add(this);
-            }
+            State = ProjectileState.Dead;
+            T.Target.IsProjectile = false;
+            Manager.CleanUp.Add(this);
         }
 
         internal bool CloseModel()
@@ -915,7 +902,6 @@ namespace WeaponCore.Projectiles
         {
             Start,
             Alive,
-            Ending,
             Dead,
             OneAndDone,
             Depleted,

@@ -150,15 +150,19 @@ namespace WeaponCore.Support
                 var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
                 width += randomValue;
             }
-
-            var target = Position + (-Direction * Length);
-            var cameraPos = MyAPIGateway.Session.Camera.Position;
-            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref cameraPos);
-            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
-            ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-
-            LineWidth = Math.Max(width, 0.11f * ScaleFov * (DistanceToLine / 100));
             Color = color;
+
+            if (OnScreen)
+            {
+                var target = Position + (-Direction * Length);
+                var cameraPos = MyAPIGateway.Session.Camera.Position;
+                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref cameraPos);
+                DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
+                ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
+
+                LineWidth = Math.Max(width, 0.11f * ScaleFov * (DistanceToLine / 100));
+                //Log.Line($"{System.WeaponName} - CollSize:{System.CollisionSize} - TracerLen:{System.TracerLength} - Len:{Length} - IsLine:{System.CollisionIsLine} - DtL:{DistanceToLine} - End:{End} - Fov:{ScaleFov} - CPoint:{ClosestPointOnLine} - Pos:{Position}");
+            }
         }
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D direction)
@@ -207,6 +211,7 @@ namespace WeaponCore.Support
             WeaponCache = null;
             Triggered = false;
             End = false;
+            Cloaked = false;
             AmmoSound = false;
             HitSoundActive = false;
             HitSoundActived = false;
@@ -214,10 +219,21 @@ namespace WeaponCore.Support
             HasTravelSound = false;
             LastHitShield = false;
             FakeExplosion = false;
+            OnScreen = false;
+            IsShrapnel = false;
+            WeaponId = 0;
+            MuzzleId = 0;
+            Length = 0;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
+            EnableGuidance = true;
             GrowDistance = 0;
             ReSizing = ReSize.None;
+            Draw = DrawState.Default;
+            Position = Vector3D.Zero;
+            Direction = Vector3D.Zero;
+            LineStart = Vector3D.Zero;
+            Origin = Vector3D.Zero;
         }
     }
 
@@ -585,9 +601,9 @@ namespace WeaponCore.Support
             HitPos = trajectile.Position;
             Direction = trajectile.Direction;
             ResizeLen = trajectile.DistanceTraveled - trajectile.PrevDistanceTraveled;
-            TracerSteps = trajectile.System.Values.Graphics.Line.Tracer.Length / ResizeLen;
+            TracerSteps = trajectile.System.TracerLength / ResizeLen;
             var frontOfTracer = (trajectile.LineStart + (Direction * ResizeLen));
-            var tracerLength = trajectile.System.Values.Graphics.Line.Tracer.Length;
+            var tracerLength = trajectile.System.TracerLength;
             BackOfTracer = frontOfTracer + (-Direction * (tracerLength + ResizeLen));
         }
 
