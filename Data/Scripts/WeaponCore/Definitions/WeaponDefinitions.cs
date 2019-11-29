@@ -383,6 +383,7 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal Vector3D Offset;
         [ProtoMember(4)] internal ParticleOptions Extras;
         [ProtoMember(5)] internal bool ApplyToShield;
+        [ProtoMember(6)] internal bool ShrinkByDistance;
     }
 
     [ProtoContract]
@@ -394,7 +395,6 @@ namespace WeaponCore.Support
         [ProtoMember(4)] internal bool Loop;
         [ProtoMember(5)] internal bool Restart;
         [ProtoMember(6)] internal float HitPlayChance;
-
     }
 
     [ProtoContract]

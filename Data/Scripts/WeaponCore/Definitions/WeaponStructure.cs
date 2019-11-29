@@ -99,6 +99,8 @@ namespace WeaponCore.Support
         public readonly bool IsMine;
         public readonly bool IsField;
         public readonly bool DesignatorWeapon;
+        public readonly bool AmmoParticleShrinks;
+        public readonly bool HitParticleShrinks;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -202,6 +204,8 @@ namespace WeaponCore.Support
             }
             MaxAmmoVolume = Values.HardPoint.Block.InventorySize;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
+            AmmoParticleShrinks = values.Graphics.Particles.Ammo.ShrinkByDistance;
+            HitParticleShrinks = values.Graphics.Particles.Hit.ShrinkByDistance;
             BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
             BarrelEffect2 = values.Graphics.Particles.Barrel2.Name != string.Empty;
             HitParticle = values.Graphics.Particles.Hit.Name != string.Empty;

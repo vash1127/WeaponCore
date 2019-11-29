@@ -322,6 +322,9 @@ namespace WeaponCore.Projectiles
                     p.TestSphere.Center = p.Position;
                     if (Session.Camera.IsInFrustum(ref p.TestSphere))
                     {
+                        if (!p.ParticleStopped && p.AmmoEffect != null && p.T.System.AmmoParticleShrinks)
+                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.T.DistanceToLine / p.T.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
+
                         if ((p.ParticleStopped || p.ParticleLateStart))
                             p.PlayAmmoParticle();
                     }

@@ -59,6 +59,7 @@ namespace WeaponCore.Projectiles
         internal double DeadZone;
         internal float DesiredSpeed;
         internal float MaxTrajectory;
+        internal float BaseAmmoParticleScale;
         internal int Age;
         internal int ChaseAge;
         internal int FieldTime;
@@ -298,7 +299,11 @@ namespace WeaponCore.Projectiles
             State = !T.System.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
             T.OnScreen = State != ProjectileState.OneAndDone;
 
-            if (T.System.AmmoParticle && EnableAv && !T.System.IsBeamWeapon) PlayAmmoParticle();
+            if (T.System.AmmoParticle && EnableAv && !T.System.IsBeamWeapon)
+            {
+                BaseAmmoParticleScale = !T.IsShrapnel ? 1 : 0.5f;
+                PlayAmmoParticle();
+            }
         }
 
         internal void StaticEntCheck()
@@ -832,7 +837,8 @@ namespace WeaponCore.Projectiles
                 var scaler = reScale < 1 ? reScale : 1;
 
                 HitEffect.UserRadiusMultiplier = T.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
-                HitEffect.UserEmitterScale = 1 * scaler;
+                var scale = T.System.HitParticleShrinks ? 1 : MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, T.DistanceToLine / T.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, BaseAmmoParticleScale);
+                HitEffect.UserEmitterScale = scale * scaler;
                 var hitVel = LastHitEntVel ?? Vector3.Zero;
                 Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
                 HitEffect.Velocity = hitVel;
