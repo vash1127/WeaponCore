@@ -29,7 +29,7 @@ namespace WeaponCore
                     if (t.ObjectsHit >= maxObjects || t.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect))
                     {
                         p.State = Projectile.ProjectileState.Depleted;
-                        Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
+                        Projectiles.HitEntityPool.Return(hitEnt);
                         continue;
                     }
                     switch (hitEnt.EventType)
@@ -59,7 +59,7 @@ namespace WeaponCore
                             UpdateEffect(hitEnt, t);
                             continue;
                     }
-                    Projectiles.HitEntityPool[p.PoolId].Return(hitEnt);
+                    Projectiles.HitEntityPool.Return(hitEnt);
                 }
 
                 if (t.BaseDamagePool <= 0 || t.End)

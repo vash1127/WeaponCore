@@ -16,7 +16,7 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-        internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam, int poolId)
+        internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam)
         {
             if (p.T.Target != null && p.T.Target.IsProjectile)
             {
@@ -52,10 +52,9 @@ namespace WeaponCore.Projectiles
 
                         if (dist != null && dist.Value < beam.Length && !p.T.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
                         {
-                            var hitEntity = HitEntityPool[poolId].Get();
+                            var hitEntity = HitEntityPool.Get();
                             hitEntity.Clean();
                             hitEntity.T = p.T;
-                            hitEntity.PoolId = poolId;
                             hitEntity.Entity = (MyEntity)shieldInfo.Value.Item1;
                             hitEntity.Beam = beam;
                             hitEntity.EventType = Shield;
@@ -69,7 +68,7 @@ namespace WeaponCore.Projectiles
                         else continue;
                     }
                 }
-                if ((ent == ai.MyPlanet && (p.CheckPlanet || p.DynamicGuidance)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
+                if ((ent == ai.MyPlanet && (p.CheckPlanet || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
                 {
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
                     var extBeam = new LineD(extFrom, beam.To);
@@ -83,32 +82,55 @@ namespace WeaponCore.Projectiles
                         if (voxel.RootVoxel != voxel) continue;
                         if (voxel == ai.MyPlanet)
                         {
-                            var check = false;
-                            var closestPos = ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
-                            var planetCenter = ai.MyPlanet.PositionComp.WorldAABB.Center;
-                            double cDistToCenter;
-                            Vector3D.DistanceSquared(ref closestPos, ref planetCenter, out cDistToCenter);
-                            double pDistToCenter;
-                            Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistToCenter);
-                            double mDistToCenter;
-                            Vector3D.DistanceSquared(ref p.T.Origin, ref planetCenter, out mDistToCenter);
 
-                            if (cDistToCenter > pDistToCenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition) || pDistToCenter > mDistToCenter) check = true;
-                            if (check)
+                            if (p.CachedPlanetHit)
                             {
-                                using (voxel.Pin())
+                                IHitInfo cachedPlanetResult;
+                                if (p.T.WeaponCache.VoxelHits[p.T.WeaponId].NewResult(out cachedPlanetResult))
                                 {
-                                    voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                                    Log.Line("cached hit");
+                                    voxelHit = cachedPlanetResult.Position;
+                                }
+                                else
+                                {
+                                    Log.Line($"cachedPlanet but no new result");
+                                    continue;
+                                }
+                            }
+
+                            if (p.CheckPlanet)
+                            {
+                                var check = false;
+                                var closestPos = ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
+                                var planetCenter = ai.MyPlanet.PositionComp.WorldAABB.Center;
+                                double cDistToCenter;
+                                Vector3D.DistanceSquared(ref closestPos, ref planetCenter, out cDistToCenter);
+                                double pDistToCenter;
+                                Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistToCenter);
+                                double mDistToCenter;
+                                Vector3D.DistanceSquared(ref p.T.Origin, ref planetCenter, out mDistToCenter);
+                                if (cDistToCenter > pDistToCenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition) || pDistToCenter > mDistToCenter) check = true;
+                                if (check)
+                                {
+                                    using (voxel.Pin())
+                                    {
+                                        Log.Line("slow check");
+                                        voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                                    }
                                 }
                             }
                         }
                         else using (voxel.Pin()) voxel.GetIntersectionWithLine(ref beam, out voxelHit);
-                        if (!voxelHit.HasValue) continue;
+
+                        if (!voxelHit.HasValue)
+                        {
+                            Log.Line("no hit");
+                            continue;
+                        }
                     }
-                    var hitEntity = HitEntityPool[poolId].Get();
+                    var hitEntity = HitEntityPool.Get();
                     hitEntity.Clean();
                     hitEntity.T = p.T;
-                    hitEntity.PoolId = poolId;
                     hitEntity.Entity = ent;
                     hitEntity.Beam = beam;
                     hitEntity.SphereCheck = !lineCheck;
@@ -150,10 +172,9 @@ namespace WeaponCore.Projectiles
                 var sphereCheck = !rayCheck && sphere.Intersects(p.PruneSphere);
                 if (rayCheck || sphereCheck)
                 {
-                    var hitEntity = HitEntityPool[poolId].Get();
+                    var hitEntity = HitEntityPool.Get();
                     hitEntity.Clean();
                     hitEntity.T = p.T;
-                    hitEntity.PoolId = poolId;
                     hitEntity.EventType = HitEntity.Type.Projectile;
                     hitEntity.Hit = true;
                     hitEntity.Projectile = p.T.Target.Projectile;
@@ -168,10 +189,10 @@ namespace WeaponCore.Projectiles
             }
             p.SegmentList.Clear();
 
-            return found ? GenerateHitInfo(p, poolId) : null;
+            return found ? GenerateHitInfo(p) : null;
         }
 
-        internal HitEntity GenerateHitInfo(Projectile p, int poolId)
+        internal HitEntity GenerateHitInfo(Projectile p)
         {
             var count = p.T.HitList.Count;
             if (count > 1) p.T.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
@@ -195,7 +216,7 @@ namespace WeaponCore.Projectiles
             {
                 var ent = p.T.HitList[endOfIndex];
                 p.T.HitList.RemoveAt(endOfIndex);
-                HitEntityPool[poolId].Return(ent);
+                HitEntityPool.Return(ent);
                 endOfIndex--;
             }
             var finalCount = p.T.HitList.Count;
@@ -352,7 +373,7 @@ namespace WeaponCore.Projectiles
             return xDist.CompareTo(yDist);
         }
 
-        private void SeekEnemy(Projectile p, int poolId)
+        private void SeekEnemy(Projectile p)
         {
             var mineInfo = p.T.System.Values.Ammo.Trajectory.Mines;
             var detectRadius = mineInfo.DetectRadius;
@@ -360,7 +381,7 @@ namespace WeaponCore.Projectiles
 
             var wakeRadius = detectRadius > deCloakRadius ? detectRadius : deCloakRadius;
             p.PruneSphere = new BoundingSphereD(p.Position, wakeRadius);
-            var checkList = CheckPool[poolId].Get();
+            var checkList = CheckPool.Get();
             var inRange = false;
             var activate = false;
             var minDist = double.MaxValue;
@@ -425,7 +446,7 @@ namespace WeaponCore.Projectiles
             }
 
             checkList.Clear();
-            CheckPool[poolId].Return(checkList);
+            CheckPool.Return(checkList);
         }
 
         internal static void GetAndSortBlocksInSphere(WeaponSystem system, GridAi ai, MyCubeGrid grid, BoundingSphereD sphere, bool fatOnly, List<IMySlimBlock> blocks)

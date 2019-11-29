@@ -111,7 +111,6 @@ namespace WeaponCore
         internal double Load;
         internal uint Tick;
         internal int PlayerEventId;
-        internal int ProCounter;
         internal int ModelCount;
         internal int ExplosionCounter;
 

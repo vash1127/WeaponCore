@@ -52,7 +52,7 @@ namespace WeaponCore.Platform
         internal uint[] BeamSlot;
         internal WeaponComponent Comp;
 
-        internal WeaponFrameCache WeaponCache = new WeaponFrameCache();
+        internal WeaponFrameCache WeaponCache;
 
         internal MyOrientedBoundingBoxD TargetBox;
         internal LineD LimitLine;
@@ -230,6 +230,7 @@ namespace WeaponCore.Platform
             BeamSlot = new uint[_numOfBarrels];
             Target = new Target(comp.MyCube);
             NewTarget = new Target(comp.MyCube);
+            WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             var gridRadiusSqr = (Comp.Ai.GridRadius * Comp.Ai.GridRadius);
             if (System.MaxTrajectorySqr + gridRadiusSqr> Comp.Ai.MaxTargetingRangeSqr)
             {

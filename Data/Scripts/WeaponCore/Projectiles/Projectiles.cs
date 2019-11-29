@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
@@ -16,40 +14,26 @@ namespace WeaponCore.Projectiles
     public partial class Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal const int PoolCount = 1;
         internal readonly Session Session;
-        internal readonly MyConcurrentPool<Fragments>[] ShrapnelPool = new MyConcurrentPool<Fragments>[PoolCount];
-        internal readonly MyConcurrentPool<Fragment>[] FragmentPool = new MyConcurrentPool<Fragment>[PoolCount];
-        internal readonly List<Fragments>[] ShrapnelToSpawn = new List<Fragments>[PoolCount];
+        internal readonly MyConcurrentPool<Fragments> ShrapnelPool = new MyConcurrentPool<Fragments>();
+        internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>();
+        internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>();
 
-        internal readonly MyConcurrentPool<List<MyEntity>>[] CheckPool = new MyConcurrentPool<List<MyEntity>>[PoolCount];
-        internal readonly ObjectsPool<Projectile>[] ProjectilePool = new ObjectsPool<Projectile>[PoolCount];
-        internal readonly EntityPool<MyEntity>[][] EntityPool = new EntityPool<MyEntity>[PoolCount][];
-        internal readonly MyConcurrentPool<HitEntity>[] HitEntityPool = new MyConcurrentPool<HitEntity>[PoolCount];
-        internal readonly ObjectsPool<Trajectile>[] TrajectilePool = new ObjectsPool<Trajectile>[PoolCount];
-        internal readonly List<Trajectile>[] DrawProjectiles = new List<Trajectile>[PoolCount];
-        internal readonly List<Projectile>[] CleanUp = new List<Projectile>[PoolCount];
-        internal readonly bool[] ModelClosed = new bool[PoolCount];
+        internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>();
+        internal readonly ObjectsPool<Projectile> ProjectilePool = new ObjectsPool<Projectile>(150);
+        internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>();
+        internal readonly ObjectsPool<Trajectile> TrajectilePool = new ObjectsPool<Trajectile>(150);
+        internal readonly List<Trajectile> DrawProjectiles = new List<Trajectile>();
+        internal readonly List<Projectile> CleanUp = new List<Projectile>();
 
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
-        internal readonly object[] Wait = new object[PoolCount];
+
+        internal EntityPool<MyEntity>[] EntityPool;
+        internal bool ModelClosed;
 
         internal Projectiles(Session session)
         {
             Session = session;
-            for (int i = 0; i < Wait.Length; i++)
-            {
-                Wait[i] = new object();
-                ShrapnelToSpawn[i] = new List<Fragments>(30);
-                ShrapnelPool[i] = new MyConcurrentPool<Fragments>(30);
-                FragmentPool[i] = new MyConcurrentPool<Fragment>(150);
-                CheckPool[i] = new MyConcurrentPool<List<MyEntity>>(75);
-                ProjectilePool[i] = new ObjectsPool<Projectile>(150);
-                HitEntityPool[i] = new MyConcurrentPool<HitEntity>(75);
-                DrawProjectiles[i] = new List<Trajectile>(150);
-                CleanUp[i] = new List<Projectile>(150);
-                TrajectilePool[i] = new ObjectsPool<Trajectile>(150);
-            }
         }
 
         internal static MyEntity EntityActivator(string model)
@@ -68,48 +52,22 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            if (Session.HighLoad)
-            {
-                MyAPIGateway.Parallel.For(0, Wait.Length, i =>
-                {
-                    //lock (Wait[i])
-                    {
-                        UpdateState(i);
-                        CheckHits(i);
-                        UpdateAv(i);
-                    }
-                }, 1);
-            }
-            else
-            {
-                for (int i = 0; i < Wait.Length; i++)
-                {
-                    //lock (Wait[i])
-                    {
-                        UpdateState(i);
-                        CheckHits(i);
-                        UpdateAv(i);
-                    }
-                }
-            }
-
-            for (int i = 0; i < Wait.Length; i++)
-                //lock (Wait[i])
-                Clean(i);
+            Clean();
+            UpdateState();
+            CheckHits();
+            UpdateAv();
         }
 
-        private void UpdateState(int i)
+        private void UpdateState()
         {
             var noAv = Session.DedicatedServer;
-            ModelClosed[i] = false;
-            var pool = ProjectilePool[i];
-            var spawnShrapnel = ShrapnelToSpawn[i];
-            if (spawnShrapnel.Count > 0) {
-                for (int j = 0; j < spawnShrapnel.Count; j++)
-                    spawnShrapnel[j].Spawn(i);
-                spawnShrapnel.Clear();
+            ModelClosed = false;
+            if (ShrapnelToSpawn.Count > 0) {
+                for (int j = 0; j < ShrapnelToSpawn.Count; j++)
+                    ShrapnelToSpawn[j].Spawn();
+                ShrapnelToSpawn.Clear();
             }
-            foreach (var p in pool.Active)
+            foreach (var p in ProjectilePool.Active)
             {
                 p.Age++;
                 p.T.OnScreen = false;
@@ -119,9 +77,9 @@ namespace WeaponCore.Projectiles
                     case ProjectileState.Dead:
                         continue;
                     case ProjectileState.Start:
-                        p.Start(this, noAv, i);
+                        p.Start(this, noAv);
                         if (p.ModelState == EntityState.NoDraw)
-                            ModelClosed[i] = p.CloseModel();
+                            ModelClosed = p.CloseModel();
                         break;
                     case ProjectileState.Ending:
                     case ProjectileState.OneAndDone:
@@ -131,7 +89,7 @@ namespace WeaponCore.Projectiles
                         if (p.ModelState != EntityState.Exists) p.Stop();
                         else
                         {
-                            ModelClosed[i] = p.CloseModel();
+                            ModelClosed = p.CloseModel();
                             p.Stop();
                         }
                         continue;
@@ -237,12 +195,11 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        private void CheckHits(int poolId)
+        private void CheckHits()
         {
-            var pool = ProjectilePool[poolId];
-            foreach (var p in pool.Active)
+           // var pool = ProjectilePool[poolId];
+            foreach (var p in ProjectilePool.Active)
             {
-
                 p.Miss = false;
                 if (!p.Active || p.State == ProjectileState.Dead) continue;
 
@@ -257,18 +214,18 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Radius = dInfo.DetonationRadius;
                     if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
                     {
-                        var checkList = CheckPool[poolId].Get();
+                        var checkList = CheckPool.Get();
                         MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
                         for (int i = 0; i < checkList.Count; i++)
                             p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
 
                         checkList.Clear();
-                        CheckPool[poolId].Return(checkList);
+                        CheckPool.Return(checkList);
                         p.HitEffects(true);
                     }
                 }
                 else if (p.MineSeeking && !p.MineTriggered)
-                    SeekEnemy(p, poolId);
+                    SeekEnemy(p);
                 else if (p.T.System.CollisionIsLine)
                 {
                     p.PruneSphere.Center = p.Position;
@@ -293,21 +250,21 @@ namespace WeaponCore.Projectiles
 
                     if (!(p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.T.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
-                        var checkList = CheckPool[poolId].Get();
+                        var checkList = CheckPool.Get();
                         MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
                         for (int i = 0; i < checkList.Count; i++)
                             p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
 
                         checkList.Clear();
-                        CheckPool[poolId].Return(checkList);
+                        CheckPool.Return(checkList);
                     }
                 }
 
                 if (p.SegmentList.Count > 0)
                 {
-                    var nearestHitEnt = GetAllEntitiesInLine(p, beam, poolId);
+                    var nearestHitEnt = GetAllEntitiesInLine(p, beam);
 
-                    if (nearestHitEnt != null && p.Intersected(p, DrawProjectiles[poolId], nearestHitEnt))
+                    if (nearestHitEnt != null && p.Intersected(p, DrawProjectiles, nearestHitEnt))
                         continue;
                 }
                 if (p.T.End) p.ProjectileClose();
@@ -317,13 +274,10 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        private void UpdateAv(int poolId)
+        private void UpdateAv()
         {
-            var drawList = DrawProjectiles[poolId];
             var camera = Session.Camera;
-
-            var pool = ProjectilePool[poolId];
-            foreach (var p in pool.Active)
+            foreach (var p in ProjectilePool.Active)
             {
                 if (!p.EnableAv || !p.Miss || p.State == ProjectileState.Dead) continue;
                 if (p.SmartsOn)
@@ -408,46 +362,42 @@ namespace WeaponCore.Projectiles
 
                 if (p.T.MuzzleId == -1)
                 {
-                    p.CreateFakeBeams(p, null, drawList, true);
+                    p.CreateFakeBeams(p, null, DrawProjectiles, true);
                     continue;
                 }
 
                 if (p.T.OnScreen)
                 {
                     p.T.Complete(null, DrawState.Default);
-                    drawList.Add(p.T);
+                    DrawProjectiles.Add(p.T);
                 }
             }
         }
 
-        private void Clean(int poolId)
+        private void Clean()
         {
-            //lock (Wait[poolId])
+            for (int j = 0; j < CleanUp.Count; j++)
             {
-                var cleanUp = CleanUp[poolId];
-                for (int j = 0; j < cleanUp.Count; j++)
-                {
-                    var p = cleanUp[j];
-                    for (int i = 0; i < p.VrTrajectiles.Count; i++)
-                        TrajectilePool[poolId].MarkForDeallocate(p.VrTrajectiles[i]);
+                var p = CleanUp[j];
+                for (int i = 0; i < p.VrTrajectiles.Count; i++)
+                    TrajectilePool.MarkForDeallocate(p.VrTrajectiles[i]);
 
-                    if (p.DynamicGuidance)
-                        DynTrees.UnregisterProjectile(p);
-                    p.PruningProxyId = -1;
+                if (p.DynamicGuidance)
+                    DynTrees.UnregisterProjectile(p);
+                p.PruningProxyId = -1;
 
-                    p.VrTrajectiles.Clear();
+                p.VrTrajectiles.Clear();
 
-                    p.T.Clean();
-                    ProjectilePool[poolId].MarkForDeallocate(p);
-                }
-                cleanUp.Clear();
-                if (ModelClosed[poolId])
-                    foreach (var e in EntityPool[poolId])
-                        e.DeallocateAllMarked();
-
-                TrajectilePool[poolId].DeallocateAllMarked();
-                ProjectilePool[poolId].DeallocateAllMarked();
+                p.T.Clean();
+                ProjectilePool.MarkForDeallocate(p);
             }
+            CleanUp.Clear();
+            if (ModelClosed)
+                foreach (var e in EntityPool)
+                    e.DeallocateAllMarked();
+
+            TrajectilePool.DeallocateAllMarked();
+            ProjectilePool.DeallocateAllMarked();
         }
     }
 }

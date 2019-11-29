@@ -26,7 +26,6 @@ namespace WeaponCore
             try
             {
                 Timings();
-
                 if (!WeaponAmmoPullQueue.IsEmpty && ITask.IsComplete)
                 {
                     if (ITask.valid && ITask.Exceptions != null)
@@ -63,7 +62,6 @@ namespace WeaponCore
                 DsUtil.Start("damage");
                 if (!Hits.IsEmpty) ProcessHits();
                 DsUtil.Complete("damage", true);
-                //if (!InventoryEvent.IsEmpty) UpdateBlockInventories();
                 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
@@ -80,8 +78,6 @@ namespace WeaponCore
                     
                     if (lastControlledEnt != null && lastControlledEnt != ControlledEntity && (lastControlledEnt is MyCockpit || lastControlledEnt is MyRemoteControl))
                         PlayerControlAcquired(lastControlledEnt);
-                    //WeaponComponent notNeeded;
-                    //ControlChanged = lastControlledEnt != ControlledEntity && ControlledEntity.Components.TryGet(out notNeeded);
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                 }
@@ -114,7 +110,6 @@ namespace WeaponCore
         {
             try
             {
-
                 if (Placer != null) UpdatePlacer();
                 if (!DedicatedServer)
                     ProcessAnimations();
@@ -170,9 +165,7 @@ namespace WeaponCore
                         TargetUi.DrawTargetUi();
                     }
 
-                    for (int i = 0; i < Projectiles.Wait.Length; i++)
-                        //lock (Projectiles.Wait[i])
-                        DrawLists(Projectiles.DrawProjectiles[i]);
+                    DrawLists();
 
                     if (_shrinking.Count > 0)
                         Shrink();
@@ -230,9 +223,6 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
 
             PurgeAll();
-
-            //Session.Player.Character.ControllerInfo.ControlReleased -= PlayerControlReleased;
-            //Session.Player.Character.ControllerInfo.ControlAcquired -= ~PlayerContr~olAcquired;
 
             Log.Line("Logging stopped.");
             Log.Close();

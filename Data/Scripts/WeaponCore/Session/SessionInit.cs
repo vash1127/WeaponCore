@@ -156,12 +156,9 @@ namespace WeaponCore
 
                 WeaponPlatforms[subTypeIdHash] =  new WeaponStructure(this, tDef, _subTypeIdToWeaponDefs[tDef.Key]);
             }
-            for (int i = 0; i < Projectiles.Wait.Length; i++)
-            {
-                Projectiles.EntityPool[i] = new EntityPool<MyEntity>[ModelCount];
-                for (int j = 0; j < ModelCount; j++)
-                    Projectiles.EntityPool[i][j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.EntityActivator);
-            }
+            Projectiles.EntityPool = new EntityPool<MyEntity>[ModelCount];
+            for (int j = 0; j < ModelCount; j++)
+                Projectiles.EntityPool[j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.EntityActivator);
         }
 
         internal void FixPrefabs()

@@ -197,9 +197,8 @@ namespace WeaponCore
                     comp.StopAllAv();
             }
 
-            for (int i = 0; i < Projectiles.Wait.Length; i++)
-                foreach (var p in Projectiles.ProjectilePool[i].Active)
-                    p.PauseAv();
+            foreach (var p in Projectiles.ProjectilePool.Active)
+                p.PauseAv();
         }
 
         public bool TaskHasErrors(ref Task task, string taskName)
@@ -422,19 +421,16 @@ namespace WeaponCore
             }
             WeaponPlatforms.Clear();
 
-            for (int i = 0; i < Projectiles.Wait.Length; i++)
-            {
-                Projectiles.CheckPool[i].Clean();
-                Projectiles.ShrapnelToSpawn[i].Clear();
-                Projectiles.ShrapnelPool[i].Clean();
-                Projectiles.FragmentPool[i].Clean();
-                Projectiles.CheckPool[i].Clean();
-                Projectiles.ProjectilePool[i].DeallocateAll();
-                Projectiles.HitEntityPool[i].Clean();
-                Projectiles.DrawProjectiles[i].Clear();
-                Projectiles.CleanUp[i].Clear();
-                Projectiles.TrajectilePool[i].DeallocateAll();
-            }
+            Projectiles.CheckPool.Clean();
+            Projectiles.ShrapnelToSpawn.Clear();
+            Projectiles.ShrapnelPool.Clean();
+            Projectiles.FragmentPool.Clean();
+            Projectiles.CheckPool.Clean();
+            Projectiles.ProjectilePool.DeallocateAll();
+            Projectiles.HitEntityPool.Clean();
+            Projectiles.DrawProjectiles.Clear();
+            Projectiles.CleanUp.Clear();
+            Projectiles.TrajectilePool.DeallocateAll();
 
             _weaponDefinitions = null;
             Projectiles = null;

@@ -1,4 +1,5 @@
-﻿using Sandbox.Game.Entities;
+﻿using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Game;
@@ -93,202 +94,195 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            //lock (session.Projectiles.Wait[session.ProCounter])
+            Projectile vProjectile = null;
+            var targetAiCnt = Comp.Ai.TargetAis.Count;
+            var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
+            if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
+            var isStatic = Comp.Ai.MyGrid.Physics.IsStatic;
+            for (int i = 0; i < bps; i++)
             {
-                Projectile vProjectile = null;
-                var targetAiCnt = Comp.Ai.TargetAis.Count;
-                var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
-                if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
-                var isStatic = Comp.Ai.MyGrid.Physics.IsStatic;
-                for (int i = 0; i < bps; i++)
+                var current = NextMuzzle;
+                var muzzle = Muzzles[current];
+                var lastTick = muzzle.LastUpdateTick;
+                var recentMovement = lastTick >= _posChangedTick && lastTick - _posChangedTick < 10;
+                if (recentMovement || _posChangedTick > lastTick)
                 {
-                    var current = NextMuzzle;
-                    var muzzle = Muzzles[current];
-                    var lastTick = muzzle.LastUpdateTick;
-                    var recentMovement = lastTick >= _posChangedTick && lastTick - _posChangedTick < 10;
-                    if (recentMovement || _posChangedTick > lastTick)
-                    {
-                        var dummy = Dummies[current];
-                        var newInfo = dummy.Info;
-                        muzzle.Direction = newInfo.Direction;
-                        muzzle.Position = newInfo.Position;
-                        muzzle.LastUpdateTick = tick;
-                    }
-
-                    if (!System.EnergyAmmo)
-                    {
-                        if (Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0) break;
-                        Comp.State.Value.Weapons[WeaponId].CurrentAmmo--;
-                    }
-
-                    if (System.HasBackKickForce && !isStatic)
-                        Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
-
-                    muzzle.LastShot = tick;
-                    if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
-
-                    for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++)
-                    {
-                        if (System.Values.HardPoint.DeviateShotAngle > 0)
-                        {
-                            var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
-                            var randomFloat1 = MyUtils.GetRandomFloat(-System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
-                            var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
-
-                            muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3(
-                                    MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
-                                    MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
-                                    MyMath.FastCos(randomFloat1)), dirMatrix);
-                        }
-                        else muzzle.DeviatedDir = muzzle.Direction;
-
-                        if (System.VirtualBeams && j == 0)
-                        {
-                            MyEntity primeE = null;
-                            MyEntity triggerE = null;
-
-                            Trajectile t;
-                            session.Projectiles.TrajectilePool[session.ProCounter].AllocateOrCreate(out t);
-                            if (System.PrimeModelId != -1)
-                            {
-                                MyEntity ent;
-                                session.Projectiles.EntityPool[session.ProCounter][System.PrimeModelId].AllocateOrCreate(out ent);
-                                if (!ent.InScene)
-                                {
-                                    ent.InScene = true;
-                                    ent.Render.AddRenderObjects();
-                                }
-                                primeE = ent;
-                            }
-
-                            if (System.TriggerModelId != -1)
-                            {
-                                MyEntity ent;
-                                session.Projectiles.EntityPool[session.ProCounter][System.TriggerModelId].AllocateOrCreate(out ent);
-                                triggerE = ent;
-                            }
-
-                            t.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
-                            vProjectile.VrTrajectiles.Add(t);
-
-                            if (System.RotateRealBeam && i == _nextVirtual)
-                            {
-                                vProjectile.T.Origin = muzzle.Position;
-                                vProjectile.Direction = muzzle.DeviatedDir;
-                            }
-                        }
-                        else
-                        {
-                            Projectile p;
-                            session.Projectiles.ProjectilePool[session.ProCounter].AllocateOrCreate(out p);
-                            p.T.System = System;
-                            p.T.Ai = Comp.Ai;
-                            p.T.Target.Entity = Target.Entity;
-                            p.T.Target.Projectile = Target.Projectile;
-                            p.T.Target.IsProjectile = Target.Projectile != null;
-                            p.T.Target.FiringCube = Comp.MyCube;
-                            p.T.WeaponId = WeaponId;
-                            p.T.MuzzleId = muzzle.MuzzleId;
-                            p.T.BaseDamagePool = BaseDamage;
-                            p.T.EnableGuidance = Comp.Set.Value.Guidance;
-                            p.T.DetonationDamage = DetonateDmg;
-                            p.T.AreaEffectDamage = AreaEffectDmg;
-
-                            p.SelfDamage = System.SelfDamage || Comp.Gunner;
-                            p.GridVel = Comp.Ai.GridVel;
-                            p.T.Origin = muzzle.Position;
-                            p.T.OriginUp = MyPivotUp;
-                            p.PredictedTargetPos = TargetPos;
-                            p.Direction = muzzle.DeviatedDir;
-                            p.State = Projectile.ProjectileState.Start;
-
-                            if (System.PrimeModelId != -1)
-                            {
-                                MyEntity ent;
-                                session.Projectiles.EntityPool[session.ProCounter][System.PrimeModelId].AllocateOrCreate(out ent);
-                                if (!ent.InScene)
-                                {
-                                    ent.InScene = true;
-                                    ent.Render.AddRenderObjects();
-                                }
-                                p.T.PrimeEntity = ent;
-                            }
-                            if (System.TriggerModelId != -1)
-                            {
-                                MyEntity ent;
-                                session.Projectiles.EntityPool[session.ProCounter][System.TriggerModelId].AllocateOrCreate(out ent);
-                                ent.InScene = false;
-                                ent.Render.RemoveRenderObjects();
-                                p.T.TriggerEntity = ent;
-                            }
-                            if (targetable)
-                            {
-                                for (int t = 0; t < targetAiCnt; t++)
-                                {
-                                    var targetAi = Comp.Ai.TargetAis[t];
-                                    if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None || Comp.Set.Value.Guidance)
-                                    {
-                                        var threatLin = targetAi.GridVel;
-
-                                        bool intercept;
-                                        if (Vector3D.IsZero(threatLin, 0.025)) intercept = Vector3.Dot(p.Direction, p.Position - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
-                                        else intercept = Vector3.Dot(threatLin, targetAi.MyGrid.PositionComp.WorldMatrix.Translation - TargetPos) < 0;
-
-                                        if (!intercept) continue;
-                                    }
-                                    targetAi.LiveProjectile.Add(p);
-                                    p.Watchers.Add(targetAi);
-                                }
-                            }
-                        }
-                    }
-
-                    _muzzlesToFire.Add(MuzzleIdToName[current]);
-
-                    if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
-                        Comp.Ai.Session.UpdateWeaponHeat(MyTuple.Create(this, 0, true));
-
-                    Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
-                    Comp.CurrentHeat += HeatPShot;
-                    if (Comp.State.Value.Weapons[WeaponId].Heat > System.MaxHeat)
-                    {
-                        var dmg = .02f * Comp.MaxIntegrity;
-
-                        Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
-
-                        EventTriggerStateChanged(EventTriggers.Overheated, true);
-                        Comp.Overheated = true;
-                        StopShooting();
-                    }
-
-                    if (i == bps) NextMuzzle++;
-
-                    NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
+                    var dummy = Dummies[current];
+                    var newInfo = dummy.Info;
+                    muzzle.Direction = newInfo.Direction;
+                    muzzle.Position = newInfo.Position;
+                    muzzle.LastUpdateTick = tick;
                 }
 
-                EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
-                if (state.ManualShoot == TerminalActionState.ShootOnce)
+                if (!System.EnergyAmmo)
                 {
-                    state.ManualShoot = TerminalActionState.ShootOff;
+                    if (Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0) break;
+                    Comp.State.Value.Weapons[WeaponId].CurrentAmmo--;
+                }
+
+                if (System.HasBackKickForce && !isStatic)
+                    Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
+
+                muzzle.LastShot = tick;
+                if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
+
+                for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++)
+                {
+                    if (System.Values.HardPoint.DeviateShotAngle > 0)
+                    {
+                        var dirMatrix = Matrix.CreateFromDir(muzzle.Direction);
+                        var randomFloat1 = MyUtils.GetRandomFloat(-System.Values.HardPoint.DeviateShotAngle, System.Values.HardPoint.DeviateShotAngle);
+                        var randomFloat2 = MyUtils.GetRandomFloat(0.0f, MathHelper.TwoPi);
+
+                        muzzle.DeviatedDir = Vector3.TransformNormal(-new Vector3(
+                                MyMath.FastSin(randomFloat1) * MyMath.FastCos(randomFloat2),
+                                MyMath.FastSin(randomFloat1) * MyMath.FastSin(randomFloat2),
+                                MyMath.FastCos(randomFloat1)), dirMatrix);
+                    }
+                    else muzzle.DeviatedDir = muzzle.Direction;
+
+                    if (System.VirtualBeams && j == 0)
+                    {
+                        MyEntity primeE = null;
+                        MyEntity triggerE = null;
+
+                        Trajectile t;
+                        session.Projectiles.TrajectilePool.AllocateOrCreate(out t);
+                        if (System.PrimeModelId != -1)
+                        {
+                            MyEntity ent;
+                            session.Projectiles.EntityPool[System.PrimeModelId].AllocateOrCreate(out ent);
+                            if (!ent.InScene)
+                            {
+                                ent.InScene = true;
+                                ent.Render.AddRenderObjects();
+                            }
+                            primeE = ent;
+                        }
+
+                        if (System.TriggerModelId != -1)
+                        {
+                            MyEntity ent;
+                            session.Projectiles.EntityPool[System.TriggerModelId].AllocateOrCreate(out ent);
+                            triggerE = ent;
+                        }
+
+                        t.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
+                        vProjectile.VrTrajectiles.Add(t);
+
+                        if (System.RotateRealBeam && i == _nextVirtual)
+                        {
+                            vProjectile.T.Origin = muzzle.Position;
+                            vProjectile.Direction = muzzle.DeviatedDir;
+                        }
+                    }
+                    else
+                    {
+                        Projectile p;
+                        session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
+                        p.T.System = System;
+                        p.T.Ai = Comp.Ai;
+                        p.T.Target.Entity = Target.Entity;
+                        p.T.Target.Projectile = Target.Projectile;
+                        p.T.Target.IsProjectile = Target.Projectile != null;
+                        p.T.Target.FiringCube = Comp.MyCube;
+                        p.T.WeaponId = WeaponId;
+                        p.T.MuzzleId = muzzle.MuzzleId;
+                        p.T.BaseDamagePool = BaseDamage;
+                        p.T.EnableGuidance = Comp.Set.Value.Guidance;
+                        p.T.DetonationDamage = DetonateDmg;
+                        p.T.AreaEffectDamage = AreaEffectDmg;
+                        p.T.WeaponCache = WeaponCache;
+
+                        p.SelfDamage = System.SelfDamage || Comp.Gunner;
+                        p.GridVel = Comp.Ai.GridVel;
+                        p.T.Origin = muzzle.Position;
+                        p.T.OriginUp = MyPivotUp;
+                        p.PredictedTargetPos = TargetPos;
+                        p.Direction = muzzle.DeviatedDir;
+                        p.State = Projectile.ProjectileState.Start;
+
+                        if (System.PrimeModelId != -1)
+                        {
+                            MyEntity ent;
+                            session.Projectiles.EntityPool[System.PrimeModelId].AllocateOrCreate(out ent);
+                            if (!ent.InScene)
+                            {
+                                ent.InScene = true;
+                                ent.Render.AddRenderObjects();
+                            }
+                            p.T.PrimeEntity = ent;
+                        }
+                        if (System.TriggerModelId != -1)
+                        {
+                            MyEntity ent;
+                            session.Projectiles.EntityPool[System.TriggerModelId].AllocateOrCreate(out ent);
+                            ent.InScene = false;
+                            ent.Render.RemoveRenderObjects();
+                            p.T.TriggerEntity = ent;
+                        }
+                        if (targetable)
+                        {
+                            for (int t = 0; t < targetAiCnt; t++)
+                            {
+                                var targetAi = Comp.Ai.TargetAis[t];
+                                if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None || Comp.Set.Value.Guidance)
+                                {
+                                    var threatLin = targetAi.GridVel;
+
+                                    bool intercept;
+                                    if (Vector3D.IsZero(threatLin, 0.025)) intercept = Vector3.Dot(p.Direction, p.Position - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
+                                    else intercept = Vector3.Dot(threatLin, targetAi.MyGrid.PositionComp.WorldMatrix.Translation - TargetPos) < 0;
+
+                                    if (!intercept) continue;
+                                }
+                                targetAi.LiveProjectile.Add(p);
+                                p.Watchers.Add(targetAi);
+                            }
+                        }
+                    }
+                }
+
+                _muzzlesToFire.Add(MuzzleIdToName[current]);
+
+                if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
+                    Comp.Ai.Session.UpdateWeaponHeat(MyTuple.Create(this, 0, true));
+
+                Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
+                Comp.CurrentHeat += HeatPShot;
+                if (Comp.State.Value.Weapons[WeaponId].Heat > System.MaxHeat)
+                {
+                    var dmg = .02f * Comp.MaxIntegrity;
+
+                    Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
+
+                    EventTriggerStateChanged(EventTriggers.Overheated, true);
+                    Comp.Overheated = true;
                     StopShooting();
-                    Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
-                    Comp.Shooting = Comp.Shooting - 1 > 0 ? Comp.Shooting - 1 : 0;
                 }
-                _muzzlesToFire.Clear();
 
-                _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
-                if (session.ProCounter++ >= session.Projectiles.Wait.Length - 1)
-                {
-                    session.ProCounter = 0;
-                    session.Load += System.IsBeamWeapon ? 0.0625 : 1;
-                }
+                if (i == bps) NextMuzzle++;
+
+                NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
             }
+
+            EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+            if (state.ManualShoot == TerminalActionState.ShootOnce)
+            {
+                state.ManualShoot = TerminalActionState.ShootOff;
+                StopShooting();
+                Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
+                Comp.Shooting = Comp.Shooting - 1 > 0 ? Comp.Shooting - 1 : 0;
+            }
+            _muzzlesToFire.Clear();
+
+            _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
         }
 
         private Projectile CreateVirtualProjectile()
         {
             Projectile p;
-            Comp.Ai.Session.Projectiles.ProjectilePool[Comp.Ai.Session.ProCounter].AllocateOrCreate(out p);
+            Comp.Ai.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
             p.T.System = System;
             p.T.Ai = Comp.Ai;
             p.T.Target.Entity = Target.Entity;

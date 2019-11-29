@@ -10,13 +10,13 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private void DrawLists(List<Trajectile> drawList)
+        private void DrawLists()
         {
             var sFound = false;
             var gFound = false;
-            for (int i = 0; i < drawList.Count; i++)
+            for (int i = 0; i < Projectiles.DrawProjectiles.Count; i++)
             {
-                var t = drawList[i];
+                var t = Projectiles.DrawProjectiles[i];
 
                 if (t.StartSoundActived)
                 {
@@ -212,7 +212,7 @@ namespace WeaponCore
             }
             if (sFound) _shrinking.ApplyAdditions();
             if (gFound) _afterGlow.ApplyAdditions();
-            drawList.Clear();
+            Projectiles.DrawProjectiles.Clear();
         }
 
         private void Shrink()

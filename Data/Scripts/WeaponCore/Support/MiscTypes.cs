@@ -12,6 +12,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Support.HitEntity.Type;
 using Projectile = WeaponCore.Projectiles.Projectile;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Support
 {
@@ -248,8 +249,6 @@ namespace WeaponCore.Support
         public double? HitDist;
         public Type EventType;
 
-        public int PoolId = - 1;
-
         public HitEntity()
         {
         }
@@ -273,7 +272,6 @@ namespace WeaponCore.Support
                 }
             }
             */
-            PoolId = -1;
             Beam.Length = 0;
             Beam.Direction = Vector3D.Zero;
             Beam.From = Vector3D.Zero;
@@ -349,6 +347,55 @@ namespace WeaponCore.Support
         }
     }
 
+    internal class VoxelParallelHits
+    {
+        internal uint RequestTick;
+        internal uint ResultTick;
+        internal IHitInfo HitInfo;
+        private bool _requesting;
+
+        internal bool Query(LineD lineTest)
+        {
+            var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
+            _requesting = thisTick - ResultTick > 1;
+            RequestTick = thisTick;
+            MyAPIGateway.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, CollisionLayers.VoxelCollisionLayer, Results);
+            return _requesting;
+        }
+
+        internal void Results(IHitInfo info)
+        {
+            ResultTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
+            if (info == null)
+            {
+                Log.Line("is null");
+                HitInfo = null;
+                return;
+            }
+
+            var voxel = info.HitEntity as MyVoxelBase;
+            if (voxel?.RootVoxel is MyPlanet)
+            {
+                HitInfo = info;
+                return;
+            }
+            HitInfo = null;
+        }
+
+        internal bool NewResult(out IHitInfo cachedPlanetResult)
+        {
+            cachedPlanetResult = null;
+            var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
+            //Log.Line($"NewREsults - thisTick:{thisTick} - RequestTick:{RequestTick} - ResultTick:{ResultTick}");
+
+            if (HitInfo == null) return false;
+            if (thisTick > RequestTick + 1) return false;
+            Log.Line($"NewResult Planet");
+            cachedPlanetResult = HitInfo;
+            return true;
+        }
+    }
+
     internal class WeaponFrameCache
     {
         internal bool VirtualHit;
@@ -359,6 +406,13 @@ namespace WeaponCore.Support
         internal IMySlimBlock HitBlock;
 
         internal readonly List<Projectile> SortProjetiles = new List<Projectile>();
+        internal readonly VoxelParallelHits[] VoxelHits;
+
+        internal WeaponFrameCache(int size)
+        {
+            VoxelHits = new VoxelParallelHits[size];
+            for (int i = 0; i < size; i++) VoxelHits[i] = new VoxelParallelHits();
+        }
 
         internal void SortProjectiles(Weapon w)
         {
@@ -429,7 +483,7 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void Spawn(int poolId)
+        internal void Spawn()
         {
             Session session = null;
             for (int i = 0; i < Sharpnel.Count; i++)
@@ -437,7 +491,7 @@ namespace WeaponCore.Support
                 var frag = Sharpnel[i];
                 session = frag.Ai.Session;
                 Projectile p;
-                frag.Ai.Session.Projectiles.ProjectilePool[poolId].AllocateOrCreate(out p);
+                frag.Ai.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
                 p.T.System = frag.System;
                 p.T.Ai = frag.Ai;
                 p.T.Target.Entity = frag.Target;
@@ -453,10 +507,10 @@ namespace WeaponCore.Support
                 p.State = Projectile.ProjectileState.Start;
 
                 p.StartSpeed = frag.Velocity;
-                frag.Ai.Session.Projectiles.FragmentPool[poolId].Return(frag);
+                frag.Ai.Session.Projectiles.FragmentPool.Return(frag);
             }
 
-            session?.Projectiles.ShrapnelPool[poolId].Return(this);
+            session?.Projectiles.ShrapnelPool.Return(this);
             Sharpnel.Clear();
         }
     }

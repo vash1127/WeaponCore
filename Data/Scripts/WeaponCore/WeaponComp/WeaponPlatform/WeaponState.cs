@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
-using VRage.Utils;
 using VRageMath;
-using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {

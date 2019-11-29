@@ -58,7 +58,6 @@ namespace WeaponCore.Projectiles
         internal double DeadZone;
         internal float DesiredSpeed;
         internal float MaxTrajectory;
-        internal int PoolId;
         internal int Age;
         internal int ChaseAge;
         internal int FieldTime;
@@ -95,7 +94,7 @@ namespace WeaponCore.Projectiles
         internal bool Miss;
         internal bool Active;
         internal bool HitParticleActive;
-        internal bool MarkedForClose;
+        internal bool CachedPlanetHit;
         internal Trajectile T = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -106,9 +105,8 @@ namespace WeaponCore.Projectiles
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
 
-        internal void Start(Projectiles manager, bool noAv, int poolId)
+        internal void Start(Projectiles manager, bool noAv)
         {
-            PoolId = poolId;
             Manager = manager;
             Position = T.Origin;
             AccelDir = Direction;
@@ -132,7 +130,7 @@ namespace WeaponCore.Projectiles
             ZombieLifeTime = 0;
             LastOffsetTime = 0;
             Colliding = false;
-            MarkedForClose = false;
+            CachedPlanetHit = false;
             ParticleStopped = false;
             ParticleLateStart = false;
             T.OnScreen = true;
@@ -318,28 +316,34 @@ namespace WeaponCore.Projectiles
                 {
                     if (voxel != null)
                     {
-                        var check = State == ProjectileState.OneAndDone;
-                        if (!check)
+                        using (voxel.Pin())
                         {
-                            //Vector3D? voxelHit;
-                            //using (voxel.Pin()) voxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
-                            //check = voxelHit.HasValue;
-                            check = true;
-                        }
-
-                        if (check)
-                        {
-                            PruneQuery = MyEntityQueryType.Both;
-                            if (voxel == ai.MyPlanet) CheckPlanet = true;
+                            if (voxel == ai.MyPlanet)
+                            {
+                                if (!T.System.IsBeamWeapon)
+                                {
+                                    CheckPlanet = true;
+                                }
+                                else if (T.WeaponCache.VoxelHits[T.WeaponId].Query(lineTest))
+                                {
+                                    Log.Line("query");
+                                    CheckPlanet = true;
+                                }
+                                else
+                                    CachedPlanetHit = true;
+                                PruneQuery = MyEntityQueryType.Both;
+                            }
+                            else
+                            {
+                                CheckPlanet = true;
+                                PruneQuery = MyEntityQueryType.Both;
+                            }
                             break;
                         }
                     }
-                    else
-                    {
-                        if (grid != null && grid.IsSameConstructAs(T.Ai.MyGrid)) continue;
-                        PruneQuery = MyEntityQueryType.Both;
-                        if (CheckPlanet || !ai.PlanetSurfaceInRange) break;
-                    }
+                    if (grid != null && grid.IsSameConstructAs(T.Ai.MyGrid)) continue;
+                    PruneQuery = MyEntityQueryType.Both;
+                    if (CheckPlanet || !ai.PlanetSurfaceInRange) break;
                 }
             }
         }
@@ -443,9 +447,9 @@ namespace WeaponCore.Projectiles
 
         private void SpawnShrapnel()
         {
-            var shrapnel = T.Ai.Session.Projectiles.ShrapnelPool[PoolId].Get();
-            shrapnel.Init(this, T.Ai.Session.Projectiles.FragmentPool[PoolId]);
-            T.Ai.Session.Projectiles.ShrapnelToSpawn[PoolId].Add(shrapnel);
+            var shrapnel = T.Ai.Session.Projectiles.ShrapnelPool.Get();
+            shrapnel.Init(this, T.Ai.Session.Projectiles.FragmentPool);
+            T.Ai.Session.Projectiles.ShrapnelToSpawn.Add(shrapnel);
         }
 
         internal bool NewTarget()
@@ -862,7 +866,7 @@ namespace WeaponCore.Projectiles
             {
                 State = ProjectileState.Dead;
                 T.Target.IsProjectile = false;
-                Manager.CleanUp[PoolId].Add(this);
+                Manager.CleanUp.Add(this);
             }
             else State = ProjectileState.Ending;
         }
@@ -878,7 +882,7 @@ namespace WeaponCore.Projectiles
                 }
                 State = ProjectileState.Dead;
                 T.Target.IsProjectile = false;
-                Manager.CleanUp[PoolId].Add(this);
+                Manager.CleanUp.Add(this);
             }
         }
 
@@ -887,9 +891,9 @@ namespace WeaponCore.Projectiles
             T.PrimeMatrix = MatrixD.Identity;
             T.TriggerMatrix = MatrixD.Identity;
             T.Complete(null, DrawState.Last);
-            Manager.DrawProjectiles[PoolId].Add(T);
-            if (T.System.PrimeModelId != -1) Manager.EntityPool[PoolId][T.System.PrimeModelId].MarkForDeallocate(T.PrimeEntity);
-            if (T.System.TriggerModelId != -1) Manager.EntityPool[PoolId][T.System.TriggerModelId].MarkForDeallocate(T.TriggerEntity);
+            Manager.DrawProjectiles.Add(T);
+            if (T.System.PrimeModelId != -1) Manager.EntityPool[T.System.PrimeModelId].MarkForDeallocate(T.PrimeEntity);
+            if (T.System.TriggerModelId != -1) Manager.EntityPool[T.System.TriggerModelId].MarkForDeallocate(T.TriggerEntity);
             ModelState = EntityState.None;
             return true;
         }
