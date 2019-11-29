@@ -159,9 +159,7 @@ namespace WeaponCore.Support
                 ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref cameraPos);
                 DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
                 ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-
-                LineWidth = Math.Max(width, 0.11f * ScaleFov * (DistanceToLine / 100));
-                //Log.Line($"{System.WeaponName} - CollSize:{System.CollisionSize} - TracerLen:{System.TracerLength} - Len:{Length} - IsLine:{System.CollisionIsLine} - DtL:{DistanceToLine} - End:{End} - Fov:{ScaleFov} - CPoint:{ClosestPointOnLine} - Pos:{Position}");
+                LineWidth = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
             }
         }
 
