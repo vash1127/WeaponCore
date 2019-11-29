@@ -351,16 +351,45 @@ namespace WeaponCore.Support
     {
         internal uint RequestTick;
         internal uint ResultTick;
+        internal uint LastTick;
         internal IHitInfo HitInfo;
-        private bool _requesting;
-
-        internal bool Query(LineD lineTest)
+        private bool _start;
+        private uint _startTick;
+        private int _miss;
+        private Vector3D _endPos = Vector3D.MinValue;
+        internal bool Cached(LineD lineTest)
         {
+            double dist;
+            Vector3D.DistanceSquared(ref _endPos, ref lineTest.To, out dist);
+
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
-            _requesting = thisTick - ResultTick > 1;
-            RequestTick = thisTick;
-            MyAPIGateway.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, CollisionLayers.VoxelCollisionLayer, Results);
-            return _requesting;
+            _start = thisTick - LastTick > 1 || dist > 5;
+            LastTick = thisTick;
+
+            if (_start)
+            {
+                _startTick = thisTick;
+                _endPos = lineTest.To;
+                _miss = 0;
+            }
+
+            var runTime = thisTick - _startTick;
+
+            if (_miss > 2)
+            {
+                if (runTime > 119 && _miss % 120 == 0)
+                    _miss = 0;
+
+                return true;
+            }
+
+            if (runTime > 59)
+            {
+                RequestTick = thisTick;
+                MyAPIGateway.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, CollisionLayers.VoxelCollisionLayer, Results);
+            }
+
+            return runTime > 60;
         }
 
         internal void Results(IHitInfo info)
@@ -368,7 +397,8 @@ namespace WeaponCore.Support
             ResultTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
             if (info == null)
             {
-                Log.Line("is null");
+                //Log.Line("is null");
+                _miss++;
                 HitInfo = null;
                 return;
             }
@@ -377,8 +407,10 @@ namespace WeaponCore.Support
             if (voxel?.RootVoxel is MyPlanet)
             {
                 HitInfo = info;
+                _miss = 0;
                 return;
             }
+            _miss++;
             HitInfo = null;
         }
 
@@ -388,9 +420,13 @@ namespace WeaponCore.Support
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
             //Log.Line($"NewREsults - thisTick:{thisTick} - RequestTick:{RequestTick} - ResultTick:{ResultTick}");
 
-            if (HitInfo == null) return false;
+            if (HitInfo == null)
+            {
+                _miss++;
+                return false;
+            }
             if (thisTick > RequestTick + 1) return false;
-            Log.Line($"NewResult Planet");
+            //Log.Line($"NewResult Planet");
             cachedPlanetResult = HitInfo;
             return true;
         }

@@ -99,7 +99,6 @@ namespace WeaponCore.Projectiles
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
         internal Projectiles Manager;
-
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
@@ -316,30 +315,27 @@ namespace WeaponCore.Projectiles
                 {
                     if (voxel != null)
                     {
-                        using (voxel.Pin())
+                        if (voxel == ai.MyPlanet)
                         {
-                            if (voxel == ai.MyPlanet)
-                            {
-                                if (!T.System.IsBeamWeapon)
-                                {
-                                    CheckPlanet = true;
-                                }
-                                else if (T.WeaponCache.VoxelHits[T.WeaponId].Query(lineTest))
-                                {
-                                    Log.Line("query");
-                                    CheckPlanet = true;
-                                }
-                                else
-                                    CachedPlanetHit = true;
-                                PruneQuery = MyEntityQueryType.Both;
-                            }
-                            else
+                            if (!T.System.IsBeamWeapon)
                             {
                                 CheckPlanet = true;
-                                PruneQuery = MyEntityQueryType.Both;
                             }
-                            break;
+                            else if (!T.WeaponCache.VoxelHits[T.WeaponId].Cached(lineTest))
+                            {
+                                Log.Line("query");
+                                CheckPlanet = true;
+                            }
+                            else CachedPlanetHit = true;
+
+                            PruneQuery = MyEntityQueryType.Both;
                         }
+                        else
+                        {
+                            CheckPlanet = true;
+                            PruneQuery = MyEntityQueryType.Both;
+                        }
+                        break;
                     }
                     if (grid != null && grid.IsSameConstructAs(T.Ai.MyGrid)) continue;
                     PruneQuery = MyEntityQueryType.Both;

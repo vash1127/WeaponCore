@@ -40,7 +40,7 @@ namespace WeaponCore.Projectiles
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
                 if (grid == null && p.EwarActive && p.AreaEffect != DotField && ent is IMyCharacter) continue;
-                if (grid != null && (!p.SelfDamage || p.SmartsOn) && (grid == p.T.Ai.MyGrid || p.T.Ai.MyGrid.IsSameConstructAs(grid)) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
+                if (grid != null && (!p.SelfDamage || p.SmartsOn) && p.T.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
                     var shieldInfo = p.T.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
@@ -88,12 +88,12 @@ namespace WeaponCore.Projectiles
                                 IHitInfo cachedPlanetResult;
                                 if (p.T.WeaponCache.VoxelHits[p.T.WeaponId].NewResult(out cachedPlanetResult))
                                 {
-                                    Log.Line("cached hit");
+                                    //Log.Line("cached hit");
                                     voxelHit = cachedPlanetResult.Position;
                                 }
                                 else
                                 {
-                                    Log.Line($"cachedPlanet but no new result");
+                                    //Log.Line($"cachedPlanet but no new result");
                                     continue;
                                 }
                             }
@@ -114,7 +114,7 @@ namespace WeaponCore.Projectiles
                                 {
                                     using (voxel.Pin())
                                     {
-                                        Log.Line("slow check");
+                                        //Log.Line("slow check");
                                         voxel.GetIntersectionWithLine(ref beam, out voxelHit);
                                     }
                                 }
@@ -123,10 +123,7 @@ namespace WeaponCore.Projectiles
                         else using (voxel.Pin()) voxel.GetIntersectionWithLine(ref beam, out voxelHit);
 
                         if (!voxelHit.HasValue)
-                        {
-                            Log.Line("no hit");
                             continue;
-                        }
                     }
                     var hitEntity = HitEntityPool.Get();
                     hitEntity.Clean();
@@ -275,7 +272,7 @@ namespace WeaponCore.Projectiles
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
                             var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
-                            if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
+                            if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) <= grid.GridSize * grid.GridSize)
                                 continue;
 
                             if (!ewarActive)
@@ -296,7 +293,7 @@ namespace WeaponCore.Projectiles
                             for (int j = 0; j < slims.Count; j++)
                             {
                                 var firstBlock = grid.GetCubeBlock(slims[j]) as IMySlimBlock;
-                                if (firstBlock != null && !firstBlock.IsDestroyed)
+                                if (firstBlock != null && !firstBlock.IsDestroyed && firstBlock != hitEnt.T.Target.FiringCube.SlimBlock)
                                 {
                                     hitEnt.Blocks.Add(firstBlock);
                                     if (closestBlockFound) continue;
