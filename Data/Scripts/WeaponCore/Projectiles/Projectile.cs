@@ -273,7 +273,6 @@ namespace WeaponCore.Projectiles
                     ModelSphereCurrent.Radius = largestSize * 2;
                     ModelSphereLast.Radius = largestSize * 2;
                 }
-                else ModelState = EntityState.NoDraw;
             }
 
             var accelPerSec = T.System.Values.Ammo.Trajectory.AccelPerSec;
@@ -890,18 +889,17 @@ namespace WeaponCore.Projectiles
             State = ProjectileState.Dead;
             T.Target.IsProjectile = false;
             Manager.CleanUp.Add(this);
-        }
 
-        internal bool CloseModel()
-        {
-            T.PrimeMatrix = MatrixD.Identity;
-            T.TriggerMatrix = MatrixD.Identity;
-            T.Complete(null, DrawState.Last);
-            Manager.DrawProjectiles.Add(T);
-            if (T.System.PrimeModelId != -1) Manager.EntityPool[T.System.PrimeModelId].MarkForDeallocate(T.PrimeEntity);
-            if (T.System.TriggerModelId != -1) Manager.EntityPool[T.System.TriggerModelId].MarkForDeallocate(T.TriggerEntity);
-            ModelState = EntityState.None;
-            return true;
+            if (ModelState == EntityState.Exists)
+            {
+                T.PrimeMatrix = MatrixD.Identity;
+                T.TriggerMatrix = MatrixD.Identity;
+                T.Complete(null, DrawState.Last);
+                Manager.DrawProjectiles.Add(T);
+                if (T.System.PrimeModelId != -1) Manager.EntityPool[T.System.PrimeModelId].MarkForDeallocate(T.PrimeEntity);
+                if (T.System.TriggerModelId != -1) Manager.EntityPool[T.System.TriggerModelId].MarkForDeallocate(T.TriggerEntity);
+                ModelState = EntityState.None;
+            }
         }
 
         internal enum ProjectileState
@@ -916,7 +914,6 @@ namespace WeaponCore.Projectiles
         internal enum EntityState
         {
             Exists,
-            NoDraw,
             None
         }
     }

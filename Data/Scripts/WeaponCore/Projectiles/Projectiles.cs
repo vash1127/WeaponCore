@@ -29,7 +29,6 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
 
         internal EntityPool<MyEntity>[] EntityPool;
-        internal bool ModelClosed;
 
         internal Projectiles(Session session)
         {
@@ -77,9 +76,8 @@ namespace WeaponCore.Projectiles
                 ProjectilePool.MarkForDeallocate(p);
             }
             CleanUp.Clear();
-            if (ModelClosed)
-                foreach (var e in EntityPool)
-                    e.DeallocateAllMarked();
+            foreach (var e in EntityPool)
+                e.DeallocateAllMarked();
 
             TrajectilePool.DeallocateAllMarked();
             ProjectilePool.DeallocateAllMarked();
@@ -94,7 +92,6 @@ namespace WeaponCore.Projectiles
 
         private void UpdateState()
         {
-            ModelClosed = false;
             foreach (var p in ProjectilePool.Active)
             {
                 p.Age++;
@@ -106,12 +103,9 @@ namespace WeaponCore.Projectiles
                         continue;
                     case ProjectileState.Start:
                         p.Start(this);
-                        if (p.ModelState == EntityState.NoDraw)
-                            ModelClosed = p.CloseModel();
                         break;
                     case ProjectileState.OneAndDone:
                     case ProjectileState.Depleted:
-                        if (p.ModelState != EntityState.Exists) ModelClosed = p.CloseModel();
                         p.ProjectileClose();
                         continue;
                     case ProjectileState.Alive:
