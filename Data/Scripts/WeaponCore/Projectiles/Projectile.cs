@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.AreaDamage;
 using static WeaponCore.Support.Trajectile;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Projectiles
 {
     internal class Projectile
     {
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal const int EndSteps = 1;
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MyEntityQueryType PruneQuery;
@@ -70,7 +71,6 @@ namespace WeaponCore.Projectiles
         internal int PulseInterval;
         internal bool EnableAv;
         internal bool DrawLine;
-
         internal bool FirstOffScreen;
         internal bool ConstantSpeed;
         internal bool PositionChecked;
@@ -103,7 +103,7 @@ namespace WeaponCore.Projectiles
         internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
-
+        internal readonly List<IHitInfo> RayHits = new List<IHitInfo>();
         internal void Start(Projectiles manager)
         {
             Manager = manager;
@@ -128,7 +128,9 @@ namespace WeaponCore.Projectiles
             ChaseAge = 0;
             ZombieLifeTime = 0;
             LastOffsetTime = 0;
+            PruningProxyId = -1;
             Colliding = false;
+            Active = false;
             CachedPlanetHit = false;
             ParticleStopped = false;
             ParticleLateStart = false;
@@ -319,11 +321,11 @@ namespace WeaponCore.Projectiles
                         {
                             if (!T.System.IsBeamWeapon)
                             {
-                                CheckPlanet = true;
+                                T.Ai.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
                             }
                             else if (!T.WeaponCache.VoxelHits[T.WeaponId].Cached(lineTest))
                             {
-                                Log.Line("query");
+                                //Log.Line("query");
                                 CheckPlanet = true;
                             }
                             else CachedPlanetHit = true;
@@ -342,6 +344,21 @@ namespace WeaponCore.Projectiles
                     if (CheckPlanet || !ai.PlanetSurfaceInRange) break;
                 }
             }
+        }
+
+        internal void CouldHitPlanet(List<IHitInfo> hitInfos)
+        {
+            for (int i = 0; i < hitInfos.Count; i++)
+            {
+                var hit = hitInfos[i];
+                var voxel = hit.HitEntity as MyVoxelBase;
+                if (voxel?.RootVoxel is MyPlanet)
+                {
+                    CheckPlanet = true;
+                    break;
+                }
+            }
+            hitInfos.Clear();
         }
 
         internal bool Intersected(Projectile p, List<Trajectile> drawList, HitEntity hitEntity)
