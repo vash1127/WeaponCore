@@ -53,20 +53,48 @@ namespace WeaponCore.Projectiles
         internal void Update()
         {
             Clean();
+            SpawnFragments();
             UpdateState();
             CheckHits();
             UpdateAv();
         }
 
+        private void Clean()
+        {
+            for (int j = 0; j < CleanUp.Count; j++)
+            {
+                var p = CleanUp[j];
+                for (int i = 0; i < p.VrTrajectiles.Count; i++)
+                    TrajectilePool.MarkForDeallocate(p.VrTrajectiles[i]);
+
+                if (p.DynamicGuidance)
+                    DynTrees.UnregisterProjectile(p);
+                p.PruningProxyId = -1;
+
+                p.VrTrajectiles.Clear();
+
+                p.T.Clean();
+                ProjectilePool.MarkForDeallocate(p);
+            }
+            CleanUp.Clear();
+            if (ModelClosed)
+                foreach (var e in EntityPool)
+                    e.DeallocateAllMarked();
+
+            TrajectilePool.DeallocateAllMarked();
+            ProjectilePool.DeallocateAllMarked();
+        }
+
+        private void SpawnFragments()
+        {
+            for (int j = 0; j < ShrapnelToSpawn.Count; j++)
+                ShrapnelToSpawn[j].Spawn();
+            ShrapnelToSpawn.Clear();
+        }
+
         private void UpdateState()
         {
-            var noAv = Session.DedicatedServer;
             ModelClosed = false;
-            if (ShrapnelToSpawn.Count > 0) {
-                for (int j = 0; j < ShrapnelToSpawn.Count; j++)
-                    ShrapnelToSpawn[j].Spawn();
-                ShrapnelToSpawn.Clear();
-            }
             foreach (var p in ProjectilePool.Active)
             {
                 p.Age++;
@@ -77,7 +105,7 @@ namespace WeaponCore.Projectiles
                     case ProjectileState.Dead:
                         continue;
                     case ProjectileState.Start:
-                        p.Start(this, noAv);
+                        p.Start(this);
                         if (p.ModelState == EntityState.NoDraw)
                             ModelClosed = p.CloseModel();
                         break;
@@ -197,7 +225,6 @@ namespace WeaponCore.Projectiles
 
         private void CheckHits()
         {
-           // var pool = ProjectilePool[poolId];
             foreach (var p in ProjectilePool.Active)
             {
                 p.Miss = false;
@@ -276,7 +303,6 @@ namespace WeaponCore.Projectiles
 
         private void UpdateAv()
         {
-            var camera = Session.Camera;
             foreach (var p in ProjectilePool.Active)
             {
                 if (!p.EnableAv || !p.Miss || p.State == ProjectileState.Dead) continue;
@@ -301,7 +327,7 @@ namespace WeaponCore.Projectiles
                 if (p.T.System.AmmoParticle)
                 {
                     p.TestSphere.Center = p.Position;
-                    if (camera.IsInFrustum(ref p.TestSphere))
+                    if (Session.Camera.IsInFrustum(ref p.TestSphere))
                     {
                         if ((p.ParticleStopped || p.ParticleLateStart))
                             p.PlayAmmoParticle();
@@ -339,7 +365,7 @@ namespace WeaponCore.Projectiles
                         p.ModelSphereLast.Radius = currentRadius;
                         p.ModelSphereCurrent.Radius = currentRadius;
                     }
-                    if (camera.IsInFrustum(ref p.ModelSphereLast) || camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
+                    if (Session.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
                     {
                         p.T.OnScreen = true;
                         p.FirstOffScreen = false;
@@ -356,7 +382,7 @@ namespace WeaponCore.Projectiles
                     else
                     {
                         var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
-                        if (camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
+                        if (Session.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
                     }
                 }
 
@@ -372,32 +398,6 @@ namespace WeaponCore.Projectiles
                     DrawProjectiles.Add(p.T);
                 }
             }
-        }
-
-        private void Clean()
-        {
-            for (int j = 0; j < CleanUp.Count; j++)
-            {
-                var p = CleanUp[j];
-                for (int i = 0; i < p.VrTrajectiles.Count; i++)
-                    TrajectilePool.MarkForDeallocate(p.VrTrajectiles[i]);
-
-                if (p.DynamicGuidance)
-                    DynTrees.UnregisterProjectile(p);
-                p.PruningProxyId = -1;
-
-                p.VrTrajectiles.Clear();
-
-                p.T.Clean();
-                ProjectilePool.MarkForDeallocate(p);
-            }
-            CleanUp.Clear();
-            if (ModelClosed)
-                foreach (var e in EntityPool)
-                    e.DeallocateAllMarked();
-
-            TrajectilePool.DeallocateAllMarked();
-            ProjectilePool.DeallocateAllMarked();
         }
     }
 }

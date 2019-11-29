@@ -105,7 +105,7 @@ namespace WeaponCore.Projectiles
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
 
-        internal void Start(Projectiles manager, bool noAv)
+        internal void Start(Projectiles manager)
         {
             Manager = manager;
             Position = T.Origin;
@@ -116,7 +116,7 @@ namespace WeaponCore.Projectiles
             GenerateShrapnel = T.System.Values.Ammo.Shrapnel.Fragments > 0;
             var noSAv = T.IsShrapnel && T.System.Values.Ammo.Shrapnel.NoAudioVisual;
             var probability = T.System.Values.Graphics.VisualProbability;
-            EnableAv = !noAv && !noSAv && DistanceFromCameraSqr <= T.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
+            EnableAv = !T.Ai.Session.DedicatedServer && !noSAv && DistanceFromCameraSqr <= T.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
 
             T.PrimeMatrix = MatrixD.Identity;
             T.TriggerMatrix = MatrixD.Identity;
