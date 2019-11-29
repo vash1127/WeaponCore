@@ -417,7 +417,7 @@ namespace WeaponCore.Projectiles
                 if (vt.System.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(vt.Origin, hitEntity.HitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
-                    vt.UpdateVrShape(beam.To, beam.Direction, beam.Length, ReSize.None);
+                    vt.UpdateShape(beam.To, beam.Direction, beam.Length, ReSize.None);
                 }
                 else
                 {
@@ -430,8 +430,8 @@ namespace WeaponCore.Projectiles
                     var line = new LineD(vt.Origin, beamEnd);
                     //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
                     if (!miss && hitEntity.HitPos.HasValue)
-                        vt.UpdateVrShape(beamEnd, line.Direction, line.Length, ReSize.None);
-                    else vt.UpdateVrShape(line.To, line.Direction, line.Length, ReSize.None);
+                        vt.UpdateShape(beamEnd, line.Direction, line.Length, ReSize.None);
+                    else vt.UpdateShape(line.To, line.Direction, line.Length, ReSize.None);
                 }
                 vt.Complete(hitEntity, DrawState.Hit);
                 drawList.Add(vt);
