@@ -235,7 +235,7 @@ namespace WeaponCore
         {
             var comp = block?.Components?.Get<WeaponComponent>();
 
-            if (comp == null && id == -6) return true;
+            if (comp == null && (id == -6 || id == -5)) return true;
             else if (comp == null) return false;
 
             if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
