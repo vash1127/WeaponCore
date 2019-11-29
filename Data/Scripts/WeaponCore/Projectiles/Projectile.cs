@@ -143,6 +143,7 @@ namespace WeaponCore.Projectiles
             MineTriggered = false;
             T.Cloaked = false;
             HitParticleActive = false;
+            T.OnScreen = true;
             EndStep = 0;
             T.PrevDistanceTraveled = 0;
             T.DistanceTraveled = 0;
@@ -297,7 +298,6 @@ namespace WeaponCore.Projectiles
             FieldTime = T.System.Values.Ammo.Trajectory.FieldTime;
 
             State = !T.System.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
-            T.OnScreen = State != ProjectileState.OneAndDone;
 
             if (T.System.AmmoParticle && EnableAv && !T.System.IsBeamWeapon)
             {
