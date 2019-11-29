@@ -142,18 +142,18 @@ namespace WeaponCore.Support
                 color.Z *= randomValue;
             }
 
-            var width = System.Values.Graphics.Line.Tracer.Width;
-
-            if (System.LineWidthVariance)
-            {
-                var wv = System.Values.Graphics.Line.WidthVariance;
-                var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
-                width += randomValue;
-            }
             Color = color;
 
             if (OnScreen)
             {
+                var width = System.Values.Graphics.Line.Tracer.Width;
+                if (System.LineWidthVariance)
+                {
+                    var wv = System.Values.Graphics.Line.WidthVariance;
+                    var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
+                    width += randomValue;
+                }
+
                 var target = Position + (-Direction * Length);
                 var cameraPos = MyAPIGateway.Session.Camera.Position;
                 ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref cameraPos);
@@ -177,15 +177,6 @@ namespace WeaponCore.Support
             Direction = direction;
             Origin = origin;
             Position = origin;
-        }
-
-        internal void UpdateVrShape(Vector3D position, Vector3D direction, double length, ReSize resizing)
-        {
-            Position = position;
-            Direction = direction;
-            Length = length;
-            ReSizing = resizing;
-            LineStart = position + -(direction * length);
         }
 
         internal void UpdateShape(Vector3D position, Vector3D direction, double length, ReSize resizing)
@@ -224,14 +215,18 @@ namespace WeaponCore.Support
             Length = 0;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
+            LineWidth = 0;
+            ScaleFov = 0;
             EnableGuidance = true;
             GrowDistance = 0;
+            DistanceToLine = 0;
             ReSizing = ReSize.None;
             Draw = DrawState.Default;
             Position = Vector3D.Zero;
             Direction = Vector3D.Zero;
             LineStart = Vector3D.Zero;
             Origin = Vector3D.Zero;
+            ClosestPointOnLine = Vector3D.Zero;
         }
     }
 
