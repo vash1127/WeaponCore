@@ -24,8 +24,12 @@ namespace WeaponCore.Support
 
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
+        internal readonly MyConcurrentPool<HashSet<WeaponComponent>> BlockGroupSet = new MyConcurrentPool<HashSet<WeaponComponent>>();
+
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
+        internal readonly ConcurrentDictionary<string, HashSet<WeaponComponent>> BlockGroups = new ConcurrentDictionary<string, HashSet<WeaponComponent>>();
+
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventories;
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
@@ -56,6 +60,7 @@ namespace WeaponCore.Support
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;
+        internal IMyGridTerminalSystem TerminalSystem;
 
         internal Focus Focus = new Focus(2);
         internal MyEntity MyShieldTmp;
@@ -79,6 +84,7 @@ namespace WeaponCore.Support
         internal long MyOwner;
         internal bool GridInit;
         internal bool DbReady;
+        internal bool ScanBlockGroups = true;
         internal bool ResetPower = true;
         internal bool RecalcPowerPercent;
         internal bool UpdatePowerSources;
@@ -111,8 +117,8 @@ namespace WeaponCore.Support
         internal Vector3 GridVel;
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private readonly FastResourceLock _scanLock = new FastResourceLock();
-        private uint _lastScan;
 
+        private uint _lastScan;
         internal enum TargetType
         {
             Projectile,

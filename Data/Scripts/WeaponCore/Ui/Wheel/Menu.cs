@@ -1,4 +1,11 @@
-﻿using VRage.Utils;
+﻿using System;
+using System.Collections.Generic;
+using Sandbox.Game.Entities;
+using Sandbox.Game.Gui;
+using Sandbox.ModAPI;
+using VRage.Utils;
+using VRageMath;
+using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -28,6 +35,7 @@ namespace WeaponCore
             internal readonly Item[] Items;
             internal readonly int ItemCount;
             internal int CurrentSlot;
+            internal List<CompInfo> Comps;
 
             private string _message;
             public string Message
@@ -72,6 +80,7 @@ namespace WeaponCore
                                         Log.Line("weapon group forward");
                                         break;
                                     default:
+                                        GetCompInfo(item);
                                         break;
                                 }
                             }
@@ -96,6 +105,7 @@ namespace WeaponCore
                                     Log.Line("weapon group backward");
                                     break;
                                 default:
+                                    GetCompInfo(item);
                                     break;
                             }
                         }
@@ -103,11 +113,80 @@ namespace WeaponCore
                 }
             }
 
+            internal void GetCompInfo(Item item)
+            {
+                Log.Line($"GetCompInfo: name: {Name} - CompValid:{Comps != null}");
+                switch (Name)
+                {
+                    case "Add":
+                        if (Comps.Count > 0)
+                        {
+                            var compInfo = Comps[item.SubSlot];
+                            if (!Wheel.Ai.WeaponBase.ContainsKey(compInfo.Comp.MyCube)) break;
+                            FormatCompMessage(compInfo);
+                        }
+                        break;
+                }
+            }
+
+            internal void FormatCompMessage(CompInfo compInfo)
+            {
+                Log.Line("format message");
+                var message = $"testMessage";
+                var gpsName = compInfo.Name;
+                Wheel.Session.SetGpsInfo(compInfo.Comp.MyCube.PositionComp.GetPosition(), gpsName);
+                Message = message;
+            }
+
             internal void LoadInfo()
             {
                 var item = Items[0];
                 item.SubSlot = 0;
+                Log.Line($"LoadInfo");
+                switch (Name)
+                {
+                    case "Add":
+                        Comps = Wheel.Comps;
+                        item.SubSlotCount = Comps.Count;
+                        break;
+                }
+
+                Wheel.Session.ResetGps();
+                GetCompInfo(item);
             }
+
+            internal void CleanUp()
+            {
+                Log.Line("CleanUp");
+                Wheel.Session.RemoveGps();
+                Comps?.Clear();
+            }
+        }
+
+        internal class MenuGroup
+        {
+            internal List<WeaponComponent> GroupComps = new List<WeaponComponent>();
+            internal Dictionary<string, GroupState> GroupSettings = new Dictionary<string, GroupState>()
+            {
+                ["Group Active"] = GroupState.Enabled,
+                ["Target Unarmed"] = GroupState.Enabled,
+                ["Target Neutrals"] = GroupState.Enabled,
+                ["Friendly Fire"] = GroupState.Enabled,
+                ["Manual Aim"] = GroupState.Enabled,
+                ["Manual Fire"] = GroupState.Enabled,
+            };
+
+            internal enum GroupState
+            {
+                Enabled,
+                Disabled,
+            }
+        }
+
+        internal class CompInfo
+        {
+            internal WeaponComponent Comp;
+            internal string Name;
         }
     }
 }

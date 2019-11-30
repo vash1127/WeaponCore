@@ -298,7 +298,7 @@ namespace WeaponCore
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp != null && comp.Platform != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
+            if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
                 var maxTrajectory = 0f;
                 FutureEvents.Schedule(comp.UpdateTerminal, null, 1);

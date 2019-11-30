@@ -16,10 +16,10 @@ namespace WeaponCore
 
         private string _currentMenu = "WeaponGroups";
         internal bool WheelActive;
-        internal readonly List<MenuTarget> Grids = new List<MenuTarget>();
-        internal readonly List<MenuTarget> Characters = new List<MenuTarget>();
-        internal readonly List<MenuTarget> Projectiles = new List<MenuTarget>();
+        internal readonly MenuGroup[] Groups = new MenuGroup[10];
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
+        internal readonly List<CompInfo> Comps = new List<CompInfo>();
+
         internal readonly Session Session;
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
@@ -99,14 +99,7 @@ namespace WeaponCore
             Menus.Add(weaponGroups.Name, weaponGroups);
             Menus.Add(group.Name, group);
             Menus.Add(subSystems.Name, subSystems);
-        }
-
-        internal struct MenuTarget
-        {
-            internal Projectile Projectile;
-            internal MyEntity MyEntity;
-            internal bool OtherArms;
-            internal string Threat;
+            for (int i = 0; i < Groups.Length; i++) Groups[i] = new MenuGroup();
         }
     }
 }

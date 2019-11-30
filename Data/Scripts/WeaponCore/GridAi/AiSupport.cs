@@ -22,8 +22,50 @@ namespace WeaponCore.Support
             if (!UpdateOwner() || Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
             GridCenter = MyGrid.PositionComp.WorldAABB.Center;
             GridRadius = MyGrid.PositionComp.LocalVolume.Radius;
+            if (ScanBlockGroups) ReScanBlockGroups();
             Session.DbsToUpdate.Add(this);
             TargetsUpdatedTick = Session.Tick;
+        }
+
+        private readonly List<Sandbox.ModAPI.Ingame.IMyBlockGroup> _tmpBlockGroups = new List<Sandbox.ModAPI.Ingame.IMyBlockGroup>();
+        private readonly List<Sandbox.ModAPI.Ingame.IMyTerminalBlock> _tmpBlocks = new List<Sandbox.ModAPI.Ingame.IMyTerminalBlock>();
+
+        private void ReScanBlockGroups()
+        {
+            Session.DsUtil2.Start("test");
+            if (TerminalSystem == null)
+                TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
+
+            if (TerminalSystem != null)
+            {
+                foreach (var group in BlockGroups) BlockGroupSet.Return(group.Value);
+                BlockGroups.Clear();
+
+                _tmpBlockGroups.Clear();
+                TerminalSystem.GetBlockGroups(_tmpBlockGroups, group =>
+                {
+                    _tmpBlocks.Clear();
+                    group.GetBlocks(_tmpBlocks, block =>
+                    {
+                        var cube = (MyCubeBlock)block;
+                        return SubGrids.Contains(cube.CubeGrid) && Session.WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId);
+                    });
+                    var foundSomething = _tmpBlocks.Count > 0;
+                    if (foundSomething)
+                    {
+                        BlockGroups.TryAdd(group.Name, BlockGroupSet.Get());
+                        foreach (var block in _tmpBlocks)
+                        {
+                            var cube = (MyCubeBlock)block;
+                            BlockGroups[group.Name].Add(Session.GridTargetingAIs[cube.CubeGrid].WeaponBase[cube]);
+                        }
+                    }
+                    return foundSomething;
+                });
+                ScanBlockGroups = false;
+            }
+            else Log.Line($"terminal system was null: {MyGrid.DebugName}");
+            Session.DsUtil2.Complete("test", false, true);
         }
 
         private bool UpdateOwner()

@@ -3,10 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.Gui;
+using Sandbox.Game.GUI.HudViewers;
+using Sandbox.Graphics.GUI;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Input;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -21,7 +25,10 @@ namespace WeaponCore
             var s = Session;
             if (s.UiInput.MouseButtonPressed)
             {
-                if (s.UiInput.MouseButtonMiddle && ChangeState == State.Open) OpenWheel();
+                if (s.UiInput.MouseButtonMiddle && ChangeState == State.Open)
+                {
+                    OpenWheel();
+                }
                 else if (s.UiInput.MouseButtonMiddle && ChangeState == State.Close) CloseWheel();
             }
             else
@@ -146,6 +153,14 @@ namespace WeaponCore
 
         internal void UpdateState(Menu oldMenu)
         {
+            Log.Line("Update State");
+            oldMenu.CleanUp();
+            Comps.Clear();
+            foreach (var comp in Ai.WeaponBase.Values)
+            {
+                var compInfo = new CompInfo { Comp = comp, Name = comp.MyCube.DisplayNameText };
+                Comps.Add(compInfo);
+            }
             var menu = Menus[_currentMenu];
             if (menu.ItemCount <= 1) menu.LoadInfo();
         }

@@ -72,19 +72,19 @@ namespace WeaponCore.Support
 
             for (int i = 0; i < adjTargetCount; i++)
             {
-                var info = ai.SortedTargets[i];
                 var focusTarget = hasOffset && i < offset;
                 var lastOffset = offset - 1;
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && i > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue;
 
+                TargetInfo info;
+                if (i == 0 && alphaInfo != null) info = alphaInfo;
+                else if (i <= lastOffset && betaInfo != null) info = betaInfo;
+                else info = ai.SortedTargets[i - offset];
+
+                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && i > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue;
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
 
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr) continue;
-
-                if (i == 0 && alphaInfo != null) info = alphaInfo;
-                else if (i <= lastOffset && betaInfo != null) info = betaInfo;
-                else info = ai.SortedTargets[i - offset];
 
                 if (!focusTarget && info.OffenseRating <= 0 || Obstruction(ref info, ref targetPos, p))
                     continue;

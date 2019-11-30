@@ -90,9 +90,8 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
 
-                TargetSelection();
-
-                PTask = MyAPIGateway.Parallel.Start(Projectiles.Update);
+                if (!WheelUi.WheelActive) TargetSelection();
+                PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
@@ -117,7 +116,12 @@ namespace WeaponCore
                 DsUtil.Start("projectiles");
 
                 if (!PTask.IsComplete)
-                    PTask.Wait();
+                {
+                    Log.Line($"PTaskNotComplete: {Projectiles.Updated}");
+                    PTask.Wait(true);
+                    Log.Line($"PTaskCompleted: {Projectiles.Updated}");
+                }
+                else if (!Projectiles.Updated) Log.Line("PTask lied");
 
                 if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
                     TaskHasErrors(ref PTask, "PTask");
