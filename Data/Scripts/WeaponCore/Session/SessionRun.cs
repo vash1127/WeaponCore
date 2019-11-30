@@ -221,6 +221,7 @@ namespace WeaponCore
             MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
+            ApiServer.Unload();
 
             PurgeAll();
 

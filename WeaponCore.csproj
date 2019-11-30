@@ -42,6 +42,10 @@
     <None Include="Data\EntityComponents.sbc" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Data\Scripts\WeaponCore\Api\ApiServer.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Api\ClientApi.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Api\PbApiWrapper.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\PartAnimation.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\UpgradeDefinitions.cs" />

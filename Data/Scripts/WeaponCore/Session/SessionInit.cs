@@ -65,6 +65,8 @@ namespace WeaponCore
             }
 
             CheckDirtyGrids();
+            ApiServer = new ApiServer(this);
+            ApiServer.Load();
         }
 
         internal void Init()

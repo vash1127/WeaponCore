@@ -443,6 +443,8 @@ namespace WeaponCore
             TargetGps = null;
             SApi.Unload();
             SApi = null;
+            Api = null;
+            ApiServer = null;
             AnimationsToProcess = null;
 
             ProjectileTree.Clear();
