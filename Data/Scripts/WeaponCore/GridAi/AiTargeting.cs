@@ -88,12 +88,11 @@ namespace WeaponCore.Support
 
                 if (!focusTarget && info.OffenseRating <= 0 || Obstruction(ref info, ref targetPos, p))
                     continue;
-
                 if (info.IsGrid && s.TrackGrids)
                 {
                     if (!focusTarget && info.FatCount < 2) continue;
 
-                    if (!AcquireBlock(p.T.System, p.T.Ai, p.T.Target, info, weaponPos)) continue;
+                    if (!AcquireBlock(p.T.System, p.T.Ai, p.T.Target, info, weaponPos, null, !focusTarget)) continue;
                     return true;
                 }
 
@@ -240,7 +239,7 @@ namespace WeaponCore.Support
             else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
         }
         
-        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null)
+        private static bool AcquireBlock(WeaponSystem system, GridAi ai, Target target, TargetInfo info, Vector3D weaponPos, Weapon w = null, bool checkPower = true)
         {
             if (system.TargetSubSystems)
             {
@@ -261,9 +260,9 @@ namespace WeaponCore.Support
                                 target.Top5.Clear();
 
                             target.LastBlockType = bt;
-                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w)) return true;
+                            if (GetClosestHitableBlockOfType(subSystemList, ai, target, weaponPos, targetLinVel, targetAccel, system, w, checkPower)) return true;
                         }
-                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w)) return true;
+                        else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, checkPower)) return true;
                     }
                 }
 
@@ -271,10 +270,10 @@ namespace WeaponCore.Support
             }
             FatMap fatMap;
             ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap);
-            return fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w);
+            return fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, checkPower);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, MyConcurrentList<MyCubeBlock> subSystemList, Weapon w)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, MyConcurrentList<MyCubeBlock> subSystemList, Weapon w, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -321,7 +320,7 @@ namespace WeaponCore.Support
                 var card = deck[i];
                 var block = subSystemList[card];
 
-                if (!(block is IMyTerminalBlock) || block.MarkedForClose || !block.IsWorking) continue;
+                if (!(block is IMyTerminalBlock) || block.MarkedForClose || checkPower && !block.IsWorking) continue;
 
                 ai.Session.BlockChecks++;
 
@@ -388,7 +387,7 @@ namespace WeaponCore.Support
             return foundBlock;
         }
 
-        internal static bool GetClosestHitableBlockOfType(MyConcurrentList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null)
+        internal static bool GetClosestHitableBlockOfType(MyConcurrentList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null, bool checkPower = true)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;
@@ -415,7 +414,7 @@ namespace WeaponCore.Support
                 var cube = i < top5Count ? top5[index] : cubes[index];
 
                 var grid = cube.CubeGrid;
-                if (cube.MarkedForClose || !cube.IsWorking || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
+                if (cube.MarkedForClose || checkPower && !cube.IsWorking || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);

@@ -116,11 +116,7 @@ namespace WeaponCore
                 DsUtil.Start("projectiles");
 
                 if (!PTask.IsComplete)
-                {
-                    Log.Line($"PTaskNotComplete: {Projectiles.Updated}");
                     PTask.Wait(true);
-                    Log.Line($"PTaskCompleted: {Projectiles.Updated}");
-                }
                 else if (!Projectiles.Updated) Log.Line("PTask lied");
 
                 if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
