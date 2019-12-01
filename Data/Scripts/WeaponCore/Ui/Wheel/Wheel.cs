@@ -153,7 +153,6 @@ namespace WeaponCore
 
         internal void UpdateState(Menu oldMenu)
         {
-            Log.Line("Update State");
             oldMenu.CleanUp();
             GroupNames.Clear();
             foreach (var group in Ai.BlockGroups)
@@ -167,6 +166,8 @@ namespace WeaponCore
                 var compInfo = new CompInfo { Comp = comp, Name = comp.MyCube.DisplayNameText };
                 Comps.Add(compInfo);
             }
+            Log.Line($"Update State: Groups:{GroupNames.Count} - Comps:{Comps.Count} - Menu:{_currentMenu}");
+
             var menu = Menus[_currentMenu];
             if (menu.ItemCount <= 1) menu.LoadInfo();
         }
