@@ -145,7 +145,10 @@ namespace WeaponCore
             GroupNames.Clear();
 
             foreach (var group in BlockGroups)
+            {
+                group.Clear();
                 GroupPool.Return(group);
+            }
             BlockGroups.Clear();
 
             foreach (var group in Ai.BlockGroups)
@@ -153,6 +156,7 @@ namespace WeaponCore
                 var groupName = group.Key;
                 GroupNames.Add(groupName);
                 var groupList = GroupPool.Get();
+                Log.Line($"{group.Value.Count}");
                 foreach (var comp in group.Value)
                 {
                     var groupInfo = new GroupInfo { Comps = comp, Title = groupName };

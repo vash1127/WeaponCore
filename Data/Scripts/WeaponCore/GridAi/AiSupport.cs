@@ -34,7 +34,11 @@ namespace WeaponCore.Support
 
             if (TerminalSystem != null)
             {
-                foreach (var group in BlockGroups) BlockGroupSet.Return(group.Value);
+                foreach (var group in BlockGroups)
+                {
+                    group.Value.Clear();
+                    BlockGroupSet.Return(group.Value);
+                }
                 BlockGroups.Clear();
                 
                 TerminalSystem.GetBlockGroups(null, group =>

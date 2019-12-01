@@ -176,7 +176,7 @@ namespace WeaponCore
                         break;
                     case "Weapons":
                         BlockGroups = Wheel.BlockGroups;
-                        item.SubSlotCount = BlockGroups.Count;
+                        item.SubSlotCount = BlockGroups[Wheel.ActiveGroupId].Count;
                         break;
                 }
 
