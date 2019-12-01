@@ -202,7 +202,7 @@ namespace WeaponCore.Support
 
         public override bool IsSerialized()
         {
-            if (_isServer)
+            if (_isServer && Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
                 if (IsSorterTurret)
                 {
