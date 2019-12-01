@@ -23,7 +23,7 @@ namespace WeaponCore.Support
             w.TargetCheckTick = tick;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
             var targetType = TargetType.None;
-
+            
             if (w.SleepTargets)
             {
                 if (w.Comp.Ai.BlockCount != w.LastBlockCount && tick - w.LastTargetTick > 300)

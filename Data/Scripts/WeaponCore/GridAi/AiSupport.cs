@@ -36,7 +36,7 @@ namespace WeaponCore.Support
             {
                 foreach (var group in BlockGroups) BlockGroupSet.Return(group.Value);
                 BlockGroups.Clear();
-
+                
                 TerminalSystem.GetBlockGroups(null, group =>
                 {
                     HashSet<WeaponComponent> customGroup = null;

@@ -12,9 +12,17 @@ namespace WeaponCore
 {
     internal partial class Wheel
     {
+
+        internal struct GroupInfo
+        {
+            internal string Title;
+            internal WeaponComponent Comps;
+        }
+
         internal class Item
         {
             internal MyStringId Texture;
+            internal GroupInfo GroupInfo;
             internal string ItemMessage;
             internal string SubName;
             internal string ParentName;
@@ -35,8 +43,8 @@ namespace WeaponCore
             internal readonly Item[] Items;
             internal readonly int ItemCount;
             internal int CurrentSlot;
-            internal List<CompInfo> Comps;
             internal List<string> GroupNames;
+            internal List<List<GroupInfo>> BlockGroups;
 
             private string _message;
             public string Message
@@ -128,22 +136,23 @@ namespace WeaponCore
                             FormatGroupMessage(groupName);
                         }
                         break;
-                    case "Add":
-                        if (Comps.Count > 0)
+                    case "Weapons":
+                        if (BlockGroups.Count > 0)
                         {
-                            var compInfo = Comps[item.SubSlot];
-                            if (!Wheel.Ai.WeaponBase.ContainsKey(compInfo.Comp.MyCube)) break;
-                            FormatCompMessage(compInfo);
+                            var groupInfo = BlockGroups[Wheel.ActiveGroupId][item.SubSlot];
+                            HashSet<WeaponComponent> weaponGroup;
+                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupInfo.Title, out weaponGroup)) break;
+                            FormatWeaponMessage(groupInfo);
                         }
                         break;
                 }
             }
 
-            internal void FormatCompMessage(CompInfo compInfo)
+            internal void FormatWeaponMessage(GroupInfo groupInfo)
             {
-                var message = $"testMessage";
-                var gpsName = compInfo.Name;
-                Wheel.Session.SetGpsInfo(compInfo.Comp.MyCube.PositionComp.GetPosition(), gpsName);
+                var message = groupInfo.Title;
+                var gpsName = groupInfo.Comps.MyCube.DisplayNameText;
+                Wheel.Session.SetGpsInfo(groupInfo.Comps.MyCube.PositionComp.GetPosition(), gpsName);
                 Message = message;
             }
 
@@ -165,9 +174,9 @@ namespace WeaponCore
                         GroupNames = Wheel.GroupNames;
                         item.SubSlotCount = GroupNames.Count;
                         break;
-                    case "Add":
-                        Comps = Wheel.Comps;
-                        item.SubSlotCount = Comps.Count;
+                    case "Weapons":
+                        BlockGroups = Wheel.BlockGroups;
+                        item.SubSlotCount = BlockGroups.Count;
                         break;
                 }
 
@@ -179,34 +188,9 @@ namespace WeaponCore
             {
                 Log.Line("CleanUp");
                 Wheel.Session.RemoveGps();
-                Comps?.Clear();
+                GroupNames?.Clear();
+                BlockGroups?.Clear();
             }
-        }
-
-        internal class MenuGroup
-        {
-            internal List<WeaponComponent> GroupComps = new List<WeaponComponent>();
-            internal Dictionary<string, GroupState> GroupSettings = new Dictionary<string, GroupState>()
-            {
-                ["Group Active"] = GroupState.Enabled,
-                ["Target Unarmed"] = GroupState.Enabled,
-                ["Target Neutrals"] = GroupState.Enabled,
-                ["Friendly Fire"] = GroupState.Enabled,
-                ["Manual Aim"] = GroupState.Enabled,
-                ["Manual Fire"] = GroupState.Enabled,
-            };
-
-            internal enum GroupState
-            {
-                Enabled,
-                Disabled,
-            }
-        }
-
-        internal struct CompInfo
-        {
-            internal WeaponComponent Comp;
-            internal string Name;
         }
     }
 }

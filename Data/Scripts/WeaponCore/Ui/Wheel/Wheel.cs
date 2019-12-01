@@ -1,16 +1,9 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
-using Sandbox.Game.Gui;
-using Sandbox.Game.GUI.HudViewers;
-using Sandbox.Graphics.GUI;
 using Sandbox.ModAPI;
-using VRage.Collections;
 using VRage.Game;
 using VRage.Input;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -44,6 +37,11 @@ namespace WeaponCore
                     var item = GetCurrentMenuItem();
                     if (item.SubName != null)
                     {
+                        if (_currentMenu == "WeaponGroups")
+                        {
+                            ActiveGroupId = item.SubSlot;
+                            Log.Line($"ACtiveGroupId:{ActiveGroupId}");
+                        }
                         _currentMenu = item.SubName;
                         UpdateState(menu);
                     }
@@ -145,18 +143,23 @@ namespace WeaponCore
         {
             oldMenu.CleanUp();
             GroupNames.Clear();
+
+            foreach (var group in BlockGroups)
+                GroupPool.Return(group);
+            BlockGroups.Clear();
+
             foreach (var group in Ai.BlockGroups)
             {
                 var groupName = group.Key;
                 GroupNames.Add(groupName);
+                var groupList = GroupPool.Get();
+                foreach (var comp in group.Value)
+                {
+                    var groupInfo = new GroupInfo { Comps = comp, Title = groupName };
+                    groupList.Add(groupInfo);
+                }
+                BlockGroups.Add(groupList);
             }
-
-            foreach (var comp in Ai.WeaponBase.Values)
-            {
-                var compInfo = new CompInfo { Comp = comp, Name = comp.MyCube.DisplayNameText };
-                Comps.Add(compInfo);
-            }
-            Log.Line($"Update State: Groups:{GroupNames.Count} - Comps:{Comps.Count} - Menu:{_currentMenu}");
 
             var menu = Menus[_currentMenu];
             if (menu.ItemCount <= 1) menu.LoadInfo();
