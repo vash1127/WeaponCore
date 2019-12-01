@@ -152,11 +152,11 @@ namespace WeaponCore
         private void UpdateWeaponPlatforms()
         {
             if (!GameLoaded) return;
-            if (!DbsUpdating && DbsToUpdate.Count > 0) UpdateDbsInQueue();
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-                if (!DbsUpdating && Tick - gridAi.TargetsUpdatedTick > 100) gridAi.RequestDbUpdate();
+                if (Tick - gridAi.TargetsUpdatedTick > 100 && DbTask.IsComplete && gridAi.UpdateOwner())
+                    gridAi.RequestDbUpdate();
 
                 if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit || gridAi.MyGrid.MarkedForClose) continue;
 
@@ -285,6 +285,8 @@ namespace WeaponCore
                     gridAi.RecalcDone = false;
                 }
             }
+
+            if (DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
         }
     }
 }

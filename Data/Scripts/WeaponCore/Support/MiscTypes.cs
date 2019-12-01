@@ -44,7 +44,6 @@ namespace WeaponCore.Support
         internal bool AmmoSound;
         internal bool HasTravelSound;
         internal bool HitSoundActive;
-        internal float AmmoTravelSoundRangeSqr;
 
         internal WeaponSystem System;
         internal GridAi Ai;
@@ -93,7 +92,6 @@ namespace WeaponCore.Support
         internal void SetupSounds(double distanceFromCameraSqr)
         {
             FiringSoundState = System.FiringSound;
-            AmmoTravelSoundRangeSqr = System.AmmoTravelSoundDistSqr;
 
             if (!System.IsBeamWeapon && System.AmmoTravelSound)
             {
@@ -365,7 +363,9 @@ namespace WeaponCore.Support
         private bool _start;
         private uint _startTick;
         private int _miss;
+        private bool _idle;
         private Vector3D _endPos = Vector3D.MinValue;
+
         internal bool Cached(LineD lineTest)
         {
             double dist;
@@ -373,32 +373,38 @@ namespace WeaponCore.Support
 
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
             _start = thisTick - LastTick > 1 || dist > 5;
+
+            //Log.Line($"Miss:{_miss} - LastTickGo:{thisTick - LastTick} - runTime: {thisTick - _startTick} - Tick:{thisTick} - Dist:{dist} - start:{_start}");
+            if (thisTick - LastTick > 1) Log.Line($"Cached miss");
             LastTick = thisTick;
+
 
             if (_start)
             {
                 _startTick = thisTick;
                 _endPos = lineTest.To;
-                _miss = 0;
             }
 
             var runTime = thisTick - _startTick;
 
-            if (_miss > 2)
+            var fastPath = runTime > 59;
+            var useCache = runTime > 60;
+            if (fastPath)
             {
-                if (runTime > 119 && _miss % 120 == 0)
-                    _miss = 0;
+                if (_miss > 1)
+                {
+                    if (_idle && _miss % 120 == 0) _idle = false;
+                    else _idle = true;
 
-                return true;
-            }
+                    //Log.Line($"idle:{_idle} - miss:{_miss} - runtime:{runTime} - {_idle} - {thisTick}");
+                    return _idle;
+                }
 
-            if (runTime > 59)
-            {
                 RequestTick = thisTick;
                 MyAPIGateway.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, CollisionLayers.VoxelCollisionLayer, Results);
             }
 
-            return runTime > 60;
+            return useCache;
         }
 
         internal void Results(IHitInfo info)

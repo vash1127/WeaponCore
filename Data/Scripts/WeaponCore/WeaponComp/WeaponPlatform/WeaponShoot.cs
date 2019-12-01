@@ -146,8 +146,6 @@ namespace WeaponCore.Platform
                         MyEntity primeE = null;
                         MyEntity triggerE = null;
 
-                        Trajectile t;
-                        session.Projectiles.TrajectilePool.AllocateOrCreate(out t);
                         if (System.PrimeModelId != -1)
                         {
                             MyEntity ent;
@@ -167,6 +165,8 @@ namespace WeaponCore.Platform
                             triggerE = ent;
                         }
 
+                        Trajectile t;
+                        session.Projectiles.TrajectilePool.AllocateOrCreate(out t);
                         t.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                         vProjectile.VrTrajectiles.Add(t);
 

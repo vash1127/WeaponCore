@@ -81,7 +81,6 @@ namespace WeaponCore.Support
         internal uint ResetPowerTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
-        internal int DbUpdating;
         internal int SourceCount;
         internal int ManualComps;
         internal int BlockCount;

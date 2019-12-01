@@ -14,7 +14,6 @@ namespace WeaponCore
     {
         public void UpdateDbsInQueue()
         {
-            DbsUpdating = true;
             if (DbTask.IsComplete && DbTask.valid && DbTask.Exceptions != null)
                 TaskHasErrors(ref DbTask, "DbTask");
 
@@ -100,10 +99,8 @@ namespace WeaponCore
                 if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();
 
                 db.FirstRun = false;
-                Interlocked.Exchange(ref db.DbUpdating, 0);
             }
             DbsToUpdate.Clear();
-            DbsUpdating = false;
             DsUtil.Complete("db", true);
         }
 

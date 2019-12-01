@@ -114,7 +114,6 @@ namespace WeaponCore.Projectiles
                                 {
                                     using (voxel.Pin())
                                     {
-                                        //Log.Line("slow check");
                                         voxel.GetIntersectionWithLine(ref beam, out voxelHit);
                                     }
                                 }

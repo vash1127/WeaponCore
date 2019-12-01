@@ -330,7 +330,6 @@ namespace WeaponCore.Projectiles
                             }
                             else if (!T.WeaponCache.VoxelHits[T.WeaponId].Cached(lineTest))
                             {
-                                //Log.Line("query");
                                 CheckPlanet = true;
                             }
                             else CachedPlanetHit = true;

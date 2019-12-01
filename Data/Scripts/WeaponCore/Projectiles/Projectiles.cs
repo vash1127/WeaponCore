@@ -66,13 +66,16 @@ namespace WeaponCore.Projectiles
             {
                 var p = CleanUp[j];
                 for (int i = 0; i < p.VrTrajectiles.Count; i++)
-                    TrajectilePool.MarkForDeallocate(p.VrTrajectiles[i]);
+                {
+                    var virtTrajectile = p.VrTrajectiles[i];
+                    virtTrajectile.Clean();
+                    TrajectilePool.MarkForDeallocate(virtTrajectile);
+                }
+                p.VrTrajectiles.Clear();
 
                 if (p.DynamicGuidance)
                     DynTrees.UnregisterProjectile(p);
                 p.PruningProxyId = -1;
-
-                p.VrTrajectiles.Clear();
 
                 p.T.Clean();
                 ProjectilePool.MarkForDeallocate(p);

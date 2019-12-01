@@ -19,7 +19,6 @@ namespace WeaponCore.Support
     {
         internal void RequestDbUpdate()
         {
-            if (!UpdateOwner() || Interlocked.CompareExchange(ref DbUpdating, 1, 1) == 1) return;
             GridCenter = MyGrid.PositionComp.WorldAABB.Center;
             GridRadius = MyGrid.PositionComp.LocalVolume.Radius;
             Session.DbsToUpdate.Add(this);
@@ -80,7 +79,7 @@ namespace WeaponCore.Support
             return false;
         }
 
-        private bool UpdateOwner()
+        internal bool UpdateOwner()
         {
             if (MyGrid == null || !MyGrid.InScene || MyGrid.MarkedForClose)
                 return false;

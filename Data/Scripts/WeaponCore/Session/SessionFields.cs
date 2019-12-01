@@ -106,7 +106,6 @@ namespace WeaponCore
         internal ApiServer ApiServer;
 
         internal object InitObj = new object();
-        internal bool DbsUpdating;
         internal bool HighLoad;
         internal double Load;
         internal uint Tick;

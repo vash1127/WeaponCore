@@ -30,7 +30,7 @@ namespace WeaponCore
                     {
                         double dist;
                         Vector3D.DistanceSquared(ref t.Position, ref CameraPos, out dist);
-                        if (dist <= t.AmmoTravelSoundRangeSqr) t.AmmoSoundStart();
+                        if (dist <= t.System.AmmoTravelSoundDistSqr) t.AmmoSoundStart();
                     }
                     else t.TravelEmitter.SetPosition(t.Position);
                 }
