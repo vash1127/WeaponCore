@@ -815,7 +815,7 @@ namespace WeaponCore.Support
             var needShift = _slotId != displayCount;
             var shiftSize = _canShift && needShift ? -(slotSpacing * (_slotId - displayCount)) : 0;
             var position = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y, 0);
-            var altPosition = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y - 1.25, 0);
+            var altPosition = new Vector3D(_screenPosition.X + shiftSize - (index * 0.45), _screenPosition.Y - 0.75, 0);
 
             double aspectratio = MyAPIGateway.Session.Camera.ViewportSize.X / MyAPIGateway.Session.Camera.ViewportSize.Y;
 

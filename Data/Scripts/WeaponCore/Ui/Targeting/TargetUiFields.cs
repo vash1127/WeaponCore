@@ -18,16 +18,16 @@ namespace WeaponCore
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
         private readonly MyStringId _focusSecondary = MyStringId.GetOrCompute("DS_TargetFocusSecondary");
-
         private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
-
+        private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
+        private readonly Session _session;
+        private readonly List<MyEntity> _targetCache = new List<MyEntity>();
+
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.25f);
         private Color _reticleColor = Color.White;
-        private readonly Vector2 _targetDrawPosition = new Vector2(0, 0.25f);
-        private readonly Session _session;
-        private readonly List<MyEntity> _targetCache = new List<MyEntity>();
+
         private readonly Dictionary<string, IconInfo[]> _targetIcons = new Dictionary<string, IconInfo[]>()
         {
             {"size", new[] {

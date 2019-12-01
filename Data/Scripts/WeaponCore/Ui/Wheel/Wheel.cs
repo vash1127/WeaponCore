@@ -94,7 +94,11 @@ namespace WeaponCore
         {
             WheelActive = true;
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
-            if (_currentMenu == string.Empty) _currentMenu = "WeaponGroups";
+            if (string.IsNullOrEmpty(_currentMenu))
+            {
+                _currentMenu = "WeaponGroups";
+                UpdateState(GetCurrentMenu());
+            }
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
@@ -118,23 +122,9 @@ namespace WeaponCore
         internal void SetCurrentMessage()
         {
             var currentMessage = GetCurrentMenu().Message;
-            string name = string.Empty;
-            var ai = Session.TrackingAi;
-            if (ai?.Focus.Target[ai.Focus.ActiveId] != null)
-            {
-                name = Session.TrackingAi.Focus.Target[ai.Focus.ActiveId].DisplayName;
-                var nameLen = 30;
-                name = name.Replace("[", "(");
-                name = name.Replace("]", ")");
-                if (name.Length > nameLen) name = name.Substring(0, nameLen);
-                name = $"[{name}\n";
-            }
-
 
             if (currentMessage == string.Empty)
                 currentMessage = GetCurrentMenu().CurrentItemMessage();
-
-            currentMessage = name + currentMessage;
 
             HudNotify.Text = currentMessage;
             HudNotify.Show();

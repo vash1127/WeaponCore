@@ -615,7 +615,7 @@ namespace WeaponCore.Support
                 var dir = (targetPos - p.Position);
                 if (voxel != null)
                 {
-                    //if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
+                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
                     {
                         var dirNorm = Vector3D.Normalize(dir);
                         var targetDist = Vector3D.Distance(p.Position, targetPos);
@@ -626,7 +626,7 @@ namespace WeaponCore.Support
                         var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                         var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
 
-                        //if (obb.Intersects(ref lineTest) != null)
+                        if (obb.Intersects(ref lineTest) != null)
                             using (voxel.Pin())
                             {
                                 voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);

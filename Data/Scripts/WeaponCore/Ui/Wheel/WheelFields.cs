@@ -14,7 +14,7 @@ namespace WeaponCore
     {
         private readonly Vector2D _wheelPosition = new Vector2D(0, 0);
 
-        private string _currentMenu = "WeaponGroups";
+        private string _currentMenu;
         internal bool WheelActive;
         internal readonly MenuGroup[] Groups = new MenuGroup[10];
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();

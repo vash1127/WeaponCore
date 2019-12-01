@@ -116,7 +116,6 @@ namespace WeaponCore
 
             internal void GetInfo(Item item)
             {
-                Log.Line($"GetInfo: name: {Name} - Groups:{GroupNames.Count} - Comps:{Comps.Count}");
                 switch (Name)
                 {
                     case "WeaponGroups":
@@ -142,7 +141,6 @@ namespace WeaponCore
 
             internal void FormatCompMessage(CompInfo compInfo)
             {
-                Log.Line("format message");
                 var message = $"testMessage";
                 var gpsName = compInfo.Name;
                 Wheel.Session.SetGpsInfo(compInfo.Comp.MyCube.PositionComp.GetPosition(), gpsName);
@@ -151,9 +149,8 @@ namespace WeaponCore
 
             internal void FormatGroupMessage(string groupName)
             {
-                Log.Line("format message");
                 var message = groupName;
-                Wheel.Session.SetGpsInfo(Wheel.Ai.GridCenter, groupName);
+                //Wheel.Session.SetGpsInfo(Wheel.Ai.GridCenter, groupName);
                 Message = message;
             }
 
