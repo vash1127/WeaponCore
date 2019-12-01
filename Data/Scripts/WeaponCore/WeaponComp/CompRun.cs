@@ -208,7 +208,6 @@ namespace WeaponCore.Support
                 {
                     if (SorterBase?.Storage != null)
                     {
-                        Log.Line($"[Sorter] State:{State != null} - Set:{Set != null}");
                         State.SaveState();
                         Set.SaveSettings();
                     }
@@ -217,7 +216,6 @@ namespace WeaponCore.Support
                 {
                     if (MissileBase?.Storage != null)
                     {
-                        Log.Line($"[MissileBase] State:{State != null} - Set:{Set != null}");
                         State.SaveState();
                         Set.SaveSettings();
                     }

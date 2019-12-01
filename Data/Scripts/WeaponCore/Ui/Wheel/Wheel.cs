@@ -155,7 +155,13 @@ namespace WeaponCore
         {
             Log.Line("Update State");
             oldMenu.CleanUp();
-            Comps.Clear();
+            GroupNames.Clear();
+            foreach (var group in Ai.BlockGroups)
+            {
+                var groupName = group.Key;
+                GroupNames.Add(groupName);
+            }
+
             foreach (var comp in Ai.WeaponBase.Values)
             {
                 var compInfo = new CompInfo { Comp = comp, Name = comp.MyCube.DisplayNameText };

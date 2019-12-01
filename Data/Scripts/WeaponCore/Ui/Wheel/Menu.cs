@@ -36,6 +36,7 @@ namespace WeaponCore
             internal readonly int ItemCount;
             internal int CurrentSlot;
             internal List<CompInfo> Comps;
+            internal List<string> GroupNames;
 
             private string _message;
             public string Message
@@ -77,10 +78,10 @@ namespace WeaponCore
                                 switch (Name)
                                 {
                                     case "WeaponGroups":
-                                        Log.Line("weapon group forward");
+                                        GetInfo(item);
                                         break;
                                     default:
-                                        GetCompInfo(item);
+                                        GetInfo(item);
                                         break;
                                 }
                             }
@@ -102,10 +103,10 @@ namespace WeaponCore
                             switch (Name)
                             {
                                 case "WeaponGroups":
-                                    Log.Line("weapon group backward");
+                                    GetInfo(item);
                                     break;
                                 default:
-                                    GetCompInfo(item);
+                                    GetInfo(item);
                                     break;
                             }
                         }
@@ -113,11 +114,21 @@ namespace WeaponCore
                 }
             }
 
-            internal void GetCompInfo(Item item)
+            internal void GetInfo(Item item)
             {
-                Log.Line($"GetCompInfo: name: {Name} - CompValid:{Comps != null}");
+                Log.Line($"GetCompInfo: name: {Name}");
                 switch (Name)
                 {
+                    case "WeaponGroups":
+                        if (GroupNames.Count > 0)
+                        {
+                            var groupName = GroupNames[item.SubSlot];
+
+                            HashSet<WeaponComponent> weaponGroup;
+                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupName, out weaponGroup)) break;
+                            FormatGroupMessage(groupName);
+                        }
+                        break;
                     case "Add":
                         if (Comps.Count > 0)
                         {
@@ -138,6 +149,14 @@ namespace WeaponCore
                 Message = message;
             }
 
+            internal void FormatGroupMessage(string groupName)
+            {
+                Log.Line("format message");
+                var message = $"testMessage";
+                Wheel.Session.SetGpsInfo(Wheel.Ai.GridCenter, groupName);
+                Message = message;
+            }
+
             internal void LoadInfo()
             {
                 var item = Items[0];
@@ -145,6 +164,10 @@ namespace WeaponCore
                 Log.Line($"LoadInfo");
                 switch (Name)
                 {
+                    case "WeaponGroups":
+                        GroupNames = Wheel.GroupNames;
+                        item.SubSlotCount = GroupNames.Count;
+                        break;
                     case "Add":
                         Comps = Wheel.Comps;
                         item.SubSlotCount = Comps.Count;
@@ -152,7 +175,7 @@ namespace WeaponCore
                 }
 
                 Wheel.Session.ResetGps();
-                GetCompInfo(item);
+                GetInfo(item);
             }
 
             internal void CleanUp()
@@ -183,7 +206,7 @@ namespace WeaponCore
             }
         }
 
-        internal class CompInfo
+        internal struct CompInfo
         {
             internal WeaponComponent Comp;
             internal string Name;

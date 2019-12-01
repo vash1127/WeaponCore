@@ -19,6 +19,8 @@ namespace WeaponCore
         internal readonly MenuGroup[] Groups = new MenuGroup[10];
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
         internal readonly List<CompInfo> Comps = new List<CompInfo>();
+        internal readonly List<string> GroupNames = new List<string>();
+        internal readonly List<HashSet<WeaponComponent>> BlockGroups = new List<HashSet<WeaponComponent>>();
 
         internal readonly Session Session;
         internal GridAi Ai;
@@ -53,16 +55,7 @@ namespace WeaponCore
 
         internal readonly Item[] WeaponGroupItems =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_0"), ItemMessage = "Group 1]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_1"), ItemMessage = "Group 2]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_2"), ItemMessage = "Group 3]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_3"), ItemMessage = "Group 4]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_4"), ItemMessage = "Group 5]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_5"), ItemMessage = "Group 6]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_6"), ItemMessage = "Group 7]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_7"), ItemMessage = "Group 8]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_8"), ItemMessage = "Group 9]", SubName = "Group"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Group_Wheel_9"), ItemMessage = "Group 10]", SubName = "Group"},
+            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Weapon Groups]", SubName = "Group"},
         };
 
         internal enum State

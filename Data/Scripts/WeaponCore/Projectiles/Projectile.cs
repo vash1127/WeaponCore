@@ -243,7 +243,7 @@ namespace WeaponCore.Projectiles
             PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
 
             PruneQuery = DynamicGuidance || T.Ai.ShieldNear ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
-            if (T.Ai.StaticEntitiesInRange && !DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic)
+            if (T.Ai.StaticEntitiesInRange)
                 StaticEntCheck();
             else CheckPlanet = false;
 
@@ -308,7 +308,8 @@ namespace WeaponCore.Projectiles
         internal void StaticEntCheck()
         {
             var ai = T.Ai;
-            CheckPlanet = false;
+            CheckPlanet = ai.PlanetSurfaceInRange && DynamicGuidance;
+
             for (int i = 0; i < T.Ai.StaticsInRange.Count; i++)
             {
                 var staticEnt = ai.StaticsInRange[i];
