@@ -35,16 +35,6 @@ namespace WeaponCore
             return false;
         }
 
-        private void PlayerReleasedControl()
-        {
-            UpdateLocalAiAndCockpit();
-        }
-
-        private void PlayerAcquiredControl()
-        {
-            UpdateLocalAiAndCockpit();
-        }
-
         private void UpdatePlacer()
         {
             if (!Placer.Visible) Placer = null;

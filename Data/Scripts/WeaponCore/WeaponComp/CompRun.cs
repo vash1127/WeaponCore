@@ -202,20 +202,22 @@ namespace WeaponCore.Support
 
         public override bool IsSerialized()
         {
-            if (MyAPIGateway.Multiplayer.IsServer)
+            if (_isServer)
             {
                 if (IsSorterTurret)
                 {
-                    if (SorterBase.Storage != null)
+                    if (SorterBase?.Storage != null)
                     {
+                        Log.Line($"[Sorter] State:{State != null} - Set:{Set != null}");
                         State.SaveState();
                         Set.SaveSettings();
                     }
                 }
                 else
                 {
-                    if (MissileBase.Storage != null)
+                    if (MissileBase?.Storage != null)
                     {
+                        Log.Line($"[MissileBase] State:{State != null} - Set:{Set != null}");
                         State.SaveState();
                         Set.SaveSettings();
                     }

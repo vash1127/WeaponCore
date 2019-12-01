@@ -28,7 +28,7 @@ namespace WeaponCore.Support
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
-        internal readonly ConcurrentDictionary<string, HashSet<WeaponComponent>> BlockGroups = new ConcurrentDictionary<string, HashSet<WeaponComponent>>();
+        internal readonly Dictionary<string, HashSet<WeaponComponent>> BlockGroups = new Dictionary<string, HashSet<WeaponComponent>>();
 
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventories;
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
@@ -43,14 +43,14 @@ namespace WeaponCore.Support
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
-        internal List<GridAi> TargetAis = new List<GridAi>();
         internal readonly List<GridAi> ThreatsTmp = new List<GridAi>();
-        internal List<GridAi> Threats = new List<GridAi>();
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
-        internal List<MyEntity> Obstructions = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
         internal List<MyEntity> StaticsInRange = new List<MyEntity>();
+        internal List<MyEntity> Obstructions = new List<MyEntity>();
+        internal List<GridAi> Threats = new List<GridAi>();
+        internal List<GridAi> TargetAis = new List<GridAi>();
 
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
@@ -61,6 +61,10 @@ namespace WeaponCore.Support
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;
         internal IMyGridTerminalSystem TerminalSystem;
+
+        internal IMyTerminalBlock LastWeaponTerminal;
+        internal IMyTerminalBlock LastTerminal;
+
 
         internal Focus Focus = new Focus(2);
         internal MyEntity MyShieldTmp;
@@ -118,6 +122,7 @@ namespace WeaponCore.Support
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private readonly FastResourceLock _scanLock = new FastResourceLock();
 
+        internal bool WeaponTerminalAccess;
         private uint _lastScan;
         internal enum TargetType
         {

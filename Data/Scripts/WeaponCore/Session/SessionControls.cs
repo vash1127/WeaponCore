@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using Sandbox.ModAPI.Interfaces.Terminal;
 using WeaponCore.Support;
@@ -297,24 +298,35 @@ namespace WeaponCore
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
-            {
-                var maxTrajectory = 0f;
-                FutureEvents.Schedule(comp.UpdateTerminal, null, 1);
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    var curMax = comp.Platform.Weapons[i].System.MaxTrajectory;
-                    if (curMax > maxTrajectory)
-                        maxTrajectory = (float)curMax;
-                }
-                comp.TerminalRefresh();
+            var cube = (MyCubeBlock)block;
 
-                for (int i = 0; i < controls.Count; i++)
+            GridAi gridAi;
+            if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+            {
+                gridAi.LastTerminal = block;
+
+                WeaponComponent comp;
+                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
-                    var c = controls[i];
-                    if (c.Id.Contains("WC_Range"))
-                        ((IMyTerminalControlSlider)c).SetLimits(0, maxTrajectory);
+                    gridAi.LastWeaponTerminal = block;
+                    gridAi.WeaponTerminalAccess = true;
+
+                    var maxTrajectory = 0f;
+                    FutureEvents.Schedule(comp.UpdateTerminal, null, 1);
+                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                    {
+                        var curMax = comp.Platform.Weapons[i].System.MaxTrajectory;
+                        if (curMax > maxTrajectory)
+                            maxTrajectory = (float)curMax;
+                    }
+                    comp.TerminalRefresh();
+
+                    for (int i = 0; i < controls.Count; i++)
+                    {
+                        var c = controls[i];
+                        if (c.Id.Contains("WC_Range"))
+                            ((IMyTerminalControlSlider)c).SetLimits(0, maxTrajectory);
+                    }
                 }
             }
         }

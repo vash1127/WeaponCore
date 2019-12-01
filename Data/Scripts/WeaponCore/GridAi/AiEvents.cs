@@ -42,7 +42,7 @@ namespace WeaponCore.Support
                     if (Batteries.Add(battery)) SourceCount++;
                     UpdatePowerSources = true;
                 }
-                if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler || myCubeBlock is IMyShipConnector)
+                else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler || myCubeBlock is IMyShipConnector)
                 {
                     MyInventory inventory;
                     if (myCubeBlock.TryGetInventory(out inventory))
@@ -56,6 +56,7 @@ namespace WeaponCore.Support
                         }
                     }
                 }
+                else if (myCubeBlock is IMyLargeTurretBase || myCubeBlock is MyConveyorSorter) ScanBlockGroups = true;
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockAdded: {ex}"); }
         }
@@ -64,13 +65,15 @@ namespace WeaponCore.Support
         {
             try
             {
+                WeaponComponent comp;
+
                 var battery = myCubeBlock as MyBatteryBlock;
                 if (battery != null)
                 {
                     if (Batteries.Remove(battery)) SourceCount--;
                     UpdatePowerSources = true;
                 }
-                if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler)
+                else if (myCubeBlock is IMyCargoContainer || myCubeBlock is IMyAssembler)
                 {
                     MyInventory inventory;
                     if (myCubeBlock.TryGetInventory(out inventory))
@@ -81,6 +84,11 @@ namespace WeaponCore.Support
                                 ammoInvetory.Value.Remove(inventory);
                         }
                     }
+                }
+                else if (myCubeBlock.Components.TryGet(out comp))
+                {
+                    foreach (var group in BlockGroups.Values)
+                        group.Remove(comp);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }
