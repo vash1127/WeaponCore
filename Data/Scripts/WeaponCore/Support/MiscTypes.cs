@@ -365,7 +365,6 @@ namespace WeaponCore.Support
         private int _miss;
         private bool _idle;
         private Vector3D _endPos = Vector3D.MinValue;
-        private Vector3D _endDir = Vector3D.MinValue;
 
         internal bool Cached(LineD lineTest, Trajectile t)
         {
@@ -375,23 +374,21 @@ namespace WeaponCore.Support
             var maxDelay = t.MuzzleId == -1 ? t.System.Barrels.Length : 1;
             
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
-            _start = thisTick - LastTick > maxDelay || dist > 5 && !_endDir.Equals(lineTest.Direction, 0.00001f);
+            _start = thisTick - LastTick > maxDelay || dist > 5;
 
             if (thisTick - LastTick > maxDelay) Log.Line($"Cached miss: {t.System.WeaponName}");
             LastTick = thisTick;
 
-            var oldDir = _endDir;
             if (_start)
             {
                 _startTick = thisTick;
                 _endPos = lineTest.To;
-                _endDir = lineTest.Direction;
             }
 
             var runTime = thisTick - _startTick;
 
-            var fastPath = runTime > 59;
-            var useCache = runTime > 60;
+            var fastPath = runTime > 9;
+            var useCache = runTime > 10;
             if (fastPath)
             {
                 if (_miss > 1)
