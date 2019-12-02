@@ -231,6 +231,26 @@ namespace WeaponCore
             comp.Set.Value.Range = range;
         }
 
+        internal static float GetMinRange(IMyTerminalBlock block)
+        {
+            return 0;
+        }
+
+        internal static float GetMaxRange(IMyTerminalBlock block)
+        {
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
+
+            var maxTrajectory = 0f;
+            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            {
+                var curMax = comp.Platform.Weapons[i].System.MaxTrajectory;
+                if (curMax > maxTrajectory)
+                    maxTrajectory = (float)curMax;
+            }
+            return maxTrajectory;
+        }
+
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
         {
             var comp = block?.Components?.Get<WeaponComponent>();

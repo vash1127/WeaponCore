@@ -29,13 +29,14 @@ namespace WeaponCore
                     currentType = "Missile";
                 }
 
+                TerminalHelpers.AlterControls<T>();
+
+
                 if (typeof(T) == typeof(IMyConveyorSorter))
                 {
-                    TerminalHelpers.AddSlider<T>(0, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, WepUi.CoreWeaponEnableCheck);
+                    TerminalHelpers.AddSlider<T>(0, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, WepUi.CoreWeaponEnableCheck, WepUi.GetMinRange, WepUi.GetMaxRange);
                     currentType = "Sorter";
                 }
-
-                TerminalHelpers.AlterControls<T>();
 
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
 
@@ -120,9 +121,9 @@ namespace WeaponCore
                 TerminalHelpers.AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
 
                 
-                TerminalHelpers.AddSlider<T>(-2, "Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps, WepUi.CoreWeaponEnableCheck);
 
-                TerminalHelpers.AddSlider<T>(-3, "ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
 
                 TerminalHelpers.AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
             }
@@ -310,23 +311,6 @@ namespace WeaponCore
                 {
                     gridAi.LastWeaponTerminal = block;
                     gridAi.WeaponTerminalAccess = true;
-
-                    var maxTrajectory = 0f;
-                    FutureEvents.Schedule(comp.UpdateTerminal, null, 1);
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    {
-                        var curMax = comp.Platform.Weapons[i].System.MaxTrajectory;
-                        if (curMax > maxTrajectory)
-                            maxTrajectory = (float)curMax;
-                    }
-                    comp.TerminalRefresh();
-
-                    for (int i = 0; i < controls.Count; i++)
-                    {
-                        var c = controls[i];
-                        if (c.Id.Contains("WC_Range"))
-                            ((IMyTerminalControlSlider)c).SetLimits(0, maxTrajectory);
-                    }
                 }
             }
         }
