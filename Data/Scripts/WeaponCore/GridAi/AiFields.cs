@@ -24,11 +24,11 @@ namespace WeaponCore.Support
 
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
         internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
-        internal readonly MyConcurrentPool<HashSet<WeaponComponent>> BlockGroupSet = new MyConcurrentPool<HashSet<WeaponComponent>>();
+        internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
-        internal readonly Dictionary<string, HashSet<WeaponComponent>> BlockGroups = new Dictionary<string, HashSet<WeaponComponent>>();
+        internal readonly CachingDictionary<string, GroupInfo> BlockGroups = new CachingDictionary<string, GroupInfo>();
 
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventories;
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
@@ -64,7 +64,6 @@ namespace WeaponCore.Support
 
         internal IMyTerminalBlock LastWeaponTerminal;
         internal IMyTerminalBlock LastTerminal;
-
 
         internal Focus Focus = new Focus(2);
         internal MyEntity MyShieldTmp;

@@ -18,13 +18,16 @@ namespace WeaponCore
         private string _currentMenu;
         internal readonly Dictionary<string, Menu> Menus = new Dictionary<string, Menu>();
         internal readonly List<string> GroupNames = new List<string>();
-        internal readonly List<List<GroupInfo>> BlockGroups = new List<List<GroupInfo>>();
-        internal readonly MyConcurrentPool<List<GroupInfo>> GroupPool = new MyConcurrentPool<List<GroupInfo>>();
+        internal readonly List<List<GroupMember>> BlockGroups = new List<List<GroupMember>>();
+        internal readonly MyConcurrentPool<List<GroupMember>> MembersPool = new MyConcurrentPool<List<GroupMember>>();
+        internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
+
         internal readonly Session Session;
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
         internal bool WheelActive;
         internal int ActiveGroupId;
+        internal int ActiveWeaponId;
 
         internal readonly Item[] WeaponGroups =
         {
@@ -39,7 +42,12 @@ namespace WeaponCore
 
         internal readonly Item[] Settings =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Setup Group]", ParentName = "Group"},
+            new Item { Title = "Group Enabled", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Attack Neutrals", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Attack Friends", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Manual Aim", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Manual Fire", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Target Subsystem", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
         };
 
         internal readonly Item[] Weapons =

@@ -8,7 +8,6 @@ using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
 using static WeaponCore.Wheel.Menu;
-using static WeaponCore.Support.TargetingDefinition.BlockTypes;
 namespace WeaponCore
 {
     internal partial class Wheel
@@ -37,11 +36,7 @@ namespace WeaponCore
                     var item = GetCurrentMenuItem();
                     if (item.SubName != null)
                     {
-                        if (_currentMenu == "WeaponGroups")
-                        {
-                            ActiveGroupId = item.SubSlot;
-                            Log.Line($"ACtiveGroupId:{ActiveGroupId}");
-                        }
+                        SaveMenuInfo(menu, item);
                         _currentMenu = item.SubName;
                         UpdateState(menu);
                     }
@@ -82,8 +77,7 @@ namespace WeaponCore
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
-            if (Session.Tick10)
-                SetCurrentMessage();
+            SetCurrentMessage();
             
             MyTransparentGeometry.AddBillboardOriented(GetCurrentMenuItem().Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
@@ -119,10 +113,17 @@ namespace WeaponCore
         
         internal void SetCurrentMessage()
         {
-            var currentMessage = GetCurrentMenu().Message;
+            var currentMenu = GetCurrentMenu();
+            var currentMessage = currentMenu.Message;
 
             if (currentMessage == string.Empty)
-                currentMessage = GetCurrentMenu().CurrentItemMessage();
+                currentMessage = currentMenu.CurrentItemMessage();
+
+            if (currentMenu.GpsEntity != null)
+            {
+                var gpsName = currentMenu.GpsEntity.DisplayNameText;
+                Session.SetGpsInfo(currentMenu.GpsEntity.PositionComp.GetPosition(), gpsName);
+            }
 
             HudNotify.Text = currentMessage;
             HudNotify.Show();
@@ -139,6 +140,20 @@ namespace WeaponCore
             return menu.Items[menu.CurrentSlot];
         }
 
+        internal void SaveMenuInfo(Menu menu, Item item)
+        {
+            switch (menu.Name)
+            {
+                case "WeaponGroups":
+                    Log.Line($"ACtiveGroupId:{ActiveGroupId}");
+                    ActiveGroupId = item.SubSlot;
+                    break;
+                case "Weapons":
+                    ActiveWeaponId = item.SubSlot;
+                    break;
+            }
+        }
+
         internal void UpdateState(Menu oldMenu)
         {
             oldMenu.CleanUp();
@@ -147,22 +162,23 @@ namespace WeaponCore
             foreach (var group in BlockGroups)
             {
                 group.Clear();
-                GroupPool.Return(group);
+                MembersPool.Return(group);
             }
+
             BlockGroups.Clear();
 
             foreach (var group in Ai.BlockGroups)
             {
                 var groupName = group.Key;
                 GroupNames.Add(groupName);
-                var groupList = GroupPool.Get();
-                Log.Line($"{group.Value.Count}");
-                foreach (var comp in group.Value)
+                var membersList = MembersPool.Get();
+
+                foreach (var comp in group.Value.Comps)
                 {
-                    var groupInfo = new GroupInfo { Comps = comp, Title = groupName };
-                    groupList.Add(groupInfo);
+                    var groupMember = new GroupMember { Comps = comp, Name = groupName };
+                    membersList.Add(groupMember);
                 }
-                BlockGroups.Add(groupList);
+                BlockGroups.Add(membersList);
             }
 
             var menu = Menus[_currentMenu];

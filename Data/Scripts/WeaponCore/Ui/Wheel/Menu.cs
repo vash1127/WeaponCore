@@ -3,26 +3,28 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.Gui;
 using Sandbox.ModAPI;
+using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
+using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore
 {
     internal partial class Wheel
     {
 
-        internal struct GroupInfo
+        internal struct GroupMember
         {
-            internal string Title;
+            internal string Name;
             internal WeaponComponent Comps;
         }
 
         internal class Item
         {
             internal MyStringId Texture;
-            internal GroupInfo GroupInfo;
+            internal string Title;
             internal string ItemMessage;
             internal string SubName;
             internal string ParentName;
@@ -44,7 +46,8 @@ namespace WeaponCore
             internal readonly int ItemCount;
             internal int CurrentSlot;
             internal List<string> GroupNames;
-            internal List<List<GroupInfo>> BlockGroups;
+            internal List<List<GroupMember>> BlockGroups;
+            internal MyEntity GpsEntity;
 
             private string _message;
             public string Message
@@ -131,28 +134,29 @@ namespace WeaponCore
                         {
                             var groupName = GroupNames[item.SubSlot];
 
-                            HashSet<WeaponComponent> weaponGroup;
-                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupName, out weaponGroup)) break;
+                            GroupInfo groupInfo;
+                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupName, out groupInfo)) break;
                             FormatGroupMessage(groupName);
                         }
                         break;
                     case "Weapons":
                         if (BlockGroups.Count > 0)
                         {
-                            var groupInfo = BlockGroups[Wheel.ActiveGroupId][item.SubSlot];
-                            HashSet<WeaponComponent> weaponGroup;
-                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupInfo.Title, out weaponGroup)) break;
-                            FormatWeaponMessage(groupInfo);
+                            var groupMember = BlockGroups[Wheel.ActiveGroupId][item.SubSlot];
+                            GroupInfo groupInfo;
+                            if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
+                            FormatWeaponMessage(groupMember);
                         }
                         break;
                 }
             }
 
-            internal void FormatWeaponMessage(GroupInfo groupInfo)
+            internal void FormatWeaponMessage(GroupMember groupMember)
             {
-                var message = groupInfo.Title;
-                var gpsName = groupInfo.Comps.MyCube.DisplayNameText;
-                Wheel.Session.SetGpsInfo(groupInfo.Comps.MyCube.PositionComp.GetPosition(), gpsName);
+                var message = groupMember.Name;
+                GpsEntity = groupMember.Comps.MyCube;
+                var gpsName = GpsEntity.DisplayNameText;
+                Wheel.Session.SetGpsInfo(GpsEntity.PositionComp.GetPosition(), gpsName);
                 Message = message;
             }
 

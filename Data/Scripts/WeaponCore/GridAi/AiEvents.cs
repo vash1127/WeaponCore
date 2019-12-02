@@ -88,7 +88,7 @@ namespace WeaponCore.Support
                 else if (myCubeBlock.Components.TryGet(out comp))
                 {
                     foreach (var group in BlockGroups.Values)
-                        group.Remove(comp);
+                        group.Comps.Remove(comp);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Controller FatBlockRemoved: {ex}"); }

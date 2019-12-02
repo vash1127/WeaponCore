@@ -33,34 +33,41 @@ namespace WeaponCore.Support
 
             if (TerminalSystem != null)
             {
-                foreach (var group in BlockGroups)
-                {
-                    group.Value.Clear();
-                    BlockGroupSet.Return(group.Value);
-                }
-                BlockGroups.Clear();
-                
                 TerminalSystem.GetBlockGroups(null, group =>
                 {
-                    HashSet<WeaponComponent> customGroup = null;
+                    GroupInfo groupInfo;
+                    if (!BlockGroups.TryGetValue(group.Name, out groupInfo))
+                    {
+                        groupInfo = GroupInfoPool.Get();
+                        groupInfo.ChangeState = GroupInfo.ChangeStates.Add;
+                        BlockGroups.Add(group.Name, groupInfo);
+                    }
+                    else groupInfo.ChangeState = GroupInfo.ChangeStates.None;
+
                     group.GetBlocks(null, block =>
                     {
                         var cube = (MyCubeBlock) block;
                         WeaponComponent comp;
                         if (cube.Components.TryGet(out comp) && SubGrids.Contains(cube.CubeGrid))
                         {
-                            if (customGroup == null)
-                                customGroup = BlockGroupSet.Get();
-
-                            customGroup.Add(comp);
+                            groupInfo.Comps.Add(comp);
+                            if (groupInfo.ChangeState == GroupInfo.ChangeStates.None)
+                                groupInfo.ChangeState = GroupInfo.ChangeStates.Modify;
                         }
                         return false;
                     });
 
-                    if (customGroup != null) BlockGroups.Add(group.Name, customGroup);
-
                     return false;
                 });
+                foreach (var group in BlockGroups)
+                {
+                    if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
+                    {
+                        GroupInfoPool.Return(group.Value);
+                        BlockGroups.Remove(group.Key);
+                    }
+                }
+                BlockGroups.ApplyChanges();
                 ScanBlockGroups = false;
             }
 

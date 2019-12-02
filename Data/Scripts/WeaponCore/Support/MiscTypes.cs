@@ -13,6 +13,7 @@ using WeaponCore.Platform;
 using static WeaponCore.Support.HitEntity.Type;
 using Projectile = WeaponCore.Projectiles.Projectile;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
+using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore.Support
 {
@@ -833,6 +834,27 @@ namespace WeaponCore.Support
             _adjustedScale[index] = (float)(_definedScale * screenScale);
             _positionOffset[index] = new Vector3D(position.X, position.Y, -.1);
             _altPositionOffset[index] = new Vector3D(altPosition.X, altPosition.Y, -.1);
+        }
+    }
+
+    internal class GroupInfo
+    {
+        internal readonly HashSet<WeaponComponent> Comps = new HashSet<WeaponComponent>();
+
+        internal string Name;
+        internal bool Enabled;
+        internal bool AttackNeutrals;
+        internal bool AttackFriends;
+        internal bool ManualAim;
+        internal bool ManualFire;
+        internal BlockTypes BlockTypes;
+        internal ChangeStates ChangeState;
+
+        internal enum ChangeStates
+        {
+            None,
+            Add,
+            Modify
         }
     }
 }
