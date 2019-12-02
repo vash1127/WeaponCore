@@ -32,6 +32,8 @@ namespace WeaponCore.Projectiles
             var ai = p.T.Ai;
             var found = false;
             var lineCheck = p.T.System.CollisionIsLine;
+            var planetBeam = beam;
+            planetBeam.To = p.T.System.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
 
             for (int i = 0; i < p.SegmentList.Count; i++)
             {
@@ -68,37 +70,36 @@ namespace WeaponCore.Projectiles
                         else continue;
                     }
                 }
-                if ((ent == ai.MyPlanet && (p.CheckPlanet || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
+                if ((ent == ai.MyPlanet && (p.LinePlanetCheck || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
                 {
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
                     var extBeam = new LineD(extFrom, beam.To);
+
                     var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
                     var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
                     if (lineCheck && obb.Intersects(ref extBeam) == null || !lineCheck && !obb.Intersects(ref p.PruneSphere)) continue;
-
                     Vector3D? voxelHit = null;
                     if (voxel != null)
                     {
                         if (voxel.RootVoxel != voxel) continue;
                         if (voxel == ai.MyPlanet)
                         {
-
                             if (p.CachedPlanetHit)
                             {
                                 IHitInfo cachedPlanetResult;
-                                if (p.T.WeaponCache.VoxelHits[p.T.WeaponId].NewResult(out cachedPlanetResult))
+                                if (p.T.WeaponCache.VoxelHits[p.CachedId].NewResult(out cachedPlanetResult))
                                 {
                                     //Log.Line("cached hit");
                                     voxelHit = cachedPlanetResult.Position;
                                 }
                                 else
                                 {
-                                    //Log.Line($"cachedPlanet but no new result");
+                                    //Log.Line($"cachedPlanet but no new result: {p.LinePlanetCheck}");
                                     continue;
                                 }
                             }
 
-                            if (p.CheckPlanet)
+                            if (p.LinePlanetCheck)
                             {
                                 var check = false;
                                 var closestPos = ai.MyPlanet.GetClosestSurfacePointGlobal(ref p.Position);
@@ -114,8 +115,7 @@ namespace WeaponCore.Projectiles
                                 {
                                     using (voxel.Pin())
                                     {
-                                        Log.Line($"slow planet check: {p.T.System.WeaponName}");
-                                        voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                                        voxel.GetIntersectionWithLine(ref planetBeam, out voxelHit);
                                     }
                                 }
                             }

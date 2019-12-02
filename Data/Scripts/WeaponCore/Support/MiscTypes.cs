@@ -388,8 +388,8 @@ namespace WeaponCore.Support
 
             var runTime = thisTick - _startTick;
 
-            var fastPath = runTime > _maxDelay + 1;
-            var useCache = runTime > _maxDelay + 2;
+            var fastPath = runTime > (_maxDelay * 3) + 1;
+            var useCache = runTime > (_maxDelay * 3) + 2;
             if (fastPath)
             {
                 if (_miss > 1)
@@ -398,9 +398,8 @@ namespace WeaponCore.Support
                     else _idle = true;
 
                     //Log.Line($"{t.System.WeaponName} - idle:{_idle} - miss:{_miss} - runtime:{runTime} - {_idle} - {thisTick}");
-                    return _idle;
+                    if (_idle) return true;
                 }
-
                 RequestTick = thisTick;
                 MyAPIGateway.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, CollisionLayers.VoxelCollisionLayer, Results);
             }
@@ -439,7 +438,11 @@ namespace WeaponCore.Support
                 _miss++;
                 return false;
             }
-            if (thisTick > RequestTick + _maxDelay) return false;
+
+            if (thisTick > RequestTick + _maxDelay)
+                return false;
+
+            //Log.Line($"newResult: {thisTick} - {RequestTick} - {_maxDelay} - {RequestTick + _maxDelay} - {thisTick - (RequestTick + _maxDelay)}");
             cachedPlanetResult = HitInfo;
             return true;
         }

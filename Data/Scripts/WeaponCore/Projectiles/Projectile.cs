@@ -70,6 +70,7 @@ namespace WeaponCore.Projectiles
         internal int PruningProxyId = -1;
         internal int PulseChance;
         internal int PulseInterval;
+        internal int CachedId;
         internal bool EnableAv;
         internal bool DrawLine;
         internal bool FirstOffScreen;
@@ -83,7 +84,7 @@ namespace WeaponCore.Projectiles
         internal bool PickTarget;
         internal bool GenerateShrapnel;
         internal bool Colliding;
-        internal bool CheckPlanet;
+        internal bool LinePlanetCheck;
         internal bool SmartsOn;
         internal bool Ewar;
         internal bool EwarActive;
@@ -144,9 +145,11 @@ namespace WeaponCore.Projectiles
             T.Cloaked = false;
             HitParticleActive = false;
             T.OnScreen = true;
+            LinePlanetCheck = false;
             EndStep = 0;
             T.PrevDistanceTraveled = 0;
             T.DistanceTraveled = 0;
+            CachedId = T.MuzzleId == -1 ? T.WeaponCache.VirutalId : T.MuzzleId;
 
             Guidance = !(T.System.Values.Ammo.Shrapnel.NoGuidance && T.IsShrapnel) ? T.System.Values.Ammo.Trajectory.Guidance : AmmoTrajectory.GuidanceType.None;
             DynamicGuidance = Guidance != AmmoTrajectory.GuidanceType.None && Guidance != AmmoTrajectory.GuidanceType.TravelTo && !T.System.IsBeamWeapon && T.EnableGuidance;
@@ -243,9 +246,9 @@ namespace WeaponCore.Projectiles
             PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
 
             PruneQuery = DynamicGuidance || T.Ai.ShieldNear ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
-            if (T.Ai.StaticEntitiesInRange)
+            if (!DynamicGuidance && T.Ai.StaticEntitiesInRange)
                 StaticEntCheck();
-            else CheckPlanet = false;
+            else if (T.Ai.PlanetSurfaceInRange) LinePlanetCheck = true;
 
             if (EnableAv)
             {
@@ -308,8 +311,7 @@ namespace WeaponCore.Projectiles
         internal void StaticEntCheck()
         {
             var ai = T.Ai;
-            CheckPlanet = ai.PlanetSurfaceInRange && DynamicGuidance;
-            var cacheId = T.MuzzleId == -1 ? T.WeaponCache.VirutalId : T.MuzzleId;
+            LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
             for (int i = 0; i < T.Ai.StaticsInRange.Count; i++)
             {
                 var staticEnt = ai.StaticsInRange[i];
@@ -318,9 +320,10 @@ namespace WeaponCore.Projectiles
                 var lineTest = new LineD(Position, Position + (Direction * MaxTrajectory));
                 var voxel = staticEnt as MyVoxelBase;
                 var grid = staticEnt as MyCubeGrid;
+
                 if (obb.Intersects(ref lineTest) != null || voxel != null && voxel.PositionComp.WorldAABB.Contains(Position) == ContainmentType.Contains)
                 {
-                    if (voxel != null)
+                    if (voxel != null && voxel == voxel.RootVoxel)
                     {
                         if (voxel == ai.MyPlanet)
                         {
@@ -328,9 +331,9 @@ namespace WeaponCore.Projectiles
                             {
                                 T.Ai.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
                             }
-                            else if (!T.WeaponCache.VoxelHits[cacheId].Cached(lineTest, T))
+                            else if (!T.WeaponCache.VoxelHits[CachedId].Cached(lineTest, T))
                             {
-                                CheckPlanet = true;
+                                LinePlanetCheck = true;
                             }
                             else CachedPlanetHit = true;
 
@@ -338,14 +341,14 @@ namespace WeaponCore.Projectiles
                         }
                         else
                         {
-                            CheckPlanet = true;
+                            LinePlanetCheck = true;
                             PruneQuery = MyEntityQueryType.Both;
                         }
                         break;
                     }
                     if (grid != null && grid.IsSameConstructAs(T.Ai.MyGrid)) continue;
                     PruneQuery = MyEntityQueryType.Both;
-                    if (CheckPlanet || !ai.PlanetSurfaceInRange) break;
+                    if (LinePlanetCheck || !ai.PlanetSurfaceInRange) break;
                 }
             }
         }
@@ -358,7 +361,7 @@ namespace WeaponCore.Projectiles
                 var voxel = hit.HitEntity as MyVoxelBase;
                 if (voxel?.RootVoxel is MyPlanet)
                 {
-                    CheckPlanet = true;
+                    LinePlanetCheck = true;
                     break;
                 }
             }
