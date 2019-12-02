@@ -842,13 +842,13 @@ namespace WeaponCore.Support
         internal readonly HashSet<WeaponComponent> Comps = new HashSet<WeaponComponent>();
 
         internal string Name;
-        internal bool Enabled;
-        internal bool AttackNeutrals;
-        internal bool AttackFriends;
-        internal bool ManualAim;
-        internal bool ManualFire;
-        internal BlockTypes BlockTypes;
+        internal bool Enabled = true;
+        internal bool AttackNeutrals = false;
+        internal bool AttackFriends = false;
+        internal bool ManualAim = false;
+        internal bool ManualFire = false;
         internal ChangeStates ChangeState;
+        internal BlockTypes Subsystem = BlockTypes.Any;
 
         internal enum ChangeStates
         {
