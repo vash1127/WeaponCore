@@ -72,7 +72,6 @@ namespace WeaponCore.Support
 
         internal void UpdateSettings(LogicSettingsValues newSettings)
         {
-            UpdateTerminal(null);
             if (newSettings.MId > Set.Value.MId)
             {
                 Set.Value = newSettings;
