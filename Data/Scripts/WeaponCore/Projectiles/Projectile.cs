@@ -309,7 +309,7 @@ namespace WeaponCore.Projectiles
         {
             var ai = T.Ai;
             CheckPlanet = ai.PlanetSurfaceInRange && DynamicGuidance;
-
+            var cacheId = T.MuzzleId == -1 ? T.WeaponCache.VirutalId : T.MuzzleId;
             for (int i = 0; i < T.Ai.StaticsInRange.Count; i++)
             {
                 var staticEnt = ai.StaticsInRange[i];
@@ -328,7 +328,7 @@ namespace WeaponCore.Projectiles
                             {
                                 T.Ai.Session.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, RayHits, CollisionLayers.VoxelCollisionLayer, CouldHitPlanet);
                             }
-                            else if (!T.WeaponCache.VoxelHits[T.WeaponId].Cached(lineTest))
+                            else if (!T.WeaponCache.VoxelHits[cacheId].Cached(lineTest, T))
                             {
                                 CheckPlanet = true;
                             }

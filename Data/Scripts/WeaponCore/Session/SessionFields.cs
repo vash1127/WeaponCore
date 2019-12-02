@@ -30,6 +30,7 @@ namespace WeaponCore
         internal volatile bool Inited;
         internal volatile bool TurretControls;
         internal volatile bool SorterControls;
+        internal volatile bool DbCallBackComplete = true;
 
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
         private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();

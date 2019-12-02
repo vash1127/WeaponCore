@@ -114,12 +114,15 @@ namespace WeaponCore.Projectiles
                                 {
                                     using (voxel.Pin())
                                     {
+                                        Log.Line($"slow planet check: {p.T.System.WeaponName}");
                                         voxel.GetIntersectionWithLine(ref beam, out voxelHit);
                                     }
                                 }
                             }
                         }
-                        else using (voxel.Pin()) voxel.GetIntersectionWithLine(ref beam, out voxelHit);
+                        else
+                            using (voxel.Pin())
+                                voxel.GetIntersectionWithLine(ref beam, out voxelHit);
 
                         if (!voxelHit.HasValue)
                             continue;

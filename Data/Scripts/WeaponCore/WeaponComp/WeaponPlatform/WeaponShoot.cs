@@ -174,6 +174,7 @@ namespace WeaponCore.Platform
                         {
                             vProjectile.T.Origin = muzzle.Position;
                             vProjectile.Direction = muzzle.DeviatedDir;
+                            vProjectile.T.WeaponCache.VirutalId = _nextVirtual;
                         }
                     }
                     else
@@ -193,6 +194,7 @@ namespace WeaponCore.Platform
                         p.T.DetonationDamage = DetonateDmg;
                         p.T.AreaEffectDamage = AreaEffectDmg;
                         p.T.WeaponCache = WeaponCache;
+                        p.T.WeaponCache.VirutalId = -1;
 
                         p.SelfDamage = System.SelfDamage || Comp.Gunner;
                         p.GridVel = Comp.Ai.GridVel;

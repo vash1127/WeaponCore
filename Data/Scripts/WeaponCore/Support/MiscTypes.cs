@@ -365,24 +365,27 @@ namespace WeaponCore.Support
         private int _miss;
         private bool _idle;
         private Vector3D _endPos = Vector3D.MinValue;
+        private Vector3D _endDir = Vector3D.MinValue;
 
-        internal bool Cached(LineD lineTest)
+        internal bool Cached(LineD lineTest, Trajectile t)
         {
             double dist;
             Vector3D.DistanceSquared(ref _endPos, ref lineTest.To, out dist);
 
+            var maxDelay = t.MuzzleId == -1 ? t.System.Barrels.Length : 1;
+            
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
-            _start = thisTick - LastTick > 1 || dist > 5;
+            _start = thisTick - LastTick > maxDelay || dist > 5 && !_endDir.Equals(lineTest.Direction, 0.00001f);
 
-            //Log.Line($"Miss:{_miss} - LastTickGo:{thisTick - LastTick} - runTime: {thisTick - _startTick} - Tick:{thisTick} - Dist:{dist} - start:{_start}");
-            if (thisTick - LastTick > 1) Log.Line($"Cached miss");
+            if (thisTick - LastTick > maxDelay) Log.Line($"Cached miss: {t.System.WeaponName}");
             LastTick = thisTick;
 
-
+            var oldDir = _endDir;
             if (_start)
             {
                 _startTick = thisTick;
                 _endPos = lineTest.To;
+                _endDir = lineTest.Direction;
             }
 
             var runTime = thisTick - _startTick;
@@ -396,14 +399,14 @@ namespace WeaponCore.Support
                     if (_idle && _miss % 120 == 0) _idle = false;
                     else _idle = true;
 
-                    //Log.Line($"idle:{_idle} - miss:{_miss} - runtime:{runTime} - {_idle} - {thisTick}");
+                    //Log.Line($"{t.System.WeaponName} - idle:{_idle} - miss:{_miss} - runtime:{runTime} - {_idle} - {thisTick}");
                     return _idle;
                 }
 
                 RequestTick = thisTick;
                 MyAPIGateway.Physics.CastRayParallel(ref lineTest.From, ref lineTest.To, CollisionLayers.VoxelCollisionLayer, Results);
             }
-
+            //if (!useCache) Log.Line($"not using cache: {t.System.WeaponName} - miss:{_miss} - runTime:{runTime} - dist:{dist} - newDir:{_endDir} - oldDir:{oldDir}");
             return useCache;
         }
 
@@ -412,7 +415,6 @@ namespace WeaponCore.Support
             ResultTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
             if (info == null)
             {
-                //Log.Line("is null");
                 _miss++;
                 HitInfo = null;
                 return;
@@ -433,7 +435,6 @@ namespace WeaponCore.Support
         {
             cachedPlanetResult = null;
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
-            //Log.Line($"NewREsults - thisTick:{thisTick} - RequestTick:{RequestTick} - ResultTick:{ResultTick}");
 
             if (HitInfo == null)
             {
@@ -441,7 +442,6 @@ namespace WeaponCore.Support
                 return false;
             }
             if (thisTick > RequestTick + 1) return false;
-            //Log.Line($"NewResult Planet");
             cachedPlanetResult = HitInfo;
             return true;
         }
@@ -455,6 +455,7 @@ namespace WeaponCore.Support
         internal uint Tick;
         internal HitEntity HitEntity = new HitEntity();
         internal IMySlimBlock HitBlock;
+        internal int VirutalId = -1;
 
         internal readonly List<Projectile> SortProjetiles = new List<Projectile>();
         internal readonly VoxelParallelHits[] VoxelHits;

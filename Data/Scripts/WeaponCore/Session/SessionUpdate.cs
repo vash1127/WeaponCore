@@ -155,7 +155,7 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-                if (Tick - gridAi.TargetsUpdatedTick > 100 && DbTask.IsComplete && gridAi.UpdateOwner())
+                if (Tick - gridAi.TargetsUpdatedTick > 100 && DbCallBackComplete && DbTask.IsComplete && gridAi.UpdateOwner())
                     gridAi.RequestDbUpdate();
 
                 if (!gridAi.Ready || !gridAi.MyGrid.InScene || !gridAi.GridInit || gridAi.MyGrid.MarkedForClose) continue;
@@ -286,7 +286,7 @@ namespace WeaponCore
                 }
             }
 
-            if (DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
+            if (DbsToUpdate.Count > 0 && DbCallBackComplete && DbTask.IsComplete) UpdateDbsInQueue();
         }
     }
 }
