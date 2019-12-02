@@ -377,7 +377,6 @@ namespace WeaponCore.Support
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
             _start = thisTick - LastTick > _maxDelay || dist > 5;
 
-            if (thisTick - LastTick > _maxDelay) Log.Line($"Cached miss: {t.System.WeaponName}");
             LastTick = thisTick;
 
             if (_start)
