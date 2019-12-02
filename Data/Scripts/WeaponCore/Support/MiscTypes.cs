@@ -363,6 +363,7 @@ namespace WeaponCore.Support
         private bool _start;
         private uint _startTick;
         private int _miss;
+        private int _maxDelay;
         private bool _idle;
         private Vector3D _endPos = Vector3D.MinValue;
 
@@ -371,12 +372,12 @@ namespace WeaponCore.Support
             double dist;
             Vector3D.DistanceSquared(ref _endPos, ref lineTest.To, out dist);
 
-            var maxDelay = t.MuzzleId == -1 ? t.System.Barrels.Length : 1;
+            _maxDelay = t.MuzzleId == -1 ? t.System.Barrels.Length : 1;
             
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
-            _start = thisTick - LastTick > maxDelay || dist > 5;
+            _start = thisTick - LastTick > _maxDelay || dist > 5;
 
-            if (thisTick - LastTick > maxDelay) Log.Line($"Cached miss: {t.System.WeaponName}");
+            if (thisTick - LastTick > _maxDelay) Log.Line($"Cached miss: {t.System.WeaponName}");
             LastTick = thisTick;
 
             if (_start)
@@ -387,8 +388,8 @@ namespace WeaponCore.Support
 
             var runTime = thisTick - _startTick;
 
-            var fastPath = runTime > 9;
-            var useCache = runTime > 10;
+            var fastPath = runTime > _maxDelay + 1;
+            var useCache = runTime > _maxDelay + 2;
             if (fastPath)
             {
                 if (_miss > 1)
@@ -438,7 +439,7 @@ namespace WeaponCore.Support
                 _miss++;
                 return false;
             }
-            if (thisTick > RequestTick + 1) return false;
+            if (thisTick > RequestTick + _maxDelay) return false;
             cachedPlanetResult = HitInfo;
             return true;
         }
