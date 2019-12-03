@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -52,10 +53,9 @@ namespace WeaponCore
                     }
                     else if (menu.Name == "WeaponGroups") CloseWheel();
                 }
-
-                if (s.UiInput.WheelForward)
+                if (!s.UiInput.AnyKeyPressed && s.UiInput.WheelForward)
                     GetCurrentMenu().Move(Movement.Forward);
-                else if (s.UiInput.WheelBackward)
+                else if (!s.UiInput.AnyKeyPressed && s.UiInput.WheelBackward)
                     GetCurrentMenu().Move(Movement.Backward);
 
                 if (previousMenu != _currentMenu) SetCurrentMessage();
@@ -78,8 +78,9 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             SetCurrentMessage();
-            
-            MyTransparentGeometry.AddBillboardOriented(GetCurrentMenuItem().Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            var test = MyStringId.GetOrCompute("DS_Empty_Wheel_0");
+            MyTransparentGeometry.AddBillboardOriented(test, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            //MyTransparentGeometry.AddBillboardOriented(GetCurrentMenuItem().Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()
@@ -145,7 +146,7 @@ namespace WeaponCore
             switch (menu.Name)
             {
                 case "WeaponGroups":
-                    Log.Line($"ACtiveGroupId:{ActiveGroupId}");
+                    Log.Line($"ActiveGroupId:{ActiveGroupId}");
                     ActiveGroupId = item.SubSlot;
                     break;
                 case "Weapons":

@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.Game.Entities;
-using Sandbox.Game.Gui;
-using Sandbox.ModAPI;
+﻿using System.Collections.Generic;
 using VRage.Game.Entity;
 using VRage.Utils;
-using VRageMath;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
-using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore
 {
@@ -136,7 +129,7 @@ namespace WeaponCore
 
                             GroupInfo groupInfo;
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupName, out groupInfo)) break;
-                            FormatGroupMessage(groupName);
+                            FormatGroupMessage(groupInfo);
                         }
                         break;
                     case "Weapons":
@@ -160,9 +153,10 @@ namespace WeaponCore
                 Message = message;
             }
 
-            internal void FormatGroupMessage(string groupName)
+            internal void FormatGroupMessage(GroupInfo groupInfo)
             {
-                var message = groupName;
+                var enabledValueString = Wheel.SettingStrings["Enabled"][groupInfo.Settings["Enabled"]].Value;
+                var message = $"Weapon Group: {groupInfo.Name} ({enabledValueString})";
                 //Wheel.Session.SetGpsInfo(Wheel.Ai.GridCenter, groupName);
                 Message = message;
             }

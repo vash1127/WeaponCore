@@ -20,7 +20,6 @@ namespace WeaponCore
         internal readonly List<string> GroupNames = new List<string>();
         internal readonly List<List<GroupMember>> BlockGroups = new List<List<GroupMember>>();
         internal readonly MyConcurrentPool<List<GroupMember>> MembersPool = new MyConcurrentPool<List<GroupMember>>();
-        internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
 
         internal readonly Session Session;
         internal GridAi Ai;
@@ -28,6 +27,13 @@ namespace WeaponCore
         internal bool WheelActive;
         internal int ActiveGroupId;
         internal int ActiveWeaponId;
+        internal struct Names
+        {
+            internal string Value;
+            internal string CurrentValue;
+            internal string NextValue;
+            internal string PreviousValue;
+        }
 
         internal readonly Item[] WeaponGroups =
         {
@@ -55,6 +61,57 @@ namespace WeaponCore
             new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Change Weapon]", ParentName = "Group"},
         };
 
+        internal readonly Dictionary<string, Dictionary<int, Names>> SettingStrings = new Dictionary<string, Dictionary<int, Names>>()
+        {
+            {
+                "Enabled", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "Neutrals", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "Friends", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "ManualAim", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "ManualFire", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "SubSystems", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Any", CurrentValue = "Any", NextValue = "Offense", PreviousValue = "Steering"},
+                    [1] = new Names {Value = "Offense", CurrentValue = "Offense", NextValue = "Utility", PreviousValue = "Any"},
+                    [2] = new Names {Value = "Utility", CurrentValue = "Utility", NextValue = "Power", PreviousValue = "Offense"},
+                    [3] = new Names {Value = "Power", CurrentValue = "Power", NextValue = "Production", PreviousValue = "Utility"},
+                    [4] = new Names {Value = "Production", CurrentValue = "Production", NextValue = "Thrust", PreviousValue = "Power"},
+                    [5] = new Names {Value = "Thrust", CurrentValue = "Thrust", NextValue = "Jumping", PreviousValue = "Production"},
+                    [6] = new Names {Value = "Jumping", CurrentValue = "Jumping", NextValue = "Steering", PreviousValue = "Thrust"},
+                    [7] = new Names {Value = "Steering", CurrentValue = "Steering", NextValue = "Any", PreviousValue = "Jumping"},
+                }
+            },
+        };
 
         internal enum State
         {

@@ -27,7 +27,6 @@ namespace WeaponCore.Support
 
         internal void ReScanBlockGroups()
         {
-            Session.DsUtil2.Start("BlockGroups");
             if (TerminalSystem == null)
                 TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
 
@@ -43,6 +42,8 @@ namespace WeaponCore.Support
                         BlockGroups.Add(group.Name, groupInfo);
                     }
                     else groupInfo.ChangeState = GroupInfo.ChangeStates.None;
+                    
+                    groupInfo.Name = group.Name;
 
                     group.GetBlocks(null, block =>
                     {
@@ -70,8 +71,6 @@ namespace WeaponCore.Support
                 BlockGroups.ApplyChanges();
                 ScanBlockGroups = false;
             }
-
-            Session.DsUtil2.Complete("test", false, true);
         }
 
 

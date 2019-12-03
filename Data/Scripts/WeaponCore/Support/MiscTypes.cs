@@ -840,16 +840,17 @@ namespace WeaponCore.Support
     internal class GroupInfo
     {
         internal readonly HashSet<WeaponComponent> Comps = new HashSet<WeaponComponent>();
-
+        internal readonly Dictionary<string, int> Settings = new Dictionary<string, int>()
+        {
+            {"Enabled", 1},
+            {"Neutrals", 0},
+            {"Friends", 0},
+            {"ManualAim", 0},
+            {"ManualFire", 0},
+            {"SubSystems", 0}
+        };
         internal string Name;
-        internal bool Enabled = true;
-        internal bool AttackNeutrals = false;
-        internal bool AttackFriends = false;
-        internal bool ManualAim = false;
-        internal bool ManualFire = false;
         internal ChangeStates ChangeState;
-        internal BlockTypes Subsystem = BlockTypes.Any;
-
         internal enum ChangeStates
         {
             None,
