@@ -27,6 +27,7 @@ namespace WeaponCore
         internal bool WheelActive;
         internal int ActiveGroupId;
         internal int ActiveWeaponId;
+        internal int CurrentTextureId;
         internal struct Names
         {
             internal string Value;

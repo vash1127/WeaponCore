@@ -53,10 +53,18 @@ namespace WeaponCore
                     }
                     else if (menu.Name == "WeaponGroups") CloseWheel();
                 }
+
                 if (!s.UiInput.AnyKeyPressed && s.UiInput.WheelForward)
+                {
+                    GetNextWheelId(true);
                     GetCurrentMenu().Move(Movement.Forward);
+
+                }
                 else if (!s.UiInput.AnyKeyPressed && s.UiInput.WheelBackward)
+                {
+                    GetNextWheelId(false);
                     GetCurrentMenu().Move(Movement.Backward);
+                }
 
                 if (previousMenu != _currentMenu) SetCurrentMessage();
             }
@@ -78,7 +86,7 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             SetCurrentMessage();
-            var test = MyStringId.GetOrCompute("DS_Empty_Wheel_0");
+            var test = MyStringId.GetOrCompute($"DS_Empty_Wheel_{CurrentTextureId}");
             MyTransparentGeometry.AddBillboardOriented(test, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
             //MyTransparentGeometry.AddBillboardOriented(GetCurrentMenuItem().Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
@@ -139,6 +147,21 @@ namespace WeaponCore
         {
             var menu = Menus[_currentMenu];
             return menu.Items[menu.CurrentSlot];
+        }
+
+        internal int GetNextWheelId(bool forward)
+        {
+            if (forward)
+            {
+                if (CurrentTextureId + 1 > 5) CurrentTextureId = 0;
+                else CurrentTextureId++;
+            }
+            else
+            {
+                if (CurrentTextureId - 1 < 0) CurrentTextureId = 5;
+                else CurrentTextureId--;
+            }
+            return CurrentTextureId;
         }
 
         internal void SaveMenuInfo(Menu menu, Item item)
