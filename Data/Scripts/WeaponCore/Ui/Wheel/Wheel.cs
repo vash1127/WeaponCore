@@ -86,9 +86,7 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             SetCurrentMessage();
-            var test = MyStringId.GetOrCompute($"DS_Empty_Wheel_{CurrentTextureId}");
-            MyTransparentGeometry.AddBillboardOriented(test, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
-            //MyTransparentGeometry.AddBillboardOriented(GetCurrentMenuItem().Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddBillboardOriented(TextureIds[CurrentTextureId], Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()

@@ -36,6 +36,17 @@ namespace WeaponCore
             internal string PreviousValue;
         }
 
+        internal readonly MyStringId[] TextureIds =
+        {
+            MyStringId.GetOrCompute("DS_Empty_Wheel_0"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_1"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_2"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_3"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_4"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_5"),
+
+        };
+
         internal readonly Item[] WeaponGroups =
         {
             new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Weapon Groups]", SubName = "Group"},
