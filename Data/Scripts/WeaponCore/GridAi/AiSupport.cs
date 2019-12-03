@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -41,7 +39,6 @@ namespace WeaponCore.Support
                         groupInfo.Name = group.Name;
                     }
 
-
                     group.GetBlocks(null, block =>
                     {
                         var cube = (MyCubeBlock) block;
@@ -64,12 +61,12 @@ namespace WeaponCore.Support
 
                     return false;
                 });
+
                 BlockGroups.ApplyAdditionsAndModifications();
                 foreach (var group in BlockGroups)
                 {
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
                     {
-                        Log.Line("remove");
                         GroupInfoPool.Return(group.Value);
                         BlockGroups.Remove(group.Key);
                     }

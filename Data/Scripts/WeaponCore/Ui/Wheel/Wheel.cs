@@ -167,7 +167,6 @@ namespace WeaponCore
             switch (menu.Name)
             {
                 case "WeaponGroups":
-                    Log.Line($"ActiveGroupId:{ActiveGroupId}");
                     ActiveGroupId = item.SubSlot;
                     break;
                 case "Weapons":

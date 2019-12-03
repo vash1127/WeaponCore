@@ -842,7 +842,7 @@ namespace WeaponCore.Support
         internal readonly HashSet<WeaponComponent> Comps = new HashSet<WeaponComponent>();
         internal readonly Dictionary<string, int> Settings = new Dictionary<string, int>()
         {
-            {"Enabled", 1},
+            {"Active", 1},
             {"Neutrals", 0},
             {"Friends", 0},
             {"ManualAim", 0},

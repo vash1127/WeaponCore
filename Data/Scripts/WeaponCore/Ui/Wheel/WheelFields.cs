@@ -2,11 +2,9 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -25,6 +23,7 @@ namespace WeaponCore
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
         internal bool WheelActive;
+        internal string ActiveGroupName;
         internal int ActiveGroupId;
         internal int ActiveWeaponId;
         internal int CurrentTextureId;
@@ -49,37 +48,32 @@ namespace WeaponCore
 
         internal readonly Item[] WeaponGroups =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Weapon Groups]", SubName = "Group"},
+            new Item {ItemMessage = "[Weapon Groups]", SubName = "Group"},
         };
 
         internal readonly Item[] Group =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Group Settings]", ParentName = "WeaponGroups", SubName = "Settings"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Modify Weapons]", ParentName = "WeaponGroups", SubName = "Weapons"},
+            new Item {ItemMessage = "[Group Settings]", ParentName = "WeaponGroups", SubName = "Settings"},
+            new Item {ItemMessage = "[Modify Weapons]", ParentName = "WeaponGroups", SubName = "Weapons"},
         };
 
         internal readonly Item[] Settings =
         {
-            new Item { Title = "Group Enabled", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Attack Neutrals", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Attack Friends", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Manual Aim", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Manual Fire", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Target Subsystem", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Settings Menu", ItemMessage = "", ParentName = "Group"},
         };
 
         internal readonly Item[] Weapons =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Change Weapon]", ParentName = "Group"},
+            new Item {Title = "Weapons Menu", ParentName = "Group"},
         };
 
         internal readonly Dictionary<string, Dictionary<int, Names>> SettingStrings = new Dictionary<string, Dictionary<int, Names>>()
         {
             {
-                "Enabled", new Dictionary<int, Names>
+                "Active", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
-                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                    [0] = new Names {Value = "Deactivated", CurrentValue = "Deactivate", NextValue = "Activate"},
+                    [1] = new Names {Value = "Activated", CurrentValue = "Activate", NextValue = "Deactivate"},
                 }
             },
             {
@@ -123,6 +117,16 @@ namespace WeaponCore
                     [7] = new Names {Value = "Steering", CurrentValue = "Steering", NextValue = "Any", PreviousValue = "Jumping"},
                 }
             },
+        };
+
+        internal readonly List<string> SettingNames = new List<string>()
+        {
+            {"Active"},
+            {"Neutrals"},
+            {"Friends"},
+            {"ManualAim"},
+            {"ManualFire"},
+            {"SubSystems"}
         };
 
         internal enum State
