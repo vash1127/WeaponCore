@@ -234,14 +234,14 @@ namespace WeaponCore.Platform
                                     {
                                         //Log.Line("approch");
                                         var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
-                                        targetSphere.Radius *= 2;
+                                        targetSphere.Radius *= 3;
                                         var testRay = new RayD(p.T.Origin, p.Direction);
                                         var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;
                                         if (!quickCheck)
                                         {
                                             var deltaPos = targetSphere.Center - MyPivotPos;
                                             var deltaVel = targetAi.GridVel - Comp.Ai.GridVel;
-                                            var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, (float) p.MaxSpeed);
+                                            var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, System.Values.Ammo.Trajectory.DesiredSpeed);
                                             var predictedPos = targetSphere.Center + (float)timeToIntercept * deltaVel;
                                             targetSphere.Center = predictedPos;
                                         }
