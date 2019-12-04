@@ -50,7 +50,7 @@ namespace WeaponCore.Support
         internal GridAi Ai;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
-        internal HitEntity HitEntity;
+        internal DrawHit? DrawHit;
         internal WeaponFrameCache WeaponCache;
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
@@ -126,9 +126,9 @@ namespace WeaponCore.Support
             AmmoSound = true;
         }
 
-        internal void Complete(HitEntity hitEntity, DrawState draw)
+        internal void Complete(DrawHit? drawHit, DrawState draw)
         {
-            HitEntity = hitEntity;
+            DrawHit = drawHit;
             Draw = draw;
 
             var color = System.Values.Graphics.Line.Tracer.Color;
@@ -195,7 +195,6 @@ namespace WeaponCore.Support
             Ai = null;
             PrimeEntity = null;
             TriggerEntity = null;
-            HitEntity = null;
             WeaponCache = null;
             Triggered = false;
             End = false;
@@ -236,7 +235,6 @@ namespace WeaponCore.Support
             Shield,
             Grid,
             Voxel,
-            Proximity,
             Destroyable,
             Stale,
             Projectile,
@@ -257,29 +255,10 @@ namespace WeaponCore.Support
         public double? HitDist;
         public Type EventType;
 
-        public HitEntity()
-        {
-        }
-
         public void Clean()
         {
             Entity = null;
             Projectile = null;
-            /*
-            if (PoolId >= 0)
-            {
-                if (_hashSetCache != null)
-                {
-                    var set = SwapSet(_hashSetCache, ((MyCubeGrid)null)?.CubeBlocks);
-                    if (set != null)
-                    {
-                        set.Clear();
-                        T.Ai.Session.Projectiles.GenericHashSetPool[PoolId].Return(_hashSetCache);
-                    }
-                    _hashSetCache = null;
-                }
-            }
-            */
             Beam.Length = 0;
             Beam.Direction = Vector3D.Zero;
             Beam.From = Vector3D.Zero;
@@ -293,6 +272,22 @@ namespace WeaponCore.Support
             PruneSphere = new BoundingSphereD();
             SphereCheck = false;
             DamageOverTime = false;
+        }
+    }
+
+    internal struct DrawHit
+    {
+        internal readonly IMySlimBlock Block;
+        internal readonly MyEntity Entity;
+        internal readonly Projectile Projectile;
+        internal readonly Vector3D? HitPos;
+
+        internal DrawHit(IMySlimBlock block, MyEntity entity, Projectile projectile, Vector3D? hitPos)
+        {
+            Block = block;
+            Entity = entity;
+            Projectile = projectile;
+            HitPos = hitPos;
         }
     }
 

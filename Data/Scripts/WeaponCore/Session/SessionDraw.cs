@@ -126,7 +126,7 @@ namespace WeaponCore
                 }
                 else
                 {
-                    if (t.ReSizing == Trajectile.ReSize.Shrink && t.HitEntity != null)
+                    if (t.ReSizing == Trajectile.ReSize.Shrink && t.DrawHit?.HitPos != null)
                     {
                         sFound = true;
                         var shrink = _shrinkPool.Get();
@@ -164,7 +164,7 @@ namespace WeaponCore
                     {
                         var weapon = weaponComp.Platform.Weapons[t.WeaponId];
                         var effect = weapon.HitEffects[t.MuzzleId];
-                        if (t.HitEntity?.HitPos != null && t.OnScreen)
+                        if (t.DrawHit?.HitPos != null && t.OnScreen)
                         {
                             if (effect != null)
                             {
@@ -175,7 +175,7 @@ namespace WeaponCore
                                     effect = null;
                                 }
                             }
-                            var hit = t.HitEntity.HitPos.Value;
+                            var hit = t.DrawHit.Value.HitPos.Value;
                             MatrixD matrix;
                             MatrixD.CreateTranslation(ref hit, out matrix);
                             if (effect == null)
@@ -199,8 +199,8 @@ namespace WeaponCore
                                 effect.Play();
 
                             effect.WorldMatrix = matrix;
-                            if (t.HitEntity.Projectile != null) effect.Velocity = t.HitEntity.Projectile.Velocity;
-                            else if (t.HitEntity.Entity?.GetTopMostParent()?.Physics != null) effect.Velocity = t.HitEntity.Entity.GetTopMostParent().Physics.LinearVelocity;
+                            if (t.DrawHit.Value.Projectile != null) effect.Velocity = t.DrawHit.Value.Projectile.Velocity;
+                            else if (t.DrawHit.Value.Entity?.GetTopMostParent()?.Physics != null) effect.Velocity = t.DrawHit.Value.Entity.GetTopMostParent().Physics.LinearVelocity;
                             weapon.HitEffects[t.MuzzleId] = effect;
                         }
                         else if (effect != null)

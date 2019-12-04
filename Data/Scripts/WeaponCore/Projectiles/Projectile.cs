@@ -368,74 +368,76 @@ namespace WeaponCore.Projectiles
             hitInfos.Clear();
         }
 
-        internal bool Intersected(Projectile p, List<Trajectile> drawList, HitEntity hitEntity)
+        internal bool Intersected(Projectile p, DrawHit? drawHit, bool queue = true)
         {
-            if (hitEntity?.HitPos == null) return false;
+            var hitPos = drawHit?.HitPos;
+            if (!hitPos.HasValue) return false;
             if (p.EnableAv && (p.DrawLine || p.T.System.PrimeModelId != -1 || p.T.System.TriggerModelId != -1))
             {
-                var hitPos = hitEntity.HitPos.Value;
-                p.TestSphere.Center = hitPos;
+                p.TestSphere.Center = hitPos.Value;
                 if (!p.T.OnScreen) CameraCheck(p);
                     
                 if (p.T.MuzzleId != -1)
                 {
-                    var length = Vector3D.Distance(p.LastPosition, hitPos);
+                    var length = Vector3D.Distance(p.LastPosition, hitPos.Value);
                     var shrink = !p.T.System.IsBeamWeapon;
                     var reSize = shrink ? ReSize.Shrink : ReSize.None;
 
-                    p.T.UpdateShape(hitPos, p.Direction, length, reSize);
-                    p.T.Complete(hitEntity, DrawState.Hit);
-                    drawList.Add(p.T);
+                    p.T.UpdateShape(hitPos.Value, p.Direction, length, reSize);
+                    p.T.Complete(drawHit, DrawState.Hit);
+                    Manager.DrawProjectiles.Add(p.T);
                 }
             }
 
             p.Colliding = true;
-            if (!p.T.System.VirtualBeams) T.Ai.Session.Hits.Enqueue(p);
+            if (!p.T.System.VirtualBeams && queue) T.Ai.Session.Hits.Enqueue(p);
             else
             {
                 p.T.WeaponCache.VirtualHit = true;
-                p.T.WeaponCache.HitEntity.Entity = hitEntity.Entity;
-                p.T.WeaponCache.HitEntity.HitPos = hitEntity.HitPos;
+                p.T.WeaponCache.HitEntity.Entity = drawHit.Value.Entity;
+                p.T.WeaponCache.HitEntity.HitPos = drawHit.Value.HitPos;
                 p.T.WeaponCache.Hits = p.VrTrajectiles.Count;
-                p.T.WeaponCache.HitDistance = Vector3D.Distance(p.LastPosition, hitEntity.HitPos.Value);
+                p.T.WeaponCache.HitDistance = Vector3D.Distance(p.LastPosition, hitPos.Value);
 
-                if (hitEntity.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = hitEntity.Blocks[0];
-                T.Ai.Session.Hits.Enqueue(p);
-                if (p.EnableAv && p.T.OnScreen) CreateFakeBeams(p, hitEntity, drawList);
+                if (drawHit.Value.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = drawHit.Value.Block;
+                if (queue) T.Ai.Session.Hits.Enqueue(p);
+                if (p.EnableAv && p.T.OnScreen) CreateFakeBeams(p, drawHit, Manager.DrawProjectiles);
             }
 
             if (p.EnableAv)
-                p.HitEffects();
+                p.HitEffects(!queue);
 
             return true;
         }
 
-        internal void CreateFakeBeams(Projectile p, HitEntity hitEntity, List<Trajectile> drawList, bool miss = false)
+        internal void CreateFakeBeams(Projectile p, DrawHit? drawHit, List<Trajectile> drawList, bool miss = false)
         {
+            Vector3D? hitPos = null;
+            if (drawHit?.HitPos != null) hitPos = drawHit.Value.HitPos;
             for (int i = 0; i < p.VrTrajectiles.Count; i++)
             {
                 var vt = p.VrTrajectiles[i];
                 vt.OnScreen = p.T.OnScreen;
                 if (vt.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vt.Origin, hitEntity.HitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
+                    var beam = !miss ? new LineD(vt.Origin, hitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
                     vt.UpdateShape(beam.To, beam.Direction, beam.Length, ReSize.None);
                 }
                 else
                 {
                     Vector3D beamEnd;
-                    var hit = !miss && hitEntity.HitPos.HasValue;
+                    var hit = !miss && hitPos.HasValue;
                     if (!hit)
                         beamEnd = vt.Origin + (vt.Direction * p.MaxTrajectory);
                     else
                         beamEnd = vt.Origin + (vt.Direction * p.T.WeaponCache.HitDistance);
                     var line = new LineD(vt.Origin, beamEnd);
                     //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
-                    if (!miss && hitEntity.HitPos.HasValue)
+                    if (!miss && hitPos.HasValue)
                         vt.UpdateShape(beamEnd, line.Direction, line.Length, ReSize.None);
                     else vt.UpdateShape(line.To, line.Direction, line.Length, ReSize.None);
                 }
-                vt.Complete(hitEntity, DrawState.Hit);
+                vt.Complete(drawHit, DrawState.Hit);
                 drawList.Add(vt);
             }
         }
@@ -768,11 +770,14 @@ namespace WeaponCore.Projectiles
                 var distToCameraSqr = Vector3D.DistanceSquared(Position, T.Ai.Session.CameraPos);
                 var closeToCamera = distToCameraSqr < 360000;
                 if (force) LastHitPos = Position;
-                if (T.OnScreen && HitParticleActive && T.System.HitParticle) PlayHitParticle();
+                
+                if (T.OnScreen && HitParticleActive && T.System.HitParticle)
+                    PlayHitParticle();
+
                 else if (HitParticleActive && (T.OnScreen || closeToCamera)) T.FakeExplosion = true;
                 T.HitSoundActived = T.System.HitSound && (T.HitSoundActive && (force || distToCameraSqr < T.System.HitSoundDistSqr || LastHitPos.HasValue && (!T.LastHitShield || T.System.Values.Audio.Ammo.HitPlayShield)));
 
-                if (T.HitSoundActived) T.HitEmitter.Entity = T.HitEntity?.Entity;
+                if (T.HitSoundActived) T.HitEmitter.Entity = T.DrawHit?.Entity;
                 T.LastHitShield = false;
             }
             Colliding = false;
@@ -839,7 +844,7 @@ namespace WeaponCore.Projectiles
                 var scaler = reScale < 1 ? reScale : 1;
 
                 HitEffect.UserRadiusMultiplier = T.System.Values.Graphics.Particles.Hit.Extras.Scale * scaler;
-                var scale = T.System.HitParticleShrinks ? 1 : MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, T.DistanceToLine / T.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, BaseAmmoParticleScale);
+                var scale = T.System.HitParticleShrinks ? MathHelper.Clamp(MathHelper.Lerp(BaseAmmoParticleScale, 0, T.DistanceToLine / T.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, BaseAmmoParticleScale) : 1;
                 HitEffect.UserEmitterScale = scale * scaler;
                 var hitVel = LastHitEntVel ?? Vector3.Zero;
                 Vector3.ClampToSphere(ref hitVel, (float)MaxSpeed);
@@ -873,16 +878,21 @@ namespace WeaponCore.Projectiles
             DisposeHitEffect(true);
         }
 
+        internal void DestroyProjectile()
+        {
+            if (State == ProjectileState.Destroy)
+                Intersected(this, new DrawHit(null, null, null, Position), false);
+            
+            State = ProjectileState.Depleted;
+        }
+
         internal void ProjectileClose()
         {
             if (!T.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
             else T.IsShrapnel = false;
 
-            //if (Watchers.Count > 0 && State != ProjectileState.Ending))
-            //{
-                for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Enqueue(this);
-                Watchers.Clear();
-            //}
+            for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Enqueue(this);
+            Watchers.Clear();
 
             if (EnableAv)
             {
@@ -912,6 +922,7 @@ namespace WeaponCore.Projectiles
             Dead,
             OneAndDone,
             Depleted,
+            Destroy,
         }
 
         internal enum EntityState

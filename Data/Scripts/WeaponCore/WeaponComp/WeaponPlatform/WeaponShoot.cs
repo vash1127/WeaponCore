@@ -228,6 +228,7 @@ namespace WeaponCore.Platform
                             for (int t = 0; t < targetAiCnt; t++)
                             {
                                 var targetAi = Comp.Ai.TargetAis[t];
+                                /*
                                 if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None || Comp.Set.Value.Guidance)
                                 {
                                     var threatLin = targetAi.GridVel;
@@ -238,6 +239,7 @@ namespace WeaponCore.Platform
 
                                     if (!intercept) continue;
                                 }
+                                */
                                 targetAi.LiveProjectile.Add(p);
                                 p.Watchers.Add(targetAi);
                             }

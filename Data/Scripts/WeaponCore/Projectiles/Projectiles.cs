@@ -104,6 +104,9 @@ namespace WeaponCore.Projectiles
                 p.Active = false;
                 switch (p.State)
                 {
+                    case ProjectileState.Destroy:
+                        p.DestroyProjectile();
+                        continue;
                     case ProjectileState.Dead:
                         continue;
                     case ProjectileState.Start:
@@ -238,6 +241,11 @@ namespace WeaponCore.Projectiles
                         for (int i = 0; i < checkList.Count; i++)
                             p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
 
+                        if (p.T.System.TrackProjectile)
+                            foreach (var lp in p.T.Ai.LiveProjectile)
+                                if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.T.Target.Projectile)
+                                    ProjectileHit(p, lp, p.T.System.CollisionIsLine);
+
                         checkList.Clear();
                         CheckPool.Return(checkList);
                         p.HitEffects(true);
@@ -279,11 +287,11 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if (p.SegmentList.Count > 0)
+                if (p.T.Target.IsProjectile || p.SegmentList.Count > 0)
                 {
                     var nearestHitEnt = GetAllEntitiesInLine(p, beam);
 
-                    if (nearestHitEnt != null && p.Intersected(p, DrawProjectiles, nearestHitEnt))
+                    if (nearestHitEnt != null && p.Intersected(p, nearestHitEnt))
                         continue;
                 }
                 if (p.T.End) p.ProjectileClose();

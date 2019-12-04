@@ -16,7 +16,7 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-        internal HitEntity GetAllEntitiesInLine(Projectile p, LineD beam)
+        internal DrawHit? GetAllEntitiesInLine(Projectile p, LineD beam)
         {
             if (p.T.Target != null && p.T.Target.IsProjectile)
             {
@@ -165,33 +165,37 @@ namespace WeaponCore.Projectiles
 
             if (p.T.Target.IsProjectile && !p.EwarEffect)
             {
-                var targetPos = p.T.Target.Projectile.Position;
-                var sphere = new BoundingSphereD(targetPos, p.T.Target.Projectile.T.System.CollisionSize);
+                var sphere = new BoundingSphereD(p.T.Target.Projectile.Position, p.T.Target.Projectile.T.System.CollisionSize);
                 var rayCheck = p.T.System.CollisionIsLine && sphere.Intersects(new RayD(p.LastPosition, p.Direction)) != null;
                 var sphereCheck = !rayCheck && sphere.Intersects(p.PruneSphere);
-                if (rayCheck || sphereCheck)
-                {
-                    var hitEntity = HitEntityPool.Get();
-                    hitEntity.Clean();
-                    hitEntity.T = p.T;
-                    hitEntity.EventType = HitEntity.Type.Projectile;
-                    hitEntity.Hit = true;
-                    hitEntity.Projectile = p.T.Target.Projectile;
-                    hitEntity.HitPos = targetPos;
-                    hitEntity.SphereCheck = !lineCheck;
-                    hitEntity.PruneSphere = p.PruneSphere;
 
-                    hitEntity.Beam = new LineD(p.LastPosition, targetPos);
-                    found = true;
-                    p.T.HitList.Add(hitEntity);
-                }
+                if (rayCheck || sphereCheck)
+                    found = ProjectileHit(p, p.T.Target.Projectile, lineCheck);
+                
             }
             p.SegmentList.Clear();
 
             return found ? GenerateHitInfo(p) : null;
         }
 
-        internal HitEntity GenerateHitInfo(Projectile p)
+        internal bool ProjectileHit(Projectile attacker, Projectile target, bool lineCheck)
+        {
+            var hitEntity = HitEntityPool.Get();
+            hitEntity.Clean();
+            hitEntity.T = attacker.T;
+            hitEntity.EventType = HitEntity.Type.Projectile;
+            hitEntity.Hit = true;
+            hitEntity.Projectile = target;
+            hitEntity.HitPos = target.Position;
+            hitEntity.SphereCheck = !lineCheck;
+            hitEntity.PruneSphere = attacker.PruneSphere;
+
+            hitEntity.Beam = new LineD(attacker.LastPosition, target.Position);
+            attacker.T.HitList.Add(hitEntity);
+            return true;
+        }
+
+        internal DrawHit? GenerateHitInfo(Projectile p)
         {
             var count = p.T.HitList.Count;
             if (count > 1) p.T.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
@@ -219,15 +223,20 @@ namespace WeaponCore.Projectiles
                 endOfIndex--;
             }
             var finalCount = p.T.HitList.Count;
-            HitEntity hitEntity = null;
             if (finalCount > 0)
             {
-                hitEntity = p.T.HitList[0];
+                var hitEntity = p.T.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
                 p.T.LastHitShield = hitEntity.EventType == Shield;
+
+                IMySlimBlock hitBlock = null;
+                if (p.T.System.VirtualBeams && hitEntity.Entity is MyCubeGrid)
+                    hitBlock = hitEntity.Blocks[0];
+
+                return new DrawHit(hitBlock, hitEntity.Entity, null, hitEntity.HitPos);
             }
-            return hitEntity;
+            return null;
         }
 
         internal int GetEntityCompareDist(HitEntity x, HitEntity y, List<Vector3I> slims)
