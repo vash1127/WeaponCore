@@ -228,20 +228,32 @@ namespace WeaponCore.Platform
                             for (int t = 0; t < targetAiCnt; t++)
                             {
                                 var targetAi = Comp.Ai.TargetAis[t];
-                                /*
-                                if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None || Comp.Set.Value.Guidance)
+                                if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None)
                                 {
-                                    var threatLin = targetAi.GridVel;
+                                    if (Vector3.Dot(p.Direction, p.T.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
+                                    {
+                                        //Log.Line("approch");
+                                        var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
+                                        targetSphere.Radius *= 2;
+                                        var testRay = new RayD(p.T.Origin, p.Direction);
+                                        var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;
+                                        if (!quickCheck)
+                                        {
+                                            var deltaPos = targetSphere.Center - MyPivotPos;
+                                            var deltaVel = targetAi.GridVel - Comp.Ai.GridVel;
+                                            var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, (float) p.MaxSpeed);
+                                            var predictedPos = targetSphere.Center + (float)timeToIntercept * deltaVel;
+                                            targetSphere.Center = predictedPos;
+                                        }
 
-                                    bool intercept;
-                                    if (Vector3D.IsZero(threatLin, 0.025)) intercept = Vector3.Dot(p.Direction, p.Position - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0;
-                                    else intercept = Vector3.Dot(threatLin, targetAi.MyGrid.PositionComp.WorldMatrix.Translation - TargetPos) < 0;
-
-                                    if (!intercept) continue;
+                                        if (quickCheck || targetSphere.Intersects(testRay) != null)
+                                        {
+                                            //Log.Line($"valid: {quickCheck} - {Vector3D.IsZero(targetAi.GridVel, 0.025)}");
+                                            targetAi.LiveProjectile.Add(p);
+                                            p.Watchers.Add(targetAi);
+                                        }
+                                    }
                                 }
-                                */
-                                targetAi.LiveProjectile.Add(p);
-                                p.Watchers.Add(targetAi);
                             }
                         }
                     }
