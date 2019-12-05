@@ -13,11 +13,12 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string,Matrix[]> weaponLinearMoveSet)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string,Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup)
         {
 
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
             var allEmissivesSet = new Dictionary<string, EmissiveState>();
+            animationIdLookup = new HashSet<string>();
 
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
@@ -53,7 +54,9 @@ namespace WeaponCore
                         List<Matrix> rotationSet = new List<Matrix>();
                         List<Matrix> rotCenterSet = new List<Matrix>();
                         List<string> rotCenterNameSet = new List<string>();
+
                         var id = $"{(int)moves.Key}{animationSet.SubpartId[t]}";
+                        animationIdLookup.Add(id);
                         AnimationType[] typeSet = new[]
                         {
                             AnimationType.Movement,
@@ -389,6 +392,7 @@ namespace WeaponCore
                                     }
                                 }
                             }
+
                         }
 
                         var loop = false;
@@ -718,7 +722,10 @@ namespace WeaponCore
             }
 
             if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
+            {
                 AnimationsToProcess.Remove(animation);
+                animation.Running = false;
+            }
         }
     }
 }
