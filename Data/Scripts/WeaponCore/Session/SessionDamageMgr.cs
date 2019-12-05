@@ -78,15 +78,20 @@ namespace WeaponCore
             var damageType = t.System.Values.DamageScales.Shields.Type;
             var energy = damageType == ShieldDefinition.ShieldType.Energy;
             var areaEffect = t.System.Values.Ammo.AreaEffect;
+            var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
 
             var scaledDamage = ((t.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier;
+            if (detonateOnEnd)
+                scaledDamage += (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * system.ShieldModifier;
             var hit = SApi.PointAttackShieldExt(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, (float)scaledDamage, energy, t.System.Values.Graphics.ShieldHitDraw);
             if (hit.HasValue)
             {
                 var objHp = hit.Value;
-                if (scaledDamage < objHp) t.BaseDamagePool = 0;
+                if (scaledDamage < objHp)
+                    t.BaseDamagePool = 0;
                 else if (objHp > 0) t.BaseDamagePool -= (float)scaledDamage - objHp;
                 else t.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
+
                 if (system.Values.Ammo.Mass <= 0) return;
 
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
@@ -114,10 +119,10 @@ namespace WeaponCore
             var explosive = areaEffect == AreaDamage.AreaEffectType.Explosive;
             var radiant = areaEffect == AreaDamage.AreaEffectType.Radiant;
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
+            var detonateDmg = t.DetonationDamage;
             var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var attackerId = shieldByPass ? grid.EntityId : t.Target.FiringCube.EntityId;
             var areaEffectDmg = t.AreaEffectDamage;
-            var detonateDmg = t.DetonationDamage;
             var hitMass = system.Values.Ammo.Mass;
             if (t.IsShrapnel)
             {
