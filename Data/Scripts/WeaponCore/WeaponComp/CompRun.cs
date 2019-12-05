@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                 switch (Platform.PreInit(this))
                 {
                     case MyWeaponPlatform.PlatformState.Invalid:
-                        Platform = null;
+                        Log.Line($"Platform PreInit is in an invalid state");
                         break;
                     case MyWeaponPlatform.PlatformState.Valid:
                         Log.Line($"Something went wrong with Platform PreInit");

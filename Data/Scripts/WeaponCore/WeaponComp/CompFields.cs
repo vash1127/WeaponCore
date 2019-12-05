@@ -73,7 +73,7 @@ namespace WeaponCore.Support
         
         internal MyCubeBlock MyCube;
         internal IMySlimBlock Slim;
-        internal MyWeaponPlatform Platform = new MyWeaponPlatform();
+        internal readonly MyWeaponPlatform Platform = new MyWeaponPlatform();
         internal IMyLargeMissileTurret MissileBase;
         internal IMyConveyorSorter SorterBase;
         internal Weapon TrackingWeapon;
