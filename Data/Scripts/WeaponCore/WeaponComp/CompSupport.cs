@@ -4,6 +4,7 @@ using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.VisualScripting;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -32,6 +33,12 @@ namespace WeaponCore.Support
             Set.NetworkUpdate();
             State.SaveState();
             State.NetworkUpdate();
+        }
+
+        internal void RemoveSinkDelegate(object o)
+        {
+            SinkInfo.RequiredInputFunc = null;
+            MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
         }
 
         internal void RemoveComp()

@@ -48,8 +48,9 @@ namespace WeaponCore.Support
             }
             else
             {
-                SinkInfo.RequiredInputFunc = null;
-                MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
+                Ai.Session.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
+                //SinkInfo.RequiredInputFunc = null;
+                //MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
             }
         }
 

@@ -694,11 +694,11 @@ namespace WeaponCore.Projectiles
                     {
                         var netted = EwaredProjectiles[j];
                         if (netted.T.Ai == T.Ai || netted.T.Target.IsProjectile) continue;
-                        Log.Line("netted");
+                        //Log.Line("netted");
                         if (MyUtils.GetRandomInt(0, 100) < PulseChance)
                         {
                             EwarActive = true;
-                            Log.Line($"change course: {netted.T.Target.Projectile != null}");
+                            //Log.Line($"change course: {netted.T.Target.Projectile != null}");
                             netted.T.Target.Projectile = this;
                             netted.T.Target.IsProjectile = true;
                             Seekers.Add(netted);

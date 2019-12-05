@@ -383,7 +383,6 @@ namespace WeaponCore.Support
                 break;
             }
             if (turretCheck && !notSelfHit) w.HitOther = true;
-            //if (!foundBlock && primeInfo != null && primeInfo.Target?.GetTopMostParent() == topEnt) Log.Line($"completed without block total:{totalBlocks} - started:{blocksStarted} - tried:{blocksChecked} - last:{lastBlocks}");
             return foundBlock;
         }
 
@@ -414,7 +413,7 @@ namespace WeaponCore.Support
                 var cube = i < top5Count ? top5[index] : cubes[index];
 
                 var grid = cube.CubeGrid;
-                if (cube.MarkedForClose || checkPower && !cube.IsWorking || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
+                if (cube.MarkedForClose || checkPower && !cube.IsWorking || !(cube is IMyTerminalBlock) || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
