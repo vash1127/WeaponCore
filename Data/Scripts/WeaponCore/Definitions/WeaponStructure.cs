@@ -30,6 +30,7 @@ namespace WeaponCore.Support
         public readonly Session Session;
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
+        public readonly HashSet<string> AnimationIdLookup;
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix[]> WeaponLinearMoveSet;
         public readonly MyPhysicalInventoryItem AmmoItem;
@@ -270,7 +271,7 @@ namespace WeaponCore.Support
 
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
-            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet);
+            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup);
         }
 
         private void SetWeaponAnimations( )
