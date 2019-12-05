@@ -67,7 +67,7 @@ namespace WeaponCore
             if ((UiInput.AltPressed && UiInput.ShiftReleased) || (TargetUi.DrawReticle && UiInput.MouseButtonRight) && UpdateLocalAiAndCockpit())
                 TrackingAi.Focus.ReleaseActive();
 
-            if (MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
+            if (!(ControlledEntity is MyCockpit && UiInput.AnyKeyPressed && !UiInput.AltPressed) && MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
                 TargetUi.SelectTarget();
             else if (UpdateLocalAiAndCockpit())
             {

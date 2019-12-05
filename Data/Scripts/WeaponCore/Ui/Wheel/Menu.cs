@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Sandbox.Game.Entities;
-using Sandbox.Game.Gui;
-using Sandbox.ModAPI;
+﻿using System.Collections.Generic;
 using VRage.Game.Entity;
 using VRage.Utils;
-using VRageMath;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
-using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore
 {
@@ -23,7 +16,6 @@ namespace WeaponCore
 
         internal class Item
         {
-            internal MyStringId Texture;
             internal string Title;
             internal string ItemMessage;
             internal string SubName;
@@ -86,15 +78,7 @@ namespace WeaponCore
                                 var item = Items[0];
                                 if (item.SubSlot < item.SubSlotCount - 1) item.SubSlot++;
                                 else item.SubSlot = 0;
-                                switch (Name)
-                                {
-                                    case "WeaponGroups":
-                                        GetInfo(item);
-                                        break;
-                                    default:
-                                        GetInfo(item);
-                                        break;
-                                }
+                                GetInfo(item);
                             }
 
                             break;
@@ -111,15 +95,7 @@ namespace WeaponCore
                             var item = Items[0];
                             if (item.SubSlot - 1 >= 0) item.SubSlot--;
                             else item.SubSlot = item.SubSlotCount - 1;
-                            switch (Name)
-                            {
-                                case "WeaponGroups":
-                                    GetInfo(item);
-                                    break;
-                                default:
-                                    GetInfo(item);
-                                    break;
-                            }
+                            GetInfo(item);
                         }
                         break;
                 }
@@ -127,6 +103,7 @@ namespace WeaponCore
 
             internal void GetInfo(Item item)
             {
+                GroupInfo groupInfo;
                 switch (Name)
                 {
                     case "WeaponGroups":
@@ -134,16 +111,19 @@ namespace WeaponCore
                         {
                             var groupName = GroupNames[item.SubSlot];
 
-                            GroupInfo groupInfo;
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupName, out groupInfo)) break;
-                            FormatGroupMessage(groupName);
+                            Wheel.ActiveGroupName = groupName;
+                            FormatGroupMessage(groupInfo);
                         }
+                        break;
+                    case "Settings":
+                        if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
+                        FormatSettingsMessage(groupInfo);
                         break;
                     case "Weapons":
                         if (BlockGroups.Count > 0)
                         {
                             var groupMember = BlockGroups[Wheel.ActiveGroupId][item.SubSlot];
-                            GroupInfo groupInfo;
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
                             FormatWeaponMessage(groupMember);
                         }
@@ -157,13 +137,22 @@ namespace WeaponCore
                 GpsEntity = groupMember.Comps.MyCube;
                 var gpsName = GpsEntity.DisplayNameText;
                 Wheel.Session.SetGpsInfo(GpsEntity.PositionComp.GetPosition(), gpsName);
+                Message = $"[{message}]";
+            }
+
+            internal void FormatGroupMessage(GroupInfo groupInfo)
+            {
+                var enabledValueString = Wheel.SettingStrings["Active"][groupInfo.Settings["Active"]].Value;
+                var message = $"[Weapon Group:\n{groupInfo.Name} ({enabledValueString})]";
                 Message = message;
             }
 
-            internal void FormatGroupMessage(string groupName)
+            internal void FormatSettingsMessage(GroupInfo groupInfo)
             {
-                var message = groupName;
-                //Wheel.Session.SetGpsInfo(Wheel.Ai.GridCenter, groupName);
+                var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
+                var setting = Wheel.SettingStrings[settingName];
+                var currentState = setting[groupInfo.Settings[settingName]].Value;
+                var message = $"[{settingName} ({currentState})]";
                 Message = message;
             }
 
@@ -177,6 +166,9 @@ namespace WeaponCore
                     case "WeaponGroups":
                         GroupNames = Wheel.GroupNames;
                         item.SubSlotCount = GroupNames.Count;
+                        break;
+                    case "Settings":
+                        item.SubSlotCount = Wheel.SettingStrings.Count;
                         break;
                     case "Weapons":
                         BlockGroups = Wheel.BlockGroups;

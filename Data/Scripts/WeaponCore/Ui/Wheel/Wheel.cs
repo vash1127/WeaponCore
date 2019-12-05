@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -53,10 +54,17 @@ namespace WeaponCore
                     else if (menu.Name == "WeaponGroups") CloseWheel();
                 }
 
-                if (s.UiInput.WheelForward)
+                if (!s.UiInput.AnyKeyPressed && s.UiInput.WheelForward)
+                {
+                    GetNextWheelId(true);
                     GetCurrentMenu().Move(Movement.Forward);
-                else if (s.UiInput.WheelBackward)
+
+                }
+                else if (!s.UiInput.AnyKeyPressed && s.UiInput.WheelBackward)
+                {
+                    GetNextWheelId(false);
                     GetCurrentMenu().Move(Movement.Backward);
+                }
 
                 if (previousMenu != _currentMenu) SetCurrentMessage();
             }
@@ -78,8 +86,7 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             SetCurrentMessage();
-            
-            MyTransparentGeometry.AddBillboardOriented(GetCurrentMenuItem().Texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddBillboardOriented(TextureIds[CurrentTextureId], Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()
@@ -140,12 +147,26 @@ namespace WeaponCore
             return menu.Items[menu.CurrentSlot];
         }
 
+        internal int GetNextWheelId(bool forward)
+        {
+            if (forward)
+            {
+                if (CurrentTextureId + 1 > 5) CurrentTextureId = 0;
+                else CurrentTextureId++;
+            }
+            else
+            {
+                if (CurrentTextureId - 1 < 0) CurrentTextureId = 5;
+                else CurrentTextureId--;
+            }
+            return CurrentTextureId;
+        }
+
         internal void SaveMenuInfo(Menu menu, Item item)
         {
             switch (menu.Name)
             {
                 case "WeaponGroups":
-                    Log.Line($"ACtiveGroupId:{ActiveGroupId}");
                     ActiveGroupId = item.SubSlot;
                     break;
                 case "Weapons":

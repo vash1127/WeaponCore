@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
-using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
@@ -27,7 +25,6 @@ namespace WeaponCore.Support
 
         internal void ReScanBlockGroups()
         {
-            Session.DsUtil2.Start("BlockGroups");
             if (TerminalSystem == null)
                 TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
 
@@ -35,14 +32,12 @@ namespace WeaponCore.Support
             {
                 TerminalSystem.GetBlockGroups(null, group =>
                 {
-                    GroupInfo groupInfo;
-                    if (!BlockGroups.TryGetValue(group.Name, out groupInfo))
+                    GroupInfo groupInfo = null;
+                    if (BlockGroups.TryGetValue(group.Name, out groupInfo))
                     {
-                        groupInfo = GroupInfoPool.Get();
-                        groupInfo.ChangeState = GroupInfo.ChangeStates.Add;
-                        BlockGroups.Add(group.Name, groupInfo);
+                        groupInfo.ChangeState = GroupInfo.ChangeStates.None;
+                        groupInfo.Name = group.Name;
                     }
-                    else groupInfo.ChangeState = GroupInfo.ChangeStates.None;
 
                     group.GetBlocks(null, block =>
                     {
@@ -50,6 +45,13 @@ namespace WeaponCore.Support
                         WeaponComponent comp;
                         if (cube.Components.TryGet(out comp) && SubGrids.Contains(cube.CubeGrid))
                         {
+                            if (groupInfo == null)
+                            {
+                                groupInfo = GroupInfoPool.Get();
+                                groupInfo.Name = group.Name;
+                                groupInfo.ChangeState = GroupInfo.ChangeStates.Add;
+                                BlockGroups.Add(group.Name, groupInfo);
+                            }
                             groupInfo.Comps.Add(comp);
                             if (groupInfo.ChangeState == GroupInfo.ChangeStates.None)
                                 groupInfo.ChangeState = GroupInfo.ChangeStates.Modify;
@@ -59,6 +61,8 @@ namespace WeaponCore.Support
 
                     return false;
                 });
+
+                BlockGroups.ApplyAdditionsAndModifications();
                 foreach (var group in BlockGroups)
                 {
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
@@ -66,12 +70,11 @@ namespace WeaponCore.Support
                         GroupInfoPool.Return(group.Value);
                         BlockGroups.Remove(group.Key);
                     }
+                    else group.Value.ChangeState = GroupInfo.ChangeStates.None;
                 }
-                BlockGroups.ApplyChanges();
+                BlockGroups.ApplyRemovals();
                 ScanBlockGroups = false;
             }
-
-            Session.DsUtil2.Complete("test", false, true);
         }
 
 

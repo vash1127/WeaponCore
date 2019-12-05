@@ -46,9 +46,6 @@ namespace WeaponCore
                         case HitEntity.Type.Voxel:
                             DamageVoxel(hitEnt, t);
                             continue;
-                        case HitEntity.Type.Proximity:
-                            ExplosionProximity(hitEnt, t);
-                            continue;
                         case HitEntity.Type.Projectile:
                             DamageProjectile(hitEnt, t);
                             continue;
@@ -323,27 +320,49 @@ namespace WeaponCore
             }
         }
 
-        private void DamageProjectile(HitEntity hitEnt, Trajectile t)
+        private void DamageProjectile(HitEntity hitEnt, Trajectile attacker)
         {
-            var pEntity = hitEnt.Projectile;
-            var system = t.System;
-            if (pEntity == null) return;
-            t.ObjectsHit++;
-
-            var objHp = pEntity.T.BaseHealthPool;
+            var pTarget = hitEnt.Projectile;
+            var system = attacker.System;
+            if (pTarget == null) return;
+            attacker.ObjectsHit++;
+            var objHp = pTarget.T.BaseHealthPool;
             var integrityCheck = system.Values.DamageScales.MaxIntegrity > 0;
             if (integrityCheck && objHp > system.Values.DamageScales.MaxIntegrity) return;
 
             float damageScale = 1;
-            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
+            if (system.VirtualBeams) damageScale *= attacker.WeaponCache.Hits;
 
-            var scaledDamage = t.BaseDamagePool * damageScale;
+            var scaledDamage = attacker.BaseDamagePool * damageScale;
 
-            if (scaledDamage < objHp) t.BaseDamagePool = 0;
-            else t.BaseDamagePool -= objHp;
-            pEntity.T.BaseHealthPool -= scaledDamage;
-            if (pEntity.T.BaseHealthPool <= 0)
-                pEntity.State = Projectile.ProjectileState.Depleted;
+            if (scaledDamage >= objHp)
+            {
+                attacker.BaseDamagePool -= objHp;
+                pTarget.T.BaseHealthPool = 0;
+                pTarget.State = Projectile.ProjectileState.Destroy;
+            }
+            else 
+            {
+                attacker.BaseDamagePool = 0;
+                pTarget.T.BaseHealthPool -= scaledDamage;
+
+                if (attacker.DetonationDamage > 0 && system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
+                {
+                    var areaSphere = new BoundingSphereD(pTarget.Position, attacker.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius);
+                    foreach (var sTarget in attacker.Ai.LiveProjectile)
+                    {
+                        if (areaSphere.Contains(sTarget.Position) != ContainmentType.Disjoint)
+                        {
+                            if (attacker.DetonationDamage > sTarget.T.BaseHealthPool)
+                            {
+                                sTarget.T.BaseHealthPool = 0;
+                                sTarget.State = Projectile.ProjectileState.Destroy;
+                            }
+                            else sTarget.T.BaseHealthPool -= attacker.DetonationDamage;
+                        }
+                    }
+                }
+            }
         }
 
         private void DamageVoxel(HitEntity hitEnt, Trajectile t)

@@ -2,11 +2,9 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
-using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
 namespace WeaponCore
@@ -20,41 +18,116 @@ namespace WeaponCore
         internal readonly List<string> GroupNames = new List<string>();
         internal readonly List<List<GroupMember>> BlockGroups = new List<List<GroupMember>>();
         internal readonly MyConcurrentPool<List<GroupMember>> MembersPool = new MyConcurrentPool<List<GroupMember>>();
-        internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
 
         internal readonly Session Session;
         internal GridAi Ai;
         internal IMyHudNotification HudNotify;
         internal bool WheelActive;
+        internal string ActiveGroupName;
         internal int ActiveGroupId;
         internal int ActiveWeaponId;
+        internal int CurrentTextureId;
+        internal struct Names
+        {
+            internal string Value;
+            internal string CurrentValue;
+            internal string NextValue;
+            internal string PreviousValue;
+        }
+
+        internal readonly MyStringId[] TextureIds =
+        {
+            MyStringId.GetOrCompute("DS_Empty_Wheel_0"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_1"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_2"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_3"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_4"),
+            MyStringId.GetOrCompute("DS_Empty_Wheel_5"),
+
+        };
 
         internal readonly Item[] WeaponGroups =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Weapon Groups]", SubName = "Group"},
+            new Item {ItemMessage = "[Weapon Groups]", SubName = "Group"},
         };
 
         internal readonly Item[] Group =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Group Settings]", ParentName = "WeaponGroups", SubName = "Settings"},
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Modify Weapons]", ParentName = "WeaponGroups", SubName = "Weapons"},
+            new Item {ItemMessage = "[Group Settings]", ParentName = "WeaponGroups", SubName = "Settings"},
+            new Item {ItemMessage = "[Modify Weapons]", ParentName = "WeaponGroups", SubName = "Weapons"},
         };
 
         internal readonly Item[] Settings =
         {
-            new Item { Title = "Group Enabled", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Attack Neutrals", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Attack Friends", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Manual Aim", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Manual Fire", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
-            new Item { Title = "Target Subsystem", Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Settings Menu", ItemMessage = "", ParentName = "Group"},
         };
 
         internal readonly Item[] Weapons =
         {
-            new Item { Texture = MyStringId.GetOrCompute("DS_Empty_Wheel"), ItemMessage = "Change Weapon]", ParentName = "Group"},
+            new Item {Title = "Weapons Menu", ParentName = "Group"},
         };
 
+        internal readonly Dictionary<string, Dictionary<int, Names>> SettingStrings = new Dictionary<string, Dictionary<int, Names>>()
+        {
+            {
+                "Active", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Deactivated", CurrentValue = "Deactivate", NextValue = "Activate"},
+                    [1] = new Names {Value = "Activated", CurrentValue = "Activate", NextValue = "Deactivate"},
+                }
+            },
+            {
+                "Neutrals", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "Friends", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "ManualAim", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "ManualFire", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "SubSystems", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Any", CurrentValue = "Any", NextValue = "Offense", PreviousValue = "Steering"},
+                    [1] = new Names {Value = "Offense", CurrentValue = "Offense", NextValue = "Utility", PreviousValue = "Any"},
+                    [2] = new Names {Value = "Utility", CurrentValue = "Utility", NextValue = "Power", PreviousValue = "Offense"},
+                    [3] = new Names {Value = "Power", CurrentValue = "Power", NextValue = "Production", PreviousValue = "Utility"},
+                    [4] = new Names {Value = "Production", CurrentValue = "Production", NextValue = "Thrust", PreviousValue = "Power"},
+                    [5] = new Names {Value = "Thrust", CurrentValue = "Thrust", NextValue = "Jumping", PreviousValue = "Production"},
+                    [6] = new Names {Value = "Jumping", CurrentValue = "Jumping", NextValue = "Steering", PreviousValue = "Thrust"},
+                    [7] = new Names {Value = "Steering", CurrentValue = "Steering", NextValue = "Any", PreviousValue = "Jumping"},
+                }
+            },
+        };
+
+        internal readonly List<string> SettingNames = new List<string>()
+        {
+            {"Active"},
+            {"Neutrals"},
+            {"Friends"},
+            {"ManualAim"},
+            {"ManualFire"},
+            {"SubSystems"}
+        };
 
         internal enum State
         {
