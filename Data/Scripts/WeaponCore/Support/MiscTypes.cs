@@ -189,7 +189,7 @@ namespace WeaponCore.Support
 
         internal void Clean()
         {
-            Target.Reset(false);
+            Target.Reset();
             HitList.Clear();
             System = null;
             Ai = null;
@@ -322,7 +322,7 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             target.Expired = Expired;
-            if(reset)Reset(false);
+            if(reset) Reset();
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null)
@@ -337,11 +337,12 @@ namespace WeaponCore.Support
             Expired = false;
         }
 
-        internal void Reset(bool targetExpired = true)
+        internal void Reset()
         {
             Entity = null;
             IsProjectile = false;
             Projectile = null;
+
             HitPos = Vector3D.Zero;
             HitShortDist = 0;
             OrigDistance = 0;

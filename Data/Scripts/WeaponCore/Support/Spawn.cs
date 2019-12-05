@@ -69,6 +69,15 @@ namespace WeaponCore.Support
             PositionAndOrientation = new MyPositionAndOrientation(Vector3D.Zero, Vector3D.Forward, Vector3D.Up)
         };
 
+        public static readonly MyObjectBuilder_FloatingObject FloatingObject = new MyObjectBuilder_FloatingObject()
+        {
+            EntityId = 0,
+            PersistentFlags = MyPersistentEntityFlags2.InScene,
+            Name = "CustomFloater",
+            PositionAndOrientation = new MyPositionAndOrientation(Vector3D.Zero, Vector3D.Forward, Vector3D.Up)
+        };
+
+
         public static MyEntity EmptyEntity(string displayName, string model, MyEntity parent, bool parented = false)
         {
             try

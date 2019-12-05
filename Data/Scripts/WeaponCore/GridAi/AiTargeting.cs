@@ -43,7 +43,7 @@ namespace WeaponCore.Support
             //Log.Line($"targetType: {targetType}");
             if (targetType == TargetType.None)
             {
-                w.NewTarget.Reset(false);
+                w.NewTarget.Reset();
                 w.SleepTargets = true;
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
                 w.Target.Expired = true;
@@ -110,7 +110,7 @@ namespace WeaponCore.Support
                 p.T.Target.Set(info.Target, targetPos, shortDist, origDist, topEntId);
                 return true;
             }
-            p.T.Target.Reset(false);
+            p.T.Target.Reset();
             return false;
         }
 
@@ -383,7 +383,6 @@ namespace WeaponCore.Support
                 break;
             }
             if (turretCheck && !notSelfHit) w.HitOther = true;
-            //if (!foundBlock && primeInfo != null && primeInfo.Target?.GetTopMostParent() == topEnt) Log.Line($"completed without block total:{totalBlocks} - started:{blocksStarted} - tried:{blocksChecked} - last:{lastBlocks}");
             return foundBlock;
         }
 
@@ -414,7 +413,7 @@ namespace WeaponCore.Support
                 var cube = i < top5Count ? top5[index] : cubes[index];
 
                 var grid = cube.CubeGrid;
-                if (cube.MarkedForClose || checkPower && !cube.IsWorking || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
+                if (cube.MarkedForClose || checkPower && !cube.IsWorking || !(cube is IMyTerminalBlock) || cube == newEntity || cube == newEntity0 || cube == newEntity1 || cube == newEntity2 || cube == newEntity3) continue;
                 var cubePos = grid.GridIntegerToWorld(cube.Position);
                 var range = cubePos - testPos;
                 var test = (range.X * range.X) + (range.Y * range.Y) + (range.Z * range.Z);
@@ -519,7 +518,7 @@ namespace WeaponCore.Support
                 target.Set(newEntity, bestCubePos, shortDist, origDist, topEntId);
                 top5.Add(newEntity);
             }
-            else target.Reset(false);
+            else target.Reset();
 
             if (newEntity0 != null) top5.Add(newEntity0);
             if (newEntity1 != null) top5.Add(newEntity1);
@@ -615,7 +614,9 @@ namespace WeaponCore.Support
                 var dir = (targetPos - p.Position);
                 if (voxel != null)
                 {
-                    if (new RayD(ref p.Position, ref dir).Intersects(ent.PositionComp.WorldVolume) != null)
+                    var voxelVolume = ent.PositionComp.WorldVolume;
+
+                    if (voxelVolume.Contains(p.Position) != ContainmentType.Disjoint || new RayD(ref p.Position, ref dir).Intersects(voxelVolume) != null)
                     {
                         var dirNorm = Vector3D.Normalize(dir);
                         var targetDist = Vector3D.Distance(p.Position, targetPos);
@@ -623,14 +624,9 @@ namespace WeaponCore.Support
                         var testPos = p.Position + (dirNorm * (targetDist - tRadius));
                         var lineTest = new LineD(p.Position, testPos);
                         Vector3D? voxelHit = null;
-                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ent.WorldMatrix);
-                        var obb = new MyOrientedBoundingBoxD(ent.PositionComp.WorldAABB.Center, ent.PositionComp.LocalAABB.HalfExtents, rotMatrix);
 
-                        if (obb.Intersects(ref lineTest) != null)
-                            using (voxel.Pin())
-                            {
-                                voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
-                            }
+                        using (voxel.Pin())
+                            voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
 
                         obstruction = voxelHit.HasValue;
                         if (obstruction)

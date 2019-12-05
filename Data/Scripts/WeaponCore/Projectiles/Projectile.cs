@@ -105,7 +105,9 @@ namespace WeaponCore.Projectiles
         internal readonly List<Trajectile> VrTrajectiles = new List<Trajectile>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
+        internal readonly HashSet<Projectile> Seekers = new HashSet<Projectile>();
         internal readonly List<IHitInfo> RayHits = new List<IHitInfo>();
+
         internal void Start(Projectiles manager)
         {
             Manager = manager;
@@ -169,7 +171,7 @@ namespace WeaponCore.Projectiles
             if (T.Target.IsProjectile)
             {
                 OriginTargetPos = T.Target.Projectile.Position;
-                T.Target.IsProjectile = T.Target.Projectile.T.BaseHealthPool > 0;
+                T.Target.Projectile.Seekers.Add(this);
             }
             else if (T.Target.Entity != null) OriginTargetPos = T.Target.Entity.PositionComp.WorldAABB.Center;
             else OriginTargetPos = Vector3D.Zero;
@@ -482,7 +484,12 @@ namespace WeaponCore.Projectiles
             if (!GridAi.ReacquireTarget(this))
             {
                 T.Target.Entity = null;
-                T.Target.IsProjectile = false;
+                if (T.Target.IsProjectile)
+                {
+                    T.Target.Projectile.Seekers.Remove(this);
+                    T.Target.IsProjectile = false;
+                    T.Target.Projectile = null;
+                }
                 return false;
             }
             return true;
@@ -686,13 +693,15 @@ namespace WeaponCore.Projectiles
                     for (int j = 0; j < EwaredProjectiles.Count; j++)
                     {
                         var netted = EwaredProjectiles[j];
-                        if (netted.T.Ai == T.Ai || netted.T.Target.Projectile != null) continue;
-                        Log.Line("netted");
+                        if (netted.T.Ai == T.Ai || netted.T.Target.IsProjectile) continue;
+                        //Log.Line("netted");
                         if (MyUtils.GetRandomInt(0, 100) < PulseChance)
                         {
                             EwarActive = true;
-                            Log.Line("change course");
+                            //Log.Line($"change course: {netted.T.Target.Projectile != null}");
                             netted.T.Target.Projectile = this;
+                            netted.T.Target.IsProjectile = true;
+                            Seekers.Add(netted);
                         }
                     }
                     EwaredProjectiles.Clear();
@@ -894,13 +903,15 @@ namespace WeaponCore.Projectiles
             for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Enqueue(this);
             Watchers.Clear();
 
+            foreach (var seeker in Seekers) seeker.T.Target.Reset();
+            Seekers.Clear();
+
             if (EnableAv)
             {
                 if (T.System.AmmoParticle) DisposeAmmoEffect(false, false);
                 HitEffects();
             }
             State = ProjectileState.Dead;
-            T.Target.IsProjectile = false;
             Manager.CleanUp.Add(this);
 
             if (ModelState == EntityState.Exists)
