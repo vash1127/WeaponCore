@@ -97,6 +97,7 @@ namespace WeaponCore.Projectiles
         internal bool Active;
         internal bool HitParticleActive;
         internal bool CachedPlanetHit;
+        internal bool ForceHitParticle;
         internal Trajectile T = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -407,7 +408,7 @@ namespace WeaponCore.Projectiles
             }
 
             if (p.EnableAv)
-                p.HitEffects(!queue);
+                p.HitEffects();
 
             return true;
         }
@@ -580,7 +581,7 @@ namespace WeaponCore.Projectiles
             {
                 var gaveUpChase = Age - ChaseAge > MaxChaseAge;
                 var validTarget = T.Target.IsProjectile || T.Target.Entity != null && !T.Target.Entity.MarkedForClose;
-                var isZombie = !T.System.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
+                var isZombie = !T.System.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 90 == 0;
                 if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)
                 {
                     if (ZombieLifeTime > 0) UpdateZombie(true);
@@ -635,7 +636,10 @@ namespace WeaponCore.Projectiles
             else
             {
                 PrevTargetPos = PredictedTargetPos;
-                if (ZombieLifeTime++ > T.System.TargetLossTime) DistanceToTravelSqr = T.DistanceTraveled * T.DistanceTraveled;
+                if (ZombieLifeTime++ > T.System.TargetLossTime)
+                {
+                    DistanceToTravelSqr = T.DistanceTraveled * T.DistanceTraveled;
+                }
                 if (Age - LastOffsetTime > 300)
                 {
                     double dist;
@@ -772,19 +776,17 @@ namespace WeaponCore.Projectiles
             if (Age != 0) LastOffsetTime = Age;
         }
 
-        internal void HitEffects(bool force = false)
+        internal void HitEffects()
         {
-            if (Colliding || force)
+            if (Colliding || ForceHitParticle)
             {
                 var distToCameraSqr = Vector3D.DistanceSquared(Position, T.Ai.Session.CameraPos);
                 var closeToCamera = distToCameraSqr < 360000;
-                if (force) LastHitPos = Position;
-                
-                if (T.OnScreen && HitParticleActive && T.System.HitParticle)
-                    PlayHitParticle();
+                if (ForceHitParticle) LastHitPos = Position;
 
+                if (T.OnScreen && HitParticleActive && T.System.HitParticle) PlayHitParticle();
                 else if (HitParticleActive && (T.OnScreen || closeToCamera)) T.FakeExplosion = true;
-                T.HitSoundActived = T.System.HitSound && (T.HitSoundActive && (force || distToCameraSqr < T.System.HitSoundDistSqr || LastHitPos.HasValue && (!T.LastHitShield || T.System.Values.Audio.Ammo.HitPlayShield)));
+                T.HitSoundActived = T.System.HitSound && (T.HitSoundActive && (ForceHitParticle || distToCameraSqr < T.System.HitSoundDistSqr || LastHitPos.HasValue && (!T.LastHitShield || T.System.Values.Audio.Ammo.HitPlayShield)));
 
                 if (T.HitSoundActived) T.HitEmitter.Entity = T.DrawHit?.Entity;
                 T.LastHitShield = false;
@@ -890,8 +892,11 @@ namespace WeaponCore.Projectiles
         internal void DestroyProjectile()
         {
             if (State == ProjectileState.Destroy)
+            {
+                ForceHitParticle = true;
                 Intersected(this, new DrawHit(null, null, null, Position), false);
-            
+            }
+
             State = ProjectileState.Depleted;
         }
 

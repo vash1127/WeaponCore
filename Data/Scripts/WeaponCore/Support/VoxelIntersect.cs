@@ -37,6 +37,41 @@ namespace WeaponCore.Support
             return hit.HasHit;
         }
 
+        internal static bool CheckPointsOnLine (MyVoxelBase voxel, LineD testLine, int distBetweenPoints)
+        {
+            var planet = voxel as MyPlanet;
+            var map = voxel as MyVoxelMap;
+            var hit = new VoxelHit();
+            var checkPoints = (int)(testLine.Length / distBetweenPoints);
+            for (int i = 0; i < checkPoints; i++)
+            {
+                var testPos = testLine.From + (testLine.Direction * (distBetweenPoints * i));
+                //Log.Line($"i: {i} - lookAhead:{(distBetweenPoints * i)}");
+                if (planet != null)
+                {
+                    var from = testPos;
+                    var localPosition = (Vector3)(from - planet.PositionLeftBottomCorner);
+                    var v = localPosition / 1f;
+                    Vector3I voxelCoord;
+                    Vector3I.Floor(ref v, out voxelCoord);
+                    planet.Storage.ExecuteOperationFast(ref hit, MyStorageDataTypeFlags.Content, ref voxelCoord, ref voxelCoord, notifyRangeChanged: false);
+                    if (hit.HasHit) return true;
+                }
+                else if (map != null)
+                {
+                    var from = testPos;
+                    var localPosition = (Vector3)(from - map.PositionLeftBottomCorner);
+                    var v = localPosition / 1f;
+                    Vector3I voxelCoord;
+                    Vector3I.Floor(ref v, out voxelCoord);
+                    map.Storage.ExecuteOperationFast(ref hit, MyStorageDataTypeFlags.Content, ref voxelCoord, ref voxelCoord, notifyRangeChanged: false);
+                    if (hit.HasHit) return true;
+                }
+            }
+
+            return false;
+        }
+
         internal static Vector3D? ProcessVoxel(LineD trajectile, MyVoxelBase voxel, WeaponSystem system, List<Vector3I> testPoints)
         {
             var planet = voxel as MyPlanet;

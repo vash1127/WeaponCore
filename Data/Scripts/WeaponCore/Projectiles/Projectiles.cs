@@ -100,7 +100,6 @@ namespace WeaponCore.Projectiles
             foreach (var p in ProjectilePool.Active)
             {
                 p.Age++;
-                p.T.OnScreen = false;
                 p.Active = false;
                 switch (p.State)
                 {
@@ -120,6 +119,7 @@ namespace WeaponCore.Projectiles
                         p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
                         break;
                 }
+                p.T.OnScreen = false;
 
                 if (p.AccelLength > 0)
                 {
@@ -223,13 +223,13 @@ namespace WeaponCore.Projectiles
             foreach (var p in ProjectilePool.Active)
             {
                 p.Miss = false;
+
                 if (!p.Active || p.State == ProjectileState.Dead) continue;
 
                 var beam = new LineD(p.LastPosition, p.Position);
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
-                    p.T.End = true;
                     var dInfo = p.T.System.Values.Ammo.AreaEffect.Detonation;
 
                     p.PruneSphere.Center = p.Position;
@@ -237,18 +237,22 @@ namespace WeaponCore.Projectiles
                     if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
                     {
                         var checkList = CheckPool.Get();
-                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
+                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList,
+                            p.PruneQuery);
                         for (int i = 0; i < checkList.Count; i++)
-                            p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = 0, Element = checkList[i] });
+                            p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
+                                {Distance = 0, Element = checkList[i]});
 
                         if (p.T.System.TrackProjectile)
                             foreach (var lp in p.T.Ai.LiveProjectile)
-                                if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.T.Target.Projectile)
+                                if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint &&
+                                    lp != p.T.Target.Projectile)
                                     ProjectileHit(p, lp, p.T.System.CollisionIsLine);
 
                         checkList.Clear();
                         CheckPool.Return(checkList);
-                        p.HitEffects(true);
+                        p.State = ProjectileState.Depleted;
+                        p.ForceHitParticle = true;
                     }
                 }
                 else if (p.MineSeeking && !p.MineTriggered)
@@ -294,7 +298,6 @@ namespace WeaponCore.Projectiles
                     if (nearestHitEnt != null && p.Intersected(p, nearestHitEnt))
                         continue;
                 }
-                if (p.T.End) p.ProjectileClose();
 
                 p.Miss = true;
                 p.T.HitList.Clear();

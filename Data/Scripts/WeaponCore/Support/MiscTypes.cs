@@ -82,7 +82,6 @@ namespace WeaponCore.Support
         internal bool EnableGuidance = true;
         internal bool Triggered;
         internal bool Cloaked;
-        internal bool End;
         internal bool FakeExplosion;
         internal bool HitSoundActived;
         internal bool StartSoundActived;
@@ -197,7 +196,6 @@ namespace WeaponCore.Support
             TriggerEntity = null;
             WeaponCache = null;
             Triggered = false;
-            End = false;
             Cloaked = false;
             AmmoSound = false;
             HitSoundActive = false;

@@ -624,7 +624,6 @@ namespace WeaponCore.Support
                         var testPos = p.Position + (dirNorm * (targetDist - tRadius));
                         var lineTest = new LineD(p.Position, testPos);
                         Vector3D? voxelHit = null;
-
                         using (voxel.Pin())
                             voxel.RootVoxel.GetIntersectionWithLine(ref lineTest, out voxelHit);
 
@@ -653,19 +652,36 @@ namespace WeaponCore.Support
             {
                 var dir = (targetPos - p.Position);
                 var ray = new RayD(ref p.Position, ref dir);
-                    foreach (var sub in ai.SubGrids)
+                foreach (var sub in ai.SubGrids)
+                {
+                    var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
+                    if (subDist.HasValue)
                     {
-                        var subDist = sub.PositionComp.WorldVolume.Intersects(ray);
-                        if (subDist.HasValue)
-                        {
-                            var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
-                            var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                            if (obb.Intersects(ref ray) != null)
-                                obstruction = sub.RayCastBlocks(p.Position, targetPos) != null;
-                        }
-
-                        if (obstruction) break;
+                        var rotMatrix = Quaternion.CreateFromRotationMatrix(ai.MyGrid.WorldMatrix);
+                        var obb = new MyOrientedBoundingBoxD(ai.MyGrid.PositionComp.WorldAABB.Center, ai.MyGrid.PositionComp.LocalAABB.HalfExtents, rotMatrix);
+                        if (obb.Intersects(ref ray) != null)
+                            obstruction = sub.RayCastBlocks(p.Position, targetPos) != null;
                     }
+
+                    if (obstruction) break;
+                }
+
+                if (!obstruction && ai.MyPlanet != null)
+                {
+                    var dirNorm = Vector3D.Normalize(dir);
+                    var targetDist = Vector3D.Distance(p.Position, targetPos);
+                    var tRadius = info.Target.PositionComp.LocalVolume.Radius;
+                    var testPos = p.Position + (dirNorm * (targetDist - tRadius));
+                    var lineTest = new LineD(p.Position, testPos);
+                    Vector3D? voxelHit = null;
+
+                    ai.Session.DsUtil2.Start("");
+                    using (ai.MyPlanet.Pin())
+                        ai.MyPlanet.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                    ai.Session.DsUtil2.Complete("", false, true);
+
+                    obstruction = voxelHit.HasValue;
+                }
             }
             return obstruction;
         }
