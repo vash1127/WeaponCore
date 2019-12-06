@@ -79,6 +79,42 @@ namespace WeaponCore.Platform
                         }
 
                         break;
+                    case EventTriggers.StopFiring:
+                        if (AnimationsSet.ContainsKey(EventTriggers.StopFiring))
+                        {
+                            for (int i = 0; i < AnimationsSet[EventTriggers.StopFiring].Length; i++)
+                            {
+                                var animation = AnimationsSet[EventTriggers.StopFiring][i];
+                                if (active && animation.Looping != true && !pause)
+                                {
+                                    if (!animation.Running && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
+                                    {
+                                        if (animation.TriggerOnce && animation.Triggered) continue;
+
+                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                        animation.Running = true;
+                                        animation.Triggered = true;
+
+                                        if (animation.DoesLoop && !animation.TriggerOnce)
+                                            animation.Looping = true;
+                                    }
+                                }
+                                else if (active && animation.Looping && pause)
+                                    animation.PauseAnimation = true;
+
+                                else if (active && animation.Looping)
+                                    animation.PauseAnimation = false;
+
+                                else
+                                {
+                                    animation.PauseAnimation = false;
+                                    animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
+                            }
+                        }
+
+                        break;
                     case EventTriggers.Reloading:
 
                         var canReload = true;
@@ -511,9 +547,11 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
+            
             if (FiringEmitter != null) StartFiringSound();
             if (ShotEnergyCost > 0 && !IsShooting && !System.DesignatorWeapon)
             {
+                EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
                 Comp.SinkPower += RequiredPower;
                 Comp.CurrentSinkPowerRequested += RequiredPower;
@@ -526,6 +564,7 @@ namespace WeaponCore.Platform
         public void StopShooting(bool avOnly = false)
         {
             EventTriggerStateChanged(EventTriggers.Firing, false);
+            EventTriggerStateChanged(EventTriggers.StopFiring, true);
             StopFiringSound(false);
             StopRotateSound();
             ShootGraphics(true);
