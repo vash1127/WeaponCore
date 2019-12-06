@@ -231,7 +231,6 @@ namespace WeaponCore.Platform
                                 {
                                     if (Vector3.Dot(p.Direction, p.T.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
                                     {
-                                        //Log.Line("approch");
                                         var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
                                         targetSphere.Radius *= 3;
                                         var testRay = new RayD(p.T.Origin, p.Direction);
