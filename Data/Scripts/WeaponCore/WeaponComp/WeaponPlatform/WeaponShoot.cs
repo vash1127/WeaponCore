@@ -226,7 +226,8 @@ namespace WeaponCore.Platform
                             for (int t = 0; t < targetAiCnt; t++)
                             {
                                 var targetAi = Comp.Ai.TargetAis[t];
-                                if (System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None)
+                                var addProjectile = System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None;
+                                if (!addProjectile)
                                 {
                                     if (Vector3.Dot(p.Direction, p.T.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
                                     {
@@ -245,12 +246,13 @@ namespace WeaponCore.Platform
                                         }
 
                                         if (quickCheck || targetSphere.Intersects(testRay) != null)
-                                        {
-                                            //Log.Line($"valid: {quickCheck} - {Vector3D.IsZero(targetAi.GridVel, 0.025)}");
-                                            targetAi.LiveProjectile.Add(p);
-                                            p.Watchers.Add(targetAi);
-                                        }
+                                            addProjectile = true;
                                     }
+                                }
+                                if (addProjectile)
+                                {
+                                    targetAi.LiveProjectile.Add(p);
+                                    p.Watchers.Add(targetAi);
                                 }
                             }
                         }

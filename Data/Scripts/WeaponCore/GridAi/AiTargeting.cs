@@ -666,21 +666,20 @@ namespace WeaponCore.Support
                     if (obstruction) break;
                 }
 
-                if (!obstruction && ai.MyPlanet != null)
+                if (!obstruction && ai.PlanetSurfaceInRange && ai.MyPlanet != null)
                 {
                     var dirNorm = Vector3D.Normalize(dir);
                     var targetDist = Vector3D.Distance(p.Position, targetPos);
                     var tRadius = info.Target.PositionComp.LocalVolume.Radius;
                     var testPos = p.Position + (dirNorm * (targetDist - tRadius));
                     var lineTest = new LineD(p.Position, testPos);
-                    Vector3D? voxelHit = null;
 
                     ai.Session.DsUtil2.Start("");
                     using (ai.MyPlanet.Pin())
-                        ai.MyPlanet.GetIntersectionWithLine(ref lineTest, out voxelHit);
+                        obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, lineTest, 3.5);
                     ai.Session.DsUtil2.Complete("", false, true);
 
-                    obstruction = voxelHit.HasValue;
+                    //obstruction = voxelHit.HasValue;
                 }
             }
             return obstruction;

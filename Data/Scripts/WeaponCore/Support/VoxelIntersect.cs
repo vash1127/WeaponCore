@@ -72,6 +72,35 @@ namespace WeaponCore.Support
             return false;
         }
 
+        internal static bool CheckSurfacePointsOnLine(MyPlanet planet, LineD testLine, double distBetweenPoints)
+        {
+            var checkPoints = (int)(testLine.Length / distBetweenPoints);
+            var lastPoint = (checkPoints - 1);
+
+            for (int i = 0; i < checkPoints; i++)
+            {
+                var planetInPath = i != lastPoint;
+                if (planetInPath)
+                {
+                    var testPos = testLine.From + (testLine.Direction * (distBetweenPoints * i));
+                    var closestSurface = planet.GetClosestSurfacePointGlobal(ref testPos);
+                    double surfaceDistToTest;
+                    Vector3D.DistanceSquared(ref closestSurface, ref testPos, out surfaceDistToTest);
+                    if (surfaceDistToTest < 4) return true;
+                }
+
+                if (!planetInPath)
+                {
+                    Vector3D? voxelHit = null;
+                    planet.GetIntersectionWithLine(ref testLine, out voxelHit);
+                    Log.Line($"voxelHit:{voxelHit.HasValue}");
+                    return voxelHit.HasValue;
+                }
+
+            }
+            return false;
+        }
+
         internal static Vector3D? ProcessVoxel(LineD trajectile, MyVoxelBase voxel, WeaponSystem system, List<Vector3I> testPoints)
         {
             var planet = voxel as MyPlanet;
