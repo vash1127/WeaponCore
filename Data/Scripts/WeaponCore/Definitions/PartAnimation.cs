@@ -21,6 +21,7 @@ namespace WeaponCore.Support {
         internal readonly MyEntity MainEnt;
         internal readonly bool DoesLoop;
         internal readonly bool DoesReverse;
+        internal readonly bool TriggerOnce;
         internal readonly string Muzzle;
         internal readonly string SubpartId;
 
@@ -50,6 +51,7 @@ namespace WeaponCore.Support {
         internal bool Looping;
         internal bool PauseAnimation;
         internal bool Running;
+        internal bool Triggered;
         internal uint StartTick;
 
         private int _currentMove;
@@ -59,19 +61,9 @@ namespace WeaponCore.Support {
         internal int CurrentMove
         {
             get { return _currentMove; }
-
-            set
-            {
-                if (value >= NumberOfMoves - 1)
-                    _currentMove = NumberOfMoves - 1;
-                else if (value < 0)
-                    _currentMove = 0;
-                else
-                    _currentMove = value;
-            }
         }
 
-        internal PartAnimation(string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false)
+        internal PartAnimation(string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false)
         {
             RotationSet = rotationSet;
             RotCenterSet = rotCeterSet;
@@ -96,6 +88,7 @@ namespace WeaponCore.Support {
             MainEnt = mainEnt;
             DoesLoop = loop;
             DoesReverse = reverse;
+            TriggerOnce = triggerOnce;
             _currentMove = 0;
 
             if (part != null)

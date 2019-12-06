@@ -124,8 +124,17 @@ namespace WeaponCore
             MissileBase = comp.MissileBase;
             IsSorterTurret = comp.IsSorterTurret;
             Value.Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length];
+            var maxTrajectory = 0f;
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
+            {
+                if (maxTrajectory < Comp.Platform.Weapons[i].System.MaxTrajectory) maxTrajectory = (float)Comp.Platform.Weapons[i].System.MaxTrajectory;
+
                 if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();
+            }
+            if (IsSorterTurret)
+                Value.Range = maxTrajectory;
+            else
+                Value.Range = MissileBase.Range;
         }
 
         public void SaveSettings(bool createStorage = false)

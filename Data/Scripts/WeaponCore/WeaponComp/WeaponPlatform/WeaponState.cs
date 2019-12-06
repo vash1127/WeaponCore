@@ -53,9 +53,13 @@ namespace WeaponCore.Platform
                                 {
                                     if (!animation.Running && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
                                     {
+                                        if (animation.TriggerOnce && animation.Triggered) continue;
+
                                         Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                         animation.Running = true;
-                                        if (animation.DoesLoop)
+                                        animation.Triggered = true;
+
+                                        if (animation.DoesLoop && !animation.TriggerOnce)
                                             animation.Looping = true;
                                     }
                                 }
@@ -69,6 +73,43 @@ namespace WeaponCore.Platform
                                 {
                                     animation.PauseAnimation = false;
                                     animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
+                            }
+                        }
+
+                        break;
+                    case EventTriggers.StopFiring:
+                        if (AnimationsSet.ContainsKey(EventTriggers.StopFiring))
+                        {
+                            for (int i = 0; i < AnimationsSet[EventTriggers.StopFiring].Length; i++)
+                            {
+                                var animation = AnimationsSet[EventTriggers.StopFiring][i];
+                                if (active && animation.Looping != true && !pause)
+                                {
+                                    if (!animation.Running && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
+                                    {
+                                        if (animation.TriggerOnce && animation.Triggered) continue;
+
+                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                        animation.Running = true;
+                                        animation.Triggered = true;
+
+                                        if (animation.DoesLoop && !animation.TriggerOnce)
+                                            animation.Looping = true;
+                                    }
+                                }
+                                else if (active && animation.Looping && pause)
+                                    animation.PauseAnimation = true;
+
+                                else if (active && animation.Looping)
+                                    animation.PauseAnimation = false;
+
+                                else
+                                {
+                                    animation.PauseAnimation = false;
+                                    animation.Looping = false;
+                                    animation.Triggered = false;
                                 }
                             }
                         }
@@ -107,9 +148,12 @@ namespace WeaponCore.Platform
                                     var animation = AnimationsSet[EventTriggers.Reloading][i];
                                     if (active && animation.Looping != true && !pause && !animation.Running)
                                     {
+                                        if (animation.TriggerOnce && animation.Triggered) continue;
+
                                         Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                         animation.Running = true;
-                                        if (animation.DoesLoop)
+                                        animation.Triggered = true;
+                                        if (animation.DoesLoop && !animation.TriggerOnce)
                                             animation.Looping = true;
                                     }
                                     else if (active && animation.Looping && pause)
@@ -141,14 +185,17 @@ namespace WeaponCore.Platform
                                     {
                                         if (!animation.Running)
                                         {
+                                            if (animation.TriggerOnce && animation.Triggered) continue;
+
                                             Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                             animation.Running = true;
-                                        }
-                                        else
-                                            animation.Looping = true;
-                                    }
+                                            animation.Triggered = false;
 
-                                    if (animation.DoesLoop)
+                                            if (animation.DoesLoop && !animation.TriggerOnce)
+                                                animation.Looping = true;
+                                        }
+                                    }
+                                    else if(animation.DoesLoop && !animation.TriggerOnce)
                                         animation.Looping = true;
                                 }
                                 else
@@ -164,14 +211,21 @@ namespace WeaponCore.Platform
                             for (int i = 0; i < AnimationsSet[EventTriggers.Overheated].Length; i++)
                             {
                                 var animation = AnimationsSet[EventTriggers.Overheated][i];
-                                if (active && animation.Looping != true)
+                                if (active && !animation.Running && animation.Looping != true)
                                 {
+                                    if (animation.TriggerOnce && animation.Triggered) continue;
+
                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                    animation.Running = true;
+                                    animation.Triggered = true;
                                     if (animation.DoesLoop)
                                         animation.Looping = true;
                                 }
                                 else if (!active)
+                                {
                                     animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
                             }
                         }
 
@@ -228,9 +282,6 @@ namespace WeaponCore.Platform
                                 }
                                 else
                                     animation.Reverse = false;
-
-                                if (animation.DoesLoop)
-                                    animation.Looping = true;
                             }
                         }
 
@@ -305,7 +356,8 @@ namespace WeaponCore.Platform
                                 {
                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                     animation.Running = true;
-                                }                            }
+                                }
+                            }
                         }
 
                         break;
@@ -322,14 +374,20 @@ namespace WeaponCore.Platform
                                 {
                                     if (!animation.Running)
                                     {
+                                        if (animation.TriggerOnce && animation.Triggered) continue;
+
                                         Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                         animation.Running = true;
+                                        animation.Triggered = true;
+                                        if (animation.DoesLoop)
+                                            animation.Looping = true;
                                     }
-                                    else if (animation.DoesLoop)
-                                        animation.Looping = true;
                                 }
                                 else
+                                {
                                     animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
                             }
                         }
                         break;
@@ -489,9 +547,11 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
+            
             if (FiringEmitter != null) StartFiringSound();
             if (ShotEnergyCost > 0 && !IsShooting && !System.DesignatorWeapon)
             {
+                EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
                 Comp.SinkPower += RequiredPower;
                 Comp.CurrentSinkPowerRequested += RequiredPower;
@@ -504,6 +564,7 @@ namespace WeaponCore.Platform
         public void StopShooting(bool avOnly = false)
         {
             EventTriggerStateChanged(EventTriggers.Firing, false);
+            EventTriggerStateChanged(EventTriggers.StopFiring, true);
             StopFiringSound(false);
             StopRotateSound();
             ShootGraphics(true);

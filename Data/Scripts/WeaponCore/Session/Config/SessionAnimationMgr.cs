@@ -397,6 +397,7 @@ namespace WeaponCore
 
                         var loop = false;
                         var reverse = false;
+                        var triggerOnce = false;
 
                         if (animationSet.Loop != null && animationSet.Loop.Contains(moves.Key))
                             loop = true;
@@ -404,9 +405,12 @@ namespace WeaponCore
                         if (animationSet.Reverse != null && animationSet.Reverse.Contains(moves.Key))
                             reverse = true;
 
+                        if (animationSet.TriggerOnce != null && animationSet.TriggerOnce.Contains(moves.Key))
+                            triggerOnce = true;
+
                         var partAnim = new PartAnimation(id, rotationSet.ToArray(),
                             rotCenterSet.ToArray(), typeSet, currentEmissivePart.ToArray(), moveIndexer.ToArray(), animationSet.SubpartId[t], null, null,
-                            animationSet.BarrelId, animationSet.StartupFireDelay, animationSet.AnimationDelays[moves.Key], system, loop, reverse);
+                            animationSet.BarrelId, animationSet.StartupFireDelay, animationSet.AnimationDelays[moves.Key], system, loop, reverse, triggerOnce);
 
                         weaponLinearMoveSet.Add(id, moveSet.ToArray());
 
@@ -474,7 +478,7 @@ namespace WeaponCore
                     allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.AnimationId, rotations, rotCenters,
                         animation.TypeSet, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
                         animation.Muzzle, animation.FireDelay, animation.MotionDelay, system, animation.DoesLoop,
-                        animation.DoesReverse));
+                        animation.DoesReverse, animation.TriggerOnce));
                 }
             }
 

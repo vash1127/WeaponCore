@@ -171,7 +171,8 @@ namespace WeaponCore.Platform
             BurstReload,
             OutOfAmmo,
             PreFire,
-            EmptyOnGameLoad
+            EmptyOnGameLoad,
+            StopFiring
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)

@@ -555,6 +555,7 @@ namespace WeaponCore.Support
         [ProtoMember(5)] internal EventTriggers[] Reverse;
         [ProtoMember(6)] internal EventTriggers[] Loop;
         [ProtoMember(7)] internal Dictionary<EventTriggers, RelMove[]> EventMoveSets;
+        [ProtoMember(8)] internal EventTriggers[] TriggerOnce;
 
     }
 
