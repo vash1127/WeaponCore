@@ -24,17 +24,15 @@ namespace WeaponCore
                 
 
                 if (typeof(T) == typeof(IMyLargeTurretBase))
-                {
-                    TerminalHelpers.AlterActions<IMyLargeTurretBase>();
                     currentType = "Missile";
-                }
 
+                TerminalHelpers.AlterActions<T>();
                 TerminalHelpers.AlterControls<T>();
 
 
                 if (typeof(T) == typeof(IMyConveyorSorter))
                 {
-                    TerminalHelpers.AddSlider<T>(0, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, WepUi.CoreWeaponEnableCheck, WepUi.GetMinRange, WepUi.GetMaxRange);
+                    TerminalHelpers.AddSlider<T>(-5, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, WepUi.CoreWeaponEnableCheck, WepUi.GetMinRange, WepUi.GetMaxRange);
                     currentType = "Sorter";
                 }
 
