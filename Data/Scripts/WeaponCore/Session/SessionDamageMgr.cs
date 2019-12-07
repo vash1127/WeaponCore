@@ -401,19 +401,6 @@ namespace WeaponCore
             }
         }
 
-        private void ExplosionProximity(HitEntity hitEnt, Trajectile t)
-        {
-            var system = t.System;
-            t.BaseDamagePool = 0;
-            var radius = system.Values.Ammo.AreaEffect.AreaEffectRadius;
-            var damage = system.Values.Ammo.AreaEffect.AreaEffectDamage;
-            if (system.VirtualBeams)
-                damage *= t.WeaponCache.Hits;
-
-            if (hitEnt.HitPos.HasValue)
-                UtilsStatic.CreateMissileExplosion(this, damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, hitEnt.Entity, system, true);
-        }
-
         public static void ApplyProjectileForce(MyEntity entity, Vector3D intersectionPosition, Vector3 normalizedDirection, float impulse)
         {
             if (entity.Physics == null || !entity.Physics.Enabled || entity.Physics.IsStatic || entity.Physics.Mass / impulse > 500)
