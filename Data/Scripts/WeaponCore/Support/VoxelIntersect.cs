@@ -92,7 +92,12 @@ namespace WeaponCore.Support
                 if (!planetInPath)
                 {
                     Vector3D? voxelHit = null;
-                    planet.GetIntersectionWithLine(ref testLine, out voxelHit);
+                    var closestSurface = planet.GetClosestSurfacePointGlobal(ref testLine.To);
+                    var reverseLine = testLine;
+                    reverseLine.Direction = -reverseLine.Direction;
+                    reverseLine.From = testLine.To;
+                    reverseLine.To = reverseLine.From + (reverseLine.Direction * (Vector3D.Distance(closestSurface, reverseLine.From) + distBetweenPoints));
+                    planet.GetIntersectionWithLine(ref reverseLine, out voxelHit);
                     Log.Line($"voxelHit:{voxelHit.HasValue}");
                     return voxelHit.HasValue;
                 }

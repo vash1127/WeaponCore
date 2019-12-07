@@ -676,7 +676,7 @@ namespace WeaponCore.Support
 
                     ai.Session.DsUtil2.Start("");
                     using (ai.MyPlanet.Pin())
-                        obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, lineTest, 3.5);
+                        obstruction = VoxelIntersect.CheckSurfacePointsOnLine(ai.MyPlanet, lineTest, 2);
                     ai.Session.DsUtil2.Complete("", false, true);
 
                     //obstruction = voxelHit.HasValue;
