@@ -80,9 +80,13 @@ namespace WeaponCore.Projectiles
                 p.T.Clean();
                 ProjectilePool.MarkForDeallocate(p);
             }
+
             CleanUp.Clear();
-            foreach (var e in EntityPool)
-                e.DeallocateAllMarked();
+            if (EntityPool != null)
+            {
+                foreach (var e in EntityPool)
+                    e.DeallocateAllMarked();
+            }
 
             TrajectilePool.DeallocateAllMarked();
             ProjectilePool.DeallocateAllMarked();
