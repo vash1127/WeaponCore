@@ -296,9 +296,11 @@ namespace WeaponCore.Support
         internal MyEntity Entity;
         internal Projectile Projectile;
         internal volatile bool IsProjectile;
-        internal int[] Deck = new int[0];
-        internal int PrevDeckLength;
-        internal TargetingDefinition.BlockTypes LastBlockType;
+        internal int[] TargetDeck = new int[0];
+        internal int[] BlockDeck = new int[0];
+        internal int TargetPrevDeckLen;
+        internal int BlockPrevDeckLen;
+        internal BlockTypes LastBlockType;
         internal Vector3D HitPos;
         internal double HitShortDist;
         internal double OrigDistance;
@@ -743,10 +745,15 @@ namespace WeaponCore.Support
 
             if (addSecondary && Target[newActiveId] == null)
             {
+                Log.Line("test -1");
                 Target[newActiveId] = Target[prevId];
                 ActiveId = newActiveId;
             }
-            else if (!addSecondary && Target[newActiveId] != null) ActiveId = newActiveId;
+            else if (!addSecondary && Target[newActiveId] != null)
+            {
+                Log.Line("test 0");
+                ActiveId = newActiveId;
+            }
         }
 
         internal bool IsFocused()
@@ -757,7 +764,8 @@ namespace WeaponCore.Support
                 if (Target[i] != null)
                 {
                     if (!Target[i].MarkedForClose) HasFocus = true;
-                    else Target[i] = null;
+                    else
+                        Target[i] = null;
                 }
 
                 if (Target[0] == null && HasFocus)

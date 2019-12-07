@@ -67,8 +67,11 @@ namespace WeaponCore.Support
             if (ai.Focus.Target[1] != null)
                 if (ai.Targets.TryGetValue(ai.Focus.Target[1], out betaInfo)) offset++;
 
-            var adjTargetCount = ai.SortedTargets.Count + offset;
+            var numOfTargets = ai.SortedTargets.Count;
+            var adjTargetCount = numOfTargets + offset;
             var hasOffset = offset > 0;
+
+            var deck = GetDeck(ref p.T.Target.TargetDeck, ref p.T.Target.TargetPrevDeckLen, 0, numOfTargets, p.T.System.Values.Targeting.TopTargets);
 
             for (int i = 0; i < adjTargetCount; i++)
             {
@@ -78,7 +81,7 @@ namespace WeaponCore.Support
                 TargetInfo info;
                 if (i == 0 && alphaInfo != null) info = alphaInfo;
                 else if (i <= lastOffset && betaInfo != null) info = betaInfo;
-                else info = ai.SortedTargets[i - offset];
+                else info = ai.SortedTargets[deck[i - offset]];
 
                 if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && i > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue;
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
@@ -139,8 +142,12 @@ namespace WeaponCore.Support
                 if(ai.Targets.TryGetValue(targetGrid, out gridInfo))
                     forceTarget = true;
 
-            var adjTargetCount = ai.SortedTargets.Count + offset;
+            var numOfTargets = ai.SortedTargets.Count;
+            var adjTargetCount = numOfTargets + offset;
             var hasOffset = offset > 0;
+
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets);
+
             for (int x = 0; x < adjTargetCount; x++)
             {
                 var focusTarget = hasOffset && x < offset;
@@ -156,7 +163,7 @@ namespace WeaponCore.Support
                         else if (x == 0 && betaInfo != null) info = betaInfo;
                         else if (x == 1) info = betaInfo;
                     }
-                    else info = ai.SortedTargets[x - offset];
+                    else info = ai.SortedTargets[deck[x - offset]];
                 }
 
                 if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue; 
@@ -301,7 +308,7 @@ namespace WeaponCore.Support
             }
 
             if (totalBlocks < lastBlocks) lastBlocks = totalBlocks;
-            var deck = GetDeck(ref target.Deck, ref target.PrevDeckLength, 0, totalBlocks, topBlocks);
+            var deck = GetDeck(ref target.BlockDeck, ref target.BlockPrevDeckLen, 0, totalBlocks, topBlocks);
             var physics = ai.Session.Physics;
             var iGrid = topEnt as IMyCubeGrid;
             var gridPhysics = iGrid?.Physics;

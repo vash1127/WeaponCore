@@ -11,13 +11,10 @@ namespace WeaponCore
     {
         internal bool ActivateSelector()
         {
-            _firstPerson = MyAPIGateway.Session.CameraController.IsInFirstPersonView;
-
-            if (_firstPerson && !_session.UiInput.AltPressed) return false;
+            if (_session.UiInput.FirstPersonView && !_session.UiInput.AltPressed) return false;
             if (MyAPIGateway.Input.IsNewKeyReleased(MyKeys.Control)) _3RdPersonDraw = !_3RdPersonDraw;
-            _ctrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
 
-            var enableActivator = _3RdPersonDraw || _ctrlPressed || _firstPerson && _session.UiInput.AltPressed;
+            var enableActivator = _3RdPersonDraw || _session.UiInput.CtrlPressed || _session.UiInput.FirstPersonView && _session.UiInput.AltPressed;
             return enableActivator;
         }
 
@@ -48,7 +45,7 @@ namespace WeaponCore
             Vector3D start;
             Vector3D end;
             Vector3D dir;
-            if (!MyAPIGateway.Session.CameraController.IsInFirstPersonView)
+            if (!s.UiInput.FirstPersonView)
             {
                 var offetPosition = Vector3D.Transform(PointerOffset, s.CameraMatrix);
                 start = offetPosition;
@@ -77,7 +74,7 @@ namespace WeaponCore
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;
                 if (hit == null || hit.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hit)) continue;
                 s.SetTarget(hit, ai);
-                s.ResetGps();
+                //s.ResetGps();
                 break;
             }
 
@@ -89,7 +86,7 @@ namespace WeaponCore
             if (closestEnt != null)
             {
                 s.SetTarget(closestEnt, ai);
-                s.ResetGps();
+                //s.ResetGps();
             }
         }
 
@@ -124,7 +121,7 @@ namespace WeaponCore
             if (ent != null)
             {
                 s.SetTarget(ent, ai);
-                s.ResetGps();
+                //s.ResetGps();
             }
         }
 

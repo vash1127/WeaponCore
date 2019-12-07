@@ -36,6 +36,7 @@ namespace WeaponCore.Projectiles
         internal Vector3D PredictedTargetPos;
         internal Vector3D PrevTargetPos;
         internal Vector3D TargetOffSet;
+        internal Vector3D PrevTargetOffset;
         internal Vector3 PrevTargetVel;
         internal Vector3 GridVel;
         internal Vector3D? LastHitPos;
@@ -180,7 +181,7 @@ namespace WeaponCore.Projectiles
 
             if (SmartsOn && T.System.TargetOffSet && LockedTarget)
             {
-                OffSetTarget(out TargetOffSet);
+                OffSetTarget();
                 OffsetSqr = T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy * T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
             }
             else
@@ -188,6 +189,7 @@ namespace WeaponCore.Projectiles
                 TargetOffSet = Vector3D.Zero;
                 OffsetSqr = 0;
             }
+            PrevTargetOffset = Vector3D.Zero;
 
             DrawLine = T.System.Values.Graphics.Line.Tracer.Enable;
             if (T.System.RangeVariance)
@@ -549,7 +551,7 @@ namespace WeaponCore.Projectiles
                 MaxChaseAge = T.System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
                 if (SmartsOn && T.System.TargetOffSet && LockedTarget)
                 {
-                    OffSetTarget(out TargetOffSet);
+                    OffSetTarget();
                     OffsetSqr = T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy * T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
                 }
                 else
@@ -596,8 +598,8 @@ namespace WeaponCore.Projectiles
                         {
                             double dist;
                             Vector3D.DistanceSquared(ref Position, ref targetPos, out dist);
-                            if (dist < OffsetSqr && Vector3.Dot(Direction, Position - targetPos) > 0)
-                                OffSetTarget(out TargetOffSet);
+                            if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Direction, Position - targetPos) > 0)
+                                OffSetTarget();
                         }
                         targetPos += TargetOffSet;
                     }
@@ -632,7 +634,7 @@ namespace WeaponCore.Projectiles
             if (reset)
             {
                 ZombieLifeTime = 0;
-                OffSetTarget(out TargetOffSet);
+                OffSetTarget();
             }
             else
             {
@@ -645,9 +647,9 @@ namespace WeaponCore.Projectiles
                 {
                     double dist;
                     Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);
-                    if (dist < OffsetSqr && Vector3.Dot(Direction, Position - PrevTargetPos) > 0)
+                    if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Direction, Position - PrevTargetPos) > 0)
                     {
-                        OffSetTarget(out TargetOffSet, true);
+                        OffSetTarget(true);
                         PrevTargetPos += TargetOffSet;
                         PredictedTargetPos = PrevTargetPos;
                     }
@@ -764,7 +766,7 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        internal void OffSetTarget(out Vector3D targetOffset, bool roam = false)
+        internal void OffSetTarget(bool roam = false)
         {
             var randAzimuth = MyUtils.GetRandomDouble(0, 1) * 2 * Math.PI;
             var randElevation = (MyUtils.GetRandomDouble(0, 1) * 2 - 1) * 0.5 * Math.PI;
@@ -772,7 +774,8 @@ namespace WeaponCore.Projectiles
             var offsetAmount = roam ? 100 : T.System.Values.Ammo.Trajectory.Smarts.Inaccuracy;
             Vector3D randomDirection;
             Vector3D.CreateFromAzimuthAndElevation(randAzimuth, randElevation, out randomDirection); // this is already normalized
-            targetOffset = (randomDirection * offsetAmount);
+            PrevTargetOffset = TargetOffSet;
+            TargetOffSet = (randomDirection * offsetAmount);
             VisualStep = 0;
             if (Age != 0) LastOffsetTime = Age;
         }

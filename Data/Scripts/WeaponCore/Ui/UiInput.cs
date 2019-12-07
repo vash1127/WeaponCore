@@ -19,8 +19,11 @@ namespace WeaponCore
         internal bool ShiftPressed;
         internal bool LongShift;
         internal bool AltPressed;
+        internal bool CtrlPressed;
         internal bool AnyKeyPressed;
+        internal bool KeyPrevPressed;
         internal bool PlayerCamera;
+        internal bool FirstPersonView;
         private readonly Session _session;
 
         internal UiInput(Session session)
@@ -51,11 +54,8 @@ namespace WeaponCore
 
             if (s.InGridAiCockPit)
             {
-                PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
-                CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);
-
                 if (ShiftPressed)
                 {
                     ShiftTime++;
@@ -69,8 +69,17 @@ namespace WeaponCore
                 }
 
                 AltPressed = MyAPIGateway.Input.IsAnyAltKeyPressed();
+                CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
+                KeyPrevPressed = AnyKeyPressed;
                 AnyKeyPressed = MyAPIGateway.Input.IsAnyKeyPress();
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
+                FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
+
+                if ((!AnyKeyPressed && !KeyPrevPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
+                {
+                    PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
+                    CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
+                }
             }
             if (CurrentWheel != PreviousWheel && CurrentWheel > PreviousWheel)
                 WheelForward = true;

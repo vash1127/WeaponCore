@@ -98,13 +98,9 @@ namespace WeaponCore
 
         private int _currentIdx;
         private int _endIdx = -1;
-        private int _previousWheel;
-        private int _currentWheel;
         private bool _cachedPointerPos;
         private bool _cachedTargetPos;
         private bool _3RdPersonDraw;
-        private bool _firstPerson;
-        private bool _ctrlPressed;
 
         internal TargetUi(Session session)
         {
