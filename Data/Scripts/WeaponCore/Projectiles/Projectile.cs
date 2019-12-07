@@ -378,15 +378,16 @@ namespace WeaponCore.Projectiles
             if (p.EnableAv && (p.DrawLine || p.T.System.PrimeModelId != -1 || p.T.System.TriggerModelId != -1))
             {
                 p.TestSphere.Center = hitPos.Value;
+                
+                var length = Vector3D.Distance(p.LastPosition, hitPos.Value);
+                var shrink = !p.T.System.IsBeamWeapon;
+                var reSize = shrink ? ReSize.Shrink : ReSize.None;
+                p.T.UpdateShape(hitPos.Value, p.Direction, length, reSize);
+
                 if (!p.T.OnScreen) CameraCheck(p);
                     
                 if (p.T.MuzzleId != -1)
                 {
-                    var length = Vector3D.Distance(p.LastPosition, hitPos.Value);
-                    var shrink = !p.T.System.IsBeamWeapon;
-                    var reSize = shrink ? ReSize.Shrink : ReSize.None;
-
-                    p.T.UpdateShape(hitPos.Value, p.Direction, length, reSize);
                     p.T.Complete(drawHit, DrawState.Hit);
                     Manager.DrawProjectiles.Add(p.T);
                 }
@@ -638,7 +639,7 @@ namespace WeaponCore.Projectiles
                 PrevTargetPos = PredictedTargetPos;
                 if (ZombieLifeTime++ > T.System.TargetLossTime)
                 {
-                    //DistanceToTravelSqr = T.DistanceTraveled * T.DistanceTraveled;
+                    DistanceToTravelSqr = T.DistanceTraveled * T.DistanceTraveled;
                 }
                 if (Age - LastOffsetTime > 300)
                 {
