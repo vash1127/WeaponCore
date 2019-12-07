@@ -199,7 +199,7 @@ namespace WeaponCore.Platform
                         var azimuthPart = Weapons[c].AzimuthPart.Item1;
                         var elevationPart = Weapons[c].ElevationPart.Item1;
 
-                        if (azimuthPart != null)
+                        if (azimuthPart != null && azimuthPartName != "None")
                         {
                             var azimuthPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
                             var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
@@ -213,9 +213,17 @@ namespace WeaponCore.Platform
                             Weapons[c].AzimuthPart.Item5 = rFullStepAzRotation;
                             Weapons[c].AzimuthPart.Item6 = azimuthPartLocation;
                         }
+                        else if (azimuthPartName == "None")
+                        {
+                            Weapons[c].AzimuthPart.Item2 = Matrix.Zero;
+                            Weapons[c].AzimuthPart.Item3 = Matrix.Zero;
+                            Weapons[c].AzimuthPart.Item4 = Matrix.Zero;
+                            Weapons[c].AzimuthPart.Item5 = Matrix.Zero;
+                            Weapons[c].AzimuthPart.Item6 = Vector3.Zero;
+                        }
 
 
-                        if (elevationPart != null)
+                        if (elevationPart != null && elevationPartName != "None")
                         {
                             var elevationPartLocation = comp.Ai.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
 
@@ -231,6 +239,14 @@ namespace WeaponCore.Platform
                             Weapons[c].ElevationPart.Item4 = fullStepElRotation;
                             Weapons[c].ElevationPart.Item5 = rFullStepElRotation;
                             Weapons[c].ElevationPart.Item6 = elevationPartLocation;
+                        }
+                        else if (elevationPartName == "None")
+                        {
+                            Weapons[c].ElevationPart.Item2 = Matrix.Zero;
+                            Weapons[c].ElevationPart.Item3 = Matrix.Zero;
+                            Weapons[c].ElevationPart.Item4 = Matrix.Zero;
+                            Weapons[c].ElevationPart.Item5 = Matrix.Zero;
+                            Weapons[c].ElevationPart.Item6 = Vector3.Zero;
                         }
                     }
 
