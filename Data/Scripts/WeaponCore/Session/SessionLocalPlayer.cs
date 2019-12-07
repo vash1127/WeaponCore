@@ -10,6 +10,7 @@ using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
 
@@ -33,6 +34,48 @@ namespace WeaponCore
             ActiveCockPit = null;
             RemoveGps();
             return false;
+        }
+
+        internal void EntityControlUpdate()
+        {
+            var lastControlledEnt = ControlledEntity;
+            ControlledEntity = (MyEntity)MyAPIGateway.Session.ControlledObject;
+
+            var entityChanged = lastControlledEnt != null && lastControlledEnt != ControlledEntity;
+
+            if (entityChanged)
+            {
+                if (lastControlledEnt is MyCockpit || lastControlledEnt is MyRemoteControl)
+                    PlayerControlAcquired(lastControlledEnt);
+                
+                if (ControlledEntity is IMyGunBaseUser && !(lastControlledEnt is IMyGunBaseUser))
+                {
+                    var cube = (MyCubeBlock)ControlledEntity;
+                    GridAi gridAi;
+                    if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                        GridTargetingAIs[cube.CubeGrid].HasGunner = true;
+                    var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
+                    var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, false);
+                    var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, false);
+                }
+                else if (!(ControlledEntity is IMyGunBaseUser) && lastControlledEnt is IMyGunBaseUser)
+                {
+                    var cube = (MyCubeBlock)ControlledEntity;
+                    GridAi gridAi;
+                    if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                        GridTargetingAIs[cube.CubeGrid].HasGunner = false;
+
+                    var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
+                    var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, true);
+                    var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
+                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
+                }
+            }
         }
 
         private void UpdatePlacer()

@@ -94,7 +94,7 @@ namespace WeaponCore.Support
         {
             Ai = ai;
             MyCube = myCube;
-            Slim = myCube.SlimBlock as IMySlimBlock;
+            Slim = myCube.SlimBlock;
 
             MaxIntegrity = Slim.MaxIntegrity;
 

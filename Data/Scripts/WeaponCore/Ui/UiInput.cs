@@ -17,6 +17,7 @@ namespace WeaponCore
         internal bool ShiftReleased;
         internal bool AltPressed;
         internal bool AnyKeyPressed;
+        internal bool PlayerCamera;
         private readonly Session _session;
 
         internal UiInput(Session session)
@@ -50,6 +51,7 @@ namespace WeaponCore
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 AltPressed = MyAPIGateway.Input.IsAnyAltKeyPressed();
                 AnyKeyPressed = MyAPIGateway.Input.IsAnyKeyPress();
+                PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
             }
             if (CurrentWheel != PreviousWheel && CurrentWheel > PreviousWheel)
                 WheelForward = true;

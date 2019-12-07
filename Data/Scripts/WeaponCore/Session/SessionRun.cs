@@ -1,9 +1,11 @@
 using System;
+using System.Runtime.InteropServices;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.Game.Entity;
+using VRage.Input;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -73,11 +75,7 @@ namespace WeaponCore
             {
                 if (!DedicatedServer)
                 {
-                    var lastControlledEnt = ControlledEntity;
-                    ControlledEntity = (MyEntity)MyAPIGateway.Session.ControlledObject;
-                    
-                    if (lastControlledEnt != null && lastControlledEnt != ControlledEntity && (lastControlledEnt is MyCockpit || lastControlledEnt is MyRemoteControl))
-                        PlayerControlAcquired(lastControlledEnt);
+                    EntityControlUpdate();
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                 }
@@ -90,7 +88,7 @@ namespace WeaponCore
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
 
-                if (!WheelUi.WheelActive) TargetSelection();
+                if (UiInput.PlayerCamera && !WheelUi.WheelActive) TargetSelection();
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -159,7 +157,7 @@ namespace WeaponCore
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
 
-                    if (!MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                    if (UiInput.PlayerCamera && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                     {
                         if (WheelUi.WheelActive) WheelUi.DrawWheel();
                         TargetUi.DrawTargetUi();

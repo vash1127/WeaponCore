@@ -74,15 +74,18 @@ namespace WeaponCore.Support
 
         internal static bool CheckSurfacePointsOnLine(MyPlanet planet, LineD testLine, double distBetweenPoints)
         {
-            var checkPoints = (int)(testLine.Length / distBetweenPoints);
+            var checkPoints = (int)((testLine.Length / distBetweenPoints) + distBetweenPoints);
             var lastPoint = (checkPoints - 1);
 
             for (int i = 0; i < checkPoints; i++)
             {
                 var planetInPath = i != lastPoint;
+                var extend = (distBetweenPoints * i);
+                if (extend > testLine.Length) extend = testLine.Length;
+                var testPos = testLine.From + (testLine.Direction * extend);
+
                 if (planetInPath)
                 {
-                    var testPos = testLine.From + (testLine.Direction * (distBetweenPoints * i));
                     var closestSurface = planet.GetClosestSurfacePointGlobal(ref testPos);
                     double surfaceDistToTest;
                     Vector3D.DistanceSquared(ref closestSurface, ref testPos, out surfaceDistToTest);
@@ -92,13 +95,12 @@ namespace WeaponCore.Support
                 if (!planetInPath)
                 {
                     Vector3D? voxelHit = null;
-                    var closestSurface = planet.GetClosestSurfacePointGlobal(ref testLine.To);
+                    var closestSurface = planet.GetClosestSurfacePointGlobal(ref testPos);
                     var reverseLine = testLine;
                     reverseLine.Direction = -reverseLine.Direction;
-                    reverseLine.From = testLine.To;
+                    reverseLine.From = testPos;
                     reverseLine.To = reverseLine.From + (reverseLine.Direction * (Vector3D.Distance(closestSurface, reverseLine.From) + distBetweenPoints));
                     planet.GetIntersectionWithLine(ref reverseLine, out voxelHit);
-                    //Log.Line($"voxelHit:{voxelHit.HasValue}");
                     return voxelHit.HasValue;
                 }
 
