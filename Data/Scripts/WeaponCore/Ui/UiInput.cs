@@ -9,6 +9,8 @@ namespace WeaponCore
         internal int PreviousWheel;
         internal int CurrentWheel;
         internal int ShiftTime;
+        internal bool LeftMouseReleased;
+        internal bool RightMouseReleased;
         internal bool MouseButtonPressed;
         internal bool MouseButtonLeft;
         internal bool MouseButtonMiddle;
@@ -85,6 +87,17 @@ namespace WeaponCore
                 WheelForward = true;
             else if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel)
                 WheelBackward = true;
+
+            if (s.WheelUi.WheelActive)
+            {
+                LeftMouseReleased = MyAPIGateway.Input.IsNewLeftMouseReleased();
+                RightMouseReleased = MyAPIGateway.Input.IsNewRightMouseReleased();
+            }
+            else
+            {
+                LeftMouseReleased = false;
+                RightMouseReleased = false;
+            }
         }
     }
 }

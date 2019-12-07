@@ -23,6 +23,7 @@ namespace WeaponCore
         private void DrawSelector()
         {
             var s = _session;
+
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
@@ -60,6 +61,10 @@ namespace WeaponCore
 
             if (s.Tick10)
                 RayCheckTargets(offetPosition, Vector3D.Normalize(offetPosition - s.CameraPos), true, true);
+
+            if (s.Tick - _lastDrawTick > 1 && _delay++ < 10) return;
+            _delay = 0;
+            _lastDrawTick = s.Tick;
 
             MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
             DrawReticle = true;

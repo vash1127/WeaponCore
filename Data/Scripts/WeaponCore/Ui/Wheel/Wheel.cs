@@ -31,7 +31,7 @@ namespace WeaponCore
             if (WheelActive)
             {
                 var previousMenu = _currentMenu;
-                if (MyAPIGateway.Input.IsNewLeftMouseReleased())
+                if (s.UiInput.LeftMouseReleased)
                 {
                     var menu = GetCurrentMenu();
                     var item = GetCurrentMenuItem();
@@ -42,7 +42,7 @@ namespace WeaponCore
                         UpdateState(menu);
                     }
                 }
-                else if (MyAPIGateway.Input.IsNewRightMouseReleased())
+                else if (s.UiInput.RightMouseReleased)
                 {
                     var menu = GetCurrentMenu();
                     var item = GetCurrentMenuItem();

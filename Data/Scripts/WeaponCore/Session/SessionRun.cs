@@ -59,7 +59,6 @@ namespace WeaponCore
                     DsUtil.Clean();
                 }
                 FutureEvents.Tick(Tick);
-                UiInput.UpdateInputState();
                 WheelUi.UpdatePosition();
                 DsUtil.Start("damage");
                 if (!Hits.IsEmpty) ProcessHits();
@@ -175,7 +174,10 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
 
-        
+        public override void HandleInput()
+        {
+            UiInput.UpdateInputState();
+        }
 
         public override void LoadData()
         {

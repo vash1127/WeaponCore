@@ -95,7 +95,9 @@ namespace WeaponCore
         };
 
         private uint _cacheIdleTicks;
+        private uint _lastDrawTick;
 
+        private int _delay;
         private int _currentIdx;
         private int _endIdx = -1;
         private bool _cachedPointerPos;
