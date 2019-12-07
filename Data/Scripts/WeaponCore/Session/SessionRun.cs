@@ -87,7 +87,6 @@ namespace WeaponCore
                 DsUtil.Start("update");
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
-
                 if (UiInput.PlayerCamera && !WheelUi.WheelActive) TargetSelection();
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
             }

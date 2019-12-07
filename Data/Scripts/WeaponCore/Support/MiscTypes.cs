@@ -720,7 +720,7 @@ namespace WeaponCore.Support
         internal Focus(int count)
         {
             Target = new MyEntity[count];
-            SubSystem = new TargetingDefinition.BlockTypes[count];
+            SubSystem = new BlockTypes[count];
             TargetState = new TargetStatus[count];
             PrevTargetId = new long[count];
             for (int i = 0; i < TargetState.Length; i++)
@@ -728,18 +728,25 @@ namespace WeaponCore.Support
         }
 
         internal MyEntity[] Target;
-        internal TargetingDefinition.BlockTypes[] SubSystem;
+        internal BlockTypes[] SubSystem;
         internal TargetStatus[] TargetState;
         internal long[] PrevTargetId;
         internal int ActiveId;
         internal bool HasFocus;
 
-        internal void NextActive()
+        internal void NextActive(bool addSecondary)
         {
             var prevId = ActiveId;
-            if (ActiveId + 1 > Target.Length - 1) ActiveId -= 1;
-            else ActiveId += 1;
-            if (Target[ActiveId] == null) Target[ActiveId] = Target[prevId];
+            var newActiveId = prevId;
+            if (newActiveId + 1 > Target.Length - 1) newActiveId -= 1;
+            else newActiveId += 1;
+
+            if (addSecondary && Target[newActiveId] == null)
+            {
+                Target[newActiveId] = Target[prevId];
+                ActiveId = newActiveId;
+            }
+            else if (!addSecondary && Target[newActiveId] != null) ActiveId = newActiveId;
         }
 
         internal bool IsFocused()
@@ -751,6 +758,13 @@ namespace WeaponCore.Support
                 {
                     if (!Target[i].MarkedForClose) HasFocus = true;
                     else Target[i] = null;
+                }
+
+                if (Target[0] == null && HasFocus)
+                {
+                    Target[0] = Target[i];
+                    Target[i] = null;
+                    ActiveId = 0;
                 }
             }
             return HasFocus;

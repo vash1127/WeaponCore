@@ -1,13 +1,14 @@
 ﻿using System.Diagnostics;
 using Sandbox.ModAPI;
 using VRage.Input;
-
+using WeaponCore.Support;
 namespace WeaponCore
 {
     internal class UiInput
     {
         internal int PreviousWheel;
         internal int CurrentWheel;
+        internal int ShiftTime;
         internal bool MouseButtonPressed;
         internal bool MouseButtonLeft;
         internal bool MouseButtonMiddle;
@@ -15,6 +16,8 @@ namespace WeaponCore
         internal bool WheelForward;
         internal bool WheelBackward;
         internal bool ShiftReleased;
+        internal bool ShiftPressed;
+        internal bool LongShift;
         internal bool AltPressed;
         internal bool AnyKeyPressed;
         internal bool PlayerCamera;
@@ -44,11 +47,27 @@ namespace WeaponCore
                 MouseButtonRight = false;
             }
 
+            if (!s.InGridAiCockPit && !PlayerCamera) s.UpdateLocalAiAndCockpit();
+
             if (s.InGridAiCockPit)
             {
                 PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                 CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
+                ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);
+
+                if (ShiftPressed)
+                {
+                    ShiftTime++;
+                    LongShift = ShiftTime > 59;
+                }
+                else
+                {
+                    if (LongShift) ShiftReleased = false;
+                    ShiftTime = 0;
+                    LongShift = false;
+                }
+
                 AltPressed = MyAPIGateway.Input.IsAnyAltKeyPressed();
                 AnyKeyPressed = MyAPIGateway.Input.IsAnyKeyPress();
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;

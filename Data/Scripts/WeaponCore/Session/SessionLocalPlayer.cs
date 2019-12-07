@@ -107,7 +107,7 @@ namespace WeaponCore
 
         internal void TargetSelection()
         {
-            if ((UiInput.AltPressed && UiInput.ShiftReleased) || (TargetUi.DrawReticle && UiInput.MouseButtonRight) && UpdateLocalAiAndCockpit())
+            if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.MouseButtonRight) && UpdateLocalAiAndCockpit())
                 TrackingAi.Focus.ReleaseActive();
 
             if (!(ControlledEntity is MyCockpit && UiInput.AnyKeyPressed && !UiInput.AltPressed) && MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
@@ -117,7 +117,8 @@ namespace WeaponCore
                 if (UiInput.CurrentWheel != UiInput.PreviousWheel)
                     TargetUi.SelectNext();
 
-                if (UiInput.ShiftReleased) TrackingAi.Focus.NextActive();
+                if (UiInput.LongShift || UiInput.ShiftReleased && !UiInput.LongShift) 
+                    TrackingAi.Focus.NextActive(UiInput.LongShift);
             }
         }
 
