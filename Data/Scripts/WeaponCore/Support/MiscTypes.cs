@@ -296,9 +296,11 @@ namespace WeaponCore.Support
         internal MyEntity Entity;
         internal Projectile Projectile;
         internal volatile bool IsProjectile;
-        internal int[] Deck = new int[0];
-        internal int PrevDeckLength;
-        internal TargetingDefinition.BlockTypes LastBlockType;
+        internal int[] TargetDeck = new int[0];
+        internal int[] BlockDeck = new int[0];
+        internal int TargetPrevDeckLen;
+        internal int BlockPrevDeckLen;
+        internal BlockTypes LastBlockType;
         internal Vector3D HitPos;
         internal double HitShortDist;
         internal double OrigDistance;
@@ -447,30 +449,15 @@ namespace WeaponCore.Support
         internal bool VirtualHit;
         internal int Hits;
         internal double HitDistance;
-        internal uint Tick;
         internal HitEntity HitEntity = new HitEntity();
         internal IMySlimBlock HitBlock;
         internal int VirutalId = -1;
-
-        internal readonly List<Projectile> SortProjetiles = new List<Projectile>();
         internal readonly VoxelParallelHits[] VoxelHits;
 
         internal WeaponFrameCache(int size)
         {
             VoxelHits = new VoxelParallelHits[size];
             for (int i = 0; i < size; i++) VoxelHits[i] = new VoxelParallelHits();
-        }
-
-        internal void SortProjectiles(Weapon w)
-        {
-            var ai = w.Comp.Ai;
-            var weaponPos = w.MyPivotPos;
-            if (w.Comp.Ai.Session.Tick != Tick)
-            {
-                SortProjetiles.Clear();
-                foreach (var lp in ai.LiveProjectile) if (lp.MaxSpeed < w.System.MaxTargetSpeed) SortProjetiles.Add(lp);
-                SortProjetiles.Sort((a, b) => Vector3D.DistanceSquared(a.Position, weaponPos).CompareTo(Vector3D.DistanceSquared(b.Position, weaponPos)));
-            }
         }
     }
 
@@ -717,8 +704,9 @@ namespace WeaponCore.Support
 
     public class Focus
     {
-        internal Focus(int count)
+        internal Focus(int count, GridAi gridAi)
         {
+            Ai = gridAi;
             Target = new MyEntity[count];
             SubSystem = new BlockTypes[count];
             TargetState = new TargetStatus[count];
@@ -727,12 +715,28 @@ namespace WeaponCore.Support
                 TargetState[i] = new TargetStatus();
         }
 
+        internal readonly GridAi Ai;
+        internal readonly BlockTypes[] SubSystem;
+        internal readonly TargetStatus[] TargetState;
+        internal readonly long[] PrevTargetId;
         internal MyEntity[] Target;
-        internal BlockTypes[] SubSystem;
-        internal TargetStatus[] TargetState;
-        internal long[] PrevTargetId;
         internal int ActiveId;
         internal bool HasFocus;
+
+        internal void AddFocus(MyEntity target)
+        {
+            Target[ActiveId] = target;
+            Ai.TargetResetTick = Ai.Session.Tick + 1;
+            foreach (var sub in Ai.SubGrids)
+            {
+                GridAi gridAi;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                {
+                    gridAi.Focus.Target[ActiveId] = target;
+                    gridAi.TargetResetTick = Ai.Session.Tick + 1;
+                }
+            }
+        }
 
         internal void NextActive(bool addSecondary)
         {
@@ -745,8 +749,15 @@ namespace WeaponCore.Support
             {
                 Target[newActiveId] = Target[prevId];
                 ActiveId = newActiveId;
+                foreach (var sub in Ai.SubGrids)
+                {
+                    GridAi gridAi;
+                    if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                        gridAi.Focus.Target[newActiveId] = Target[ActiveId];
+                }
             }
-            else if (!addSecondary && Target[newActiveId] != null) ActiveId = newActiveId;
+            else if (!addSecondary && Target[newActiveId] != null)
+                ActiveId = newActiveId;
         }
 
         internal bool IsFocused()
@@ -757,7 +768,16 @@ namespace WeaponCore.Support
                 if (Target[i] != null)
                 {
                     if (!Target[i].MarkedForClose) HasFocus = true;
-                    else Target[i] = null;
+                    else
+                    {
+                        Target[i] = null;
+                        foreach (var sub in Ai.SubGrids)
+                        {
+                            GridAi gridAi;
+                            if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                                gridAi.Focus.Target[i] = null;
+                        }
+                    }
                 }
 
                 if (Target[0] == null && HasFocus)
@@ -765,6 +785,16 @@ namespace WeaponCore.Support
                     Target[0] = Target[i];
                     Target[i] = null;
                     ActiveId = 0;
+
+                    foreach (var sub in Ai.SubGrids)
+                    {
+                        GridAi gridAi;
+                        if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                        {
+                            gridAi.Focus.Target[0] = Target[i];
+                            gridAi.Focus.Target[i] = null;
+                        }
+                    }
                 }
             }
             return HasFocus;
@@ -773,6 +803,13 @@ namespace WeaponCore.Support
         internal void ReleaseActive()
         {
             Target[ActiveId] = null;
+
+            foreach (var sub in Ai.SubGrids)
+            {
+                GridAi gridAi;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                    gridAi.Focus.Target[ActiveId] = null;
+            }
         }
     }
 

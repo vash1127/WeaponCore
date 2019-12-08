@@ -20,6 +20,7 @@ namespace WeaponCore
                 {
                     Projectile p;
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
+                    gridAi.LiveProjectileTick = Tick;
                 }
                 if (!gridAi.HasGunner && !gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.CheckReload || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
 

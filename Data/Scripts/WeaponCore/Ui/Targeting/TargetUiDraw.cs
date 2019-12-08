@@ -23,27 +23,25 @@ namespace WeaponCore
         private void DrawSelector()
         {
             var s = _session;
+
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var offetPosition = Vector3D.Transform(PointerOffset, _session.CameraMatrix);
 
-            if (_firstPerson)
+            if (s.UiInput.FirstPersonView)
             {
                 if (!MyUtils.IsZero(_pointerPosition.Y))
                 {
                     _pointerPosition.Y = 0f;
                     InitPointerOffset(0.05);
-                    Log.Line("reset cursor");
                 }
             }
-            else if (_ctrlPressed)
+            else if (s.UiInput.CtrlPressed)
             {
-                _previousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
-                _currentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
-                if (_previousWheel != _currentWheel)
+                if (s.UiInput.PreviousWheel != s.UiInput.CurrentWheel)
                 {
                     var currentPos = _pointerPosition.Y;
-                    if (_currentWheel > _previousWheel) currentPos += 0.1f;
+                    if (s.UiInput.CurrentWheel > s.UiInput.PreviousWheel) currentPos += 0.1f;
                     else currentPos -= 0.1f;
                     var clampPos = MathHelper.Clamp(currentPos, -1.25f, 1.25f);
                     _3RdPersonPos.Y = clampPos;
@@ -63,6 +61,10 @@ namespace WeaponCore
 
             if (s.Tick10)
                 RayCheckTargets(offetPosition, Vector3D.Normalize(offetPosition - s.CameraPos), true, true);
+
+            if (s.Tick - _lastDrawTick > 1 && _delay++ < 10) return;
+            _delay = 0;
+            _lastDrawTick = s.Tick;
 
             MyTransparentGeometry.AddBillboardOriented(_cross, _reticleColor, offetPosition, s.CameraMatrix.Left, s.CameraMatrix.Up, (float)PointerAdjScale, BlendTypeEnum.PostPP);
             DrawReticle = true;

@@ -45,7 +45,6 @@ namespace WeaponCore
                     TargetRequests = 0;
                     TargetChecks = 0;
                     BlockChecks = 0;
-                    ProjectileChecks = 0;
                     CanShoot = 0;
                     ClosestRayCasts = 0;
                     RandomRayCasts = 0;
@@ -59,7 +58,6 @@ namespace WeaponCore
                     DsUtil.Clean();
                 }
                 FutureEvents.Tick(Tick);
-                UiInput.UpdateInputState();
                 WheelUi.UpdatePosition();
                 DsUtil.Start("damage");
                 if (!Hits.IsEmpty) ProcessHits();
@@ -175,7 +173,10 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
 
-        
+        public override void HandleInput()
+        {
+            UiInput.UpdateInputState();
+        }
 
         public override void LoadData()
         {

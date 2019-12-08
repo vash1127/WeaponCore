@@ -27,12 +27,11 @@ namespace WeaponCore
                 InGridAiCockPit = true;
                 return true;
             }
-
             TrackingAi?.Focus.IsFocused();
 
             TrackingAi = null;
             ActiveCockPit = null;
-            RemoveGps();
+            //RemoveGps();
             return false;
         }
 
@@ -110,22 +109,18 @@ namespace WeaponCore
             if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.MouseButtonRight) && UpdateLocalAiAndCockpit())
                 TrackingAi.Focus.ReleaseActive();
 
-            if (!(ControlledEntity is MyCockpit && UiInput.AnyKeyPressed && !UiInput.AltPressed) && MyAPIGateway.Input.IsNewLeftMouseReleased() && UpdateLocalAiAndCockpit())
-                TargetUi.SelectTarget();
-            else if (UpdateLocalAiAndCockpit())
+            if (UpdateLocalAiAndCockpit())
             {
-                if (UiInput.CurrentWheel != UiInput.PreviousWheel)
-                    TargetUi.SelectNext();
-
-                if (UiInput.LongShift || UiInput.ShiftReleased && !UiInput.LongShift) 
-                    TrackingAi.Focus.NextActive(UiInput.LongShift);
+                if ((TargetUi.DrawReticle || UiInput.FirstPersonView) && MyAPIGateway.Input.IsNewLeftMouseReleased())
+                    TargetUi.SelectTarget();
+                else
+                {
+                    if (UiInput.CurrentWheel != UiInput.PreviousWheel)
+                        TargetUi.SelectNext();
+                    else if (UiInput.LongShift || UiInput.ShiftReleased && !UiInput.LongShift)
+                        TrackingAi.Focus.NextActive(UiInput.LongShift);
+                }
             }
-        }
-
-        internal bool PlayerInAiCockPit()
-        {
-            if (ActiveCockPit == null || ActiveCockPit.MarkedForClose || ((IMyControllerInfo)ActiveCockPit.ControllerInfo)?.ControllingIdentityId != MyAPIGateway.Session.Player.IdentityId) return false;
-            return true;
         }
 
         internal void ResetGps()
@@ -184,9 +179,10 @@ namespace WeaponCore
 
         internal void SetTarget(MyEntity entity, GridAi ai)
         {
-            ai.Focus.Target[ai.Focus.ActiveId] = entity;
+            
             TrackingAi = ai;
-            ai.TargetResetTick = Tick + 1;
+            TrackingAi.Focus.AddFocus(entity);
+
             GridAi gridAi;
             TargetArmed = false;
             if (GridTargetingAIs.TryGetValue((MyCubeGrid)entity, out gridAi))
