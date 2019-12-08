@@ -35,10 +35,10 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
         internal readonly HashSet<MyCubeGrid> PrevSubGrids = new HashSet<MyCubeGrid>();
-        internal HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
-        internal HashSet<MyCubeGrid> RemSubGrids = new HashSet<MyCubeGrid>();
-        internal HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
-        internal HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> SubGrids = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> RemSubGrids = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
+        internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
 
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
@@ -48,29 +48,32 @@ namespace WeaponCore.Support
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
         internal readonly List<Projectile> ProjetileCache = new List<Projectile>();
-        internal List<MyEntity> StaticsInRange = new List<MyEntity>();
-        internal List<MyEntity> Obstructions = new List<MyEntity>();
-        internal List<GridAi> Threats = new List<GridAi>();
-        internal List<GridAi> TargetAis = new List<GridAi>();
+        internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
+        internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
+        internal readonly List<GridAi> Threats = new List<GridAi>();
+        internal readonly List<GridAi> TargetAis = new List<GridAi>();
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
+
         internal readonly Session Session;
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;
-        internal IMyGridTerminalSystem TerminalSystem;
+        internal readonly Focus Focus;
+        
+        internal Vector3D GridCenter;
+        internal Vector3 GridVel;
 
+        internal IMyGridTerminalSystem TerminalSystem;
         internal IMyTerminalBlock LastWeaponTerminal;
         internal IMyTerminalBlock LastTerminal;
-
-        internal Focus Focus;
+        internal MyShipController FakeShipController = new MyShipController();
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
-        internal MyShipController FakeShipController = new MyShipController();
         internal Vector3D PlanetClosestPoint;
         internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
@@ -102,6 +105,7 @@ namespace WeaponCore.Support
         internal bool HasPower;
         internal bool HadPower;
         internal bool HasGunner;
+        internal bool WeaponTerminalAccess;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double GridRadius;
@@ -117,21 +121,17 @@ namespace WeaponCore.Support
         internal float CurrentWeaponsDraw;
         internal float LastAvailablePower;
         internal float OptimalDps;
-        internal Vector3D GridCenter;
-        internal Vector3 GridVel;
-        private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
-        private readonly FastResourceLock _scanLock = new FastResourceLock();
-
-        internal bool WeaponTerminalAccess;
-        private uint _lastScan;
-        private uint _pCacheTick;
-
         internal enum TargetType
         {
             Projectile,
             Other,
             None,
         }
+
+        private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
+        private readonly FastResourceLock _scanLock = new FastResourceLock();
+        private uint _lastScan;
+        private uint _pCacheTick;
 
         internal GridAi(MyCubeGrid grid, Session session, uint createdTick)
         {

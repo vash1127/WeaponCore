@@ -144,7 +144,6 @@ namespace WeaponCore.Support
             CubePool.Clean();
             MyShieldTmp = null;
             MyShield = null;
-            Focus = null;
             MyPlanetTmp = null;
             MyPlanet = null;
             FakeShipController = null;

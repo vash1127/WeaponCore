@@ -124,6 +124,12 @@ namespace WeaponCore
         private void MenuOpened(object obj)
         {
             PlayerControlAcquired(ControlledEntity);
+            InMenu = true;
+        }
+
+        private void MenuClosed(object obj)
+        {
+            InMenu = false;
         }
 
         private void PlayerControlAcquired(MyEntity lastEnt)
