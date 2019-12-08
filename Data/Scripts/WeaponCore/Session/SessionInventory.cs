@@ -28,7 +28,7 @@ namespace WeaponCore
                 weapon.Comp.Ai.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
             if (lastMags == 0 && comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0)
-                weapon.Comp.Ai.Reloading = true;
+                weapon.StartReload();
         }
 
         internal void AmmoPull() {

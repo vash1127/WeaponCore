@@ -3,6 +3,7 @@ using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRageMath;
+using WeaponCore.Support;
 
 namespace WeaponCore.Platform
 {
@@ -55,9 +56,25 @@ namespace WeaponCore.Platform
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
-                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                        animation.Running = true;
-                                        animation.Triggered = true;
+                                        PartAnimation animCheck;
+                                        if (AnimationLookup.TryGetValue(EventTriggers.StopFiring + animation.SubpartId, out animCheck))
+                                        {
+                                            if (animCheck.Running)
+                                                animCheck.Reverse = true;
+                                            else
+                                            {
+                                                animation.Part.PositionComp.LocalMatrix = animation.HomePos;
+                                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                                animation.Running = true;
+                                                animation.Triggered = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                            animation.Running = true;
+                                            animation.Triggered = true;
+                                        }
 
                                         if (animation.DoesLoop && !animation.TriggerOnce)
                                             animation.Looping = true;
@@ -87,14 +104,29 @@ namespace WeaponCore.Platform
                                 var animation = AnimationsSet[EventTriggers.StopFiring][i];
                                 if (active && animation.Looping != true && !pause)
                                 {
-                                    if (!animation.Running && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
+                                    if (!animation.Running)
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
-                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                        animation.Running = true;
-                                        animation.Triggered = true;
-
+                                        PartAnimation animCheck;
+                                        if (AnimationLookup.TryGetValue(EventTriggers.Firing + animation.SubpartId, out animCheck))
+                                        {
+                                            if (animCheck.Running)
+                                                animCheck.Reverse = true;
+                                            else
+                                            {
+                                                animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
+                                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                                animation.Running = true;
+                                                animation.Triggered = true;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                            animation.Running = true;
+                                            animation.Triggered = true;
+                                        }
                                         if (animation.DoesLoop && !animation.TriggerOnce)
                                             animation.Looping = true;
                                     }
@@ -146,7 +178,7 @@ namespace WeaponCore.Platform
                                 for (int i = 0; i < AnimationsSet[EventTriggers.Reloading].Length; i++)
                                 {
                                     var animation = AnimationsSet[EventTriggers.Reloading][i];
-                                    if (active && animation.Looping != true && !pause && !animation.Running)
+                                    if (active && !animation.Running)
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
@@ -235,20 +267,38 @@ namespace WeaponCore.Platform
                         Session.ComputeStorage(this);
                         if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         {
-                            var running = new HashSet<MyEntitySubpart>();
-
-                            if (AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                            for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
                             {
-                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
+                                var animation = AnimationsSet[EventTriggers.TurnOn][i];
+
+                                if (!animation.Running)
                                 {
-                                    var animation = AnimationsSet[EventTriggers.TurnOff][i];
-                                    if (animation.Running)
+                                    if (animation.TriggerOnce && animation.Triggered) continue;
+
+                                    PartAnimation animCheck;
+                                    if (AnimationLookup.TryGetValue(EventTriggers.TurnOff + animation.SubpartId, out animCheck))
                                     {
-                                        running.Add(animation.Part);
-                                        animation.Reverse = true;
+                                        if (animCheck.Running)
+                                            animCheck.Reverse = true;
+                                        else
+                                        {
+                                            animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
+                                            Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                            animation.Running = true;
+                                            animation.Triggered = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                        animation.Running = true;
+                                        animation.Triggered = true;
                                     }
                                 }
+                                else
+                                    animation.Reverse = false;
                             }
+
                             foreach (var set in AnimationsSet)
                             {
                                 for (int j = 0; j < set.Value.Length; j++)
@@ -258,30 +308,14 @@ namespace WeaponCore.Platform
                                     {
                                         Comp.Ai.Session.AnimationsToProcess.Remove(animation);
                                         animation.Running = false;
-                                        if (System.AnimationIdLookup.Contains((int)EventTriggers.TurnOff + animation.SubpartId) || System.AnimationIdLookup.Contains((int)EventTriggers.TurnOn + animation.SubpartId))
+                                        if (System.AnimationIdLookup.Contains(EventTriggers.TurnOff + animation.SubpartId) || System.AnimationIdLookup.Contains(EventTriggers.TurnOn + animation.SubpartId))
                                             animation.Reset(false, false);
                                         else
                                             animation.Reset();
                                     }
                                     else if (animation.Running)
                                         animation.Looping = false;
-
-                                    if (running.Count == 0 && set.Key == EventTriggers.TurnOff)
-                                        animation.Part.PositionComp.LocalMatrix = animation.FinalPos;
-
                                 }
-                            }
-                            for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
-                            {
-                                var animation = AnimationsSet[EventTriggers.TurnOn][i];
-
-                                if (!animation.Running && !running.Contains(animation.Part))
-                                {
-                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                    animation.Running = true;
-                                }
-                                else
-                                    animation.Reverse = false;
                             }
                         }
 
@@ -291,21 +325,38 @@ namespace WeaponCore.Platform
 
                         if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                         {
-                            var running = new HashSet<MyEntitySubpart>();
-
-                            if (AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                            for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
                             {
+                                var animation = AnimationsSet[EventTriggers.TurnOff][i];
 
-                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i++)
+                                if (!animation.Running)
                                 {
-                                    var animation = AnimationsSet[EventTriggers.TurnOn][i];
-                                    if (animation.Running)
+                                    if (animation.TriggerOnce && animation.Triggered) continue;
+
+                                    PartAnimation animCheck;
+                                    if (AnimationLookup.TryGetValue(EventTriggers.TurnOn + animation.SubpartId, out animCheck))
                                     {
-                                        running.Add(animation.Part);
-                                        animation.Reverse = true;
+                                        if (animCheck.Running)
+                                            animCheck.Reverse = true;
+                                        else
+                                        {
+                                            animation.Part.PositionComp.LocalMatrix = animation.HomePos;
+                                            Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                            animation.Running = true;
+                                            animation.Triggered = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                        animation.Running = true;
+                                        animation.Triggered = true;
                                     }
                                 }
+                                else
+                                    animation.Reverse = false;
                             }
+
                             foreach (var set in AnimationsSet)
                             {
                                 for (int j = 0; j < set.Value.Length; j++)
@@ -315,33 +366,14 @@ namespace WeaponCore.Platform
                                     {
                                         Comp.Ai.Session.AnimationsToProcess.Remove(animation);
                                         animation.Running = false;
-                                        if (System.AnimationIdLookup.Contains((int)EventTriggers.TurnOff + animation.SubpartId) || System.AnimationIdLookup.Contains((int)EventTriggers.TurnOn + animation.SubpartId))
+                                        if (System.AnimationIdLookup.Contains(EventTriggers.TurnOff + animation.SubpartId) || System.AnimationIdLookup.Contains(EventTriggers.TurnOn + animation.SubpartId))
                                             animation.Reset(false, false);
                                         else
                                             animation.Reset();
                                     }
-                                    else if(animation.Running)
+                                    else if (animation.Running)
                                         animation.Looping = false;
-
-                                    if (running.Count == 0 && set.Key == EventTriggers.TurnOff)
-                                        animation.Part.PositionComp.LocalMatrix = animation.HomePos;
-                                        
                                 }
-                            }
-                            for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
-                            {
-                                var animation = AnimationsSet[EventTriggers.TurnOff][i];
-
-                                animation.StartTick = OffDelay > 0
-                                    ? Comp.Ai.Session.Tick + animation.MotionDelay + OffDelay
-                                    : 0;
-                                if (!animation.Running && !running.Contains(animation.Part))
-                                {
-                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                    animation.Running = true;
-                                }
-                                else
-                                    animation.Reverse = false;
                             }
                         }
                         break;
@@ -563,8 +595,6 @@ namespace WeaponCore.Platform
 
         public void StopShooting(bool avOnly = false)
         {
-            EventTriggerStateChanged(EventTriggers.Firing, false);
-            EventTriggerStateChanged(EventTriggers.StopFiring, true);
             StopFiringSound(false);
             StopRotateSound();
             ShootGraphics(true);
@@ -574,6 +604,8 @@ namespace WeaponCore.Platform
                 _ticksUntilShoot = 0;
                 if (IsShooting)
                 {
+                    EventTriggerStateChanged(EventTriggers.Firing, false);
+                    EventTriggerStateChanged(EventTriggers.StopFiring, true);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
                     Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                     Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
@@ -587,12 +619,24 @@ namespace WeaponCore.Platform
         public void StartReload()
         {
             Reloading = true;
-            EventTriggerStateChanged(EventTriggers.Reloading, true);
-            EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
-            LoadAmmoMag = true;
+            EventTriggerStateChanged(state: EventTriggers.Firing, active: false);
 
-            if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
-            ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
+            if (IsShooting)
+                StopShooting();
+
+            if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !Comp.Ai.Session.IsCreative))
+                EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
+            else
+            {
+                EventTriggerStateChanged(EventTriggers.Reloading, true);
+
+                Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
+                AmmoMagTimer = System.ReloadTime;
+                _reloadedTick = Comp.Ai.Session.Tick + (uint)AmmoMagTimer;
+
+                if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
+                ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
+            }
         }
 
         public void StartFiringSound()

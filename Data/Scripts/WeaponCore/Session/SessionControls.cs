@@ -9,6 +9,7 @@ using VRage.Utils;
 using WeaponCore.Control;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using static WeaponCore.Platform.Weapon;
 
 namespace WeaponCore
 {
@@ -173,6 +174,7 @@ namespace WeaponCore
                     if (comp.Platform.Weapons[i].System.WeaponId == id)
                     {
                         var w = comp.Platform.Weapons[i];
+
                         var wState = comp.State.Value.Weapons[w.WeaponId];
                         if (wState.ManualShoot == ShootOn)
                         {

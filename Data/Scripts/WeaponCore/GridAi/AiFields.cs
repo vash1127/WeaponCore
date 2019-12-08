@@ -93,7 +93,6 @@ namespace WeaponCore.Support
         internal bool AvailablePowerIncrease;
         internal bool RecalcDone;
         internal bool StaticEntitiesInRange;
-        internal bool Reloading;
         internal bool ReturnHome;
         internal bool ShieldNearTmp;
         internal bool ShieldNear;

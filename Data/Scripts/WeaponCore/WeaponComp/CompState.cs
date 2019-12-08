@@ -32,12 +32,14 @@ namespace WeaponCore.Support
             IsWorking = MyCube.IsWorking;
             IsFunctional = MyCube.IsFunctional;
             State.Value.Online = IsWorking && IsFunctional;
+            
 
-            if(IsSorterTurret)
+            if(IsSorterTurret && SorterBase != null)
                 if (SorterBase.Enabled) { SorterBase.Enabled = false; SorterBase.Enabled = true; }
-            else
+            else if(MissileBase != null)
                 if (MissileBase.Enabled) { MissileBase.Enabled = false; MissileBase.Enabled = true; }
 
+            
             Status = Start.Started;
             return true;
         }

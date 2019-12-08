@@ -13,12 +13,14 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string,Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string,Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out uint onDelay)
         {
 
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
             var allEmissivesSet = new Dictionary<string, EmissiveState>();
             animationIdLookup = new HashSet<string>();
+
+            onDelay = 0;
 
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
@@ -46,16 +48,14 @@ namespace WeaponCore
                     foreach (var moves in animationSet.EventMoveSets)
                     {
                         if (!allAnimationSet.ContainsKey(moves.Key))
-                        {
                             allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
-                        }
 
                         List<Matrix> moveSet = new List<Matrix>();
                         List<Matrix> rotationSet = new List<Matrix>();
                         List<Matrix> rotCenterSet = new List<Matrix>();
                         List<string> rotCenterNameSet = new List<string>();
 
-                        var id = $"{(int)moves.Key}{animationSet.SubpartId[t]}";
+                        var id = $"{moves.Key}{animationSet.SubpartId[t]}";
                         animationIdLookup.Add(id);
                         AnimationType[] typeSet = new[]
                         {
@@ -73,6 +73,9 @@ namespace WeaponCore
                         for (int i = 0; i < moves.Value.Length; i++)
                         {
                             var move = moves.Value[i];
+
+                            if (moves.Key == Weapon.EventTriggers.TurnOn)
+                                onDelay += move.TicksToMove;
 
                             var hasEmissive = !string.IsNullOrEmpty(move.EmissiveName);
 
