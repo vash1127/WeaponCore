@@ -23,7 +23,7 @@ namespace WeaponCore.Projectiles
                 var valid = p.T.Target.Projectile != null;
                 if (valid && p.T.Target.Projectile.T.System == null)
                 {
-                    Log.Line($"projectile is invalid: {p.T.Target.Projectile.T.System == null} - {p.State} - {p.T.Target.Projectile.State} - {p.T.Target.Projectile.T.BaseHealthPool}");
+                    Log.Line($"projectile target is stale: myState:{p.State} - targetState:{p.T.Target.Projectile.State} - targetHealth:{p.T.Target.Projectile.T.BaseHealthPool} - targetDamage:{p.T.Target.Projectile.T.BaseDamagePool} - targetAge:{p.T.Target.Projectile.Age} - targetTravel:{p.T.Target.Projectile.T.DistanceTraveled}");
                     return null;
                 }
             }

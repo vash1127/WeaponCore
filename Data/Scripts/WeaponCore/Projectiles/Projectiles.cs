@@ -114,6 +114,7 @@ namespace WeaponCore.Projectiles
                         break;
                     case ProjectileState.OneAndDone:
                     case ProjectileState.Depleted:
+                    case ProjectileState.Detonate:
                         p.ProjectileClose();
                         continue;
                     case ProjectileState.Alive:
@@ -225,7 +226,7 @@ namespace WeaponCore.Projectiles
             {
                 p.Miss = false;
 
-                if (!p.Active || p.State == ProjectileState.Dead) continue;
+                if (!p.Active || (int)p.State > 3) continue;
                 var beam = new LineD(p.LastPosition, p.Position);
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
@@ -252,10 +253,10 @@ namespace WeaponCore.Projectiles
 
                         checkList.Clear();
                         CheckPool.Return(checkList);
-                        p.State = ProjectileState.Depleted;
+                        p.State = ProjectileState.Detonate;
                         p.ForceHitParticle = true;
                     }
-                    else p.State = ProjectileState.Depleted;
+                    else p.State = ProjectileState.Detonate;
                 }
                 else if (p.MineSeeking && !p.MineTriggered)
                     SeekEnemy(p);
@@ -310,7 +311,7 @@ namespace WeaponCore.Projectiles
         {
             foreach (var p in ProjectilePool.Active)
             {
-                if (!p.EnableAv || !p.Miss || p.State == ProjectileState.Dead) continue;
+                if (!p.EnableAv || !p.Miss || (int)p.State > 3) continue;
                 if (p.SmartsOn)
                 {
                     if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)

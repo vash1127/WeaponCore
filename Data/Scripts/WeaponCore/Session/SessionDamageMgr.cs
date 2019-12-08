@@ -23,7 +23,7 @@ namespace WeaponCore
                 var t = p.T;
                 var maxObjects = t.System.MaxObjectsHit;
                 var phantom = t.System.Values.Ammo.BaseDamage <= 0;
-                var pInvalid = (int) p.State > 1 && p.State != Projectile.ProjectileState.OneAndDone;
+                var pInvalid = (int) p.State > 3;
                 var tInvalid = p.T.Target.IsProjectile && (int)p.T.Target.Projectile.State > 1;
                 if (tInvalid) p.T.Target.Reset();
 
@@ -37,7 +37,7 @@ namespace WeaponCore
                     {
                         if (hitMax || outOfPew || pInvalid)
                         {
-                            if (pInvalid) Log.Line($"pInvalid: {p.State}");
+                            if (pInvalid) Log.Line($"noPew:{outOfPew} - max:{hitMax} - tInvalid:{tInvalid} - state:{p.State} - {p.T.System.WeaponName} - {p.T.BaseDamagePool} - {p.T.BaseHealthPool} - {p.Age}");
                             p.State = Projectile.ProjectileState.Depleted;
                         }
                         Projectiles.HitEntityPool.Return(hitEnt);
@@ -131,8 +131,7 @@ namespace WeaponCore
             var radiant = areaEffect == AreaDamage.AreaEffectType.Radiant;
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
             var detonateDmg = t.DetonationDamage;
-            var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
-            var attackerId = shieldByPass ? grid.EntityId : t.Target.FiringCube.EntityId;
+            var attackerId = t.Target.FiringCube.EntityId;
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = system.Values.Ammo.Mass;
             if (t.IsShrapnel)

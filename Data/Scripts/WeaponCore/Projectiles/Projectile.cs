@@ -944,8 +944,9 @@ namespace WeaponCore.Projectiles
         {
             Start,
             Alive,
-            Dead,
+            Detonate,
             OneAndDone,
+            Dead,
             Depleted,
             Destroy,
         }

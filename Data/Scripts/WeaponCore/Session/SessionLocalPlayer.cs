@@ -142,6 +142,7 @@ namespace WeaponCore
                 }
                 MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
                 MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, Color.Yellow);
+                if (TargetGps != null) TargetGps.ShowOnHud = false;
             }
         }
 
