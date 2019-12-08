@@ -449,30 +449,15 @@ namespace WeaponCore.Support
         internal bool VirtualHit;
         internal int Hits;
         internal double HitDistance;
-        internal uint Tick;
         internal HitEntity HitEntity = new HitEntity();
         internal IMySlimBlock HitBlock;
         internal int VirutalId = -1;
-
-        internal readonly List<Projectile> SortProjetiles = new List<Projectile>();
         internal readonly VoxelParallelHits[] VoxelHits;
 
         internal WeaponFrameCache(int size)
         {
             VoxelHits = new VoxelParallelHits[size];
             for (int i = 0; i < size; i++) VoxelHits[i] = new VoxelParallelHits();
-        }
-
-        internal void SortProjectiles(Weapon w)
-        {
-            var ai = w.Comp.Ai;
-            var weaponPos = w.MyPivotPos;
-            if (w.Comp.Ai.Session.Tick != Tick)
-            {
-                SortProjetiles.Clear();
-                foreach (var lp in ai.LiveProjectile) if (lp.MaxSpeed < w.System.MaxTargetSpeed) SortProjetiles.Add(lp);
-                SortProjetiles.Sort((a, b) => Vector3D.DistanceSquared(a.Position, weaponPos).CompareTo(Vector3D.DistanceSquared(b.Position, weaponPos)));
-            }
         }
     }
 

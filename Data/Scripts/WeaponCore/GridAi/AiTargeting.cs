@@ -539,20 +539,23 @@ namespace WeaponCore.Support
 
         private static void AcquireProjectile(Weapon w, out TargetType targetType)
         {
-            var wCache = w.WeaponCache;
             var ai = w.Comp.Ai;
             var s = w.System;
-            var collection = s.ClosestFirst ? wCache.SortProjetiles : ai.LiveProjectile as IEnumerable<Projectile>;
-            wCache.SortProjectiles(w);
+            var collection = ai.GetProCache();
             var physics = ai.Session.Physics;
             var target = w.NewTarget;
             var weaponPos = w.MyPivotPos;
             const Projectile.ProjectileState ignoreStates = (Projectile.ProjectileState)1;
-            foreach (var lp in collection)
+            var numOfTargets = collection.Count;
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets);
+            if (s.ClosestFirst) collection.Sort((a, b) => Vector3D.DistanceSquared(a.Position, w.MyPivotPos).CompareTo(Vector3D.DistanceSquared(b.Position, w.MyPivotPos)));
+
+            for (int x = 0; x < numOfTargets; x++)
             {
-                ai.Session.ProjectileChecks++;
+                var card = deck[x];
+                var lp = collection[card];
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State > ignoreStates) continue;
-                if (lp.State != Projectile.ProjectileState.Alive && lp.State != Projectile.ProjectileState.Start) Log.Line($"invaid projectile state: {lp.State}");
+
                 if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity))
                 {
                     var needsCast = false;

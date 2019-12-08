@@ -23,12 +23,13 @@ namespace WeaponCore
                 var t = p.T;
                 var maxObjects = t.System.MaxObjectsHit;
                 var phantom = t.System.Values.Ammo.BaseDamage <= 0;
+                var invalid = (int)p.State > 1 || p.T.Target.IsProjectile && (int)p.T.Target.Projectile.State >1;
                 for (int i = 0; i < t.HitList.Count; i++)
                 {
                     var hitEnt = t.HitList[i];
-                    if (t.ObjectsHit >= maxObjects || t.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect))
+                    if (invalid || t.ObjectsHit >= maxObjects || t.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect))
                     {
-                        p.State = Projectile.ProjectileState.Depleted;
+                        if (!invalid) p.State = Projectile.ProjectileState.Depleted;
                         Projectiles.HitEntityPool.Return(hitEnt);
                         continue;
                     }
@@ -358,7 +359,7 @@ namespace WeaponCore
                     {
                         if (areaSphere.Contains(sTarget.Position) != ContainmentType.Disjoint)
                         {
-                            if (attacker.DetonationDamage > sTarget.T.BaseHealthPool)
+                            if (attacker.DetonationDamage >= sTarget.T.BaseHealthPool)
                             {
                                 sTarget.T.BaseHealthPool = 0;
                                 sTarget.State = Projectile.ProjectileState.Destroy;

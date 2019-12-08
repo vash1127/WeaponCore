@@ -47,11 +47,11 @@ namespace WeaponCore.Support
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
+        internal readonly List<Projectile> ProjetileCache = new List<Projectile>();
         internal List<MyEntity> StaticsInRange = new List<MyEntity>();
         internal List<MyEntity> Obstructions = new List<MyEntity>();
         internal List<GridAi> Threats = new List<GridAi>();
         internal List<GridAi> TargetAis = new List<GridAi>();
-
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
@@ -80,6 +80,7 @@ namespace WeaponCore.Support
         internal uint ResetPowerTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
+        internal uint LiveProjectileTick;
         internal int SourceCount;
         internal int ManualComps;
         internal int BlockCount;
@@ -123,6 +124,8 @@ namespace WeaponCore.Support
 
         internal bool WeaponTerminalAccess;
         private uint _lastScan;
+        private uint _pCacheTick;
+
         internal enum TargetType
         {
             Projectile,

@@ -121,7 +121,6 @@ namespace WeaponCore
         internal int RandomRayCasts;
         internal int TopRayCasts;
         internal int CanShoot;
-        internal int ProjectileChecks;
         internal int TargetTransfers;
         internal int TargetSets;
         internal int TargetResets;

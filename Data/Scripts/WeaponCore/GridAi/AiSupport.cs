@@ -10,6 +10,8 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
+using WeaponCore.Projectiles;
 using static WeaponCore.Support.TargetingDefinition;
 namespace WeaponCore.Support
 {
@@ -341,6 +343,17 @@ namespace WeaponCore.Support
                 var adjustedDist = DistSqr - (MyAi.GridRadius * MyAi.GridRadius);
                 CollisionDistSqr = adjustedDist > 0 ? adjustedDist : 0;
             }
+        }
+
+        internal List<Projectile> GetProCache()
+        {
+            if (LiveProjectileTick > _pCacheTick)
+            {
+                ProjetileCache.Clear();
+                ProjetileCache.AddRange(LiveProjectile);
+                _pCacheTick = LiveProjectileTick;
+            }
+            return ProjetileCache;
         }
 
         internal bool GetTargetState()

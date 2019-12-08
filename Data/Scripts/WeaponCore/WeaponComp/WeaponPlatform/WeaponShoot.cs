@@ -251,6 +251,7 @@ namespace WeaponCore.Platform
                                 if (addProjectile)
                                 {
                                     targetAi.LiveProjectile.Add(p);
+                                    targetAi.LiveProjectileTick = tick;
                                     p.Watchers.Add(targetAi);
                                 }
                             }

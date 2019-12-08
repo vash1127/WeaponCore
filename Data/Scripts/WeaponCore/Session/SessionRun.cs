@@ -45,7 +45,6 @@ namespace WeaponCore
                     TargetRequests = 0;
                     TargetChecks = 0;
                     BlockChecks = 0;
-                    ProjectileChecks = 0;
                     CanShoot = 0;
                     ClosestRayCasts = 0;
                     RandomRayCasts = 0;
