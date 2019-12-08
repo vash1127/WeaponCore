@@ -181,6 +181,23 @@ namespace WeaponCore
             return radius;
         }
 
+        public void WeaponDebug(Weapon w)
+        {
+            DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
+            DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
+            DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
+            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.07f);
+            //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
+            if (w.TargetBox != null)
+            {
+                //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
+                DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
+            }
+
+            if (!w.Target.Expired)
+                DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
+        }
+
         public string ModPath()
         {
             var modPath = ModContext.ModPath;

@@ -127,22 +127,7 @@ namespace WeaponCore
 
                         gridAi.Reloading = !w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 && (comp.State.Value.Weapons[w.WeaponId].CurrentMags > 0 || IsCreative);
 
-                        if (comp.Debug)
-                        {
-                            DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.07f);
-                            //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
-                            if (w.TargetBox != null)
-                            {
-                                //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
-                                DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
-                            }
-
-                            if (!w.Target.Expired)
-                                DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
-                        }
+                        if (comp.Debug) WeaponDebug(w);
 
                         if (w.AiReady || w.SeekTarget || gunner || wState.ManualShoot != ShootOff || gridAi.Reloading || w.ReturnHome) gridAi.Ready = true;
                     }
@@ -288,7 +273,7 @@ namespace WeaponCore
                 }
             }
 
-            if (DbsToUpdate.Count > 0 && DbCallBackComplete && DbTask.IsComplete) UpdateDbsInQueue();
+            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
         }
     }
 }
