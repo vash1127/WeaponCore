@@ -65,7 +65,7 @@ namespace WeaponCore.Support
         internal IMyTerminalBlock LastWeaponTerminal;
         internal IMyTerminalBlock LastTerminal;
 
-        internal Focus Focus = new Focus(2);
+        internal Focus Focus;
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyPlanet MyPlanetTmp;
@@ -136,6 +136,7 @@ namespace WeaponCore.Support
             Session = session;
             CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
+            Focus = new Focus(2, this);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }
     }

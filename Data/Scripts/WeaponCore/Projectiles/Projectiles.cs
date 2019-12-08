@@ -229,7 +229,6 @@ namespace WeaponCore.Projectiles
                 p.Miss = false;
 
                 if (!p.Active || p.State == ProjectileState.Dead) continue;
-
                 var beam = new LineD(p.LastPosition, p.Position);
 
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.T.DistanceTraveled * p.T.DistanceTraveled >= p.DistanceToTravelSqr))
@@ -238,6 +237,7 @@ namespace WeaponCore.Projectiles
 
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = dInfo.DetonationRadius;
+
                     if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.T.ObjectsHit > 0))
                     {
                         var checkList = CheckPool.Get();
@@ -258,6 +258,7 @@ namespace WeaponCore.Projectiles
                         p.State = ProjectileState.Depleted;
                         p.ForceHitParticle = true;
                     }
+                    else p.State = ProjectileState.Depleted;
                 }
                 else if (p.MineSeeking && !p.MineTriggered)
                     SeekEnemy(p);

@@ -179,9 +179,10 @@ namespace WeaponCore
 
         internal void SetTarget(MyEntity entity, GridAi ai)
         {
-            ai.Focus.Target[ai.Focus.ActiveId] = entity;
+            
             TrackingAi = ai;
-            ai.TargetResetTick = Tick + 1;
+            TrackingAi.Focus.AddFocus(entity);
+
             GridAi gridAi;
             TargetArmed = false;
             if (GridTargetingAIs.TryGetValue((MyCubeGrid)entity, out gridAi))

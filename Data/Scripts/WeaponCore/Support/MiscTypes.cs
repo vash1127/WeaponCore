@@ -719,8 +719,9 @@ namespace WeaponCore.Support
 
     public class Focus
     {
-        internal Focus(int count)
+        internal Focus(int count, GridAi gridAi)
         {
+            Ai = gridAi;
             Target = new MyEntity[count];
             SubSystem = new BlockTypes[count];
             TargetState = new TargetStatus[count];
@@ -729,12 +730,28 @@ namespace WeaponCore.Support
                 TargetState[i] = new TargetStatus();
         }
 
+        internal readonly GridAi Ai;
+        internal readonly BlockTypes[] SubSystem;
+        internal readonly TargetStatus[] TargetState;
+        internal readonly long[] PrevTargetId;
         internal MyEntity[] Target;
-        internal BlockTypes[] SubSystem;
-        internal TargetStatus[] TargetState;
-        internal long[] PrevTargetId;
         internal int ActiveId;
         internal bool HasFocus;
+
+        internal void AddFocus(MyEntity target)
+        {
+            Target[ActiveId] = target;
+            Ai.TargetResetTick = Ai.Session.Tick + 1;
+            foreach (var sub in Ai.SubGrids)
+            {
+                GridAi gridAi;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                {
+                    gridAi.Focus.Target[ActiveId] = target;
+                    gridAi.TargetResetTick = Ai.Session.Tick + 1;
+                }
+            }
+        }
 
         internal void NextActive(bool addSecondary)
         {
@@ -745,15 +762,17 @@ namespace WeaponCore.Support
 
             if (addSecondary && Target[newActiveId] == null)
             {
-                Log.Line("test -1");
                 Target[newActiveId] = Target[prevId];
                 ActiveId = newActiveId;
+                foreach (var sub in Ai.SubGrids)
+                {
+                    GridAi gridAi;
+                    if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                        gridAi.Focus.Target[newActiveId] = Target[ActiveId];
+                }
             }
             else if (!addSecondary && Target[newActiveId] != null)
-            {
-                Log.Line("test 0");
                 ActiveId = newActiveId;
-            }
         }
 
         internal bool IsFocused()
@@ -765,7 +784,15 @@ namespace WeaponCore.Support
                 {
                     if (!Target[i].MarkedForClose) HasFocus = true;
                     else
+                    {
                         Target[i] = null;
+                        foreach (var sub in Ai.SubGrids)
+                        {
+                            GridAi gridAi;
+                            if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                                gridAi.Focus.Target[i] = null;
+                        }
+                    }
                 }
 
                 if (Target[0] == null && HasFocus)
@@ -773,6 +800,16 @@ namespace WeaponCore.Support
                     Target[0] = Target[i];
                     Target[i] = null;
                     ActiveId = 0;
+
+                    foreach (var sub in Ai.SubGrids)
+                    {
+                        GridAi gridAi;
+                        if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                        {
+                            gridAi.Focus.Target[0] = Target[i];
+                            gridAi.Focus.Target[i] = null;
+                        }
+                    }
                 }
             }
             return HasFocus;
@@ -781,6 +818,13 @@ namespace WeaponCore.Support
         internal void ReleaseActive()
         {
             Target[ActiveId] = null;
+
+            foreach (var sub in Ai.SubGrids)
+            {
+                GridAi gridAi;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                    gridAi.Focus.Target[ActiveId] = null;
+            }
         }
     }
 
