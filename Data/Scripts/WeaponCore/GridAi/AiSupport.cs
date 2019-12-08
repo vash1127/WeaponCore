@@ -548,6 +548,35 @@ namespace WeaponCore.Support
                 FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
         }
 
+        internal void DelayedGridCleanUp(object o)
+        {
+            if (MyGrid.InScene) Log.Line("grid was closed but still inScene");
+            RegisterMyGridEvents(false);
+            _possibleTargets.Clear();
+            foreach (var grid in SubGrids)
+            {
+                if (grid == MyGrid) continue;
+                RemSubGrids.Add(grid);
+            }
+            AddSubGrids.Clear();
+            SubGridChanges();
+            SubGrids.Clear();
+            Obstructions.Clear();
+            Threats.Clear();
+            TargetAis.Clear();
+            EntitiesInRange.Clear();
+            Batteries.Clear();
+            Targets.Clear();
+            SortedTargets.Clear();
+            BlockTypePool.Clean();
+            CubePool.Clean();
+            MyShieldTmp = null;
+            MyShield = null;
+            MyPlanetTmp = null;
+            MyPlanet = null;
+            FakeShipController = null;
+        }
+
         internal void UpdateGridPower()
         {
             GridAvailablePower = 0;

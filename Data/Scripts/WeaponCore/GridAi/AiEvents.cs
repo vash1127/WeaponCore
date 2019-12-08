@@ -123,30 +123,7 @@ namespace WeaponCore.Support
 
         private void GridClose(MyEntity myEntity)
         { 
-            RegisterMyGridEvents(false);
-            _possibleTargets.Clear();
-            foreach (var grid in SubGrids)
-            {
-                if (grid == MyGrid) continue;
-                RemSubGrids.Add(grid);
-            }
-            AddSubGrids.Clear();
-            SubGridChanges();
-            SubGrids.Clear();
-            Obstructions.Clear();
-            Threats.Clear();
-            TargetAis.Clear();
-            EntitiesInRange.Clear();
-            Batteries.Clear();
-            Targets.Clear();
-            SortedTargets.Clear();
-            BlockTypePool.Clean();
-            CubePool.Clean();
-            MyShieldTmp = null;
-            MyShield = null;
-            MyPlanetTmp = null;
-            MyPlanet = null;
-            FakeShipController = null;
+            Session.FutureEvents.Schedule(DelayedGridCleanUp, null, 120);
         }
     }
 }

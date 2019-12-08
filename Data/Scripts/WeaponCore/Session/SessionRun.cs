@@ -112,7 +112,6 @@ namespace WeaponCore
 
                 if (!PTask.IsComplete)
                     PTask.Wait();
-                else if (!Projectiles.Updated) Log.Line("PTask lied");
 
                 if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
                     TaskHasErrors(ref PTask, "PTask");

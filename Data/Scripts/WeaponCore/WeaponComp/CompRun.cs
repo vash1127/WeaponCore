@@ -43,15 +43,8 @@ namespace WeaponCore.Support
         public override void OnBeforeRemovedFromContainer()
         {
             base.OnBeforeRemovedFromContainer();
-            if (Container.Entity.InScene)
-            {
-            }
-            else
-            {
+            if (!Container.Entity.InScene)
                 Ai.Session.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
-                //SinkInfo.RequiredInputFunc = null;
-                //MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
-            }
         }
 
         public void RePreInit(object o)
@@ -142,7 +135,6 @@ namespace WeaponCore.Support
                             w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                     }
                 }
-                //Log.Line($"Comp Inited");
                 Platform.State = MyWeaponPlatform.PlatformState.Ready;
             }
         }

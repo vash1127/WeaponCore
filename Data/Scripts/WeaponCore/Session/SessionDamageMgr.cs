@@ -23,13 +23,23 @@ namespace WeaponCore
                 var t = p.T;
                 var maxObjects = t.System.MaxObjectsHit;
                 var phantom = t.System.Values.Ammo.BaseDamage <= 0;
-                var invalid = (int)p.State > 1 || p.T.Target.IsProjectile && (int)p.T.Target.Projectile.State >1;
+                var pInvalid = (int) p.State > 1 && p.State != Projectile.ProjectileState.OneAndDone;
+                var tInvalid = p.T.Target.IsProjectile && (int)p.T.Target.Projectile.State > 1;
+                if (tInvalid) p.T.Target.Reset();
+
+                var skip = pInvalid || tInvalid;
                 for (int i = 0; i < t.HitList.Count; i++)
                 {
                     var hitEnt = t.HitList[i];
-                    if (invalid || t.ObjectsHit >= maxObjects || t.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect))
+                    var hitMax = t.ObjectsHit >= maxObjects;
+                    var outOfPew = t.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect);
+                    if (skip || hitMax || outOfPew)
                     {
-                        if (!invalid) p.State = Projectile.ProjectileState.Depleted;
+                        if (hitMax || outOfPew || pInvalid)
+                        {
+                            if (pInvalid) Log.Line($"pInvalid: {p.State}");
+                            p.State = Projectile.ProjectileState.Depleted;
+                        }
                         Projectiles.HitEntityPool.Return(hitEnt);
                         continue;
                     }

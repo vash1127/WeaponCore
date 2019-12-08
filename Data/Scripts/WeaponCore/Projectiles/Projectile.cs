@@ -488,14 +488,12 @@ namespace WeaponCore.Projectiles
             if (!GridAi.ReacquireTarget(this))
             {
                 T.Target.Entity = null;
-                if (T.Target.IsProjectile)
-                {
-                    T.Target.Projectile.Seekers.Remove(this);
-                    T.Target.IsProjectile = false;
-                    T.Target.Projectile = null;
-                }
+                if (T.Target.IsProjectile) UnAssignProjectile();
                 return false;
             }
+
+            if (T.Target.IsProjectile) UnAssignProjectile();
+
             return true;
         }
 
@@ -902,6 +900,13 @@ namespace WeaponCore.Projectiles
             }
 
             State = ProjectileState.Depleted;
+        }
+
+        internal void UnAssignProjectile()
+        {
+            T.Target.Projectile.Seekers.Remove(this);
+            T.Target.IsProjectile = false;
+            T.Target.Projectile = null;
         }
 
         internal void ProjectileClose()

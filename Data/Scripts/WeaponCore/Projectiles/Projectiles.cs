@@ -27,7 +27,6 @@ namespace WeaponCore.Projectiles
         internal readonly List<Projectile> CleanUp = new List<Projectile>();
 
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
-        internal volatile bool Updated;
         internal EntityPool<MyEntity>[] EntityPool;
 
         internal Projectiles(Session session)
@@ -51,13 +50,11 @@ namespace WeaponCore.Projectiles
 
         internal void Update()
         {
-            Updated = false;
             Clean();
             SpawnFragments();
             UpdateState();
             CheckHits();
             UpdateAv();
-            Updated = true;
         }
 
         private void Clean()
