@@ -21,8 +21,6 @@ namespace WeaponCore.Platform
             var state = Comp.State.Value.Weapons[WeaponId];
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
 
-            if (FirstFireTick > tick) return;
-
             if (System.BurstMode)
             {
                 if (state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)

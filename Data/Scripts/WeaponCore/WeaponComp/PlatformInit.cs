@@ -266,8 +266,8 @@ namespace WeaponCore.Platform
                                         animation.Part = (MyEntitySubpart)part;
                                         animation.Reset();
 
-                                        if (comp.Ai.Session.AnimationsToProcess.Contains(animation))
-                                            comp.Ai.Session.AnimationsToProcess.Remove(animation);
+                                        //if (comp.Ai.Session.AnimationsToProcess.Contains(animation))
+                                            //comp.Ai.Session.AnimationsToProcess.Remove(animation);
 
                                         if (!registered)
                                         {

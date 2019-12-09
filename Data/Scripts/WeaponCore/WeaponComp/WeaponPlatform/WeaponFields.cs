@@ -25,7 +25,6 @@ namespace WeaponCore.Platform
         private uint _ticksUntilShoot;
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
-        private uint _reloadedTick;
         private uint _delayShootTick;
         internal uint TicksPerShot;
         internal double TimePerShot;
@@ -89,7 +88,6 @@ namespace WeaponCore.Platform
         internal uint OffDelay;
         internal int RateOfFire;
         internal int BarrelSpinRate;
-        internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
         internal int WeaponId;
         internal int HsRate;
@@ -121,6 +119,7 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool TargetWasExpired = true;
         internal bool Reloading;
+        internal bool OutOfAmmo;
         internal bool ReturnHome;
         internal bool CurrentlyDegrading;
         internal bool SleepTargets;
@@ -136,20 +135,6 @@ namespace WeaponCore.Platform
             ShootOff,
             ShootOnce,
             ShootClick,
-        }
-
-        internal bool AmmoMagLoaded
-        {
-            get
-            {
-                if (_reloadedTick > Comp.Ai.Session.Tick) return false;
-                EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
-                EventTriggerStateChanged(EventTriggers.Reloading, false);
-                Comp.State.Value.Weapons[WeaponId].CurrentAmmo = System.MagazineDef.Capacity;
-                AmmoMagTimer = int.MaxValue;
-                Reloading = false;
-                return true;
-            }
         }
 
         public enum EventTriggers

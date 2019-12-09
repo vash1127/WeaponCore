@@ -160,11 +160,12 @@ namespace WeaponCore.Support
             BlockInventory.Constraint.m_useDefaultIcon = false;
             BlockInventory.ResetVolume();
             BlockInventory.Refresh();
+
+            if (Set.Value.Inventory != null)
+                BlockInventory.Init(Set.Value.Inventory);
+            
             foreach (var weapon in Platform.Weapons)
-            {
-                Session.ComputeStorage(weapon);
                 MaxInventoryVolume += weapon.System.MaxAmmoVolume;
-            }
 
             if (MyCube.HasInventory)
             {

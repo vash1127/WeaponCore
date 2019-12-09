@@ -82,7 +82,7 @@ namespace WeaponCore
         internal readonly double VisDirToleranceCosine;
         internal readonly double AimDirToleranceCosine;
 
-
+        internal ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
         internal DsUniqueListFastRemove<PartAnimation> AnimationsToProcess = new DsUniqueListFastRemove<PartAnimation>();
         internal List<GridAi> DbsToUpdate = new List<GridAi>();
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);

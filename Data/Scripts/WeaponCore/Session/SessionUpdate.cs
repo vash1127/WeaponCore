@@ -176,7 +176,7 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
 
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || !gridAi.Ready)
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || !gridAi.Ready || (!w.System.EnergyAmmo && (comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 || w.Reloading)))
                         {
                             if (w.ReturnHome)
                                 w.TurretHomePosition();
@@ -209,9 +209,6 @@ namespace WeaponCore
                         else comp.Charging = false;
                         
                         if (comp.Charging) continue;
-
-                        if (!w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 && !w.AmmoMagLoaded)
-                            continue;
 
                         if (w.SeekTarget || gridAi.TargetResetTick == Tick)
                         {

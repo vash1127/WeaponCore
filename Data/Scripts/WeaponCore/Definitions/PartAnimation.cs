@@ -186,7 +186,7 @@ namespace WeaponCore.Support {
             PauseAnimation = false;
 
             if (resetMove) _currentMove = 0;
-            if (resetPos) Part.WorldMatrix = HomePos;
+            if (resetPos) Part.PositionComp.LocalMatrix = HomePos;
             
         }
 
