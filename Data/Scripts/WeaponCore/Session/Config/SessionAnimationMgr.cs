@@ -630,8 +630,6 @@ namespace WeaponCore
             while (ThreadedAnimations.TryDequeue(out anim))
                 AnimationsToProcess.Add(anim);
 
-            Log.Line($"AnimationsToProcess.Count: {AnimationsToProcess.Count}");
-
             for (int i = AnimationsToProcess.Count - 1; i >= 0; i--)
             {
                 var animation = AnimationsToProcess[i];
@@ -641,7 +639,6 @@ namespace WeaponCore
                     if (!animation.PauseAnimation && (animation.MotionDelay == 0 || animation.CurrentMove > 0 || (animation.MotionDelay > 0 && animation.StartTick <= Tick && animation.StartTick > 0)))
                     {
                         AnimateParts(animation);
-                        Log.Line($"Part: {animation.SubpartId} Current Move: {animation.CurrentMove} TotalMoves: {animation.NumberOfMoves - 1}");
                         animation.StartTick = 0;
                     }
                     else if (animation.MotionDelay > 0 && animation.StartTick == 0)
