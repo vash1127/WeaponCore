@@ -28,6 +28,7 @@ namespace WeaponCore.Projectiles
 
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
         internal EntityPool<MyEntity>[] EntityPool;
+        internal ulong CurrentProjectileId;
 
         internal Projectiles(Session session)
         {
@@ -117,10 +118,11 @@ namespace WeaponCore.Projectiles
                     case ProjectileState.Detonate:
                         p.ProjectileClose();
                         continue;
-                    case ProjectileState.Alive:
-                        p.T.Target.IsProjectile = p.T.Target.IsProjectile && (p.T.Target.Projectile.T.BaseHealthPool > 0);
-                        break;
                 }
+                if (p.T.Target.IsProjectile)
+                    if (p.T.Target.Projectile.State != ProjectileState.Alive)
+                        p.UnAssignProjectile(true);
+
                 p.T.OnScreen = false;
 
                 if (p.AccelLength > 0)

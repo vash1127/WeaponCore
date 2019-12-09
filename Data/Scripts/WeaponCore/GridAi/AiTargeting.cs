@@ -545,16 +545,17 @@ namespace WeaponCore.Support
             var physics = ai.Session.Physics;
             var target = w.NewTarget;
             var weaponPos = w.MyPivotPos;
-            const Projectile.ProjectileState ignoreStates = (Projectile.ProjectileState)1;
             var numOfTargets = collection.Count;
-            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets);
+            var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
             if (s.ClosestFirst) collection.Sort((a, b) => Vector3D.DistanceSquared(a.Position, w.MyPivotPos).CompareTo(Vector3D.DistanceSquared(b.Position, w.MyPivotPos)));
+
+            var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize);
 
             for (int x = 0; x < numOfTargets; x++)
             {
                 var card = deck[x];
                 var lp = collection[card];
-                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State > ignoreStates) continue;
+                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive) continue;
 
                 if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity))
                 {

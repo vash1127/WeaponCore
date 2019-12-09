@@ -18,16 +18,6 @@ namespace WeaponCore.Projectiles
     {
         internal DrawHit? GetAllEntitiesInLine(Projectile p, LineD beam)
         {
-            if (p.T.Target != null && p.T.Target.IsProjectile)
-            {
-                var valid = p.T.Target.Projectile != null;
-                if (valid && p.T.Target.Projectile.T.System == null)
-                {
-                    Log.Line($"projectile target is stale: myState:{p.State} - targetState:{p.T.Target.Projectile.State} - targetHealth:{p.T.Target.Projectile.T.BaseHealthPool} - targetDamage:{p.T.Target.Projectile.T.BaseDamagePool} - targetAge:{p.T.Target.Projectile.Age} - targetTravel:{p.T.Target.Projectile.T.DistanceTraveled}");
-                    return null;
-                }
-            }
-
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
             var ai = p.T.Ai;
             var found = false;

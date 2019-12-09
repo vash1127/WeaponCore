@@ -51,7 +51,7 @@ namespace WeaponCore
                             w.Target.Expired = true;
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose)
                             w.Target.Reset();
-                        else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile))
+                        else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                             w.Target.Reset();
 
                         else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable)
@@ -65,7 +65,7 @@ namespace WeaponCore
                             {
                                 if (!w.TrackTarget)
                                 {
-                                    if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
+                                    if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
                                         w.Target.Reset();
                                 }
                                 else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target))

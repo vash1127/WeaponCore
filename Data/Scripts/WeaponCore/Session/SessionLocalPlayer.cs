@@ -151,6 +151,7 @@ namespace WeaponCore
             if (TargetGps != null)
             {
                 Log.Line("remove gps");
+                TargetGps.ShowOnHud = false;
                 MyAPIGateway.Session.GPS.RemoveLocalGps(TargetGps);
                 TargetGps = null;
             }
