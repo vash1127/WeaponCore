@@ -125,6 +125,7 @@ namespace WeaponCore
                 }
             }
         }
+        /*
 
         internal void ResetGps()
         {
@@ -132,6 +133,7 @@ namespace WeaponCore
             {
                 Log.Line("resetgps");
                 MyVisualScriptLogicProvider.AddGPS("WEAPONCORE", "", Vector3D.MaxValue, Color.Red);
+                
                 foreach (var t in MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId))
                 {
                     if (t.Name == "WEAPONCORE")
@@ -145,15 +147,27 @@ namespace WeaponCore
                 if (TargetGps != null) TargetGps.ShowOnHud = false;
             }
         }
+        */
 
         internal void RemoveGps()
         {
             if (TargetGps != null)
             {
-                Log.Line("remove gps");
+                if (TargetGps.ShowOnHud)
+                    MyAPIGateway.Session.GPS.RemoveLocalGps(TargetGps);
+
                 TargetGps.ShowOnHud = false;
-                MyAPIGateway.Session.GPS.RemoveLocalGps(TargetGps);
-                TargetGps = null;
+            }
+        }
+
+        internal void AddGps(Color color = default(Color))
+        {
+            if (TargetGps != null)
+            {
+                if (TargetGps.ShowOnHud) MyAPIGateway.Session.GPS.RemoveLocalGps(TargetGps);
+                else TargetGps.ShowOnHud = true;
+                MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
+                if (color != default(Color)) MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, Color.Yellow);
             }
         }
 
@@ -175,7 +189,7 @@ namespace WeaponCore
             {
                 Log.Line("resetting target");
                 TrackingAi = null;
-                RemoveGps();
+                //RemoveGps();
                 return false;
             }
 

@@ -74,7 +74,6 @@ namespace WeaponCore
                 var hit = _hitInfo[i].HitEntity as MyCubeGrid;
                 if (hit == null || hit.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hit)) continue;
                 s.SetTarget(hit, ai);
-                //s.ResetGps();
                 break;
             }
 
@@ -86,7 +85,6 @@ namespace WeaponCore
             if (closestEnt != null)
             {
                 s.SetTarget(closestEnt, ai);
-                //s.ResetGps();
             }
         }
 
@@ -119,10 +117,7 @@ namespace WeaponCore
             } 
 
             if (ent != null)
-            {
                 s.SetTarget(ent, ai);
-                //s.ResetGps();
-            }
         }
 
         private bool UpdateCache()

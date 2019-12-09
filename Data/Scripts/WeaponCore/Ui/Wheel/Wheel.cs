@@ -54,13 +54,13 @@ namespace WeaponCore
                     else if (menu.Name == "WeaponGroups") CloseWheel();
                 }
 
-                if (!s.UiInput.AnyKeyPressed && s.UiInput.WheelForward)
+                if (!s.UiInput.UiKeyPressed && s.UiInput.WheelForward)
                 {
                     GetNextWheelId(true);
                     GetCurrentMenu().Move(Movement.Forward);
 
                 }
-                else if (!s.UiInput.AnyKeyPressed && s.UiInput.WheelBackward)
+                else if (!s.UiInput.UiKeyPressed && s.UiInput.WheelBackward)
                 {
                     GetNextWheelId(false);
                     GetCurrentMenu().Move(Movement.Backward);
@@ -116,6 +116,7 @@ namespace WeaponCore
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, true);
             var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
+            Session.RemoveGps();
         }
         
         internal void SetCurrentMessage()
@@ -129,8 +130,10 @@ namespace WeaponCore
             if (currentMenu.GpsEntity != null)
             {
                 var gpsName = currentMenu.GpsEntity.DisplayNameText;
+                Session.AddGps();
                 Session.SetGpsInfo(currentMenu.GpsEntity.PositionComp.GetPosition(), gpsName);
             }
+            else Session.RemoveGps();
 
             HudNotify.Text = currentMessage;
             HudNotify.Show();
