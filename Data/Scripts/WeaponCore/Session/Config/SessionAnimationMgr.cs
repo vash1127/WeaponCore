@@ -734,7 +734,6 @@ namespace WeaponCore
 
             if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
             {
-                Log.Line($"Removed");
                 AnimationsToProcess.Remove(animation);
                 animation.Running = false;
             }
