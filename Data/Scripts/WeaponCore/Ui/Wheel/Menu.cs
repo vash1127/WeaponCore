@@ -176,14 +176,11 @@ namespace WeaponCore
                         break;
                 }
 
-                Wheel.Session.ResetGps();
                 GetInfo(item);
             }
 
             internal void CleanUp()
             {
-                Log.Line("CleanUp");
-                Wheel.Session.RemoveGps();
                 GroupNames?.Clear();
                 BlockGroups?.Clear();
             }

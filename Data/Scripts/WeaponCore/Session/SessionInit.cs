@@ -56,10 +56,10 @@ namespace WeaponCore
 
             if (TargetGps == null)
             {
-                TargetGps = MyAPIGateway.Session.GPS.Create("", "", Vector3D.MaxValue, true, true);
+                TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
                 MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
                 MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
-                TargetGps.ShowOnHud = false;
+                TargetGps.ShowOnHud = true;
             }
 
             CheckDirtyGrids();
