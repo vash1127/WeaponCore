@@ -108,6 +108,7 @@ namespace WeaponCore
 
         internal object InitObj = new object();
         internal bool HighLoad;
+        internal bool InMenu;
         internal double Load;
         internal uint Tick;
         internal int PlayerEventId;

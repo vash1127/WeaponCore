@@ -630,41 +630,6 @@ namespace WeaponCore.Support
         internal uint FirstTick;
     }
 
-    public struct InventoryChange
-    {
-        public enum ChangeType
-        {
-            Add,
-            Changed
-        }
-
-        public readonly Weapon Weapon;
-        public readonly MyPhysicalInventoryItem Item;
-        public readonly MyFixedPoint Amount;
-        public readonly ChangeType Type;
-        public InventoryChange(Weapon weapon, MyPhysicalInventoryItem item, MyFixedPoint amount, ChangeType type)
-        {
-            Weapon = weapon;
-            Item = item;
-            Amount = amount;
-            Type = type;
-        }
-    }
-
-    public struct WeaponHit
-    {
-        public readonly WeaponComponent Logic;
-        public readonly Vector3D HitPos;
-        public readonly float Size;
-
-        public WeaponHit(WeaponComponent logic, Vector3D hitPos, float size, string stateEffect)
-        {
-            Logic = logic;
-            HitPos = hitPos;
-            Size = size;
-        }
-    }
-
     public struct BlockInfo
     {
         public enum BlockType

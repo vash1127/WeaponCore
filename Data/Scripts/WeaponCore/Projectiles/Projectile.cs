@@ -16,6 +16,7 @@ namespace WeaponCore.Projectiles
     internal class Projectile
     {
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+        internal ulong Id;
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MyEntityQueryType PruneQuery;
@@ -113,6 +114,7 @@ namespace WeaponCore.Projectiles
         internal void Start(Projectiles manager)
         {
             Manager = manager;
+            Id = Manager.CurrentProjectileId++;
             Position = T.Origin;
             AccelDir = Direction;
             VisualDir = Direction;
@@ -488,14 +490,12 @@ namespace WeaponCore.Projectiles
             if (!GridAi.ReacquireTarget(this))
             {
                 T.Target.Entity = null;
-                if (T.Target.IsProjectile)
-                {
-                    T.Target.Projectile.Seekers.Remove(this);
-                    T.Target.IsProjectile = false;
-                    T.Target.Projectile = null;
-                }
+                if (T.Target.IsProjectile) UnAssignProjectile(true);
                 return false;
             }
+
+            if (T.Target.IsProjectile) UnAssignProjectile(false);
+
             return true;
         }
 
@@ -904,6 +904,17 @@ namespace WeaponCore.Projectiles
             State = ProjectileState.Depleted;
         }
 
+        internal void UnAssignProjectile(bool clear)
+        {
+            T.Target.Projectile.Seekers.Remove(this);
+            if (clear) T.Target.Reset();
+            else
+            {
+                T.Target.IsProjectile = false;
+                T.Target.Projectile = null;
+            }
+        }
+
         internal void ProjectileClose()
         {
             if (!T.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
@@ -939,8 +950,9 @@ namespace WeaponCore.Projectiles
         {
             Start,
             Alive,
-            Dead,
+            Detonate,
             OneAndDone,
+            Dead,
             Depleted,
             Destroy,
         }

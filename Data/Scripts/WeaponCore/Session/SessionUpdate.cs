@@ -51,7 +51,7 @@ namespace WeaponCore
                             w.Target.Expired = true;
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose)
                             w.Target.Reset();
-                        else if (w.Target.Projectile != null && !gridAi.LiveProjectile.Contains(w.Target.Projectile))
+                        else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
                             w.Target.Reset();
 
                         else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable)
@@ -65,7 +65,7 @@ namespace WeaponCore
                             {
                                 if (!w.TrackTarget)
                                 {
-                                    if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
+                                    if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
                                         w.Target.Reset();
                                 }
                                 else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target))
@@ -125,22 +125,7 @@ namespace WeaponCore
 
                         if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType) ComputeStorage(w);
 
-                        if (comp.Debug)
-                        {
-                            DsDebugDraw.DrawLine(w.MyPivotTestLine, Color.Green, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyBarrelTestLine, Color.Red, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
-                            DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.07f);
-                            //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
-                            if (w.TargetBox != null)
-                            {
-                                //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
-                                DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
-                            }
-
-                            if (!w.Target.Expired)
-                                DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
-                        }
+                        if (comp.Debug) WeaponDebug(w);
 
                         if (w.AiReady || w.SeekTarget || gunner || wState.ManualShoot != ShootOff || w.ReturnHome) gridAi.Ready = true;
                     }
@@ -258,7 +243,7 @@ namespace WeaponCore
                 }
             }
 
-            if (DbsToUpdate.Count > 0 && DbCallBackComplete && DbTask.IsComplete) UpdateDbsInQueue();
+            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
         }
     }
 }

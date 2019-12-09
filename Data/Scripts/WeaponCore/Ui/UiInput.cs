@@ -24,6 +24,8 @@ namespace WeaponCore
         internal bool CtrlPressed;
         internal bool AnyKeyPressed;
         internal bool KeyPrevPressed;
+        internal bool UiKeyPressed;
+        internal bool UiKeyWasPressed;
         internal bool PlayerCamera;
         internal bool FirstPersonView;
         private readonly Session _session;
@@ -74,10 +76,12 @@ namespace WeaponCore
                 CtrlPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.Control);
                 KeyPrevPressed = AnyKeyPressed;
                 AnyKeyPressed = MyAPIGateway.Input.IsAnyKeyPress();
+                UiKeyWasPressed = UiKeyPressed;
+                UiKeyPressed = CtrlPressed || AltPressed || ShiftPressed;
                 PlayerCamera = MyAPIGateway.Session.IsCameraControlledObject;
                 FirstPersonView = PlayerCamera && MyAPIGateway.Session.CameraController.IsInFirstPersonView;
 
-                if ((!AnyKeyPressed && !KeyPrevPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
+                if ((!UiKeyPressed && !UiKeyWasPressed) || !AltPressed && CtrlPressed && !FirstPersonView)
                 {
                     PreviousWheel = MyAPIGateway.Input.PreviousMouseScrollWheelValue();
                     CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();

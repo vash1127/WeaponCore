@@ -58,7 +58,7 @@ namespace WeaponCore
                     DsUtil.Clean();
                 }
                 FutureEvents.Tick(Tick);
-                WheelUi.UpdatePosition();
+                if (UiInput.PlayerCamera && !InMenu) WheelUi.UpdatePosition();
                 DsUtil.Start("damage");
                 if (!Hits.IsEmpty) ProcessHits();
                 DsUtil.Complete("damage", true);
@@ -85,7 +85,7 @@ namespace WeaponCore
                 DsUtil.Start("update");
                 UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
-                if (UiInput.PlayerCamera && !WheelUi.WheelActive) TargetSelection();
+                if (UiInput.PlayerCamera && !WheelUi.WheelActive && !InMenu) TargetSelection();
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
             }
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
@@ -112,7 +112,6 @@ namespace WeaponCore
 
                 if (!PTask.IsComplete)
                     PTask.Wait();
-                else if (!Projectiles.Updated) Log.Line("PTask lied");
 
                 if (PTask.IsComplete && PTask.valid && PTask.Exceptions != null)
                     TaskHasErrors(ref PTask, "PTask");
@@ -154,7 +153,7 @@ namespace WeaponCore
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
 
-                    if (UiInput.PlayerCamera && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                    if (UiInput.PlayerCamera && !InMenu && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                     {
                         if (WheelUi.WheelActive) WheelUi.DrawWheel();
                         TargetUi.DrawTargetUi();
@@ -186,6 +185,8 @@ namespace WeaponCore
                 SoundDefinitions = Static.GetSoundDefinitions();
                 MyEntities.OnEntityCreate += OnEntityCreate;
                 MyAPIGateway.Gui.GuiControlCreated += MenuOpened;
+                MyAPIGateway.Gui.GuiControlRemoved += MenuClosed;
+
                 MyAPIGateway.Utilities.RegisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 MyAPIGateway.Utilities.RegisterMessageHandler(7773, UpgradeHandler);
@@ -217,6 +218,8 @@ namespace WeaponCore
 
             MyEntities.OnEntityCreate -= OnEntityCreate;
             MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
+            MyAPIGateway.Gui.GuiControlRemoved -= MenuClosed;
+
             MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
             MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
             ApiServer.Unload();
