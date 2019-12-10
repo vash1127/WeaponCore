@@ -110,6 +110,7 @@ namespace WeaponCore
         internal bool HighLoad;
         internal bool InMenu;
         internal double Load;
+        internal bool GunnerBlackList;
         internal uint Tick;
         internal int PlayerEventId;
         internal int ModelCount;

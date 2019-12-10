@@ -3,6 +3,7 @@ using ParallelTasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using WeaponCore.Platform;
