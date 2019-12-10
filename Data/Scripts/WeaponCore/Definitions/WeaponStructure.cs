@@ -225,7 +225,7 @@ namespace WeaponCore.Support
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
-            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && MagazineDef.Capacity >= (values.HardPoint.Loading.ShotsInBurst * 2);
+            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && (EnergyAmmo || MagazineDef.Capacity >= (values.HardPoint.Loading.ShotsInBurst * 2));
             DegRof = values.HardPoint.Loading.DegradeRof;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             WepCooldown = values.HardPoint.Loading.Cooldown;
@@ -249,7 +249,6 @@ namespace WeaponCore.Support
             DetonateRadiusLarge = Session.ModRadius(values.Ammo.AreaEffect.Detonation.DetonationRadius, true);
             ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
-            EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
             IsHybrid = values.HardPoint.Hybrid;
 
             MaxTrajectory = values.Ammo.Trajectory.MaxTrajectory;
