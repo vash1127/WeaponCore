@@ -226,7 +226,7 @@ namespace WeaponCore.Support
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
-            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && (EnergyAmmo || MagazineDef.Capacity >= (values.HardPoint.Loading.ShotsInBurst * 2));
+            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && (EnergyAmmo || MagazineDef.Capacity >= values.HardPoint.Loading.ShotsInBurst);
             DegRof = values.HardPoint.Loading.DegradeRof;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             WepCooldown = values.HardPoint.Loading.Cooldown;
