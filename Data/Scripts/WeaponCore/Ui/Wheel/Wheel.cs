@@ -130,7 +130,7 @@ namespace WeaponCore
             if (currentMenu.GpsEntity != null)
             {
                 var gpsName = currentMenu.GpsEntity.DisplayNameText;
-                Session.AddGps();
+                Session.AddGps(Color.Yellow);
                 Session.SetGpsInfo(currentMenu.GpsEntity.PositionComp.GetPosition(), gpsName);
             }
             else Session.RemoveGps();

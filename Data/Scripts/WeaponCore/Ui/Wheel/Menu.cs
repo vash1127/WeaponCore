@@ -160,7 +160,6 @@ namespace WeaponCore
             {
                 var item = Items[0];
                 item.SubSlot = 0;
-                Log.Line($"LoadInfo");
                 switch (Name)
                 {
                     case "WeaponGroups":

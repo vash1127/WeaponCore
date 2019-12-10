@@ -54,13 +54,7 @@ namespace WeaponCore
             Physics = MyAPIGateway.Physics;
             Camera = MyAPIGateway.Session.Camera;
 
-            if (TargetGps == null)
-            {
-                TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
-                MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
-                MyVisualScriptLogicProvider.SetGPSColor(TargetGps.Name, Color.Yellow);
-                TargetGps.ShowOnHud = true;
-            }
+            TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
 
             CheckDirtyGrids();
             ApiServer = new ApiServer(this);

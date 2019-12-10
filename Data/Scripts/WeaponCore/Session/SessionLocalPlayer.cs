@@ -52,29 +52,33 @@ namespace WeaponCore
                     var cube = (MyCubeBlock)ControlledEntity;
                     GridAi gridAi;
                     if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                    {
+                        GunnerBlackList = true;
                         GridTargetingAIs[cube.CubeGrid].HasGunner = true;
-                    var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
-                    var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, false);
-                    var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
-                    MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, false);
+                        var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
+                        var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, false);
+                        var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
+                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, false);
+                    }
+
                 }
                 else if (!(ControlledEntity is IMyGunBaseUser) && lastControlledEnt is IMyGunBaseUser)
                 {
-                    var cube = ControlledEntity as MyCubeBlock;
-                    if (cube != null)
+                    if (GunnerBlackList)
                     {
-                        GridAi gridAi;
-                        if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
-                            GridTargetingAIs[cube.CubeGrid].HasGunner = false;
-
+                        GunnerBlackList = false;
                         var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
                         var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, true);
                         var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
                         MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, true);
+                        var oldCube = lastControlledEnt as MyCubeBlock;
+                        GridAi gridAi;
+                        if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out gridAi))
+                            gridAi.HasGunner = false;
                     }
                 }
             }
@@ -154,9 +158,11 @@ namespace WeaponCore
             if (TargetGps != null)
             {
                 if (TargetGps.ShowOnHud)
+                {
                     MyAPIGateway.Session.GPS.RemoveLocalGps(TargetGps);
+                    TargetGps.ShowOnHud = false;
+                }
 
-                TargetGps.ShowOnHud = false;
             }
         }
 
@@ -164,10 +170,13 @@ namespace WeaponCore
         {
             if (TargetGps != null)
             {
-                if (TargetGps.ShowOnHud) MyAPIGateway.Session.GPS.RemoveLocalGps(TargetGps);
-                else TargetGps.ShowOnHud = true;
-                MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
-                if (color != default(Color)) MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, Color.Yellow);
+                if (!TargetGps.ShowOnHud)
+                {
+                    TargetGps.ShowOnHud = true;
+                    MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
+                    if (color != default(Color))
+                        MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, color);
+                }
             }
         }
 
