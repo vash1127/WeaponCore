@@ -56,11 +56,7 @@ namespace WeaponCore.Platform
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
-                                        if (animation.Muzzle != "Any")
-                                        {
-                                            _muzzlesFiring.Add(animation.Muzzle);
-                                            Log.Line($"Muzzle Added: {animation.Muzzle}");
-                                        }
+                                        if (animation.Muzzle != "Any") _muzzlesFiring.Add(animation.Muzzle);
                                         PartAnimation animCheck;
                                         if (AnimationLookup.TryGetValue(EventTriggers.StopFiring + animation.SubpartId, out animCheck))
                                         {
@@ -79,8 +75,8 @@ namespace WeaponCore.Platform
 
                                                 Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                                 animation.Running = true;
-                                                animation.Triggered = true;
                                             }
+                                            animation.Triggered = true;
                                         }
                                         else
                                         {
@@ -117,14 +113,10 @@ namespace WeaponCore.Platform
                                 var animation = AnimationsSet[EventTriggers.StopFiring][i];
                                 if (active && animation.Looping != true && !pause)
                                 {
-                                    foreach(var muzzle in _muzzlesFiring)
-                                    Log.Line($"Muzzle Firing: {muzzle}");
-
                                     if (!animation.Running && (animation.Muzzle == "Any" || _muzzlesFiring.Contains(animation.Muzzle)))
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
-                                        if (animation.Muzzle != "Any") _muzzlesFiring.Remove(animation.Muzzle);
                                         PartAnimation animCheck;
                                         if (AnimationLookup.TryGetValue(EventTriggers.Firing + animation.SubpartId, out animCheck))
                                         {
@@ -134,8 +126,8 @@ namespace WeaponCore.Platform
                                             {
                                                 if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
                                                 {
-                                                    var matrix = animCheck.FinalPos;
-                                                    matrix.Translation = animation.HomePos.Translation;
+                                                    var matrix = animation.Part.PositionComp.LocalMatrix;
+                                                    matrix.Translation = animCheck.FinalPos.Translation;
                                                     animation.Part.PositionComp.LocalMatrix = matrix;
                                                 }
                                                 else
@@ -143,8 +135,8 @@ namespace WeaponCore.Platform
 
                                                 Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                                 animation.Running = true;
-                                                animation.Triggered = true;
                                             }
+                                            animation.Triggered = true;
                                         }
                                         else
                                         {
@@ -169,6 +161,7 @@ namespace WeaponCore.Platform
                                     animation.Triggered = false;
                                 }
                             }
+                            if(active) _muzzlesFiring.Clear();
                         }
 
                         break;
@@ -229,6 +222,62 @@ namespace WeaponCore.Platform
                         }
 
                         break;
+                    case EventTriggers.StopTracking:
+                        if (AnimationsSet.ContainsKey(EventTriggers.StopTracking))
+                        {
+                            for (int i = 0; i < AnimationsSet[EventTriggers.StopTracking].Length; i++)
+                            {
+                                var animation = AnimationsSet[EventTriggers.StopTracking][i];
+                                if (active)
+                                {
+                                    if (!animation.Running)
+                                    {
+                                        if (animation.TriggerOnce && animation.Triggered) continue;
+
+                                        PartAnimation animCheck;
+                                        if (AnimationLookup.TryGetValue(EventTriggers.Tracking + animation.SubpartId, out animCheck))
+                                        {
+                                            if (animCheck.Running)
+                                                animCheck.Reverse = true;
+                                            else
+                                            {
+                                                if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
+                                                {
+                                                    var matrix = animation.Part.PositionComp.LocalMatrix;
+                                                    matrix.Translation = animCheck.FinalPos.Translation;
+                                                    animation.Part.PositionComp.LocalMatrix = matrix;
+                                                }
+                                                else
+                                                    animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
+
+                                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                                animation.Running = true;
+                                            }
+                                            animation.Triggered = true;
+                                        }
+                                        else
+                                        {
+                                            Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                            animation.Running = true;
+                                            animation.Triggered = true;
+                                        }
+
+                                        if (animation.DoesLoop && !animation.TriggerOnce)
+                                            animation.Looping = true;
+                                    }
+                                    else if (animation.DoesLoop && !animation.TriggerOnce)
+                                        animation.Looping = true;
+                                }
+                                else
+                                {
+                                    animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
+
+                            }
+                        }
+
+                        break;
                     case EventTriggers.Tracking:
                         if (AnimationsSet.ContainsKey(EventTriggers.Tracking))
                         {
@@ -237,25 +286,50 @@ namespace WeaponCore.Platform
                                 var animation = AnimationsSet[EventTriggers.Tracking][i];
                                 if (active)
                                 {
-                                    if (animation.CurrentMove == 0 && !animation.Looping)
+                                    if (!animation.Running)
                                     {
-                                        if (!animation.Running)
-                                        {
-                                            if (animation.TriggerOnce && animation.Triggered) continue;
+                                        if (animation.TriggerOnce && animation.Triggered) continue;
 
+                                        PartAnimation animCheck;
+                                        if (AnimationLookup.TryGetValue(EventTriggers.StopTracking + animation.SubpartId, out animCheck))
+                                        {
+                                            if (animCheck.Running)
+                                                animCheck.Reverse = true;
+                                            else
+                                            {
+                                                if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
+                                                {
+                                                    var matrix = animation.Part.PositionComp.LocalMatrix;
+                                                    matrix.Translation = animation.HomePos.Translation;
+                                                    animation.Part.PositionComp.LocalMatrix = matrix;
+                                                }
+                                                else
+                                                    animation.Part.PositionComp.LocalMatrix = animation.HomePos;
+
+                                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                                animation.Running = true;
+                                            }
+                                            animation.Triggered = true;
+                                        }
+                                        else
+                                        {
                                             Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                             animation.Running = true;
-                                            animation.Triggered = false;
-
-                                            if (animation.DoesLoop && !animation.TriggerOnce)
-                                                animation.Looping = true;
+                                            animation.Triggered = true;
                                         }
+
+                                        if (animation.DoesLoop && !animation.TriggerOnce)
+                                            animation.Looping = true;
                                     }
-                                    else if(animation.DoesLoop && !animation.TriggerOnce)
+                                    else if (animation.DoesLoop && !animation.TriggerOnce)
                                         animation.Looping = true;
                                 }
                                 else
+                                {
                                     animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
+
                             }
                         }
 
@@ -310,8 +384,8 @@ namespace WeaponCore.Platform
                                             Comp.Ai.Session.ThreadedAnimations.Enqueue(animation);
                                             //Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                             animation.Running = true;
-                                            animation.Triggered = true;
                                         }
+                                        animation.Triggered = true;
                                     }
                                     else
                                     {
@@ -375,8 +449,8 @@ namespace WeaponCore.Platform
                                             Comp.Ai.Session.ThreadedAnimations.Enqueue(animation);
                                             //Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                             animation.Running = true;
-                                            animation.Triggered = true;
                                         }
+                                        animation.Triggered = true;
                                     }
                                     else
                                     {

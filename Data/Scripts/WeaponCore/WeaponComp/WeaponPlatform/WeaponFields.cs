@@ -150,7 +150,8 @@ namespace WeaponCore.Platform
             OutOfAmmo,
             PreFire,
             EmptyOnGameLoad,
-            StopFiring
+            StopFiring,
+            StopTracking
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
