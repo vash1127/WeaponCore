@@ -56,6 +56,11 @@ namespace WeaponCore.Platform
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
+                                        if (animation.Muzzle != "Any")
+                                        {
+                                            _muzzlesFiring.Add(animation.Muzzle);
+                                            Log.Line($"Muzzle Added: {animation.Muzzle}");
+                                        }
                                         PartAnimation animCheck;
                                         if (AnimationLookup.TryGetValue(EventTriggers.StopFiring + animation.SubpartId, out animCheck))
                                         {
@@ -63,7 +68,15 @@ namespace WeaponCore.Platform
                                                 animCheck.Reverse = true;
                                             else
                                             {
-                                                animation.Part.PositionComp.LocalMatrix = animation.HomePos;
+                                                if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
+                                                {
+                                                    var matrix = animation.Part.PositionComp.LocalMatrix;
+                                                    matrix.Translation = animation.HomePos.Translation;
+                                                    animation.Part.PositionComp.LocalMatrix = matrix;
+                                                }
+                                                else
+                                                    animation.Part.PositionComp.LocalMatrix = animation.HomePos;
+
                                                 Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                                 animation.Running = true;
                                                 animation.Triggered = true;
@@ -104,10 +117,14 @@ namespace WeaponCore.Platform
                                 var animation = AnimationsSet[EventTriggers.StopFiring][i];
                                 if (active && animation.Looping != true && !pause)
                                 {
-                                    if (!animation.Running)
+                                    foreach(var muzzle in _muzzlesFiring)
+                                    Log.Line($"Muzzle Firing: {muzzle}");
+
+                                    if (!animation.Running && (animation.Muzzle == "Any" || _muzzlesFiring.Contains(animation.Muzzle)))
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
+                                        if (animation.Muzzle != "Any") _muzzlesFiring.Remove(animation.Muzzle);
                                         PartAnimation animCheck;
                                         if (AnimationLookup.TryGetValue(EventTriggers.Firing + animation.SubpartId, out animCheck))
                                         {
@@ -115,7 +132,15 @@ namespace WeaponCore.Platform
                                                 animCheck.Reverse = true;
                                             else
                                             {
-                                                animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
+                                                if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
+                                                {
+                                                    var matrix = animCheck.FinalPos;
+                                                    matrix.Translation = animation.HomePos.Translation;
+                                                    animation.Part.PositionComp.LocalMatrix = matrix;
+                                                }
+                                                else
+                                                    animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
+
                                                 Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                                 animation.Running = true;
                                                 animation.Triggered = true;
@@ -305,6 +330,11 @@ namespace WeaponCore.Platform
                                 for (int j = 0; j < set.Value.Length; j++)
                                 {
                                     var animation = set.Value[j];
+
+                                    Azimuth = Elevation = 0;
+
+                                    if (!AiOnlyWeapon) Comp.MissileBase.Azimuth = Comp.MissileBase.Elevation = 0;
+
                                     if (animation.Running && set.Key != EventTriggers.TurnOff && set.Key != EventTriggers.TurnOn)
                                     {
                                         Comp.Ai.Session.AnimationsToProcess.Remove(animation);
@@ -364,6 +394,11 @@ namespace WeaponCore.Platform
                                 for (int j = 0; j < set.Value.Length; j++)
                                 {
                                     var animation = set.Value[j];
+
+                                    Azimuth = Elevation = 0;
+
+                                    if (!AiOnlyWeapon) Comp.MissileBase.Azimuth = Comp.MissileBase.Elevation = 0;
+
                                     if (animation.Running && set.Key != EventTriggers.TurnOff && set.Key != EventTriggers.TurnOn)
                                     {
                                         Comp.Ai.Session.AnimationsToProcess.Remove(animation);

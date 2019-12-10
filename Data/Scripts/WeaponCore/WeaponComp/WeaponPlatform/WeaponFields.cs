@@ -17,6 +17,7 @@ namespace WeaponCore.Platform
 
         private readonly int _numOfBarrels;
         private readonly HashSet<string> _muzzlesToFire = new HashSet<string>();
+        private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
 
         private int _shotsInCycle;
