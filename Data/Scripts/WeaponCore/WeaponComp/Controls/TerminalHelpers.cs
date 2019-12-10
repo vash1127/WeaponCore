@@ -137,7 +137,7 @@ namespace WeaponCore.Control
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
-                
+
                 if (!On)
                 {
                     if (w.TurretMode)
@@ -155,6 +155,8 @@ namespace WeaponCore.Control
 
                     w.StopShooting();
                 }
+                else
+                    w.FirstFireTick = comp.Ai.Session.Tick + w.System.OnDelay;
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);

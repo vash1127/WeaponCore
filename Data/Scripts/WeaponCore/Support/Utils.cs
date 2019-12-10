@@ -6,6 +6,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using Sandbox.Game.Entities;
 using VRage.Game.Entity;
+using static VRage.FastResourceLockExtensions;
+using VRage.Library.Collections;
 
 namespace WeaponCore.Support
 {
@@ -156,6 +158,98 @@ namespace WeaponCore.Support
         }
 
         public List<T>.Enumerator GetEnumerator()
+        {
+            return _list.GetEnumerator();
+        }
+    }
+
+    public class DsUniqueConcurrentListFastRemove<T>
+    {
+        private MyConcurrentList<T> _list = new MyConcurrentList<T>();
+        private ConcurrentDictionary<T, int> _dictionary = new ConcurrentDictionary<T, int>();
+
+        /// <summary>O(1)</summary>
+        public int Count
+        {
+            get
+            {
+                return _list.Count;
+            }
+        }
+
+        /// <summary>O(1)</summary>
+        public T this[int index]
+        {
+            get
+            {
+                return _list[index];
+            }
+        }
+
+        /// <summary>O(1)</summary>
+        public bool Add(T item)
+        {
+            if (_dictionary.ContainsKey(item))
+                return false;
+            _list.Add(item);
+
+            return _dictionary.TryAdd(item, _list.Count - 1);
+            
+        }
+
+        /// <summary>O(1)</summary>
+        public bool Remove(T item)
+        {
+            int oldPos;
+            if (_dictionary.TryGetValue(item, out oldPos))
+            {
+
+                _dictionary.Remove(item);
+                _list.RemoveAtFast(oldPos);
+                var count = _list.Count;
+                if (count > 0)
+                {
+                    count--;
+                    if (oldPos <= count)
+                        _dictionary[_list[oldPos]] = oldPos;
+                    else
+                        _dictionary[_list[count]] = count;
+                }
+
+                return true;
+            }
+            return false;
+        }
+
+        public void Clear()
+        {
+            _list.Clear();
+            _dictionary.Clear();
+        }
+
+        /// <summary>O(1)</summary>
+        public bool Contains(T item)
+        {
+            return _dictionary.ContainsKey(item);
+        }
+
+        public UniqueListReader<T> Items
+        {
+            get
+            {
+                return new UniqueListReader<T>();
+            }
+        }
+
+        public ListReader<T> ItemList
+        {
+            get
+            {
+                return new ListReader<T>(new List<T>(_list));
+            }
+        }
+
+        public Object GetEnumerator()
         {
             return _list.GetEnumerator();
         }

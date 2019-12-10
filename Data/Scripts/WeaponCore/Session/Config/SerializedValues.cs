@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using ProtoBuf;
 using VRage;
+using VRage.Game;
 using VRageMath;
 using static WeaponCore.Platform.Weapon;
 
@@ -39,6 +40,7 @@ namespace WeaponCore
         [ProtoMember(6)] public float RofModifier = 1;
         [ProtoMember(7)] public WeaponSettingsValues[] Weapons;
         [ProtoMember(8)] public float Range = 100;
+        [ProtoMember(9)] internal MyObjectBuilder_Inventory Inventory = null;
     }
 
     [ProtoContract]

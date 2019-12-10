@@ -13,17 +13,19 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string,Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out uint onDelay)
         {
 
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
             var allEmissivesSet = new Dictionary<string, EmissiveState>();
             animationIdLookup = new HashSet<string>();
 
+            onDelay = 0;
+
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
 
-            weaponLinearMoveSet = new Dictionary<string,Matrix[]>();
+            weaponLinearMoveSet = new Dictionary<string, Matrix[]>();
 
             var emissiveLookup = new Dictionary<string, WeaponEmissive>();
 
@@ -46,16 +48,14 @@ namespace WeaponCore
                     foreach (var moves in animationSet.EventMoveSets)
                     {
                         if (!allAnimationSet.ContainsKey(moves.Key))
-                        {
                             allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
-                        }
 
                         List<Matrix> moveSet = new List<Matrix>();
                         List<Matrix> rotationSet = new List<Matrix>();
                         List<Matrix> rotCenterSet = new List<Matrix>();
                         List<string> rotCenterNameSet = new List<string>();
 
-                        var id = $"{(int)moves.Key}{animationSet.SubpartId[t]}";
+                        var id = $"{moves.Key}{animationSet.SubpartId[t]}";
                         animationIdLookup.Add(id);
                         AnimationType[] typeSet = new[]
                         {
@@ -73,6 +73,9 @@ namespace WeaponCore
                         for (int i = 0; i < moves.Value.Length; i++)
                         {
                             var move = moves.Value[i];
+
+                            if (moves.Key == Weapon.EventTriggers.TurnOn)
+                                onDelay += move.TicksToMove;
 
                             var hasEmissive = !string.IsNullOrEmpty(move.EmissiveName);
 
@@ -104,7 +107,7 @@ namespace WeaponCore
                                     WeaponEmissive emissive;
                                     if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                     {
-                                        createEmissiveStep(emissive, id + moveIndexer.Count, (float)j /  (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                        createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
                                     }
                                     else
                                     {
@@ -422,7 +425,7 @@ namespace WeaponCore
 
             weaponAnimationSets = allAnimationSet;
             weaponEmissivesSet = allEmissivesSet;
-            
+
         }
 
         internal Dictionary<Weapon.EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> systemAnimations, RecursiveSubparts parts)
@@ -540,10 +543,10 @@ namespace WeaponCore
             {
                 if (progress < 1)
                 {
-                    float scaledTime = progress * (float) (emissive.Colors.Length - 1);
-                    Color lastColor = emissive.Colors[(int) scaledTime];
-                    Color nextColor = emissive.Colors[(int) (scaledTime + 1f)];
-                    float scaledProgress = (float) (scaledTime * progress);
+                    float scaledTime = progress * (float)(emissive.Colors.Length - 1);
+                    Color lastColor = emissive.Colors[(int)scaledTime];
+                    Color nextColor = emissive.Colors[(int)(scaledTime + 1f)];
+                    float scaledProgress = (float)(scaledTime * progress);
                     setColor = Color.Lerp(lastColor, nextColor, scaledProgress);
                 }
                 else
@@ -553,7 +556,7 @@ namespace WeaponCore
             var intensity = MathHelper.Lerp(emissive.IntensityRange[0],
                 emissive.IntensityRange[1], progress);
 
-            var currPart =  (int)Math.Round(MathHelper.Lerp(0, emissive.EmissivePartNames.Length - 1, progress));
+            var currPart = (int)Math.Round(MathHelper.Lerp(0, emissive.EmissivePartNames.Length - 1, progress));
 
             allEmissivesSet.Add(id, new EmissiveState { CurrentColor = setColor, CurrentIntensity = intensity, EmissiveParts = emissive.EmissivePartNames, CycleParts = emissive.CycleEmissivesParts, LeavePreviousOn = emissive.LeavePreviousOn });
             currentEmissivePart.Add(currPart);
@@ -561,7 +564,7 @@ namespace WeaponCore
 
         internal static Color[] CreateHeatEmissive()
         {
-            var colors = new []
+            var colors = new[]
             {
                 new Color(10, 0, 0, 150),
                 new Color(30, 0, 0, 150),
@@ -593,7 +596,7 @@ namespace WeaponCore
                 else
                     setColors[i] = colors[colors.Length - 1];
             }
-            
+
             return setColors;
         }
 
@@ -623,7 +626,11 @@ namespace WeaponCore
 
         internal void ProcessAnimations()
         {
-            for(int i = AnimationsToProcess.Count - 1; i >= 0 ; i--)
+            PartAnimation anim;
+            while (ThreadedAnimations.TryDequeue(out anim))
+                AnimationsToProcess.Add(anim);
+
+            for (int i = AnimationsToProcess.Count - 1; i >= 0; i--)
             {
                 var animation = AnimationsToProcess[i];
                 //var data = new AnimationParallelData(ref animation);

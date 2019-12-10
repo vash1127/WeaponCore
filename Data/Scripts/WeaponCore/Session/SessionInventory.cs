@@ -18,7 +18,6 @@ namespace WeaponCore
 
             MyInventory.GetItemVolumeAndMass(def, out itemMass, out itemVolume);
 
-            var lastMags = comp.State.Value.Weapons[weapon.WeaponId].CurrentMags;
             var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
 
             comp.State.Value.Weapons[weapon.WeaponId].CurrentMags = comp.BlockInventory.GetItemAmount(def);
@@ -27,8 +26,8 @@ namespace WeaponCore
             if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                 weapon.Comp.Ai.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
-            if (lastMags == 0 && comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0)
-                weapon.Comp.Ai.Reloading = true;
+            if (comp.State.Value.Weapons[weapon.WeaponId].CurrentAmmo == 0 && (comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0 || comp.Ai.Session.IsCreative))
+                weapon.StartReload();
         }
 
         internal void AmmoPull() {
@@ -100,8 +99,10 @@ namespace WeaponCore
                     var amt = inventoriesToPull[i].Item2;
                     inventoriesToPull[i].Item1.RemoveItemsOfType(amt, def);
                     weapon.Comp.BlockInventory.Add(magItem, amt);
+                    weapon.Comp.Ai.CheckReload = true;
                 }
                 weapon.Comp.IgnoreInvChange = false;
+                
             }
         }
     }

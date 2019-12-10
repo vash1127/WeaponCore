@@ -25,7 +25,7 @@ namespace WeaponCore.Platform
         private uint _ticksUntilShoot;
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
-        private uint _reloadedTick;
+        private uint _delayShootTick;
         internal uint TicksPerShot;
         internal double TimePerShot;
 
@@ -71,6 +71,7 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
+        internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
         internal readonly Dictionary<MyEntity, Vector3D> SleepingTargets = new Dictionary<MyEntity, Vector3D>();
         internal float RequiredPower;
         internal float BaseDamage;
@@ -82,12 +83,11 @@ namespace WeaponCore.Platform
         internal uint ShotCounter;
         internal uint LastTargetTick;
         internal uint TargetCheckTick;
-        internal uint FirstFireDelay;
+        internal uint FirstFireTick;
         internal uint LastTrackedTick;
         internal uint OffDelay;
         internal int RateOfFire;
         internal int BarrelSpinRate;
-        internal int AmmoMagTimer = int.MaxValue;
         internal int DelayFireCount;
         internal int WeaponId;
         internal int HsRate;
@@ -119,6 +119,7 @@ namespace WeaponCore.Platform
         internal bool DelayCeaseFire;
         internal bool TargetWasExpired = true;
         internal bool Reloading;
+        internal bool OutOfAmmo;
         internal bool ReturnHome;
         internal bool CurrentlyDegrading;
         internal bool SleepTargets;
@@ -134,30 +135,6 @@ namespace WeaponCore.Platform
             ShootOff,
             ShootOnce,
             ShootClick,
-        }
-
-        internal bool LoadAmmoMag
-        {
-            set
-            {
-                if (value && _reloadedTick <= Comp.Ai.Session.Tick)
-                {
-                    Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
-                    AmmoMagTimer = System.ReloadTime;
-                    _reloadedTick = Comp.Ai.Session.Tick + (uint)AmmoMagTimer;
-                }
-            }
-        }
-
-        internal bool AmmoMagLoaded
-        {
-            get
-            {
-                if (_reloadedTick > Comp.Ai.Session.Tick) return false;
-                Comp.State.Value.Weapons[WeaponId].CurrentAmmo = System.MagazineDef.Capacity;
-                AmmoMagTimer = int.MaxValue;
-                return true;
-            }
         }
 
         public enum EventTriggers
@@ -179,6 +156,16 @@ namespace WeaponCore.Platform
         {
             MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> {Item1 = entity };
             AnimationsSet = animationSets;
+
+            foreach (var set in AnimationsSet)
+            {
+                for (int j = 0; j < set.Value.Length; j++)
+                {
+                    var animation = set.Value[j];
+                    AnimationLookup.Add(animation.AnimationId, animation);
+                }
+            }
+
             System = system;
             Comp = comp;
             comp.HasEnergyWeapon = comp.HasEnergyWeapon || System.EnergyAmmo || System.IsHybrid;

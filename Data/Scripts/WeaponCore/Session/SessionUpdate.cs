@@ -22,7 +22,7 @@ namespace WeaponCore
                     while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
                     gridAi.LiveProjectileTick = Tick;
                 }
-                if (!gridAi.HasGunner && !gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.Reloading && !gridAi.CheckReload || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
+                if (!gridAi.HasGunner && !gridAi.DbReady && !gridAi.ReturnHome && gridAi.ManualComps == 0 && !gridAi.CheckReload || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
 
                 gridAi.ReturnHome = false;
                 foreach (var basePair in gridAi.WeaponBase)
@@ -125,11 +125,9 @@ namespace WeaponCore
 
                         if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType) ComputeStorage(w);
 
-                        gridAi.Reloading = !w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 && (comp.State.Value.Weapons[w.WeaponId].CurrentMags > 0 || IsCreative);
-
                         if (comp.Debug) WeaponDebug(w);
 
-                        if (w.AiReady || w.SeekTarget || gunner || wState.ManualShoot != ShootOff || gridAi.Reloading || w.ReturnHome) gridAi.Ready = true;
+                        if (w.AiReady || w.SeekTarget || gunner || wState.ManualShoot != ShootOff || w.ReturnHome) gridAi.Ready = true;
                     }
                 }
                 gridAi.CheckReload = false;
@@ -163,7 +161,7 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
 
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || !gridAi.Ready)
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable || comp.Overheated || !gridAi.Ready || (!w.System.EnergyAmmo && (comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0 || w.Reloading)))
                         {
                             if (w.ReturnHome)
                                 w.TurretHomePosition();
@@ -196,34 +194,6 @@ namespace WeaponCore
                         else comp.Charging = false;
                         
                         if (comp.Charging) continue;
-
-                        if (!w.System.EnergyAmmo && comp.State.Value.Weapons[w.WeaponId].CurrentAmmo == 0)
-                        {
-                            if (w.AmmoMagTimer == int.MaxValue)
-                            {
-                                if (!w.Reloading)
-                                {
-                                    w.EventTriggerStateChanged(state: Weapon.EventTriggers.Firing, active: true, pause: true);
-                                    if (w.IsShooting)
-                                        w.StopShooting();
-                                }
-                                if (comp.State.Value.Weapons[w.WeaponId].CurrentMags != 0 || IsCreative)
-                                    w.StartReload();
-                                else if(!w.Reloading)
-                                    w.EventTriggerStateChanged(Weapon.EventTriggers.OutOfAmmo, true);
-                                continue;
-                            }
-                            if (!w.AmmoMagLoaded) continue;
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.Reloading, false);
-
-                            if (w.IsShooting)
-                            {
-                                if (w.FiringEmitter != null) w.StartFiringSound();
-                                if (w.PlayTurretAv && w.RotateEmitter != null && !w.RotateEmitter.IsPlaying) w.StartRotateSound();
-                                comp.CurrentDps += w.Dps;
-                            }
-                            w.Reloading = false;
-                        }
 
                         if (w.SeekTarget || gridAi.TargetResetTick == Tick)
                         {

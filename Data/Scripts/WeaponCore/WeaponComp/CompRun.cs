@@ -91,6 +91,8 @@ namespace WeaponCore.Support
                 HeatPerSecond = 0;
                 OptimalDps = 0;
 
+                InventoryInit();
+
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var weapon = Platform.Weapons[i];
@@ -100,9 +102,9 @@ namespace WeaponCore.Support
                     DpsAndHeatInit(weapon);
                     weapon.UpdateBarrelRotation();
 
+                    Session.ComputeStorage(weapon);
 
-
-                    if (state.CurrentAmmo == 0)
+                    if (state.CurrentAmmo == 0 && !weapon.Reloading)
                         weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
 
                     if(state.ManualShoot != Weapon.TerminalActionState.ShootOff)
@@ -115,7 +117,7 @@ namespace WeaponCore.Support
 
                 Ai.OptimalDps += OptimalDps;
 
-                InventoryInit();
+                
                 PowerInit();
                 RegisterEvents();
                 OnAddedToSceneTasks();
@@ -197,6 +199,7 @@ namespace WeaponCore.Support
         {
             if (_isServer && Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
+                if(BlockInventory != null) Set.Value.Inventory = BlockInventory.GetObjectBuilder();
                 if (IsSorterTurret)
                 {
                     if (SorterBase?.Storage != null)

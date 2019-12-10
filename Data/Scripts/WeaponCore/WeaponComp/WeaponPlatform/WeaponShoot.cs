@@ -20,6 +20,7 @@ namespace WeaponCore.Platform
             var tick = session.Tick;
             var state = Comp.State.Value.Weapons[WeaponId];
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
+
             if (System.BurstMode)
             {
                 if (state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
@@ -27,9 +28,8 @@ namespace WeaponCore.Platform
                     if (tick - _lastShotTick > System.Values.HardPoint.Loading.DelayAfterBurst)
                     {
                         state.ShotsFired = 1;
-                        EventTriggerStateChanged(EventTriggers.BurstReload,false);
+                        EventTriggerStateChanged(EventTriggers.BurstReload, false);
                     }
-
                     else
                     {
                         EventTriggerStateChanged(EventTriggers.BurstReload, true);
@@ -63,10 +63,6 @@ namespace WeaponCore.Platform
             if (ShotCounter != 0) return;
 
             if (!IsShooting) StartShooting();
-
-            if(_ticksUntilShoot < FirstFireDelay) return;
-
-            FirstFireDelay = 0;
 
             if (_ticksUntilShoot < System.DelayToFire)
             {
@@ -295,6 +291,9 @@ namespace WeaponCore.Platform
             _muzzlesToFire.Clear();
 
             _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
+
+            if (!System.EnergyAmmo && !Reloading && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
+                StartReload();
         }
 
         private Projectile CreateVirtualProjectile()

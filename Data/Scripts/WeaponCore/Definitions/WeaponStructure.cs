@@ -36,6 +36,7 @@ namespace WeaponCore.Support
         public readonly MyPhysicalInventoryItem AmmoItem;
         public readonly string WeaponName;
         public readonly string[] Barrels;
+        public readonly uint OnDelay;
         public readonly int ReloadTime;
         public readonly int DelayToFire;
         public readonly int TimeToCeaseFire;
@@ -224,7 +225,7 @@ namespace WeaponCore.Support
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
-            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0;
+            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && MagazineDef.Capacity >= (values.HardPoint.Loading.ShotsInBurst * 2);
             DegRof = values.HardPoint.Loading.DegradeRof;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             WepCooldown = values.HardPoint.Loading.Cooldown;
@@ -271,7 +272,7 @@ namespace WeaponCore.Support
 
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
-            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup);
+            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out OnDelay);
         }
 
         private void SetWeaponAnimations( )
