@@ -22,6 +22,7 @@ namespace WeaponCore
             internal string ParentName;
             internal int SubSlot;
             internal int SubSlotCount;
+            internal bool Dynamic;
         }
 
         internal class Menu
@@ -131,6 +132,29 @@ namespace WeaponCore
                 }
             }
 
+            internal void SetInfo(Item item)
+            {
+                GroupInfo groupInfo;
+                switch (Name)
+                {
+                    case "Settings":
+                        if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
+                        SetSettings(groupInfo);
+                        break;
+                }
+            }
+
+            internal void SetSettings(GroupInfo groupInfo)
+            {
+                var currentSettingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
+                var currentValue = groupInfo.Settings[currentSettingName];
+                var map = Wheel.SettingCycleStrMap[currentSettingName];
+                var nextValueStr = map[currentValue].NextValue;
+                var nextValue = Wheel.SettingStrToValues[currentSettingName][nextValueStr];
+                groupInfo.Settings[currentSettingName] = nextValue;
+                FormatSettingsMessage(groupInfo);
+            }
+
             internal void FormatWeaponMessage(GroupMember groupMember)
             {
                 var message = groupMember.Name;
@@ -142,7 +166,7 @@ namespace WeaponCore
 
             internal void FormatGroupMessage(GroupInfo groupInfo)
             {
-                var enabledValueString = Wheel.SettingStrings["Active"][groupInfo.Settings["Active"]].Value;
+                var enabledValueString = Wheel.SettingCycleStrMap["Active"][groupInfo.Settings["Active"]].Value;
                 var message = $"[Weapon Group:\n{groupInfo.Name} ({enabledValueString})]";
                 Message = message;
             }
@@ -150,7 +174,7 @@ namespace WeaponCore
             internal void FormatSettingsMessage(GroupInfo groupInfo)
             {
                 var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
-                var setting = Wheel.SettingStrings[settingName];
+                var setting = Wheel.SettingCycleStrMap[settingName];
                 var currentState = setting[groupInfo.Settings[settingName]].Value;
                 var message = $"[{settingName} ({currentState})]";
                 Message = message;
@@ -167,7 +191,7 @@ namespace WeaponCore
                         item.SubSlotCount = GroupNames.Count;
                         break;
                     case "Settings":
-                        item.SubSlotCount = Wheel.SettingStrings.Count;
+                        item.SubSlotCount = Wheel.SettingStrToValues.Count;
                         break;
                     case "Weapons":
                         BlockGroups = Wheel.BlockGroups;

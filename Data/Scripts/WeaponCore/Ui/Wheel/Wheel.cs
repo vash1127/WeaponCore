@@ -41,6 +41,11 @@ namespace WeaponCore
                         _currentMenu = item.SubName;
                         UpdateState(menu);
                     }
+                    else if (item.Dynamic)
+                    {
+                        Log.Line($"is dynamic");
+                        menu.SetInfo(item);
+                    }
                 }
                 else if (s.UiInput.RightMouseReleased)
                 {
