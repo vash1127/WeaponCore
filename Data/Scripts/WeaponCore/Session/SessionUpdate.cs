@@ -44,8 +44,6 @@ namespace WeaponCore
                         var lastGunner = comp.Gunner;
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
 
-                        w.TargetWasExpired = w.Target.Expired;
-
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable && !w.ReturnHome) continue;
                         if (w.Target.Entity == null && w.Target.Projectile == null)
                             w.Target.Expired = true;
@@ -92,7 +90,9 @@ namespace WeaponCore
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
+                            Log.Line($"Tracking: {!w.Target.Expired}");
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.Expired);
                             if (w.Target.Expired)
                                 w.TargetReset = true;
                         }
@@ -194,6 +194,8 @@ namespace WeaponCore
                         else comp.Charging = false;
                         
                         if (comp.Charging) continue;
+
+                        w.TargetWasExpired = w.Target.Expired;
 
                         if (w.SeekTarget || gridAi.TargetResetTick == Tick)
                         {
