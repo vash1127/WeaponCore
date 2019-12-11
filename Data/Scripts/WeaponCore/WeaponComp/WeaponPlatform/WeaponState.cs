@@ -754,9 +754,6 @@ namespace WeaponCore.Platform
 
                 EventTriggerStateChanged(EventTriggers.Reloading, true);
 
-                Comp.BlockInventory.RemoveItemsOfType(1, System.AmmoDefId);
-                Comp.State.Value.Weapons[WeaponId].CurrentAmmo = System.MagazineDef.Capacity;
-
                 Comp.Ai.Session.FutureEvents.Schedule(Reloaded, this, (uint)System.ReloadTime);
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
@@ -769,6 +766,8 @@ namespace WeaponCore.Platform
         {
             var w = o as Weapon;
             w.EventTriggerStateChanged(EventTriggers.Reloading, false);
+            w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId);
+            w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
             w.Reloading = false;
         }
 

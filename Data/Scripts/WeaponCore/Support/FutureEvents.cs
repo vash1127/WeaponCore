@@ -25,12 +25,12 @@ namespace WeaponCore.Support
 
         internal FutureEvents()
         {
-            for (int i = 0; i < _maxDelay; i++) _callbacks[i] = new List<FutureAction>();
+            for (int i = 0; i <= _maxDelay; i++) _callbacks[i] = new List<FutureAction>();
         }
 
         private volatile bool Active = true;
-        private const int _maxDelay = 1800;
-        private List<FutureAction>[] _callbacks = new List<FutureAction>[_maxDelay]; // and fill with list instances
+        private const int _maxDelay = 7200;
+        private List<FutureAction>[] _callbacks = new List<FutureAction>[_maxDelay + 1]; // and fill with list instances
         private uint _offset = 0;
         internal void Schedule(Action<object> callback, object arg1, uint delay)
         {
