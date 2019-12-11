@@ -7,14 +7,14 @@ namespace WeaponCore
     using Sandbox.Game.EntityComponents;
     using Sandbox.ModAPI;
 
-    public class LogicState
+    public class CompState
     {
-        public LogicStateValues Value = new LogicStateValues();
+        public CompStateValues Value = new CompStateValues();
         public readonly WeaponComponent Comp;
         public readonly IMyConveyorSorter SorterBase;
         public readonly IMyLargeMissileTurret ControllableTurret;
         public readonly bool IsSorterTurret;
-        public LogicState(WeaponComponent comp)
+        public CompState(WeaponComponent comp)
         {
             Comp = comp;
             SorterBase = comp.SorterBase;
@@ -65,7 +65,7 @@ namespace WeaponCore
             if ((IsSorterTurret && SorterBase.Storage == null) || (!IsSorterTurret && ControllableTurret.Storage == null)) return false;
 
             byte[] base64;
-            LogicStateValues loadedState = null;
+            CompStateValues loadedState = null;
             string rawData;
             bool loadedSomething = false;
 
@@ -74,7 +74,7 @@ namespace WeaponCore
                 if (SorterBase.Storage.TryGetValue(Comp.Ai.Session.LogicStateGuid, out rawData))
                 {
                     base64 = Convert.FromBase64String(rawData);
-                    loadedState = MyAPIGateway.Utilities.SerializeFromBinary<LogicStateValues>(base64);
+                    loadedState = MyAPIGateway.Utilities.SerializeFromBinary<CompStateValues>(base64);
                 }
             }
             else
@@ -82,7 +82,7 @@ namespace WeaponCore
                 if (ControllableTurret.Storage.TryGetValue(Comp.Ai.Session.LogicStateGuid, out rawData))
                 {
                     base64 = Convert.FromBase64String(rawData);
-                    loadedState = MyAPIGateway.Utilities.SerializeFromBinary<LogicStateValues>(base64);
+                    loadedState = MyAPIGateway.Utilities.SerializeFromBinary<CompStateValues>(base64);
                 }
             }
 
@@ -102,28 +102,29 @@ namespace WeaponCore
             {
                 Value.MId++;
                 if(IsSorterTurret)
-                    Comp.Ai.Session.PacketizeToClientsInRange(SorterBase, new DataLogicState(SorterBase.EntityId, Value)); // update clients with server's state
+                    Comp.Ai.Session.PacketizeToClientsInRange(SorterBase, new DataCompState(SorterBase.EntityId, Value)); // update clients with server's state
                 else
-                    Comp.Ai.Session.PacketizeToClientsInRange(ControllableTurret, new DataLogicState(ControllableTurret.EntityId, Value));
+                    Comp.Ai.Session.PacketizeToClientsInRange(ControllableTurret, new DataCompState(ControllableTurret.EntityId, Value));
             }
         }
         #endregion
     }
 
-    public class LogicSettings
+    public class CompSettings
     {
-        public LogicSettingsValues Value = new LogicSettingsValues();
+        public CompSettingsValues Value = new CompSettingsValues();
         public readonly WeaponComponent Comp;
         public readonly IMyConveyorSorter SorterBase;
         public readonly IMyLargeMissileTurret MissileBase;
         public readonly bool IsSorterTurret;
-        public LogicSettings(WeaponComponent comp)
+        public CompSettings(WeaponComponent comp)
         {
             Comp = comp;
             SorterBase = comp.SorterBase;
             MissileBase = comp.MissileBase;
             IsSorterTurret = comp.IsSorterTurret;
             Value.Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length];
+            Value.Overrides = new CompGroupOverrides();
             var maxTrajectory = 0f;
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
             {
@@ -155,22 +156,22 @@ namespace WeaponCore
             string rawData;
             bool loadedSomething = false;
             byte[] base64;
-            LogicSettingsValues loadedSettings = null;
+            CompSettingsValues loadedSettings = null;
 
 
             if (IsSorterTurret && SorterBase.Storage.TryGetValue(Comp.Ai.Session.LogicSettingsGuid, out rawData))
             {
                 base64 = Convert.FromBase64String(rawData);
-                loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<LogicSettingsValues>(base64);
+                loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<CompSettingsValues>(base64);
                 
             }
             else if (MissileBase.Storage.TryGetValue(Comp.Ai.Session.LogicSettingsGuid, out rawData))
             {
                 base64 = Convert.FromBase64String(rawData);
-                loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<LogicSettingsValues>(base64);
+                loadedSettings = MyAPIGateway.Utilities.SerializeFromBinary<CompSettingsValues>(base64);
             }
 
-            if (loadedSettings != null && loadedSettings.Weapons != null)
+            if (loadedSettings?.Weapons != null)
             {
                 Value = loadedSettings;
                 loadedSomething = true;
@@ -185,17 +186,17 @@ namespace WeaponCore
             if (Comp.Ai.Session.IsServer)
             {
                 if(IsSorterTurret)
-                    Comp.Ai.Session.PacketizeToClientsInRange(SorterBase, new DataLogicSettings(SorterBase.EntityId, Value)); // update clients with server's settings
+                    Comp.Ai.Session.PacketizeToClientsInRange(SorterBase, new DataCompSettings(SorterBase.EntityId, Value)); // update clients with server's settings
                 else
-                    Comp.Ai.Session.PacketizeToClientsInRange(MissileBase, new DataLogicSettings(MissileBase.EntityId, Value));
+                    Comp.Ai.Session.PacketizeToClientsInRange(MissileBase, new DataCompSettings(MissileBase.EntityId, Value));
             }
             else // client, send settings to server
             {
                 byte[] bytes = null;
                 if(IsSorterTurret)
-                    MyAPIGateway.Utilities.SerializeToBinary(new DataLogicSettings(SorterBase.EntityId, Value));
+                    MyAPIGateway.Utilities.SerializeToBinary(new DataCompSettings(SorterBase.EntityId, Value));
                 else
-                    MyAPIGateway.Utilities.SerializeToBinary(new DataLogicSettings(MissileBase.EntityId, Value));
+                    MyAPIGateway.Utilities.SerializeToBinary(new DataCompSettings(MissileBase.EntityId, Value));
 
                 MyAPIGateway.Multiplayer.SendMessageToServer(Session.PACKET_ID, bytes);
             }

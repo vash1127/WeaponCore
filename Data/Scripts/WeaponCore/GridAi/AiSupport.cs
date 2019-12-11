@@ -70,6 +70,7 @@ namespace WeaponCore.Support
                 {
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
                     {
+                        group.Value.Comps.Clear();
                         GroupInfoPool.Return(group.Value);
                         BlockGroups.Remove(group.Key);
                     }

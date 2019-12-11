@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
@@ -101,7 +102,6 @@ namespace WeaponCore.Support
                     weapon.InitTracking();
                     DpsAndHeatInit(weapon);
                     weapon.UpdateBarrelRotation();
-
                     Session.ComputeStorage(weapon);
 
                     if (state.CurrentAmmo == 0 && !weapon.Reloading)

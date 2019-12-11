@@ -854,11 +854,14 @@ namespace WeaponCore.Support
         {
             {"Active", 1},
             {"Neutrals", 0},
-            {"Friends", 0},
+            {"Friend", 0},
             {"ManualAim", 0},
             {"ManualFire", 0},
+            {"FocusTargets", 0},
+            {"FocusSubSystems", 0},
             {"SubSystems", 0}
         };
+
         internal string Name;
         internal ChangeStates ChangeState;
         internal enum ChangeStates
@@ -866,6 +869,44 @@ namespace WeaponCore.Support
             None,
             Add,
             Modify
+        }
+
+        internal void ApplySettings()
+        {
+            foreach (var comp in Comps)
+            {
+                var o = comp.Set.Value.Overrides;
+                foreach (var setting in Settings)
+                {
+                    switch (setting.Key)
+                    {
+                        case "Active":
+                            o.Activate = setting.Value;
+                            break;
+                        case "Neutral":
+                            o.Neutral = setting.Value;
+                            break;
+                        case "Friend":
+                            o.Friend = setting.Value;
+                            break;
+                        case "ManualAim":
+                            o.ManualAim = setting.Value;
+                            break;
+                        case "ManualFire":
+                            o.ManualFire = setting.Value;
+                            break;
+                        case "FocusTargets":
+                            o.FocusTargets = setting.Value;
+                            break;
+                        case "FocusSubSystem":
+                            o.FocusSubSystem = setting.Value;
+                            break;
+                        case "SubSystems":
+                            o.SubSystem = setting.Value;
+                            break;
+                    }
+                }
+            }
         }
     }
 }

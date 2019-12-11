@@ -72,7 +72,7 @@ namespace WeaponCore.Support
             return true;
         }
 
-        internal void UpdateSettings(LogicSettingsValues newSettings)
+        internal void UpdateSettings(CompSettingsValues newSettings)
         {
             if (newSettings.MId > Set.Value.MId)
             {
@@ -81,7 +81,7 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void UpdateState(LogicStateValues newState)
+        internal void UpdateState(CompStateValues newState)
         {
             if (newState.MId > State.Value.MId)
             {

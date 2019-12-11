@@ -138,7 +138,7 @@ namespace WeaponCore
                 }
             },
             {
-                "Friends", new Dictionary<string, int>
+                "Friend", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
@@ -173,15 +173,7 @@ namespace WeaponCore
             },
         };
 
-        internal readonly List<string> SettingNames = new List<string>()
-        {
-            {"Active"},
-            {"Neutrals"},
-            {"Friends"},
-            {"ManualAim"},
-            {"ManualFire"},
-            {"SubSystems"}
-        };
+        internal readonly List<string> SettingNames = new List<string>();
 
         internal enum State
         {
@@ -210,7 +202,9 @@ namespace WeaponCore
             var group = new Menu(this, "Group", Group, Group.Length);
             var settings = new Menu(this, "Settings", Settings, Settings.Length);
             var weapons = new Menu(this, "Weapons", Weapons, Weapons.Length);
-
+            var tmpGroupInfo = new GroupInfo();
+            foreach (var groupInfo in tmpGroupInfo.Settings.Keys)
+                SettingNames.Add(groupInfo);
 
             Menus.Add(weaponGroups.Name, weaponGroups);
             Menus.Add(group.Name, group);

@@ -4,7 +4,6 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -42,10 +41,7 @@ namespace WeaponCore
                         UpdateState(menu);
                     }
                     else if (item.Dynamic)
-                    {
-                        Log.Line($"is dynamic");
                         menu.SetInfo(item);
-                    }
                 }
                 else if (s.UiInput.RightMouseReleased)
                 {
