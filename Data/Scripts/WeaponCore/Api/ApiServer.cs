@@ -6,7 +6,7 @@ namespace WeaponCore.Support
 {
     public class ApiServer
     {
-        private const long Channel = 66665555;
+        private const long Channel = 67549756549;
         private readonly Session _session;
         internal ApiServer (Session session)
         {

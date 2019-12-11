@@ -57,6 +57,7 @@ namespace WeaponCore
             TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
 
             CheckDirtyGrids();
+            Api = new ApiBackend(this);
             ApiServer = new ApiServer(this);
             ApiServer.Load();
         }
