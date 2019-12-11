@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -27,6 +28,7 @@ namespace WeaponCore
         internal int ActiveGroupId;
         internal int ActiveWeaponId;
         internal int CurrentTextureId;
+
         internal struct Names
         {
             internal string Value;
@@ -59,7 +61,7 @@ namespace WeaponCore
 
         internal readonly Item[] Settings =
         {
-            new Item { Title = "Settings Menu", ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Settings Menu", Dynamic = true, ItemMessage = "", ParentName = "Group"},
         };
 
         internal readonly Item[] Weapons =
@@ -67,7 +69,7 @@ namespace WeaponCore
             new Item {Title = "Weapons Menu", ParentName = "Group"},
         };
 
-        internal readonly Dictionary<string, Dictionary<int, Names>> SettingStrings = new Dictionary<string, Dictionary<int, Names>>()
+        internal readonly Dictionary<string, Dictionary<int, Names>> SettingCycleStrMap = new Dictionary<string, Dictionary<int, Names>>()
         {
             {
                 "Active", new Dictionary<int, Names>
@@ -115,6 +117,58 @@ namespace WeaponCore
                     [5] = new Names {Value = "Thrust", CurrentValue = "Thrust", NextValue = "Jumping", PreviousValue = "Production"},
                     [6] = new Names {Value = "Jumping", CurrentValue = "Jumping", NextValue = "Steering", PreviousValue = "Thrust"},
                     [7] = new Names {Value = "Steering", CurrentValue = "Steering", NextValue = "Any", PreviousValue = "Jumping"},
+                }
+            },
+        };
+
+        internal readonly Dictionary<string, Dictionary<string, int>> SettingStrToValues = new Dictionary<string, Dictionary<string, int>>()
+        {
+            {
+                "Active", new Dictionary<string, int>
+                {
+                    ["Activate"] = 1,
+                    ["Deactivate"] = 0,
+                }
+            },
+            {
+                "Neutrals", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "Friends", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "ManualAim", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "ManualFire", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "SubSystems", new Dictionary<string, int>
+                {
+                    ["Any"] = 0,
+                    ["Offense"] = 1,
+                    ["Utility"] = 2,
+                    ["Power"] = 3,
+                    ["Production"] = 4,
+                    ["Thrust"] = 5,
+                    ["Jumping"] = 6,
+                    ["Steering"] = 7,
                 }
             },
         };
