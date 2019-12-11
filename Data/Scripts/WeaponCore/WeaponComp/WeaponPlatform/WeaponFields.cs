@@ -159,14 +159,18 @@ namespace WeaponCore.Platform
             MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> {Item1 = entity };
             AnimationsSet = animationSets;
 
-            foreach (var set in AnimationsSet)
+            if (AnimationsSet != null)
             {
-                for (int j = 0; j < set.Value.Length; j++)
+                foreach (var set in AnimationsSet)
                 {
-                    var animation = set.Value[j];
-                    AnimationLookup.Add(animation.AnimationId, animation);
+                    for (int j = 0; j < set.Value.Length; j++)
+                    {
+                        var animation = set.Value[j];
+                        AnimationLookup.Add(animation.AnimationId, animation);
+                    }
                 }
             }
+            
 
             System = system;
             Comp = comp;

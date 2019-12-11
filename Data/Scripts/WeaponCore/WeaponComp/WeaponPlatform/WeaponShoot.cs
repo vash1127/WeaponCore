@@ -93,6 +93,8 @@ namespace WeaponCore.Platform
             var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
             if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
             var isStatic = Comp.Ai.MyGrid.Physics.IsStatic;
+            var shot = System.EnergyAmmo;
+
             for (int i = 0; i < bps; i++)
             {
                 var current = NextMuzzle;
@@ -110,8 +112,10 @@ namespace WeaponCore.Platform
 
                 if (!System.EnergyAmmo)
                 {
+
                     if (Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0) break;
                     Comp.State.Value.Weapons[WeaponId].CurrentAmmo--;
+                    shot = true;
                 }
 
                 if (System.HasBackKickForce && !isStatic)
@@ -280,7 +284,12 @@ namespace WeaponCore.Platform
                 NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
             }
 
-            EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+
+            if(shot)
+                EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
+            else if (!System.EnergyAmmo && !Reloading && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
+                StartReload();
+
             if (state.ManualShoot == TerminalActionState.ShootOnce)
             {
                 state.ManualShoot = TerminalActionState.ShootOff;
@@ -291,9 +300,6 @@ namespace WeaponCore.Platform
             _muzzlesToFire.Clear();
 
             _nextVirtual = _nextVirtual + 1 < bps ? _nextVirtual + 1 : 0;
-
-            if (!System.EnergyAmmo && !Reloading && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
-                StartReload();
         }
 
         private Projectile CreateVirtualProjectile()
