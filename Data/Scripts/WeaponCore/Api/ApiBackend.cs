@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
-using VRage;
-using VRage.Collections;
 using VRage.Game;
-using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRageMath;
 using static WeaponCore.Support.TargetingDefinition;
@@ -16,42 +11,51 @@ namespace WeaponCore.Support
 {
     internal class ApiBackend
     {
-        internal readonly Dictionary<string, Delegate> ModApiMethods = new Dictionary<string, Delegate>()
-        {
-            ["GetCoreStaticLaunchers"]= new Func<List<MyDefinitionId>>(GetCoreStaticLaunchers),
-            ["GetCoreTurrets"] = new Func<List<MyDefinitionId>>(GetCoreTurrets),
-            ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity>(SetTargetEntity),
-            ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
-            ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
-            ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
-            ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
-            ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, List<List<Threat>>>(GetTurretTargetTypes),
-            ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, List<List<Threat>>>(SetTurretTargetTypes),
-            ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),            
-            ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IMyEntity>(GetTargetedEntity),
-            ["TargetPredictedPosition"] = new Func<IMyTerminalBlock, Vector3D?>(TargetPredictedPosition),
-            ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
-            ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
-            ["MaxPower"] = new Func<MyDefinitionId, float?>(MaxPower),
-            ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower)
-        };
+        private readonly Session _session;
+        internal readonly Dictionary<string, Delegate> ModApiMethods;
+        private readonly Dictionary<string, Delegate> _terminalPbApiMethods;
 
-        private readonly Dictionary<string, Delegate> _terminalPbApiMethods = new Dictionary<string, Delegate>()
+        internal ApiBackend(Session session)
         {
-            ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity>(SetTargetEntity),
-            ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
-            ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
-            ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
-            ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
-            ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, List<List<Threat>>>(GetTurretTargetTypes),
-            ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, List<List<Threat>>>(SetTurretTargetTypes),
-            ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
-            ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IMyEntity>(GetTargetedEntity),
-            ["TargetPredictedPosition"] = new Func<IMyTerminalBlock, Vector3D?>(TargetPredictedPosition),
-            ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
-            ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
-            ["MaxPower"] = new Func<MyDefinitionId, float?>(MaxPower)
-        };
+            _session = session;
+
+            ModApiMethods = new Dictionary<string, Delegate>()
+            {
+                ["GetCoreStaticLaunchers"] = new Func<List<MyDefinitionId>>(GetCoreStaticLaunchers),
+                ["GetCoreTurrets"] = new Func<List<MyDefinitionId>>(GetCoreTurrets),
+                ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity>(SetTargetEntity),
+                ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
+                ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
+                ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
+                ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
+                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, List<List<Threat>>>(GetTurretTargetTypes),
+                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, List<List<Threat>>>(SetTurretTargetTypes),
+                ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
+                ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IMyEntity>(GetTargetedEntity),
+                ["TargetPredictedPosition"] = new Func<IMyTerminalBlock, Vector3D?>(TargetPredictedPosition),
+                ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
+                ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
+                ["MaxPower"] = new Func<MyDefinitionId, float?>(MaxPower),
+                ["DisableRequiredPower"] = new Action<IMyTerminalBlock>(DisableRequiredPower)
+            };
+
+            _terminalPbApiMethods = new Dictionary<string, Delegate>()
+            {
+                ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity>(SetTargetEntity),
+                ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
+                ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
+                ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
+                ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
+                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, List<List<Threat>>>(GetTurretTargetTypes),
+                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, List<List<Threat>>>(SetTurretTargetTypes),
+                ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
+                ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IMyEntity>(GetTargetedEntity),
+                ["TargetPredictedPosition"] = new Func<IMyTerminalBlock, Vector3D?>(TargetPredictedPosition),
+                ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
+                ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
+                ["MaxPower"] = new Func<MyDefinitionId, float?>(MaxPower)
+            };
+        }
 
         internal void Init()
         {
@@ -70,9 +74,20 @@ namespace WeaponCore.Support
             return new List<MyDefinitionId>();
         }
 
-        private static void SetTargetEntity(IMyEntity shooter, IMyEntity target)
+        private void SetTargetEntity(IMyEntity shooter, IMyEntity target)
         {
+            if (shooter is MyCubeGrid)
+            {
+                var shootingGrid =  shooter as MyCubeGrid;
+                if (_session.GridTargetingAIs.ContainsKey(shootingGrid))
+                {
 
+                }
+            }
+            else if (shooter is MyCubeBlock)
+            {
+
+            }
         }
 
         private static void FireOnce(IMyTerminalBlock weaponBlock)
