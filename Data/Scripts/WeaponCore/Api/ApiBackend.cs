@@ -55,10 +55,6 @@ namespace WeaponCore.Support
 
         internal void Init()
         {
-            var mod = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WeaponCoreAPI");
-            mod.Getter = (b) => ModApiMethods;
-            MyAPIGateway.TerminalControls.AddControl<IMyUpgradeModule>(mod);
-
             var pb = MyAPIGateway.TerminalControls.CreateProperty<Dictionary<string, Delegate>, IMyTerminalBlock>("WeaponCorePbAPI");
             pb.Getter = (b) => _terminalPbApiMethods;
             MyAPIGateway.TerminalControls.AddControl<Sandbox.ModAPI.Ingame.IMyProgrammableBlock>(pb);
