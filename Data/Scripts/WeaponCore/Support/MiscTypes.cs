@@ -794,24 +794,6 @@ namespace WeaponCore.Support
                     gridAi.Focus.Target[ActiveId] = null;
             }
         }
-
-        internal bool ReassignTarget(MyEntity target, int focusId)
-        {
-            if (focusId >= Target.Length) return false;
-            Target[focusId] = target;
-            foreach (var sub in Ai.SubGrids)
-            {
-                GridAi gridAi;
-                if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
-                    gridAi.Focus.Target[focusId] = Target[ActiveId];
-            }
-            return true;
-        }
-
-        internal int FocusSlots()
-        {
-            return Target.Length;
-        }
     }
 
     public class TargetStatus
