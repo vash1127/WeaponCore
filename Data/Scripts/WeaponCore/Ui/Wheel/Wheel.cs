@@ -173,7 +173,7 @@ namespace WeaponCore
                 case "WeaponGroups":
                     ActiveGroupId = item.SubSlot;
                     break;
-                case "Weapons":
+                case "Comps":
                     ActiveWeaponId = item.SubSlot;
                     break;
             }
@@ -200,7 +200,7 @@ namespace WeaponCore
 
                 foreach (var comp in group.Value.Comps)
                 {
-                    var groupMember = new GroupMember { Comps = comp, Name = groupName };
+                    var groupMember = new GroupMember { Comp = comp, Name = groupName };
                     membersList.Add(groupMember);
                 }
                 BlockGroups.Add(membersList);

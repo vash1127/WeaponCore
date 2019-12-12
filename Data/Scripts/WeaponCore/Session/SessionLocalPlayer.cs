@@ -180,13 +180,15 @@ namespace WeaponCore
             }
         }
 
-        internal void SetGpsInfo(Vector3D pos, string name, double dist = 0)
+        internal void SetGpsInfo(Vector3D pos, string name, double dist = 0, Color color = default(Color))
         {
             if (TargetGps != null)
             {
                 var newPos = dist > 0 ? pos + (Camera.WorldMatrix.Up * dist) : pos;
                 TargetGps.Coords = newPos;
                 TargetGps.Name = name;
+                if (color != default(Color))
+                    MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, color);
             }
         }
 

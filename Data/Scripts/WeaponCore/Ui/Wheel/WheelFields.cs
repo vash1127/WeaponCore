@@ -55,18 +55,23 @@ namespace WeaponCore
 
         internal readonly Item[] Group =
         {
-            new Item {ItemMessage = "[Group Settings]", ParentName = "WeaponGroups", SubName = "Settings"},
-            new Item {ItemMessage = "[Modify Weapons]", ParentName = "WeaponGroups", SubName = "Weapons"},
+            new Item {ItemMessage = "[Group Settings]", ParentName = "WeaponGroups", SubName = "GroupSettings"},
+            new Item {ItemMessage = "[Modify Weapons]", ParentName = "WeaponGroups", SubName = "Comps"},
         };
 
         internal readonly Item[] Settings =
         {
-            new Item { Title = "Settings Menu", Dynamic = true, ItemMessage = "", ParentName = "Group"},
+            new Item { Title = "Settings Menu", Dynamic = true, ParentName = "Group"},
         };
 
-        internal readonly Item[] Weapons =
+        internal readonly Item[] Comps =
         {
-            new Item {Title = "Weapons Menu", ParentName = "Group"},
+            new Item {Title = "Comps", ParentName = "Group", SubName = "CompSettings"},
+        };
+
+        internal readonly Item[] CompSet =
+        {
+            new Item {Title = "Comp Settings", Dynamic = true, ParentName = "Comps"},
         };
 
         internal readonly Dictionary<string, Dictionary<int, Names>> SettingCycleStrMap = new Dictionary<string, Dictionary<int, Names>>()
@@ -242,16 +247,19 @@ namespace WeaponCore
             var weaponGroups = new Menu(this, "WeaponGroups", WeaponGroups, WeaponGroups.Length);
 
             var group = new Menu(this, "Group", Group, Group.Length);
-            var settings = new Menu(this, "Settings", Settings, Settings.Length);
-            var weapons = new Menu(this, "Weapons", Weapons, Weapons.Length);
+            var groupSettings = new Menu(this, "GroupSettings", Settings, Settings.Length);
+            var comps = new Menu(this, "Comps", Comps, Comps.Length);
+            var compSet = new Menu(this, "CompSettings", CompSet, CompSet.Length);
+
             var tmpGroupInfo = new GroupInfo();
             foreach (var groupInfo in tmpGroupInfo.Settings.Keys)
                 SettingNames.Add(groupInfo);
 
             Menus.Add(weaponGroups.Name, weaponGroups);
             Menus.Add(group.Name, group);
-            Menus.Add(settings.Name, settings);
-            Menus.Add(weapons.Name, weapons);
+            Menus.Add(groupSettings.Name, groupSettings);
+            Menus.Add(comps.Name, comps);
+            Menus.Add(compSet.Name, compSet);
         }
     }
 }

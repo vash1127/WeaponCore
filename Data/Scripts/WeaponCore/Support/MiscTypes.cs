@@ -931,5 +931,43 @@ namespace WeaponCore.Support
                 }
             }
         }
+
+        internal int GetCompSetting(string setting, WeaponComponent comp)
+        {
+            var value = 0;
+            var o = comp.Set.Value.Overrides;
+            switch (setting)
+            {
+                case "Active":
+                    value = o.Activate ? 1 : 0;
+                    break;
+                case "Neutral":
+                    value = o.Neutral ? 1 : 0;
+                    break;
+                case "NoOwner":
+                    value = o.NoOwner ? 1 : 0;
+                    break;
+                case "Friend":
+                    value = o.Friend ? 1 : 0;
+                    break;
+                case "ManualAim":
+                    value = o.ManualAim ? 1 : 0;
+                    break;
+                case "ManualFire":
+                    value = o.ManualFire ? 1 : 0;
+                    break;
+                case "FocusTargets":
+                    value = o.FocusTargets ? 1 : 0;
+                    break;
+                case "FocusSubSystem":
+                    value = o.FocusSubSystem ? 1 : 0;
+                    break;
+                case "SubSystems":
+                    value = (int)o.SubSystem;
+                    break;
+            }
+
+            return value;
+        }
     }
 }
