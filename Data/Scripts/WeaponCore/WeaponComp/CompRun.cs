@@ -93,6 +93,8 @@ namespace WeaponCore.Support
 
                 InventoryInit();
 
+                //range slider fix
+                var maxTrajectory = 0d;
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var weapon = Platform.Weapons[i];
@@ -101,6 +103,10 @@ namespace WeaponCore.Support
                     weapon.InitTracking();
                     DpsAndHeatInit(weapon);
                     weapon.UpdateBarrelRotation();
+
+                    //range slider fix
+                    if (weapon.System.MaxTrajectory > maxTrajectory)
+                        maxTrajectory = weapon.System.MaxTrajectory;
 
                     Session.ComputeStorage(weapon);
 
@@ -113,6 +119,13 @@ namespace WeaponCore.Support
                         Shooting++;
                     }
 
+                }
+
+                //range slider fix - removed from weaponFields.cs
+                if (maxTrajectory + Ai.GridRadius > Ai.MaxTargetingRange)
+                {
+                    Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
+                    Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
                 }
 
                 Ai.OptimalDps += OptimalDps;
