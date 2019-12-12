@@ -1,4 +1,5 @@
-﻿using Sandbox.ModAPI;
+﻿using Sandbox.Game;
+using Sandbox.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
@@ -91,7 +92,6 @@ namespace WeaponCore
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
-                            Log.Line($"Tracking: {!w.Target.Expired}");
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
                             w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.Expired);
                             if (w.Target.Expired)
@@ -195,7 +195,6 @@ namespace WeaponCore
                         else comp.Charging = false;
                         
                         if (comp.Charging) continue;
-
                         w.TargetWasExpired = w.Target.Expired;
 
                         if (w.SeekTarget || gridAi.TargetResetTick == Tick)

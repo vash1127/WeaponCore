@@ -53,7 +53,7 @@ namespace WeaponCore.Support
             if (State == null)
             {
                 //Log.Line($"State null");
-                State = new LogicState(this);
+                State = new CompState(this);
             }
 
             if (IsSorterTurret)
@@ -76,7 +76,7 @@ namespace WeaponCore.Support
             if (Set == null)
             {
                 //Log.Line($"Settings null");
-                Set = new LogicSettings(this);
+                Set = new CompSettings(this);
             }
 
             State.LoadState();

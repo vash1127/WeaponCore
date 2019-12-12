@@ -6,9 +6,7 @@ using WeaponCore.Support;
 
 namespace WeaponCore
 {
-    [ProtoInclude(3, typeof(DataLogicState))]
-    [ProtoInclude(4, typeof(DataWeaponHit))]
-
+    [ProtoInclude(3, typeof(DataCompState))]
     [ProtoContract]
     public abstract class PacketBase
     {
@@ -41,15 +39,15 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class DataLogicState : PacketBase
+    public class DataCompState : PacketBase
     {
-        public DataLogicState()
+        public DataCompState()
         {
         } // Empty constructor required for deserialization
 
-        [ProtoMember(1)] public LogicStateValues State = null;
+        [ProtoMember(1)] public CompStateValues State = null;
 
-        public DataLogicState(long entityId, LogicStateValues state) : base(entityId)
+        public DataCompState(long entityId, CompStateValues state) : base(entityId)
         {
             State = state;
         }
@@ -68,15 +66,15 @@ namespace WeaponCore
     }
 
     [ProtoContract]
-    public class DataLogicSettings : PacketBase
+    public class DataCompSettings : PacketBase
     {
-        public DataLogicSettings()
+        public DataCompSettings()
         {
         } // Empty constructor required for deserialization
 
-        [ProtoMember(1)] public LogicSettingsValues Settings = null;
+        [ProtoMember(1)] public CompSettingsValues Settings = null;
 
-        public DataLogicSettings(long entityId, LogicSettingsValues settings) : base(entityId)
+        public DataCompSettings(long entityId, CompSettingsValues settings) : base(entityId)
         {
             Settings = settings;
         }
@@ -87,31 +85,6 @@ namespace WeaponCore
             var comp = Entity.Components.Get<WeaponComponent>();
             comp?.UpdateSettings(Settings);
             return isServer;
-        }
-    }
-
-    [ProtoContract]
-    public class DataWeaponHit : PacketBase
-    {
-        public DataWeaponHit()
-        {
-        } // Empty constructor required for deserialization
-
-        [ProtoMember(1)] public WeaponHitValues State = null;
-
-        public DataWeaponHit(long entityId, WeaponHitValues state) : base(entityId)
-        {
-            State = state;
-        }
-
-        public override bool Received(bool isServer)
-        {
-            if (isServer || Entity?.GameLogic == null) return false;
-            var logic = Entity.GameLogic.GetAs<WeaponComponent>();
-            if (logic == null) return false;
-
-            //Session.Instance.WeaponHits.Add(new WeaponHit(logic, State.HitPos, State.Size, State.Effect));
-            return false;
         }
     }
 }

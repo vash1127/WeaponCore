@@ -19,7 +19,9 @@ namespace WeaponCore.Support
     {
         internal volatile bool Scanning;
         internal volatile bool Ready;
+        internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
+
         internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(8);
 
         internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
@@ -88,7 +90,6 @@ namespace WeaponCore.Support
         internal int ManualComps;
         internal int BlockCount;
         internal long MyOwner;
-        internal bool GridInit;
         internal bool DbReady;
         internal bool ScanBlockGroups = true;
         internal bool ResetPower = true;

@@ -12,10 +12,8 @@ namespace WeaponCore.Support
         internal void Scan()
         {
             if (Scanning)
-            {
-                Log.Line("already scanning");
                 return;
-            }
+
             using (_scanLock.AcquireExclusiveUsing())
             {
                 if (!Scanning && Session.Tick - _lastScan > 100)

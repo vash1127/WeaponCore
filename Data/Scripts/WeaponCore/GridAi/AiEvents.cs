@@ -66,7 +66,7 @@ namespace WeaponCore.Support
             try
             {
                 WeaponComponent comp;
-
+                
                 var battery = myCubeBlock as MyBatteryBlock;
                 if (battery != null)
                 {
@@ -122,8 +122,12 @@ namespace WeaponCore.Support
         }
 
         private void GridClose(MyEntity myEntity)
-        { 
-            Session.FutureEvents.Schedule(DelayedGridCleanUp, null, 120);
+        {
+            if (GridInit)
+            {
+                GridInit = false;
+                Session.FutureEvents.Schedule(DelayedGridCleanUp, null, 120);
+            }
         }
     }
 }

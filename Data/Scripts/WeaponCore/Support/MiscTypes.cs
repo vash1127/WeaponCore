@@ -794,6 +794,24 @@ namespace WeaponCore.Support
                     gridAi.Focus.Target[ActiveId] = null;
             }
         }
+
+        internal bool ReassignTarget(MyEntity target, int focusId)
+        {
+            if (focusId >= Target.Length) return false;
+            Target[focusId] = target;
+            foreach (var sub in Ai.SubGrids)
+            {
+                GridAi gridAi;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                    gridAi.Focus.Target[focusId] = Target[ActiveId];
+            }
+            return true;
+        }
+
+        internal int FocusSlots()
+        {
+            return Target.Length;
+        }
     }
 
     public class TargetStatus
@@ -868,15 +886,20 @@ namespace WeaponCore.Support
     internal class GroupInfo
     {
         internal readonly HashSet<WeaponComponent> Comps = new HashSet<WeaponComponent>();
+
         internal readonly Dictionary<string, int> Settings = new Dictionary<string, int>()
         {
             {"Active", 1},
             {"Neutrals", 0},
-            {"Friends", 0},
+            {"Friend", 0},
+            {"NoOwner", 0},
             {"ManualAim", 0},
             {"ManualFire", 0},
+            {"FocusTargets", 0},
+            {"FocusSubSystems", 0},
             {"SubSystems", 0}
         };
+
         internal string Name;
         internal ChangeStates ChangeState;
         internal enum ChangeStates
@@ -884,6 +907,85 @@ namespace WeaponCore.Support
             None,
             Add,
             Modify
+        }
+
+        internal void ApplySettings()
+        {
+            foreach (var comp in Comps)
+            {
+                var o = comp.Set.Value.Overrides;
+                foreach (var setting in Settings)
+                {
+                    switch (setting.Key)
+                    {
+                        case "Active":
+                            o.Activate = setting.Value > 0;
+                            break;
+                        case "Neutral":
+                            o.Neutral = setting.Value > 0;
+                            break;
+                        case "NoOwner":
+                            o.NoOwner = setting.Value > 0;
+                            break;
+                        case "Friend":
+                            o.Friend = setting.Value > 0;
+                            break;
+                        case "ManualAim":
+                            o.ManualAim = setting.Value > 0;
+                            break;
+                        case "ManualFire":
+                            o.ManualFire = setting.Value > 0;
+                            break;
+                        case "FocusTargets":
+                            o.FocusTargets = setting.Value > 0;
+                            break;
+                        case "FocusSubSystem":
+                            o.FocusSubSystem = setting.Value > 0;
+                            break;
+                        case "SubSystems":
+                            o.SubSystem = (BlockTypes)setting.Value;
+                            break;
+                    }
+                }
+            }
+        }
+
+        internal int GetCompSetting(string setting, WeaponComponent comp)
+        {
+            var value = 0;
+            var o = comp.Set.Value.Overrides;
+            switch (setting)
+            {
+                case "Active":
+                    value = o.Activate ? 1 : 0;
+                    break;
+                case "Neutral":
+                    value = o.Neutral ? 1 : 0;
+                    break;
+                case "NoOwner":
+                    value = o.NoOwner ? 1 : 0;
+                    break;
+                case "Friend":
+                    value = o.Friend ? 1 : 0;
+                    break;
+                case "ManualAim":
+                    value = o.ManualAim ? 1 : 0;
+                    break;
+                case "ManualFire":
+                    value = o.ManualFire ? 1 : 0;
+                    break;
+                case "FocusTargets":
+                    value = o.FocusTargets ? 1 : 0;
+                    break;
+                case "FocusSubSystem":
+                    value = o.FocusSubSystem ? 1 : 0;
+                    break;
+                case "SubSystems":
+                    value = (int)o.SubSystem;
+                    break;
+            }
+
+            return value;
         }
     }
 }

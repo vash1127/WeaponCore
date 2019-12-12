@@ -4,7 +4,6 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -42,10 +41,7 @@ namespace WeaponCore
                         UpdateState(menu);
                     }
                     else if (item.Dynamic)
-                    {
-                        Log.Line($"is dynamic");
                         menu.SetInfo(item);
-                    }
                 }
                 else if (s.UiInput.RightMouseReleased)
                 {
@@ -177,7 +173,7 @@ namespace WeaponCore
                 case "WeaponGroups":
                     ActiveGroupId = item.SubSlot;
                     break;
-                case "Weapons":
+                case "Comps":
                     ActiveWeaponId = item.SubSlot;
                     break;
             }
@@ -204,7 +200,7 @@ namespace WeaponCore
 
                 foreach (var comp in group.Value.Comps)
                 {
-                    var groupMember = new GroupMember { Comps = comp, Name = groupName };
+                    var groupMember = new GroupMember { Comp = comp, Name = groupName };
                     membersList.Add(groupMember);
                 }
                 BlockGroups.Add(membersList);

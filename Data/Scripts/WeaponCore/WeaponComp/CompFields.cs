@@ -86,8 +86,8 @@ namespace WeaponCore.Support
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
         internal bool IgnoreInvChange;
-        internal LogicSettings Set;
-        internal LogicState State;
+        internal CompSettings Set;
+        internal CompState State;
         internal MyResourceSinkInfo SinkInfo;
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 

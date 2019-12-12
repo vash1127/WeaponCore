@@ -70,6 +70,7 @@ namespace WeaponCore.Support
                 {
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
                     {
+                        group.Value.Comps.Clear();
                         GroupInfoPool.Return(group.Value);
                         BlockGroups.Remove(group.Key);
                     }
@@ -550,7 +551,6 @@ namespace WeaponCore.Support
 
         internal void DelayedGridCleanUp(object o)
         {
-            if (MyGrid.InScene) Log.Line("grid was closed but still inScene");
             RegisterMyGridEvents(false);
             _possibleTargets.Clear();
             foreach (var grid in SubGrids)
