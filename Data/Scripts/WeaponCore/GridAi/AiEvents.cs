@@ -21,14 +21,14 @@ namespace WeaponCore.Support
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
                 grid.OnMarkForClose += GridClose;
-                grid.OnClose += GridClose;
+                //grid.OnClose += GridClose;
             }
             else
             {
                 grid.OnFatBlockAdded -= FatBlockAdded;
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
                 grid.OnMarkForClose -= GridClose;
-                grid.OnClose -= GridClose;
+                //grid.OnClose -= GridClose;
             }
         }
 
@@ -66,7 +66,7 @@ namespace WeaponCore.Support
             try
             {
                 WeaponComponent comp;
-
+                
                 var battery = myCubeBlock as MyBatteryBlock;
                 if (battery != null)
                 {

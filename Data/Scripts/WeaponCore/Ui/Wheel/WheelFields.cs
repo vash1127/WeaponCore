@@ -86,7 +86,14 @@ namespace WeaponCore
                 }
             },
             {
-                "Friends", new Dictionary<int, Names>
+                "NoOwner", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "Friend", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
@@ -101,6 +108,20 @@ namespace WeaponCore
             },
             {
                 "ManualFire", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "FocusTargets", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "FocusSubSystems", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
@@ -138,6 +159,13 @@ namespace WeaponCore
                 }
             },
             {
+                "NoOwner", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
                 "Friend", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
@@ -153,6 +181,20 @@ namespace WeaponCore
             },
             {
                 "ManualFire", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "FocusTargets", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "FocusSubSystem", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,

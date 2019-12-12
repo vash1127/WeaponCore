@@ -152,7 +152,9 @@ namespace WeaponCore
                 var nextValueStr = map[currentValue].NextValue;
                 var nextValue = Wheel.SettingStrToValues[currentSettingName][nextValueStr];
                 groupInfo.Settings[currentSettingName] = nextValue;
+                groupInfo.ApplySettings();
                 FormatSettingsMessage(groupInfo);
+
             }
 
             internal void FormatWeaponMessage(GroupMember groupMember)

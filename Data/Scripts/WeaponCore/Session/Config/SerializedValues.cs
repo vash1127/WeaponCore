@@ -35,6 +35,10 @@ namespace WeaponCore
         [ProtoMember(9)] internal MyObjectBuilder_Inventory Inventory = null;
         [ProtoMember(10)] public CompGroupOverrides Overrides;
 
+        public CompSettingsValues()
+        {
+            Overrides = new CompGroupOverrides();
+        }
 
     }
 
@@ -57,13 +61,14 @@ namespace WeaponCore
     [ProtoContract]
     public class CompGroupOverrides
     {
-        [ProtoMember(1), DefaultValue(1)] public int Activate = 1;
-        [ProtoMember(2)] public int Neutral = 0;
-        [ProtoMember(3)] public int Friend = 0;
-        [ProtoMember(4)] public int ManualAim = 0;
-        [ProtoMember(5)] public int ManualFire = 0;
-        [ProtoMember(6)] public int FocusTargets = 0;
-        [ProtoMember(7)] public int FocusSubSystem = 0;
-        [ProtoMember(8)] public int SubSystem = 0;
+        [ProtoMember(1), DefaultValue(true)] public bool Activate = true;
+        [ProtoMember(2)] public bool Neutral = false;
+        [ProtoMember(3)] public bool NoOwner = false;
+        [ProtoMember(4)] public bool Friend = false;
+        [ProtoMember(5)] public bool ManualAim = false;
+        [ProtoMember(6)] public bool ManualFire = false;
+        [ProtoMember(7)] public bool FocusTargets = false;
+        [ProtoMember(8)] public bool FocusSubSystem = false;
+        [ProtoMember(9)] public BlockTypes SubSystem = BlockTypes.Any;
     }
 }

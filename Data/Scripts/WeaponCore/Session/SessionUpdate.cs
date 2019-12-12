@@ -91,7 +91,6 @@ namespace WeaponCore
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
-                            Log.Line($"Tracking: {!w.Target.Expired}");
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
                             w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.Expired);
                             if (w.Target.Expired)

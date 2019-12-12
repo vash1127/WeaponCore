@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO.IsolatedStorage;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -119,11 +120,17 @@ namespace WeaponCore.Support
 
         private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
         {
-            var ai = w.Comp.Ai;
+            var comp = w.Comp;
+            var overRides = comp.Set.Value.Overrides;
+            var attackNeutrals = overRides.Activate && overRides.Neutral;
+            var attackFriends = overRides.Activate && overRides.Friend;
+            var attackNoOwner = overRides.Activate && overRides.NoOwner;
+
+            var ai = comp.Ai;
             ai.Session.TargetRequests++;
             var physics = ai.Session.Physics;
             var weaponPos = w.MyPivotPos;
-            var weaponRangeSqr = w.Comp.Set.Value.Range * w.Comp.Set.Value.Range;
+            var weaponRangeSqr = comp.Set.Value.Range * comp.Set.Value.Range;
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
@@ -142,10 +149,9 @@ namespace WeaponCore.Support
                 if(ai.Targets.TryGetValue(targetGrid, out gridInfo))
                     forceTarget = true;
 
-            var numOfTargets = ai.SortedTargets.Count;
-            var adjTargetCount = numOfTargets + offset;
             var hasOffset = offset > 0;
-
+            var numOfTargets = ai.SortedTargets.Count;
+            var adjTargetCount = overRides.Activate && overRides.FocusTargets && hasOffset ? offset : numOfTargets + offset;
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets);
 
             for (int x = 0; x < adjTargetCount; x++)
@@ -162,12 +168,12 @@ namespace WeaponCore.Support
                         if (x == 0 && alphaInfo != null) info = alphaInfo;
                         else if (x == 0 && betaInfo != null) info = betaInfo;
                         else if (x == 1) info = betaInfo;
+                        if (!attackFriends && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Friends) continue;
                     }
                     else info = ai.SortedTargets[deck[x - offset]];
                 }
 
-                if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue; 
-
+                if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue; 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
 
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
