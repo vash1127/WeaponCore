@@ -438,7 +438,9 @@ namespace WeaponCore
                 structure.AmmoToWeaponIds.Clear();
             }
             WeaponPlatforms.Clear();
-
+            weaponCoreBlockDefs.Clear();
+            weaponCoreFixedBlockDefs.Clear();
+            weaponCoreTurretBlockDefs.Clear();
             Projectiles.CheckPool.Clean();
             Projectiles.ShrapnelToSpawn.Clear();
             Projectiles.ShrapnelPool.Clean();

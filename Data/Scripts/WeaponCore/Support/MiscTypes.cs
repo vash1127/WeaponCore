@@ -688,6 +688,11 @@ namespace WeaponCore.Support
         internal int ActiveId;
         internal bool HasFocus;
 
+        internal int FocusSlots()
+        {
+            return Target.Length;
+        }
+
         internal void AddFocus(MyEntity target)
         {
             Target[ActiveId] = target;
@@ -701,6 +706,19 @@ namespace WeaponCore.Support
                     gridAi.TargetResetTick = Ai.Session.Tick + 1;
                 }
             }
+        }
+
+        internal bool ReassignTarget(MyEntity target, int focusId)
+        {
+            if (focusId >= Target.Length) return false;
+            Target[focusId] = target;
+            foreach (var sub in Ai.SubGrids)
+            {
+                GridAi gridAi;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
+                    gridAi.Focus.Target[focusId] = Target[ActiveId];
+            }
+            return true;
         }
 
         internal void NextActive(bool addSecondary)

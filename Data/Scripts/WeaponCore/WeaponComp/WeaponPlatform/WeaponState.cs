@@ -695,9 +695,13 @@ namespace WeaponCore.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                Comp.SinkPower += RequiredPower;
-                Comp.CurrentSinkPowerRequested += RequiredPower;
-                Comp.MyCube.ResourceSink.Update();
+                if (!Comp.UnlimitedPower)
+                {
+                    Comp.SinkPower += RequiredPower;
+                    Comp.CurrentSinkPowerRequested += RequiredPower;
+                    Comp.MyCube.ResourceSink.Update();
+                }
+                
                 Comp.TerminalRefresh();
             }
             IsShooting = true;
@@ -717,9 +721,12 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
-                    Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
-                    Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
-                    Comp.MyCube.ResourceSink.Update();
+                    if (!Comp.UnlimitedPower)
+                    {
+                        Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
+                        Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
+                        Comp.MyCube.ResourceSink.Update();
+                    }
                     Comp.TerminalRefresh();
                 }
                 IsShooting = false;

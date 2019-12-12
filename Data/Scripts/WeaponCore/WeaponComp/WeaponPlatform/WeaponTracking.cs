@@ -118,9 +118,8 @@ namespace WeaponCore.Platform
             return canTrack;
         }
 
-        internal static bool TargetAligned(Weapon weapon, Target target)
+        internal static bool TargetAligned(Weapon weapon, Target target, out Vector3D targetPos, Prediction predOverride = Prediction.Off)
         {
-            Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
 

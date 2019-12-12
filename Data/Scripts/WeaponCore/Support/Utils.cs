@@ -149,11 +149,11 @@ namespace WeaponCore.Support
             }
         }
 
-        public ListReader<T> ItemList
+        public List<T> ItemList
         {
             get
             {
-                return new ListReader<T>(_list);
+                return new List<T>(_list);
             }
         }
 

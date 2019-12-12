@@ -59,6 +59,7 @@ namespace WeaponCore
                         }
                         else
                         {
+                            Vector3D targetPos;
                             if (w.IsTurret)
                             {
                                 if (!w.TrackTarget)
@@ -66,10 +67,10 @@ namespace WeaponCore
                                     if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
                                         w.Target.Reset();
                                 }
-                                else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target))
+                                else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target, out targetPos))
                                     w.Target.Reset();
                             }
-                            else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target))
+                            else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
                                 w.Target.Expired = true;
                         }
 

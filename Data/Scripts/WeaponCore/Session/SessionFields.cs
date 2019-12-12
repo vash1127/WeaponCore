@@ -58,6 +58,9 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
+        internal readonly Dictionary<string, MyDefinitionId> weaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
+        internal readonly DsUniqueListFastRemove<MyDefinitionId> weaponCoreFixedBlockDefs = new DsUniqueListFastRemove<MyDefinitionId>();
+        internal readonly DsUniqueListFastRemove<MyDefinitionId> weaponCoreTurretBlockDefs = new DsUniqueListFastRemove<MyDefinitionId>();
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
