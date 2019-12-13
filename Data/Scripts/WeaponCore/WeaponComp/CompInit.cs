@@ -9,19 +9,38 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
+        /*
         private void PowerInit()
         {
-            /*SinkInfo = new MyResourceSinkInfo()
+            SinkInfo = new MyResourceSinkInfo()
             {
                 ResourceTypeId = GId,
                 MaxRequiredInput = 0f,
                 RequiredInputFunc = () => SinkPower,
             };
             MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
-            MyCube.ResourceSink.TemporaryConnectedEntity = MyCube;*/
+            MyCube.ResourceSink.TemporaryConnectedEntity = MyCube;
 
             MyCube.ResourceSink.SetRequiredInputFuncByType(GId, () => SinkPower);
             MyCube.ResourceSink.Update();
+        }
+        */
+
+        private void PowerInit()
+        {
+            var resourceInfo = new MyResourceSinkInfo()
+            {
+                ResourceTypeId = GId,
+                MaxRequiredInput = 0f,
+                RequiredInputFunc = () => SinkPower,
+            };
+            MyResourceSinkComponent sink;
+            MyCube.Components.TryGet(out sink);
+            var gId = GId;
+            sink.RemoveType(ref gId);
+            sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
+            sink.AddType(ref resourceInfo);
+            //sink.Update();
         }
 
         private bool EntityAlive()

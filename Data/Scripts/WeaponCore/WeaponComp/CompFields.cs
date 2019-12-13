@@ -113,7 +113,7 @@ namespace WeaponCore.Support
             }
 
             SinkPower = IdlePower;
-            //PowerInit();
+            PowerInit();
         }        
     }
 }
