@@ -35,6 +35,42 @@ namespace WeaponCore.Support
             State.NetworkUpdate();
         }
 
+
+        internal void UpdateCompPower()
+        {
+            var shooting = false;
+            for (int i = 0; i < Platform.Weapons.Length; i++)
+            {
+                if (Platform.Weapons[i].IsShooting && Platform.Weapons[i].System.EnergyAmmo) shooting = true;
+            }
+            if (shooting)
+            {
+                if (!Ai.AvailablePowerIncrease)
+                {
+                    if (Ai.ResetPower)
+                    {
+                        //Log.Line($"grid available: {Ai.GridAvailablePower + Ai.CurrentWeaponsDraw}");
+                        Ai.WeaponCleanPower = Ai.GridMaxPower - (Ai.GridCurrentPower - Ai.CurrentWeaponsDraw);
+                        Ai.ResetPower = false;
+                    }
+
+                    SinkPower = CompPowerPerc * Ai.WeaponCleanPower;
+
+                    DelayTicks += (uint)(5 * MaxRequiredPower / SinkPower) - DelayTicks;
+                    ShootTick = DelayTicks + Ai.Session.Tick;
+                    Ai.RecalcDone = true;
+                }
+                else
+                {
+                    SinkPower = CurrentSinkPowerRequested;
+                    Ai.ResetPower = true;
+                }
+
+                MyCube.ResourceSink.Update();
+                TerminalRefresh();
+            }
+        }
+
         internal void RemoveSinkDelegate(object o)
         {
             SinkInfo.RequiredInputFunc = null;
@@ -82,41 +118,6 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
-        }
-
-        internal void UpdateCompPower()
-        {
-            var shooting = false;
-            for (int i = 0; i < Platform.Weapons.Length; i++)
-            {
-                if (Platform.Weapons[i].IsShooting && Platform.Weapons[i].System.EnergyAmmo) shooting = true;
-            }
-            if (shooting)
-            {
-                if (!Ai.AvailablePowerIncrease)
-                {
-                    if (Ai.ResetPower)
-                    {
-                        //Log.Line($"grid available: {Ai.GridAvailablePower + Ai.CurrentWeaponsDraw}");
-                        Ai.WeaponCleanPower = Ai.GridMaxPower - (Ai.GridCurrentPower - Ai.CurrentWeaponsDraw);
-                        Ai.ResetPower = false;
-                    }
-
-                    SinkPower = CompPowerPerc * Ai.WeaponCleanPower;
-
-                    DelayTicks += (uint)(5 * MaxRequiredPower / SinkPower) - DelayTicks;
-                    ShootTick = DelayTicks + Ai.Session.Tick;
-                    Ai.RecalcDone = true;
-                }
-                else
-                {
-                    SinkPower = CurrentSinkPowerRequested;
-                    Ai.ResetPower = true;
-                }
-
-                MyCube.ResourceSink.Update();
-                TerminalRefresh();
-            }            
         }
 
         public void StopRotSound(bool force)

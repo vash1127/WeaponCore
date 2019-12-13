@@ -608,7 +608,6 @@ namespace WeaponCore.Support
                 }
                 GridMaxPower = FakeShipController.GridResourceDistributor.MaxAvailableResourceByType(GId);
                 GridCurrentPower = FakeShipController.GridResourceDistributor.TotalRequiredInputByType(GId);
-                Log.Line($"{GridCurrentPower}");
                 GridAvailablePower = GridMaxPower - GridCurrentPower;
 
                 GridCurrentPower += BatteryCurrentInput;
@@ -625,7 +624,10 @@ namespace WeaponCore.Support
 
             if (HasPower) return;
             if (HadPower)
+            {
+                Log.Line($"power loss");
                 Session.FutureEvents.Schedule(Session.WeaponShootOff, this, 1);
+            }
         }
         #endregion
     }

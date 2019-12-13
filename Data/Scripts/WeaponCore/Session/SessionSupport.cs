@@ -31,7 +31,7 @@ namespace WeaponCore
                     for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
                         subTypes.Add(wepDef.Assignments.MountPoints[i].SubtypeId);
                 }
-                var group = MyStringHash.GetOrCompute("Defense");
+                var group = MyStringHash.GetOrCompute("Charging");
 
                 foreach (var def in AllDefinitions)
                 {
