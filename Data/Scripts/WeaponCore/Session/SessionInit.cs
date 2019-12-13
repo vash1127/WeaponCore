@@ -130,7 +130,7 @@ namespace WeaponCore
                                     gunDef.ElevationSpeed = (float)blockDefs.ElevateRate;
                                 }
 
-                                weaponCoreBlockDefs.Add(subTypeId,def.Id);
+                                weaponCoreBlockDefs[subTypeId] = def.Id;
                             }
                         }
                         _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string, string>>
