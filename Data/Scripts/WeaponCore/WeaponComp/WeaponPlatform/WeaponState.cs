@@ -699,7 +699,7 @@ namespace WeaponCore.Platform
                 {
                     Comp.SinkPower += RequiredPower;
                     Comp.CurrentSinkPowerRequested += RequiredPower;
-                    Comp.Sink.Update();
+                    Comp.MyCube.ResourceSink.Update();
                 }
                 
                 Comp.TerminalRefresh();
@@ -725,7 +725,7 @@ namespace WeaponCore.Platform
                     {
                         Comp.SinkPower = Comp.SinkPower - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.SinkPower - RequiredPower;
                         Comp.CurrentSinkPowerRequested = Comp.CurrentSinkPowerRequested - RequiredPower < Comp.IdlePower ? Comp.IdlePower : Comp.CurrentSinkPowerRequested - RequiredPower;
-                        Comp.Sink.Update();
+                        Comp.MyCube.ResourceSink.Update();
                     }
                     Comp.TerminalRefresh();
                 }

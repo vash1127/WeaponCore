@@ -9,9 +9,9 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
-        /*
         private void PowerInit()
         {
+            /*
             SinkInfo = new MyResourceSinkInfo()
             {
                 ResourceTypeId = GId,
@@ -20,27 +20,14 @@ namespace WeaponCore.Support
             };
             MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Defense"), SinkInfo);
             MyCube.ResourceSink.TemporaryConnectedEntity = MyCube;
-            //MyCube.ResourceSink.SetRequiredInputFuncByType(GId, () => SinkPower);
-            //MyCube.ResourceSink.SetMaxRequiredInputByType(GId, 0);
+            */
+
+            MyCube.ResourceSink.SetRequiredInputFuncByType(GId, () => SinkPower);
+            MyCube.ResourceSink.SetMaxRequiredInputByType(GId, 0);
 
             MyCube.ResourceSink.Update();
         }
-        */
-        private void PowerInit()
-        {
-            var resourceInfo = new MyResourceSinkInfo()
-            {
-                ResourceTypeId = GId,
-                MaxRequiredInput = 0f,
-                RequiredInputFunc = () => SinkPower,
-            };
-            MyCube.Components.TryGet(out Sink);
-            var gId = GId;
-            Sink.RemoveType(ref gId);
-            Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
-            Sink.AddType(ref resourceInfo);
-            Sink.Update();
-        }
+
         private bool EntityAlive()
         {
             if (Ai.MyGrid?.Physics == null) return false;
