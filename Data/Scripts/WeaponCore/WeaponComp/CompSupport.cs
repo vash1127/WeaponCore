@@ -38,7 +38,7 @@ namespace WeaponCore.Support
         internal void RemoveSinkDelegate(object o)
         {
             SinkInfo.RequiredInputFunc = null;
-            MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
+            Sink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
         }
 
         internal void RemoveComp()
@@ -114,7 +114,7 @@ namespace WeaponCore.Support
                     Ai.ResetPower = true;
                 }
 
-                MyCube.ResourceSink.Update();
+                Sink.Update();
                 TerminalRefresh();
             }            
         }

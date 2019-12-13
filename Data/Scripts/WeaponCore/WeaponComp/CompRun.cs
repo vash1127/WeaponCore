@@ -132,7 +132,7 @@ namespace WeaponCore.Support
                 Ai.OptimalDps += OptimalDps;
 
                 
-                //PowerInit();
+                PowerInit();
                 RegisterEvents();
                 OnAddedToSceneTasks();
                 if (IsSorterTurret)

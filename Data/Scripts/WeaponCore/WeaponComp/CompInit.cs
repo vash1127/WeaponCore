@@ -18,14 +18,14 @@ namespace WeaponCore.Support
                 MaxRequiredInput = 0f,
                 RequiredInputFunc = () => SinkPower,
             };
-            MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
+            MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Defense"), SinkInfo);
             MyCube.ResourceSink.TemporaryConnectedEntity = MyCube;
+            //MyCube.ResourceSink.SetRequiredInputFuncByType(GId, () => SinkPower);
+            //MyCube.ResourceSink.SetMaxRequiredInputByType(GId, 0);
 
-            MyCube.ResourceSink.SetRequiredInputFuncByType(GId, () => SinkPower);
             MyCube.ResourceSink.Update();
         }
         */
-
         private void PowerInit()
         {
             var resourceInfo = new MyResourceSinkInfo()
@@ -34,15 +34,13 @@ namespace WeaponCore.Support
                 MaxRequiredInput = 0f,
                 RequiredInputFunc = () => SinkPower,
             };
-            MyResourceSinkComponent sink;
-            MyCube.Components.TryGet(out sink);
+            MyCube.Components.TryGet(out Sink);
             var gId = GId;
-            sink.RemoveType(ref gId);
-            sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
-            sink.AddType(ref resourceInfo);
-            //sink.Update();
+            Sink.RemoveType(ref gId);
+            Sink.Init(MyStringHash.GetOrCompute("Defense"), resourceInfo);
+            Sink.AddType(ref resourceInfo);
+            Sink.Update();
         }
-
         private bool EntityAlive()
         {
             if (Ai.MyGrid?.Physics == null) return false;

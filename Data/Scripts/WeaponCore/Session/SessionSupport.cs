@@ -31,26 +31,6 @@ namespace WeaponCore
                     for (int i = 0; i < wepDef.Assignments.MountPoints.Length; i++)
                         subTypes.Add(wepDef.Assignments.MountPoints[i].SubtypeId);
                 }
-                /*
-                var group = MyStringHash.GetOrCompute("Charging");
-
-                foreach (var def in AllDefinitions)
-                {
-                    if (subTypes.Contains(def.Id.SubtypeName))
-                    {
-                        if (def is MyLargeTurretBaseDefinition)
-                        {
-                            var weaponDef = def as MyLargeTurretBaseDefinition;
-                            weaponDef.ResourceSinkGroup = group;
-                        }
-                        else if (def is MyConveyorSorterDefinition)
-                        {
-                            var weaponDef = def as MyConveyorSorterDefinition;
-                            weaponDef.ResourceSinkGroup = group;
-                        }
-                    }
-                }
-                */
             }
             catch (Exception ex) { Log.Line($"Exception in Handler: {ex}"); }
         }

@@ -90,6 +90,8 @@ namespace WeaponCore.Support
         internal CompState State;
         internal MyResourceSinkInfo SinkInfo;
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+        internal MyResourceSinkComponent Sink;
+
 
         public WeaponComponent(GridAi ai, MyCubeBlock myCube)
         {
@@ -113,7 +115,7 @@ namespace WeaponCore.Support
             }
 
             SinkPower = IdlePower;
-            PowerInit();
+            //PowerInit();
         }        
     }
 }
