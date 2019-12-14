@@ -16,6 +16,7 @@ using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
+using static WeaponCore.Support.GridAi;
 using Task = ParallelTasks.Task;
 
 namespace WeaponCore
@@ -57,6 +58,7 @@ namespace WeaponCore
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
+        internal readonly ConcurrentDictionary<MyCubeBlock, CoreCubeQuickLook> CoreCubeLookup = new ConcurrentDictionary<MyCubeBlock, CoreCubeQuickLook>();
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> weaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
         internal readonly DsUniqueListFastRemove<MyDefinitionId> weaponCoreFixedBlockDefs = new DsUniqueListFastRemove<MyDefinitionId>();
@@ -156,6 +158,12 @@ namespace WeaponCore
             ShowFade,
             HideFade,
             Delay
+        }
+
+        internal struct CoreCubeQuickLook
+        {
+            internal Dictionary<int, Weapon> Weapons;
+            internal WeaponComponent Comp;
         }
 
         internal ulong AuthorSteamId = 76561197969691953;

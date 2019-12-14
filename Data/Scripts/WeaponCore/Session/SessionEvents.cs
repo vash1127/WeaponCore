@@ -39,7 +39,7 @@ namespace WeaponCore
                         lock (InitObj)
                         {
                             if (!SorterControls)
-                                MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyConveyorSorter>);
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUI<IMyConveyorSorter>(this));
                             SorterControls = true;
                         }
                     }
@@ -48,7 +48,7 @@ namespace WeaponCore
                         lock (InitObj)
                         {
                             if (!TurretControls)
-                                MyAPIGateway.Utilities.InvokeOnGameThread(CreateTerminalUI<IMyLargeTurretBase>);
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUI<IMyLargeTurretBase>(this));
                             TurretControls = true;
                         }
                     }
