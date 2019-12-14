@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
+using static WeaponCore.Session;
 
 namespace WeaponCore.Support
 {
@@ -166,7 +168,10 @@ namespace WeaponCore.Support
             Ai = gridAi;
             RegisterEvents();
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
+            {
+                Ai.Session.CoreCubeLookup.TryAdd(MyCube, new CoreCubeQuickLook() { Weapons = new Dictionary<int, Weapon>(), Comp = this });
                 MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
+            }
         }
 
         private void OnAddedToSceneTasks()

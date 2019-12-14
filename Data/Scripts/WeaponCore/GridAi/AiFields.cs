@@ -10,6 +10,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using static WeaponCore.Support.TargetingDefinition;
 
@@ -29,6 +30,7 @@ namespace WeaponCore.Support
         internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
+
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
         internal readonly CachingDictionary<string, GroupInfo> BlockGroups = new CachingDictionary<string, GroupInfo>();
 
@@ -120,6 +122,7 @@ namespace WeaponCore.Support
         internal float RequestedWeaponsDraw;
         internal float LastAvailablePower;
         internal float OptimalDps;
+
         internal enum TargetType
         {
             Projectile,

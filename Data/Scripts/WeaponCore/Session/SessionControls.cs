@@ -17,7 +17,7 @@ namespace WeaponCore
     {
         #region UI Config
 
-        public void CreateTerminalUI<T>() where T : IMyTerminalBlock
+        public void CreateTerminalUI<T>(Session session) where T : IMyTerminalBlock
         {
             try
             {
@@ -66,7 +66,7 @@ namespace WeaponCore
                                 continue;
 
                             TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled);
-                            CreateShootActionSet<T>(wepName, wepID);
+                            CreateShootActionSet<T>(wepName, wepID, session);
                         }
                     }
                 }
@@ -161,7 +161,7 @@ namespace WeaponCore
             }
         }
 
-        internal static void CreateShootActionSet<T>(string name, int id) where T : IMyTerminalBlock
+        internal static void CreateShootActionSet<T>(string name, int id, Session session) where T : IMyTerminalBlock
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On_Off");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
@@ -194,7 +194,7 @@ namespace WeaponCore
                     }
                 }
             };
-            action.Writer = (b, t) => t.Append(CheckWeaponManualState(b, id) ? "On" : "Off");
+            action.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
             action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
             action.ValidForGroups = true;
 
@@ -282,16 +282,16 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        internal static bool CheckWeaponManualState(IMyTerminalBlock blk, int id)
+        internal bool CheckWeaponManualState(IMyTerminalBlock blk, int id)
         {
-            var comp = blk?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            CoreCubeQuickLook quickLook;
+            if (CoreCubeLookup.TryGetValue((MyCubeBlock)blk, out quickLook) && quickLook.Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
-                if (comp.Platform.Weapons[i].System.WeaponId == id)
-                    if (comp.State.Value.Weapons[comp.Platform.Weapons[i].WeaponId].ManualShoot != ShootOff)
-                        return true;
+                var w = quickLook.Weapons[id];
+                var comp = quickLook.Comp;
+
+                if (comp.State.Value.Weapons[w.WeaponId].ManualShoot != ShootOff)
+                    return true;
             }
 
             return false;

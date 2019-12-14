@@ -137,6 +137,8 @@ namespace WeaponCore
                 var weaponComp = new WeaponComponent(gridAi, cube);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
                 {
+                    CoreCubeLookup.TryAdd(cube, new CoreCubeQuickLook() { Weapons = new Dictionary<int, Weapon>(), Comp = weaponComp});
+
                     if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
                         gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
 

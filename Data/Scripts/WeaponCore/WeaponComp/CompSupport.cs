@@ -7,6 +7,7 @@ using VRage.Game.VisualScripting;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
+using static WeaponCore.Session;
 
 namespace WeaponCore.Support
 {
@@ -84,6 +85,9 @@ namespace WeaponCore.Support
                 WeaponComponent comp;
                 if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                 {
+                    CoreCubeQuickLook quickLook;
+                    Ai.Session.CoreCubeLookup.TryRemove(MyCube, out quickLook);
+
                     if (Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     {
                         GridAi.WeaponCount wCount;
@@ -108,6 +112,8 @@ namespace WeaponCore.Support
                     {
                         Log.Line($"cube matches different grid: marked:{MyCube.MarkedForClose}({gridAi.MyGrid.MarkedForClose}) - gridMisMatch: {gridAi.MyGrid != MyCube.CubeGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
                         gridAi.WeaponBase.TryRemove(MyCube, out comp);
+                        CoreCubeQuickLook quickLook;
+                        gridAi.Session.CoreCubeLookup.TryRemove(MyCube, out quickLook);
                     }
                 }
 

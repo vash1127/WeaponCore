@@ -4,6 +4,7 @@ using VRage;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Session;
 using static WeaponCore.Support.WeaponComponent.Start;
 namespace WeaponCore.Platform
 {
@@ -42,6 +43,8 @@ namespace WeaponCore.Platform
                     State = PlatformState.Invalid;
                     WeaponComponent removed;
                     comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed);
+                    CoreCubeQuickLook quickLook;
+                    comp.Ai.Session.CoreCubeLookup.TryRemove(comp.MyCube, out quickLook);
                     Log.Line("init platform invalid");
                     return State;
                 }
@@ -115,6 +118,10 @@ namespace WeaponCore.Platform
                     ElevationPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = elevationPart },
                     AiOnlyWeapon = comp.IsSorterTurret || (!comp.IsSorterTurret && (azimuthPartName != "MissileTurretBase1" || elevationPartName != "MissileTurretBarrels"))
                 };
+
+                CoreCubeQuickLook quickLook;
+                if(comp.Ai.Session.CoreCubeLookup.TryGetValue(comp.MyCube, out quickLook))
+                    quickLook.Weapons[system.WeaponId] = Weapons[i];
 
                 var weapon = Weapons[i];
                 if (weapon.System.Values.HardPoint.Block.TurretController)
