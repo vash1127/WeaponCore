@@ -66,6 +66,7 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
         internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
+
         internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>();
         internal readonly MyConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, FatMap>();

@@ -139,9 +139,9 @@ namespace WeaponCore
 
             GridAi gridAi;
             if (cockpit != null && GridTargetingAIs.TryGetValue(cockpit.CubeGrid, out gridAi))
-                FutureEvents.Schedule(TurnWeaponShootOff, gridAi, 1);
+                gridAi.CheckWeaponShoot(MyAPIGateway.Session.Player.IdentityId);
             else if (remote != null && GridTargetingAIs.TryGetValue(remote.CubeGrid, out gridAi))
-                FutureEvents.Schedule(TurnWeaponShootOff, gridAi, 1);
+                gridAi.CheckWeaponShoot(MyAPIGateway.Session.Player.IdentityId);
         }
 
         private void PlayerConnected(long id)

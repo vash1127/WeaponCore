@@ -29,6 +29,8 @@ namespace WeaponCore.Support
         internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
 
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
+        internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>();
+        internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
         internal readonly CachingDictionary<string, GroupInfo> BlockGroups = new CachingDictionary<string, GroupInfo>();
 
@@ -56,6 +58,7 @@ namespace WeaponCore.Support
         internal readonly List<GridAi> TargetAis = new List<GridAi>();
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
+        internal readonly Dictionary<WeaponComponent, long> Gunners = new Dictionary<WeaponComponent, long>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
 
@@ -101,7 +104,6 @@ namespace WeaponCore.Support
         internal bool CheckReload;
         internal bool HasPower;
         internal bool HadPower;
-        internal bool HasGunner;
         internal bool WeaponTerminalAccess;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;

@@ -166,7 +166,10 @@ namespace WeaponCore.Support
             Ai = gridAi;
             RegisterEvents();
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
+            {
+                UpdateCompList(add: true, invoke: true);
                 MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
+            }
         }
 
         private void OnAddedToSceneTasks()

@@ -28,14 +28,14 @@ namespace WeaponCore
                     gridAi.LiveProjectileTick = Tick;
                 }
 
-                if (!gridAi.HasGunner && !gridAi.DbReady && gridAi.ManualComps == 0 && !gridAi.CheckReload || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
+                if (!gridAi.DbReady && gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0 || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
 
                 if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180) gridAi.UpdateGridPower();
-                if (!gridAi.HasPower) continue;         
+                if (!gridAi.HasPower) continue;
 
-                foreach (var basePair in gridAi.WeaponBase)
+                for (int i = 0; i < gridAi.Weapons.Count; i++)
                 {
-                    var comp = basePair.Value;
+                    var comp = gridAi.Weapons[i];
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         continue;
 

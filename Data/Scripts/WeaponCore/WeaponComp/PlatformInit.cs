@@ -1,5 +1,6 @@
 ﻿using Sandbox.Game.Entities;
 using System;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Entity;
 using VRageMath;
@@ -41,7 +42,9 @@ namespace WeaponCore.Platform
                 {
                     State = PlatformState.Invalid;
                     WeaponComponent removed;
-                    comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed);
+                    if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
+                        comp.UpdateCompList(add: false);
+
                     Log.Line("init platform invalid");
                     return State;
                 }

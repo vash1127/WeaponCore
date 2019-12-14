@@ -76,7 +76,7 @@ namespace WeaponCore
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
                     //Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
-                    weaponComp.RemoveComp();
+                    weaponComp.RemoveComp(onThread: false);
                     CompsToStart.Remove(weaponComp);
                     continue;
                 }
@@ -91,7 +91,7 @@ namespace WeaponCore
                     }
 
                     Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
-                    weaponComp.RemoveComp();
+                    weaponComp.RemoveComp(onThread: false);
                     InitComp(weaponComp.MyCube, false);
                     reassign = true;
                     CompsToStart.Remove(weaponComp);
@@ -137,6 +137,7 @@ namespace WeaponCore
                 var weaponComp = new WeaponComponent(gridAi, cube);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
                 {
+                    weaponComp.UpdateCompList(add: true, invoke: apply);
                     if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
                         gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
 
@@ -356,42 +357,18 @@ namespace WeaponCore
             var gridAi = obj as GridAi;
             if (gridAi == null) return;
 
-            foreach (var baseValuePair in gridAi.WeaponBase)
+            for (int i = 0; i < gridAi.Weapons.Count; i++)
             {
-                var comp = baseValuePair.Value;
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                var comp = gridAi.Weapons[i];
+                for (int x = 0; x < comp.Platform.Weapons.Length; x++)
                 {
-                    var w = comp.Platform.Weapons[i];
+                    var w = comp.Platform.Weapons[x];
                     w.StopReloadSound();
                     w.StopShooting();
                 }
             }
         }
 
-        internal void TurnWeaponShootOff(object ai)
-        {
-            var gridAi = ai as GridAi;
-            if(gridAi == null) return;
-
-            foreach (var basePair in gridAi.WeaponBase)
-            {
-                var comp = basePair.Value;
-                if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
-                for (int i = 0; i < basePair.Value.Platform.Weapons.Length; i++)
-                {
-                    var wState = comp.State.Value.Weapons[basePair.Value.Platform.Weapons[i].WeaponId];
-
-                    if (wState.ManualShoot == Weapon.TerminalActionState.ShootClick)
-                    {
-                        wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
-                        gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
-                        comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
-                    }
-
-                }
-            }
-        }
 
         internal void ReturnHome(object o)
         {

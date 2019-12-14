@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game.Components;
@@ -77,13 +78,14 @@ namespace WeaponCore.Support
             MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
         }
 
-        internal void RemoveComp()
+        internal void RemoveComp(bool onThread = true)
         {
             try
             {
                 WeaponComponent comp;
                 if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                 {
+                    UpdateCompList(add: false, invoke: onThread);
                     if (Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     {
                         GridAi.WeaponCount wCount;
@@ -107,7 +109,8 @@ namespace WeaponCore.Support
                     if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
                     {
                         Log.Line($"cube matches different grid: marked:{MyCube.MarkedForClose}({gridAi.MyGrid.MarkedForClose}) - gridMisMatch: {gridAi.MyGrid != MyCube.CubeGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
-                        gridAi.WeaponBase.TryRemove(MyCube, out comp);
+                        if(gridAi.WeaponBase.TryRemove(MyCube, out comp))
+                            UpdateCompList(add: false, invoke: onThread);
                     }
                 }
 
@@ -118,6 +121,42 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
+        }
+
+        internal void UpdateCompList(bool add, bool invoke = true)
+        {
+            if (invoke)
+            {
+                if (add) MyAPIGateway.Utilities.InvokeOnGameThread(AddCompList);
+                else MyAPIGateway.Utilities.InvokeOnGameThread(RemoveCompList);
+            }
+            else
+            {
+                if (add) AddCompList();
+                else RemoveCompList();
+            }
+
+        }
+
+        internal void AddCompList()
+        {
+            if (Ai.WeaponsIdx.ContainsKey(this))
+                return;
+            Ai.WeaponsIdx.Add(this, Ai.Weapons.Count);
+            Ai.Weapons.Add(this);
+        }
+
+        internal void RemoveCompList()
+        {
+            int idx;
+            if (!Ai.WeaponsIdx.TryGetValue(this, out idx))
+                return;
+
+            Ai.Weapons.RemoveAtFast(idx);
+            if (idx < Ai.Weapons.Count)
+                Ai.WeaponsIdx[Ai.Weapons[idx]] = idx;
+
+            Ai.WeaponsIdx.Remove(this);
         }
 
         public void StopRotSound(bool force)

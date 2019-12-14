@@ -53,16 +53,19 @@ namespace WeaponCore
                     GridAi gridAi;
                     if (GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                     {
-                        GunnerBlackList = true;
-                        GridTargetingAIs[cube.CubeGrid].HasGunner = true;
-                        var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
-                        var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, false);
-                        var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
-                        MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, false);
+                        WeaponComponent comp;
+                        if (gridAi.WeaponBase.TryGetValue(cube, out comp))
+                        {
+                            GunnerBlackList = true;
+                            GridTargetingAIs[cube.CubeGrid].Gunners.Add(comp, MyAPIGateway.Session.Player.IdentityId);
+                            var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
+                            var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringRight, MyAPIGateway.Session.Player.IdentityId, false);
+                            var controlStringMiddle = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Middle).GetGameControlEnum().String;
+                            MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringMiddle, MyAPIGateway.Session.Player.IdentityId, false);
+                        }
                     }
-
                 }
                 else if (!(ControlledEntity is IMyGunBaseUser) && lastControlledEnt is IMyGunBaseUser)
                 {
@@ -78,7 +81,11 @@ namespace WeaponCore
                         var oldCube = lastControlledEnt as MyCubeBlock;
                         GridAi gridAi;
                         if (oldCube != null && GridTargetingAIs.TryGetValue(oldCube.CubeGrid, out gridAi))
-                            gridAi.HasGunner = false;
+                        {
+                            WeaponComponent comp;
+                            if (gridAi.WeaponBase.TryGetValue(oldCube, out comp))
+                                GridTargetingAIs[oldCube.CubeGrid].Gunners.Remove(comp);
+                        }
                     }
                 }
             }
