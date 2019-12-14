@@ -873,13 +873,13 @@ namespace WeaponCore.Support
         {
             {"Active", 1},
             {"Neutrals", 0},
-            {"Friend", 0},
-            {"NoOwner", 0},
-            {"ManualAim", 0},
-            {"ManualFire", 0},
-            {"FocusTargets", 0},
-            {"FocusSubSystems", 0},
-            {"SubSystems", 0}
+            {"Friends", 0},
+            {"Unowned", 0},
+            {"Manual Aim", 0},
+            {"Manual Fire", 0},
+            {"Focus Targets", 0},
+            {"Focus SubSystem", 0},
+            {"Sub Systems", 0}
         };
 
         internal string Name;
@@ -903,28 +903,28 @@ namespace WeaponCore.Support
                         case "Active":
                             o.Activate = setting.Value > 0;
                             break;
-                        case "Neutral":
+                        case "Neutrals":
                             o.Neutral = setting.Value > 0;
                             break;
-                        case "NoOwner":
+                        case "Unowned":
                             o.NoOwner = setting.Value > 0;
                             break;
-                        case "Friend":
+                        case "Friends":
                             o.Friend = setting.Value > 0;
                             break;
-                        case "ManualAim":
+                        case "Manual Aim":
                             o.ManualAim = setting.Value > 0;
                             break;
-                        case "ManualFire":
+                        case "Manual Fire":
                             o.ManualFire = setting.Value > 0;
                             break;
-                        case "FocusTargets":
+                        case "Focus Targets":
                             o.FocusTargets = setting.Value > 0;
                             break;
-                        case "FocusSubSystem":
+                        case "Focus SubSystem":
                             o.FocusSubSystem = setting.Value > 0;
                             break;
-                        case "SubSystems":
+                        case "Sub Systems":
                             o.SubSystem = (BlockTypes)setting.Value;
                             break;
                     }
@@ -941,28 +941,28 @@ namespace WeaponCore.Support
                 case "Active":
                     value = o.Activate ? 1 : 0;
                     break;
-                case "Neutral":
+                case "Neutrals":
                     value = o.Neutral ? 1 : 0;
                     break;
-                case "NoOwner":
+                case "Unowned":
                     value = o.NoOwner ? 1 : 0;
                     break;
-                case "Friend":
+                case "Friends":
                     value = o.Friend ? 1 : 0;
                     break;
-                case "ManualAim":
+                case "Manual Aim":
                     value = o.ManualAim ? 1 : 0;
                     break;
-                case "ManualFire":
+                case "Manual Fire":
                     value = o.ManualFire ? 1 : 0;
                     break;
-                case "FocusTargets":
+                case "Focus Targets":
                     value = o.FocusTargets ? 1 : 0;
                     break;
-                case "FocusSubSystem":
+                case "Focus SubSystem":
                     value = o.FocusSubSystem ? 1 : 0;
                     break;
-                case "SubSystems":
+                case "Sub Systems":
                     value = (int)o.SubSystem;
                     break;
             }

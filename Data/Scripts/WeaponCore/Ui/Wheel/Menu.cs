@@ -41,6 +41,7 @@ namespace WeaponCore
             internal List<string> GroupNames;
             internal List<List<GroupMember>> BlockGroups;
             internal MyEntity GpsEntity;
+            internal string Font;
 
             private string _message;
             public string Message
@@ -49,17 +50,30 @@ namespace WeaponCore
                 set { _message = value ?? string.Empty; }
             }
 
-            internal Menu(Wheel wheel, string name, Item[] items, int itemCount)
+            internal Menu(Wheel wheel, string name, Item[] items, int itemCount, string font = "White")
             {
                 Wheel = wheel;
                 Name = name;
                 Items = items;
                 ItemCount = itemCount;
+                Font = font;
             }
 
             internal string CurrentItemMessage()
             {
-                return Items[CurrentSlot].ItemMessage;
+                var currentItemMessage = Items[CurrentSlot].ItemMessage;
+                switch (Name)
+                {
+                    case "Group":
+                        if (Wheel.GroupNames.Count > 0)
+                        {
+                            currentItemMessage = $"# {Wheel.ActiveGroupName} #\n{currentItemMessage}";
+                        }
+                        break;
+                    default:
+                        break;
+                }
+                return currentItemMessage;
             }
 
             internal void Move(Movement move)
@@ -72,14 +86,15 @@ namespace WeaponCore
                             {
                                 if (CurrentSlot < ItemCount - 1) CurrentSlot++;
                                 else CurrentSlot = 0;
-                                Message = Items[CurrentSlot].ItemMessage;
+                                var item = Items[CurrentSlot];
+                                PickMessage(item);
                             }
                             else
                             {
                                 var item = Items[0];
                                 if (item.SubSlot < item.SubSlotCount - 1) item.SubSlot++;
                                 else item.SubSlot = 0;
-                                GetInfo(item);
+                                PickMessage(item);
                             }
 
                             break;
@@ -89,25 +104,32 @@ namespace WeaponCore
                         {
                             if (CurrentSlot - 1 >= 0) CurrentSlot--;
                             else CurrentSlot = ItemCount - 1;
-                            Message = Items[CurrentSlot].ItemMessage;
+                            var item = Items[CurrentSlot];
+                            PickMessage(item);
                         }
                         else
                         {
                             var item = Items[0];
                             if (item.SubSlot - 1 >= 0) item.SubSlot--;
                             else item.SubSlot = item.SubSlotCount - 1;
-                            GetInfo(item);
+                            PickMessage(item);
                         }
                         break;
                 }
             }
 
-            internal void GetInfo(Item item)
+            internal void PickMessage(Item item)
             {
                 GroupInfo groupInfo;
                 switch (Name)
                 {
-                    case "WeaponGroups":
+                    case "Group":
+                        if (Wheel.GroupNames.Count > 0)
+                        {
+                            Message = $"# {Wheel.ActiveGroupName} #\n{item.ItemMessage}";
+                        }
+                        break;
+                    case "CompGroups":
                         if (GroupNames.Count > 0)
                         {
                             var groupName = GroupNames[item.SubSlot];
@@ -126,7 +148,7 @@ namespace WeaponCore
                         {
                             var groupMember = BlockGroups[Wheel.ActiveGroupId][item.SubSlot];
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
-                            FormatWeaponMessage(groupMember, Color.Yellow);
+                            FormatCompMessage(groupMember, Color.Yellow);
                         }
                         break;
                     case "CompSettings":
@@ -134,7 +156,7 @@ namespace WeaponCore
                         {
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
-                            FormatWeaponMessage(groupMember, Color.Green);
+                            FormatCompMessage(groupMember, Color.DarkOrange);
                             FormatMemberSettingsMessage(groupInfo, groupMember);
                         }
                         break;
@@ -181,19 +203,18 @@ namespace WeaponCore
                 FormatMemberSettingsMessage(groupInfo, groupMember);
             }
 
-            internal void FormatWeaponMessage(GroupMember groupMember, Color color)
+            internal void FormatCompMessage(GroupMember groupMember, Color color)
             {
                 var message = groupMember.Name;
                 GpsEntity = groupMember.Comp.MyCube;
                 var gpsName = GpsEntity.DisplayNameText;
                 Wheel.Session.SetGpsInfo(GpsEntity.PositionComp.GetPosition(), gpsName, 0, color);
-                Message = $"[{message}]";
+                Message = $"# {message} #";
             }
 
             internal void FormatGroupMessage(GroupInfo groupInfo)
             {
-                var enabledValueString = Wheel.SettingCycleStrMap["Active"][groupInfo.Settings["Active"]].Value;
-                var message = $"[Weapon Group:\n{groupInfo.Name} ({enabledValueString})]";
+                var message = $"# {groupInfo.Name} #";
                 Message = message;
             }
 
@@ -202,7 +223,7 @@ namespace WeaponCore
                 var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var setting = Wheel.SettingCycleStrMap[settingName];
                 var currentState = setting[groupInfo.Settings[settingName]].Value;
-                var message = $"[{settingName} ({currentState})]";
+                var message = $"# {groupInfo.Name} #\n{settingName} ({currentState})";
                 Message = message;
             }
 
@@ -211,33 +232,36 @@ namespace WeaponCore
                 var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var setting = Wheel.SettingCycleStrMap[settingName];
                 var currentState = setting[groupInfo.GetCompSetting(settingName, groupMember.Comp)];
-                var message = $"[{settingName} ({currentState.Value})]";
+                var message = $"# {groupInfo.Name} #\n{settingName} ({currentState.Value})";
                 Message = message;
             }
 
-            internal void LoadInfo()
+            internal void LoadInfo(bool reset = true)
             {
                 var item = Items[0];
-                item.SubSlot = 0;
-                switch (Name)
+                if (reset)
                 {
-                    case "WeaponGroups":
-                        GroupNames = Wheel.GroupNames;
-                        item.SubSlotCount = GroupNames.Count;
-                        break;
-                    case "GroupSettings":
-                        item.SubSlotCount = Wheel.SettingStrToValues.Count;
-                        break;
-                    case "Comps":
-                        BlockGroups = Wheel.BlockGroups;
-                        item.SubSlotCount = BlockGroups[Wheel.ActiveGroupId].Count;
-                        break;
-                    case "CompSettings":
-                        item.SubSlotCount = Wheel.SettingStrToValues.Count;
-                        break;
+                    item.SubSlot = 0;
+                    switch (Name)
+                    {
+                        case "CompGroups":
+                            GroupNames = Wheel.GroupNames;
+                            item.SubSlotCount = GroupNames.Count;
+                            break;
+                        case "GroupSettings":
+                            item.SubSlotCount = Wheel.SettingStrToValues.Count;
+                            break;
+                        case "Comps":
+                            BlockGroups = Wheel.BlockGroups;
+                            item.SubSlotCount = BlockGroups[Wheel.ActiveGroupId].Count;
+                            break;
+                        case "CompSettings":
+                            item.SubSlotCount = Wheel.SettingStrToValues.Count;
+                            break;
+                    }
                 }
 
-                GetInfo(item);
+                PickMessage(item);
             }
 
             internal void CleanUp()

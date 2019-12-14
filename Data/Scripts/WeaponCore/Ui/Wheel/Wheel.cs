@@ -50,9 +50,9 @@ namespace WeaponCore
                     if (item.ParentName != null)
                     {
                         _currentMenu = item.ParentName;
-                        UpdateState(menu);
+                        UpdateState(menu, item.SubName != null);
                     }
-                    else if (menu.Name == "WeaponGroups") CloseWheel();
+                    else if (menu.Name == "CompGroups") CloseWheel();
                 }
 
                 if (!s.UiInput.UiKeyPressed && s.UiInput.WheelForward)
@@ -96,7 +96,7 @@ namespace WeaponCore
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
             if (string.IsNullOrEmpty(_currentMenu))
             {
-                _currentMenu = "WeaponGroups";
+                _currentMenu = "CompGroups";
                 UpdateState(GetCurrentMenu());
             }
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
@@ -109,7 +109,7 @@ namespace WeaponCore
 
         internal void CloseWheel()
         {
-            _currentMenu = "WeaponGroups";
+            _currentMenu = "CompGroups";
             WheelActive = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
@@ -125,7 +125,7 @@ namespace WeaponCore
             var currentMenu = GetCurrentMenu();
             var currentMessage = currentMenu.Message;
 
-            if (currentMessage == string.Empty)
+            if (_currentMenu == "Group")
                 currentMessage = currentMenu.CurrentItemMessage();
 
             if (currentMenu.GpsEntity != null)
@@ -135,7 +135,27 @@ namespace WeaponCore
                 Session.SetGpsInfo(currentMenu.GpsEntity.PositionComp.GetPosition(), gpsName);
             }
             else Session.RemoveGps();
-
+            string font;
+            switch (currentMenu.Font)
+            {
+                case "Red":
+                    font = currentMenu.Font;
+                    break;
+                case "Blue":
+                    font = currentMenu.Font;
+                    break;
+                case "Green":
+                    font = currentMenu.Font;
+                    break;
+                case "Yellow":
+                    font = "White";
+                    currentMessage = $"[{currentMessage}]";
+                    break;
+                default:
+                    font = "White";
+                    break;
+            }
+            HudNotify.Font = font; // BuildInfoHighlight, Red, Blue, Green, White, DarkBlue,  
             HudNotify.Text = currentMessage;
             HudNotify.Show();
         }
@@ -170,7 +190,7 @@ namespace WeaponCore
         {
             switch (menu.Name)
             {
-                case "WeaponGroups":
+                case "CompGroups":
                     ActiveGroupId = item.SubSlot;
                     break;
                 case "Comps":
@@ -179,35 +199,38 @@ namespace WeaponCore
             }
         }
 
-        internal void UpdateState(Menu oldMenu)
+        internal void UpdateState(Menu oldMenu, bool reset = true)
         {
-            oldMenu.CleanUp();
-            GroupNames.Clear();
-
-            foreach (var group in BlockGroups)
+            if (reset)
             {
-                group.Clear();
-                MembersPool.Return(group);
-            }
+                oldMenu.CleanUp();
+                GroupNames.Clear();
 
-            BlockGroups.Clear();
-
-            foreach (var group in Ai.BlockGroups)
-            {
-                var groupName = group.Key;
-                GroupNames.Add(groupName);
-                var membersList = MembersPool.Get();
-
-                foreach (var comp in group.Value.Comps)
+                foreach (var group in BlockGroups)
                 {
-                    var groupMember = new GroupMember { Comp = comp, Name = groupName };
-                    membersList.Add(groupMember);
+                    group.Clear();
+                    MembersPool.Return(group);
                 }
-                BlockGroups.Add(membersList);
+
+                BlockGroups.Clear();
+
+                foreach (var group in Ai.BlockGroups)
+                {
+                    var groupName = group.Key;
+                    GroupNames.Add(groupName);
+                    var membersList = MembersPool.Get();
+
+                    foreach (var comp in group.Value.Comps)
+                    {
+                        var groupMember = new GroupMember { Comp = comp, Name = groupName };
+                        membersList.Add(groupMember);
+                    }
+                    BlockGroups.Add(membersList);
+                }
             }
 
             var menu = Menus[_currentMenu];
-            if (menu.ItemCount <= 1) menu.LoadInfo();
+            if (menu.ItemCount <= 1) menu.LoadInfo(reset);
         }
     }
 }
