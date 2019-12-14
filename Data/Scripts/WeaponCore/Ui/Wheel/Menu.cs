@@ -200,6 +200,15 @@ namespace WeaponCore
 
             internal void SetMemberSettings(GroupInfo groupInfo, GroupMember groupMember)
             {
+                var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
+                var setting = Wheel.SettingCycleStrMap[settingName];
+                var currentValue = groupInfo.GetCompSetting(settingName, groupMember.Comp);
+                var names = setting[currentValue];
+
+                var map = Wheel.SettingCycleStrMap[names.CurrentValue];
+                var nextValueStr = map[currentValue].NextValue;
+                var nextValue = Wheel.SettingStrToValues[names.CurrentValue][nextValueStr];
+                groupInfo.SetValue(groupMember.Comp, nextValue);
                 FormatMemberSettingsMessage(groupInfo, groupMember);
             }
 

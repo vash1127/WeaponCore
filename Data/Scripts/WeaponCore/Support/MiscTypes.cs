@@ -932,6 +932,44 @@ namespace WeaponCore.Support
             }
         }
 
+        internal void SetValue(WeaponComponent comp, int value)
+        {
+            var o = comp.Set.Value.Overrides;
+            foreach (var setting in Settings.Keys)
+            {
+                switch (setting)
+                {
+                    case "Active":
+                        o.Activate = value > 0;
+                        break;
+                    case "Neutrals":
+                        o.Neutral = value > 0;
+                        break;
+                    case "Unowned":
+                        o.NoOwner = value > 0;
+                        break;
+                    case "Friends":
+                        o.Friend = value > 0;
+                        break;
+                    case "Manual Aim":
+                        o.ManualAim = value > 0;
+                        break;
+                    case "Manual Fire":
+                        o.ManualFire = value > 0;
+                        break;
+                    case "Focus Targets":
+                        o.FocusTargets = value > 0;
+                        break;
+                    case "Focus SubSystem":
+                        o.FocusSubSystem = value > 0;
+                        break;
+                    case "Sub Systems":
+                        o.SubSystem = (BlockTypes)value;
+                        break;
+                }
+            }
+        }
+
         internal int GetCompSetting(string setting, WeaponComponent comp)
         {
             var value = 0;

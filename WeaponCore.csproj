@@ -76,7 +76,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiSelect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\UiInput.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\MenuMessages.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompFields.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompInit.cs" />
