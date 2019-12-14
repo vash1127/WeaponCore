@@ -544,6 +544,7 @@ namespace WeaponCore.Platform
             else
                 RequiredPower = Comp.IdlePower;
 
+            UseablePower = RequiredPower;
             Comp.MaxRequiredPower += RequiredPower;
         }
 
@@ -697,8 +698,10 @@ namespace WeaponCore.Platform
                 Comp.CurrentDps += Dps;
                 if (!Comp.UnlimitedPower)
                 {
-                    Comp.SinkPower = MathHelper.Clamp(Comp.SinkPower + RequiredPower, 0, Comp.Ai.GridAvailablePower * 95 / 100);
-                    Comp.CurrentSinkPowerRequested = Comp.SinkPower;
+                    Comp.Ai.RequestedWeaponsDraw += RequiredPower;
+                    Comp.SinkPower += UseablePower;
+                    Comp.Ai.CurrentWeaponsDraw -= UseablePower;
+                    //Comp.CurrentSinkPowerRequested = Comp.SinkPower;
                     Comp.Ai.GridAvailablePower -= Comp.SinkPower;
                     Comp.MyCube.ResourceSink.Update();
                 }
@@ -724,9 +727,12 @@ namespace WeaponCore.Platform
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
                     if (!Comp.UnlimitedPower)
                     {
+                        Comp.Ai.RequestedWeaponsDraw -= RequiredPower;
                         Comp.Ai.GridAvailablePower += Comp.SinkPower;
-                        Comp.SinkPower = Comp.IdlePower;
-                        Comp.CurrentSinkPowerRequested = Comp.IdlePower;
+                        Comp.SinkPower -= UseablePower;
+                        Comp.Ai.CurrentWeaponsDraw -= UseablePower;
+                        DelayTicks = 0;
+                        //Comp.CurrentSinkPowerRequested = Comp.IdlePower;
                         Comp.MyCube.ResourceSink.Update();
                     }
                     Comp.TerminalRefresh();

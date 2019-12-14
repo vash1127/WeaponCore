@@ -241,8 +241,8 @@ namespace WeaponCore.Platform
 
             if (weapon.IsTracking)
                 isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
-            else
-                weapon.SeekTarget = true;
+            //else
+              //  weapon.SeekTarget = true;
 
             var wasAligned = weapon.IsAligned;
             weapon.IsAligned = isAligned;
@@ -267,7 +267,7 @@ namespace WeaponCore.Platform
                     }
                     if (reset)
                     {
-                        weapon.SeekTarget = true;
+                        //weapon.SeekTarget = true;
                         weapon.IsAligned = false;
                         weapon.Target.Expired = true;
                     }

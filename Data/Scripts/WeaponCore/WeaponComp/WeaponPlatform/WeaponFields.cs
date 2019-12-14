@@ -75,6 +75,7 @@ namespace WeaponCore.Platform
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
         internal readonly Dictionary<MyEntity, Vector3D> SleepingTargets = new Dictionary<MyEntity, Vector3D>();
         internal float RequiredPower;
+        internal float UseablePower;
         internal float BaseDamage;
         internal float ShotEnergyCost;
         internal float Dps;
@@ -86,6 +87,8 @@ namespace WeaponCore.Platform
         internal uint TargetCheckTick;
         internal uint FirstFireTick;
         internal uint LastTrackedTick;
+        internal uint DelayTicks;
+        internal uint ChargeUntilTick;
         internal uint OffDelay;
         internal int RateOfFire;
         internal int BarrelSpinRate;
@@ -110,7 +113,7 @@ namespace WeaponCore.Platform
         internal bool TurretMode;
         internal bool TrackTarget;
         internal bool AiReady;
-        internal bool SeekTarget;
+        //internal bool SeekTarget;
         internal bool TrackingAi;
         internal bool IsTracking;
         internal bool IsAligned;
@@ -128,6 +131,7 @@ namespace WeaponCore.Platform
         internal bool FixedOffset;
         internal bool TurretTargetLock;
         internal bool AiOnlyWeapon;
+        internal bool Charging;
         internal HardPointDefinition.Prediction Prediction;
 
         public enum TerminalActionState

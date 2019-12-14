@@ -398,7 +398,12 @@ namespace WeaponCore
             var weapon = o as Weapon;
             if (weapon == null) return;
 
-            weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
+            weapon.TurretHomePosition();
+
+            if (weapon.ReturnHome)
+                FutureEvents.Schedule(ReturnHome, weapon, 1);
+
+            //weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
 
         internal void PurgeAll()

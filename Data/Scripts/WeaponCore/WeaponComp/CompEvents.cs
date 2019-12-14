@@ -26,7 +26,7 @@ namespace WeaponCore.Support
                 if (InventoryInited)
                     BlockInventory.ContentsChanged += OnContentsChanged;
 
-                MyCube.ResourceSink.CurrentInputChanged += CurrentInputChanged;
+                //MyCube.ResourceSink.CurrentInputChanged += CurrentInputChanged;
 
                 //MyCube.PositionComp.OnPositionChanged += UpdatePartPos;
 
@@ -43,7 +43,7 @@ namespace WeaponCore.Support
                 if (InventoryInited)
                     BlockInventory.ContentsChanged -= OnContentsChanged;
 
-                MyCube.ResourceSink.CurrentInputChanged -= CurrentInputChanged;
+                //MyCube.ResourceSink.CurrentInputChanged -= CurrentInputChanged;
 
                 //MyCube.PositionComp.OnPositionChanged -= UpdatePartPos;
             }
@@ -95,8 +95,8 @@ namespace WeaponCore.Support
         {
             if (!State.Value.Online && !MyCube.IsFunctional) return "[Systems Fault]";
             if (!State.Value.Online && !MyCube.IsWorking) return "[Systems Offline]";
-            if (Charging && !(SinkPower > 0)) return "[Insufficient Power]";
-            if (Charging) return "[Systems Charging]";
+            //if (Charging && !(SinkPower > 0)) return "[Insufficient Power]";
+            //if (Charging) return "[Systems Charging]";
             return "[Systems Online]";
         }
 
@@ -121,12 +121,12 @@ namespace WeaponCore.Support
 
                 if(HasEnergyWeapon)
                     stringBuilder.Append("\n[Current Draw]: " + SinkPower.ToString("0.0") + " Mw" +
-                        "\n[Required Power]: " +CurrentSinkPowerRequested.ToString("0.0") + " Mw"+
-                        "\n[Max Required Power]: " +MaxRequiredPower.ToString("0.0") + " Mw");
+                        "\n[Required Power]: " +MaxRequiredPower.ToString("0.0") + " Mw");
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }
 
+        /*
         internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
         {
             try
@@ -142,7 +142,7 @@ namespace WeaponCore.Support
                         {
                             Ai.CurrentWeaponsDraw = 0;
                             Ai.ResetPowerTick = tick;
-                            Ai.RecalcLowPowerTick = tick + 20;
+                            //Ai.RecalcLowPowerTick = tick + 20;
                             Ai.UpdatePowerSources = true;
                         }
 
@@ -157,6 +157,6 @@ namespace WeaponCore.Support
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
-        }
+        }*/
     }
 }

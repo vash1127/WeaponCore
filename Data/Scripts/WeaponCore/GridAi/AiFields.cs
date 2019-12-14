@@ -81,8 +81,7 @@ namespace WeaponCore.Support
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
         internal uint TargetsUpdatedTick;
-        internal uint RecalcLowPowerTick;
-        internal uint ResetPowerTick;
+        //internal uint ResetPowerTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
         internal uint LiveProjectileTick;
@@ -93,12 +92,10 @@ namespace WeaponCore.Support
         internal bool DbReady;
         internal bool ScanBlockGroups = true;
         internal bool ResetPower = true;
-        internal bool RecalcPowerPercent;
+        internal bool OverPowered;
         internal bool UpdatePowerSources;
-        internal bool AvailablePowerIncrease;
-        internal bool RecalcDone;
+        internal bool AvailablePowerChange;
         internal bool StaticEntitiesInRange;
-        internal bool ReturnHome;
         internal bool ShieldNearTmp;
         internal bool ShieldNear;
         internal bool CheckReload;
@@ -110,7 +107,7 @@ namespace WeaponCore.Support
         internal double MaxTargetingRangeSqr;
         internal double GridRadius;
         internal float GridMaxPower;
-        internal float WeaponCleanPower;
+        //internal float WeaponCleanPower;
         internal float GridCurrentPower;
         internal float GridAvailablePower;
         internal float BatteryMaxPower;
@@ -119,6 +116,7 @@ namespace WeaponCore.Support
         internal float TotalSinkPower;
         internal float MinSinkPower;
         internal float CurrentWeaponsDraw;
+        internal float RequestedWeaponsDraw;
         internal float LastAvailablePower;
         internal float OptimalDps;
         internal enum TargetType
