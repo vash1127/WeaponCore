@@ -160,8 +160,6 @@ namespace WeaponCore
                         }
                         else if (w.IsShooting)
                             w.StopShooting();
-
-
                     }
                 }
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
