@@ -170,7 +170,7 @@ namespace WeaponCore
                             continue;
                         }
 
-                        if ((w.System.EnergyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
+                        /*if ((w.System.EnergyAmmo || w.System.IsHybrid) && comp.DelayTicks > 0)
                         {
                             if (comp.ShootTick <= Tick)
                             {
@@ -192,7 +192,7 @@ namespace WeaponCore
                             }
                             comp.TerminalRefresh();
                         }
-                        else comp.Charging = false;
+                        else comp.Charging = false;*/
                         
                         if (comp.Charging) continue;
                         w.TargetWasExpired = w.Target.Expired;
