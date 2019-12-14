@@ -49,7 +49,7 @@ namespace WeaponCore.Projectiles
             return ent;
         }
 
-        internal void Update()
+        internal void Update() // Methods highly inlined due to keen's mod profiler
         {
             Clean();
             SpawnFragments();

@@ -14,7 +14,7 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal void Shoot()
+        internal void Shoot() // Inlined due to keens mod profiler
         {
             var session = Comp.Ai.Session;
             var tick = session.Tick;
