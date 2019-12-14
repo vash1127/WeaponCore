@@ -29,6 +29,13 @@ namespace WeaponCore
         internal int ActiveWeaponId;
         internal int CurrentTextureId;
 
+        internal enum Update
+        {
+            Parent,
+            Sub,
+            None
+        }
+
         internal struct Names
         {
             internal string Value;

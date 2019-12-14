@@ -37,8 +37,7 @@ namespace WeaponCore
                     if (item.SubName != null)
                     {
                         SaveMenuInfo(menu, item);
-                        _currentMenu = item.SubName;
-                        UpdateState(menu);
+                        UpdateState(menu, item, Update.Sub);
                     }
                     else if (item.Dynamic)
                         menu.SetInfo(item);
@@ -49,8 +48,7 @@ namespace WeaponCore
                     var item = GetCurrentMenuItem();
                     if (item.ParentName != null)
                     {
-                        _currentMenu = item.ParentName;
-                        UpdateState(menu, item.SubName != null);
+                        UpdateState(menu, item, Update.Parent, item.SubName != null);
                     }
                     else if (menu.Name == "CompGroups") CloseWheel();
                 }
@@ -97,7 +95,9 @@ namespace WeaponCore
             if (string.IsNullOrEmpty(_currentMenu))
             {
                 _currentMenu = "CompGroups";
-                UpdateState(GetCurrentMenu());
+                var menu = GetCurrentMenu();
+                var item = GetCurrentMenuItem();
+                UpdateState(menu, item, Update.None);
             }
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
@@ -199,7 +199,7 @@ namespace WeaponCore
             }
         }
 
-        internal void UpdateState(Menu oldMenu, bool reset = true)
+        internal bool UpdateState(Menu oldMenu, Item item, Update update, bool reset = true)
         {
             if (reset)
             {
@@ -229,8 +229,25 @@ namespace WeaponCore
                 }
             }
 
-            var menu = Menus[_currentMenu];
-            if (menu.ItemCount <= 1) menu.LoadInfo(reset);
+            var groupReady = BlockGroups.Count > 0;
+            if (groupReady)
+            {
+                switch (update)
+                {
+                    case Update.Parent:
+                        _currentMenu = item.ParentName;
+                        break;
+                    case Update.Sub:
+                        _currentMenu = item.SubName;
+                        break;
+                    default:
+                        break;
+                }
+                var menu = Menus[_currentMenu];
+                if (menu.ItemCount <= 1) menu.LoadInfo(reset);
+            }
+
+            return groupReady;
         }
     }
 }

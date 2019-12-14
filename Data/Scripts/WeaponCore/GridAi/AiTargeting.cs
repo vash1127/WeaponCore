@@ -119,8 +119,6 @@ namespace WeaponCore.Support
 
         private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
         {
-            w.Comp.Ai.Session.TargetRequests++;
-
             var comp = w.Comp;
             var overRides = comp.Set.Value.Overrides;
             var attackNeutrals = overRides.Activate && overRides.Neutral;
