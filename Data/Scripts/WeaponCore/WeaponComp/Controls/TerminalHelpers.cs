@@ -20,19 +20,19 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
             for (int i = 0; i < actions.Count; i++)
             {
-                var c = actions[i];
+                var a = actions[i];
                 //Log.Line($"Count: {i} ID:{c.Id}");
 
-                if (!c.Id.Contains("OnOff") && !c.Id.Equals("Shoot") && !c.Id.Equals("ShootOnce"))
-                    c.Enabled = b => WepUi.CoreWeaponEnableCheck(b, -6);
+                if (!a.Id.Contains("OnOff") && !a.Id.Equals("Shoot") && !a.Id.Equals("ShootOnce"))
+                    a.Enabled = b => WepUi.CoreWeaponEnableCheck(b, -6);
 
-                if(c.Id.Contains("Control"))
-                    c.Enabled = b => WepUi.CoreWeaponEnableCheck(b, -5);
+                else if(a.Id.Contains("Control"))
+                    a.Enabled = b => WepUi.CoreWeaponEnableCheck(b, -5);
 
-                if (c.Id.Equals("ShootOnce"))
+                else if (a.Id.Equals("ShootOnce"))
                 {
-                    var oldAction = c.Action;
-                    c.Action = blk =>
+                    var oldAction = a.Action;
+                    a.Action = blk =>
                     {
                         var comp = blk?.Components?.Get<WeaponComponent>();
                         oldAction(blk);
@@ -44,6 +44,11 @@ namespace WeaponCore.Control
                             comp.Shooting++;
                         }
                     };
+                }
+                else if (a.Id.Equals("OnOff"))
+                {
+                    a.Enabled = (IMyTerminalBlock b) => true;
+                    a.Writer = (block, strBuild) => strBuild.Append("Code For on/of values");
                 }
             }
             return false;
