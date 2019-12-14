@@ -282,7 +282,7 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        internal bool CheckWeaponManualState(IMyTerminalBlock block, int weaponId)
+        internal bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
         {
             var cube = (MyCubeBlock)block;
             var grid = cube.CubeGrid;
@@ -292,9 +292,13 @@ namespace WeaponCore
                 WeaponComponent comp;
                 if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
-                    var w = comp.Platform.Weapons[weaponId];
-                    if (comp.State.Value.Weapons[w.WeaponId].ManualShoot != ShootOff)
-                        return true;
+                    int weaponId;
+                    if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
+                    {
+                        var w = comp.Platform.Weapons[weaponId];
+                        if (comp.State.Value.Weapons[w.WeaponId].ManualShoot != ShootOff)
+                            return true;
+                    }
                 }
             }
 
