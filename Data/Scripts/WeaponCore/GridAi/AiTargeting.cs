@@ -24,7 +24,6 @@ namespace WeaponCore.Support
             w.TargetCheckTick = tick;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
             var targetType = TargetType.None;
-            
             if (w.SleepTargets)
             {
                 if (w.Comp.Ai.BlockCount != w.LastBlockCount && tick - w.LastTargetTick > 300)
@@ -120,6 +119,8 @@ namespace WeaponCore.Support
 
         private static void AcquireOther(Weapon w, out TargetType targetType, bool attemptReset = false, MyEntity targetGrid = null)
         {
+            w.Comp.Ai.Session.TargetRequests++;
+
             var comp = w.Comp;
             var overRides = comp.Set.Value.Overrides;
             var attackNeutrals = overRides.Activate && overRides.Neutral;
@@ -179,8 +180,8 @@ namespace WeaponCore.Support
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > weaponRangeSqr) continue;
-
                 w.Comp.Ai.Session.TargetChecks++;
+
                 Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
                 if (info.IsGrid)
