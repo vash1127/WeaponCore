@@ -13,7 +13,6 @@ namespace WeaponCore
     {
         private void AiLoop() //Fully Inlined due to keen's mod profiler
         {
-            if (!GameLoaded) return;
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
@@ -169,12 +168,11 @@ namespace WeaponCore
                 gridAi.CheckReload = false;
                 gridAi.AvailablePowerChange = false;
             }
+            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
         }
 
         private void UpdateWeaponPlatforms() //Fully Inlined due to keen's mod profiler
         {
-            if (!GameLoaded) return;
-
             while (ShootingWeapons.Count > 0)
             {
                 var w = ShootingWeapons.Dequeue();
@@ -184,7 +182,6 @@ namespace WeaponCore
                 //TODO add logic for power priority
                 if (ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid))
                 {
-                    
                     if (w.DelayTicks == 0)
                     {
                         Log.Line($"Recalc");
@@ -227,8 +224,6 @@ namespace WeaponCore
                 w.Shoot();
                 if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
             }
-
-            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
         }
     }
 }

@@ -85,11 +85,11 @@ namespace WeaponCore
                 }
 
                 DsUtil.Start("ai");
-                AiLoop();
+                if (GameLoaded) AiLoop();
                 DsUtil.Complete("ai", true);
 
                 DsUtil.Start("update");
-                UpdateWeaponPlatforms();
+                if (GameLoaded) UpdateWeaponPlatforms();
                 DsUtil.Complete("update", true);
                 if (UiInput.PlayerCamera && !WheelUi.WheelActive && !InMenu) TargetSelection();
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
