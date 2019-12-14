@@ -157,7 +157,7 @@ namespace WeaponCore.Support
             Fixed //not used yet
         }
 
-        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId)
+        public WeaponSystem(Session session, MyStringHash muzzlePartName, MyStringHash azimuthPartName, MyStringHash elevationPartName, WeaponDefinition values, string weaponName, MyDefinitionId ammoDefId, int weaponId)
         {
             Session = session;
             MuzzlePartName = muzzlePartName;
@@ -165,12 +165,13 @@ namespace WeaponCore.Support
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
             TurretMovement = TurretType.Full;
-            
+
             Values = values;
             Barrels = values.Assignments.Barrels;
+            WeaponId = weaponId;
             WeaponName = weaponName;
             AmmoDefId = ammoDefId;
-            WeaponId = (weaponName + elevationPartName + muzzlePartName + azimuthPartName).GetHashCode();
+            
             MagazineDef = MyDefinitionManager.Static.GetAmmoMagazineDefinition(AmmoDefId);
             TracerMaterial = MyStringId.GetOrCompute(values.Graphics.Line.TracerMaterial);
             TrailMaterial = MyStringId.GetOrCompute(values.Graphics.Line.Trail.Material);
@@ -489,6 +490,8 @@ namespace WeaponCore.Support
     {
         public readonly Dictionary<MyStringHash, WeaponSystem> WeaponSystems;
         public readonly Dictionary<MyDefinitionId, List<int>> AmmoToWeaponIds;
+        public readonly Dictionary<int, int> HashToId;
+
         public readonly MyStringHash[] MuzzlePartNames;
         public readonly bool MultiParts;
         public readonly int GridWeaponCap;
@@ -506,6 +509,8 @@ namespace WeaponCore.Support
             var mapIndex = 0;
             WeaponSystems = new Dictionary<MyStringHash, WeaponSystem>(MyStringHash.Comparer);
             AmmoToWeaponIds = new Dictionary<MyDefinitionId, List<int>>(MyDefinitionId.Comparer);
+            HashToId = new Dictionary<int, int>();
+
             var gridWeaponCap = 0;
             foreach (var w in map)
             {
@@ -536,7 +541,9 @@ namespace WeaponCore.Support
 
                 Session.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventory, MyFixedPoint>();
 
-                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId));
+                var weaponId = (typeName + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
+                HashToId.Add(weaponId, mapIndex);
+                WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId, weaponId));
                 if (!ammoBlank)
                 {
                     if (!AmmoToWeaponIds.ContainsKey(ammoDefId)) AmmoToWeaponIds[ammoDefId] = new List<int>();

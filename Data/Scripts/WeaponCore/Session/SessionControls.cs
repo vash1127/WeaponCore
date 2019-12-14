@@ -282,16 +282,21 @@ namespace WeaponCore
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        internal bool CheckWeaponManualState(IMyTerminalBlock blk, int id)
+        internal bool CheckWeaponManualState(IMyTerminalBlock block, int weaponId)
         {
-            CoreCubeQuickLook quickLook;
-            if (CoreCubeLookup.TryGetValue((MyCubeBlock)blk, out quickLook) && quickLook.Comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
+            return false;
+            var cube = (MyCubeBlock)block;
+            var grid = cube.CubeGrid;
+            GridAi gridAi;
+            if (GridTargetingAIs.TryGetValue(grid, out gridAi))
             {
-                var w = quickLook.Weapons[id];
-                var comp = quickLook.Comp;
-
-                if (comp.State.Value.Weapons[w.WeaponId].ManualShoot != ShootOff)
-                    return true;
+                WeaponComponent comp;
+                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                {
+                    var w = comp.Platform.Weapons[weaponId];
+                    if (comp.State.Value.Weapons[w.WeaponId].ManualShoot != ShootOff)
+                        return true;
+                }
             }
 
             return false;
