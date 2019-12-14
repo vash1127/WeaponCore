@@ -28,11 +28,12 @@ namespace WeaponCore
                     gridAi.LiveProjectileTick = Tick;
                 }
 
-                if (!gridAi.HasGunner && !gridAi.DbReady && gridAi.ManualComps == 0 && !gridAi.CheckReload || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
+                if ((!gridAi.ActiveTarget && !gridAi.HasGunner && !gridAi.DbReady && gridAi.ManualComps == 0 && !gridAi.CheckReload) || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
 
                 if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180) gridAi.UpdateGridPower();
-                if (!gridAi.HasPower) continue;         
+                if (!gridAi.HasPower) continue;
 
+                gridAi.ActiveTarget = false;
                 foreach (var basePair in gridAi.WeaponBase)
                 {
                     var comp = basePair.Value;
@@ -50,6 +51,9 @@ namespace WeaponCore
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
                         var w = comp.Platform.Weapons[j];
+
+                        Log.Line($"w.Target.Expired: {w.Target.Expired}");
+
                         var lastGunner = comp.Gunner;
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
                         w.TargetWasExpired = w.Target.Expired;
@@ -109,6 +113,8 @@ namespace WeaponCore
                             }
                         }
                         else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+
+                        gridAi.ActiveTarget = gridAi.ActiveTarget || !w.Target.Expired;
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {

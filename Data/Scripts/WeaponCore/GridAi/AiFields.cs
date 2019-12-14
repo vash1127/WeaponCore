@@ -103,6 +103,7 @@ namespace WeaponCore.Support
         internal bool HadPower;
         internal bool HasGunner;
         internal bool WeaponTerminalAccess;
+        internal bool ActiveTarget;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double GridRadius;
