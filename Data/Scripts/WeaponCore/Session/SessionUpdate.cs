@@ -171,28 +171,26 @@ namespace WeaponCore
             if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
         }
 
-        private void UpdateWeaponPlatforms() //Fully Inlined due to keen's mod profiler
+        private void ShootWeapons() //Fully Inlined due to keen's mod profiler
         {
             while (ShootingWeapons.Count > 0)
             {
                 var w = ShootingWeapons.Dequeue();
-                var comp = w.Comp;
-                var ai = w.Comp.Ai;
 
                 //TODO add logic for power priority
-                if (ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid))
+                if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid))
                 {
                     if (w.DelayTicks == 0)
                     {
                         Log.Line($"Recalc");
-                        var percUseable = w.RequiredPower / ai.RequestedWeaponsDraw;
+                        var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         var oldUseable = w.UseablePower;
-                        w.UseablePower = (ai.GridMaxPower * .98f) * percUseable;
+                        w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
                         if (w.IsShooting)
                         {
-                            comp.SinkPower = (comp.SinkPower - oldUseable) + w.UseablePower;
-                            comp.MyCube.ResourceSink.Update();
+                            w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
+                            w.Comp.MyCube.ResourceSink.Update();
                         }
 
                         w.DelayTicks = 1 + ((uint)(w.RequiredPower - w.UseablePower) * 20); //arbitrary charge rate ticks/watt should be config
@@ -206,19 +204,19 @@ namespace WeaponCore
                         w.Charging = false;
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                     }
-                    comp.TerminalRefresh();
+                    w.Comp.TerminalRefresh();
                 }
                 else if(w.RequiredPower - w.UseablePower > 0.0001)
                 {
                     Log.Line($"Full Power");
                     var oldUseable = w.UseablePower;
                     w.UseablePower = w.RequiredPower;
-                    comp.SinkPower = (comp.SinkPower - oldUseable) + w.UseablePower;
+                    w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
                     w.DelayTicks = 0;
                     w.Charging = false;
                 }
 
-                if (!comp.Set.Value.Weapons[w.WeaponId].Enable || w.Charging)
+                if (!w.Comp.Set.Value.Weapons[w.WeaponId].Enable || w.Charging)
                     continue;
 
                 w.Shoot();
