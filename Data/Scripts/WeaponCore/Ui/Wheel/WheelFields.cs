@@ -48,20 +48,20 @@ namespace WeaponCore
 
         };
 
-        internal readonly Item[] WeaponGroups =
+        internal readonly Item[] CompGroups =
         {
-            new Item {ItemMessage = "[Weapon Groups]", SubName = "Group"},
+            new Item {Title = "Select Group", SubName = "Group"},
         };
 
         internal readonly Item[] Group =
         {
-            new Item {ItemMessage = "[Group Settings]", ParentName = "WeaponGroups", SubName = "GroupSettings"},
-            new Item {ItemMessage = "[Modify Weapons]", ParentName = "WeaponGroups", SubName = "Comps"},
+            new Item {ItemMessage = "Group Settings", ParentName = "CompGroups", SubName = "GroupSettings"},
+            new Item {ItemMessage = "Modify Weapons", ParentName = "CompGroups", SubName = "Comps"},
         };
 
         internal readonly Item[] Settings =
         {
-            new Item { Title = "Settings Menu", Dynamic = true, ParentName = "Group"},
+            new Item {Title = "Settings Menu", Dynamic = true, ParentName = "Group"},
         };
 
         internal readonly Item[] Comps =
@@ -91,49 +91,49 @@ namespace WeaponCore
                 }
             },
             {
-                "NoOwner", new Dictionary<int, Names>
+                "Friends", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "Friend", new Dictionary<int, Names>
+                "Unowned", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "ManualAim", new Dictionary<int, Names>
+                "Manual Aim", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "ManualFire", new Dictionary<int, Names>
+                "Manual Fire", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "FocusTargets", new Dictionary<int, Names>
+                "Focus Targets", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "FocusSubSystems", new Dictionary<int, Names>
+                "Focus SubSystem", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "SubSystems", new Dictionary<int, Names>
+                "Sub Systems", new Dictionary<int, Names>
                 {
                     [0] = new Names {Value = "Any", CurrentValue = "Any", NextValue = "Offense", PreviousValue = "Steering"},
                     [1] = new Names {Value = "Offense", CurrentValue = "Offense", NextValue = "Utility", PreviousValue = "Any"},
@@ -164,49 +164,49 @@ namespace WeaponCore
                 }
             },
             {
-                "NoOwner", new Dictionary<string, int>
+                "Unowned", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "Friend", new Dictionary<string, int>
+                "Friends", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "ManualAim", new Dictionary<string, int>
+                "Manual Aim", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "ManualFire", new Dictionary<string, int>
+                "Manual Fire", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "FocusTargets", new Dictionary<string, int>
+                "Focus Targets", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "FocusSubSystem", new Dictionary<string, int>
+                "Focus SubSystem", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "SubSystems", new Dictionary<string, int>
+                "Sub Systems", new Dictionary<string, int>
                 {
                     ["Any"] = 0,
                     ["Offense"] = 1,
@@ -244,18 +244,17 @@ namespace WeaponCore
         internal Wheel(Session session)
         {
             Session = session;
-            var weaponGroups = new Menu(this, "WeaponGroups", WeaponGroups, WeaponGroups.Length);
-
-            var group = new Menu(this, "Group", Group, Group.Length);
-            var groupSettings = new Menu(this, "GroupSettings", Settings, Settings.Length);
-            var comps = new Menu(this, "Comps", Comps, Comps.Length);
-            var compSet = new Menu(this, "CompSettings", CompSet, CompSet.Length);
+            var compGroups = new Menu(this, "CompGroups", CompGroups, CompGroups.Length, "Green");
+            var group = new Menu(this, "Group", Group, Group.Length, "Green");
+            var groupSettings = new Menu(this, "GroupSettings", Settings, Settings.Length, "Red");
+            var comps = new Menu(this, "Comps", Comps, Comps.Length, "Yellow");
+            var compSet = new Menu(this, "CompSettings", CompSet, CompSet.Length, "Yellow");
 
             var tmpGroupInfo = new GroupInfo();
             foreach (var groupInfo in tmpGroupInfo.Settings.Keys)
                 SettingNames.Add(groupInfo);
 
-            Menus.Add(weaponGroups.Name, weaponGroups);
+            Menus.Add(compGroups.Name, compGroups);
             Menus.Add(group.Name, group);
             Menus.Add(groupSettings.Name, groupSettings);
             Menus.Add(comps.Name, comps);

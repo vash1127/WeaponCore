@@ -11,7 +11,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private void AiLoop()
+        private void AiLoop() //Fully Inlined due to keen's mod profiler
         {
             if (!GameLoaded) return;
             foreach (var aiPair in GridTargetingAIs)
@@ -171,7 +171,7 @@ namespace WeaponCore
             }
         }
 
-        private void UpdateWeaponPlatforms()
+        private void UpdateWeaponPlatforms() //Fully Inlined due to keen's mod profiler
         {
             if (!GameLoaded) return;
 
