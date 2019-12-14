@@ -323,14 +323,14 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int id)
+        internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int weaponHash)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+            int weaponId;
+            if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
             {
-                if (comp.Platform.Weapons[i].System.WeaponId == id)
+                if (comp.Platform.Weapons[weaponId].System.WeaponId == weaponHash)
                     return true;
             }
             return false;
