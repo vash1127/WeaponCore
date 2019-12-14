@@ -43,7 +43,7 @@ namespace WeaponCore
             internal MyEntity GpsEntity;
             internal string Font;
 
-            private string _message;
+            private string _message = "You have no weapons assigned to groups!";
             public string Message
             {
                 get { return _message ?? string.Empty; }
@@ -120,6 +120,8 @@ namespace WeaponCore
 
             internal void PickMessage(Item item)
             {
+                if (Wheel.BlockGroups == null || Wheel.BlockGroups.Count == 0) return;
+
                 GroupInfo groupInfo;
                 switch (Name)
                 {
