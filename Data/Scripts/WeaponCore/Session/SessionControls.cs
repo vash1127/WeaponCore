@@ -65,7 +65,15 @@ namespace WeaponCore
                             else
                                 continue;
 
-                            TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, TerminalHelpers.WeaponFunctionEnabled);
+                            TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon,
+                                (block, i) =>
+                                {
+                                    var comp = block?.Components?.Get<WeaponComponent>();
+                                    if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+                                    int weaponId;
+                                    if (!comp.Platform.Structure.HashToId.TryGetValue(i, out weaponId)) return false;
+                                    return comp.Platform.Weapons[weaponId].System.WeaponId == i;
+                                } );
                             CreateShootActionSet<T>(wepName, wepID, session);
                         }
                     }
@@ -129,34 +137,38 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
         }
 
-        internal bool WeaponEnabled(IMyTerminalBlock block, int wepID)
+        internal bool WeaponEnabled(IMyTerminalBlock block, int weaponHash)
         {
+            Log.Line("WeaponEnabled");
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
 
             var enabled = false;
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+
+            int weaponId;
+            if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
             {
-                if (comp.Platform.Weapons[i].System.WeaponId == wepID)
-                    enabled = comp.Set.Value.Weapons[i].Enable;
+                if (weaponId == weaponHash)
+                    enabled = comp.Set.Value.Weapons[weaponId].Enable;
             }
             return enabled;
         }
 
-        internal void EnableWeapon(IMyTerminalBlock block, int wepID, bool enabled)
+        internal void EnableWeapon(IMyTerminalBlock block, int weaponHash, bool enabled)
         {
+            Log.Line("EnableWeapon");
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                int weaponId;
+                if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponId == wepID)
+                    if (comp.Platform.Weapons[weaponId].System.WeaponId == weaponHash)
                     {
-                        comp.Set.Value.Weapons[i].Enable = enabled;
+                        comp.Set.Value.Weapons[weaponId].Enable = enabled;
                         comp.SettingsUpdated = true;
                         comp.ClientUiUpdate = true;
                     }
-
                 }
             }
         }
@@ -195,7 +207,19 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
-            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
+            action.Enabled = (b) =>
+            {
+
+                var comp = b?.Components?.Get<WeaponComponent>();
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+                int weaponId;
+                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
+                {
+                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
+                        return true;
+                }
+                return false;
+            };
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -224,7 +248,19 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("On");
-            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
+            action.Enabled = (b) =>
+            {
+
+                var comp = b?.Components?.Get<WeaponComponent>();
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+                int weaponId;
+                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
+                {
+                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
+                        return true;
+                }
+                return false;
+            };
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -254,7 +290,19 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("Off");
-            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
+            action.Enabled = (b) =>
+            {
+
+                var comp = b?.Components?.Get<WeaponComponent>();
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+                int weaponId;
+                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
+                {
+                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
+                        return true;
+                }
+                return false;
+            };
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
@@ -276,7 +324,19 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append("");
-            action.Enabled = (b) => TerminalHelpers.WeaponFunctionEnabled(b, id);
+            action.Enabled = (b) =>
+            {
+
+                var comp = b?.Components?.Get<WeaponComponent>();
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+                int weaponId;
+                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
+                {
+                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
+                        return true;
+                }
+                return false;
+            };
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
