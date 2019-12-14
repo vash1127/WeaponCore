@@ -52,8 +52,6 @@ namespace WeaponCore
                     {
                         var w = comp.Platform.Weapons[j];
 
-                        Log.Line($"w.Target.Expired: {w.Target.Expired}");
-
                         var lastGunner = comp.Gunner;
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
                         w.TargetWasExpired = w.Target.Expired;
