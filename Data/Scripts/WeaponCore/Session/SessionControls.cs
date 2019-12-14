@@ -284,7 +284,6 @@ namespace WeaponCore
 
         internal bool CheckWeaponManualState(IMyTerminalBlock block, int weaponId)
         {
-            return false;
             var cube = (MyCubeBlock)block;
             var grid = cube.CubeGrid;
             GridAi gridAi;
