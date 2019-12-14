@@ -616,7 +616,8 @@ namespace WeaponCore.Support
 
             UpdatePowerSources = false;
 
-            if (GridMaxPower - CurrentWeaponsDraw > LastAvailablePower && CurrentWeaponsDraw > MinSinkPower) AvailablePowerIncrease = true;
+            if (Math.Abs((GridMaxPower - CurrentWeaponsDraw) - LastAvailablePower) > 0.001 && CurrentWeaponsDraw > 0) AvailablePowerChange = true;
+
             LastAvailablePower = GridMaxPower - CurrentWeaponsDraw;
 
             HadPower = HasPower;

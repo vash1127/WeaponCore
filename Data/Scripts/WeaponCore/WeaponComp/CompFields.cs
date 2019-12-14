@@ -35,8 +35,8 @@ namespace WeaponCore.Support
         internal uint LastRayCastTick;
         internal uint LastUpdateTick;
         internal uint LastInventoryChangedTick;
-        internal uint ShootTick = 0;
-        internal uint DelayTicks = 0;
+        internal uint ChargeUntilTick;
+        internal uint DelayTicks;
         internal uint IsWorkingChangedTick;
         internal uint PositionUpdateTick;
         internal uint MatrixUpdateTick;
@@ -49,16 +49,12 @@ namespace WeaponCore.Support
         internal float HeatSinkRate;
         internal float SinkPower;
         internal float MaxRequiredPower;
-        internal float CurrentSinkPowerRequested;
-        internal float CompPowerPerc;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
         internal bool Overheated;
         internal bool Gunner;
         internal bool Starting;
         internal int Shooting;
-        internal bool Charging;
-        internal bool ReturnHome;
         internal bool Debug;
         internal bool MouseShoot;
         internal bool UnlimitedPower;

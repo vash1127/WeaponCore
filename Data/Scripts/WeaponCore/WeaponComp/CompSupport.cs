@@ -35,7 +35,7 @@ namespace WeaponCore.Support
             State.NetworkUpdate();
         }
 
-
+        /*
         internal void UpdateCompPower()
         {
             var shooting = false;
@@ -58,7 +58,7 @@ namespace WeaponCore.Support
 
                     DelayTicks += (uint)(5 * MaxRequiredPower / SinkPower) - DelayTicks;
                     ShootTick = DelayTicks + Ai.Session.Tick;
-                    Ai.RecalcDone = true;
+                    //Ai.RecalcDone = true;
                 }
                 else
                 {
@@ -69,7 +69,7 @@ namespace WeaponCore.Support
                 MyCube.ResourceSink.Update();
                 TerminalRefresh();
             }
-        }
+        }*/
 
         internal void RemoveSinkDelegate(object o)
         {

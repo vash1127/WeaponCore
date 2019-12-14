@@ -150,7 +150,7 @@ namespace WeaponCore.Control
 
                         w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
-                        w.ReturnHome = comp.ReturnHome = comp.Ai.ReturnHome = w.Target.Expired = true;
+                        w.Target.Expired = true;
                     }
 
                     w.StopShooting();

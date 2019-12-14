@@ -102,18 +102,15 @@ namespace WeaponCore
                 comp.OptimalDps += w.Dps;
 
                 if (w.IsShooting)
-                {
-                    comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
                     comp.CurrentDps -= (oldDps - w.Dps);
-                }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
             }
             comp.Ai.OptimalDps += comp.OptimalDps;
             comp.TerminalRefresh();
-            comp.Ai.RecalcPowerPercent = true;
+            //comp.Ai.RecalcPowerPercent = true;
             comp.Ai.UpdatePowerSources = true;
-            comp.Ai.AvailablePowerIncrease = true;
+            comp.Ai.AvailablePowerChange = true;
             comp.SettingsUpdated = true;
             comp.ClientUiUpdate = true;
         }
@@ -175,10 +172,7 @@ namespace WeaponCore
                 comp.OptimalDps += w.Dps;
 
                 if (w.IsShooting)
-                {
-                    comp.CurrentSinkPowerRequested -= (oldRequired - w.RequiredPower);
                     comp.CurrentDps -= (oldDps - w.Dps);
-                }
 
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
 
@@ -186,9 +180,9 @@ namespace WeaponCore
             }
             comp.Ai.OptimalDps += comp.OptimalDps;
             comp.TerminalRefresh();
-            comp.Ai.RecalcPowerPercent = true;
+            //comp.Ai.RecalcPowerPercent = true;
             comp.Ai.UpdatePowerSources = true;
-            comp.Ai.AvailablePowerIncrease = true;
+            comp.Ai.AvailablePowerChange = true;
             comp.SettingsUpdated = true;
             comp.ClientUiUpdate = true;
         }
