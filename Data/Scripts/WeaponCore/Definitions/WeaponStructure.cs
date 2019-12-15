@@ -541,7 +541,7 @@ namespace WeaponCore.Support
 
                 Session.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventory, MyFixedPoint>();
 
-                var weaponId = (typeName + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
+                var weaponId = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
                 HashToId.Add(weaponId, mapIndex);
                 WeaponSystems.Add(myMuzzleNameHash, new WeaponSystem(Session, myMuzzleNameHash, myAzimuthNameHash, myElevationNameHash, weaponDef, typeName, ammoDefId, weaponId));
                 if (!ammoBlank)
