@@ -134,14 +134,10 @@ namespace WeaponCore
 
         private void PlayerControlAcquired(MyEntity lastEnt)
         {
-            var cockpit = lastEnt as MyCockpit;
-            var remote = lastEnt as MyRemoteControl;
-
+            var cube = lastEnt as MyCubeBlock;
             GridAi gridAi;
-            if (cockpit != null && GridTargetingAIs.TryGetValue(cockpit.CubeGrid, out gridAi))
-                gridAi.CheckWeaponShoot(MyAPIGateway.Session.Player.IdentityId);
-            else if (remote != null && GridTargetingAIs.TryGetValue(remote.CubeGrid, out gridAi))
-                gridAi.CheckWeaponShoot(MyAPIGateway.Session.Player.IdentityId);
+            if (cube!= null && GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
+                gridAi.TurnMouseShootOff();
         }
 
         private void PlayerConnected(long id)

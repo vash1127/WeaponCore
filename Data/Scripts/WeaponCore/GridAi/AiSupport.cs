@@ -632,20 +632,19 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void CheckWeaponShoot(long playerId)
+        internal void TurnMouseShootOff()
         {
-            foreach (var pair in Gunners)
+            foreach (var cubeComp in WeaponBase)
             {
-                if (pair.Value != playerId)  continue;
-                var comp = pair.Key;
+                var comp = cubeComp.Value;   
                 if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var wState = comp.State.Value.Weapons[comp.Platform.Weapons[i].WeaponId];
 
                     if (wState.ManualShoot == Weapon.TerminalActionState.ShootClick)
                     {
+                        comp.MouseShoot = false;
                         wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
                         ManualComps = ManualComps - 1 > 0 ? ManualComps - 1 : 0;
                         comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
