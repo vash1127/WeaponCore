@@ -139,19 +139,12 @@ namespace WeaponCore
 
         internal bool WeaponEnabled(IMyTerminalBlock block, int weaponHash)
         {
-            Log.Line("WeaponEnabled");
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-
-            var enabled = false;
-
+            
             int weaponId;
-            if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
-            {
-                if (weaponId == weaponHash)
-                    enabled = comp.Set.Value.Weapons[weaponId].Enable;
-            }
-            return enabled;
+            if (!comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId)) return false;
+            return comp.Platform.Weapons[weaponId].System.WeaponId == weaponHash && comp.Set.Value.Weapons[weaponId].Enable;
         }
 
         internal void EnableWeapon(IMyTerminalBlock block, int weaponHash, bool enabled)
