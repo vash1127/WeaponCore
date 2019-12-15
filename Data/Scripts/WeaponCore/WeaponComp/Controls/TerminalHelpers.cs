@@ -45,11 +45,11 @@ namespace WeaponCore.Control
                         }
                     };
                 }
-                else if (a.Id.Equals("OnOff"))
+                /*else if (a.Id.Equals("OnOff"))
                 {
                     a.Enabled = (IMyTerminalBlock b) => true;
                     a.Writer = (block, strBuild) => strBuild.Append("Code For on/of values");
-                }
+                }*/
             }
             return false;
         }
