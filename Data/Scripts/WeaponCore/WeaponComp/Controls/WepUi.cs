@@ -253,7 +253,7 @@ namespace WeaponCore
             if (comp == null && (id == -6 || id == -5)) return true;
             else if (comp == null) return false;
 
-            if (comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+            if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
             if (id == 0) return true;
             else if (id == -6) return false;
 
