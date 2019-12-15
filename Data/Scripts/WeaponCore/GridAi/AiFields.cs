@@ -94,7 +94,7 @@ namespace WeaponCore.Support
         internal long MyOwner;
         internal bool DbReady;
         internal bool ScanBlockGroups = true;
-        internal bool ResetPower = true;
+        //internal bool ResetPower = true;
         internal bool OverPowered;
         internal bool UpdatePowerSources;
         internal bool AvailablePowerChange;

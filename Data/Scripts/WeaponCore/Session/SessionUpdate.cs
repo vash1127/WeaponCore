@@ -1,6 +1,4 @@
-﻿using Sandbox.Game;
-using Sandbox.ModAPI;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -17,7 +15,6 @@ namespace WeaponCore
             {
                 var gridAi = aiPair.Value;
 
-                //moved from update
                 if (Tick - gridAi.TargetsUpdatedTick > 100 && DbCallBackComplete && DbTask.IsComplete && gridAi.UpdateOwner())
                     gridAi.RequestDbUpdate();
 
@@ -38,8 +35,6 @@ namespace WeaponCore
                     var comp = gridAi.Weapons[i];
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         continue;
-
-                    //if (gridAi.RecalcPowerPercent) comp.CompPowerPerc = comp.MaxRequiredPower / gridAi.TotalSinkPower;
 
                     if (!comp.State.Value.Online || comp.Status != Started)
                     {
@@ -169,7 +164,7 @@ namespace WeaponCore
             if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
         }
 
-        private void ShootWeapons() //Fully Inlined due to keen's mod profiler
+        private void ShootWeapons() 
         {
             while (ShootingWeapons.Count > 0)
             {
@@ -180,7 +175,6 @@ namespace WeaponCore
                 {
                     if (w.DelayTicks == 0)
                     {
-                        Log.Line($"Recalc");
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         var oldUseable = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
@@ -198,7 +192,6 @@ namespace WeaponCore
                     }
                     else if (w.ChargeUntilTick <= Tick)
                     {
-                        Log.Line($"Charged");
                         w.Charging = false;
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                     }
@@ -206,7 +199,6 @@ namespace WeaponCore
                 }
                 else if(w.RequiredPower - w.UseablePower > 0.0001)
                 {
-                    Log.Line($"Full Power");
                     var oldUseable = w.UseablePower;
                     w.UseablePower = w.RequiredPower;
                     w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;

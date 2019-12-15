@@ -614,7 +614,6 @@ namespace WeaponCore.Support
                 GridCurrentPower += BatteryCurrentInput;
                 GridAvailablePower -= BatteryCurrentInput;
             }
-
             UpdatePowerSources = false;
 
             if (Math.Abs((GridMaxPower - CurrentWeaponsDraw) - LastAvailablePower) > 0.001 && CurrentWeaponsDraw > 0) AvailablePowerChange = true;
@@ -626,10 +625,7 @@ namespace WeaponCore.Support
 
             if (HasPower) return;
             if (HadPower)
-            {
-                Log.Line($"power loss");
                 Session.FutureEvents.Schedule(Session.WeaponShootOff, this, 1);
-            }
         }
 
         internal void TurnMouseShootOff()
