@@ -176,7 +176,7 @@ namespace WeaponCore.Projectiles
             hitEntity.EventType = HitEntity.Type.Projectile;
             hitEntity.Hit = true;
             hitEntity.Projectile = target;
-            hitEntity.HitPos = target.Position;
+            hitEntity.HitPos = attacker.Position;
             hitEntity.SphereCheck = !lineCheck;
             hitEntity.PruneSphere = attacker.PruneSphere;
 

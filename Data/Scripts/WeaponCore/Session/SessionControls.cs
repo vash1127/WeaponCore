@@ -195,30 +195,25 @@ namespace WeaponCore
             action.Name = new StringBuilder($"{name} Shoot On/Off");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    if (comp.Platform.Weapons[i].System.WeaponId == id)
-                    {
-                        var w = comp.Platform.Weapons[i];
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
+                
+                var w = comp.Platform.Weapons[weaponId];
 
-                        var wState = comp.State.Value.Weapons[w.WeaponId];
-                        if (wState.ManualShoot == ShootOn)
-                        {
-                            wState.ManualShoot = ShootOff;
-                            w.StopShooting();
-                            comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                            comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
-                        }
-                        else if (wState.ManualShoot != ShootOff)
-                            wState.ManualShoot = ShootOn;
-                        else
-                        {
-                            wState.ManualShoot = ShootOn;
-                            comp.Ai.ManualComps++;
-                            comp.Shooting++;
-                        }
-                    }
+                var wState = comp.State.Value.Weapons[w.WeaponId];
+                if (wState.ManualShoot == ShootOn)
+                {
+                    wState.ManualShoot = ShootOff;
+                    w.StopShooting();
+                    comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                    comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
+                }
+                else if (wState.ManualShoot != ShootOff) wState.ManualShoot = ShootOn;
+                else
+                {
+                    wState.ManualShoot = ShootOn;
+                    comp.Ai.ManualComps++;
+                    comp.Shooting++;
                 }
             };
             action.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
@@ -231,37 +226,28 @@ namespace WeaponCore
             action.Name = new StringBuilder($"{name} Shoot On");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    if (comp.Platform.Weapons[i].System.WeaponId == id)
-                    {
-                        var wState = comp.State.Value.Weapons[comp.Platform.Weapons[i].WeaponId];
+                
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
+                
+                var wState = comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId];
 
-                        if (wState.ManualShoot != ShootOff)
-                            wState.ManualShoot = ShootOn;
-                        else
-                        {
-                            wState.ManualShoot = ShootOn;
-                            comp.Ai.ManualComps++;
-                            comp.Shooting++;
-                        }
-                    }
+                if (wState.ManualShoot != ShootOff) wState.ManualShoot = ShootOn;
+                else
+                {
+                    wState.ManualShoot = ShootOn;
+                    comp.Ai.ManualComps++;
+                    comp.Shooting++;
                 }
             };
             action.Writer = (b, t) => t.Append("On");
             action.Enabled = (b) =>
             {
-
                 var comp = b?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
                 int weaponId;
-                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
-                {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
-                        return true;
-                }
-                return false;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;
+                
+                return comp.Platform.Weapons[weaponId].System.WeaponId == id;
             };
             action.ValidForGroups = false;
 
@@ -272,24 +258,19 @@ namespace WeaponCore
             action.Name = new StringBuilder($"{name} Shoot Off");
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    if (comp.Platform.Weapons[i].System.WeaponId == id)
-                    {
-                        var w = comp.Platform.Weapons[i];
-                        var wState = comp.State.Value.Weapons[w.WeaponId];
 
-                        if (wState.ManualShoot != ShootOff)
-                        {
-                            wState.ManualShoot = ShootOff;
-                            w.StopShooting();
-                            comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                            comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
-                        }
-                    }
-                        
-                }
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
+
+                var w = comp.Platform.Weapons[weaponId];
+                var wState = comp.State.Value.Weapons[w.WeaponId];
+
+                if (wState.ManualShoot == ShootOff) return;
+
+                wState.ManualShoot = ShootOff;
+                w.StopShooting();
+                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
             };
             action.Writer = (b, t) => t.Append("Off");
             action.Enabled = (b) =>
@@ -315,11 +296,13 @@ namespace WeaponCore
             action.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+
+                int weaponId;
+                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
                 {
-                    if (comp.Platform.Weapons[i].System.WeaponId == id)
+                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
                     {
-                        comp.State.Value.Weapons[comp.Platform.Weapons[i].WeaponId].ManualShoot = ShootOnce;
+                        comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
                         comp.Ai.ManualComps++;
                         comp.Shooting++;
                     }

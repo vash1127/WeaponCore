@@ -93,7 +93,7 @@ namespace WeaponCore
                 db.StaticsInRangeTmp.Clear();
                 db.StaticEntitiesInRange = db.StaticsInRange.Count > 0;
 
-                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || db.FirstRun;
+                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || db.FirstRun || db.LiveProjectile.Count > 0;
                 db.MyShield = db.MyShieldTmp;
                 db.ShieldNear = db.ShieldNearTmp;
                 db.BlockCount = db.MyGrid.BlocksCount;
