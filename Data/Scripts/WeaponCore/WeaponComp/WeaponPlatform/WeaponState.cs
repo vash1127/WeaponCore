@@ -783,6 +783,7 @@ namespace WeaponCore.Platform
             w.EventTriggerStateChanged(EventTriggers.Reloading, false);
             w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId);
             w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
+            w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
             w.Reloading = false;
         }
 
