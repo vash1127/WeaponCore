@@ -1,4 +1,5 @@
-﻿using VRageMath;
+﻿using SpaceEngineers.Game.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -14,7 +15,6 @@ namespace WeaponCore
             foreach (var aiPair in GridTargetingAIs)
             {
                 var gridAi = aiPair.Value;
-
                 if (Tick - gridAi.TargetsUpdatedTick > 100 && DbCallBackComplete && DbTask.IsComplete && gridAi.UpdateOwner())
                     gridAi.RequestDbUpdate();
 

@@ -382,7 +382,7 @@ namespace WeaponCore.Platform
             }
 
             var targetPos = Target.Projectile?.Position ?? Target.Entity.PositionComp.WorldMatrix.Translation;
-            if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > System.MaxTrajectorySqr)
+            if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > (Comp.Set.Value.Range * Comp.Set.Value.Range))
             {
                 //Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
                 masterWeapon.Target.Expired = true;
