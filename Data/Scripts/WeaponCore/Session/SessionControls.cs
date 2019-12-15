@@ -217,6 +217,15 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
+            action.Enabled = (b) =>
+            {
+                var comp = b?.Components?.Get<WeaponComponent>();
+                int weaponId;
+                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId)) return false;
+
+                return comp.Platform.Weapons[weaponId].System.WeaponId == id;
+            };
+
             action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);

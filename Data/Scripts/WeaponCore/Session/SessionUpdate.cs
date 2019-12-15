@@ -25,7 +25,9 @@ namespace WeaponCore
                     gridAi.LiveProjectileTick = Tick;
                 }
 
-                if (!gridAi.DbReady && gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0 || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
+                if (!gridAi.ActiveTarget && !gridAi.DbReady && gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0 || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
+
+                gridAi.ActiveTarget = false;
 
                 if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180) gridAi.UpdateGridPower();
                 if (!gridAi.HasPower) continue;
@@ -104,6 +106,8 @@ namespace WeaponCore
                             }
                         }
                         else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+
+                        gridAi.ActiveTarget = gridAi.ActiveTarget || !w.Target.Expired;
 
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
