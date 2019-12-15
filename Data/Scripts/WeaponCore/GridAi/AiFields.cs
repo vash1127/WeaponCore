@@ -104,7 +104,7 @@ namespace WeaponCore.Support
         internal bool CheckReload;
         internal bool HasPower;
         internal bool HadPower;
-        internal bool ActiveTarget;
+        //internal bool ActiveTarget;
         internal bool WeaponTerminalAccess;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
