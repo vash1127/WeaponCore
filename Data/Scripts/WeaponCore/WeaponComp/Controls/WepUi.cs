@@ -247,7 +247,7 @@ namespace WeaponCore
 
         internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
         {
-            Log.Line($"CoreWeaponEnableCheck");
+            //Log.Line($"CoreWeaponEnableCheck");
             var comp = block?.Components?.Get<WeaponComponent>();
 
             if (comp == null && (id == -6 || id == -5)) return true;
