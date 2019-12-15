@@ -230,7 +230,7 @@ namespace WeaponCore.Control
             return s;
         }
 
-        internal static IMyTerminalControlCheckbox AddCheckbox<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, Func<IMyTerminalBlock, int, bool> visibleGetter = null) where T : IMyTerminalBlock
+        internal static IMyTerminalControlCheckbox AddCheckbox<T>(int id, string name, string title, string tooltip, Func<IMyTerminalBlock, bool> getter, Action<IMyTerminalBlock, bool> setter, bool allowGroup, Func<IMyTerminalBlock, int, bool> visibleGetter = null) where T : IMyTerminalBlock
         {
             var c = MyAPIGateway.TerminalControls.CreateControl<IMyTerminalControlCheckbox, T>("WC_" + name);
 
@@ -243,7 +243,7 @@ namespace WeaponCore.Control
 
             MyAPIGateway.TerminalControls.AddControl<T>(c);
 
-            CreateOnOffActionSet<T>(c, name, id, visibleGetter);
+            CreateOnOffActionSet<T>(c, name, id, visibleGetter, allowGroup);
 
             return c;
         }
@@ -281,7 +281,7 @@ namespace WeaponCore.Control
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
-        internal static void CreateOnOffActionSet<T>(IMyTerminalControlCheckbox tc, string name, int id, Func<IMyTerminalBlock, int, bool> enabler) where T : IMyTerminalBlock
+        internal static void CreateOnOffActionSet<T>(IMyTerminalControlCheckbox tc, string name, int id, Func<IMyTerminalBlock, int, bool> enabler, bool group = false) where T : IMyTerminalBlock
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
@@ -289,29 +289,29 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, !tc.Getter(b));
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            action.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
-            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action.Name = new StringBuilder($"{name} On");
-            action.Action = (b) => tc.Setter(b, true);
-            action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
+            action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
+            action2.Name = new StringBuilder($"{name} On");
+            action2.Action = (b) => tc.Setter(b, true);
+            action2.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
+            action2.Enabled = (b) => enabler(b, id);
+            action2.ValidForGroups = group;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action2);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
-            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action.Name = new StringBuilder($"{name} Off");
-            action.Action = (b) => tc.Setter(b, true);
-            action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            var action3 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
+            action3.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
+            action3.Name = new StringBuilder($"{name} Off");
+            action3.Action = (b) => tc.Setter(b, true);
+            action3.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
+            action3.Enabled = (b) => enabler(b, id);
+            action3.ValidForGroups = group;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action3);
         }
 
         internal static void CreateSliderActionSet<T>(IMyTerminalControlSlider tc, string name, int id, int min, int max, float incAmt, Func<IMyTerminalBlock, int, bool> enabler) where T : IMyTerminalBlock
