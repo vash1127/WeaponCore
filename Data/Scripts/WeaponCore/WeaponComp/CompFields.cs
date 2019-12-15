@@ -82,6 +82,14 @@ namespace WeaponCore.Support
         internal bool AiMoving;
         internal bool HasEnergyWeapon;
         internal bool IgnoreInvChange;
+
+        //ui fields
+        internal bool HasGuidanceToggle;
+        internal bool HasDamageSlider;
+        internal bool HasRofSlider;
+        internal bool CanOverload;
+        internal bool HasTurret;
+
         internal CompSettings Set;
         internal CompState State;
         internal MyResourceSinkInfo SinkInfo;

@@ -250,47 +250,24 @@ namespace WeaponCore
             Log.Line($"CoreWeaponEnableCheck");
             var comp = block?.Components?.Get<WeaponComponent>();
 
-            if (comp == null && id == -6) return true;
+            if (comp == null && (id == -6 || id == -5)) return true;
             else if (comp == null) return false;
 
             if (comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
             if (id == 0) return true;
             else if (id == -6) return false;
 
-            for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-            {
-                var w = comp.Platform.Weapons[i];
-                switch (id) {
-                    case -1:
-                        if (w.System.Values.HardPoint.Ui.ToggleGuidance && w.System.Values.Ammo.Trajectory.Guidance != None) {
-                            return true;
-                        }
-                        break;
-                    case -2:
-                        if (w.System.Values.HardPoint.Ui.DamageModifier && w.System.EnergyAmmo || w.System.IsHybrid)
-                        {
-                            return true;
-                        }
-                        break;
-                    case -3:
-                        if (w.System.Values.HardPoint.Ui.RateOfFire)
-                        {
-                            return true;
-                        }
-                        break;
-                    case -4:
-                        if (w.System.Values.HardPoint.Ui.EnableOverload && w.System.IsBeamWeapon)
-                        {
-                            return true;
-                        }
-                        break;
-                    case -5:
-                        if (w.System.Values.HardPoint.Block.TurretAttached)
-                        {
-                            return true;
-                        }
-                        break;
-                }
+            switch (id) {
+                case -1:
+                    return comp.HasGuidanceToggle;
+                case -2:
+                    return comp.HasDamageSlider;
+                case -3:
+                    return comp.HasRofSlider;
+                case -4:
+                    return comp.CanOverload;
+                case -5:
+                    return comp.HasTurret;
             }
 
             return false;
