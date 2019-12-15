@@ -553,6 +553,7 @@ namespace WeaponCore.Support
             var numOfTargets = collection.Count;
             var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
             if (s.ClosestFirst) collection.Sort((a, b) => Vector3D.DistanceSquared(a.Position, w.MyPivotPos).CompareTo(Vector3D.DistanceSquared(b.Position, w.MyPivotPos)));
+            var weaponRangeSqr = w.Comp.Set.Value.Range * w.Comp.Set.Value.Range;
 
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize);
 
@@ -560,7 +561,7 @@ namespace WeaponCore.Support
             {
                 var card = deck[x];
                 var lp = collection[card];
-                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive) continue;
+                if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) > weaponRangeSqr) continue;
 
                 if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity))
                 {
