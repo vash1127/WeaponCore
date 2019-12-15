@@ -123,7 +123,7 @@ namespace WeaponCore
                     var comp = b?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
                 };
-                action.ValidForGroups = false;
+                action.ValidForGroups = true;
 
                 MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -150,7 +150,7 @@ namespace WeaponCore
                         return comp != null && comp.HasRofSlider;
                     } );
 
-                TerminalHelpers.AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload,
+                TerminalHelpers.AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, true,
                     (block, i) =>
                     {
                         var comp = block?.Components?.Get<WeaponComponent>();
