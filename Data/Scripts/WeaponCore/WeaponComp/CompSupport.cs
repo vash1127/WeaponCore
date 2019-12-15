@@ -100,7 +100,6 @@ namespace WeaponCore.Support
                         Ai.TotalSinkPower -= MaxRequiredPower;
                         Ai.OptimalDps -= OptimalDps;
                     }
-                    else Log.Line("platform not initted");
                 }
                 else
                 {
