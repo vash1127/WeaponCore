@@ -332,7 +332,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
             action.Writer = (b, t) => t.Append("");
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
