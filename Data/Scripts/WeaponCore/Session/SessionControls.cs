@@ -123,7 +123,7 @@ namespace WeaponCore
                     var comp = b?.Components?.Get<WeaponComponent>();
                     return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
                 };
-                action.ValidForGroups = true;
+                action.ValidForGroups = false;
 
                 MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -223,20 +223,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
-            action.Enabled = (b) =>
-            {
-
-                var comp = b?.Components?.Get<WeaponComponent>();
-                if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-                int weaponId;
-                if (comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId))
-                {
-                    if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
-                        return true;
-                }
-                return false;
-            };
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -277,7 +264,7 @@ namespace WeaponCore
                 }
                 return false;
             };
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -319,7 +306,7 @@ namespace WeaponCore
                 }
                 return false;
             };
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -353,28 +340,22 @@ namespace WeaponCore
                 }
                 return false;
             };
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
 
         internal bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
         {
-            var cube = (MyCubeBlock)block;
-            var grid = cube.CubeGrid;
-            GridAi gridAi;
-            if (GridTargetingAIs.TryGetValue(grid, out gridAi))
+            var comp = block?.Components?.Get<WeaponComponent>();
+            if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
-                WeaponComponent comp;
-                if (gridAi.WeaponBase.TryGetValue(cube, out comp) && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                int weaponId;
+                if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
                 {
-                    int weaponId;
-                    if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
-                    {
-                        var w = comp.Platform.Weapons[weaponId];
-                        if (comp.State.Value.Weapons[w.WeaponId].ManualShoot != ShootOff)
-                            return true;
-                    }
+                    var w = comp.Platform.Weapons[weaponId];
+                    if (weaponHash == w.System.WeaponId && comp.State.Value.Weapons[w.WeaponId].ManualShoot != ShootOff)
+                        return true;
                 }
             }
 

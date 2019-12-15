@@ -256,7 +256,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, !tc.Getter(b));
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -266,7 +266,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -276,7 +276,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
@@ -289,7 +289,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, !tc.Getter(b));
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -299,7 +299,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -309,7 +309,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
@@ -322,7 +322,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
             action.Writer = (b, t) => t.Append("");
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -332,7 +332,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
             action.Writer = (b, t) => t.Append("");
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
