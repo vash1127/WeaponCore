@@ -172,7 +172,6 @@ namespace WeaponCore
 
         internal void EnableWeapon(IMyTerminalBlock block, int weaponHash, bool enabled)
         {
-            Log.Line("EnableWeapon");
             var comp = block?.Components?.Get<WeaponComponent>();
             if (comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
@@ -223,7 +222,7 @@ namespace WeaponCore
                 }
             };
             action.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
-            action.ValidForGroups = false;
+            action.ValidForGroups = true;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 

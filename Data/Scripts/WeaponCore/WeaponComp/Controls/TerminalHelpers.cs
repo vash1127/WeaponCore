@@ -97,7 +97,7 @@ namespace WeaponCore.Control
                         break;
 
                     case "Shoot":
-                        ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, On) =>
+                        ((IMyTerminalControlOnOffSwitch)c).Setter += (blk, on) =>
                         {
                             var comp = blk?.Components?.Get<WeaponComponent>();
                             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
@@ -106,16 +106,16 @@ namespace WeaponCore.Control
                                 var w = comp.Platform.Weapons[j];
                                 var wState = comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId];
 
-                                if (!On && wState.ManualShoot == ShootOn)
+                                if (!on && wState.ManualShoot == ShootOn)
                                 {
                                     wState.ManualShoot = ShootOff;
                                     w.StopShooting();
                                     comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                                     comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }
-                                else if (On && wState.ManualShoot != ShootOff)
+                                else if (on && wState.ManualShoot != ShootOff)
                                     wState.ManualShoot = ShootOn;
-                                else if (On)
+                                else if (on)
                                 {
                                     wState.ManualShoot = ShootOn;
                                     comp.Ai.ManualComps++;
@@ -193,7 +193,7 @@ namespace WeaponCore.Control
             c.Setter = (b, enabled) => setter(b, id, enabled);
             MyAPIGateway.TerminalControls.AddControl<T>(c);
 
-            CreateOnOffActionSet<T>(c, name, id, visibleGetter);
+            CreateOnOffActionSet<T>(c, name, id, visibleGetter, false);
 
             return c;
         }
@@ -248,7 +248,7 @@ namespace WeaponCore.Control
             return c;
         }
 
-        internal static void CreateOnOffActionSet<T>(IMyTerminalControlOnOffSwitch tc, string name, int id, Func<IMyTerminalBlock, int,bool> enabler) where T : IMyTerminalBlock
+        internal static void CreateOnOffActionSet<T>(IMyTerminalControlOnOffSwitch tc, string name, int id, Func<IMyTerminalBlock, int,bool> enabler, bool group = false) where T : IMyTerminalBlock
         {
             var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
             action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
@@ -256,7 +256,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, !tc.Getter(b));
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            action.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -266,7 +266,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            action.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
 
@@ -276,7 +276,7 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, true);
             action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            action.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
         }
@@ -332,22 +332,9 @@ namespace WeaponCore.Control
             action.Action = (b) => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
             action.Writer = (b, t) => t.Append("");
             action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = true;
+            action.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action);
-        }
-
-        internal static bool WeaponFunctionEnabled(IMyTerminalBlock block, int weaponHash)
-        {
-            var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-            int weaponId;
-            if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
-            {
-                if (comp.Platform.Weapons[weaponId].System.WeaponId == weaponHash)
-                    return true;
-            }
-            return false;
         }
 
         #region Saved Code
