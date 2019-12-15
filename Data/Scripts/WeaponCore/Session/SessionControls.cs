@@ -33,7 +33,7 @@ namespace WeaponCore
 
                 if (typeof(T) == typeof(IMyConveyorSorter))
                 {
-                    TerminalHelpers.AddSlider<T>(-5, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, WepUi.CoreWeaponEnableCheck, WepUi.GetMinRange, WepUi.GetMaxRange);
+                    TerminalHelpers.AddSlider<T>(-5, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, (b, i) => { var comp = b?.Components?.Get<WeaponComponent>(); return comp == null || comp.HasTurret; }, WepUi.GetMinRange, WepUi.GetMaxRange);
                     currentType = "Sorter";
                 }
 
@@ -118,21 +118,44 @@ namespace WeaponCore
                     else
                         t.Append("Off");
                 };
-                action.Enabled = (b) => WepUi.CoreWeaponEnableCheck(b, 0);
+                action.Enabled = (b) =>
+                {
+                    var comp = b?.Components?.Get<WeaponComponent>();
+                    return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
+                };
                 action.ValidForGroups = true;
 
                 MyAPIGateway.TerminalControls.AddAction<T>(action);
 
                 TerminalHelpers.Separator<T>(0, "WC_sep1");
 
-                TerminalHelpers.AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance, WepUi.CoreWeaponEnableCheck);
-
+                TerminalHelpers.AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance,
+                    (block, i) =>
+                    {
+                        var comp = block?.Components?.Get<WeaponComponent>();
+                        return comp != null && comp.HasGuidanceToggle;
+                    });
                 
-                TerminalHelpers.AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps,
+                    (block, i) =>
+                    {
+                        var comp = block?.Components?.Get<WeaponComponent>();
+                        return comp != null && comp.HasDamageSlider;
+                    });
 
-                TerminalHelpers.AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof,
+                    (block, i) =>
+                    {
+                        var comp = block?.Components?.Get<WeaponComponent>();
+                        return comp != null && comp.HasRofSlider;
+                    } );
 
-                TerminalHelpers.AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, WepUi.CoreWeaponEnableCheck);
+                TerminalHelpers.AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload,
+                    (block, i) =>
+                    {
+                        var comp = block?.Components?.Get<WeaponComponent>();
+                        return comp != null && comp.CanOverload;
+                    });
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
         }

@@ -24,10 +24,14 @@ namespace WeaponCore.Control
                 //Log.Line($"Count: {i} ID:{c.Id}");
 
                 if (!a.Id.Contains("OnOff") && !a.Id.Equals("Shoot") && !a.Id.Equals("ShootOnce"))
-                    a.Enabled = b => WepUi.CoreWeaponEnableCheck(b, -6);
+                    a.Enabled = b => !b.Components.Has<WeaponComponent>();
 
                 else if(a.Id.Contains("Control"))
-                    a.Enabled = b => WepUi.CoreWeaponEnableCheck(b, -5);
+                    a.Enabled = b =>
+                    {
+                        var comp = b?.Components?.Get<WeaponComponent>();
+                        return comp == null || comp.HasTurret;
+                    };
 
                 else if (a.Id.Equals("ShootOnce"))
                 {
@@ -64,12 +68,16 @@ namespace WeaponCore.Control
                 //Log.Line($"Count: {i} ID:{c.Id}");
 
                 if(!c.Id.Contains("OnOff") && !string.IsNullOrEmpty(c.Id) && !c.Id.Contains("ShowInTerminal") && !c.Id.Contains("ShowInInventory") && !c.Id.Contains("ShowInToolbarConfig") && !c.Id.Contains("Name") && !c.Id.Contains("ShowOnHUD") && !c.Id.Contains("CustomData") && !c.Id.Contains("ShootOnce") && !c.Id.Contains("Shoot") && !c.Id.Contains("Control") && !c.Id.Contains("Range"))
-                    c.Visible = b => WepUi.CoreWeaponEnableCheck(b, -6);
+                    c.Visible = b => !b.Components.Has<WeaponComponent>();
 
                 switch (c.Id)
                 {
                     case "Control":
-                        c.Visible = b => WepUi.CoreWeaponEnableCheck(b, -5);
+                        c.Visible = b =>
+                        {
+                            var comp = b?.Components?.Get<WeaponComponent>();
+                            return comp == null || comp.HasTurret;
+                        };
                         break;
 
                     case "ShootOnce":
@@ -77,6 +85,7 @@ namespace WeaponCore.Control
                         {
                             var comp = blk?.Components?.Get<WeaponComponent>();
                             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+                            
                             for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                             {
                                 comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
