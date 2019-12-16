@@ -230,7 +230,6 @@ namespace WeaponCore.Platform
                                 var animation = AnimationsSet[EventTriggers.StopTracking][i];
                                 if (active)
                                 {
-                                    Log.Line($"StopTrackingAnim");
                                     if (!animation.Running)
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
@@ -287,7 +286,6 @@ namespace WeaponCore.Platform
                                 var animation = AnimationsSet[EventTriggers.Tracking][i];
                                 if (active)
                                 {
-                                    Log.Line($"StartTrackingAnim");
                                     if (!animation.Running)
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;

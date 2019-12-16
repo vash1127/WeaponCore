@@ -11,7 +11,6 @@ namespace WeaponCore.Platform
 
             if (AiOnlyWeapon)
             {
-                Log.Line($"Azimuth: {Azimuth} Elevation: {Elevation} azimuthChange: {azimuthChange} elevationChange: {elevationChange}");
                 double absAzChange;
                 double absElChange;
 
