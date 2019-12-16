@@ -250,91 +250,91 @@ namespace WeaponCore.Control
 
         internal static void CreateOnOffActionSet<T>(IMyTerminalControlOnOffSwitch tc, string name, int id, Func<IMyTerminalBlock, int,bool> enabler, bool group = false) where T : IMyTerminalBlock
         {
-            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder($"{name} Toggle On/Off");
-            action.Action = (b) => tc.Setter(b, !tc.Getter(b));
-            action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = group;
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
+            action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action0.Name = new StringBuilder($"{name} Toggle On/Off");
+            action0.Action = (b) => tc.Setter(b, !tc.Getter(b));
+            action0.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
+            action0.Enabled = (b) => enabler(b, id);
+            action0.ValidForGroups = group;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
-            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action.Name = new StringBuilder($"{name} On");
-            action.Action = (b) => tc.Setter(b, true);
-            action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = group;
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
+            action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
+            action1.Name = new StringBuilder($"{name} On");
+            action1.Action = (b) => tc.Setter(b, true);
+            action1.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
+            action1.Enabled = (b) => enabler(b, id);
+            action1.ValidForGroups = group;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action1);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
-            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action.Name = new StringBuilder($"{name} Off");
-            action.Action = (b) => tc.Setter(b, true);
-            action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = group;
-
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
-        }
-
-        internal static void CreateOnOffActionSet<T>(IMyTerminalControlCheckbox tc, string name, int id, Func<IMyTerminalBlock, int, bool> enabler, bool group = false) where T : IMyTerminalBlock
-        {
-            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder($"{name} Toggle On/Off");
-            action.Action = (b) => tc.Setter(b, !tc.Getter(b));
-            action.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = group;
-
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
-
-            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
-            action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action2.Name = new StringBuilder($"{name} On");
+            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
+            action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
+            action2.Name = new StringBuilder($"{name} Off");
             action2.Action = (b) => tc.Setter(b, true);
             action2.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
             action2.Enabled = (b) => enabler(b, id);
             action2.ValidForGroups = group;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action2);
+        }
 
-            var action3 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
-            action3.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action3.Name = new StringBuilder($"{name} Off");
-            action3.Action = (b) => tc.Setter(b, true);
-            action3.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
-            action3.Enabled = (b) => enabler(b, id);
-            action3.ValidForGroups = group;
+        internal static void CreateOnOffActionSet<T>(IMyTerminalControlCheckbox tc, string name, int id, Func<IMyTerminalBlock, int, bool> enabler, bool group = false) where T : IMyTerminalBlock
+        {
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle");
+            action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action0.Name = new StringBuilder($"{name} Toggle On/Off");
+            action0.Action = (b) => tc.Setter(b, !tc.Getter(b));
+            action0.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
+            action0.Enabled = (b) => enabler(b, id);
+            action0.ValidForGroups = group;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action3);
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
+
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_On");
+            action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
+            action1.Name = new StringBuilder($"{name} On");
+            action1.Action = (b) => tc.Setter(b, true);
+            action1.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
+            action1.Enabled = (b) => enabler(b, id);
+            action1.ValidForGroups = group;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action1);
+
+            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Toggle_Off");
+            action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
+            action2.Name = new StringBuilder($"{name} Off");
+            action2.Action = (b) => tc.Setter(b, true);
+            action2.Writer = (b, t) => t.Append(tc.Getter(b) ? tc.OnText : tc.OffText);
+            action2.Enabled = (b) => enabler(b, id);
+            action2.ValidForGroups = group;
+
+            MyAPIGateway.TerminalControls.AddAction<T>(action2);
         }
 
         internal static void CreateSliderActionSet<T>(IMyTerminalControlSlider tc, string name, int id, int min, int max, float incAmt, Func<IMyTerminalBlock, int, bool> enabler) where T : IMyTerminalBlock
         {
-            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Increase");
-            action.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
-            action.Name = new StringBuilder($"Increase {name}");
-            action.Action = (b) => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
-            action.Writer = (b, t) => t.Append("");
-            action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Increase");
+            action0.Icon = @"Textures\GUI\Icons\Actions\Increase.dds";
+            action0.Name = new StringBuilder($"Increase {name}");
+            action0.Action = (b) => tc.Setter(b, tc.Getter(b) + incAmt <= max ? tc.Getter(b) + incAmt : max);
+            action0.Writer = (b, t) => t.Append("");
+            action0.Enabled = (b) => enabler(b, id);
+            action0.ValidForGroups = false;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Decrease");
-            action.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
-            action.Name = new StringBuilder($"Decrease {name}");
-            action.Action = (b) => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
-            action.Writer = (b, t) => t.Append("");
-            action.Enabled = (b) => enabler(b, id);
-            action.ValidForGroups = false;
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Decrease");
+            action1.Icon = @"Textures\GUI\Icons\Actions\Decrease.dds";
+            action1.Name = new StringBuilder($"Decrease {name}");
+            action1.Action = (b) => tc.Setter(b, tc.Getter(b) - incAmt >= min ? tc.Getter(b) - incAmt : min);
+            action1.Writer = (b, t) => t.Append("");
+            action1.Enabled = (b) => enabler(b, id);
+            action1.ValidForGroups = false;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action1);
         }
 
         #region Saved Code

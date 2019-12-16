@@ -29,8 +29,6 @@ namespace WeaponCore
 
                 if (!gridAi.DbReady && gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0 || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
 
-                //gridAi.ActiveTarget = false;
-
                 if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180) gridAi.UpdateGridPower();
                 if (!gridAi.HasPower) continue;
 
@@ -108,10 +106,6 @@ namespace WeaponCore
                         }
                         else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
 
-                        //gridAi.ActiveTarget = gridAi.ActiveTarget || !w.Target.Expired;
-
-                        //Log.Line($"gridAi.ActiveTarget: {gridAi.ActiveTarget} w.Target.Expired: {w.Target.Expired} w.TargetWasExpired:{ w.TargetWasExpired }");
-
                         if (w.TargetWasExpired != w.Target.Expired)
                         {
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
@@ -150,7 +144,7 @@ namespace WeaponCore
 
                         var reloading = !w.System.EnergyAmmo && w.Reloading;
 
-                        if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick || comp.Gunner) && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
+                        if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick || comp.Gunner) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
                             if (gridAi.AvailablePowerChange)
                                 w.DelayTicks = 0;

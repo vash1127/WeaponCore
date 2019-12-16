@@ -190,10 +190,10 @@ namespace WeaponCore
 
         internal static void CreateShootActionSet<T>(string name, int id, Session session) where T : IMyTerminalBlock
         {
-            var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On_Off");
-            action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-            action.Name = new StringBuilder($"{name} Shoot On/Off");
-            action.Action = delegate (IMyTerminalBlock blk) {
+            var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On_Off");
+            action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
+            action0.Name = new StringBuilder($"{name} Shoot On/Off");
+            action0.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 int weaponId;
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
@@ -216,8 +216,8 @@ namespace WeaponCore
                     comp.Shooting++;
                 }
             };
-            action.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
-            action.Enabled = (b) =>
+            action0.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
+            action0.Enabled = (b) =>
             {
                 var comp = b?.Components?.Get<WeaponComponent>();
                 int weaponId;
@@ -226,14 +226,14 @@ namespace WeaponCore
                 return comp.Platform.Weapons[weaponId].System.WeaponId == id;
             };
 
-            action.ValidForGroups = true;
+            action0.ValidForGroups = true;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action0);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On");
-            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
-            action.Name = new StringBuilder($"{name} Shoot On");
-            action.Action = delegate (IMyTerminalBlock blk) {
+            var action1 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On");
+            action1.Icon = @"Textures\GUI\Icons\Actions\SwitchOn.dds";
+            action1.Name = new StringBuilder($"{name} Shoot On");
+            action1.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 
                 int weaponId;
@@ -249,8 +249,8 @@ namespace WeaponCore
                     comp.Shooting++;
                 }
             };
-            action.Writer = (b, t) => t.Append("On");
-            action.Enabled = (b) =>
+            action1.Writer = (b, t) => t.Append("On");
+            action1.Enabled = (b) =>
             {
                 var comp = b?.Components?.Get<WeaponComponent>();
                 int weaponId;
@@ -258,14 +258,14 @@ namespace WeaponCore
                 
                 return comp.Platform.Weapons[weaponId].System.WeaponId == id;
             };
-            action.ValidForGroups = false;
+            action1.ValidForGroups = false;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action1);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Off");
-            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action.Name = new StringBuilder($"{name} Shoot Off");
-            action.Action = delegate (IMyTerminalBlock blk) {
+            var action2 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Off");
+            action2.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
+            action2.Name = new StringBuilder($"{name} Shoot Off");
+            action2.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
 
                 int weaponId;
@@ -281,8 +281,8 @@ namespace WeaponCore
                 comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                 comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
             };
-            action.Writer = (b, t) => t.Append("Off");
-            action.Enabled = (b) =>
+            action2.Writer = (b, t) => t.Append("Off");
+            action2.Enabled = (b) =>
             {
 
                 var comp = b?.Components?.Get<WeaponComponent>();
@@ -295,14 +295,14 @@ namespace WeaponCore
                 }
                 return false;
             };
-            action.ValidForGroups = false;
+            action2.ValidForGroups = false;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action2);
 
-            action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Once");
-            action.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
-            action.Name = new StringBuilder($"{name} Shoot Once");
-            action.Action = delegate (IMyTerminalBlock blk) {
+            var action3 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Once");
+            action3.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
+            action3.Name = new StringBuilder($"{name} Shoot Once");
+            action3.Action = delegate (IMyTerminalBlock blk) {
                 var comp = blk?.Components?.Get<WeaponComponent>();
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
@@ -317,8 +317,8 @@ namespace WeaponCore
                     }
                 }
             };
-            action.Writer = (b, t) => t.Append("");
-            action.Enabled = (b) =>
+            action3.Writer = (b, t) => t.Append("");
+            action3.Enabled = (b) =>
             {
 
                 var comp = b?.Components?.Get<WeaponComponent>();
@@ -331,9 +331,9 @@ namespace WeaponCore
                 }
                 return false;
             };
-            action.ValidForGroups = false;
+            action3.ValidForGroups = false;
 
-            MyAPIGateway.TerminalControls.AddAction<T>(action);
+            MyAPIGateway.TerminalControls.AddAction<T>(action3);
         }
 
         internal bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)

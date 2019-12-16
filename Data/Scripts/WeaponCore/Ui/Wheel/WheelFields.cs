@@ -44,17 +44,6 @@ namespace WeaponCore
             internal string PreviousValue;
         }
 
-        internal readonly MyStringId[] TextureIds =
-        {
-            MyStringId.GetOrCompute("DS_Empty_Wheel_0"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_1"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_2"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_3"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_4"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_5"),
-
-        };
-
         internal readonly Item[] CompGroups =
         {
             new Item {Title = "Select Group", SubName = "Group"},
@@ -62,8 +51,8 @@ namespace WeaponCore
 
         internal readonly Item[] Group =
         {
-            new Item {ItemMessage = "Group Settings", ParentName = "CompGroups", SubName = "GroupSettings"},
-            new Item {ItemMessage = "Modify Weapons", ParentName = "CompGroups", SubName = "Comps"},
+            new Item {ItemMessage = "Group Settings", Texture = MyStringId.GetOrCompute("DS_GroupSettings"), ParentName = "CompGroups", SubName = "GroupSettings"},
+            new Item {ItemMessage = "Modify Weapons",  Texture = MyStringId.GetOrCompute("DS_ModifyWeapon"), ParentName = "CompGroups", SubName = "Comps"},
         };
 
         internal readonly Item[] Settings =

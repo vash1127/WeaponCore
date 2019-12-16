@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -55,13 +56,10 @@ namespace WeaponCore
 
                 if (!s.UiInput.UiKeyPressed && s.UiInput.WheelForward)
                 {
-                    GetNextWheelId(true);
                     GetCurrentMenu().Move(Movement.Forward);
-
                 }
                 else if (!s.UiInput.UiKeyPressed && s.UiInput.WheelBackward)
                 {
-                    GetNextWheelId(false);
                     GetCurrentMenu().Move(Movement.Backward);
                 }
 
@@ -84,8 +82,10 @@ namespace WeaponCore
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
+            var currentItem = GetCurrentMenuItem();
+            var texture = currentItem.Texture;
             SetCurrentMessage();
-            MyTransparentGeometry.AddBillboardOriented(TextureIds[CurrentTextureId], Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            if (texture != MyStringId.NullOrEmpty) MyTransparentGeometry.AddBillboardOriented(texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()
@@ -99,6 +99,7 @@ namespace WeaponCore
                 var item = GetCurrentMenuItem();
                 UpdateState(menu, item, Update.None);
             }
+            Ai.SupressMouseShoot = true;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
@@ -111,6 +112,7 @@ namespace WeaponCore
         {
             _currentMenu = "CompGroups";
             WheelActive = false;
+            Ai.SupressMouseShoot = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
@@ -169,21 +171,6 @@ namespace WeaponCore
         {
             var menu = Menus[_currentMenu];
             return menu.Items[menu.CurrentSlot];
-        }
-
-        internal int GetNextWheelId(bool forward)
-        {
-            if (forward)
-            {
-                if (CurrentTextureId + 1 > 5) CurrentTextureId = 0;
-                else CurrentTextureId++;
-            }
-            else
-            {
-                if (CurrentTextureId - 1 < 0) CurrentTextureId = 5;
-                else CurrentTextureId--;
-            }
-            return CurrentTextureId;
         }
 
         internal void SaveMenuInfo(Menu menu, Item item)
