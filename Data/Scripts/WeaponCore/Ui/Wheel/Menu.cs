@@ -68,7 +68,7 @@ namespace WeaponCore
                     case "Group":
                         if (Wheel.GroupNames.Count > 0)
                         {
-                            currentItemMessage = $"# {Wheel.ActiveGroupName} #\n{currentItemMessage}";
+                            currentItemMessage = $"# {Wheel.ActiveGroupName} #";
                         }
                         break;
                     default:
