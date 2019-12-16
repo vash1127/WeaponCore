@@ -720,6 +720,7 @@ namespace WeaponCore.Platform
             if (!avOnly)
             {
                 _ticksUntilShoot = 0;
+                PreFired = false;
                 if (IsShooting)
                 {
                     EventTriggerStateChanged(EventTriggers.Firing, false);
