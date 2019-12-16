@@ -225,7 +225,7 @@ namespace WeaponCore
                             WeaponDebug(w);
 
                         ///
-                        /// Check weapon's turret to see if its time to go home
+                        /// Determine if its time to shoot
                         ///
                         
                         var reloading = !w.System.EnergyAmmo && w.Reloading;
