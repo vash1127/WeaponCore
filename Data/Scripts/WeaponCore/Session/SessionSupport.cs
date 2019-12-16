@@ -377,6 +377,8 @@ namespace WeaponCore
 
             weapon.TurretHomePosition();
 
+            //Log.Line($"{weapon.System.WeaponName}: homing");
+
             if (weapon.ReturnHome)
                 FutureEvents.Schedule(ReturnHome, weapon, 1);
 
