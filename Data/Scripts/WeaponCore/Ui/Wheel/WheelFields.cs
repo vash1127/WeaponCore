@@ -46,13 +46,10 @@ namespace WeaponCore
 
         internal readonly MyStringId[] TextureIds =
         {
-            MyStringId.GetOrCompute("DS_Empty_Wheel_0"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_1"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_2"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_3"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_4"),
-            MyStringId.GetOrCompute("DS_Empty_Wheel_5"),
-
+            MyStringId.GetOrCompute("DS_GroupSettings"),
+            MyStringId.GetOrCompute("DS_ModifyWeapon"),
+            MyStringId.GetOrCompute("DS_ActivatedEnabled"),
+            MyStringId.GetOrCompute("DS_ActivatedDisabled"),
         };
 
         internal readonly Item[] CompGroups =
