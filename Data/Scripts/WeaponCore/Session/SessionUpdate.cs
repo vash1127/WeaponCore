@@ -86,7 +86,6 @@ namespace WeaponCore
                         var w = comp.Platform.Weapons[j];
                         var lastGunner = comp.Gunner;
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
-                        w.TargetWasExpired = w.Target.Expired;
 
                         if (!comp.Set.Value.Weapons[w.WeaponId].Enable) 
                             continue;
@@ -242,6 +241,8 @@ namespace WeaponCore
                         }
                         else if (w.IsShooting)
                             w.StopShooting();
+
+                        w.TargetWasExpired = w.Target.Expired;
                     }
                 }
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
