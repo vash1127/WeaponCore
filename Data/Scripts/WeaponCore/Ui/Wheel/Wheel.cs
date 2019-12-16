@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Input;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
@@ -84,8 +85,11 @@ namespace WeaponCore
             var left = cameraWorldMatrix.Left;
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
+            var currentMenu = GetCurrentMenu();
+            var currentItem = GetCurrentMenuItem();
+            var texture = currentItem.Texture != MyStringId.NullOrEmpty ? currentItem.Texture : TextureIds[CurrentTextureId];
             SetCurrentMessage();
-            MyTransparentGeometry.AddBillboardOriented(TextureIds[CurrentTextureId], Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            MyTransparentGeometry.AddBillboardOriented(texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()

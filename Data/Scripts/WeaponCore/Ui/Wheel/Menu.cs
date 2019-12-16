@@ -20,6 +20,7 @@ namespace WeaponCore
             internal string ItemMessage;
             internal string SubName;
             internal string ParentName;
+            internal MyStringId Texture;
             internal int SubSlot;
             internal int SubSlotCount;
             internal bool Dynamic;

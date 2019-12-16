@@ -62,8 +62,8 @@ namespace WeaponCore
 
         internal readonly Item[] Group =
         {
-            new Item {ItemMessage = "Group Settings", ParentName = "CompGroups", SubName = "GroupSettings"},
-            new Item {ItemMessage = "Modify Weapons", ParentName = "CompGroups", SubName = "Comps"},
+            new Item {ItemMessage = "Group Settings", Texture = MyStringId.GetOrCompute("DS_GroupSettings"), ParentName = "CompGroups", SubName = "GroupSettings"},
+            new Item {ItemMessage = "Modify Weapons",  Texture = MyStringId.GetOrCompute("DS_ModifyWeapon"), ParentName = "CompGroups", SubName = "Comps"},
         };
 
         internal readonly Item[] Settings =
