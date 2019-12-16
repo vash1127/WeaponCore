@@ -58,8 +58,8 @@ namespace WeaponCore
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         continue;
 
-                    if (!comp.State.Value.Online || comp.Status != Started)
-                    {
+                    if (!comp.State.Value.Online || comp.Status != Started) {
+
                         if (comp.Status != Started) 
                             comp.HealthCheck();
 
@@ -72,8 +72,8 @@ namespace WeaponCore
                     ///
                     ///
 
-                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                    {
+                    for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
+
                         var w = comp.Platform.Weapons[j];
                         var lastGunner = comp.Gunner;
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
