@@ -20,6 +20,8 @@ namespace WeaponCore.Platform
             var tick = session.Tick;
             var state = Comp.State.Value.Weapons[WeaponId];
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
+            var userControlled = Comp.Gunner || state.ManualShoot != TerminalActionState.ShootOff;
+            var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
 
             if (System.BurstMode)
             {
@@ -59,7 +61,6 @@ namespace WeaponCore.Platform
 
             //if (ShotCounter++ >= TicksPerShot - 1) ShotCounter = 0;
 
-
             if (_ticksUntilShoot++ < System.DelayToFire)
             {
                 if (!PreFired)
@@ -67,10 +68,10 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.PreFire, true);
                     PreFired = true;
                 }
-
                 return;
             }
-            else if(PreFired)
+            
+            if (PreFired)
             {
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
                 PreFired = false;
@@ -78,21 +79,9 @@ namespace WeaponCore.Platform
 
             if (_shootTick > tick) return;
             _shootTick = tick + TicksPerShot;
-
             
-            if (!IsShooting) StartShooting();                
-            
-
+            if (!IsShooting) StartShooting();
             state.ShotsFired++;
-
-            /*if (_shotsInCycle++ == _numOfBarrels - 1)
-            {
-                _shotsInCycle = 0;
-                _newCycle = true;
-            }*/
-
-            var userControlled = Comp.Gunner || state.ManualShoot != TerminalActionState.ShootOff;
-            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null && !DelayCeaseFire) ShootRayCheck();
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
@@ -100,12 +89,21 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            Projectile vProjectile = null;
+            /*if (_shotsInCycle++ == _numOfBarrels - 1)
+            {
+                _shotsInCycle = 0;
+                _newCycle = true;
+            }*/
+
+            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null && !DelayCeaseFire) 
+                ShootRayCheck();
+
             var targetAiCnt = Comp.Ai.TargetAis.Count;
-            var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
-            if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
             var isStatic = Comp.Ai.MyGrid.Physics.IsStatic;
 
+            Projectile vProjectile = null;
+            if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
+            
             for (int i = 0; i < bps; i++)
             {
                 var current = NextMuzzle;
@@ -348,14 +346,7 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.Ai.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
-            /*
-            if (true)
-            {
-                masterWeapon.Target.Expired = true;
-                if (masterWeapon != this) Target.Expired = true;
-                return;
-            }
-            */
+
             if (Target.Projectile != null)
             {
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
