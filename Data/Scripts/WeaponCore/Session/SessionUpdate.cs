@@ -16,12 +16,9 @@ namespace WeaponCore
             {
                 ///
                 ///
-                ///
                 /// GridAi update section
                 ///
                 ///
-                ///
-                
                 
                 var gridAi = aiPair.Value;
                 if (!gridAi.GridInit || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) 
@@ -49,15 +46,11 @@ namespace WeaponCore
                 
                 if (!gridAi.HasPower) continue;
 
-
-                ///
                 ///
                 ///
                 /// Comp update section
                 ///
                 ///
-                ///  
-
 
                 for (int i = 0; i < gridAi.Weapons.Count; i++)
                 {
@@ -75,9 +68,7 @@ namespace WeaponCore
 
                     ///
                     ///
-                    ///
                     /// Weapon update section
-                    ///
                     ///
                     ///
 
@@ -245,11 +236,14 @@ namespace WeaponCore
                         w.TargetWasExpired = w.Target.Expired;
                     }
                 }
+
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
                 gridAi.CheckReload = false;
                 gridAi.AvailablePowerChange = false;
             }
-            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
+
+            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) 
+                UpdateDbsInQueue();
         }
 
         private void ShootWeapons() 
