@@ -44,14 +44,6 @@ namespace WeaponCore
             internal string PreviousValue;
         }
 
-        internal readonly MyStringId[] TextureIds =
-        {
-            MyStringId.GetOrCompute("DS_GroupSettings"),
-            MyStringId.GetOrCompute("DS_ModifyWeapon"),
-            MyStringId.GetOrCompute("DS_ActivatedEnabled"),
-            MyStringId.GetOrCompute("DS_ActivatedDisabled"),
-        };
-
         internal readonly Item[] CompGroups =
         {
             new Item {Title = "Select Group", SubName = "Group"},
