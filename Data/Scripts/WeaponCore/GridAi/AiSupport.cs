@@ -587,36 +587,31 @@ namespace WeaponCore.Support
             BatteryCurrentOutput = 0;
             BatteryCurrentInput = 0;
 
-            if (FakeShipController?.GridResourceDistributor != null)
+            if (Session.Tick60)
             {
-                if (Session.Tick60)
+                foreach (var battery in Batteries)
                 {
-                    foreach (var battery in Batteries)
+                    if (!battery.IsWorking) continue;
+                    var currentInput = battery.CurrentInput;
+                    var currentOutput = battery.CurrentOutput;
+                    var maxOutput = battery.MaxOutput;
+                    if (currentInput > 0)
                     {
-                        if (!battery.IsWorking) continue;
-                        var currentInput = battery.CurrentInput;
-                        var currentOutput = battery.CurrentOutput;
-                        var maxOutput = battery.MaxOutput;
-                        if (currentInput > 0)
-                        {
-                            BatteryCurrentInput += currentInput;
-                            if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
-                            else BatteryCurrentOutput -= currentInput;
-                        }
-                        BatteryMaxPower += maxOutput;
-                        BatteryCurrentOutput += currentOutput;
+                        BatteryCurrentInput += currentInput;
+                        if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
+                        else BatteryCurrentOutput -= currentInput;
                     }
+                    BatteryMaxPower += maxOutput;
+                    BatteryCurrentOutput += currentOutput;
                 }
-
-                
-
-                GridMaxPower = FakeShipController.GridResourceDistributor?.MaxAvailableResourceByType(GId) ?? 0;
-                GridCurrentPower = FakeShipController.GridResourceDistributor?.TotalRequiredInputByType(GId) ?? 0;
-                GridAvailablePower = GridMaxPower - GridCurrentPower;
-
-                GridCurrentPower += BatteryCurrentInput;
-                GridAvailablePower -= BatteryCurrentInput;
             }
+
+            GridMaxPower = FakeShipController.GridResourceDistributor.MaxAvailableResourceByType(GId);
+            GridCurrentPower = FakeShipController.GridResourceDistributor.TotalRequiredInputByType(GId);
+            GridAvailablePower = GridMaxPower - GridCurrentPower;
+
+            GridCurrentPower += BatteryCurrentInput;
+            GridAvailablePower -= BatteryCurrentInput;
             UpdatePowerSources = false;
 
             if (Math.Abs((GridMaxPower - CurrentWeaponsDraw) - LastAvailablePower) > 0.001 && CurrentWeaponsDraw > 0) AvailablePowerChange = true;
