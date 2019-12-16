@@ -11,6 +11,7 @@ namespace WeaponCore.Platform
 
             if (AiOnlyWeapon)
             {
+                Log.Line($"Azimuth: {Azimuth} Elevation: {Elevation} azimuthChange: {azimuthChange} elevationChange: {elevationChange}");
                 double absAzChange;
                 double absElChange;
 
@@ -98,6 +99,19 @@ namespace WeaponCore.Platform
 
             if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) ReturnHome = true;
 
+        }
+
+        internal void HomeTurret(object o)
+        {
+            TurretHomePosition();
+
+            //Log.Line($"{weapon.System.WeaponName}: homing");
+            ReturnHome = ReturnHome && Comp.State.Value.Weapons[WeaponId].ManualShoot == Weapon.TerminalActionState.ShootOff && !Comp.Gunner && Target.Expired;
+
+            if (ReturnHome)
+                Comp.Ai.Session.FutureEvents.Schedule(HomeTurret, null, 1);
+
+            //weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
 
         internal void UpdatePivotPos()

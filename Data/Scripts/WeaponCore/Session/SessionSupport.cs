@@ -369,22 +369,6 @@ namespace WeaponCore
             }
         }
 
-
-        internal void ReturnHome(object o)
-        {
-            var weapon = o as Weapon;
-            if (weapon == null) return;
-
-            weapon.TurretHomePosition();
-
-            //Log.Line($"{weapon.System.WeaponName}: homing");
-
-            if (weapon.ReturnHome)
-                FutureEvents.Schedule(ReturnHome, weapon, 1);
-
-            //weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
-        }
-
         internal void PurgeAll()
         {
             FutureEvents.Purge();

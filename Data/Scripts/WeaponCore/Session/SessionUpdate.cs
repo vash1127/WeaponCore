@@ -197,10 +197,7 @@ namespace WeaponCore
                         if (w.TurretMode) {
 
                             if (comp.State.Value.Online) {
-                                if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) || (gunner != lastGunner && !gunner))) {
-
-                                    FutureEvents.Schedule(ReturnHome, w, 240);
-                                }
+                                if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) || (gunner != lastGunner && !gunner))) FutureEvents.Schedule(w.HomeTurret, null, 240);
 
                                 if (gunner != lastGunner && gunner) {
 
@@ -214,7 +211,7 @@ namespace WeaponCore
                                 }
                             }
 
-                            w.ReturnHome = w.ReturnHome && wState.ManualShoot == ShootOff && !comp.Gunner && w.Target.Expired;
+                            //w.ReturnHome = ;
                         }
 
                         // reload if needed

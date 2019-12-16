@@ -164,6 +164,8 @@ namespace WeaponCore.Control
 
                         w.OffDelay = (uint)(azSteps + elSteps > 0 ? azSteps > elSteps ? azSteps : elSteps : 0);
 
+                        w.HomeTurret(null);
+
                         w.Target.Expired = true;
                     }
 
