@@ -14,23 +14,50 @@ namespace WeaponCore
         {
             foreach (var aiPair in GridTargetingAIs)
             {
+                ///
+                ///
+                ///
+                /// GridAi update section
+                ///
+                ///
+                ///
+                
+                
                 var gridAi = aiPair.Value;
-                if (!gridAi.GridInit) continue;
+                if (!gridAi.GridInit || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) 
+                    continue;
 
-                if (Tick - gridAi.TargetsUpdatedTick > 100 && DbCallBackComplete && DbTask.IsComplete && gridAi.UpdateOwner())
+                var dbIsStale = Tick - gridAi.TargetsUpdatedTick > 100;
+                var readyToUpdate = dbIsStale && DbCallBackComplete && DbTask.IsComplete;
+                if (readyToUpdate && gridAi.UpdateOwner())
                     gridAi.RequestDbUpdate();
 
-                if (!gridAi.DeadProjectiles.IsEmpty)
-                {
+                if (!gridAi.DeadProjectiles.IsEmpty) {
                     Projectile p;
-                    while (gridAi.DeadProjectiles.TryDequeue(out p)) gridAi.LiveProjectile.Remove(p);
+                    while (gridAi.DeadProjectiles.TryDequeue(out p)) {
+                        gridAi.LiveProjectile.Remove(p);
+                    }
                     gridAi.LiveProjectileTick = Tick;
                 }
 
-                if (!gridAi.DbReady && gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0 || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) continue;
+                var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
+                if (!gridAi.DbReady && weaponsInStandby) 
+                    continue;
 
-                if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180) gridAi.UpdateGridPower();
+                if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180) 
+                    gridAi.UpdateGridPower();
+                
                 if (!gridAi.HasPower) continue;
+
+
+                ///
+                ///
+                ///
+                /// Comp update section
+                ///
+                ///
+                ///  
+
 
                 for (int i = 0; i < gridAi.Weapons.Count; i++)
                 {
@@ -40,9 +67,19 @@ namespace WeaponCore
 
                     if (!comp.State.Value.Online || comp.Status != Started)
                     {
-                        if (comp.Status != Started) comp.HealthCheck();
+                        if (comp.Status != Started) 
+                            comp.HealthCheck();
+
                         continue;
                     }
+
+                    ///
+                    ///
+                    ///
+                    /// Weapon update section
+                    ///
+                    ///
+                    ///
 
                     for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                     {
@@ -51,100 +88,148 @@ namespace WeaponCore
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
                         w.TargetWasExpired = w.Target.Expired;
 
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable) continue;
-                        if (w.Target.Entity == null && w.Target.Projectile == null)
-                            w.Target.Expired = true;
-                        else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose)
-                            w.Target.Reset();
-                        else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
-                            w.Target.Reset();
+                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable) 
+                            continue;
 
-                        else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable)
-                        {
-                            if (!Weapon.TrackingTarget(w, w.Target, !gunner))
-                                w.Target.Expired = true;
+                        ///
+                        /// Check target for expire states
+                        /// 
+                        
+                        if (w.Target.Entity == null && w.Target.Projectile == null) {
+                            
+                            w.Target.Expired = true;
                         }
-                        else
-                        {
-                            Vector3D targetPos;
-                            if (w.IsTurret)
-                            {
-                                if (!w.TrackTarget)
-                                {
-                                    if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
-                                        w.Target.Reset();
-                                }
-                                else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target, out targetPos))
-                                    w.Target.Reset();
-                            }
-                            else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
+                        else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) {
+                            
+                            w.Target.Reset();
+                        }
+                        else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive)) {
+                            
+                            w.Target.Reset();
+                        }
+                        else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable) {
+                            
+                            if (!Weapon.TrackingTarget(w, w.Target, !gunner)) {
+                                
                                 w.Target.Expired = true;
+                            }
+                        }
+                        else {
+                            
+                            Vector3D targetPos;
+                            if (w.IsTurret) {
+                                
+                                if (!w.TrackTarget) {
+                                    
+                                    if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity)) {
+                                        
+                                        w.Target.Reset();
+                                    }
+                                }
+                                else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
+                                    
+                                    w.Target.Reset();
+                                }
+                            }
+                            else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
+                                
+                                w.Target.Expired = true;
+                            }
                         }
 
                         if (gunner && UiInput.MouseButtonPressed)
                             w.TargetPos = Vector3D.Zero;
 
-                        if ((w.Target.Expired && w.TrackTarget) || gridAi.TargetResetTick == Tick)
-                        {
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset)
-                            {
+                        ///
+                        /// Update target tracking
+                        /// 
+
+                        if ((w.Target.Expired && w.TrackTarget) || gridAi.TargetResetTick == Tick) {
+                            
+                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset) {
+                                
                                 w.TargetReset = false;
-                                if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
+                                if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired) {
+                                    
                                     GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
-                                else GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
+                                }
+                                else {
+
+                                    GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
+                                }
                             }
                         }
-                        else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
-                            w.Target = w.Comp.TrackingWeapon.Target;
+                        else if (w.IsTurret && !w.TrackTarget && w.Target.Expired) {
 
-                        if (w.DelayCeaseFire)
-                        {
-                            if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire)
-                            {
+                            w.Target = w.Comp.TrackingWeapon.Target;
+                        }
+
+                        ///
+                        /// Set weapon Ai state
+                        /// 
+
+                        if (w.DelayCeaseFire) {
+
+                            if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire) {
+
                                 w.DelayFireCount = 0;
                                 w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
                             }
                         }
-                        else w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                        else {
 
-                        if (w.TargetWasExpired != w.Target.Expired)
-                        {
+                            w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                        }
+
+                        if (w.TargetWasExpired != w.Target.Expired) {
+
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
                             w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.Expired);
+
                             if (w.Target.Expired)
                                 w.TargetReset = true;
                         }
 
+                        ///
+                        /// Check weapon's turret to see if its time to go home
+                        /// 
+
                         var wState = comp.State.Value.Weapons[w.WeaponId];
+                        if (w.TurretMode) {
 
-                        if (w.TurretMode)
-                        {
-                            if (comp.State.Value.Online)
-                            {
-                                if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) ||
-                                     (gunner != lastGunner && !gunner)))
+                            if (comp.State.Value.Online) {
+                                if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) || (gunner != lastGunner && !gunner))) {
+
                                     FutureEvents.Schedule(ReturnHome, w, 240);
+                                }
 
-                                if (gunner != lastGunner && gunner)
-                                {
+                                if (gunner != lastGunner && gunner) {
+
                                     gridAi.ManualComps++;
                                     comp.Shooting++;
                                 }
-                                else if (gunner != lastGunner && !gunner)
-                                {
+                                else if (gunner != lastGunner && !gunner) {
+
                                     gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
                                     comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }
                             }
+
                             w.ReturnHome = w.ReturnHome && wState.ManualShoot == ShootOff && !comp.Gunner && w.Target.Expired;
                         }
 
-                        if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType) ComputeStorage(w);
+                        // reload if needed
+                        if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType) 
+                            ComputeStorage(w);
 
-                        if (comp.Debug) WeaponDebug(w);
+                        if (comp.Debug) 
+                            WeaponDebug(w);
 
+                        ///
+                        /// Check weapon's turret to see if its time to go home
+                        ///
+                        
                         var reloading = !w.System.EnergyAmmo && w.Reloading;
-
                         if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick || comp.Gunner) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
                             if (gridAi.AvailablePowerChange)
