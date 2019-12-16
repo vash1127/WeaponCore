@@ -16,12 +16,9 @@ namespace WeaponCore
             {
                 ///
                 ///
-                ///
                 /// GridAi update section
                 ///
                 ///
-                ///
-                
                 
                 var gridAi = aiPair.Value;
                 if (!gridAi.GridInit || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) 
@@ -49,15 +46,11 @@ namespace WeaponCore
                 
                 if (!gridAi.HasPower) continue;
 
-
-                ///
                 ///
                 ///
                 /// Comp update section
                 ///
                 ///
-                ///  
-
 
                 for (int i = 0; i < gridAi.Weapons.Count; i++)
                 {
@@ -65,8 +58,8 @@ namespace WeaponCore
                     if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                         continue;
 
-                    if (!comp.State.Value.Online || comp.Status != Started)
-                    {
+                    if (!comp.State.Value.Online || comp.Status != Started) {
+
                         if (comp.Status != Started) 
                             comp.HealthCheck();
 
@@ -75,14 +68,12 @@ namespace WeaponCore
 
                     ///
                     ///
-                    ///
                     /// Weapon update section
                     ///
                     ///
-                    ///
 
-                    for (int j = 0; j < comp.Platform.Weapons.Length; j++)
-                    {
+                    for (int j = 0; j < comp.Platform.Weapons.Length; j++) {
+
                         var w = comp.Platform.Weapons[j];
                         var lastGunner = comp.Gunner;
                         var gunner = comp.Gunner = comp.MyCube == ControlledEntity;
@@ -222,7 +213,7 @@ namespace WeaponCore
                             WeaponDebug(w);
 
                         ///
-                        /// Check weapon's turret to see if its time to go home
+                        /// Determine if its time to shoot
                         ///
                         
                         var reloading = !w.System.EnergyAmmo && w.Reloading;
@@ -242,11 +233,14 @@ namespace WeaponCore
                         w.TargetWasExpired = w.Target.Expired;
                     }
                 }
+
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
                 gridAi.CheckReload = false;
                 gridAi.AvailablePowerChange = false;
             }
-            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) UpdateDbsInQueue();
+
+            if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) 
+                UpdateDbsInQueue();
         }
 
         private void ShootWeapons() 
