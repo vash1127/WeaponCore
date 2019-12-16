@@ -690,7 +690,6 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
-            
             if (FiringEmitter != null) StartFiringSound();
             if (ShotEnergyCost > 0 && !IsShooting && !System.DesignatorWeapon)
             {
