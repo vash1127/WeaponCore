@@ -99,6 +99,7 @@ namespace WeaponCore
                 var item = GetCurrentMenuItem();
                 UpdateState(menu, item, Update.None);
             }
+            Ai.SupressMouseShoot = true;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
@@ -111,6 +112,7 @@ namespace WeaponCore
         {
             _currentMenu = "CompGroups";
             WheelActive = false;
+            Ai.SupressMouseShoot = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, true);
             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
