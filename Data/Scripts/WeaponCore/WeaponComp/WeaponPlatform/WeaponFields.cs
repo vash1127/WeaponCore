@@ -20,17 +20,19 @@ namespace WeaponCore.Platform
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
 
-        private int _shotsInCycle;
+        //private int _shotsInCycle;
         private int _nextVirtual;
         private int _barrelRate;
         private uint _ticksUntilShoot;
+        private uint _shootTick;
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
         private uint _delayShootTick;
+        private bool PreFired;
         internal uint TicksPerShot;
         internal double TimePerShot;
 
-        private bool _newCycle;
+        //private bool _newCycle;
         //private bool _firstRun = true;
         internal MyTuple<MyEntity, Matrix, Matrix, Vector3> MuzzlePart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> AzimuthPart;

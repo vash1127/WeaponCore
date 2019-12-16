@@ -607,8 +607,11 @@ namespace WeaponCore.Support
                         BatteryCurrentOutput += currentOutput;
                     }
                 }
-                GridMaxPower = FakeShipController.GridResourceDistributor.MaxAvailableResourceByType(GId);
-                GridCurrentPower = FakeShipController.GridResourceDistributor.TotalRequiredInputByType(GId);
+
+                
+
+                GridMaxPower = FakeShipController.GridResourceDistributor?.MaxAvailableResourceByType(GId) ?? 0;
+                GridCurrentPower = FakeShipController.GridResourceDistributor?.TotalRequiredInputByType(GId) ?? 0;
                 GridAvailablePower = GridMaxPower - GridCurrentPower;
 
                 GridCurrentPower += BatteryCurrentInput;

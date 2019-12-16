@@ -54,31 +54,43 @@ namespace WeaponCore.Platform
                     StartRotateSound();
             }
 
-            if (ShotCounter == 0 && _newCycle)
-                _newCycle = false;
+            //if (ShotCounter == 0 && _newCycle)
+            //_newCycle = false;
 
-            if (ShotCounter++ >= TicksPerShot - 1) ShotCounter = 0;
+            //if (ShotCounter++ >= TicksPerShot - 1) ShotCounter = 0;
 
-            _ticksUntilShoot++;
-            if (ShotCounter != 0) return;
 
-            if (!IsShooting) StartShooting();
-
-            if (_ticksUntilShoot < System.DelayToFire)
+            if (_ticksUntilShoot++ < System.DelayToFire)
             {
-                EventTriggerStateChanged(EventTriggers.PreFire, true);
+                if (!PreFired)
+                {
+                    EventTriggerStateChanged(EventTriggers.PreFire, true);
+                    PreFired = true;
+                }
+
                 return;
             }
-            if (System.DelayToFire > 0)
+            else if(PreFired)
+            {
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
+                PreFired = false;
+            }                
+
+            if (_shootTick > tick) return;
+            _shootTick = tick + TicksPerShot;
+
+            
+            if (!IsShooting) StartShooting();                
+            
 
             state.ShotsFired++;
 
-            if (_shotsInCycle++ == _numOfBarrels - 1)
+            /*if (_shotsInCycle++ == _numOfBarrels - 1)
             {
                 _shotsInCycle = 0;
                 _newCycle = true;
-            }
+            }*/
+
             var userControlled = Comp.Gunner || state.ManualShoot != TerminalActionState.ShootOff;
             if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null && !DelayCeaseFire) ShootRayCheck();
 
