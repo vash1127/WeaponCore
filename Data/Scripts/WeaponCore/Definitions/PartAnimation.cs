@@ -22,6 +22,7 @@ namespace WeaponCore.Support {
         internal readonly bool DoesLoop;
         internal readonly bool DoesReverse;
         internal readonly bool TriggerOnce;
+        internal readonly bool HasMovement;
         internal readonly string Muzzle;
         internal readonly string SubpartId;
 
@@ -104,11 +105,23 @@ namespace WeaponCore.Support {
                     EmissiveState currentEmissive;
                     GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
 
-                    if (animationType == AnimationType.Movement) FinalPos.Translation  += translation;
+                    if (animationType == AnimationType.Movement)
+                    {
+                        HasMovement = true;
+                        FinalPos.Translation += translation;
+                    }
 
-                    if (rotation != Matrix.Zero) FinalPos *= rotation;
+                    if (rotation != Matrix.Zero)
+                    {
+                        HasMovement = true;
+                        FinalPos *= rotation;
+                    }
 
-                    if (rotAroundCenter != Matrix.Zero) FinalPos *= rotAroundCenter;
+                    if (rotAroundCenter != Matrix.Zero)
+                    {
+                        HasMovement = true;
+                        FinalPos *= rotAroundCenter;
+                    }
 
                     Next();
                 }

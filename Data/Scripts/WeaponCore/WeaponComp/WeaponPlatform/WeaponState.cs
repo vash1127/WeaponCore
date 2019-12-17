@@ -64,7 +64,7 @@ namespace WeaponCore.Platform
                                                 animCheck.Reverse = true;
                                             else
                                             {
-                                                if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
+                                                /*if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
                                                 {
                                                     var matrix = animation.Part.PositionComp.LocalMatrix;
                                                     matrix.Translation = animation.HomePos.Translation;
@@ -72,7 +72,7 @@ namespace WeaponCore.Platform
                                                 }
                                                 else
                                                     animation.Part.PositionComp.LocalMatrix = animation.HomePos;
-
+                                                */
                                                 Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                                 animation.Running = true;
                                             }
@@ -116,15 +116,17 @@ namespace WeaponCore.Platform
                                     if (!animation.Running && (animation.Muzzle == "Any" || _muzzlesFiring.Contains(animation.Muzzle)))
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
-
                                         PartAnimation animCheck;
                                         if (AnimationLookup.TryGetValue(EventTriggers.Firing + animation.SubpartId, out animCheck))
                                         {
-                                            if (animCheck.Running)
+                                            if (animCheck.Running && animCheck.HasMovement)
                                                 animCheck.Reverse = true;
                                             else
                                             {
-                                                if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
+                                                animCheck.Reset(false,false);
+                                                animCheck.Running = false;
+                                                Comp.Ai.Session.AnimationsToProcess.Remove(animCheck);
+                                                /*if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
                                                 {
                                                     var matrix = animation.Part.PositionComp.LocalMatrix;
                                                     matrix.Translation = animCheck.FinalPos.Translation;
@@ -132,7 +134,7 @@ namespace WeaponCore.Platform
                                                 }
                                                 else
                                                     animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
-
+                                                    */
                                                 Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                                 animation.Running = true;
                                             }
@@ -509,13 +511,36 @@ namespace WeaponCore.Platform
 
                     case EventTriggers.OutOfAmmo:
                     case EventTriggers.BurstReload:
-                    case EventTriggers.PreFire:
                         if (AnimationsSet.ContainsKey(state))
                         {
                             for (int i = 0; i < AnimationsSet[state].Length; i++)
                             {
                                 var animation = AnimationsSet[state][i];
                                 if (active && !animation.Running)
+                                {
+                                    if (animation.TriggerOnce && animation.Triggered) continue;
+
+                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                    animation.Running = true;
+                                    animation.Triggered = true;
+                                    if (animation.DoesLoop)
+                                        animation.Looping = true;
+                                }
+                                else
+                                {
+                                    animation.Looping = false;
+                                    animation.Triggered = false;
+                                }
+                            }
+                        }
+                        break;
+                    case EventTriggers.PreFire:
+                        if (AnimationsSet.ContainsKey(state))
+                        {
+                            for (int i = 0; i < AnimationsSet[state].Length; i++)
+                            {
+                                var animation = AnimationsSet[state][i];
+                                if (active && !animation.Running && (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
                                 {                                    
                                     if (animation.TriggerOnce && animation.Triggered) continue;
 

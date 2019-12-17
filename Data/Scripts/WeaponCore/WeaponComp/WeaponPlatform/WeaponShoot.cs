@@ -65,7 +65,16 @@ namespace WeaponCore.Platform
             {
                 if (!PreFired)
                 {
-                    EventTriggerStateChanged(EventTriggers.PreFire, true);
+                    var nxtMuzzle = NextMuzzle;
+                    for (int i = 0; i < bps; i++)
+                    {
+                        _muzzlesToFire.Clear();
+                        _muzzlesToFire.Add(MuzzleIdToName[NextMuzzle]);
+                        if (i == bps) NextMuzzle++;
+                        nxtMuzzle = (nxtMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
+                    }
+
+                    EventTriggerStateChanged(EventTriggers.PreFire, true, false, _muzzlesToFire);
                     PreFired = true;
                 }
                 return;
@@ -74,6 +83,7 @@ namespace WeaponCore.Platform
             if (PreFired)
             {
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
+                _muzzlesToFire.Clear();
                 PreFired = false;
             }                
 
