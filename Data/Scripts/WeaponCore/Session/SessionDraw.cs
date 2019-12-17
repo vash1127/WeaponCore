@@ -58,7 +58,7 @@ namespace WeaponCore
                 {
                     t.FakeExplosion = false;
                     if (ExplosionReady)
-                        UtilsStatic.CreateFakeExplosion(this, t.System.Values.Ammo.AreaEffect.AreaEffectRadius, t.Position, t.System);
+                        SUtils.CreateFakeExplosion(this, t.System.Values.Ammo.AreaEffect.AreaEffectRadius, t.Position, t.System);
                 }
 
                 if (t.PrimeEntity != null)
@@ -300,7 +300,7 @@ namespace WeaponCore
                 if (distanceFromPointSqr > 160000) thickness *= 8f;
                 else if (distanceFromPointSqr > 40000) thickness *= 4f;
                 else if (distanceFromPointSqr > 10000) thickness *= 2f;
-
+                
                 if (thisStep < steps)
                     MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, system.Values.Graphics.Line.Trail.Color, a.Back, a.Direction, (float) a.StepLength, thickness);
                 else

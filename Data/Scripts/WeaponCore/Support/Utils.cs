@@ -580,7 +580,7 @@ namespace WeaponCore.Support
                     times.TmpArray[i] = times.Values[i];
 
                 times.Values.Clear();
-                var median = UtilsStatic.GetMedian(times.TmpArray);
+                var median = SUtils.GetMedian(times.TmpArray);
 
                 return new Results { Median = median / 1000000.0, Min = times.Min, Max = times.Max };
             }
