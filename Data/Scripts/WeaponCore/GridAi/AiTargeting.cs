@@ -102,7 +102,7 @@ namespace WeaponCore.Support
                 var character = info.Target as IMyCharacter;
                 if (character != null && !s.TrackCharacters) continue;
 
-                var meteor = info.Target as IMyMeteor;
+                var meteor = info.Target as MyMeteor;
                 if (meteor != null && !s.TrackMeteors) continue;
 
                 double rayDist;
@@ -171,11 +171,11 @@ namespace WeaponCore.Support
                     }
                     else info = ai.SortedTargets[deck[x - offset]];
                 }
-
                 if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue; 
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
 
                 if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
+
                 var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                 if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > weaponRangeSqr) continue;
                 w.Comp.Ai.Session.TargetChecks++;

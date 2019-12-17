@@ -7,6 +7,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -398,10 +399,12 @@ namespace WeaponCore
             if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
 
             var scaledDamage = t.BaseDamagePool * damageScale;
+            var radius = system.AmmoAreaEffect ? system.Values.Ammo.AreaEffect.AreaEffectRadius : 1;
+            var vol = 4 * Math.PI * Math.Pow(radius, 3) / 3;
             var objHp = 1;
+            
             if (scaledDamage < objHp) t.BaseDamagePool = 0;
             else t.BaseDamagePool -= objHp;
-            var radius = system.AmmoAreaEffect ? system.Values.Ammo.AreaEffect.AreaEffectRadius : 1;
             destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float) radius, true);
 
             if (detonateOnEnd)

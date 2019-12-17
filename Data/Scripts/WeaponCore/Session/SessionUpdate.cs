@@ -188,7 +188,9 @@ namespace WeaponCore
                         if (w.TurretMode) {
 
                             if (comp.State.Value.Online) {
-                                if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) || (gunner != lastGunner && !gunner))) FutureEvents.Schedule(w.HomeTurret, null, 240);
+                                
+                                if (w.TargetWasExpired != w.Target.Expired && w.Target.Expired || gunner != lastGunner && !gunner) 
+                                    FutureEvents.Schedule(w.HomeTurret, null, 240);
 
                                 if (gunner != lastGunner && gunner) {
 
@@ -201,8 +203,6 @@ namespace WeaponCore
                                     comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }
                             }
-
-                            //w.ReturnHome = ;
                         }
 
                         // reload if needed
@@ -250,16 +250,16 @@ namespace WeaponCore
                 var w = ShootingWeapons.Dequeue();
 
                 //TODO add logic for power priority
-                if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid))
-                {
-                    if (w.DelayTicks == 0)
-                    {
+                if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid)) {
+
+                    if (w.DelayTicks == 0) {
+
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         var oldUseable = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                        if (w.IsShooting)
-                        {
+                        if (w.IsShooting) {
+
                             w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
                             w.Comp.MyCube.ResourceSink.Update();
                         }
@@ -269,15 +269,15 @@ namespace WeaponCore
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                         w.Charging = true;
                     }
-                    else if (w.ChargeUntilTick <= Tick)
-                    {
+                    else if (w.ChargeUntilTick <= Tick) {
+
                         w.Charging = false;
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                     }
                     w.Comp.TerminalRefresh();
                 }
-                else if(w.RequiredPower - w.UseablePower > 0.0001)
-                {
+                else if(w.RequiredPower - w.UseablePower > 0.0001) {
+
                     var oldUseable = w.UseablePower;
                     w.UseablePower = w.RequiredPower;
                     w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
@@ -285,11 +285,13 @@ namespace WeaponCore
                     w.Charging = false;
                 }
 
-                if (!w.Comp.Set.Value.Weapons[w.WeaponId].Enable || w.Charging)
+                if (w.Charging)
                     continue;
 
                 w.Shoot();
-                if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
+                
+                if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) 
+                    w.ShootGraphics();
             }
         }
     }

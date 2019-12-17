@@ -219,7 +219,7 @@ namespace WeaponCore.Support
             if (entity is MyMeteor)
             {
                 const Sandbox.ModAPI.Ingame.MyDetectedEntityType type = Sandbox.ModAPI.Ingame.MyDetectedEntityType.Meteor;
-                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationship1, new BoundingBoxD(), Session.Tick);
+                entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, MyRelationsBetweenPlayerAndBlock.Enemies, new BoundingBoxD(), Session.Tick);
                 return true;
             }
             entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
@@ -258,6 +258,8 @@ namespace WeaponCore.Support
                             armed = true;
                     }
                 }
+                else if (parent is MyMeteor || parent is IMyCharacter) armed = true;
+
                 Armed = armed;
                 IsGrid = isGrid;
                 LargeGrid = largeGrid;
