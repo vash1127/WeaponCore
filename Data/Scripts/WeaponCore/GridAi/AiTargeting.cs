@@ -57,6 +57,12 @@ namespace WeaponCore.Support
             var s = p.T.System;
             var ai = p.T.Ai;
             var weaponPos = p.Position;
+            var overRides = p.T.Overrides;
+            var overActive = overRides.Activate;
+            var attackNeutrals = overActive && overRides.Neutral;
+            var attackFriends = overActive && overRides.Friend;
+            var attackNoOwner = overActive && overRides.NoOwner;
+            var forceFoci = overActive && overRides.FocusTargets;
 
             TargetInfo alphaInfo = null;
             TargetInfo betaInfo = null;
@@ -67,10 +73,10 @@ namespace WeaponCore.Support
             if (ai.Focus.Target[1] != null)
                 if (ai.Targets.TryGetValue(ai.Focus.Target[1], out betaInfo)) offset++;
 
-            var numOfTargets = ai.SortedTargets.Count;
-            var adjTargetCount = numOfTargets + offset;
-            var hasOffset = offset > 0;
 
+            var numOfTargets = ai.SortedTargets.Count;
+            var hasOffset = offset > 0;
+            var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
             var deck = GetDeck(ref p.T.Target.TargetDeck, ref p.T.Target.TargetPrevDeckLen, 0, numOfTargets, p.T.System.Values.Targeting.TopTargets);
 
             for (int i = 0; i < adjTargetCount; i++)
@@ -91,6 +97,11 @@ namespace WeaponCore.Support
 
                 if (!focusTarget && info.OffenseRating <= 0 || Obstruction(ref info, ref targetPos, p))
                     continue;
+
+                if (focusTarget && !attackFriends && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Friends) continue;
+
+                if (!attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
+
                 if (info.IsGrid && s.TrackGrids)
                 {
                     if (!focusTarget && info.FatCount < 2) continue;
@@ -121,9 +132,11 @@ namespace WeaponCore.Support
         {
             var comp = w.Comp;
             var overRides = comp.Set.Value.Overrides;
-            var attackNeutrals = overRides.Activate && overRides.Neutral;
-            var attackFriends = overRides.Activate && overRides.Friend;
-            var attackNoOwner = overRides.Activate && overRides.NoOwner;
+            var overActive = overRides.Activate;
+            var attackNeutrals = overActive && overRides.Neutral;
+            var attackFriends = overActive && overRides.Friend;
+            var attackNoOwner = overActive && overRides.NoOwner;
+            var forceFoci = overActive && overRides.FocusTargets;
 
             var ai = comp.Ai;
             ai.Session.TargetRequests++;
@@ -150,7 +163,7 @@ namespace WeaponCore.Support
 
             var hasOffset = offset > 0;
             var numOfTargets = ai.SortedTargets.Count;
-            var adjTargetCount = overRides.Activate && overRides.FocusTargets && hasOffset ? offset : numOfTargets + offset;
+            var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, w.System.Values.Targeting.TopTargets);
 
             for (int x = 0; x < adjTargetCount; x++)

@@ -199,6 +199,7 @@ namespace WeaponCore.Platform
                         session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
                         p.T.System = System;
                         p.T.Ai = Comp.Ai;
+                        p.T.Overrides = Comp.Set.Value.Overrides;
                         p.T.Target.Entity = Target.Entity;
                         p.T.Target.Projectile = Target.Projectile;
                         p.T.Target.IsProjectile = Target.Projectile != null;
@@ -325,6 +326,7 @@ namespace WeaponCore.Platform
             Comp.Ai.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
             p.T.System = System;
             p.T.Ai = Comp.Ai;
+            p.T.Overrides = Comp.Set.Value.Overrides;
             p.T.Target.Entity = Target.Entity;
             p.T.Target.Projectile = Target.Projectile;
             p.T.Target.IsProjectile = Target.Projectile != null;

@@ -48,6 +48,7 @@ namespace WeaponCore.Support
 
         internal WeaponSystem System;
         internal GridAi Ai;
+        internal CompGroupOverrides Overrides;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
         internal DrawHit? DrawHit;
