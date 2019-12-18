@@ -84,8 +84,9 @@ namespace WeaponCore
             scale = 1 * scale;
             var currentItem = GetCurrentMenuItem();
             var texture = currentItem.Texture;
+            var color = Color.White * MyAPIGateway.Session.Config.UIBkOpacity;
             SetCurrentMessage();
-            if (texture != MyStringId.NullOrEmpty) MyTransparentGeometry.AddBillboardOriented(texture, Color.White, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            if (texture != MyStringId.NullOrEmpty) MyTransparentGeometry.AddBillboardOriented(texture, color, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()
