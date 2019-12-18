@@ -88,6 +88,8 @@ namespace WeaponCore
                 if (GameLoaded) AiLoop();
                 DsUtil.Complete("ai", true);
 
+                CheckAcquire();
+
                 DsUtil.Start("update");
                 if (GameLoaded) ShootWeapons();
                 DsUtil.Complete("update", true);

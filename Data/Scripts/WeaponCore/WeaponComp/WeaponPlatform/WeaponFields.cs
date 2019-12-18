@@ -115,7 +115,7 @@ namespace WeaponCore.Platform
         internal bool TurretMode;
         internal bool TrackTarget;
         internal bool AiReady;
-        //internal bool SeekTarget;
+        internal bool SeekTarget;
         internal bool TrackingAi;
         internal bool IsTracking;
         internal bool IsAligned;

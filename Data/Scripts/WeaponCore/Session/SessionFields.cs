@@ -75,6 +75,8 @@ namespace WeaponCore
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
         internal readonly Queue<Weapon> ShootingWeapons = new Queue<Weapon>(100);
+        internal readonly Queue<Weapon> AcquireTargets = new Queue<Weapon>(100);
+
         internal readonly MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
