@@ -608,6 +608,21 @@ namespace WeaponCore.Support
                 }
             }
 
+            if (FakeShipController.GridResourceDistributor == null)
+            {
+                Log.Line($"{MyGrid.DebugName} - broken GridResourceDistributor - Marked:{MyGrid.MarkedForClose} - InScene:{MyGrid.InScene} - FakeValid:{FakeShipController != null} - GridValid:{FakeShipController?.CubeGrid != null} TopGridValid:{FakeShipController?.TopGrid != null}");
+                
+                FatMap fatMap;
+                if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && !fatMap.MyCubeBocks.Empty)
+                {
+                    FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
+                    if (FakeShipController.GridResourceDistributor == null) return;
+
+                    Log.Line($"fixed GridResourceDistributor");
+                }
+                else return;
+            }
+
             GridMaxPower = FakeShipController.GridResourceDistributor.MaxAvailableResourceByType(GId);
             GridCurrentPower = FakeShipController.GridResourceDistributor.TotalRequiredInputByType(GId);
             GridAvailablePower = GridMaxPower - GridCurrentPower;
