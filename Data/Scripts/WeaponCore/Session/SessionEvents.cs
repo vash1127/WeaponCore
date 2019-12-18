@@ -154,10 +154,9 @@ namespace WeaponCore
         {
             try
             {
-                IMyPlayer removedPlayer;
-                Players.TryRemove(l, out removedPlayer);
                 PlayerEventId++;
-                if (removedPlayer.SteamUserId == AuthorSteamId)
+                IMyPlayer removedPlayer;
+                if (Players.TryRemove(l, out removedPlayer) && removedPlayer.SteamUserId == AuthorSteamId)
                 {
                     AuthorPlayerId = 0;
                 }

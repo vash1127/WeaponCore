@@ -11,8 +11,35 @@ using VRageMath;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 namespace WeaponCore.Support
 {
-    internal static class UtilsStatic
+    internal static class SUtils
     {
+        public static double LargestCubeInSphere(double r)
+        {
+
+            // radius cannot be negative  
+            if (r < 0)
+                return -1;
+
+            // side of the cube  
+            var a = (2 * r) / Math.Sqrt(3);
+            return a;
+        }
+
+        public static double AreaCube(double a)
+        {
+            return (a * a * a);
+        }
+
+        public static double SurfaceCube(double a)
+        {
+            return (6 * a * a);
+        }
+
+        public static double VolumeCube(double len)
+        {
+            return Math.Pow(len, 3);
+        }
+
         public static double Percentile(double[] sequence, double excelPercentile)
         {
             Array.Sort(sequence);

@@ -38,7 +38,7 @@ namespace WeaponCore
 
         internal struct Names
         {
-            internal string Value;
+            internal string Name;
             internal string CurrentValue;
             internal string NextValue;
             internal string PreviousValue;
@@ -75,70 +75,70 @@ namespace WeaponCore
             {
                 "Active", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Deactivated", CurrentValue = "Deactivate", NextValue = "Activate"},
-                    [1] = new Names {Value = "Activated", CurrentValue = "Activate", NextValue = "Deactivate"},
+                    [0] = new Names {Name = "Deactivated", CurrentValue = "Deactivate", NextValue = "Activate"},
+                    [1] = new Names {Name = "Activated", CurrentValue = "Activate", NextValue = "Deactivate"},
                 }
             },
             {
                 "Neutrals", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
-                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
                 "Friends", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
-                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
                 "Unowned", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
-                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
                 "Manual Aim", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
-                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
                 "Manual Fire", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
-                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
                 "Focus Targets", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
-                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
                 "Focus SubSystem", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
-                    [1] = new Names {Value = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
                 "Sub Systems", new Dictionary<int, Names>
                 {
-                    [0] = new Names {Value = "Any", CurrentValue = "Any", NextValue = "Offense", PreviousValue = "Steering"},
-                    [1] = new Names {Value = "Offense", CurrentValue = "Offense", NextValue = "Utility", PreviousValue = "Any"},
-                    [2] = new Names {Value = "Utility", CurrentValue = "Utility", NextValue = "Power", PreviousValue = "Offense"},
-                    [3] = new Names {Value = "Power", CurrentValue = "Power", NextValue = "Production", PreviousValue = "Utility"},
-                    [4] = new Names {Value = "Production", CurrentValue = "Production", NextValue = "Thrust", PreviousValue = "Power"},
-                    [5] = new Names {Value = "Thrust", CurrentValue = "Thrust", NextValue = "Jumping", PreviousValue = "Production"},
-                    [6] = new Names {Value = "Jumping", CurrentValue = "Jumping", NextValue = "Steering", PreviousValue = "Thrust"},
-                    [7] = new Names {Value = "Steering", CurrentValue = "Steering", NextValue = "Any", PreviousValue = "Jumping"},
+                    [0] = new Names {Name = "Any", CurrentValue = "Any", NextValue = "Offense", PreviousValue = "Steering"},
+                    [1] = new Names {Name = "Offense", CurrentValue = "Offense", NextValue = "Utility", PreviousValue = "Any"},
+                    [2] = new Names {Name = "Utility", CurrentValue = "Utility", NextValue = "Power", PreviousValue = "Offense"},
+                    [3] = new Names {Name = "Power", CurrentValue = "Power", NextValue = "Production", PreviousValue = "Utility"},
+                    [4] = new Names {Name = "Production", CurrentValue = "Production", NextValue = "Thrust", PreviousValue = "Power"},
+                    [5] = new Names {Name = "Thrust", CurrentValue = "Thrust", NextValue = "Jumping", PreviousValue = "Production"},
+                    [6] = new Names {Name = "Jumping", CurrentValue = "Jumping", NextValue = "Steering", PreviousValue = "Thrust"},
+                    [7] = new Names {Name = "Steering", CurrentValue = "Steering", NextValue = "Any", PreviousValue = "Jumping"},
                 }
             },
         };
@@ -215,6 +215,80 @@ namespace WeaponCore
                 }
             },
         };
+
+        internal readonly Dictionary<string, Dictionary<string, MyStringId>> SettingStrToTextures = new Dictionary<string, Dictionary<string, MyStringId>>()
+        {
+            {
+                "Active", new Dictionary<string, MyStringId>
+                {
+                    ["Activate"] = MyStringId.GetOrCompute("DS_ActivatedEnabled"),
+                    ["Deactivate"] = MyStringId.GetOrCompute("DS_ActivatedDisabled"),
+                }
+            },
+            {
+                "Neutrals", new Dictionary<string, MyStringId>
+                {
+                    ["Enable"] = MyStringId.GetOrCompute("DS_NeutralEnabled"),
+                    ["Disable"] = MyStringId.GetOrCompute("DS_NeutralDisabled"),
+                }
+            },
+            {
+                "Unowned", new Dictionary<string, MyStringId>
+                {
+                    ["Enable"] = MyStringId.GetOrCompute("DS_UnownedEnabled"),
+                    ["Disable"] = MyStringId.GetOrCompute("DS_UnownedDisabled"),
+                }
+            },
+            {
+                "Friends", new Dictionary<string, MyStringId>
+                {
+                    ["Enable"] = MyStringId.GetOrCompute("DS_FriendlyEnabled"),
+                    ["Disable"] = MyStringId.GetOrCompute("DS_FriendlyDisabled"),
+                }
+            },
+            {
+                "Manual Aim", new Dictionary<string, MyStringId>
+                {
+                    ["Enable"] = MyStringId.GetOrCompute("DS_ManualAimEnabled"),
+                    ["Disable"] = MyStringId.GetOrCompute("DS_ManualAimDisabled"),
+                }
+            },
+            {
+                "Manual Fire", new Dictionary<string, MyStringId>
+                {
+                    ["Enable"] = MyStringId.GetOrCompute("DS_ManualFireEnabled"),
+                    ["Disable"] = MyStringId.GetOrCompute("DS_ManualFireDisabled"),
+                }
+            },
+            {
+                "Focus Targets", new Dictionary<string, MyStringId>
+                {
+                    ["Enable"] = MyStringId.GetOrCompute("DS_FocusTargetEnabled"),
+                    ["Disable"] = MyStringId.GetOrCompute("DS_FocusTargetDisabled"),
+                }
+            },
+            {
+                "Focus SubSystem", new Dictionary<string, MyStringId>
+                {
+                    ["Enable"] = MyStringId.GetOrCompute("DS_FocusSubsystemEnabled"),
+                    ["Disable"] = MyStringId.GetOrCompute("DS_FocusSubsystemDisabled"),
+                }
+            },
+            {
+                "Sub Systems", new Dictionary<string, MyStringId>
+                {
+                    ["Any"] = MyStringId.GetOrCompute("DS_SubsystemAny"),
+                    ["Offense"] = MyStringId.GetOrCompute("DS_SubsystemOffense"),
+                    ["Utility"] = MyStringId.GetOrCompute("DS_SubsystemUtility"),
+                    ["Power"] = MyStringId.GetOrCompute("DS_SubsystemPower"),
+                    ["Production"] = MyStringId.GetOrCompute("DS_SubsystemProduction"),
+                    ["Thrust"] = MyStringId.GetOrCompute("DS_SubsystemThrust"),
+                    ["Jumping"] = MyStringId.GetOrCompute("DS_SubsystemJump"),
+                    ["Steering"] = MyStringId.GetOrCompute("DS_SubsystemSteering"),
+                }
+            },
+        };
+
 
         internal readonly List<string> SettingNames = new List<string>();
 

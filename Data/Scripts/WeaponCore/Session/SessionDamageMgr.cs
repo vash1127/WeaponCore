@@ -7,6 +7,7 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -266,7 +267,7 @@ namespace WeaponCore
                     {
                         var damage = detonateOnEnd && theEnd ? detonateDmg : areaEffectDmg;
                         var radius = detonateOnEnd && theEnd ? detonateRadius : areaRadius;
-                        UtilsStatic.CreateMissileExplosion(this, damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, grid, system, true);
+                        SUtils.CreateMissileExplosion(this, damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, grid, system, true);
                     }
                     else if (!nova)
                     {
@@ -391,18 +392,32 @@ namespace WeaponCore
                 t.BaseDamagePool = 0;
                 return;
             }
-            var detonateOnEnd = system.AmmoAreaEffect && system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
+            var detonateOnEnd = system.AmmoAreaEffect && system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && system.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Radiant;
 
             t.ObjectsHit++;
             float damageScale = 1;
             if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
 
             var scaledDamage = t.BaseDamagePool * damageScale;
-            var objHp = 1;
-            if (scaledDamage < objHp) t.BaseDamagePool = 0;
-            else t.BaseDamagePool -= objHp;
-            var radius = system.AmmoAreaEffect ? system.Values.Ammo.AreaEffect.AreaEffectRadius : 1;
-            destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float) radius, true);
+            var oRadius = system.Values.Ammo.AreaEffect.AreaEffectRadius;
+            var minTestRadius = t.DistanceTraveled - t.PrevDistanceTraveled;
+            var tRadius = oRadius < minTestRadius ? minTestRadius : oRadius;
+            var objHp = (int)MathHelper.Clamp(SUtils.VolumeCube(SUtils.LargestCubeInSphere(tRadius)), 1, double.MaxValue);
+            
+            if (scaledDamage < objHp)
+            {
+                var reduceBy = objHp / scaledDamage;
+                oRadius /= reduceBy;
+                if (oRadius < 1) oRadius = 1;
+
+                t.BaseDamagePool = 0;
+            }
+            else
+            {
+                t.BaseDamagePool -= objHp;
+                if (oRadius < minTestRadius) oRadius = minTestRadius;
+            }
+            destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float)oRadius, true);
 
             if (detonateOnEnd)
             {

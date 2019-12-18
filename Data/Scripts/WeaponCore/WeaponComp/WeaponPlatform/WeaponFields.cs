@@ -28,7 +28,7 @@ namespace WeaponCore.Platform
         private uint _posChangedTick = 1;
         private uint _lastShotTick;
         private uint _delayShootTick;
-        private bool PreFired;
+        internal bool PreFired;
         internal uint TicksPerShot;
         internal double TimePerShot;
 
@@ -115,7 +115,7 @@ namespace WeaponCore.Platform
         internal bool TurretMode;
         internal bool TrackTarget;
         internal bool AiReady;
-        //internal bool SeekTarget;
+        internal bool SeekTarget;
         internal bool TrackingAi;
         internal bool IsTracking;
         internal bool IsAligned;

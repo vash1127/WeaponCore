@@ -351,7 +351,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.State == ProjectileState.OneAndDone)
                         p.T.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
-                    else if (p.ModelState == EntityState.None && p.T.System.AmmoParticle)
+                    else if (p.ModelState == EntityState.None && p.T.System.AmmoParticle && !p.DrawLine)
                         p.T.UpdateShape(p.Position, p.Direction, p.T.System.CollisionSize, ReSize.None);
                     else
                     {

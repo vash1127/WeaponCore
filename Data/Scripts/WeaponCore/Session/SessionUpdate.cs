@@ -131,30 +131,6 @@ namespace WeaponCore
                             w.TargetPos = Vector3D.Zero;
 
                         ///
-                        /// Update target tracking
-                        /// 
-
-                        if ((w.Target.Expired && w.TrackTarget) || gridAi.TargetResetTick == Tick) {
-                            
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset) {
-                                
-                                w.TargetReset = false;
-                                if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired) {
-                                    
-                                    GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
-                                }
-                                else {
-
-                                    GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
-                                }
-                            }
-                        }
-                        else if (w.IsTurret && !w.TrackTarget && w.Target.Expired) {
-
-                            w.Target = w.Comp.TrackingWeapon.Target;
-                        }
-
-                        ///
                         /// Set weapon Ai state
                         /// 
 
@@ -179,6 +155,8 @@ namespace WeaponCore
                             if (w.Target.Expired)
                                 w.TargetReset = true;
                         }
+                        w.SeekTarget = w.Target.Expired && w.TrackTarget;
+                        if (w.SeekTarget) AcquireTargets.Enqueue(w);
 
                         ///
                         /// Check weapon's turret to see if its time to go home
@@ -188,7 +166,9 @@ namespace WeaponCore
                         if (w.TurretMode) {
 
                             if (comp.State.Value.Online) {
-                                if (((w.TargetWasExpired != w.Target.Expired && w.Target.Expired) || (gunner != lastGunner && !gunner))) FutureEvents.Schedule(w.HomeTurret, null, 240);
+                                
+                                if (w.TargetWasExpired != w.Target.Expired && w.Target.Expired || gunner != lastGunner && !gunner) 
+                                    FutureEvents.Schedule(w.HomeTurret, null, 240);
 
                                 if (gunner != lastGunner && gunner) {
 
@@ -201,8 +181,6 @@ namespace WeaponCore
                                     comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }
                             }
-
-                            //w.ReturnHome = ;
                         }
 
                         // reload if needed
@@ -217,20 +195,29 @@ namespace WeaponCore
                         ///
                         
                         var reloading = !w.System.EnergyAmmo && w.Reloading;
+
+                        var con1 = !comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce);
+                        var con2 = wState.ManualShoot == ShootOnce;
+                        var con3 = (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner);
+                        var con4 = ((wState.ManualShoot == ShootClick || comp.Gunner));
+                        var con5 = !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
+
+                        //if (con1 || con2 || con3 || con4 || con5) Log.Line($"{con1} - {con2} - {con3} - {con4} - {con5}");
+
                         if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick || comp.Gunner) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
                             if (gridAi.AvailablePowerChange)
                                 w.DelayTicks = 0;
 
-                            if (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick)
+                            if (!w.SeekTarget && (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick))
+                            {
                                 ShootingWeapons.Enqueue(w);
+                            }
                             else if (w.ChargeUntilTick > Tick)
                                 w.Charging = true;
                         }
                         else if (w.IsShooting)
                             w.StopShooting();
-
-                        w.TargetWasExpired = w.Target.Expired;
                     }
                 }
 
@@ -243,6 +230,39 @@ namespace WeaponCore
                 UpdateDbsInQueue();
         }
 
+        private void CheckAcquire()
+        {
+            while (AcquireTargets.Count > 0)
+            {
+                var w = AcquireTargets.Dequeue();
+                var gridAi = w.Comp.Ai;
+                var comp = w.Comp;
+
+                w.TargetWasExpired = w.Target.Expired;
+
+                if ((w.Target.Expired && w.TrackTarget) || gridAi.TargetResetTick == Tick)
+                {
+                    if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset)
+                    {
+
+                        w.TargetReset = false;
+                        if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
+                        {
+                            GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
+                        }
+                        else
+                        {
+                            GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
+                        }
+                    }
+                }
+                else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
+                {
+                    w.Target = w.Comp.TrackingWeapon.Target;
+                }
+            }
+        }
+
         private void ShootWeapons() 
         {
             while (ShootingWeapons.Count > 0)
@@ -250,16 +270,16 @@ namespace WeaponCore
                 var w = ShootingWeapons.Dequeue();
 
                 //TODO add logic for power priority
-                if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid))
-                {
-                    if (w.DelayTicks == 0)
-                    {
+                if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid)) {
+
+                    if (w.DelayTicks == 0) {
+
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         var oldUseable = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                        if (w.IsShooting)
-                        {
+                        if (w.IsShooting) {
+
                             w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
                             w.Comp.MyCube.ResourceSink.Update();
                         }
@@ -269,15 +289,15 @@ namespace WeaponCore
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                         w.Charging = true;
                     }
-                    else if (w.ChargeUntilTick <= Tick)
-                    {
+                    else if (w.ChargeUntilTick <= Tick) {
+
                         w.Charging = false;
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                     }
                     w.Comp.TerminalRefresh();
                 }
-                else if(w.RequiredPower - w.UseablePower > 0.0001)
-                {
+                else if(w.RequiredPower - w.UseablePower > 0.0001) {
+
                     var oldUseable = w.UseablePower;
                     w.UseablePower = w.RequiredPower;
                     w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
@@ -285,11 +305,13 @@ namespace WeaponCore
                     w.Charging = false;
                 }
 
-                if (!w.Comp.Set.Value.Weapons[w.WeaponId].Enable || w.Charging)
+                if (w.Charging)
                     continue;
 
                 w.Shoot();
-                if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) w.ShootGraphics();
+                
+                if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) 
+                    w.ShootGraphics();
             }
         }
     }

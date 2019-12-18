@@ -144,7 +144,7 @@ namespace WeaponCore
                         break;
                     case "GroupSettings":
                         if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
-                        FormatGroupSettingsMessage(groupInfo);
+                        ReportGroupSettings(groupInfo, item);
                         break;
                     case "Comps":
                         if (BlockGroups.Count > 0)
@@ -160,7 +160,7 @@ namespace WeaponCore
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
                             FormatCompMessage(groupMember, Color.DarkOrange);
-                            FormatMemberSettingsMessage(groupInfo, groupMember);
+                            ReportMemberSettings(groupInfo, groupMember, item);
                         }
                         break;
                 }
@@ -173,7 +173,7 @@ namespace WeaponCore
                 {
                     case "GroupSettings":
                         if (!Wheel.Ai.BlockGroups.TryGetValue(Wheel.ActiveGroupName, out groupInfo)) break;
-                        SetGroupSettings(groupInfo);
+                        SetGroupSettings(groupInfo, item);
                         break;
                 }
                 switch (Name)
@@ -183,13 +183,23 @@ namespace WeaponCore
                         {
                             var groupMember = Wheel.BlockGroups[Wheel.ActiveGroupId][Wheel.ActiveWeaponId];
                             if (!Wheel.Ai.BlockGroups.TryGetValue(groupMember.Name, out groupInfo)) break;
-                            SetMemberSettings(groupInfo, groupMember);
+                            SetMemberSettings(groupInfo, groupMember, item);
                         }
                         break;
                 }
             }
 
-            internal void SetGroupSettings(GroupInfo groupInfo)
+            internal void ReportGroupSettings(GroupInfo groupInfo, Item item)
+            {
+                var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
+                var setting = Wheel.SettingCycleStrMap[settingName];
+                var current = setting[groupInfo.Settings[settingName]].CurrentValue;
+                item.Texture = Wheel.SettingStrToTextures[settingName][current];
+                var message = $"# {groupInfo.Name} #";
+                Message = message;
+            }
+
+            internal void SetGroupSettings(GroupInfo groupInfo, Item item)
             {
                 var currentSettingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var currentValue = groupInfo.Settings[currentSettingName];
@@ -198,10 +208,10 @@ namespace WeaponCore
                 var nextValue = Wheel.SettingStrToValues[currentSettingName][nextValueStr];
                 groupInfo.Settings[currentSettingName] = nextValue;
                 groupInfo.ApplySettings();
-                FormatGroupSettingsMessage(groupInfo);
+                ReportGroupSettings(groupInfo, item);
             }
 
-            internal void SetMemberSettings(GroupInfo groupInfo, GroupMember groupMember)
+            internal void SetMemberSettings(GroupInfo groupInfo, GroupMember groupMember, Item item)
             {
                 var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var settingMap = Wheel.SettingCycleStrMap[settingName];
@@ -210,7 +220,7 @@ namespace WeaponCore
                 var nextValue = Wheel.SettingStrToValues[settingName][nextValueToStr];
 
                 groupInfo.SetValue(groupMember.Comp, nextValue);
-                FormatMemberSettingsMessage(groupInfo, groupMember);
+                ReportMemberSettings(groupInfo, groupMember, item);
             }
 
             internal void FormatCompMessage(GroupMember groupMember, Color color)
@@ -228,21 +238,13 @@ namespace WeaponCore
                 Message = message;
             }
 
-            internal void FormatGroupSettingsMessage(GroupInfo groupInfo)
+            internal void ReportMemberSettings(GroupInfo groupInfo, GroupMember groupMember, Item item)
             {
                 var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var setting = Wheel.SettingCycleStrMap[settingName];
-                var currentState = setting[groupInfo.Settings[settingName]].Value;
-                var message = $"# {groupInfo.Name} #\n{settingName} ({currentState})";
-                Message = message;
-            }
-
-            internal void FormatMemberSettingsMessage(GroupInfo groupInfo, GroupMember groupMember)
-            {
-                var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
-                var setting = Wheel.SettingCycleStrMap[settingName];
-                var currentState = setting[groupInfo.GetCompSetting(settingName, groupMember.Comp)];
-                var message = $"# {groupInfo.Name} #\n{settingName} ({currentState.Value})";
+                var current = setting[groupInfo.GetCompSetting(settingName, groupMember.Comp)].CurrentValue;
+                item.Texture = Wheel.SettingStrToTextures[settingName][current];
+                var message = $"# {groupInfo.Name} #";
                 Message = message;
             }
 

@@ -222,26 +222,25 @@ namespace WeaponCore
 
             GridAi gridAi;
             TargetArmed = false;
-            if (GridTargetingAIs.TryGetValue((MyCubeGrid)entity, out gridAi))
-            {
+            var grid = entity as MyCubeGrid;
+            if (grid != null && GridTargetingAIs.TryGetValue(grid, out gridAi)) {
+
                 TargetArmed = true;
             }
-            else
-            {
-                foreach (var info in ai.SortedTargets)
-                {
-                    if (info.Target != entity) continue;
-                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
-                    if (info.IsGrid && ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict))
-                    {
-                        MyConcurrentList<MyCubeBlock> fatList;
-                        if (typeDict.TryGetValue(TargetingDefinition.BlockTypes.Offense, out fatList))
-                            TargetArmed = fatList.Count > 0;
-                        else TargetArmed = false;
-                    }
+            else {
+
+                GridAi.TargetInfo info;
+                if (!ai.Targets.TryGetValue(entity, out info)) return;
+                ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
+                
+                if (info.IsGrid && ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict)) {
+
+                    MyConcurrentList<MyCubeBlock> fatList;
+                    if (typeDict.TryGetValue(TargetingDefinition.BlockTypes.Offense, out fatList))
+                        TargetArmed = fatList.Count > 0;
                     else TargetArmed = false;
-                    break;
                 }
+                else TargetArmed = false;
             }
         }
     }
