@@ -83,10 +83,14 @@ namespace WeaponCore
             var up = cameraWorldMatrix.Up;
             scale = 1 * scale;
             var currentItem = GetCurrentMenuItem();
-            var texture = currentItem.Texture;
-            var color = Color.White * MyAPIGateway.Session.Config.UIBkOpacity;
+            var foreTexture = currentItem.ForeTexture;
+            var backTexture = currentItem.BackTexture;
+            var foreColor = Color.White * MyAPIGateway.Session.Config.UIOpacity;
+            var backColor = Color.White * MyAPIGateway.Session.Config.UIBkOpacity;
+
             SetCurrentMessage();
-            if (texture != MyStringId.NullOrEmpty) MyTransparentGeometry.AddBillboardOriented(texture, color, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            if (backTexture != MyStringId.NullOrEmpty) MyTransparentGeometry.AddBillboardOriented(backTexture, backColor, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
+            if (foreTexture != MyStringId.NullOrEmpty) MyTransparentGeometry.AddBillboardOriented(foreTexture, foreColor, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
         }
 
         internal void OpenWheel()

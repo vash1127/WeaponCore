@@ -20,7 +20,8 @@ namespace WeaponCore
             internal string ItemMessage;
             internal string SubName;
             internal string ParentName;
-            internal MyStringId Texture;
+            internal MyStringId ForeTexture;
+            internal MyStringId BackTexture;
             internal int SubSlot;
             internal int SubSlotCount;
             internal bool Dynamic;
@@ -194,7 +195,8 @@ namespace WeaponCore
                 var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var setting = Wheel.SettingCycleStrMap[settingName];
                 var current = setting[groupInfo.Settings[settingName]].CurrentValue;
-                item.Texture = Wheel.SettingStrToTextures[settingName][current];
+                item.ForeTexture = Wheel.SettingStrToTextures[settingName][current][0];
+                item.BackTexture = Wheel.SettingStrToTextures[settingName][current][1];
                 var message = $"# {groupInfo.Name} #";
                 Message = message;
             }
@@ -243,7 +245,8 @@ namespace WeaponCore
                 var settingName = Wheel.SettingNames[Items[CurrentSlot].SubSlot];
                 var setting = Wheel.SettingCycleStrMap[settingName];
                 var current = setting[groupInfo.GetCompSetting(settingName, groupMember.Comp)].CurrentValue;
-                item.Texture = Wheel.SettingStrToTextures[settingName][current];
+                item.ForeTexture = Wheel.SettingStrToTextures[settingName][current][0];
+                item.BackTexture = Wheel.SettingStrToTextures[settingName][current][1];
                 var message = $"# {groupInfo.Name} #";
                 Message = message;
             }

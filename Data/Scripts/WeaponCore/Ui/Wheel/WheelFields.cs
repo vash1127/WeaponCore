@@ -51,8 +51,8 @@ namespace WeaponCore
 
         internal readonly Item[] Group =
         {
-            new Item {ItemMessage = "Group Settings", Texture = MyStringId.GetOrCompute("DS_GroupSettings"), ParentName = "CompGroups", SubName = "GroupSettings"},
-            new Item {ItemMessage = "Modify Weapons",  Texture = MyStringId.GetOrCompute("DS_ModifyWeapon"), ParentName = "CompGroups", SubName = "Comps"},
+            new Item {ItemMessage = "Group Settings", ForeTexture = MyStringId.GetOrCompute("DS_GroupSettings"), ParentName = "CompGroups", SubName = "GroupSettings"},
+            new Item {ItemMessage = "Modify Weapons",  ForeTexture = MyStringId.GetOrCompute("DS_ModifyWeapon"), ParentName = "CompGroups", SubName = "Comps"},
         };
 
         internal readonly Item[] Settings =
@@ -216,75 +216,75 @@ namespace WeaponCore
             },
         };
 
-        internal readonly Dictionary<string, Dictionary<string, MyStringId>> SettingStrToTextures = new Dictionary<string, Dictionary<string, MyStringId>>()
+        internal readonly Dictionary<string, Dictionary<string, MyStringId[]>> SettingStrToTextures = new Dictionary<string, Dictionary<string, MyStringId[]>>()
         {
             {
-                "Active", new Dictionary<string, MyStringId>
+                "Active", new Dictionary<string, MyStringId[]>
                 {
-                    ["Activate"] = MyStringId.GetOrCompute("DS_ActivatedEnabled"),
-                    ["Deactivate"] = MyStringId.GetOrCompute("DS_ActivatedDisabled"),
+                    ["Activate"] = new []{MyStringId.GetOrCompute("DS_ActivatedEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Deactivate"] = new []{MyStringId.GetOrCompute("DS_ActivatedDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Neutrals", new Dictionary<string, MyStringId>
+                "Neutrals", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = MyStringId.GetOrCompute("DS_NeutralEnabled"),
-                    ["Disable"] = MyStringId.GetOrCompute("DS_NeutralDisabled"),
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_NeutralEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_NeutralDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Unowned", new Dictionary<string, MyStringId>
+                "Unowned", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = MyStringId.GetOrCompute("DS_UnownedEnabled"),
-                    ["Disable"] = MyStringId.GetOrCompute("DS_UnownedDisabled"),
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_UnownedEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_UnownedDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Friends", new Dictionary<string, MyStringId>
+                "Friends", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = MyStringId.GetOrCompute("DS_FriendlyEnabled"),
-                    ["Disable"] = MyStringId.GetOrCompute("DS_FriendlyDisabled"),
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_FriendlyEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_FriendlyDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Manual Aim", new Dictionary<string, MyStringId>
+                "Manual Aim", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = MyStringId.GetOrCompute("DS_ManualAimEnabled"),
-                    ["Disable"] = MyStringId.GetOrCompute("DS_ManualAimDisabled"),
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_ManualAimEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_ManualAimDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Manual Fire", new Dictionary<string, MyStringId>
+                "Manual Fire", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = MyStringId.GetOrCompute("DS_ManualFireEnabled"),
-                    ["Disable"] = MyStringId.GetOrCompute("DS_ManualFireDisabled"),
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_ManualFireEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_ManualFireDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Focus Targets", new Dictionary<string, MyStringId>
+                "Focus Targets", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = MyStringId.GetOrCompute("DS_FocusTargetEnabled"),
-                    ["Disable"] = MyStringId.GetOrCompute("DS_FocusTargetDisabled"),
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_FocusTargetEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_FocusTargetDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Focus SubSystem", new Dictionary<string, MyStringId>
+                "Focus SubSystem", new Dictionary<string, MyStringId[]>
                 {
-                    ["Enable"] = MyStringId.GetOrCompute("DS_FocusSubsystemEnabled"),
-                    ["Disable"] = MyStringId.GetOrCompute("DS_FocusSubsystemDisabled"),
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_FocusSubsystemEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_FocusSubsystemDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Sub Systems", new Dictionary<string, MyStringId>
+                "Sub Systems", new Dictionary<string, MyStringId[]>
                 {
-                    ["Any"] = MyStringId.GetOrCompute("DS_SubsystemAny"),
-                    ["Offense"] = MyStringId.GetOrCompute("DS_SubsystemOffense"),
-                    ["Utility"] = MyStringId.GetOrCompute("DS_SubsystemUtility"),
-                    ["Power"] = MyStringId.GetOrCompute("DS_SubsystemPower"),
-                    ["Production"] = MyStringId.GetOrCompute("DS_SubsystemProduction"),
-                    ["Thrust"] = MyStringId.GetOrCompute("DS_SubsystemThrust"),
-                    ["Jumping"] = MyStringId.GetOrCompute("DS_SubsystemJump"),
-                    ["Steering"] = MyStringId.GetOrCompute("DS_SubsystemSteering"),
+                    ["Any"] = new [] {MyStringId.GetOrCompute("DS_SubsystemAny"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
+                    ["Offense"] = new [] {MyStringId.GetOrCompute("DS_SubsystemOffense"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
+                    ["Utility"] = new [] {MyStringId.GetOrCompute("DS_SubsystemUtility"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
+                    ["Power"] = new [] {MyStringId.GetOrCompute("DS_SubsystemPower"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
+                    ["Production"] = new [] {MyStringId.GetOrCompute("DS_SubsystemProduction"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
+                    ["Thrust"] = new [] {MyStringId.GetOrCompute("DS_SubsystemThrust"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
+                    ["Jumping"] = new [] {MyStringId.GetOrCompute("DS_SubsystemJump"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
+                    ["Steering"] = new [] {MyStringId.GetOrCompute("DS_SubsystemSteering"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
                 }
             },
         };
