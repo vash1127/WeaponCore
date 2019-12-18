@@ -87,18 +87,15 @@ namespace WeaponCore
                         
                         if (w.Target.Entity == null && w.Target.Projectile == null) {
                             
-                            w.Target.Expired = true;
-                            w.TurretTargetLock = false;
+                            w.Target.Reset();
                         }
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) {
                             
                             w.Target.Reset();
-                            w.TurretTargetLock = false;
                         }
                         else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive)) {
                             
                             w.Target.Reset();
-                            w.TurretTargetLock = false;
                         }
                         else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable) {
                             
@@ -117,19 +114,16 @@ namespace WeaponCore
                                     if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity)) {
                                         
                                         w.Target.Reset();
-                                        w.TurretTargetLock = false;
                                     }
                                 }
                                 else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
                                     
                                     w.Target.Reset();
-                                    w.TurretTargetLock = false;
                                 }
                             }
                             else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
                                 
-                                w.Target.Expired = true;
-                                w.TurretTargetLock = false;
+                                w.Target.Reset();
                             }
                         }
 
@@ -145,12 +139,12 @@ namespace WeaponCore
                             if (gunner || !w.AiReady || w.DelayFireCount++ > w.System.TimeToCeaseFire) {
 
                                 w.DelayFireCount = 0;
-                                w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                                w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Target.TargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
                             }
                         }
                         else {
 
-                            w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.TurretTargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
+                            w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Target.TargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
                         }
 
                         if (w.TargetWasExpired != w.Target.Expired) {

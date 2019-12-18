@@ -131,7 +131,6 @@ namespace WeaponCore.Platform
         internal bool SleepTargets;
         internal bool HitOther;
         internal bool FixedOffset;
-        internal bool TurretTargetLock;
         internal bool AiOnlyWeapon;
         internal bool Charging;
         internal HardPointDefinition.Prediction Prediction;

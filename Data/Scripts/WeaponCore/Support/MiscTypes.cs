@@ -292,10 +292,11 @@ namespace WeaponCore.Support
     internal class Target
     {
         internal volatile bool Expired = true;
+        internal volatile bool IsProjectile;
+        internal bool TargetLock;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
         internal Projectile Projectile;
-        internal volatile bool IsProjectile;
         internal int[] TargetDeck = new int[0];
         internal int[] BlockDeck = new int[0];
         internal int TargetPrevDeckLen;
@@ -322,7 +323,7 @@ namespace WeaponCore.Support
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
             target.Expired = Expired;
-            if(reset) Reset();
+            if (reset) Reset();
         }
 
         internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null)
@@ -342,12 +343,12 @@ namespace WeaponCore.Support
             Entity = null;
             IsProjectile = false;
             Projectile = null;
-
             HitPos = Vector3D.Zero;
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
             Expired = true;
+            TargetLock = false;
         }
     }
 

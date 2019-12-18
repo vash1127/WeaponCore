@@ -278,7 +278,7 @@ namespace WeaponCore.Platform
             else if (alignedChange && !weapon.DelayCeaseFire)
                 weapon.StopShooting();
 
-            weapon.TurretTargetLock = weapon.IsTracking && weapon.IsAligned;
+            weapon.Target.TargetLock = weapon.IsTracking && weapon.IsAligned;
             return weapon.IsTracking;
         }
 
