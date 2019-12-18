@@ -37,7 +37,6 @@ namespace WeaponCore
                     gridAi.LiveProjectileTick = Tick;
                 }
 
-                //Log.Line($"gridAi.Gunners: {gridAi.Gunners.Count}");
                 var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
                 if (!gridAi.DbReady && weaponsInStandby) 
                     continue;
@@ -89,17 +88,14 @@ namespace WeaponCore
                         if (w.Target.Entity == null && w.Target.Projectile == null) {
                             
                             w.Target.Expired = true;
-                            w.TurretTargetLock = false;
                         }
                         else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) {
                             
                             w.Target.Reset();
-                            w.TurretTargetLock = false;
                         }
                         else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive)) {
                             
                             w.Target.Reset();
-                            w.TurretTargetLock = false;
                         }
                         else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable) {
                             
@@ -118,19 +114,16 @@ namespace WeaponCore
                                     if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity)) {
                                         
                                         w.Target.Reset();
-                                        w.TurretTargetLock = false;
                                     }
                                 }
                                 else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
                                     
                                     w.Target.Reset();
-                                    w.TurretTargetLock = false;
                                 }
                             }
                             else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
                                 
                                 w.Target.Expired = true;
-                                w.TurretTargetLock = false;
                             }
                         }
 
