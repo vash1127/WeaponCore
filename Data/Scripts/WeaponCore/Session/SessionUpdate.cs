@@ -131,30 +131,6 @@ namespace WeaponCore
                             w.TargetPos = Vector3D.Zero;
 
                         ///
-                        /// Update target tracking
-                        /// 
-
-                        if ((w.Target.Expired && w.TrackTarget) || gridAi.TargetResetTick == Tick) {
-                            
-                            if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset) {
-                                
-                                w.TargetReset = false;
-                                if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired) {
-                                    
-                                    GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
-                                }
-                                else {
-
-                                    GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
-                                }
-                            }
-                        }
-                        else if (w.IsTurret && !w.TrackTarget && w.Target.Expired) {
-
-                            w.Target = w.Comp.TrackingWeapon.Target;
-                        }
-
-                        ///
                         /// Set weapon Ai state
                         /// 
 
@@ -225,7 +201,10 @@ namespace WeaponCore
                             if (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick)
                                 ShootingWeapons.Enqueue(w);
                             else if (w.ChargeUntilTick > Tick)
+                            {
                                 w.Charging = true;
+                                ShootingWeapons.Enqueue(w);
+                            }
                         }
                         else if (w.IsShooting)
                             w.StopShooting();
@@ -248,6 +227,34 @@ namespace WeaponCore
             while (ShootingWeapons.Count > 0)
             {
                 var w = ShootingWeapons.Dequeue();
+
+                ///
+                /// Update target tracking
+                /// 
+
+                if ((w.Target.Expired && w.TrackTarget) || w.Comp.Ai.TargetResetTick == Tick)
+                {
+
+                    if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || w.Comp.Ai.TargetResetTick == Tick || w.TargetReset)
+                    {
+
+                        w.TargetReset = false;
+                        if (w.Comp.TrackingWeapon != null && w.Comp.TrackingWeapon.System.DesignatorWeapon && w.Comp.TrackingWeapon != w && !w.Comp.TrackingWeapon.Target.Expired)
+                        {
+                            GridAi.AcquireTarget(w, false, w.Comp.TrackingWeapon.Target.Entity.GetTopMostParent());
+                        }
+                        else
+                        {
+                            GridAi.AcquireTarget(w, w.Comp.Ai.TargetResetTick == Tick);
+                        }
+                    }
+                }
+                else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
+                {
+                    w.Target = w.Comp.TrackingWeapon.Target;
+                }
+                var proceed = w.DelayTicks == 0 || w.ChargeUntilTick <= Tick;
+                if (!proceed) continue;
 
                 //TODO add logic for power priority
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid)) {
