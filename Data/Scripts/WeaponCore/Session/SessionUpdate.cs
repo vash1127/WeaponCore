@@ -85,6 +85,7 @@ namespace WeaponCore
                         /// Check target for expire states
                         /// 
                         
+                        w.TargetWasExpired = w.Target.Expired;
                         if (w.Target.Entity == null && w.Target.Projectile == null) {
                             
                             w.Target.Reset();
@@ -127,6 +128,8 @@ namespace WeaponCore
                             }
                         }
 
+                        var targetChange = w.TargetWasExpired != w.Target.Expired;
+
                         if (gunner && UiInput.MouseButtonPressed)
                             w.TargetPos = Vector3D.Zero;
 
@@ -147,7 +150,7 @@ namespace WeaponCore
                             w.AiReady = gunner || !w.Target.Expired && ((w.TrackingAi || !w.TrackTarget) && w.Target.TargetLock) || !w.TrackingAi && w.TrackTarget && !w.Target.Expired;
                         }
 
-                        if (w.TargetWasExpired != w.Target.Expired) {
+                        if (targetChange) {
 
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, !w.Target.Expired);
                             w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.Expired);
@@ -155,6 +158,8 @@ namespace WeaponCore
                             if (w.Target.Expired)
                                 w.TargetReset = true;
                         }
+
+
                         w.SeekTarget = w.Target.Expired && w.TrackTarget;
                         if (w.SeekTarget) AcquireTargets.Enqueue(w);
 
@@ -167,7 +172,7 @@ namespace WeaponCore
 
                             if (comp.State.Value.Online) {
                                 
-                                if (w.TargetWasExpired != w.Target.Expired && w.Target.Expired || gunner != lastGunner && !gunner) 
+                                if (targetChange && w.Target.Expired || gunner != lastGunner && !gunner) 
                                     FutureEvents.Schedule(w.HomeTurret, null, 240);
 
                                 if (gunner != lastGunner && gunner) {
@@ -201,7 +206,8 @@ namespace WeaponCore
                             if (gridAi.AvailablePowerChange)
                                 w.DelayTicks = 0;
 
-                            if (!w.SeekTarget && (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick))
+                            var targetRequested = w.SeekTarget && targetChange;
+                            if (!targetRequested && (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick))
                             {
                                 ShootingWeapons.Enqueue(w);
                             }
@@ -229,8 +235,6 @@ namespace WeaponCore
                 var w = AcquireTargets.Dequeue();
                 var gridAi = w.Comp.Ai;
                 var comp = w.Comp;
-
-                w.TargetWasExpired = w.Target.Expired;
 
                 if ((w.Target.Expired && w.TrackTarget) || gridAi.TargetResetTick == Tick)
                 {
