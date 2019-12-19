@@ -75,16 +75,14 @@ namespace WeaponCore.Support
                 IsFunctional = myCubeBlock.IsFunctional;
                 if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
                     Status = Start.ReInit;
-
                 IsWorking = myCubeBlock.IsWorking;
                 State.Value.Online = IsWorking && IsFunctional;
+                if (MyCube.ResourceSink.CurrentInputByType(GId) < 0) Log.Line($"IsWorking:{IsWorking}(was:{wasFunctional}) - online:{State.Value.Online} - Func:{IsFunctional} - GridAvailPow:{Ai.GridAvailablePower} - SinkPow:{SinkPower} - SinkReq:{MyCube.ResourceSink.RequiredInputByType(GId)} - SinkCur:{MyCube.ResourceSink.CurrentInputByType(GId)}");
                 TerminalRefresh();
                 if (!IsWorking)
                 {
                     foreach (var w in Platform.Weapons)
-                    {
                         w.StopShooting();
-                    }
                 }
                 IsWorkingChangedTick = Ai.Session.Tick;
             }

@@ -723,10 +723,10 @@ namespace WeaponCore.Platform
                 if (!Comp.UnlimitedPower)
                 {
                     Comp.Ai.RequestedWeaponsDraw += RequiredPower;
+                    Comp.Ai.CurrentWeaponsDraw += UseablePower;
                     Comp.SinkPower += UseablePower;
-                    Comp.Ai.CurrentWeaponsDraw -= UseablePower;
-                    //Comp.CurrentSinkPowerRequested = Comp.SinkPower;
                     Comp.Ai.GridAvailablePower -= Comp.SinkPower;
+
                     Comp.MyCube.ResourceSink.Update();
                 }
                 
@@ -745,7 +745,7 @@ namespace WeaponCore.Platform
             {
                 _ticksUntilShoot = 0;
                 PreFired = false;
-                if (IsShooting)
+                if (ShotEnergyCost > 0 && IsShooting && !System.DesignatorWeapon)
                 {
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true);
@@ -753,11 +753,11 @@ namespace WeaponCore.Platform
                     if (!Comp.UnlimitedPower)
                     {
                         Comp.Ai.RequestedWeaponsDraw -= RequiredPower;
-                        Comp.Ai.GridAvailablePower += Comp.SinkPower;
-                        Comp.SinkPower -= UseablePower;
                         Comp.Ai.CurrentWeaponsDraw -= UseablePower;
+                        Comp.SinkPower -= UseablePower;
+                        Comp.Ai.GridAvailablePower += Comp.SinkPower;
+
                         DelayTicks = 0;
-                        //Comp.CurrentSinkPowerRequested = Comp.IdlePower;
                         Comp.MyCube.ResourceSink.Update();
                     }
                     Comp.TerminalRefresh();

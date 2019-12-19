@@ -11,17 +11,6 @@ namespace WeaponCore.Support
     {
         private void PowerInit()
         {
-            /*
-            SinkInfo = new MyResourceSinkInfo()
-            {
-                ResourceTypeId = GId,
-                MaxRequiredInput = 0f,
-                RequiredInputFunc = () => SinkPower,
-            };
-            MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Defense"), SinkInfo);
-            MyCube.ResourceSink.TemporaryConnectedEntity = MyCube;
-            */
-
             MyCube.ResourceSink.SetRequiredInputFuncByType(GId, () => SinkPower);
             MyCube.ResourceSink.SetMaxRequiredInputByType(GId, 0);
 

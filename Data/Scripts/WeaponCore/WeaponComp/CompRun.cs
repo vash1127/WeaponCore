@@ -187,6 +187,7 @@ namespace WeaponCore.Support
 
             Ai.TotalSinkPower += MaxRequiredPower;
             Ai.MinSinkPower += IdlePower;
+            Ai.RequestedWeaponsDraw = Ai.MinSinkPower;
             //Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
             if (!Ai.GridInit)

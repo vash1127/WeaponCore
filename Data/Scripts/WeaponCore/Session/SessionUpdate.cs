@@ -297,6 +297,7 @@ namespace WeaponCore
                     var oldUseable = w.UseablePower;
                     w.UseablePower = w.RequiredPower;
                     w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
+
                     w.DelayTicks = 0;
                     w.Charging = false;
                 }
