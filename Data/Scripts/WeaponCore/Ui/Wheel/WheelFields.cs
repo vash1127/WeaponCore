@@ -46,13 +46,13 @@ namespace WeaponCore
 
         internal readonly Item[] CompGroups =
         {
-            new Item {Title = "Select Group", SubName = "Group"},
+            new Item {Title = "Select Group",ForeTexture = MyStringId.GetOrCompute("DS_Menu_SelectGroup"), BackTexture = MyStringId.GetOrCompute("DS_Menu_SelectGroupBackground"), SubName = "Group"},
         };
 
         internal readonly Item[] Group =
         {
-            new Item {ItemMessage = "Group Settings", ForeTexture = MyStringId.GetOrCompute("DS_GroupSettings"), BackTexture = MyStringId.GetOrCompute("DS_Menu_SelectGroupBackground"), ParentName = "CompGroups", SubName = "GroupSettings"},
-            new Item {ItemMessage = "Modify Weapons",  ForeTexture = MyStringId.GetOrCompute("DS_ModifyWeapon"), BackTexture = MyStringId.GetOrCompute("DS_Menu_SelectGroupBackground"), ParentName = "CompGroups", SubName = "Comps"},
+            new Item {ItemMessage = "Group Settings", ForeTexture = MyStringId.GetOrCompute("DS_GroupSettings"), BackTexture = MyStringId.GetOrCompute("DS_Menu_ModifyGroup_Background"), ParentName = "CompGroups", SubName = "GroupSettings"},
+            new Item {ItemMessage = "Modify Weapons",  ForeTexture = MyStringId.GetOrCompute("DS_ModifyWeapon"), BackTexture = MyStringId.GetOrCompute("DS_Menu_ModifyGroup_Background"), ParentName = "CompGroups", SubName = "Comps"},
         };
 
         internal readonly Item[] Settings =
