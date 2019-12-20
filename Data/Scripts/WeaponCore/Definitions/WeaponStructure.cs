@@ -216,8 +216,7 @@ namespace WeaponCore.Support
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && (EnergyAmmo || MagazineDef.Capacity >= values.HardPoint.Loading.ShotsInBurst);
             BaseDamage = values.Ammo.BaseDamage;
             MaxTargets = Values.Ammo.Trajectory.Smarts.MaxTargets;
-            TargetLossDegree = Values.Ammo.Trajectory.TargetLossDegree;
-
+            TargetLossDegree = Values.Ammo.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(Values.Ammo.Trajectory.TargetLossDegree)) : 0;
 
             Fields(out PulseInterval, out PulseChance);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);

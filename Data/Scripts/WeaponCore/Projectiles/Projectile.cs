@@ -576,6 +576,7 @@ namespace WeaponCore.Projectiles
                     if (T.Target.IsProjectile) targetPos = T.Target.Projectile.Position;
                     else if (T.Target.Entity != null) targetPos = T.Target.Entity.PositionComp.WorldAABB.Center;
 
+
                     if (T.System.TargetOffSet)
                     {
                         if (Age - LastOffsetTime > 300)
@@ -587,7 +588,6 @@ namespace WeaponCore.Projectiles
                         }
                         targetPos += TargetOffSet;
                     }
-                    //var test = MathFuncs.IsDotProductWithinTolerance(ref TargetDir, ref refDir, myAi.Session.ApproachDegrees);
 
                     var physics = T.Target.Entity?.Physics ?? T.Target.Entity?.Parent?.Physics;
 
@@ -598,6 +598,20 @@ namespace WeaponCore.Projectiles
                     var tVel = Vector3.Zero;
                     if (T.Target.IsProjectile) tVel = T.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
+
+                    if (T.System.TargetLossDegree > 0 && T.Ai.Session.Tick60)
+                    {
+                        if (!MyUtils.IsZero(tVel, 1E-02F))
+                        {
+                            var targetDir = Vector3D.Normalize(tVel);
+                            var refDir = Vector3D.Normalize(Position - targetPos);
+                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, T.System.TargetLossDegree))
+                            {
+                                Log.Line($"not in targetlossDegree");
+                                PickTarget = true;
+                            }
+                        }
+                    }
 
                     PrevTargetVel = tVel;
                 }
