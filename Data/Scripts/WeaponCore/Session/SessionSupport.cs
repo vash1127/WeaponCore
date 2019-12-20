@@ -332,7 +332,7 @@ namespace WeaponCore
                     weaponValue.Heat = weaponValue.Heat >= w.HsRate ? weaponValue.Heat - w.HsRate : 0;
 
                     w.Comp.TerminalRefresh();
-                    if (w.Comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
+                    if (w.Comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCoolDown))
                     {
                         w.EventTriggerStateChanged(Weapon.EventTriggers.Overheated, false);
                         w.Comp.Overheated = false;

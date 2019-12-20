@@ -213,7 +213,7 @@ namespace WeaponCore.Platform
                         p.T.WeaponCache = WeaponCache;
                         p.T.WeaponCache.VirutalId = -1;
 
-                        p.SelfDamage = System.SelfDamage || Comp.Gunner;
+                        p.Gunner = Comp.Gunner;
                         p.GridVel = Comp.Ai.GridVel;
                         p.T.Origin = muzzle.Position;
                         p.T.OriginUp = MyPivotUp;
@@ -344,7 +344,7 @@ namespace WeaponCore.Platform
             p.T.WeaponId = WeaponId;
             p.T.MuzzleId = -1;
 
-            p.SelfDamage = System.SelfDamage || Comp.Gunner;
+            p.Gunner = Comp.Gunner;
             p.GridVel = Comp.Ai.GridVel;
             p.T.Origin = MyPivotPos;
             p.T.OriginUp = MyPivotUp;

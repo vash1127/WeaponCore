@@ -34,6 +34,7 @@ namespace WeaponCore.Support
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix[]> WeaponLinearMoveSet;
         public readonly MyPhysicalInventoryItem AmmoItem;
+        public readonly AreaDamage.AreaEffectType AreaEffect;
         public readonly string WeaponName;
         public readonly string[] Barrels;
         public readonly uint OnDelay;
@@ -54,6 +55,9 @@ namespace WeaponCore.Support
         public readonly int HeatPerShot;
         public readonly int RateOfFire;
         public readonly int BarrelSpinRate;
+        public readonly int MaxTargets;
+        public readonly int PulseInterval;
+        public readonly int PulseChance;
         public readonly TurretType TurretMovement;
         public readonly bool HasBarrelRate;
         public readonly bool ElevationOnly;
@@ -103,6 +107,9 @@ namespace WeaponCore.Support
         public readonly bool DesignatorWeapon;
         public readonly bool AmmoParticleShrinks;
         public readonly bool HitParticleShrinks;
+        public readonly bool DrawLine;
+        public readonly bool Ewar;
+        public readonly bool EwarEffect;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -116,9 +123,11 @@ namespace WeaponCore.Support
         public readonly double TracerLength;
         public readonly double AzStep;
         public readonly double ElStep;
+        public readonly double SmartsDelayDistSqr;
+        public readonly float TargetLossDegree;
         public readonly float Barrel1AvTicks;
         public readonly float Barrel2AvTicks;
-        public readonly float WepCooldown;
+        public readonly float WepCoolDown;
         public readonly float BaseDamage;
         public readonly float AreaEffectDamage;
         public readonly float DetonationDamage;
@@ -164,7 +173,6 @@ namespace WeaponCore.Support
             DesignatorWeapon = muzzlePartName.String == "Designator";
             AzimuthPartName = azimuthPartName;
             ElevationPartName = elevationPartName;
-            TurretMovement = TurretType.Full;
 
             Values = values;
             Barrels = values.Assignments.Barrels;
@@ -181,40 +189,18 @@ namespace WeaponCore.Support
             IsMine = Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectFixed || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectSmart || Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.DetectTravelTo;
             IsField = Values.Ammo.Trajectory.FieldTime > 0;
 
-            AzStep = Values.HardPoint.Block.RotateRate;
-            ElStep = Values.HardPoint.Block.ElevateRate;
-            MinAzimuth = Values.HardPoint.Block.MinAzimuth;
-            MaxAzimuth = Values.HardPoint.Block.MaxAzimuth;
-            MinElevation = Values.HardPoint.Block.MinElevation;
-            MaxElevation = Values.HardPoint.Block.MaxElevation;
+            TurretMovements(out AzStep, out ElStep, out MinAzimuth, out MaxAzimuth, out MinElevation, out MaxElevation, out TurretMovement, out ElevationOnly, out LimitedAxisTurret);
 
-            if (MinAzimuth == MaxAzimuth)
-            {
-                TurretMovement = TurretType.ElevationOnly;
-                ElevationOnly = true;
-                LimitedAxisTurret = true;
-            }
-            if (MinElevation == MaxElevation && TurretMovement != TurretType.Full)
-            {
-                TurretMovement = TurretType.Fixed;
-                LimitedAxisTurret = true;
-            }
-            else if (MinElevation == MaxElevation)
-            {
-                TurretMovement = TurretType.AzimuthOnly;
-                ElevationOnly = false;
-                LimitedAxisTurret = true;
-            }
             MaxAmmoVolume = Values.HardPoint.Block.InventorySize;
             AmmoParticle = values.Graphics.Particles.Ammo.Name != string.Empty;
             AmmoParticleShrinks = values.Graphics.Particles.Ammo.ShrinkByDistance;
             HitParticleShrinks = values.Graphics.Particles.Hit.ShrinkByDistance;
-            BarrelEffect1 = values.Graphics.Particles.Barrel1.Name != string.Empty;
-            BarrelEffect2 = values.Graphics.Particles.Barrel2.Name != string.Empty;
+            
+            BarrelsAv(out BarrelEffect1, out BarrelEffect2, out Barrel1AvTicks, out Barrel2AvTicks, out BarrelAxisRotation);
+
             HitParticle = values.Graphics.Particles.Hit.Name != string.Empty;
-            Barrel1AvTicks = values.Graphics.Particles.Barrel1.Extras.MaxDuration;
-            Barrel2AvTicks = values.Graphics.Particles.Barrel2.Extras.MaxDuration;
-            BarrelAxisRotation = values.HardPoint.RotateBarrelAxis != 0;
+
+            DrawLine = Values.Graphics.Line.Tracer.Enable;
             LineColorVariance = values.Graphics.Line.ColorVariance.Start > 0 && values.Graphics.Line.ColorVariance.End > 0;
             LineWidthVariance = values.Graphics.Line.WidthVariance.Start > 0 || values.Graphics.Line.WidthVariance.End > 0;
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
@@ -228,27 +214,16 @@ namespace WeaponCore.Support
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
             BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && (EnergyAmmo || MagazineDef.Capacity >= values.HardPoint.Loading.ShotsInBurst);
-            DegRof = values.HardPoint.Loading.DegradeRof;
-            MaxHeat = values.HardPoint.Loading.MaxHeat;
-            WepCooldown = values.HardPoint.Loading.Cooldown;
-            BarrelsPerShot = values.HardPoint.Loading.BarrelsPerShot;
-            HeatPerShot = values.HardPoint.Loading.HeatPerShot;
             BaseDamage = values.Ammo.BaseDamage;
-            RateOfFire = values.HardPoint.Loading.RateOfFire;
-            BarrelSpinRate = values.HardPoint.Loading.BarrelSpinRate;
-            HasBarrelRate = BarrelSpinRate > 0;
+            MaxTargets = Values.Ammo.Trajectory.Smarts.MaxTargets;
+            TargetLossDegree = Values.Ammo.Trajectory.TargetLossDegree;
 
-            AreaEffectDamage = Values.Ammo.AreaEffect.AreaEffectDamage;
-            AreaEffectSize = Values.Ammo.AreaEffect.AreaEffectRadius;
-            DetonationDamage = Values.Ammo.AreaEffect.Detonation.DetonationDamage;
-            if (WepCooldown < .2f) WepCooldown = .2f;
-            if(WepCooldown > .95f) WepCooldown = .95f;
-            AmmoAreaEffect = values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
+
+            Fields(out PulseInterval, out PulseChance);
+            Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
+            BarrelValues(out BarrelsPerShot, out BarrelSpinRate, out HasBarrelRate, out RateOfFire);
+            AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect);
             
-            AreaRadiusSmall = Session.ModRadius(values.Ammo.AreaEffect.AreaEffectRadius, false);
-            AreaRadiusLarge = Session.ModRadius(values.Ammo.AreaEffect.AreaEffectRadius, true);
-            DetonateRadiusSmall = Session.ModRadius(values.Ammo.AreaEffect.Detonation.DetonationRadius, false);
-            DetonateRadiusLarge = Session.ModRadius(values.Ammo.AreaEffect.Detonation.DetonationRadius, true);
             ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             IsHybrid = values.HardPoint.Hybrid;
@@ -264,6 +239,7 @@ namespace WeaponCore.Support
 
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
             CollisionShape(out CollisionIsLine, out CollisionSize, out TracerLength);
+            SmartsDelayDistSqr = (CollisionSize * Values.Ammo.Trajectory.Smarts.TrackingDelay) * (CollisionSize * Values.Ammo.Trajectory.Smarts.TrackingDelay);
             Models(out PrimeModelId, out TriggerModelId);
             Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
@@ -276,9 +252,84 @@ namespace WeaponCore.Support
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out OnDelay);
         }
 
-        private void SetWeaponAnimations( )
+        private void Fields(out int pulseInterval, out int pulseChance)
         {
+            pulseInterval = Values.Ammo.AreaEffect.Pulse.Interval;
+            pulseChance = Values.Ammo.AreaEffect.Pulse.PulseChance;
+        }
+
+        private void Heat(out bool degRof, out int maxHeat, out float wepCoolDown, out int heatPerShot)
+        {
+            degRof = Values.HardPoint.Loading.DegradeRof;
+            maxHeat = Values.HardPoint.Loading.MaxHeat;
+            wepCoolDown = Values.HardPoint.Loading.Cooldown;
+            heatPerShot = Values.HardPoint.Loading.HeatPerShot;
+            if (wepCoolDown < .2f) wepCoolDown = .2f;
+            if (wepCoolDown > .95f) wepCoolDown = .95f;
+        }
+
+        private void BarrelValues(out int barrelsPerShot, out int barrelSpinRate, out bool hasBarrelRate, out int rateOfFire)
+        {
+            barrelsPerShot = Values.HardPoint.Loading.BarrelsPerShot;
+            barrelSpinRate = Values.HardPoint.Loading.BarrelSpinRate;
+            hasBarrelRate = BarrelSpinRate > 0;
+            rateOfFire = Values.HardPoint.Loading.RateOfFire;
+        }
+
+        private void BarrelsAv(out bool barrelEffect1, out bool barrelEffect2, out float barrel1AvTicks, out float barrel2AvTicks, out bool barrelAxisRotation)
+        {
+            barrelEffect1 = Values.Graphics.Particles.Barrel1.Name != string.Empty;
+            barrelEffect2 = Values.Graphics.Particles.Barrel2.Name != string.Empty;
+            barrel1AvTicks = Values.Graphics.Particles.Barrel1.Extras.MaxDuration;
+            barrel2AvTicks = Values.Graphics.Particles.Barrel2.Extras.MaxDuration;
+            barrelAxisRotation = Values.HardPoint.RotateBarrelAxis != 0;
+        }
+
+        private void AreaEffects(out AreaDamage.AreaEffectType areaEffect, out float areaEffectDamage, out double areaEffectSize, out float detonationDamage, out bool ammoAreaEffect, out double areaRadiusSmall, out double areaRadiusLarge, out double detonateRadiusSmall, out double detonateRadiusLarge, out bool eWar, out bool eWarEffect)
+        {
+            areaEffect = Values.Ammo.AreaEffect.AreaEffect;
+            areaEffectDamage = Values.Ammo.AreaEffect.AreaEffectDamage;
+            areaEffectSize = Values.Ammo.AreaEffect.AreaEffectRadius;
+            detonationDamage = Values.Ammo.AreaEffect.Detonation.DetonationDamage;
+            ammoAreaEffect = Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled;
+            areaRadiusSmall = Session.ModRadius(Values.Ammo.AreaEffect.AreaEffectRadius, false);
+            areaRadiusLarge = Session.ModRadius(Values.Ammo.AreaEffect.AreaEffectRadius, true);
+            detonateRadiusSmall = Session.ModRadius(Values.Ammo.AreaEffect.Detonation.DetonationRadius, false);
+            detonateRadiusLarge = Session.ModRadius(Values.Ammo.AreaEffect.Detonation.DetonationRadius, true);
+            eWar = areaEffect > (AreaDamage.AreaEffectType)2;
+            eWarEffect = areaEffect > (AreaDamage.AreaEffectType)3;
+        }
+
+        private void TurretMovements(out double azStep, out double elStep, out int minAzimuth, out int maxAzimuth, out int minElevation, out int maxElevation, out TurretType turretMove, out bool elevationOnly, out bool limitedAxisTurret)
+        {
+            azStep = Values.HardPoint.Block.RotateRate;
+            elStep = Values.HardPoint.Block.ElevateRate;
+            minAzimuth = Values.HardPoint.Block.MinAzimuth;
+            maxAzimuth = Values.HardPoint.Block.MaxAzimuth;
+            minElevation = Values.HardPoint.Block.MinElevation;
+            maxElevation = Values.HardPoint.Block.MaxElevation;
             
+            elevationOnly = false;
+            limitedAxisTurret = false;
+            turretMove = TurretType.Full;
+
+            if (minAzimuth == maxAzimuth)
+            {
+                turretMove = TurretType.ElevationOnly;
+                elevationOnly = true;
+                limitedAxisTurret = true;
+            }
+            if (minElevation == maxElevation && TurretMovement != TurretType.Full)
+            {
+                turretMove = TurretType.Fixed;
+                limitedAxisTurret = true;
+            }
+            else if (minElevation == maxElevation)
+            {
+                turretMove = TurretType.AzimuthOnly;
+                elevationOnly = false;
+                limitedAxisTurret = true;
+            }
         }
 
         private void DamageScales(out bool damageScaling, out bool armorScaling, out bool customDamageScales, out Dictionary<MyDefinitionBase, float> customBlockDef, out bool selfDamage, out bool voxelDamage)

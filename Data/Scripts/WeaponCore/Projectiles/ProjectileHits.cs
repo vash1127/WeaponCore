@@ -32,8 +32,8 @@ namespace WeaponCore.Projectiles
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
-                if (grid == null && p.EwarActive && p.AreaEffect != DotField && ent is IMyCharacter) continue;
-                if (grid != null && (!p.SelfDamage || p.SmartsOn) && p.T.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
+                if (grid == null && p.EwarActive && p.T.System.AreaEffect != DotField && ent is IMyCharacter) continue;
+                if (grid != null && (!(p.T.System.SelfDamage || p.Gunner) || p.SmartsOn) && p.T.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
                     var shieldInfo = p.T.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
@@ -139,12 +139,12 @@ namespace WeaponCore.Projectiles
 
                     if (grid != null)
                     {
-                        if (!(p.EwarActive && p.EwarEffect))
+                        if (!(p.EwarActive && p.T.System.EwarEffect))
                             hitEntity.EventType = Grid;
                         else if (p.T.System.IsBeamWeapon)
                             hitEntity.EventType = Effect;
                         else hitEntity.EventType = Field;
-                        if (p.AreaEffect == DotField) hitEntity.DamageOverTime = true;
+                        if (p.T.System.AreaEffect == DotField) hitEntity.DamageOverTime = true;
                     }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;
@@ -155,7 +155,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (p.T.Target.IsProjectile && !p.EwarEffect)
+            if (p.T.Target.IsProjectile && !p.T.System.EwarEffect)
             {
                 var sphere = new BoundingSphereD(p.T.Target.Projectile.Position, p.T.Target.Projectile.T.System.CollisionSize);
                 var rayCheck = p.T.System.CollisionIsLine && sphere.Intersects(new RayD(p.LastPosition, p.Direction)) != null;
