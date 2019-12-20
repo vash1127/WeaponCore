@@ -47,7 +47,6 @@ namespace WeaponCore
                 }
                 else if (s.UiInput.RightMouseReleased)
                 {
-                    Log.Line("RightMouseReleased");
                     var menu = GetCurrentMenu();
                     var item = GetCurrentMenuItem();
                     if (item.ParentName != null)
@@ -98,7 +97,6 @@ namespace WeaponCore
 
         internal void OpenWheel()
         {
-            Log.Line($"open wheel");
             WheelActive = true;
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
             if (string.IsNullOrEmpty(_currentMenu))
