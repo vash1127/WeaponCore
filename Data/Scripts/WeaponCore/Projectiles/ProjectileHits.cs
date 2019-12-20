@@ -19,6 +19,7 @@ namespace WeaponCore.Projectiles
         internal DrawHit? GetAllEntitiesInLine(Projectile p, LineD beam)
         {
             var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
+
             var ai = p.T.Ai;
             var found = false;
             var lineCheck = p.T.System.CollisionIsLine;
@@ -60,6 +61,7 @@ namespace WeaponCore.Projectiles
                         else continue;
                     }
                 }
+                
                 if ((ent == ai.MyPlanet && (p.LinePlanetCheck || p.DynamicGuidance || p.CachedPlanetHit)) || ent.Physics != null && !ent.IsPreview && (grid != null || voxel != null || destroyable != null))
                 {
                     var extFrom = beam.From - (beam.Direction * (ent.PositionComp.WorldVolume.Radius * 2));
