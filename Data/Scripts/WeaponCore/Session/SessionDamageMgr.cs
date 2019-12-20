@@ -145,7 +145,7 @@ namespace WeaponCore
             var radiant = areaEffect == AreaDamage.AreaEffectType.Radiant;
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
             var detonateDmg = t.DetonationDamage;
-            var attackerId = t.Target.FiringCube.EntityId;
+            var attackerId = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = system.Values.Ammo.Mass;
             var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
