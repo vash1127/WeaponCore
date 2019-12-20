@@ -167,7 +167,8 @@ namespace WeaponCore
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
         internal double MaxEntitySpeed;
-
+        internal float UIBkOpacity;
+        internal float UIOpacity;
         internal bool MpActive;
         internal bool IsServer;
         internal bool DedicatedServer;

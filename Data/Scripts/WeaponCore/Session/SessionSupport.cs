@@ -161,6 +161,8 @@ namespace WeaponCore
             if (_count++ == 59)
             {
                 _count = 0;
+                UIBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
+                UIOpacity = MyAPIGateway.Session.Config.UIOpacity;
             }
             _lCount++;
             if (_lCount == 129)
