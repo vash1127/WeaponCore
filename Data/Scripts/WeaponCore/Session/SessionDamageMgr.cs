@@ -148,7 +148,6 @@ namespace WeaponCore
             var attackerId = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = system.Values.Ammo.Mass;
-            var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
 
             if (t.IsShrapnel)
             {
@@ -164,8 +163,7 @@ namespace WeaponCore
             var radiantCascade = radiant && !detonateOnEnd;
             var primeDamage = !radiantCascade || !hasAreaDmg;
             var radiantBomb = radiant && detonateOnEnd;
-            var defaultDamage = !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill;
-            var damageType = explosive || radiant ? MyDamageType.Explosion : defaultDamage;
+            var damageType = explosive || radiant ? MyDamageType.Explosion : MyDamageType.Bullet;
 
             var damagePool = t.BaseDamagePool;
             if (system.VirtualBeams)
