@@ -101,13 +101,18 @@ namespace WeaponCore
             var hit = SApi.PointAttackShieldExt(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, combinedDamage, energy, t.System.Values.Graphics.ShieldHitDraw);
             if (hit.HasValue)
             {
+                if (heal)
+                {
+                    t.BaseHealthPool = 0;
+                    return;
+                }
                 var objHp = hit.Value;
                 if (scaledDamage < objHp)
                     t.BaseDamagePool = 0;
                 else if (objHp > 0) t.BaseDamagePool -= (float)scaledDamage - objHp;
                 else t.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
 
-                if (system.Values.Ammo.Mass <= 0 || heal) return;
+                if (system.Values.Ammo.Mass <= 0) return;
 
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
                 ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, t.Direction, system.Values.Ammo.Mass * speed);

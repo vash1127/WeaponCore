@@ -19,15 +19,12 @@ namespace WeaponCore
             if (s.UiInput.MouseButtonPressed)
             {
                 if (s.UiInput.MouseButtonMiddle && ChangeState == State.Open)
-                {
                     OpenWheel();
-                }
-                else if (s.UiInput.MouseButtonMiddle && ChangeState == State.Close) CloseWheel();
+                else if (s.UiInput.MouseButtonMiddle && ChangeState == State.Close) 
+                    CloseWheel();
             }
-            else
-            {
-                if (WheelActive && !(Session.Session.ControlledObject is MyCockpit)) CloseWheel();
-            }
+            else if (WheelActive && !(Session.Session.ControlledObject is MyCockpit)) CloseWheel();
+            
             if (WheelActive)
             {
                 var previousMenu = _currentMenu;
@@ -45,6 +42,7 @@ namespace WeaponCore
                 }
                 else if (s.UiInput.RightMouseReleased)
                 {
+                    Log.Line("RightMouseReleased");
                     var menu = GetCurrentMenu();
                     var item = GetCurrentMenuItem();
                     if (item.ParentName != null)
@@ -95,6 +93,7 @@ namespace WeaponCore
 
         internal void OpenWheel()
         {
+            Log.Line($"open wheel");
             WheelActive = true;
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
             if (string.IsNullOrEmpty(_currentMenu))
@@ -115,7 +114,8 @@ namespace WeaponCore
 
         internal void CloseWheel()
         {
-            _currentMenu = "CompGroups";
+            Log.Line($"close wheel");
+            _currentMenu = string.Empty;
             WheelActive = false;
             Ai.SupressMouseShoot = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
