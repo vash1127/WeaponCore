@@ -49,7 +49,7 @@ namespace WeaponCore
 
             foreach (var mod in MyAPIGateway.Session.Mods)
                 if (mod.PublishedFileId == 1365616918) ShieldMod = true;
-            ShieldMod = true;
+            //ShieldMod = true;
 
             Physics = MyAPIGateway.Physics;
             Camera = MyAPIGateway.Session.Camera;
