@@ -59,9 +59,9 @@ namespace WeaponCore.Support
             var weaponPos = p.Position;
             var overRides = p.T.Overrides;
             var overActive = overRides.Activate;
-            var attackNeutrals = overActive && overRides.Neutral;
-            var attackFriends = overActive && overRides.Friend;
-            var attackNoOwner = overActive && overRides.NoOwner;
+            var attackNeutrals = overActive && overRides.Neutrals;
+            var attackFriends = overActive && overRides.Friendly;
+            var attackNoOwner = overActive && overRides.Unowned;
             var forceFoci = overActive && overRides.FocusTargets;
 
             TargetInfo alphaInfo = null;
@@ -133,9 +133,9 @@ namespace WeaponCore.Support
             var comp = w.Comp;
             var overRides = comp.Set.Value.Overrides;
             var overActive = overRides.Activate;
-            var attackNeutrals = overActive && overRides.Neutral;
-            var attackFriends = overActive && overRides.Friend;
-            var attackNoOwner = overActive && overRides.NoOwner;
+            var attackNeutrals = overActive && overRides.Neutrals;
+            var attackFriends = overActive && overRides.Friendly;
+            var attackNoOwner = overActive && overRides.Unowned;
             var forceFoci = overActive && overRides.FocusTargets;
 
             var ai = comp.Ai;

@@ -874,14 +874,17 @@ namespace WeaponCore.Support
         internal readonly Dictionary<string, int> Settings = new Dictionary<string, int>()
         {
             {"Active", 1},
-            {"Neutrals", 0},
-            {"Friends", 0},
+            {"SubSystems", 0},
+            {"FocusSubSystem", 0},
+            {"FocusTargets", 0},
+            {"ManualFire", 0},
+            {"ManualAim", 0},
             {"Unowned", 0},
-            {"Manual Aim", 0},
-            {"Manual Fire", 0},
-            {"Focus Targets", 0},
-            {"Focus SubSystem", 0},
-            {"Sub Systems", 0}
+            {"Friendly", 0},
+            {"Meteors", 0 },
+            {"Biologicals", 0 },
+            {"Projectiles", 0 },
+            {"Neutrals", 0},
         };
 
         internal string Name;
@@ -905,29 +908,38 @@ namespace WeaponCore.Support
                         case "Active":
                             o.Activate = setting.Value > 0;
                             break;
-                        case "Neutrals":
-                            o.Neutral = setting.Value > 0;
+                        case "SubSystems":
+                            o.SubSystem = (BlockTypes)setting.Value;
                             break;
-                        case "Unowned":
-                            o.NoOwner = setting.Value > 0;
-                            break;
-                        case "Friends":
-                            o.Friend = setting.Value > 0;
-                            break;
-                        case "Manual Aim":
-                            o.ManualAim = setting.Value > 0;
-                            break;
-                        case "Manual Fire":
-                            o.ManualFire = setting.Value > 0;
-                            break;
-                        case "Focus Targets":
-                            o.FocusTargets = setting.Value > 0;
-                            break;
-                        case "Focus SubSystem":
+                        case "FocusSubSystem":
                             o.FocusSubSystem = setting.Value > 0;
                             break;
-                        case "Sub Systems":
-                            o.SubSystem = (BlockTypes)setting.Value;
+                        case "FocusTargets":
+                            o.FocusTargets = setting.Value > 0;
+                            break;
+                        case "ManualFire":
+                            o.ManualFire = setting.Value > 0;
+                            break;
+                        case "ManualAim":
+                            o.ManualAim = setting.Value > 0;
+                            break;
+                        case "Unowned":
+                            o.Unowned = setting.Value > 0;
+                            break;
+                        case "Friendly":
+                            o.Friendly = setting.Value > 0;
+                            break;
+                        case "Meteors":
+                            o.Meteors = setting.Value > 0;
+                            break;
+                        case "Biologicals":
+                            o.Biologicals = setting.Value > 0;
+                            break;
+                        case "Projectiles":
+                            o.Projectiles = setting.Value > 0;
+                            break;
+                        case "Neutrals":
+                            o.Neutrals = setting.Value > 0;
                             break;
                     }
                 }
@@ -944,29 +956,38 @@ namespace WeaponCore.Support
                     case "Active":
                         o.Activate = value > 0;
                         break;
-                    case "Neutrals":
-                        o.Neutral = value > 0;
+                    case "SubSystems":
+                        o.SubSystem = (BlockTypes)value;
                         break;
-                    case "Unowned":
-                        o.NoOwner = value > 0;
-                        break;
-                    case "Friends":
-                        o.Friend = value > 0;
-                        break;
-                    case "Manual Aim":
-                        o.ManualAim = value > 0;
-                        break;
-                    case "Manual Fire":
-                        o.ManualFire = value > 0;
-                        break;
-                    case "Focus Targets":
-                        o.FocusTargets = value > 0;
-                        break;
-                    case "Focus SubSystem":
+                    case "FocusSubSystem":
                         o.FocusSubSystem = value > 0;
                         break;
-                    case "Sub Systems":
-                        o.SubSystem = (BlockTypes)value;
+                    case "FocusTargets":
+                        o.FocusTargets = value > 0;
+                        break;
+                    case "ManualFire":
+                        o.ManualFire = value > 0;
+                        break;
+                    case "ManualAim":
+                        o.ManualAim = value > 0;
+                        break;
+                    case "Unowned":
+                        o.Unowned = value > 0;
+                        break;
+                    case "Friendly":
+                        o.Friendly = value > 0;
+                        break;
+                    case "Meteors":
+                        o.Meteors = value > 0;
+                        break;
+                    case "Biologicals":
+                        o.Biologicals = value > 0;
+                        break;
+                    case "Projectiles":
+                        o.Projectiles = value > 0;
+                        break;
+                    case "Neutrals":
+                        o.Neutrals = value > 0;
                         break;
                 }
             }
@@ -981,32 +1002,40 @@ namespace WeaponCore.Support
                 case "Active":
                     value = o.Activate ? 1 : 0;
                     break;
-                case "Neutrals":
-                    value = o.Neutral ? 1 : 0;
-                    break;
-                case "Unowned":
-                    value = o.NoOwner ? 1 : 0;
-                    break;
-                case "Friends":
-                    value = o.Friend ? 1 : 0;
-                    break;
-                case "Manual Aim":
-                    value = o.ManualAim ? 1 : 0;
-                    break;
-                case "Manual Fire":
-                    value = o.ManualFire ? 1 : 0;
-                    break;
-                case "Focus Targets":
-                    value = o.FocusTargets ? 1 : 0;
-                    break;
-                case "Focus SubSystem":
-                    value = o.FocusSubSystem ? 1 : 0;
-                    break;
-                case "Sub Systems":
+                case "SubSystems":
                     value = (int)o.SubSystem;
                     break;
+                case "FocusSubSystem":
+                    value = o.FocusSubSystem ? 1 : 0;
+                    break;
+                case "FocusTargets":
+                    value = o.FocusTargets ? 1 : 0;
+                    break;
+                case "ManualFire":
+                    value = o.ManualFire ? 1 : 0;
+                    break;
+                case "ManualAim":
+                    value = o.ManualAim ? 1 : 0;
+                    break;
+                case "Unowned":
+                    value = o.Unowned ? 1 : 0;
+                    break;
+                case "Friendly":
+                    value = o.Friendly ? 1 : 0;
+                    break;
+                case "Meteors":
+                    value = o.Meteors ? 1 : 0;
+                    break;
+                case "Biologicals":
+                    value = o.Biologicals ? 1 : 0;
+                    break;
+                case "Projectiles":
+                    value = o.Projectiles ? 1 : 0;
+                    break;
+                case "Neutrals":
+                    value = o.Neutrals ? 1 : 0;
+                    break;
             }
-
             return value;
         }
     }
