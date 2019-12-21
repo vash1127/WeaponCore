@@ -87,7 +87,7 @@ namespace WeaponCore
                 }
             },
             {
-                "Friends", new Dictionary<int, Names>
+                "Friendly", new Dictionary<int, Names>
                 {
                     [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
@@ -101,35 +101,56 @@ namespace WeaponCore
                 }
             },
             {
-                "Manual Aim", new Dictionary<int, Names>
+                "ManualAim", new Dictionary<int, Names>
                 {
                     [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "Manual Fire", new Dictionary<int, Names>
+                "ManualFire", new Dictionary<int, Names>
                 {
                     [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "Focus Targets", new Dictionary<int, Names>
+                "FocusTargets", new Dictionary<int, Names>
                 {
                     [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "Focus SubSystem", new Dictionary<int, Names>
+                "FocusSubSystem", new Dictionary<int, Names>
                 {
                     [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
                     [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
                 }
             },
             {
-                "Sub Systems", new Dictionary<int, Names>
+                "Meteors", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "Biologicals", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "Projectiles", new Dictionary<int, Names>
+                {
+                    [0] = new Names {Name = "Disabled", CurrentValue = "Disable", NextValue = "Enable"},
+                    [1] = new Names {Name = "Enabled", CurrentValue = "Enable", NextValue = "Disable"},
+                }
+            },
+            {
+                "SubSystems", new Dictionary<int, Names>
                 {
                     [0] = new Names {Name = "Any", CurrentValue = "Any", NextValue = "Offense", PreviousValue = "Steering"},
                     [1] = new Names {Name = "Offense", CurrentValue = "Offense", NextValue = "Utility", PreviousValue = "Any"},
@@ -167,42 +188,63 @@ namespace WeaponCore
                 }
             },
             {
-                "Friends", new Dictionary<string, int>
+                "Friendly", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "Manual Aim", new Dictionary<string, int>
+                "ManualAim", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "Manual Fire", new Dictionary<string, int>
+                "ManualFire", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "Focus Targets", new Dictionary<string, int>
+                "FocusTargets", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "Focus SubSystem", new Dictionary<string, int>
+                "FocusSubSystem", new Dictionary<string, int>
                 {
                     ["Enable"] = 1,
                     ["Disable"] = 0,
                 }
             },
             {
-                "Sub Systems", new Dictionary<string, int>
+                "Meteors", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "Biologicals", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "Projectiles", new Dictionary<string, int>
+                {
+                    ["Enable"] = 1,
+                    ["Disable"] = 0,
+                }
+            },
+            {
+                "SubSystems", new Dictionary<string, int>
                 {
                     ["Any"] = 0,
                     ["Offense"] = 1,
@@ -240,42 +282,63 @@ namespace WeaponCore
                 }
             },
             {
-                "Friends", new Dictionary<string, MyStringId[]>
+                "Friendly", new Dictionary<string, MyStringId[]>
                 {
                     ["Enable"] = new [] {MyStringId.GetOrCompute("DS_FriendlyEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                     ["Disable"] = new [] {MyStringId.GetOrCompute("DS_FriendlyDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Manual Aim", new Dictionary<string, MyStringId[]>
+                "ManualAim", new Dictionary<string, MyStringId[]>
                 {
                     ["Enable"] = new [] {MyStringId.GetOrCompute("DS_ManualAimEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                     ["Disable"] = new [] {MyStringId.GetOrCompute("DS_ManualAimDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Manual Fire", new Dictionary<string, MyStringId[]>
+                "ManualFire", new Dictionary<string, MyStringId[]>
                 {
                     ["Enable"] = new [] {MyStringId.GetOrCompute("DS_ManualFireEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                     ["Disable"] = new [] {MyStringId.GetOrCompute("DS_ManualFireDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Focus Targets", new Dictionary<string, MyStringId[]>
+                "FocusTargets", new Dictionary<string, MyStringId[]>
                 {
                     ["Enable"] = new [] {MyStringId.GetOrCompute("DS_FocusTargetEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                     ["Disable"] = new [] {MyStringId.GetOrCompute("DS_FocusTargetDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Focus SubSystem", new Dictionary<string, MyStringId[]>
+                "FocusSubSystem", new Dictionary<string, MyStringId[]>
                 {
                     ["Enable"] = new [] {MyStringId.GetOrCompute("DS_FocusSubsystemEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                     ["Disable"] = new [] {MyStringId.GetOrCompute("DS_FocusSubsystemDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
                 }
             },
             {
-                "Sub Systems", new Dictionary<string, MyStringId[]>
+                "Meteors", new Dictionary<string, MyStringId[]>
+                {
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_MeteorsEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_MeteorsDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                }
+            },
+            {
+                "Biologicals", new Dictionary<string, MyStringId[]>
+                {
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_BiologicalsEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_BiologicalsDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                }
+            },
+            {
+                "Projectiles", new Dictionary<string, MyStringId[]>
+                {
+                    ["Enable"] = new [] {MyStringId.GetOrCompute("DS_ProjectilesEnabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                    ["Disable"] = new [] {MyStringId.GetOrCompute("DS_ProjectilesDisabled"), MyStringId.GetOrCompute("DS_MenuBackground")},
+                }
+            },
+            {
+                "SubSystems", new Dictionary<string, MyStringId[]>
                 {
                     ["Any"] = new [] {MyStringId.GetOrCompute("DS_SubsystemAny"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },
                     ["Offense"] = new [] {MyStringId.GetOrCompute("DS_SubsystemOffense"), MyStringId.GetOrCompute("DS_MenuBackground_Subsystems") },

@@ -161,6 +161,8 @@ namespace WeaponCore
             if (_count++ == 59)
             {
                 _count = 0;
+                UIBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
+                UIOpacity = MyAPIGateway.Session.Config.UIOpacity;
             }
             _lCount++;
             if (_lCount == 129)
@@ -330,7 +332,7 @@ namespace WeaponCore
                     weaponValue.Heat = weaponValue.Heat >= w.HsRate ? weaponValue.Heat - w.HsRate : 0;
 
                     w.Comp.TerminalRefresh();
-                    if (w.Comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCooldown))
+                    if (w.Comp.Overheated && weaponValue.Heat <= (w.System.MaxHeat * w.System.WepCoolDown))
                     {
                         w.EventTriggerStateChanged(Weapon.EventTriggers.Overheated, false);
                         w.Comp.Overheated = false;

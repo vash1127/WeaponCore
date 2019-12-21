@@ -264,7 +264,7 @@ namespace WeaponCore
             while (ShootingWeapons.Count > 0)
             {
                 var w = ShootingWeapons.Dequeue();
-
+                if (w.RequiredPower < 0) Log.Line($"required power less than 0");
                 //TODO add logic for power priority
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid)) {
 
@@ -296,8 +296,8 @@ namespace WeaponCore
 
                     var oldUseable = w.UseablePower;
                     w.UseablePower = w.RequiredPower;
+                    if (w.RequiredPower < 0) Log.Line($"required power less than 0 - step 2");
                     w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
-
                     w.DelayTicks = 0;
                     w.Charging = false;
                 }

@@ -103,7 +103,7 @@ namespace WeaponCore
             {
                 if (heal)
                 {
-                    t.BaseHealthPool = 0;
+                    t.BaseDamagePool = 0;
                     return;
                 }
                 var objHp = hit.Value;
@@ -145,7 +145,9 @@ namespace WeaponCore
             var radiant = areaEffect == AreaDamage.AreaEffectType.Radiant;
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
             var detonateDmg = t.DetonationDamage;
-            var attackerId = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
+            var shieldBypass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
+            var attackerId = shieldBypass ? grid.EntityId : t.Target.FiringCube.EntityId;
+            var attacker = shieldBypass ? (MyEntity)grid : t.Target.FiringCube;
             var areaEffectDmg = t.AreaEffectDamage;
             var hitMass = system.Values.Ammo.Mass;
 
@@ -286,7 +288,7 @@ namespace WeaponCore
                     {
                         var damage = detonateOnEnd && theEnd ? detonateDmg : areaEffectDmg;
                         var radius = detonateOnEnd && theEnd ? detonateRadius : areaRadius;
-                        SUtils.CreateMissileExplosion(this, damage, radius, hitEnt.HitPos.Value, t.Direction, t.Target.FiringCube, grid, system, true);
+                        SUtils.CreateMissileExplosion(this, damage, radius, hitEnt.HitPos.Value, t.Direction, attacker, grid, system, true);
                     }
                     else if (!nova)
                     {

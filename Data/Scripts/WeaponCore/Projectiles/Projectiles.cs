@@ -216,7 +216,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if (p.Ewar)
+                if (p.T.System.Ewar)
                     p.RunEwar();
                 p.Active = true;
             }
@@ -284,7 +284,7 @@ namespace WeaponCore.Projectiles
                         p.PruneSphere.Radius = p.T.System.CollisionSize;
                     }
 
-                    if (!(p.SelfDamage && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.T.Origin, p.DeadZone)) != ContainmentType.Disjoint))
+                    if (!((p.T.System.SelfDamage || p.Gunner) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.T.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
                         var checkList = CheckPool.Get();
                         MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
@@ -347,11 +347,11 @@ namespace WeaponCore.Projectiles
                         p.DisposeAmmoEffect(false, true);
                 }
 
-                if (p.DrawLine || p.ModelState == EntityState.None && p.T.System.AmmoParticle)
+                if (p.T.System.DrawLine || p.ModelState == EntityState.None && p.T.System.AmmoParticle)
                 {
                     if (p.State == ProjectileState.OneAndDone)
                         p.T.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
-                    else if (p.ModelState == EntityState.None && p.T.System.AmmoParticle && !p.DrawLine)
+                    else if (p.ModelState == EntityState.None && p.T.System.AmmoParticle && !p.T.System.DrawLine)
                         p.T.UpdateShape(p.Position, p.Direction, p.T.System.CollisionSize, ReSize.None);
                     else
                     {
@@ -386,7 +386,7 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if (!p.T.OnScreen && (p.DrawLine || p.ModelState == EntityState.None && p.T.System.AmmoParticle))
+                if (!p.T.OnScreen && (p.T.System.DrawLine || p.ModelState == EntityState.None && p.T.System.AmmoParticle))
                 {
                     if (p.T.System.Trail)
                     {

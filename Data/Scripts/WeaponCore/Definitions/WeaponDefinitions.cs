@@ -326,6 +326,7 @@ namespace WeaponCore.Support
         [ProtoMember(4)] internal double TrackingDelay;
         [ProtoMember(5)] internal int MaxChaseTime;
         [ProtoMember(6)] internal bool OverideTarget;
+        [ProtoMember(7)] internal int MaxTargets;
     }
 
     [ProtoContract]

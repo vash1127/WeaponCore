@@ -22,9 +22,14 @@ namespace WeaponCore
                     OpenWheel();
                 else if (s.UiInput.MouseButtonMiddle && ChangeState == State.Close) 
                     CloseWheel();
+
+
             }
             else if (WheelActive && !(Session.Session.ControlledObject is MyCockpit)) CloseWheel();
             
+            if (!WheelActive && _currentMenu != string.Empty)
+                _currentMenu = string.Empty;
+
             if (WheelActive)
             {
                 var previousMenu = _currentMenu;
@@ -42,7 +47,6 @@ namespace WeaponCore
                 }
                 else if (s.UiInput.RightMouseReleased)
                 {
-                    Log.Line("RightMouseReleased");
                     var menu = GetCurrentMenu();
                     var item = GetCurrentMenuItem();
                     if (item.ParentName != null)
@@ -83,8 +87,8 @@ namespace WeaponCore
             var currentItem = GetCurrentMenuItem();
             var foreTexture = currentItem.ForeTexture;
             var backTexture = currentItem.BackTexture;
-            var foreColor = Color.White * MyAPIGateway.Session.Config.UIOpacity;
-            var backColor = Color.White * MyAPIGateway.Session.Config.UIBkOpacity;
+            var foreColor = Color.White * Session.UIOpacity;
+            var backColor = Color.White * Session.UIBkOpacity;
 
             SetCurrentMessage();
             if (backTexture != MyStringId.NullOrEmpty) MyTransparentGeometry.AddBillboardOriented(backTexture, backColor, origin, left, up, (float)scale, BlendTypeEnum.PostPP);
@@ -93,7 +97,6 @@ namespace WeaponCore
 
         internal void OpenWheel()
         {
-            Log.Line($"open wheel");
             WheelActive = true;
             if (HudNotify == null) HudNotify = MyAPIGateway.Utilities.CreateNotification("[Grids]", 160, "UrlHighlight");
             if (string.IsNullOrEmpty(_currentMenu))
@@ -114,8 +117,6 @@ namespace WeaponCore
 
         internal void CloseWheel()
         {
-            Log.Line($"close wheel");
-            _currentMenu = string.Empty;
             WheelActive = false;
             Ai.SupressMouseShoot = false;
             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;

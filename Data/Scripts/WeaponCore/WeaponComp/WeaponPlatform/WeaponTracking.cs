@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.ModAPI.Ingame;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
@@ -29,7 +30,7 @@ namespace WeaponCore.Platform
 
             var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
 
-            bool canTrack = false;
+            bool canTrack;
 
             if (weapon == trackingWeapon)
             {
@@ -282,10 +283,10 @@ namespace WeaponCore.Platform
             return weapon.IsTracking;
         }
 
-        public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Vector3D targetAccel, Prediction prediction, out double timeToIntercept)
+        public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Vector3D targetAccel, Prediction prediction, out double timeToIntercept, double projectileAccel = 0)
         {
             var ammoSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
-            if (ammoSpeed <= 0)
+            if (ammoSpeed <= 0 || System.IsBeamWeapon)
             {
                 timeToIntercept = 0;
                 return targetPos;
@@ -299,6 +300,10 @@ namespace WeaponCore.Platform
             }
             var targetVel = targetLinVel;
             Vector3D predictedPos;
+            //predictedPos = CalculateProjectileInterceptPoint2(Comp.Ai.Session.MaxEntitySpeed, ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
+            timeToIntercept = CalculateTimeToIntercept(ammoSpeed, Comp.Ai.GridVel, shooterPos, targetVel, targetPos);
+            predictedPos = TrajectoryEstimation(timeToIntercept, targetPos, targetVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, shooterPos, Comp.Ai.GridVel, ammoSpeed, 0, projectileAccel); 
+            return predictedPos;
             if (prediction == Prediction.Basic) 
             {
                 var deltaPos = targetPos - shooterPos;
@@ -307,11 +312,174 @@ namespace WeaponCore.Platform
                 predictedPos = targetPos + (float)timeToIntercept * deltaVel;
             }
             else if (prediction == Prediction.Accurate)
-                predictedPos = CalculateProjectileInterceptPointFast(ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
+                predictedPos = CalculateProjectileInterceptPointFast(ammoSpeed, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
             else
-                predictedPos = CalculateProjectileInterceptPoint(Comp.Ai.Session.MaxEntitySpeed, ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
+                predictedPos = CalculateProjectileInterceptPoint(Comp.Ai.Session.MaxEntitySpeed, ammoSpeed, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
 
             return predictedPos;
+        }
+
+
+        /*
+        ** Whip's Projectile Time To Intercept - Modified 07/21/2019
+        */
+        private static double CalculateTimeToIntercept(double projectileSpeed, Vector3D shooterVelocity, Vector3D shooterPosition, Vector3D targetVelocity, Vector3D targetPosition)
+        {
+            double timeToIntercept = -1;
+            Vector3D deltaPos = targetPosition - shooterPosition;
+            Vector3D deltaVel = targetVelocity - shooterVelocity;
+            Vector3D deltaPosNorm = MathFuncs.SafeNormalize(deltaPos);
+            double closingSpeed = Vector3D.Dot(deltaVel, deltaPosNorm);
+            Vector3D closingVel = closingSpeed * deltaPosNorm; 
+            Vector3D lateralVel = deltaVel - closingVel;
+            double diff = projectileSpeed * projectileSpeed - lateralVel.LengthSquared();
+
+            if (diff < 0)
+            {
+                Log.Line("CalculateTimeToIntercept < 0");
+                return 0;
+            }
+
+            double projectileClosingSpeed = Math.Sqrt(diff) - closingSpeed;
+            double closingDistance = Vector3D.Dot(deltaPos, deltaPosNorm);
+            timeToIntercept = closingDistance / projectileClosingSpeed;
+            return timeToIntercept;
+        }
+
+        private static Vector3D TrajectoryEstimation(double timeToIntercept, Vector3D targetPos, Vector3D targetVel, Vector3D targetAcc, double targetMaxSpeed, Vector3D shooterPos, Vector3D shooterVel, double projectileMaxSpeed, double projectileInitSpeed = 0, double projectileAccMag = 0, double gravityMultiplier = 0, Vector3D gravity = default(Vector3D))
+        {
+            bool projectileAccelerates = projectileAccMag > 1e-6;
+            bool hasGravity = gravityMultiplier > 1e-6;
+            double shooterVelScaleFactor = 1;
+
+            if (projectileAccelerates)
+            {
+                Log.Line("projectile accels");
+                /*
+                This is a rough estimate to smooth out our initial guess based upon the missile parameters.
+                The reasoning is that the longer it takes to reach max velocity, the more the initial velocity
+                has an overall impact on the estimated impact point.
+                */
+                shooterVelScaleFactor = Math.Min(1, (projectileMaxSpeed - projectileInitSpeed) / projectileAccMag);
+            }
+            /*
+            Estimate our predicted impact point and aim direction
+            */
+            Vector3D estimatedImpactPoint = targetPos + timeToIntercept * (targetVel - shooterVel * shooterVelScaleFactor);
+            Vector3D aimDirection = estimatedImpactPoint - shooterPos; 
+            Vector3D aimDirectionNorm = MathFuncs.SafeNormalize(aimDirection);
+            Vector3D projectileVel = shooterVel; Vector3D projectilePos = shooterPos;
+
+            if (projectileAccelerates)
+            {
+                projectileVel += aimDirectionNorm * projectileInitSpeed;
+            }
+            else
+            {
+                projectileVel += aimDirectionNorm * projectileMaxSpeed;
+            }
+
+            /*
+            Target trajectory estimation. We do only 10 steps since PBs are instruction limited.
+            */
+
+            double dt = timeToIntercept * 0.001; // This can be a const somewhere
+            double maxSpeedSq = targetMaxSpeed * targetMaxSpeed;
+            double projectileMaxSpeedSq = projectileMaxSpeed * projectileMaxSpeed;
+            Vector3D targetAccStep = targetAcc * dt;
+            Vector3D projectileAccStep = aimDirectionNorm * projectileAccMag * dt;
+            Vector3D gravityStep = gravity * gravityMultiplier * dt;
+            Vector3D aimOffset = Vector3D.Zero; 
+            double minDiff = double.MaxValue;
+
+            for (int i = 0; i < 1000; ++i)
+            {
+                targetVel += targetAccStep;
+
+                if (targetVel.LengthSquared() > maxSpeedSq)
+                    targetVel = Vector3D.Normalize(targetVel) * targetMaxSpeed;
+
+                targetPos += targetVel * dt;
+                if (projectileAccelerates)
+                {
+                    Log.Line($"projectileAccelerates");
+                    projectileVel += projectileAccStep;
+                    if (projectileVel.LengthSquared() > projectileMaxSpeedSq)
+                    {
+                        projectileVel = Vector3D.Normalize(projectileVel) * projectileMaxSpeed;
+                    }
+                }
+
+                if (hasGravity)
+                {
+                    Log.Line($"has gravity");
+                    projectileVel += gravityStep;
+                }
+
+                projectilePos += projectileVel * dt;
+                Vector3D diff = (targetPos - projectilePos);
+                double diffLenSq = diff.LengthSquared();
+                if (diffLenSq < minDiff)
+                {
+                    minDiff = diffLenSq; 
+                    aimOffset = diff;
+                    Log.Line($"less than min: {diffLenSq} - {diff.Length()}");
+                }
+                else Log.Line($"more than min:  {diffLenSq} - {diff.Length()}");
+            }
+            return estimatedImpactPoint + aimOffset; //(targetPos - projectilePos);
+        }
+
+        public Vector3D CalculateProjectileInterceptPoint2(double gridMaxSpeed, double projectileSpeed, double updateFrequency, Vector3D shooterVelocity, Vector3D shooterPosition, Vector3D targetVelocity, Vector3D targetPosition, Vector3D lastTargetVelocity, out double timeToIntercept)
+        {
+            timeToIntercept = -1;
+
+            var directHeading = targetPosition - shooterPosition;
+            var directHeadingNorm = Vector3D.Normalize(directHeading);
+            var distanceToTarget = Vector3D.Dot(directHeading, directHeadingNorm);
+
+            var relativeVelocity = targetVelocity - shooterVelocity;
+
+            var parallelVelocity = relativeVelocity.Dot(directHeadingNorm) * directHeadingNorm;
+            var normalVelocity = relativeVelocity - parallelVelocity;
+            var diff = projectileSpeed * projectileSpeed - normalVelocity.LengthSquared();
+            if (diff < 0)
+                return targetPosition;
+
+            var projectileForwardSpeed = Math.Sqrt(diff);
+            var projectileForwardVelocity = projectileForwardSpeed * directHeadingNorm;
+            timeToIntercept = distanceToTarget / projectileForwardSpeed;
+
+            var interceptPoint = shooterPosition + (projectileForwardVelocity + normalVelocity) * timeToIntercept;
+            var targetAcceleration = updateFrequency * (targetVelocity - lastTargetVelocity);
+
+            /*
+             * We return here if we are at or over the max speed as predicting acceleration becomes an exercise in folly
+             * as the solution becomes numerical and not analytical. We also return if acceleration is really close to
+             * zero for obvious reasons.
+             */
+            if (targetVelocity.LengthSquared() >= gridMaxSpeed * gridMaxSpeed || Vector3D.IsZero(targetAcceleration, 1e-3))
+                return interceptPoint;
+
+            /*
+             * Getting our time to critcal point where we hit the speed cap.
+             * vf = vi + a*t
+             * (vf - vi) / a
+             */
+            var velocityInAccelDirn = MathFuncs.Projection(targetVelocity, targetAcceleration).Length() * Math.Sign(Vector3D.Dot(targetVelocity, targetAcceleration));
+            var timeToSpeedCap = (gridMaxSpeed - velocityInAccelDirn) / targetAcceleration.Length();
+
+            /*
+             * This is our estimate adding on the displacement due to the target acceleration UNTIL
+             * it hits the speed cap.
+             * vf^2 = vi^2 + 2*a*d
+             * d = v * t + .5 * a * t^2
+             */
+            var timeAcceleration = Math.Min(timeToSpeedCap, timeToIntercept);
+            var timePostAcceleration = timeToIntercept - timeAcceleration;
+            var adjustedInterceptPoint = interceptPoint + 0.5 * targetAcceleration * timeAcceleration * timeAcceleration;
+            var parallelAccelerationRatio = 1; //Math.Abs(VectorMath.CosBetween(targetVelocity, targetAcceleration));
+            return (1 - parallelAccelerationRatio) * interceptPoint + parallelAccelerationRatio * adjustedInterceptPoint;
         }
 
         /*
@@ -321,7 +489,6 @@ namespace WeaponCore.Platform
         public static Vector3D CalculateProjectileInterceptPoint(
             double gridMaxSpeed,        /* Maximum grid speed           (m/s)   */
             double projectileSpeed,     /* Maximum projectile speed     (m/s)   */
-            double updateFrequency,     /* Frequency this is run        (Hz)    */
             Vector3D shooterVelocity,   /* Shooter initial velocity     (m/s)   */
             Vector3D shooterPosition,   /* Shooter initial position     (m)     */
             Vector3D targetVelocity,    /* Target initial velocity      (m/s)   */
@@ -347,17 +514,14 @@ namespace WeaponCore.Platform
             double tmax = Math.Max(t1, t2);
             if (t1 < 0 && t2 < 0)
                 return targetPosition;
-            else if (tmin > 0)
-                timeToIntercept = tmin;
-            else
-                timeToIntercept = tmax;
 
-            Vector3D interceptEst = targetPosition
-                                    + targetVelocity * timeToIntercept;
+            timeToIntercept = tmin > 0 ? tmin : tmax;
+
+            Vector3D interceptEst = targetPosition + targetVelocity * timeToIntercept;
             /*
             ** Target trajectory estimation
             */
-            const double dt = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS; 
+            const double dt = MyEngineConstants.UPDATE_STEP_SIZE_IN_SECONDS;
 
             double simtime = 0;
             double maxSpeedSq = gridMaxSpeed * gridMaxSpeed;
@@ -388,7 +552,6 @@ namespace WeaponCore.Platform
         //Vector3D _lastTargetVelocity2 = Vector3D.Zero;
         private static Vector3D CalculateProjectileInterceptPointFast(
             double projectileSpeed,     /* Maximum projectile speed     (m/s) */
-            double updateFrequency,     /* Frequency this is run        (Hz) */
             Vector3D shooterVelocity,   /* Shooter initial velocity     (m/s) */
             Vector3D shooterPosition,   /* Shooter initial position     (m) */
             Vector3D targetVelocity,    /* Target initial velocity      (m/s) */
@@ -417,6 +580,54 @@ namespace WeaponCore.Platform
             var interceptPoint = shooterPosition + (projectileForwardVelocity + normalVelocity) * timeToIntercept + 0.5 * targetAccel * timeToIntercept * timeToIntercept;
             return interceptPoint;
         }
+
+        /*
+        private static Vector3D GetTargetPoint(Vector3D shooterPosition, IMyLargeTurretBase designator)
+        {
+            if (designator.IsUnderControl)
+            {
+                _targetVec = designator.GetPosition() + VectorAzimuthElevation(designator) * _convergenceRange; _lastTargetEntityId = 0;
+            }
+            else if (designator.HasTarget)
+            {
+                var targetInfo = designator.GetTargetedEntity();
+                if (targetInfo.EntityId != _lastTargetEntityId)
+                {
+                    _lastTargetVelocity = targetInfo.Velocity;
+                    if (IsRotorTurret)
+                    {
+                        _azimuthPID.Reset();
+                        _elevationPID.Reset();
+                    }
+                }
+                _lastTargetEntityId = targetInfo.EntityId;
+                double timeToIntercept = 0;
+                double projectileInitSpeed = 0;
+                double projectileAcceleration = 0;
+                Vector3D gridVelocity;
+                Vector3D targetPosition = MainUpdateInterval * ((Vector3D)targetInfo.Velocity - _gridVelocity) + targetInfo.Position;
+
+                if (_isRocket)
+                {
+                    projectileInitSpeed = _rocketInitVelocity; 
+                    projectileAcceleration = _rocketAcceleration; 
+                    gridVelocity = Vector3D.Zero;
+                }
+                else
+                {
+                    gridVelocity = _gridVelocity;
+                }
+
+                timeToIntercept = CalculateTimeToIntercept(_muzzleVelocity, gridVelocity, shooterPosition, targetInfo.Velocity, targetPosition);
+                Vector3D targetAcceleration = UpdatesPerSecond * (targetInfo.Velocity - _lastTargetVelocity);
+                _targetVec = TrajectoryEstimation(timeToIntercept, targetPosition, targetInfo.Velocity, targetAcceleration, _gameMaxSpeed, shooterPosition, _gridVelocity, _muzzleVelocity, projectileInitSpeed, projectileAcceleration, _gravityMultiplier); _lastTargetVelocity = targetInfo.Velocity;
+            }
+            else { _lastTargetEntityId = 0; }
+            return _targetVec;
+        }
+        */
+
+
 
         internal void InitTracking()
         {

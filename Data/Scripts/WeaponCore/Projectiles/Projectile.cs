@@ -20,7 +20,6 @@ namespace WeaponCore.Projectiles
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MyEntityQueryType PruneQuery;
-        internal AreaEffectType AreaEffect;
         internal AmmoTrajectory.GuidanceType Guidance;
         internal Vector3D Direction;
         internal Vector3D AccelDir;
@@ -47,34 +46,32 @@ namespace WeaponCore.Projectiles
         internal BoundingSphereD ModelSphereLast;
         internal BoundingSphereD PruneSphere;
         internal double AccelLength;
-        internal double MaxTrajectorySqr;
         internal double DistanceToTravelSqr;
         internal double TracerLength;
         internal double VelocityLengthSqr;
-        internal double SmartsDelayDistSqr;
         internal double DistanceFromCameraSqr;
         internal double OffsetSqr;
         internal double AccelPerSec;
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double VisualStep;
-        internal double DeadZone;
+        internal double DeadZone = 3;
+        internal double MaxTrajectorySqr;
         internal float DesiredSpeed;
         internal float MaxTrajectory;
         internal float BaseAmmoParticleScale;
         internal int Age;
         internal int ChaseAge;
         internal int FieldTime;
-        internal int MaxChaseAge;
         internal int EndStep;
         internal int ZombieLifeTime;
         internal int LastOffsetTime;
         internal int PruningProxyId = -1;
-        internal int PulseChance;
-        internal int PulseInterval;
         internal int CachedId;
+        internal int MaxChaseAge;
+        internal int NewTargets;
+        internal bool PickTarget;
         internal bool EnableAv;
-        internal bool DrawLine;
         internal bool FirstOffScreen;
         internal bool ConstantSpeed;
         internal bool PositionChecked;
@@ -83,15 +80,11 @@ namespace WeaponCore.Projectiles
         internal bool DynamicGuidance;
         internal bool ParticleStopped;
         internal bool ParticleLateStart;
-        internal bool PickTarget;
         internal bool GenerateShrapnel;
         internal bool Colliding;
         internal bool LinePlanetCheck;
         internal bool SmartsOn;
-        internal bool Ewar;
         internal bool EwarActive;
-        internal bool EwarEffect;
-        internal bool SelfDamage;
         internal bool MineSeeking;
         internal bool MineActivated;
         internal bool MineTriggered;
@@ -100,6 +93,7 @@ namespace WeaponCore.Projectiles
         internal bool HitParticleActive;
         internal bool CachedPlanetHit;
         internal bool ForceHitParticle;
+        internal bool Gunner;
         internal Trajectile T = new Trajectile();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -134,6 +128,7 @@ namespace WeaponCore.Projectiles
             LastHitEntVel = null;
             Age = 0;
             ChaseAge = 0;
+            NewTargets = 0;
             ZombieLifeTime = 0;
             LastOffsetTime = 0;
             PruningProxyId = -1;
@@ -193,7 +188,6 @@ namespace WeaponCore.Projectiles
             }
             PrevTargetOffset = Vector3D.Zero;
 
-            DrawLine = T.System.Values.Graphics.Line.Tracer.Enable;
             if (T.System.RangeVariance)
             {
                 var min = T.System.Values.Ammo.Trajectory.RangeVariance.Start;
@@ -215,15 +209,11 @@ namespace WeaponCore.Projectiles
                 T.DetonationDamage = T.System.Values.Ammo.AreaEffect.Detonation.DetonationDamage;
                 T.AreaEffectDamage = T.System.Values.Ammo.AreaEffect.AreaEffectDamage;
 
-                SelfDamage = T.System.SelfDamage;
                 MaxTrajectory = shrapnel.MaxTrajectory;
                 TracerLength = TracerLength / shrapnel.Fragments >= 1 ? TracerLength / shrapnel.Fragments : 1;
             }
 
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
-
-            var smartsDelayDist = T.System.CollisionSize * T.System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
-            SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
 
             if (!T.IsShrapnel) StartSpeed = GridVel;
 
@@ -245,12 +235,7 @@ namespace WeaponCore.Projectiles
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
             PickTarget = LockedTarget && T.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
-
-            AreaEffect = T.System.Values.Ammo.AreaEffect.AreaEffect;
-            Ewar = AreaEffect > (AreaEffectType) 2;
-            EwarEffect = AreaEffect > (AreaEffectType) 3;
-            PulseInterval = T.System.Values.Ammo.AreaEffect.Pulse.Interval;
-            PulseChance = T.System.Values.Ammo.AreaEffect.Pulse.PulseChance;
+            if (PickTarget || LockedTarget) NewTargets++;
 
             PruneQuery = DynamicGuidance || T.Ai.ShieldNear ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
             if (!DynamicGuidance && T.Ai.StaticEntitiesInRange)
@@ -260,7 +245,7 @@ namespace WeaponCore.Projectiles
             if (EnableAv)
             {
                 T.SetupSounds(DistanceFromCameraSqr);
-                if (T.System.HitParticle && !T.System.IsBeamWeapon || AreaEffect == AreaEffectType.Explosive && !T.System.Values.Ammo.AreaEffect.Explosions.NoVisuals)
+                if (T.System.HitParticle && !T.System.IsBeamWeapon || T.System.AreaEffect == AreaEffectType.Explosive && !T.System.Values.Ammo.AreaEffect.Explosions.NoVisuals)
                 {
                     var hitPlayChance = T.System.Values.Graphics.Particles.Hit.Extras.HitPlayChance;
                     HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
@@ -293,7 +278,6 @@ namespace WeaponCore.Projectiles
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
             AccelLength = T.System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
-            DeadZone = 3;
 
             if (ConstantSpeed)
             {
@@ -379,7 +363,7 @@ namespace WeaponCore.Projectiles
         {
             var hitPos = drawHit?.HitPos;
             if (!hitPos.HasValue) return false;
-            if (p.EnableAv && (p.DrawLine || p.T.System.PrimeModelId != -1 || p.T.System.TriggerModelId != -1))
+            if (p.EnableAv && (T.System.DrawLine || p.T.System.PrimeModelId != -1 || p.T.System.TriggerModelId != -1))
             {
                 p.TestSphere.Center = hitPos.Value;
                 
@@ -464,7 +448,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (!p.T.OnScreen && p.DrawLine)
+            if (!p.T.OnScreen && T.System.DrawLine)
             {
                 if (p.T.System.Trail)
                 {
@@ -485,9 +469,11 @@ namespace WeaponCore.Projectiles
 
         internal bool NewTarget()
         {
+            var giveUp = !PickTarget && ++NewTargets > T.System.MaxTargets && T.System.MaxTargets != 0;
             ChaseAge = Age;
             PickTarget = false;
-            if (!GridAi.ReacquireTarget(this))
+
+            if (giveUp || !GridAi.ReacquireTarget(this))
             {
                 T.Target.Entity = null;
                 if (T.Target.IsProjectile) UnAssignProjectile(true);
@@ -546,8 +532,6 @@ namespace WeaponCore.Projectiles
             if (Guidance == AmmoTrajectory.GuidanceType.DetectSmart)
             {
                 SmartsOn = true;
-                var smartsDelayDist = T.System.CollisionSize * T.System.Values.Ammo.Trajectory.Smarts.TrackingDelay;
-                SmartsDelayDistSqr = smartsDelayDist * smartsDelayDist;
                 MaxChaseAge = T.System.Values.Ammo.Trajectory.Smarts.MaxChaseTime;
                 if (SmartsOn && T.System.TargetOffSet && LockedTarget)
                 {
@@ -567,20 +551,20 @@ namespace WeaponCore.Projectiles
         internal void TriggerMine(bool startTimer)
         {
             DistanceToTravelSqr = double.MinValue;
-            if (Ewar)
+            if (T.System.Ewar)
             {
                 T.Triggered = true;
                 if (startTimer) FieldTime = T.System.Values.Ammo.Trajectory.Mines.FieldTime;
             }
             else if (startTimer) FieldTime = 0;
             MineTriggered = true;
-            Log.Line($"[Mine] Ewar:{Ewar} - Activated:{MineActivated} - active:{EwarActive} - Triggered:{T.Triggered} - IdleTime:{FieldTime}");
+            Log.Line($"[Mine] Ewar:{T.System.Ewar} - Activated:{MineActivated} - active:{EwarActive} - Triggered:{T.Triggered} - IdleTime:{FieldTime}");
         }
 
         internal void RunSmart()
         {
             Vector3D newVel;
-            if ((AccelLength <= 0 || Vector3D.DistanceSquared(T.Origin, Position) >= SmartsDelayDistSqr))
+            if ((AccelLength <= 0 || Vector3D.DistanceSquared(T.Origin, Position) >= T.System.SmartsDelayDistSqr))
             {
                 var gaveUpChase = Age - ChaseAge > MaxChaseAge;
                 var validTarget = T.Target.IsProjectile || T.Target.Entity != null && !T.Target.Entity.MarkedForClose;
@@ -591,6 +575,7 @@ namespace WeaponCore.Projectiles
                     var targetPos = Vector3D.Zero;
                     if (T.Target.IsProjectile) targetPos = T.Target.Projectile.Position;
                     else if (T.Target.Entity != null) targetPos = T.Target.Entity.PositionComp.WorldAABB.Center;
+
 
                     if (T.System.TargetOffSet)
                     {
@@ -613,6 +598,20 @@ namespace WeaponCore.Projectiles
                     var tVel = Vector3.Zero;
                     if (T.Target.IsProjectile) tVel = T.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
+
+                    if (T.System.TargetLossDegree > 0 && T.Ai.Session.Tick60)
+                    {
+                        if (!MyUtils.IsZero(tVel, 1E-02F))
+                        {
+                            var targetDir = Vector3D.Normalize(tVel);
+                            var refDir = Vector3D.Normalize(Position - targetPos);
+                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, T.System.TargetLossDegree))
+                            {
+                                Log.Line($"not in targetlossDegree");
+                                PickTarget = true;
+                            }
+                        }
+                    }
 
                     PrevTargetVel = tVel;
                 }
@@ -685,14 +684,14 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (Age % PulseInterval == 0 || State == ProjectileState.OneAndDone)
+            if (Age % T.System.PulseInterval == 0 || State == ProjectileState.OneAndDone)
                 PulseEffect();
             else EwarActive = false;
         }
 
         internal void PulseEffect()
         {
-            switch (AreaEffect)
+            switch (T.System.AreaEffect)
             {
                 case AreaEffectType.AntiSmart:
                     var eWarSphere = new BoundingSphereD(Position, T.System.AreaEffectSize);
@@ -702,7 +701,7 @@ namespace WeaponCore.Projectiles
                         var netted = EwaredProjectiles[j];
                         if (netted.T.Ai == T.Ai || netted.T.Target.IsProjectile) continue;
                         //Log.Line("netted");
-                        if (MyUtils.GetRandomInt(0, 100) < PulseChance)
+                        if (MyUtils.GetRandomInt(0, 100) < T.System.PulseChance)
                         {
                             EwarActive = true;
                             //Log.Line($"change course: {netted.T.Target.Projectile != null}");
@@ -714,42 +713,42 @@ namespace WeaponCore.Projectiles
                     EwaredProjectiles.Clear();
                     break;
                 case AreaEffectType.JumpNullField:
-                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < T.System.PulseChance)
                     {
                         //Log.Line($"jumpNullField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.AnchorField:
-                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < T.System.PulseChance)
                     {
                         //Log.Line($"jumpAnchorFieldNullField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.EnergySinkField:
-                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < T.System.PulseChance)
                     {
                         //Log.Line($"EnergySinkField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.EmpField:
-                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < T.System.PulseChance)
                     {
                         //Log.Line($"EmpField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.OffenseField:
-                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < T.System.PulseChance)
                     {
                         //Log.Line($"OffenseField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
                     }
                     break;
                 case AreaEffectType.NavField:
-                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < T.System.PulseChance)
                     {
                         //Log.Line($"NavField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;
@@ -757,7 +756,7 @@ namespace WeaponCore.Projectiles
 
                     break;
                 case AreaEffectType.DotField:
-                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < PulseChance)
+                    if (T.Triggered && MyUtils.GetRandomInt(0, 100) < T.System.PulseChance)
                     {
                         //Log.Line($"DotField Pulse - Time:{IdleTime} - distTravel:{T.DistanceTraveled}({T.DistanceTraveled * T.DistanceTraveled} >= {DistanceToTravelSqr})");
                         EwarActive = true;

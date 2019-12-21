@@ -80,6 +80,7 @@ namespace WeaponCore.Support
         internal MyPlanet MyPlanetTmp;
         internal MyPlanet MyPlanet;
         internal Vector3D PlanetClosestPoint;
+        internal Vector3D NaturalGravity;
         internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;

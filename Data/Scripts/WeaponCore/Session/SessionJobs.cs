@@ -95,6 +95,7 @@ namespace WeaponCore
 
                 db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || Tick - db.LiveProjectileTick < 3600|| db.LiveProjectile.Count > 0 || db.FirstRun;
                 db.MyShield = db.MyShieldTmp;
+                db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
                 db.ShieldNear = db.ShieldNearTmp;
                 db.BlockCount = db.MyGrid.BlocksCount;
                 if (db.ScanBlockGroups || db.WeaponTerminalReleased()) db.ReScanBlockGroups();

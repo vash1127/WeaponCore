@@ -89,16 +89,17 @@ namespace WeaponCore.Support
         {
             if (Vector3D.IsZero(a) || Vector3D.IsZero(b))
                 return 0;
-            else
-                return Math.Acos(MathHelperD.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
+
+            return Math.Acos(MathHelperD.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1));
         }
 
-        internal static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD worldMatrix, out double yaw, out double pitch)
+        internal static void GetRotationAngles(ref Vector3D targetVector, ref MatrixD matrix, out double yaw, out double pitch)
         {
-            var localTargetVector = Vector3D.Rotate(targetVector, MatrixD.Transpose(worldMatrix));
+            var localTargetVector = Vector3D.TransformNormal(targetVector, MatrixD.Transpose(matrix));
             var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
-            yaw = AngleBetween(Vector3D.Forward, flattenedTargetVector) * -Math.Sign(localTargetVector.X); //right is negative
-
+            yaw = AngleBetween(Vector3D.Forward, flattenedTargetVector) * -Math.Sign(localTargetVector.X); //right is positive
+            if (Math.Abs(yaw) < 1E-6 && localTargetVector.Z > 0) //check for straight back case
+                yaw = Math.PI;
             if (Vector3D.IsZero(flattenedTargetVector)) //check for straight up case
                 pitch = MathHelper.PiOver2 * Math.Sign(localTargetVector.Y);
             else
@@ -123,5 +124,88 @@ namespace WeaponCore.Support
                 return -1.0;
             return 2.0 * num3 / (Math.Sqrt(d) - num2);
         }
+
+        internal static void WrapAngleAroundPI(ref float angle)
+        {
+            angle %= MathHelper.TwoPi;
+            if (angle > Math.PI)
+                angle = -MathHelper.TwoPi + angle;
+            else if (angle < -Math.PI)
+                angle = MathHelper.TwoPi + angle;
+        }
+
+        internal static double CalculateRotorDeviationAngle(Vector3D forwardVector, MatrixD lastOrientation)
+        {
+            var flattenedForwardVector = Rejection(forwardVector, lastOrientation.Up);
+            return AngleBetween(flattenedForwardVector, lastOrientation.Forward) * Math.Sign(flattenedForwardVector.Dot(lastOrientation.Left));
+        }
+
+        internal static void GetAzimuthAngle(ref Vector3D targetVector, ref MatrixD matrix, out double azimuth)
+        {
+            var localTargetVector = Vector3D.TransformNormal(targetVector, MatrixD.Transpose(matrix));
+            var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
+            azimuth = AngleBetween(Vector3D.Forward, flattenedTargetVector) * -Math.Sign(localTargetVector.X); //right is positive
+            if (Math.Abs(azimuth) < 1E-6 && localTargetVector.Z > 0) //check for straight back case
+                azimuth = Math.PI;
+        }
+        internal static void GetElevationAngle(ref Vector3D targetVector, ref MatrixD matrix, out double pitch)
+        {
+            var localTargetVector = Vector3D.TransformNormal(targetVector, MatrixD.Transpose(matrix));
+            var flattenedTargetVector = new Vector3D(localTargetVector.X, 0, localTargetVector.Z);
+            if (Vector3D.IsZero(flattenedTargetVector)) //check for straight up case
+                pitch = MathHelper.PiOver2 * Math.Sign(localTargetVector.Y);
+            else
+                pitch = AngleBetween(localTargetVector, flattenedTargetVector) * Math.Sign(localTargetVector.Y); //up is positive
+        }
+
+        internal static Vector3D SafeNormalize(Vector3D a)
+        {
+            if (Vector3D.IsZero(a)) return Vector3D.Zero; 
+            if (Vector3D.IsUnit(ref a)) return a; 
+            return Vector3D.Normalize(a);
+        }
+
+        internal static Vector3D Reflection(Vector3D a, Vector3D b, double rejectionFactor = 1) //reflect a over b
+        {
+            Vector3D project_a = Projection(a, b); 
+            Vector3D reject_a = a - project_a; 
+            return project_a - reject_a * rejectionFactor;
+        }
+
+        internal static Vector3D Rejection(Vector3D a, Vector3D b) //reject a on b
+        {
+            if (Vector3D.IsZero(a) || Vector3D.IsZero(b)) 
+                return Vector3D.Zero; 
+            return a - a.Dot(b) / b.LengthSquared() * b;
+        }
+
+        internal static Vector3D Projection(Vector3D a, Vector3D b)
+        {
+            if (Vector3D.IsZero(a) || Vector3D.IsZero(b)) 
+                return Vector3D.Zero; 
+            if (Vector3D.IsUnit(ref b)) 
+                return a.Dot(b) * b; 
+
+            return a.Dot(b) / b.LengthSquared() * b;
+        }
+
+        internal static double ScalarProjection(Vector3D a, Vector3D b)
+        {
+            if (Vector3D.IsZero(a) || Vector3D.IsZero(b)) return 0; 
+            if (Vector3D.IsUnit(ref b)) 
+                return a.Dot(b); 
+            return a.Dot(b) / b.Length();
+        }
+
+
+
+        public static double CosBetween(Vector3D a, Vector3D b)
+        {
+            if (Vector3D.IsZero(a) || Vector3D.IsZero(b)) 
+                return 0; 
+            else 
+                return MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1);
+        }
+
     }
 }
