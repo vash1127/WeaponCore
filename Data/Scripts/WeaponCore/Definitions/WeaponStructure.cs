@@ -54,6 +54,7 @@ namespace WeaponCore.Support
         public readonly int HeatPerShot;
         public readonly int RateOfFire;
         public readonly int BarrelSpinRate;
+        public readonly int EnergyMagSize;
         public readonly TurretType TurretMovement;
         public readonly bool HasBarrelRate;
         public readonly bool ElevationOnly;
@@ -67,6 +68,7 @@ namespace WeaponCore.Support
         public readonly bool LineWidthVariance;
         public readonly bool LineColorVariance;
         public readonly bool EnergyAmmo;
+        public readonly bool MustCharge;
         public readonly bool IsHybrid;
         public readonly bool BarrelEffect1;
         public readonly bool BarrelEffect2;
@@ -227,7 +229,9 @@ namespace WeaponCore.Support
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
-            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && (EnergyAmmo || MagazineDef.Capacity >= values.HardPoint.Loading.ShotsInBurst);
+            EnergyMagSize = values.HardPoint.Loading.ShotsInBurst;
+            MustCharge = EnergyAmmo && ReloadTime > 0;
+            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && ((EnergyAmmo && !MustCharge) || MagazineDef.Capacity >= values.HardPoint.Loading.ShotsInBurst);
             DegRof = values.HardPoint.Loading.DegradeRof;
             MaxHeat = values.HardPoint.Loading.MaxHeat;
             WepCooldown = values.HardPoint.Loading.Cooldown;

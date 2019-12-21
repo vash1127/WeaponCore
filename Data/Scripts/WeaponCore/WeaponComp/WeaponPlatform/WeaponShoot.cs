@@ -305,7 +305,7 @@ namespace WeaponCore.Platform
 
             EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-            if (!System.EnergyAmmo && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
+            if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
                 StartReload();
 
             if (state.ManualShoot == TerminalActionState.ShootOnce)
