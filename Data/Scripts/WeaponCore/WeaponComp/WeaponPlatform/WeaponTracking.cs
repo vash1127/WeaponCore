@@ -423,9 +423,8 @@ namespace WeaponCore.Platform
                 {
                     minDiff = diffLenSq; 
                     aimOffset = diff;
-                    Log.Line($"less than min: {diffLenSq} - {diff.Length()}");
+                    if (i == 1000) Log.Line($"{minDiff}");
                 }
-                else Log.Line($"more than min:  {diffLenSq} - {diff.Length()}");
             }
             return estimatedImpactPoint + aimOffset; //(targetPos - projectilePos);
         }
