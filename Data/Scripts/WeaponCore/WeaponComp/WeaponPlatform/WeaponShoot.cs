@@ -99,12 +99,6 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            /*if (_shotsInCycle++ == _numOfBarrels - 1)
-            {
-                _shotsInCycle = 0;
-                _newCycle = true;
-            }*/
-
             if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null && !DelayCeaseFire) 
                 ShootRayCheck();
 

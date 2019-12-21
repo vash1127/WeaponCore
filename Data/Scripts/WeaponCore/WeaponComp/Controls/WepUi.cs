@@ -59,7 +59,6 @@ namespace WeaponCore
                     newBase = 0;
 
                 w.BaseDamage = newBase;
-
                 var oldRequired = w.RequiredPower;
                 w.UpdateShotEnergy();
                 w.UpdateRequiredPower();
@@ -73,8 +72,7 @@ namespace WeaponCore
                 w.AreaEffectDmg = w.System.AreaEffectDamage * mulitplier;
                 w.DetonateDmg = w.System.DetonationDamage * mulitplier;
 
-
-                comp.MaxRequiredPower -= w.RequiredPower;
+                //comp.MaxRequiredPower -= w.RequiredPower;
                 w.RequiredPower *= mulitplier;
                 comp.MaxRequiredPower += w.RequiredPower;
 
@@ -103,8 +101,8 @@ namespace WeaponCore
 
                 if (w.IsShooting)
                     comp.CurrentDps -= (oldDps - w.Dps);
-
                 comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
+
             }
             comp.Ai.OptimalDps += comp.OptimalDps;
             comp.TerminalRefresh();
@@ -244,34 +242,5 @@ namespace WeaponCore
             }
             return maxTrajectory;
         }
-        /*
-        internal static bool CoreWeaponEnableCheck(IMyTerminalBlock block, int id)
-        {
-            Log.Line($"CoreWeaponEnableCheck");
-            var comp = block?.Components?.Get<WeaponComponent>();
-
-            if (comp == null && (id == -6 || id == -5)) return true;
-            else if (comp == null) return false;
-
-            if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-            if (id == 0) return true;
-            else if (id == -6) return false;
-
-            switch (id) {
-                case -1:
-                    return comp.HasGuidanceToggle;
-                case -2:
-                    return comp.HasDamageSlider;
-                case -3:
-                    return comp.HasRofSlider;
-                case -4:
-                    return comp.CanOverload;
-                case -5:
-                    return comp.HasTurret;
-            }
-
-            return false;
-        }
-        */
     }
 }

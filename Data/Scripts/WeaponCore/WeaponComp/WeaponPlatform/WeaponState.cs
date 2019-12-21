@@ -615,22 +615,22 @@ namespace WeaponCore.Platform
         {
             if (System.BarrelEffect1 || System.BarrelEffect2)
             {
-                var removal = false;    
+                var removal = false;
+                var tick = Comp.Ai.Session.Tick;
+                if (Comp.Ai.VelocityUpdateTick != tick)
+                {
+                    Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics.LinearVelocity;
+                    Comp.Ai.VelocityUpdateTick = tick;
+                }
                 foreach (var barrelPair in BarrelAvUpdater)
                 {
                     var lastUpdateTick = barrelPair.Value;
                     var muzzle = barrelPair.Key;
                     var id = muzzle.MuzzleId;
                     var dummy = Dummies[id];
-                    var tick = Comp.Ai.Session.Tick;
                     var ticksAgo = tick - lastUpdateTick;
 
                     var particles = System.Values.Graphics.Particles;
-                    if (Comp.Ai.VelocityUpdateTick != tick)
-                    {
-                        Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics.LinearVelocity;
-                        Comp.Ai.VelocityUpdateTick = tick;
-                    }
 
                     var pos = dummy.Info.Position;
                     var entityExists = MuzzlePart.Item1?.Parent != null && !MuzzlePart.Item1.MarkedForClose;
@@ -722,10 +722,12 @@ namespace WeaponCore.Platform
                 Comp.CurrentDps += Dps;
                 if (!Comp.UnlimitedPower)
                 {
+                    if (Comp.SinkPower <= Comp.IdlePower) Comp.SinkPower = 0;
                     Comp.Ai.RequestedWeaponsDraw += RequiredPower;
                     Comp.Ai.CurrentWeaponsDraw += UseablePower;
                     Comp.SinkPower += UseablePower;
                     Comp.Ai.GridAvailablePower -= Comp.SinkPower;
+                    Log.Line($"StartShooting: {Comp.SinkPower}");
 
                     Comp.MyCube.ResourceSink.Update();
                 }
@@ -758,6 +760,8 @@ namespace WeaponCore.Platform
                         Comp.Ai.GridAvailablePower += Comp.SinkPower;
 
                         DelayTicks = 0;
+                        if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
+                        Log.Line($"StopShooting: {Comp.SinkPower}");
                         Comp.MyCube.ResourceSink.Update();
                     }
                     Comp.TerminalRefresh();

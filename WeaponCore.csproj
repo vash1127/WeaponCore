@@ -119,6 +119,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\Menu.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\Wheel.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Wheel\WheelFields.cs" />
+    <Compile Include="test.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="HavokWrapper, Version=0.1.1.0, Culture=neutral, processorArchitecture=AMD64">
