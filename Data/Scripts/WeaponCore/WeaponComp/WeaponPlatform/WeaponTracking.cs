@@ -270,7 +270,6 @@ namespace WeaponCore.Platform
                 weapon.StopShooting();
 
             weapon.Target.TargetLock = weapon.IsTracking && weapon.IsAligned;
-            Log.Line($"tracking: {weapon.IsTracking} - lock:{weapon.Target.TargetLock} - Dist:{Vector3D.Distance(targetPos, weapon.MyPivotPos)} - maxT:{system.MaxTrajectory} - Name:{system.WeaponName} - target:{weapon.Target.Entity != null} - tExpired:{weapon.Target.Expired}");
             return weapon.IsTracking;
         }
 
@@ -351,7 +350,7 @@ namespace WeaponCore.Platform
             var targetVelSqr = targetVel.LengthSquared();
             double maxSpeedSqr = targetMaxSpeed * targetMaxSpeed;
             var accelLimit = maxSpeedSqr - targetVelSqr;
-            var targetHitWall =  accelLimit <= 1;
+            var targetHitWall =  accelLimit <= 1 || targetAcc.LengthSquared() < 1;
             var oTvel = targetVel;
             bool projectileAccelerates = projectileAccMag > 1e-6;
             bool hasGravity = gravityMultiplier > 1e-6;
@@ -377,16 +376,11 @@ namespace WeaponCore.Platform
             Vector3D projectilePos = shooterPos;
 
             if (projectileAccelerates)
-            {
                 projectileVel += aimDirectionNorm * projectileInitSpeed;
-            }
             else
             {
                 if (targetHitWall)
-                {
-                    Log.Line($"[skip] targetVelLen:{targetVel.Length()} - targetAccel: {targetAcc.Length()} - projSpeed:{projectileMaxSpeed} - targetToShooterDist:{Vector3D.Distance(targetPos, shooterPos)}");
                     return estimatedImpactPoint;
-                }
 
                 projectileVel += aimDirectionNorm * projectileMaxSpeed;
             }

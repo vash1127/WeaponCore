@@ -86,56 +86,45 @@ namespace WeaponCore
                         /// 
                         
                         w.TargetWasExpired = w.Target.Expired;
-                        if (!w.Target.Expired)
-                        {
-                            if (w.Target.Entity == null && w.Target.Projectile == null)
-                            {
+                        if (!w.Target.Expired) {
+
+                            if (w.Target.Entity == null && w.Target.Projectile == null) {
 
                                 w.Target.Reset();
                             }
-                            else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose)
-                            {
+                            else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose) {
 
                                 w.Target.Reset();
                             }
-                            else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive))
-                            {
+                            else if (w.Target.Projectile != null && (!gridAi.LiveProjectile.Contains(w.Target.Projectile) || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive)) {
 
                                 w.Target.Reset();
                             }
-                            else if (w.TrackingAi && comp.Set.Value.Weapons[w.WeaponId].Enable)
-                            {
+                            else if (w.TrackingAi) {
 
-                                if (!Weapon.TrackingTarget(w, w.Target, !gunner))
-                                {
+                                if (!Weapon.TrackingTarget(w, w.Target, !gunner)) {
 
                                     w.Target.Reset();
                                 }
                             }
-                            else
-                            {
+                            else {
 
                                 Vector3D targetPos;
-                                if (w.IsTurret)
-                                {
+                                if (w.IsTurret) {
 
-                                    if (!w.TrackTarget)
-                                    {
+                                    if (!w.TrackTarget) {
 
-                                        if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity))
-                                        {
+                                        if ((comp.TrackingWeapon.Target.Projectile != w.Target.Projectile || w.Target.IsProjectile && w.Target.Projectile.State != Projectile.ProjectileState.Alive || comp.TrackingWeapon.Target.Entity != w.Target.Entity)) {
 
                                             w.Target.Reset();
                                         }
                                     }
-                                    else if (!w.Target.Expired && !Weapon.TargetAligned(w, w.Target, out targetPos))
-                                    {
+                                    else if (!Weapon.TargetAligned(w, w.Target, out targetPos)) {
 
                                         w.Target.Reset();
                                     }
                                 }
-                                else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos))
-                                {
+                                else if (w.TrackTarget && !Weapon.TargetAligned(w, w.Target, out targetPos)) {
 
                                     w.Target.Reset();
                                 }
