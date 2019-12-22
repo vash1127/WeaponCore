@@ -777,7 +777,6 @@ namespace WeaponCore.Platform
             if (IsShooting)
             {
                 StopShooting();
-                Log.Line($"StartReload");
             }
 
             if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !Comp.Ai.Session.IsCreative))
