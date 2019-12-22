@@ -185,9 +185,6 @@ namespace WeaponCore.Support
 
             Entity.NeedsWorldMatrix = true;
 
-            Ai.TotalSinkPower += MaxRequiredPower;
-            Ai.MinSinkPower += IdlePower;
-            Ai.RequestedWeaponsDraw = Ai.MinSinkPower;
             //Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
             if (!Ai.GridInit)

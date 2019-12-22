@@ -569,7 +569,7 @@ namespace WeaponCore.Platform
             else
                 RequiredPower = Comp.IdlePower;
 
-            UseablePower = RequiredPower;
+            
             Comp.MaxRequiredPower += RequiredPower;
         }
 

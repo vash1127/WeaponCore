@@ -215,9 +215,9 @@ namespace WeaponCore.Support
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
             EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
-            EnergyMagSize = values.HardPoint.Loading.ShotsInBurst;
             MustCharge = EnergyAmmo && ReloadTime > 0;
-            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && (EnergyAmmo || MagazineDef.Capacity >= values.HardPoint.Loading.ShotsInBurst);
+            EnergyMagSize = MustCharge ? values.HardPoint.Loading.ShotsInBurst : 0;
+            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && ((EnergyAmmo && !MustCharge) || MagazineDef.Capacity >= values.HardPoint.Loading.ShotsInBurst);
             BaseDamage = values.Ammo.BaseDamage;
             MaxTargets = Values.Ammo.Trajectory.Smarts.MaxTargets;
             TargetLossDegree = Values.Ammo.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(Values.Ammo.Trajectory.TargetLossDegree)) : 0;

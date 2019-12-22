@@ -119,7 +119,7 @@ namespace WeaponCore.Support
 
                 if(HasEnergyWeapon)
                     stringBuilder.Append("\n[Current Draw]: " + SinkPower.ToString("0.0") + " Mw" +
-                        "\n[Required Power]: " +MaxRequiredPower.ToString("0.0") + " Mw");
+                        "\n[Required Power]: " + MaxRequiredPower.ToString("0.0") + " Mw");
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }

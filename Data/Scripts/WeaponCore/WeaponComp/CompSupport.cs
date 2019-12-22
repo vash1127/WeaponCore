@@ -57,13 +57,15 @@ namespace WeaponCore.Support
                         if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
                             wCount.Current--;
 
+                        for (int i = 0; i < Platform.Weapons.Length; i++)
+                            Platform.Weapons[i].StopShooting();
+
                         RegisterEvents(false);
                         StopAllSounds();
                         Platform.RemoveParts(this);
-
-                        Ai.TotalSinkPower -= MaxRequiredPower;
-                        Ai.MinSinkPower -= IdlePower;
+                        
                         Ai.OptimalDps -= OptimalDps;
+                        
                     }
                 }
                 else

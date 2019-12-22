@@ -43,12 +43,6 @@ namespace WeaponCore
             comp.OptimalDps = 0;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++) {
                 var w = comp.Platform.Weapons[i];
-                if (!w.System.EnergyAmmo) {
-                    comp.OptimalDps += w.Dps;
-                    comp.MaxRequiredPower += w.RequiredPower;
-                    comp.HeatPerSecond += (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
-                    continue;
-                }
                 var newBase = w.System.BaseDamage * newValue;
 
                 if (w.System.IsBeamWeapon)
@@ -60,6 +54,7 @@ namespace WeaponCore
 
                 w.BaseDamage = newBase;
                 var oldRequired = w.RequiredPower;
+                var oldUsable = w.UseablePower;
                 w.UpdateShotEnergy();
                 w.UpdateRequiredPower();
 
@@ -72,7 +67,7 @@ namespace WeaponCore
                 w.AreaEffectDmg = w.System.AreaEffectDamage * mulitplier;
                 w.DetonateDmg = w.System.DetonationDamage * mulitplier;
 
-                //comp.MaxRequiredPower -= w.RequiredPower;
+                comp.MaxRequiredPower -= w.RequiredPower;
                 w.RequiredPower *= mulitplier;
                 comp.MaxRequiredPower += w.RequiredPower;
 
@@ -100,9 +95,20 @@ namespace WeaponCore
                 comp.OptimalDps += w.Dps;
 
                 if (w.IsShooting)
-                    comp.CurrentDps -= (oldDps - w.Dps);
-                comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
+                {
+                    if (oldRequired - oldUsable < 0.001)
+                    {
+                        w.UseablePower = w.RequiredPower;
+                        comp.SinkPower -= (oldUsable - w.UseablePower);
+                        comp.MyCube.ResourceSink.Update();
+                    }
 
+                    comp.Ai.RequestedWeaponsDraw -= (oldRequired - w.RequiredPower);
+
+                    comp.CurrentDps -= (oldDps - w.Dps);
+                }
+
+                w.DelayTicks = 0;
             }
             comp.Ai.OptimalDps += comp.OptimalDps;
             comp.TerminalRefresh();
@@ -171,8 +177,6 @@ namespace WeaponCore
 
                 if (w.IsShooting)
                     comp.CurrentDps -= (oldDps - w.Dps);
-
-                comp.Ai.TotalSinkPower -= (oldRequired - w.RequiredPower);
 
 
             }
