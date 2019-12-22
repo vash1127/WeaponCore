@@ -358,8 +358,8 @@ namespace WeaponCore.Platform
                 if (!Comp.Ai.LiveProjectile.Contains(Target.Projectile))
                 {
                     Log.Line($"{System.WeaponName} - ShootRayCheckFail - projectile not alive");
-                    masterWeapon.Target.Expired = true;
-                    if (masterWeapon != this) Target.Expired = true;
+                    masterWeapon.Target.Reset();
+                    if (masterWeapon != this) Target.Reset();
                     return;
                 }
             }
@@ -368,24 +368,24 @@ namespace WeaponCore.Platform
                 if ((Target.Entity == null || Target.Entity.MarkedForClose))
                 {
                     //Log.Line($"{System.WeaponName} - ShootRayCheckFail - target null/marked/misMatch - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
-                    masterWeapon.Target.Expired = true;
-                    if (masterWeapon != this) Target.Expired = true;
+                    masterWeapon.Target.Reset();
+                    if (masterWeapon != this) Target.Reset();
                     return;
                 }
                 var cube = Target.Entity as MyCubeBlock;
                 if (cube != null && !cube.IsWorking)
                 {
                     //Log.Line($"{System.WeaponName} - ShootRayCheckFail - block is no longer working - weaponId:{Comp.MyCube.EntityId} - Null:{Target.Entity == null} - Marked:{Target.Entity?.MarkedForClose} - IdMisMatch:{Target.TopEntityId != Target.Entity?.GetTopMostParent()?.EntityId} - OldId:{Target.TopEntityId} - Id:{Target.Entity?.GetTopMostParent()?.EntityId}");
-                    masterWeapon.Target.Expired = true;
-                    if (masterWeapon != this) Target.Expired = true;
+                    masterWeapon.Target.Reset();
+                    if (masterWeapon != this) Target.Reset();
                     return;
                 }  
                 var topMostEnt = Target.Entity.GetTopMostParent();
                 if (Target.TopEntityId != topMostEnt.EntityId || !Comp.Ai.Targets.ContainsKey(topMostEnt))
                 {
                     //Log.Line("topmostEnt checks");
-                    masterWeapon.Target.Expired = true;
-                    if (masterWeapon != this) Target.Expired = true;
+                    masterWeapon.Target.Reset();
+                    if (masterWeapon != this) Target.Reset();
                     return;
                 }
             }
@@ -394,8 +394,8 @@ namespace WeaponCore.Platform
             if (Vector3D.DistanceSquared(targetPos, MyPivotPos) > (Comp.Set.Value.Range * Comp.Set.Value.Range))
             {
                 //Log.Line($"{System.WeaponName} - ShootRayCheck Fail - out of range");
-                masterWeapon.Target.Expired = true;
-                if (masterWeapon !=  this) Target.Expired = true;
+                masterWeapon.Target.Reset();
+                if (masterWeapon !=  this) Target.Reset();
                 return;
             }
             Casting = true;
@@ -411,8 +411,8 @@ namespace WeaponCore.Platform
                 if (Target.Projectile != null)
                     return;
 
-                masterWeapon.Target.Expired = true;
-                if (masterWeapon != this) Target.Expired = true;
+                masterWeapon.Target.Reset();
+                if (masterWeapon != this) Target.Reset();
                 //Log.Line($"{System.WeaponName} - ShootRayCheck failure - unexpected nullHit - target:{Target?.Entity?.DebugName} - {Target?.Entity?.MarkedForClose}");
                 return;
             }
@@ -434,8 +434,8 @@ namespace WeaponCore.Platform
                 var grid = parentAsGrid ?? rootAsGrid;
                 if (grid == Comp.Ai.MyGrid)
                 {
-                    masterWeapon.Target.Expired = true;
-                    if (masterWeapon != this) Target.Expired = true;
+                    masterWeapon.Target.Reset();
+                    if (masterWeapon != this) Target.Reset();
                     //Log.Line($"{System.WeaponName} - ShootRayCheck failure - own grid: {grid?.DebugName}");
                     return;
                 }
@@ -445,8 +445,8 @@ namespace WeaponCore.Platform
                     if (!grid.IsSameConstructAs(Comp.Ai.MyGrid))
                     {
                         //Log.Line($"{System.WeaponName} - ShootRayCheck fail - friendly grid: {grid?.DebugName} - {grid?.DebugName}");
-                        masterWeapon.Target.Expired = true;
-                        if (masterWeapon != this) Target.Expired = true;
+                        masterWeapon.Target.Reset();
+                        if (masterWeapon != this) Target.Reset();
                     }
                     //Log.Line($"{System.WeaponName} - ShootRayCheck Success - sameLogicGroup: {((MyEntity)hitInfo.HitEntity).DebugName}");
                     return;
@@ -476,8 +476,8 @@ namespace WeaponCore.Platform
                     var escapeDistExceed = distanceToTarget - Target.OrigDistance > Target.OrigDistance;
                     if (shortDistExceed || escapeDistExceed)
                     {
-                        masterWeapon.Target.Expired = true;
-                        if (masterWeapon != this) Target.Expired = true;
+                        masterWeapon.Target.Reset();
+                        if (masterWeapon != this) Target.Reset();
                         //if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
                         //else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met - {distanceToTarget} - {Target.OrigDistance} -{distanceToTarget - Target.OrigDistance} > {Target.OrigDistance}");
                     }

@@ -46,7 +46,7 @@ namespace WeaponCore.Support
                 w.NewTarget.Reset();
                 w.SleepTargets = true;
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Expired = true;
+                w.Target.Reset();
             }
             else w.WakeTargets();
         }
@@ -220,8 +220,7 @@ namespace WeaponCore.Support
                     ai.Session.CanShoot++;
                     if (!w.TrackingAi)
                     {
-                        double intercept;
-                        var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, w.Prediction, out intercept) : targetCenter;
+                        var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, w.Prediction) : targetCenter;
                         var targetSphere = info.Target.PositionComp.WorldVolume;
                         targetSphere.Center = newCenter;
                         if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
