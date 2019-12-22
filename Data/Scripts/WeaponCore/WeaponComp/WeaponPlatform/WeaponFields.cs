@@ -133,6 +133,7 @@ namespace WeaponCore.Platform
         internal bool FixedOffset;
         internal bool AiOnlyWeapon;
         internal bool Charging;
+        internal bool DrawingPower;
         internal HardPointDefinition.Prediction Prediction;
 
         public enum TerminalActionState

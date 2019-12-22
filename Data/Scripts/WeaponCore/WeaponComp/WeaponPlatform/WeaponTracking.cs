@@ -265,13 +265,13 @@ namespace WeaponCore.Platform
                     }
                     if (reset)
                     {
-                        //weapon.SeekTarget = true;
+                        weapon.SeekTarget = true;
                         weapon.IsAligned = false;
                         weapon.Target.Expired = true;
                     }
                 }
-                else
-                    weapon.StartShooting();
+                //else
+                    //weapon.StartShooting();
             }
             else if (alignedChange && !weapon.DelayCeaseFire)
                 weapon.StopShooting();
