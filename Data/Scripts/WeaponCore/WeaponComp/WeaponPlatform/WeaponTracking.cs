@@ -20,7 +20,7 @@ namespace WeaponCore.Platform
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
-            if (prediction != Prediction.Off)
+            if (prediction != Prediction.Off && !weapon.System.IsBeamWeapon)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, prediction);
             else
                 targetPos = targetCenter;
@@ -77,7 +77,7 @@ namespace WeaponCore.Platform
             var rotMatrix = Quaternion.CreateFromRotationMatrix(entity.PositionComp.WorldMatrix);
             var obb = new MyOrientedBoundingBoxD(entity.PositionComp.WorldAABB.Center, entity.PositionComp.LocalAABB.HalfExtents, rotMatrix);
 
-            if (prediction != Prediction.Off)
+            if (prediction != Prediction.Off && !weapon.System.IsBeamWeapon)
                 targetPos = weapon.GetPredictedTargetPosition(obb.Center, targetLinVel, targetAccel, prediction);
             else
                 targetPos = obb.Center;
@@ -138,7 +138,7 @@ namespace WeaponCore.Platform
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
-            if (weapon.Prediction != Prediction.Off)
+            if (weapon.Prediction != Prediction.Off && !weapon.System.IsBeamWeapon)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction);
             else
                 targetPos = targetCenter;
@@ -176,7 +176,7 @@ namespace WeaponCore.Platform
             }
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
-            if (weapon.Prediction != Prediction.Off)
+            if (weapon.Prediction != Prediction.Off && !weapon.System.IsBeamWeapon)
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, weapon.Prediction);
             else
                 targetPos = targetCenter;
@@ -276,7 +276,7 @@ namespace WeaponCore.Platform
         public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Vector3D targetAccel, Prediction prediction, double projectileAccel = 0)
         {
             var ammoSpeed = System.Values.Ammo.Trajectory.DesiredSpeed;
-            if (ammoSpeed <= 0 || System.IsBeamWeapon)
+            if (ammoSpeed <= 0)
             {
                 return targetPos;
             }
@@ -289,7 +289,7 @@ namespace WeaponCore.Platform
             }
             var targetVel = targetLinVel;
             Vector3D predictedPos;
-            if (prediction == Prediction.Basic && false) 
+            if (prediction == Prediction.Basic) 
             {
                 var deltaPos = targetPos - shooterPos;
                 var deltaVel = targetVel - Comp.Ai.GridVel;
@@ -300,7 +300,7 @@ namespace WeaponCore.Platform
                 predictedPos = TrajectoryEstimation(targetPos, targetVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, shooterPos, Comp.Ai.GridVel, ammoSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec);
             else
                 predictedPos = TrajectoryEstimation(targetPos, targetVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, shooterPos, Comp.Ai.GridVel, ammoSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec);
-            DsDebugDraw.DrawSingleVec(predictedPos, 2.5f, Color.Red);
+            //DsDebugDraw.DrawSingleVec(predictedPos, 2.5f, Color.Red);
             return predictedPos;
         }
 
@@ -409,7 +409,7 @@ namespace WeaponCore.Platform
                     minDiff = diffLenSq; 
                     aimOffset = diff;
                 }
-                if (i == 599) Log.Line($"[end] loop:{i} - accelLimit: {accelLimit} - diffLen:{diff.Length()} - tVelLen: {oTvel.Length()}({targetVel.Length()}) - tAccel: {targetAcc.Length()} - projSpeed:{projectileMaxSpeed} - targetToShooterDist:{Vector3D.Distance(targetPos, shooterPos)} - aimOffset:{aimOffset.Length()} - maxSqr:{targetMaxSpeed * targetMaxSpeed} - tvelSqr:{targetVel.LengthSquared()} ");
+                //if (i == 599) Log.Line($"[end] loop:{i} - accelLimit: {accelLimit} - diffLen:{diff.Length()} - tVelLen: {oTvel.Length()}({targetVel.Length()}) - tAccel: {targetAcc.Length()} - projSpeed:{projectileMaxSpeed} - targetToShooterDist:{Vector3D.Distance(targetPos, shooterPos)} - aimOffset:{aimOffset.Length()} - maxSqr:{targetMaxSpeed * targetMaxSpeed} - tvelSqr:{targetVel.LengthSquared()} ");
             }
             return estimatedImpactPoint + aimOffset; 
         }

@@ -101,10 +101,12 @@ namespace WeaponCore
                             }
                             else if (w.TrackingAi) {
 
+                                //DsUtil2.Start("");
                                 if (!Weapon.TrackingTarget(w, w.Target, !gunner)) {
 
                                     w.Target.Reset();
                                 }
+                                //DsUtil2.Complete("", false, true);
                             }
                             else {
 
