@@ -62,7 +62,6 @@ namespace WeaponCore.Platform
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             var tracking = inRange && canTrack;
-
             return tracking;
         }
 
@@ -114,7 +113,6 @@ namespace WeaponCore.Platform
                 else
                     canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
             }
-
             return canTrack;
         }
 
@@ -154,7 +152,6 @@ namespace WeaponCore.Platform
 
             weapon.TargetPos = targetPos;
             weapon.IsAligned = isAligned;
-
             return isAligned;
         }
 
@@ -239,8 +236,6 @@ namespace WeaponCore.Platform
 
             if (weapon.IsTracking)
                 isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
-            //else
-              //  weapon.SeekTarget = true;
 
             var wasAligned = weapon.IsAligned;
             weapon.IsAligned = isAligned;
@@ -270,13 +265,12 @@ namespace WeaponCore.Platform
                         weapon.Target.Expired = true;
                     }
                 }
-                //else
-                    //weapon.StartShooting();
             }
             else if (alignedChange && !weapon.DelayCeaseFire)
                 weapon.StopShooting();
 
             weapon.Target.TargetLock = weapon.IsTracking && weapon.IsAligned;
+            Log.Line($"tracking: {weapon.IsTracking} - lock:{weapon.Target.TargetLock} - Dist:{Vector3D.Distance(targetPos, weapon.MyPivotPos)} - maxT:{system.MaxTrajectory} - Name:{system.WeaponName} - target:{weapon.Target.Entity != null} - tExpired:{weapon.Target.Expired}");
             return weapon.IsTracking;
         }
 
@@ -297,6 +291,7 @@ namespace WeaponCore.Platform
             var targetVel = targetLinVel;
             Vector3D predictedPos;
             //predictedPos = CalculateProjectileInterceptPoint2(Comp.Ai.Session.MaxEntitySpeed, ammoSpeed, 60, Comp.Ai.GridVel, shooterPos, targetVel, targetAccel, targetPos, out timeToIntercept);
+            
             predictedPos = TrajectoryEstimation(targetPos, targetVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, shooterPos, Comp.Ai.GridVel, ammoSpeed, 0, projectileAccel); 
             return predictedPos;
             if (prediction == Prediction.Basic) 
