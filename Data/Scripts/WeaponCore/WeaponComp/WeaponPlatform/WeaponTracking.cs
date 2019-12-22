@@ -297,10 +297,10 @@ namespace WeaponCore.Platform
                 predictedPos = targetPos + (float)timeToIntercept * deltaVel;
             }
             else if (prediction == Prediction.Accurate)
-                predictedPos = TrajectoryEstimation(targetPos, targetVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, shooterPos, Comp.Ai.GridVel, ammoSpeed, 0, projectileAccel);
+                predictedPos = TrajectoryEstimation(targetPos, targetVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, shooterPos, Comp.Ai.GridVel, ammoSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec);
             else
-                predictedPos = TrajectoryEstimation(targetPos, targetVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, shooterPos, Comp.Ai.GridVel, ammoSpeed, 0, projectileAccel);
-
+                predictedPos = TrajectoryEstimation(targetPos, targetVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, shooterPos, Comp.Ai.GridVel, ammoSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec);
+            DsDebugDraw.DrawSingleVec(predictedPos, 2.5f, Color.Red);
             return predictedPos;
         }
 

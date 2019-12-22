@@ -11,14 +11,14 @@ namespace WeaponCore
         internal static bool GetGuidance(IMyTerminalBlock block, int wepId)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
             return comp.Set.Value.Guidance;
         }
 
         internal static void SetGuidance(IMyTerminalBlock block, int wepId, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (comp == null ||  comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             comp.Set.Value.Guidance = newValue;
             comp.SettingsUpdated = true;
             comp.ClientUiUpdate = true;
@@ -27,14 +27,14 @@ namespace WeaponCore
         internal static float GetDps(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
             return comp.Set.Value.DpsModifier;
         }
 
         internal static void SetDps(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             comp.Set.Value.DpsModifier = newValue;
 
             comp.MaxRequiredPower = 0;
@@ -122,14 +122,14 @@ namespace WeaponCore
         internal static float GetRof(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
             return comp.Set.Value.RofModifier;
         }
 
         internal static void SetRof(IMyTerminalBlock block, float newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             comp.Set.Value.RofModifier = newValue;
 
             comp.MaxRequiredPower = 0;
@@ -192,14 +192,14 @@ namespace WeaponCore
         internal static bool GetOverload(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
             return comp.Set.Value.Overload == 2;
         }
 
         internal static void SetOverload(IMyTerminalBlock block, bool newValue)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             if (newValue)
                 comp.Set.Value.Overload = 2;
@@ -217,13 +217,13 @@ namespace WeaponCore
 
         internal static float GetRange(IMyTerminalBlock block) {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 100;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 100;
             return comp.Set.Value.Range;
         }
 
         internal static void SetRange(IMyTerminalBlock block, float range) {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
             comp.Set.Value.Range = range;
         }
 
@@ -235,7 +235,7 @@ namespace WeaponCore
         internal static float GetMaxRange(IMyTerminalBlock block)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
-            if (comp == null || comp.Platform == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
+            if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return 0;
 
             var maxTrajectory = 0f;
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)

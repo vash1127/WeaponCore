@@ -65,7 +65,6 @@ namespace WeaponCore
 
                         continue;
                     }
-
                     ///
                     ///
                     /// Weapon update section
@@ -216,7 +215,6 @@ namespace WeaponCore
                                 {
                                     gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                     w.DrawingPower = true;
-                                    Log.Line($"Request added");
                                 }
                                 ShootingWeapons.Enqueue(w);
                             }
@@ -280,9 +278,7 @@ namespace WeaponCore
 
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         var oldUseable = w.UseablePower;
-                        Log.Line($"percUseable: {percUseable} w.Comp.Ai.GridMaxPower: {w.Comp.Ai.GridMaxPower}");
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
-
                         if (w.IsShooting) {
                             w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
                             w.Comp.MyCube.ResourceSink.Update();

@@ -168,7 +168,6 @@ namespace WeaponCore.Control
                         w.HomeTurret(null);
                         
                     }
-
                     w.StopShooting();
                 }
                 else

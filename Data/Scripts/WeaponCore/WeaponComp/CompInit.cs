@@ -110,7 +110,6 @@ namespace WeaponCore.Support
             weapon.UpdateShotEnergy();
             weapon.UpdateRequiredPower();
             weapon.UseablePower = weapon.RequiredPower;
-
             var mulitplier = (weapon.System.EnergyAmmo && weapon.System.BaseDamage > 0) ? weapon.BaseDamage / weapon.System.BaseDamage : 1;
 
             if (weapon.BaseDamage > weapon.System.BaseDamage)
