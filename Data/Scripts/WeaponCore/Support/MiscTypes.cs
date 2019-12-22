@@ -874,17 +874,17 @@ namespace WeaponCore.Support
         internal readonly Dictionary<string, int> Settings = new Dictionary<string, int>()
         {
             {"Active", 1},
-            {"SubSystems", 0},
-            {"FocusSubSystem", 0},
-            {"FocusTargets", 0},
-            {"ManualFire", 0},
-            {"ManualAim", 0},
-            {"Unowned", 0},
-            {"Friendly", 0},
-            {"Meteors", 0 },
-            {"Biologicals", 0 },
-            {"Projectiles", 0 },
             {"Neutrals", 0},
+            {"Projectiles", 0 },
+            {"Biologicals", 0 },
+            {"Meteors", 0 },
+            {"Friendly", 0},
+            {"Unowned", 0},
+            {"ManualAim", 0},
+            {"ManualFire", 0},
+            {"FocusTargets", 0},
+            {"FocusSubSystem", 0},
+            {"SubSystems", 0},
         };
 
         internal string Name;

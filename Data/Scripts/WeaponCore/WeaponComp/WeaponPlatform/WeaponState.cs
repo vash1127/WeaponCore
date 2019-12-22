@@ -715,6 +715,7 @@ namespace WeaponCore.Platform
 
         public void StartShooting()
         {
+
             if (FiringEmitter != null) StartFiringSound();
             if (ShotEnergyCost > 0 && !IsShooting && !System.DesignatorWeapon)
             {
@@ -722,13 +723,13 @@ namespace WeaponCore.Platform
                 Comp.CurrentDps += Dps;
                 if (!Comp.UnlimitedPower)
                 {
+                    if (Comp.SinkPower <= Comp.IdlePower) Comp.SinkPower = 0;
                     Comp.Ai.CurrentWeaponsDraw += UseablePower;
                     Comp.SinkPower += UseablePower;
                     Comp.Ai.GridAvailablePower -= UseablePower;
-
                     Comp.MyCube.ResourceSink.Update();
                 }
-                
+
                 Comp.TerminalRefresh();
             }
             IsShooting = true;
@@ -774,7 +775,9 @@ namespace WeaponCore.Platform
             EventTriggerStateChanged(state: EventTriggers.Firing, active: false);
 
             if (IsShooting)
+            {
                 StopShooting();
+            }
 
             if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !Comp.Ai.Session.IsCreative))
             {

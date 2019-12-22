@@ -65,7 +65,6 @@ namespace WeaponCore
 
                         continue;
                     }
-
                     ///
                     ///
                     /// Weapon update section
@@ -102,10 +101,12 @@ namespace WeaponCore
                             }
                             else if (w.TrackingAi) {
 
+                                //DsUtil2.Start("");
                                 if (!Weapon.TrackingTarget(w, w.Target, !gunner)) {
 
                                     w.Target.Reset();
                                 }
+                                //DsUtil2.Complete("", false, true);
                             }
                             else {
 
@@ -216,7 +217,6 @@ namespace WeaponCore
                                 {
                                     gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                     w.DrawingPower = true;
-                                    Log.Line($"Request added");
                                 }
                                 ShootingWeapons.Enqueue(w);
                             }
@@ -280,9 +280,7 @@ namespace WeaponCore
 
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         var oldUseable = w.UseablePower;
-                        Log.Line($"percUseable: {percUseable} w.Comp.Ai.GridMaxPower: {w.Comp.Ai.GridMaxPower}");
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
-
                         if (w.IsShooting) {
                             w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
                             w.Comp.MyCube.ResourceSink.Update();
