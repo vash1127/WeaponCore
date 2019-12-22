@@ -147,6 +147,7 @@ namespace WeaponCore
 
                 w.RateOfFire = newRate;
                 var oldRequired = w.RequiredPower;
+                var oldUsable = w.UseablePower;
                 w.UpdateRequiredPower();
 
                 w.TicksPerShot = (uint)(3600f / w.RateOfFire);
@@ -176,7 +177,18 @@ namespace WeaponCore
                 comp.OptimalDps += w.Dps;
 
                 if (w.IsShooting)
+                {
+                    if (oldRequired - oldUsable < 0.001)
+                    {
+                        w.UseablePower = w.RequiredPower;
+                        comp.SinkPower -= (oldUsable - w.UseablePower);
+                        comp.MyCube.ResourceSink.Update();
+                    }
+
+                    comp.Ai.RequestedWeaponsDraw -= (oldRequired - w.RequiredPower);
+
                     comp.CurrentDps -= (oldDps - w.Dps);
+                }
 
 
             }
