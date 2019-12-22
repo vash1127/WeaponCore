@@ -262,7 +262,7 @@ namespace WeaponCore.Platform
                     {
                         weapon.SeekTarget = true;
                         weapon.IsAligned = false;
-                        weapon.Target.Expired = true;
+                        weapon.Target.Reset();
                     }
                 }
             }
