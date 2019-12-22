@@ -722,12 +722,9 @@ namespace WeaponCore.Platform
                 Comp.CurrentDps += Dps;
                 if (!Comp.UnlimitedPower)
                 {
-                    if (Comp.SinkPower <= Comp.IdlePower) Comp.SinkPower = 0;
-                    Comp.Ai.RequestedWeaponsDraw += RequiredPower;
                     Comp.Ai.CurrentWeaponsDraw += UseablePower;
                     Comp.SinkPower += UseablePower;
-                    Comp.Ai.GridAvailablePower -= Comp.SinkPower;
-                    Log.Line($"StartShooting: {Comp.SinkPower}");
+                    Comp.Ai.GridAvailablePower -= UseablePower;
 
                     Comp.MyCube.ResourceSink.Update();
                 }
@@ -754,14 +751,14 @@ namespace WeaponCore.Platform
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
                     if (!Comp.UnlimitedPower)
                     {
+                        DrawingPower = false;
                         Comp.Ai.RequestedWeaponsDraw -= RequiredPower;
                         Comp.Ai.CurrentWeaponsDraw -= UseablePower;
                         Comp.SinkPower -= UseablePower;
-                        Comp.Ai.GridAvailablePower += Comp.SinkPower;
+                        Comp.Ai.GridAvailablePower += UseablePower;
 
                         DelayTicks = 0;
                         if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
-                        Log.Line($"StopShooting: {Comp.SinkPower}");
                         Comp.MyCube.ResourceSink.Update();
                     }
                     Comp.TerminalRefresh();

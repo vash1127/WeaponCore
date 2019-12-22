@@ -209,6 +209,12 @@ namespace WeaponCore
                             var targetRequested = w.SeekTarget && targetChange;
                             if (!targetRequested && (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick))
                             {
+                                if (!w.DrawingPower)
+                                {
+                                    gridAi.RequestedWeaponsDraw += w.RequiredPower;
+                                    w.DrawingPower = true;
+                                    Log.Line($"Request added");
+                                }
                                 ShootingWeapons.Enqueue(w);
                             }
                             else if (w.ChargeUntilTick > Tick)
@@ -271,6 +277,7 @@ namespace WeaponCore
 
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         var oldUseable = w.UseablePower;
+                        Log.Line($"percUseable: {percUseable} w.Comp.Ai.GridMaxPower: {w.Comp.Ai.GridMaxPower}");
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
                         if (w.IsShooting) {
