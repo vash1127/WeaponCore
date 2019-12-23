@@ -141,6 +141,7 @@ namespace WeaponCore
                             System = t.System,
                             StepLength = (t.DistanceTraveled - t.PrevDistanceTraveled),
                             Direction = t.Direction,
+                            Velocity = t.ShooterVel,
                             Back = t.LineStart,
                             FirstTick = Tick,
                         };
@@ -257,6 +258,7 @@ namespace WeaponCore
                             System = s.System,
                             StepLength = stepLength,
                             Direction = direction,
+                            Velocity = s.Velocity,
                             Back = back,
                             FirstTick = Tick,
                         };
@@ -292,6 +294,10 @@ namespace WeaponCore
                 var fullSize = system.Values.Graphics.Line.Tracer.Width;
                 var steps = system.Values.Graphics.Line.Trail.DecayTime;
                 var thisStep = (Tick - a.FirstTick);
+                if (thisStep != 0)
+                {
+                    a.Back += (a.Velocity * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
+                }
                 var shrinkAmount = fullSize / steps;
                 var reduction = (shrinkAmount * thisStep);
                 var thickness = fullSize - reduction;

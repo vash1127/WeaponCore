@@ -74,25 +74,6 @@ namespace WeaponCore.Support
         [ProtoMember(14)] internal UiDefinition Ui;
     }
 
-    /*
-    [ProtoContract]
-    public struct HardPointDefinitionUpgrade
-    {
-        public enum Prediction
-        {
-            Off,
-            Basic,
-            Accurate,
-            Advanced,
-        }
-
-        [ProtoMember(1)] internal float DeviateShotAngle;
-        [ProtoMember(2)] internal float EnergyCost;
-        [ProtoMember(3)] internal double AimingTolerance;
-        [ProtoMember(4)] internal Prediction AimLeadingPrediction;
-        [ProtoMember(5)] internal AmmoLoading Loading;
-    }*/
-
     [ProtoContract]
     public struct AimControlDefinition
     {

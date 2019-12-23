@@ -257,9 +257,8 @@ namespace WeaponCore.Support
             {
                 if (comp.Platform.State != Ready) return false;
                 var w = comp.Platform.Weapons[weaponId];
-                var prediction = w.Prediction != HardPointDefinition.Prediction.Off ? w.Prediction : HardPointDefinition.Prediction.Accurate;
 
-                return Weapon.TargetAligned(w, target, out targetPos, prediction);
+                return Weapon.TargetAligned(w, target, out targetPos);
             }
             return false;
         }

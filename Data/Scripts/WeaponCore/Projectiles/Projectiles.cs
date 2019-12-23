@@ -5,6 +5,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
@@ -101,7 +102,7 @@ namespace WeaponCore.Projectiles
         {
             foreach (var p in ProjectilePool.Active)
             {
-                p.Age++;
+                p.T.Age++;
                 p.Active = false;
                 switch (p.State)
                 {
@@ -356,7 +357,8 @@ namespace WeaponCore.Projectiles
                     else
                     {
                         p.T.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Direction, (p.Velocity - p.StartSpeed) * StepConst));
-                        if (p.T.ProjectileDisplacement < p.TracerLength)
+                        var displaceDiff = p.T.ProjectileDisplacement - p.TracerLength;
+                        if (p.T.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.001)
                         {
                             p.T.UpdateShape(p.Position, p.Direction, p.T.ProjectileDisplacement, ReSize.Grow);
                         }

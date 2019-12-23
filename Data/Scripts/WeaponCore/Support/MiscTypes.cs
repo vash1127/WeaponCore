@@ -56,6 +56,7 @@ namespace WeaponCore.Support
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
         internal Vector3D Position;
+        internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
         internal Vector3D Direction;
@@ -66,6 +67,7 @@ namespace WeaponCore.Support
         internal int MuzzleId;
         internal int TriggerGrowthSteps;
         internal int ObjectsHit;
+        internal int Age;
         internal double Length;
         internal double GrowDistance;
         internal double DistanceTraveled;
@@ -160,6 +162,7 @@ namespace WeaponCore.Support
                 ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
                 LineWidth = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
             }
+            //if (DistanceTraveled <= 120) Log.Line($"[test] Age:{Age} - moved::{(DistanceTraveled - PrevDistanceTraveled)} - distTraveled:{DistanceTraveled} - pDisplacement:{ProjectileDisplacement} - reSize:{ReSizing} - onScreen:{OnScreen} - dToLine:{DistanceToLine}");
         }
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D direction)
@@ -210,6 +213,7 @@ namespace WeaponCore.Support
             WeaponId = 0;
             MuzzleId = 0;
             Length = 0;
+            Age = 0;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
             LineWidth = 0;
@@ -223,6 +227,7 @@ namespace WeaponCore.Support
             Direction = Vector3D.Zero;
             LineStart = Vector3D.Zero;
             Origin = Vector3D.Zero;
+            ShooterVel = Vector3D.Zero;
             ClosestPointOnLine = Vector3D.Zero;
         }
     }
@@ -573,6 +578,7 @@ namespace WeaponCore.Support
         internal Vector3D HitPos;
         internal Vector3D BackOfTracer;
         internal Vector3D Direction;
+        internal Vector3D Velocity;
         internal double ResizeLen;
         internal double TracerSteps;
         internal float Thickness;
@@ -584,6 +590,7 @@ namespace WeaponCore.Support
             System = trajectile.System;
             HitPos = trajectile.Position;
             Direction = trajectile.Direction;
+            Velocity = trajectile.ShooterVel;
             ResizeLen = trajectile.DistanceTraveled - trajectile.PrevDistanceTraveled;
             TracerSteps = trajectile.System.TracerLength / ResizeLen;
             var frontOfTracer = (trajectile.LineStart + (Direction * ResizeLen));
@@ -628,6 +635,7 @@ namespace WeaponCore.Support
         internal WeaponSystem System;
         internal Vector3D Back;
         internal Vector3D Direction;
+        internal Vector3D Velocity;
         internal double StepLength;
         internal uint FirstTick;
     }

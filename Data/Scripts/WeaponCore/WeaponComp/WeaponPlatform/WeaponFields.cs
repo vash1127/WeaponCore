@@ -134,7 +134,6 @@ namespace WeaponCore.Platform
         internal bool AiOnlyWeapon;
         internal bool Charging;
         internal bool DrawingPower;
-        internal HardPointDefinition.Prediction Prediction;
 
         public enum TerminalActionState
         {
@@ -221,7 +220,6 @@ namespace WeaponCore.Platform
             var toleranceInRadians = MathHelperD.ToRadians(System.Values.HardPoint.AimingTolerance);
             AimCone.ConeAngle = toleranceInRadians;
             AimingTolerance = Math.Cos(toleranceInRadians);
-            Prediction = System.Values.HardPoint.AimLeadingPrediction;
 
             _numOfBarrels = System.Barrels.Length;
             DelayCeaseFire = System.TimeToCeaseFire > 0;

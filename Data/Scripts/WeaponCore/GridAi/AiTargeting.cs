@@ -53,7 +53,7 @@ namespace WeaponCore.Support
 
         internal static bool ReacquireTarget(Projectile p)
         {
-            p.ChaseAge = p.Age;
+            p.ChaseAge = p.T.Age;
             var s = p.T.System;
             var ai = p.T.Ai;
             var weaponPos = p.Position;
@@ -220,7 +220,7 @@ namespace WeaponCore.Support
                     ai.Session.CanShoot++;
                     if (!w.TrackingAi)
                     {
-                        var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, w.Prediction) : targetCenter;
+                        var newCenter = w.System.NeedsPrediction ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
                         var targetSphere = info.Target.PositionComp.WorldVolume;
                         targetSphere.Center = newCenter;
                         if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;

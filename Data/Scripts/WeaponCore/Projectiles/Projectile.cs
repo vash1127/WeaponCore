@@ -38,7 +38,6 @@ namespace WeaponCore.Projectiles
         internal Vector3D TargetOffSet;
         internal Vector3D PrevTargetOffset;
         internal Vector3 PrevTargetVel;
-        internal Vector3 GridVel;
         internal Vector3D? LastHitPos;
         internal Vector3? LastHitEntVel;
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
@@ -60,7 +59,6 @@ namespace WeaponCore.Projectiles
         internal float DesiredSpeed;
         internal float MaxTrajectory;
         internal float BaseAmmoParticleScale;
-        internal int Age;
         internal int ChaseAge;
         internal int FieldTime;
         internal int EndStep;
@@ -126,7 +124,7 @@ namespace WeaponCore.Projectiles
 
             LastHitPos = null;
             LastHitEntVel = null;
-            Age = 0;
+            T.Age = 0;
             ChaseAge = 0;
             NewTargets = 0;
             ZombieLifeTime = 0;
@@ -215,7 +213,7 @@ namespace WeaponCore.Projectiles
 
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
 
-            if (!T.IsShrapnel) StartSpeed = GridVel;
+            if (!T.IsShrapnel) StartSpeed = T.ShooterVel;
 
             if (T.System.SpeedVariance && !T.System.IsBeamWeapon)
             {
@@ -470,7 +468,7 @@ namespace WeaponCore.Projectiles
         internal bool NewTarget()
         {
             var giveUp = !PickTarget && ++NewTargets > T.System.MaxTargets && T.System.MaxTargets != 0;
-            ChaseAge = Age;
+            ChaseAge = T.Age;
             PickTarget = false;
 
             if (giveUp || !GridAi.ReacquireTarget(this))
@@ -487,7 +485,7 @@ namespace WeaponCore.Projectiles
 
         internal void ForceNewTarget()
         {
-            ChaseAge = Age;
+            ChaseAge = T.Age;
             PickTarget = false;
         }
 
@@ -566,7 +564,7 @@ namespace WeaponCore.Projectiles
             Vector3D newVel;
             if ((AccelLength <= 0 || Vector3D.DistanceSquared(T.Origin, Position) >= T.System.SmartsDelayDistSqr))
             {
-                var gaveUpChase = Age - ChaseAge > MaxChaseAge;
+                var gaveUpChase = T.Age - ChaseAge > MaxChaseAge;
                 var validTarget = T.Target.IsProjectile || T.Target.Entity != null && !T.Target.Entity.MarkedForClose;
                 var isZombie = !T.System.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)
@@ -579,7 +577,7 @@ namespace WeaponCore.Projectiles
 
                     if (T.System.TargetOffSet)
                     {
-                        if (Age - LastOffsetTime > 300)
+                        if (T.Age - LastOffsetTime > 300)
                         {
                             double dist;
                             Vector3D.DistanceSquared(ref Position, ref targetPos, out dist);
@@ -642,7 +640,7 @@ namespace WeaponCore.Projectiles
                 {
                     DistanceToTravelSqr = T.DistanceTraveled * T.DistanceTraveled;
                 }
-                if (Age - LastOffsetTime > 300)
+                if (T.Age - LastOffsetTime > 300)
                 {
                     double dist;
                     Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);
@@ -684,7 +682,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (Age % T.System.PulseInterval == 0 || State == ProjectileState.OneAndDone)
+            if (T.Age % T.System.PulseInterval == 0 || State == ProjectileState.OneAndDone)
                 PulseEffect();
             else EwarActive = false;
         }
@@ -776,7 +774,7 @@ namespace WeaponCore.Projectiles
             PrevTargetOffset = TargetOffSet;
             TargetOffSet = (randomDirection * offsetAmount);
             VisualStep = 0;
-            if (Age != 0) LastOffsetTime = Age;
+            if (T.Age != 0) LastOffsetTime = T.Age;
         }
 
         internal void HitEffects()
@@ -799,7 +797,7 @@ namespace WeaponCore.Projectiles
 
         internal void PlayAmmoParticle()
         {
-            if (Age == 0 && !ParticleLateStart)
+            if (T.Age == 0 && !ParticleLateStart)
             {
                 TestSphere.Center = Position;
                 if (!T.Ai.Session.Camera.IsInFrustum(ref TestSphere))

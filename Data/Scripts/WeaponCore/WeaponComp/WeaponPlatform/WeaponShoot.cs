@@ -208,7 +208,7 @@ namespace WeaponCore.Platform
                         p.T.WeaponCache.VirutalId = -1;
 
                         p.Gunner = Comp.Gunner;
-                        p.GridVel = Comp.Ai.GridVel;
+                        p.T.ShooterVel = Comp.Ai.GridVel;
                         p.T.Origin = muzzle.Position;
                         p.T.OriginUp = MyPivotUp;
                         p.PredictedTargetPos = TargetPos;
@@ -339,7 +339,7 @@ namespace WeaponCore.Platform
             p.T.MuzzleId = -1;
 
             p.Gunner = Comp.Gunner;
-            p.GridVel = Comp.Ai.GridVel;
+            p.T.ShooterVel = Comp.Ai.GridVel;
             p.T.Origin = MyPivotPos;
             p.T.OriginUp = MyPivotUp;
             p.PredictedTargetPos = TargetPos;
