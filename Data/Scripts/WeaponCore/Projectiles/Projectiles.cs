@@ -124,7 +124,7 @@ namespace WeaponCore.Projectiles
                     if (p.T.Target.Projectile.State != ProjectileState.Alive)
                         p.UnAssignProjectile(true);
 
-                p.T.OnScreen = false;
+                p.T.OnScreen = Screen.None;
 
                 if (p.AccelLength > 0)
                 {
@@ -382,23 +382,20 @@ namespace WeaponCore.Projectiles
                     }
                     if (Session.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
                     {
-                        p.T.OnScreen = true;
+                        p.T.OnScreen = Screen.Tracer;
                         p.FirstOffScreen = false;
                         p.LastEntityPos = p.Position;
                     }
                 }
 
-                if (!p.T.OnScreen && (p.T.System.DrawLine || p.ModelState == EntityState.None && p.T.System.AmmoParticle))
+                if (p.T.OnScreen == Screen.None && (p.T.System.DrawLine || p.ModelState == EntityState.None && p.T.System.AmmoParticle))
                 {
-                    if (p.T.System.Trail)
-                    {
-                        p.T.OnScreen = true;
-                    }
-                    else
-                    {
-                        var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
-                        if (Session.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
-                    }
+
+                    var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
+                    if (Session.Camera.IsInFrustum(ref bb)) p.T.OnScreen = Screen.Tracer;
+                    
+                    if (p.T.OnScreen == Screen.None && p.T.System.Trail)
+                        p.T.OnScreen = Screen.Tail;
                 }
 
                 if (p.T.MuzzleId == -1)
@@ -407,7 +404,7 @@ namespace WeaponCore.Projectiles
                     continue;
                 }
 
-                if (p.T.OnScreen)
+                if (p.T.OnScreen != Screen.None)
                 {
                     p.T.Complete(null, DrawState.Default);
                     DrawProjectiles.Add(p.T);

@@ -143,7 +143,7 @@ namespace WeaponCore.Projectiles
             MineTriggered = false;
             T.Cloaked = false;
             HitParticleActive = false;
-            T.OnScreen = true;
+            T.OnScreen = Screen.None;
             LinePlanetCheck = false;
             EndStep = 0;
             T.PrevDistanceTraveled = 0;
@@ -370,7 +370,7 @@ namespace WeaponCore.Projectiles
                 var reSize = shrink ? ReSize.Shrink : ReSize.None;
                 p.T.UpdateShape(hitPos.Value, p.Direction, length, reSize);
 
-                if (!p.T.OnScreen) CameraCheck(p);
+                if (p.T.OnScreen == Screen.None) CameraCheck(p);
                     
                 if (p.T.MuzzleId != -1)
                 {
@@ -391,7 +391,7 @@ namespace WeaponCore.Projectiles
 
                 if (drawHit.Value.Entity is MyCubeGrid) p.T.WeaponCache.HitBlock = drawHit.Value.Block;
                 if (queue) T.Ai.Session.Hits.Enqueue(p);
-                if (p.EnableAv && p.T.OnScreen) CreateFakeBeams(p, drawHit, Manager.DrawProjectiles);
+                if (p.EnableAv && p.T.OnScreen == Screen.Tracer) CreateFakeBeams(p, drawHit, Manager.DrawProjectiles);
             }
 
             if (p.EnableAv)
@@ -440,21 +440,20 @@ namespace WeaponCore.Projectiles
                 p.ModelSphereCurrent.Center = p.Position;
                 if (T.Ai.Session.Camera.IsInFrustum(ref p.ModelSphereLast) || T.Ai.Session.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
                 {
-                    p.T.OnScreen = true;
+                    p.T.OnScreen = Screen.Tracer;
                     p.FirstOffScreen = false;
                     p.LastEntityPos = p.Position;
                 }
             }
 
-            if (!p.T.OnScreen && T.System.DrawLine)
+            if (T.OnScreen == Screen.None && T.System.DrawLine)
             {
-                if (p.T.System.Trail)
-                {
-                    p.T.OnScreen = true;
-                    return;
-                }
+
                 var bb = new BoundingBoxD(Vector3D.Min(p.T.LineStart, p.T.Position), Vector3D.Max(p.T.LineStart, p.T.Position));
-                if (T.Ai.Session.Camera.IsInFrustum(ref bb)) p.T.OnScreen = true;
+                if (T.Ai.Session.Camera.IsInFrustum(ref bb)) p.T.OnScreen = Screen.Tracer;
+
+                if (p.T.OnScreen == Screen.None && p.T.System.Trail)
+                    p.T.OnScreen = Screen.Tail;
             }
         }
 
@@ -785,8 +784,8 @@ namespace WeaponCore.Projectiles
                 var closeToCamera = distToCameraSqr < 360000;
                 if (ForceHitParticle) LastHitPos = Position;
 
-                if (T.OnScreen && HitParticleActive && T.System.HitParticle) PlayHitParticle();
-                else if (HitParticleActive && (T.OnScreen || closeToCamera)) T.FakeExplosion = true;
+                if (T.OnScreen == Screen.Tracer && HitParticleActive && T.System.HitParticle) PlayHitParticle();
+                else if (HitParticleActive && (T.OnScreen == Screen.Tracer || closeToCamera)) T.FakeExplosion = true;
                 T.HitSoundActived = T.System.HitSound && (T.HitSoundActive && (ForceHitParticle || distToCameraSqr < T.System.HitSoundDistSqr || LastHitPos.HasValue && (!T.LastHitShield || T.System.Values.Audio.Ammo.HitPlayShield)));
 
                 if (T.HitSoundActived) T.HitEmitter.Entity = T.DrawHit?.Entity;

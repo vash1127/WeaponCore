@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
+using Sandbox.ModAPI;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -126,7 +128,7 @@ namespace WeaponCore
                 }
                 else
                 {
-                    if (t.ReSizing == Trajectile.ReSize.Shrink && t.DrawHit?.HitPos != null)
+                    if (t.ReSizing == Trajectile.ReSize.Shrink && t.DrawHit?.HitPos != null && t.OnScreen == Trajectile.Screen.Tracer)
                     {
                         sFound = true;
                         var shrink = _shrinkPool.Get();
@@ -136,10 +138,14 @@ namespace WeaponCore
                     else if (t.System.Trail && t.ReSizing != Trajectile.ReSize.Grow)
                     {
                         gFound = true;
+                        var addPad = Vector3.Dot(t.ShooterVel, t.LineStart - t.Position) > 0;
+                        var travelPad = Vector3D.Distance(t.LineStart + ((t.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)), t.LineStart);
+                        var travel = (t.DistanceTraveled - t.PrevDistanceTraveled);
+                        var stepLen = addPad ? (travel + travelPad) : travel;
                         var afterGlow = new AfterGlow
                         {
                             System = t.System,
-                            StepLength = (t.DistanceTraveled - t.PrevDistanceTraveled),
+                            StepLength = stepLen,
                             Direction = t.Direction,
                             Velocity = t.ShooterVel,
                             Back = t.LineStart,
@@ -149,9 +155,9 @@ namespace WeaponCore
                     }
                 }
 
-                if (t.System.OffsetEffect)
+                if (t.System.OffsetEffect && t.OnScreen == Trajectile.Screen.Tracer)
                     LineOffsetEffect(t.System, t.Position, t.Direction, (float)t.DistanceTraveled, t.Length, thickness, color);
-                else
+                else if (t.OnScreen == Trajectile.Screen.Tracer)
                     MyTransparentGeometry.AddLineBillboard(t.System.TracerMaterial, color, t.Position, -t.Direction, (float)t.Length, thickness);
 
                 if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
@@ -165,7 +171,7 @@ namespace WeaponCore
                     {
                         var weapon = weaponComp.Platform.Weapons[t.WeaponId];
                         var effect = weapon.HitEffects[t.MuzzleId];
-                        if (t.DrawHit?.HitPos != null && t.OnScreen)
+                        if (t.DrawHit?.HitPos != null && t.OnScreen == Trajectile.Screen.Tail)
                         {
                             if (effect != null)
                             {
@@ -256,7 +262,7 @@ namespace WeaponCore
                         var afterGlow = new AfterGlow
                         {
                             System = s.System,
-                            StepLength = stepLength,
+                            StepLength = stepLength + s.Pad,
                             Direction = direction,
                             Velocity = s.Velocity,
                             Back = back,
@@ -295,18 +301,30 @@ namespace WeaponCore
                 var steps = system.Values.Graphics.Line.Trail.DecayTime;
                 var thisStep = (Tick - a.FirstTick);
                 var travelPos = a.Back + ((a.Velocity * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS) * thisStep);
-
                 var shrinkAmount = fullSize / steps;
                 var reduction = (shrinkAmount * thisStep);
                 var thickness = fullSize - reduction;
                 var hitPos = travelPos + (-a.Direction * a.StepLength);
+
                 var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref travelPos, ref hitPos, ref CameraPos)));
-                if (distanceFromPointSqr > 160000) thickness *= 8f;
-                else if (distanceFromPointSqr > 40000) thickness *= 4f;
-                else if (distanceFromPointSqr > 10000) thickness *= 2f;
-                
+                if (distanceFromPointSqr > 10000 * 10000) thickness *= 8f;
+                else if (distanceFromPointSqr > 7500 * 7500) thickness *= 7f;
+                else if (distanceFromPointSqr > 5000 * 5000) thickness *= 6f;
+                else if (distanceFromPointSqr > 2500 * 2500) thickness *= 5f;
+                else if (distanceFromPointSqr > 1000 * 1000) thickness *= 4f;
+                else if (distanceFromPointSqr > 750 * 750) thickness *= 3f;
+                else if (distanceFromPointSqr > 500 * 500) thickness *= 2.5f;
+                else if (distanceFromPointSqr > 250 * 250) thickness *= 2f;
+                else if (distanceFromPointSqr > 100 * 100) thickness *= 1.5f;
+                /*
+                var closestPointOnLine = MyUtils.GetClosestPointOnLine(ref travelPos, ref hitPos, ref CameraPos);
+                var distanceToLine = (float)Vector3D.Distance(closestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
+                var scaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
+                var lineWidth = Math.Max(thickness, 0.10f * scaleFov * (distanceToLine / 100));
+                */
+
                 if (thisStep < steps)
-                    MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, system.Values.Graphics.Line.Trail.Color, travelPos, a.Direction, (float) a.StepLength, thickness);
+                    MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, system.Values.Graphics.Line.Trail.Color, travelPos, a.Direction, (float)a.StepLength, thickness);
                 else
                 {
                     _afterGlow.Remove(a);

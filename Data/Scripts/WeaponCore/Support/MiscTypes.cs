@@ -5,6 +5,7 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -80,7 +81,7 @@ namespace WeaponCore.Support
         internal float AreaEffectDamage;
         internal float DetonationDamage;
         internal float BaseHealthPool;
-        internal bool OnScreen;
+        internal Screen OnScreen;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool Triggered;
@@ -91,6 +92,12 @@ namespace WeaponCore.Support
         internal bool LastHitShield;
         internal ReSize ReSizing;
         internal DrawState Draw;
+        internal enum Screen
+        {
+            Tracer,
+            Tail,
+            None,
+        }
 
         internal void SetupSounds(double distanceFromCameraSqr)
         {
@@ -145,7 +152,7 @@ namespace WeaponCore.Support
 
             Color = color;
 
-            if (OnScreen)
+            if (OnScreen != Screen.None)
             {
                 var width = System.Values.Graphics.Line.Tracer.Width;
                 if (System.LineWidthVariance)
@@ -156,8 +163,7 @@ namespace WeaponCore.Support
                 }
 
                 var target = Position + (-Direction * Length);
-                var cameraPos = MyAPIGateway.Session.Camera.Position;
-                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref cameraPos);
+                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
                 DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
                 ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
                 LineWidth = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
@@ -208,7 +214,7 @@ namespace WeaponCore.Support
             HasTravelSound = false;
             LastHitShield = false;
             FakeExplosion = false;
-            OnScreen = false;
+            OnScreen = Screen.None;
             IsShrapnel = false;
             WeaponId = 0;
             MuzzleId = 0;
@@ -579,6 +585,7 @@ namespace WeaponCore.Support
         internal Vector3D BackOfTracer;
         internal Vector3D Direction;
         internal Vector3D Velocity;
+        internal double Pad;
         internal double ResizeLen;
         internal double TracerSteps;
         internal float Thickness;
@@ -596,6 +603,8 @@ namespace WeaponCore.Support
             var frontOfTracer = (trajectile.LineStart + (Direction * ResizeLen));
             var tracerLength = trajectile.System.TracerLength;
             BackOfTracer = frontOfTracer + (-Direction * (tracerLength + ResizeLen));
+            var travelPad = Vector3D.Distance(trajectile.LineStart + ((trajectile.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)), trajectile.LineStart);
+            Pad = Vector3.Dot(trajectile.ShooterVel, trajectile.LineStart - trajectile.Position) > 0 ? travelPad : 0;
         }
 
         internal Shrunk? GetLine()
