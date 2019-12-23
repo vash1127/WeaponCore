@@ -294,21 +294,19 @@ namespace WeaponCore
                 var fullSize = system.Values.Graphics.Line.Tracer.Width;
                 var steps = system.Values.Graphics.Line.Trail.DecayTime;
                 var thisStep = (Tick - a.FirstTick);
-                if (thisStep != 0)
-                {
-                    a.Back += (a.Velocity * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
-                }
+                var travelPos = a.Back + ((a.Velocity * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS) * thisStep);
+
                 var shrinkAmount = fullSize / steps;
                 var reduction = (shrinkAmount * thisStep);
                 var thickness = fullSize - reduction;
-                var hitPos = a.Back + (-a.Direction * a.StepLength);
-                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref a.Back, ref hitPos, ref CameraPos)));
+                var hitPos = travelPos + (-a.Direction * a.StepLength);
+                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref travelPos, ref hitPos, ref CameraPos)));
                 if (distanceFromPointSqr > 160000) thickness *= 8f;
                 else if (distanceFromPointSqr > 40000) thickness *= 4f;
                 else if (distanceFromPointSqr > 10000) thickness *= 2f;
                 
                 if (thisStep < steps)
-                    MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, system.Values.Graphics.Line.Trail.Color, a.Back, a.Direction, (float) a.StepLength, thickness);
+                    MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, system.Values.Graphics.Line.Trail.Color, travelPos, a.Direction, (float) a.StepLength, thickness);
                 else
                 {
                     _afterGlow.Remove(a);
