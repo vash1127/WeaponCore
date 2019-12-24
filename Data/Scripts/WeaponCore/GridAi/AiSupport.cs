@@ -200,6 +200,10 @@ namespace WeaponCore.Support
                 #endif
 
                 entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo(entity.EntityId, string.Empty, type, null, MatrixD.Zero, Vector3.Zero, relationPlayerBlock, new BoundingBoxD(), Session.Tick);
+                IMyPlayer player;
+                Session.Players.TryGetValue(playerId, out player);
+                if (player != null && Session.Session.IsUserAdmin(player.SteamUserId)) return false;
+
                 return true;
             }
             const MyRelationsBetweenPlayerAndBlock relationship1 = MyRelationsBetweenPlayerAndBlock.Neutral;

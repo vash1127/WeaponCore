@@ -10,17 +10,17 @@ namespace WeaponCore.Support
         {
             if (projectile.PruningProxyId != -1)
                 return;
-            BoundingSphereD sphere = new BoundingSphereD(projectile.Position, projectile.T.System.AreaEffectSize);
+            BoundingSphereD sphere = new BoundingSphereD(projectile.Position, projectile.Info.System.AreaEffectSize);
             BoundingBoxD result;
             BoundingBoxD.CreateFromSphere(ref sphere, out result);
-            projectile.PruningProxyId = projectile.T.Ai.Session.ProjectileTree.AddProxy(ref result, projectile, 0U, true);
+            projectile.PruningProxyId = projectile.Info.Ai.Session.ProjectileTree.AddProxy(ref result, projectile, 0U, true);
         }
 
         internal static void UnregisterProjectile(Projectile projectile)
         {
             if (projectile.PruningProxyId == -1)
                 return;
-            projectile.T.Ai.Session.ProjectileTree.RemoveProxy(projectile.PruningProxyId);
+            projectile.Info.Ai.Session.ProjectileTree.RemoveProxy(projectile.PruningProxyId);
             projectile.PruningProxyId = -1;
         }
 
@@ -28,10 +28,10 @@ namespace WeaponCore.Support
         {
             if (projectile.PruningProxyId == -1)
                 return;
-            BoundingSphereD sphere = new BoundingSphereD(projectile.Position, projectile.T.System.AreaEffectSize);
+            BoundingSphereD sphere = new BoundingSphereD(projectile.Position, projectile.Info.System.AreaEffectSize);
             BoundingBoxD result;
             BoundingBoxD.CreateFromSphere(ref sphere, out result);
-            projectile.T.Ai.Session.ProjectileTree.MoveProxy(projectile.PruningProxyId, ref result, velocity);
+            projectile.Info.Ai.Session.ProjectileTree.MoveProxy(projectile.PruningProxyId, ref result, velocity);
         }
 
         internal static void GetAllProjectilesInSphere(Session session, ref BoundingSphereD sphere, List<Projectile> result, bool clearList = true)

@@ -66,9 +66,6 @@ namespace WeaponCore
                 }
                 FutureEvents.Tick(Tick);
                 if (UiInput.PlayerCamera && !InMenu) WheelUi.UpdatePosition();
-                DsUtil.Start("damage");
-                if (!Hits.IsEmpty) ProcessHits();
-                DsUtil.Complete("damage", true);
                 
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
@@ -150,6 +147,11 @@ namespace WeaponCore
 
                 if (GridTask.IsComplete)
                     CheckDirtyGrids();
+
+                DsUtil.Start("damage");
+                if (!Hits.IsEmpty) ProcessHits();
+                DsUtil.Complete("damage", true);
+
             }
             catch (Exception ex) { Log.Line($"Exception in SessionAfterSim: {ex}"); }
         }

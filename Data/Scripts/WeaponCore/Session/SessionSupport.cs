@@ -415,7 +415,8 @@ namespace WeaponCore
             GridToBlockTypeMap.Clear();
             AnimationsToProcess.Clear();
             _shrinking.ClearImmediate();
-            _afterGlow.ClearImmediate();
+            //_afterGlow.ClearImmediate();
+            _afterGlow.Clear();
             _shrinkPool.Clean();
             _subTypeIdToWeaponDefs.Clear();
             _weaponDefinitions.Clear();
@@ -448,7 +449,7 @@ namespace WeaponCore
             Projectiles.HitEntityPool.Clean();
             Projectiles.DrawProjectiles.Clear();
             Projectiles.CleanUp.Clear();
-            Projectiles.TrajectilePool.DeallocateAll();
+            Projectiles.InfoPool.DeallocateAll();
 
             _weaponDefinitions = null;
             Projectiles = null;

@@ -21,24 +21,24 @@ namespace WeaponCore
             Projectile p;
             while (Hits.TryDequeue(out p))
             {
-                var t = p.T;
-                var maxObjects = t.System.MaxObjectsHit;
-                var phantom = t.System.Values.Ammo.BaseDamage <= 0;
+                var info = p.Info;
+                var maxObjects = info.System.MaxObjectsHit;
+                var phantom = info.System.Values.Ammo.BaseDamage <= 0;
                 var pInvalid = (int) p.State > 3;
-                var tInvalid = p.T.Target.IsProjectile && (int)p.T.Target.Projectile.State > 1;
-                if (tInvalid) p.T.Target.Reset();
+                var tInvalid = info.Target.IsProjectile && (int)info.Target.Projectile.State > 1;
+                if (tInvalid) info.Target.Reset();
 
                 var skip = pInvalid || tInvalid;
-                for (int i = 0; i < t.HitList.Count; i++)
+                for (int i = 0; i < info.HitList.Count; i++)
                 {
-                    var hitEnt = t.HitList[i];
-                    var hitMax = t.ObjectsHit >= maxObjects;
-                    var outOfPew = t.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect);
+                    var hitEnt = info.HitList[i];
+                    var hitMax = info.ObjectsHit >= maxObjects;
+                    var outOfPew = info.BaseDamagePool <= 0 && !(phantom && hitEnt.EventType == HitEntity.Type.Effect);
                     if (skip || hitMax || outOfPew)
                     {
                         if (hitMax || outOfPew || pInvalid)
                         {
-                            if (pInvalid) Log.Line($"noPew:{outOfPew} - max:{hitMax} - tInvalid:{tInvalid} - state:{p.State} - {p.T.System.WeaponName} - {p.T.BaseDamagePool} - {p.T.BaseHealthPool} - {p.T.Age}");
+                            if (pInvalid) Log.Line($"noPew:{outOfPew} - max:{hitMax} - tInvalid:{tInvalid} - state:{p.State} - {info.System.WeaponName} - {info.BaseDamagePool} - {info.BaseHealthPool} - {p.Info.Age}");
                             p.State = Projectile.ProjectileState.Depleted;
                         }
                         Projectiles.HitEntityPool.Return(hitEnt);
@@ -47,79 +47,79 @@ namespace WeaponCore
                     switch (hitEnt.EventType)
                     {
                         case HitEntity.Type.Shield:
-                            DamageShield(hitEnt, t);
+                            DamageShield(hitEnt, info);
                             continue;
                         case HitEntity.Type.Grid:
-                            DamageGrid(hitEnt, t);
+                            DamageGrid(hitEnt, info);
                             continue;
                         case HitEntity.Type.Destroyable:
-                            DamageDestObj(hitEnt, t);
+                            DamageDestObj(hitEnt, info);
                             continue;
                         case HitEntity.Type.Voxel:
-                            DamageVoxel(hitEnt, t);
+                            DamageVoxel(hitEnt, info);
                             continue;
                         case HitEntity.Type.Projectile:
-                            DamageProjectile(hitEnt, t);
+                            DamageProjectile(hitEnt, info);
                             continue;
                         case HitEntity.Type.Field:
-                            UpdateField(hitEnt, t);
+                            UpdateField(hitEnt, info);
                             continue;
                         case HitEntity.Type.Effect:
-                            UpdateEffect(hitEnt, t);
+                            UpdateEffect(hitEnt, info);
                             continue;
                     }
                     Projectiles.HitEntityPool.Return(hitEnt);
                 }
 
-                if (t.BaseDamagePool <= 0)
+                if (info.BaseDamagePool <= 0)
                     p.State = Projectile.ProjectileState.Depleted;
 
-                t.HitList.Clear();
+                info.HitList.Clear();
             }
         }
 
-        private void DamageShield(HitEntity hitEnt, Trajectile t)
+        private void DamageShield(HitEntity hitEnt, ProInfo info)
         {
             var shield = hitEnt.Entity as IMyTerminalBlock;
-            var system = t.System;
+            var system = info.System;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
-            t.ObjectsHit++;
+            info.ObjectsHit++;
 
             var damageScale = 1;
-            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
-            var damageType = t.System.Values.DamageScales.Shields.Type;
+            if (system.VirtualBeams) damageScale *= info.WeaponCache.Hits;
+            var damageType = info.System.Values.DamageScales.Shields.Type;
             var energy = damageType == ShieldDefinition.ShieldType.Energy;
             var heal = damageType == ShieldDefinition.ShieldType.Heal;
-            var areaEffect = t.System.Values.Ammo.AreaEffect;
+            var areaEffect = info.System.Values.Ammo.AreaEffect;
             var detonateOnEnd = system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd;
 
-            var scaledDamage = ((t.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier;
+            var scaledDamage = ((info.BaseDamagePool * damageScale) + areaEffect.AreaEffectDamage * (areaEffect.AreaEffectRadius * 0.5f)) * system.ShieldModifier;
             var detonateDamage = detonateOnEnd ? (areaEffect.Detonation.DetonationDamage * (areaEffect.Detonation.DetonationRadius * 0.5f)) * system.ShieldModifier : 0;
 
             var combinedDamage = (float) (scaledDamage + detonateDamage);
             if (heal) combinedDamage *= -1;
-            var hit = SApi.PointAttackShieldExt(shield, hitEnt.HitPos.Value, t.Target.FiringCube.EntityId, combinedDamage, energy, t.System.Values.Graphics.ShieldHitDraw);
+            var hit = SApi.PointAttackShieldExt(shield, hitEnt.HitPos.Value, info.Target.FiringCube.EntityId, combinedDamage, energy, info.System.Values.Graphics.ShieldHitDraw);
             if (hit.HasValue)
             {
                 if (heal)
                 {
-                    t.BaseDamagePool = 0;
+                    info.BaseDamagePool = 0;
                     return;
                 }
                 var objHp = hit.Value;
                 if (scaledDamage < objHp)
-                    t.BaseDamagePool = 0;
-                else if (objHp > 0) t.BaseDamagePool -= (float)scaledDamage - objHp;
-                else t.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
+                    info.BaseDamagePool = 0;
+                else if (objHp > 0) info.BaseDamagePool -= (float)scaledDamage - objHp;
+                else info.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
 
                 if (system.Values.Ammo.Mass <= 0) return;
 
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, t.Direction, system.Values.Ammo.Mass * speed);
+                ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, info.Direction, system.Values.Ammo.Mass * speed);
             }
         }
 
-        private void DamageGrid(HitEntity hitEnt, Trajectile t)
+        private void DamageGrid(HitEntity hitEnt, ProInfo t)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
             var system = t.System;
@@ -325,53 +325,53 @@ namespace WeaponCore
             hitEnt.Blocks.Clear();
         }
 
-        private void DamageDestObj(HitEntity hitEnt, Trajectile t)
+        private void DamageDestObj(HitEntity hitEnt, ProInfo info)
         {
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as IMyDestroyableObject;
-            var system = t.System;
+            var system = info.System;
 
             if (destObj == null || entity == null) return;
             var shieldHeal = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Heal;
             var shieldByPass = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
 
             //projectile.ObjectsHit++;
-            var attackerId = t.Target.FiringCube.EntityId;
+            var attackerId = info.Target.FiringCube.EntityId;
 
             var objHp = destObj.Integrity;
             var integrityCheck = system.Values.DamageScales.MaxIntegrity > 0;
             if (integrityCheck && objHp > system.Values.DamageScales.MaxIntegrity || shieldHeal)
             {
-                t.BaseDamagePool = 0;
+                info.BaseDamagePool = 0;
                 return;
             }
 
             var character = hitEnt.Entity as IMyCharacter;
             float damageScale = 1;
-            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
+            if (system.VirtualBeams) damageScale *= info.WeaponCache.Hits;
             if (character != null && system.Values.DamageScales.Characters >= 0)
                 damageScale *= system.Values.DamageScales.Characters;
 
-            var scaledDamage = t.BaseDamagePool * damageScale;
-            if (scaledDamage < objHp) t.BaseDamagePool = 0;
-            else t.BaseDamagePool -= objHp;
+            var scaledDamage = info.BaseDamagePool * damageScale;
+            if (scaledDamage < objHp) info.BaseDamagePool = 0;
+            else info.BaseDamagePool -= objHp;
 
             destObj.DoDamage(scaledDamage, !shieldByPass ? MyDamageType.Bullet : MyDamageType.Drill, true, null, attackerId);
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, t.Direction, (system.Values.Ammo.Mass * speed));
+                ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, info.Direction, (system.Values.Ammo.Mass * speed));
             }
         }
 
-        private void DamageProjectile(HitEntity hitEnt, Trajectile attacker)
+        private void DamageProjectile(HitEntity hitEnt, ProInfo attacker)
         {
             var pTarget = hitEnt.Projectile;
             var system = attacker.System;
             if (pTarget == null) return;
 
             attacker.ObjectsHit++;
-            var objHp = pTarget.T.BaseHealthPool;
+            var objHp = pTarget.Info.BaseHealthPool;
             var integrityCheck = system.Values.DamageScales.MaxIntegrity > 0;
             if (integrityCheck && objHp > system.Values.DamageScales.MaxIntegrity) return;
 
@@ -383,13 +383,13 @@ namespace WeaponCore
             if (scaledDamage >= objHp)
             {
                 attacker.BaseDamagePool -= objHp;
-                pTarget.T.BaseHealthPool = 0;
+                pTarget.Info.BaseHealthPool = 0;
                 pTarget.State = Projectile.ProjectileState.Destroy;
             }
             else 
             {
                 attacker.BaseDamagePool = 0;
-                pTarget.T.BaseHealthPool -= scaledDamage;
+                pTarget.Info.BaseHealthPool -= scaledDamage;
 
                 if (attacker.DetonationDamage > 0 && system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd)
                 {
@@ -398,39 +398,39 @@ namespace WeaponCore
                     {
                         if (areaSphere.Contains(sTarget.Position) != ContainmentType.Disjoint)
                         {
-                            if (attacker.DetonationDamage >= sTarget.T.BaseHealthPool)
+                            if (attacker.DetonationDamage >= sTarget.Info.BaseHealthPool)
                             {
-                                sTarget.T.BaseHealthPool = 0;
+                                sTarget.Info.BaseHealthPool = 0;
                                 sTarget.State = Projectile.ProjectileState.Destroy;
                             }
-                            else sTarget.T.BaseHealthPool -= attacker.DetonationDamage;
+                            else sTarget.Info.BaseHealthPool -= attacker.DetonationDamage;
                         }
                     }
                 }
             }
         }
 
-        private void DamageVoxel(HitEntity hitEnt, Trajectile t)
+        private void DamageVoxel(HitEntity hitEnt, ProInfo info)
         {
             var entity = hitEnt.Entity;
             var destObj = hitEnt.Entity as MyVoxelBase;
-            var system = t.System;
+            var system = info.System;
             if (destObj == null || entity == null || !hitEnt.HitPos.HasValue) return;
             var shieldHeal = system.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Heal;
             if (!system.VoxelDamage || shieldHeal)
             {
-                t.BaseDamagePool = 0;
+                info.BaseDamagePool = 0;
                 return;
             }
             var detonateOnEnd = system.AmmoAreaEffect && system.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && system.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Radiant;
 
-            t.ObjectsHit++;
+            info.ObjectsHit++;
             float damageScale = 1;
-            if (system.VirtualBeams) damageScale *= t.WeaponCache.Hits;
+            if (system.VirtualBeams) damageScale *= info.WeaponCache.Hits;
 
-            var scaledDamage = t.BaseDamagePool * damageScale;
+            var scaledDamage = info.BaseDamagePool * damageScale;
             var oRadius = system.Values.Ammo.AreaEffect.AreaEffectRadius;
-            var minTestRadius = t.DistanceTraveled - t.PrevDistanceTraveled;
+            var minTestRadius = info.DistanceTraveled - info.PrevDistanceTraveled;
             var tRadius = oRadius < minTestRadius ? minTestRadius : oRadius;
             var objHp = (int)MathHelper.Clamp(SUtils.VolumeCube(SUtils.LargestCubeInSphere(tRadius)), 1, double.MaxValue);
             
@@ -440,11 +440,11 @@ namespace WeaponCore
                 oRadius /= reduceBy;
                 if (oRadius < 1) oRadius = 1;
 
-                t.BaseDamagePool = 0;
+                info.BaseDamagePool = 0;
             }
             else
             {
-                t.BaseDamagePool -= objHp;
+                info.BaseDamagePool -= objHp;
                 if (oRadius < minTestRadius) oRadius = minTestRadius;
             }
             destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, (float)oRadius, true);
