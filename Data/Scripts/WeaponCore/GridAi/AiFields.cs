@@ -37,7 +37,6 @@ namespace WeaponCore.Support
 
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventories;
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
-        internal readonly DsUniqueListFastRemove<Weapon> ChargingWeapons = new DsUniqueListFastRemove<Weapon>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
         internal readonly HashSet<MyCubeGrid> PrevSubGrids = new HashSet<MyCubeGrid>();

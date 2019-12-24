@@ -13,7 +13,7 @@ namespace WeaponCore.Support
 {
     public partial class GridAi
     {
-        private void RegisterMyGridEvents(bool register = true, MyCubeGrid grid = null)
+        internal void RegisterMyGridEvents(bool register = true, MyCubeGrid grid = null)
         {
             if (grid == null) grid = MyGrid;
             if (register)

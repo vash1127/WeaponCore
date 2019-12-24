@@ -9,6 +9,7 @@ using WeaponCore.Support;
 using WeaponCore.Platform;
 using Sandbox.Definitions;
 using System.Collections.Generic;
+using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Utils;
 
 namespace WeaponCore
@@ -486,8 +487,12 @@ namespace WeaponCore
                     comp.SinkInfo.RequiredInputFunc = null;
                     comp.MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), comp.SinkInfo);
                 }
+                ai.Value.RegisterMyGridEvents(false);
                 ai.Value.Weapons.Clear();
                 ai.Value.WeaponBase.Clear();
+                ai.Value.BlockTypePool.Clean();
+                ai.Value.BlockGroups.Clear();
+                ai.Value.GroupInfoPool.Clean();
             }
             GridTargetingAIs.Clear();
         }

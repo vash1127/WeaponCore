@@ -575,6 +575,8 @@ namespace WeaponCore.Support
             Batteries.Clear();
             Targets.Clear();
             SortedTargets.Clear();
+            BlockGroups.Clear();
+            GroupInfoPool.Clean();
             BlockTypePool.Clean();
             CubePool.Clean();
             MyShieldTmp = null;
