@@ -402,6 +402,8 @@ namespace WeaponCore
             }
 
             _effectActive = false;
+            ShootingWeapons.Clear();
+            AcquireTargets.Clear();
             RemoveEffectsFromGrid.Clear();
             WeaponAmmoPullQueue.Clear();
             DbsToUpdate.Clear();
@@ -415,7 +417,7 @@ namespace WeaponCore
             GridToBlockTypeMap.Clear();
             AnimationsToProcess.Clear();
             _shrinking.ClearImmediate();
-            //_afterGlow.ClearImmediate();
+            _glowPool.Clean();
             _afterGlow.Clear();
             _shrinkPool.Clean();
             _subTypeIdToWeaponDefs.Clear();
@@ -430,12 +432,15 @@ namespace WeaponCore
             BlockTypePool.Clean();
             ConcurrentListPool.Clean();
             GridToFatMap.Clear();
+            FatMapPool.Clean();
 
             foreach (var structure in WeaponPlatforms.Values)
             {
                 structure.WeaponSystems.Clear();
                 structure.AmmoToWeaponIds.Clear();
             }
+
+            Projectiles.Clean();
             WeaponPlatforms.Clear();
             weaponCoreBlockDefs.Clear();
             weaponCoreFixedBlockDefs.Clear();
@@ -450,8 +455,10 @@ namespace WeaponCore
             Projectiles.DrawProjectiles.Clear();
             Projectiles.CleanUp.Clear();
             Projectiles.InfoPool.DeallocateAll();
+            Projectiles.V3Pool.Clean();
 
             _weaponDefinitions = null;
+            Projectiles.EntityPool = null;
             Projectiles = null;
             TrackingAi = null;
             UiInput = null;
@@ -468,11 +475,21 @@ namespace WeaponCore
 
             ProjectileTree.Clear();
             ProjectileTree = null;
-            GridTargetingAIs.Clear();
             AllDefinitions = null;
             SoundDefinitions = null;
             ActiveCockPit = null;
             ControlledEntity = null;
+            foreach (var ai in GridTargetingAIs)
+            {
+                foreach (var comp in ai.Value.WeaponBase.Values)
+                {
+                    comp.SinkInfo.RequiredInputFunc = null;
+                    comp.MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), comp.SinkInfo);
+                }
+                ai.Value.Weapons.Clear();
+                ai.Value.WeaponBase.Clear();
+            }
+            GridTargetingAIs.Clear();
         }
     }
 }

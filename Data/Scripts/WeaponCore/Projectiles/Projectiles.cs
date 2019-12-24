@@ -59,7 +59,7 @@ namespace WeaponCore.Projectiles
             UpdateAv();
         }
 
-        private void Clean()
+        internal void Clean()
         {
             for (int j = 0; j < CleanUp.Count; j++)
             {
