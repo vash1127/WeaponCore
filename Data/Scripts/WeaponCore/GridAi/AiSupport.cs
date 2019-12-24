@@ -568,12 +568,17 @@ namespace WeaponCore.Support
             SubGridChanges();
             SubGrids.Clear();
             Gunners.Clear();
+            NewEntities.Clear();
             Obstructions.Clear();
+            ObstructionsTmp.Clear();
+            ThreatsTmp.Clear();
             Threats.Clear();
             TargetAis.Clear();
+            TargetAisTmp.Clear();
             EntitiesInRange.Clear();
             Batteries.Clear();
             Targets.Clear();
+            TargetAisTmp.Clear();
             SortedTargets.Clear();
             BlockGroups.Clear();
             GroupInfoPool.Clean();
