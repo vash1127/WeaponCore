@@ -224,22 +224,26 @@ namespace WeaponCore
 
         protected override void UnloadData()
         {
-            MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
-            MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
-            MyAPIGateway.Utilities.UnregisterMessageHandler(7773, UpgradeHandler);
-            MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
-            MyEntities.OnEntityCreate -= OnEntityCreate;
-            MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
-            MyAPIGateway.Gui.GuiControlRemoved -= MenuClosed;
+            try
+            {
+                MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
+                MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
+                MyAPIGateway.Utilities.UnregisterMessageHandler(7773, UpgradeHandler);
+                MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
+                MyEntities.OnEntityCreate -= OnEntityCreate;
+                MyAPIGateway.Gui.GuiControlCreated -= MenuOpened;
+                MyAPIGateway.Gui.GuiControlRemoved -= MenuClosed;
 
-            MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
-            MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
-            ApiServer.Unload();
+                MyVisualScriptLogicProvider.PlayerDisconnected -= PlayerDisconnected;
+                MyVisualScriptLogicProvider.PlayerRespawnRequest -= PlayerConnected;
+                ApiServer.Unload();
 
-            PurgeAll();
+                PurgeAll();
 
-            Log.Line("Logging stopped.");
-            Log.Close();
+                Log.Line("Logging stopped.");
+                Log.Close();
+            }
+            catch (Exception ex) { Log.Line($"Exception in UnloadData: {ex}"); }
         }
     }
 }

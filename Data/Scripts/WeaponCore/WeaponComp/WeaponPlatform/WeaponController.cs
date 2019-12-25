@@ -7,6 +7,7 @@ namespace WeaponCore.Platform
     {
         public void AimBarrel(double azimuthChange, double elevationChange)
         {
+            if (Comp?.Ai?.Session == null) return;
             LastTrackedTick = Comp.Ai.Session.Tick;
 
             if (AiOnlyWeapon)

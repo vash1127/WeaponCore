@@ -588,7 +588,7 @@ namespace WeaponCore.Support
     public class Shrinking
     {
         internal WeaponSystem System;
-        internal Stack<AfterGlow> Glowers = new Stack<AfterGlow>();
+        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>();
         internal ProInfo Info;
         internal Vector3D HitPos;
         internal Vector3D BackOfTracer;
@@ -641,7 +641,6 @@ namespace WeaponCore.Support
         {
             System = null;
             Glowers.Clear();
-            Glowers = null;
             if (Info != null)
             {
                 Info.Shrinking = false;
