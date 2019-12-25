@@ -71,11 +71,6 @@ namespace WeaponCore
                 db.NewEntities.Clear();
                 db.SortedTargets.Sort(db.TargetCompare1);
 
-                //Interlocked.Exchange(ref db.Threats, db.ThreatsTmp);
-                db.Threats.Clear();
-                db.Threats.AddRange(db.TargetAisTmp);
-                db.ThreatsTmp.Clear();
-
                 //Interlocked.Exchange(ref db.TargetAis, db.TargetAisTmp);
                 db.TargetAis.Clear();
                 db.TargetAis.AddRange(db.TargetAisTmp);
@@ -93,7 +88,7 @@ namespace WeaponCore
                 db.StaticsInRangeTmp.Clear();
                 db.StaticEntitiesInRange = db.StaticsInRange.Count > 0;
 
-                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || Tick - db.LiveProjectileTick < 3600|| db.LiveProjectile.Count > 0 || db.FirstRun;
+                db.DbReady = db.SortedTargets.Count > 0 || db.TargetAis.Count > 0 || Tick - db.LiveProjectileTick < 3600|| db.LiveProjectile.Count > 0 || db.FirstRun;
                 db.MyShield = db.MyShieldTmp;
                 db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
                 db.ShieldNear = db.ShieldNearTmp;

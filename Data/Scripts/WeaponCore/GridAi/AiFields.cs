@@ -48,14 +48,12 @@ namespace WeaponCore.Support
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
-        internal readonly List<GridAi> ThreatsTmp = new List<GridAi>();
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
         internal readonly List<Projectile> ProjetileCache = new List<Projectile>();
         internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
-        internal readonly List<GridAi> Threats = new List<GridAi>();
         internal readonly List<GridAi> TargetAis = new List<GridAi>();
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
@@ -141,7 +139,7 @@ namespace WeaponCore.Support
             Session = session;
             CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
-            Focus = new Focus(2, this);
+            Focus = new Focus(2);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }
     }

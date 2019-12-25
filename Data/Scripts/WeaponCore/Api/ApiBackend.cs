@@ -28,7 +28,7 @@ namespace WeaponCore.Support
             {
                 ["GetAllCoreWeapons"] = new Func<List<MyDefinitionId>>(GetAllCoreWeapons),
                 ["GetCoreStaticLaunchers"] = new Func<List<MyDefinitionId>>(GetCoreStaticLaunchers),
-                ["GetCoreTurrets"] = new Func<List<MyDefinitionId>>(GetCoreTurrets),
+                ["GetCoreTurrets"] = new Func<IList<MyDefinitionId>>(GetCoreTurrets),
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
                 ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
@@ -72,17 +72,17 @@ namespace WeaponCore.Support
 
         private List<MyDefinitionId> GetAllCoreWeapons()
         {
-            return new List<MyDefinitionId>(_session.weaponCoreBlockDefs.Values);
+            return new List<MyDefinitionId>(_session.WeaponCoreBlockDefs.Values);
         }
 
         private List<MyDefinitionId> GetCoreStaticLaunchers()
         {
-            return _session.weaponCoreFixedBlockDefs.ItemList;
+            return _session.WeaponCoreFixedBlockDefs;
         }
 
-        private List<MyDefinitionId> GetCoreTurrets()
+        private IList<MyDefinitionId> GetCoreTurrets()
         {
-            return _session.weaponCoreTurretBlockDefs.ItemList;
+            return _session.WeaponCoreTurretBlockDefs.AsReadOnly();
         }
 
         private void SetTargetEntity(IMyEntity shooter, IMyEntity target, int priority = 0)
@@ -93,7 +93,7 @@ namespace WeaponCore.Support
             {
                 GridAi ai;
                 if (_session.GridTargetingAIs.TryGetValue(shootingGrid, out ai))
-                    ai.Focus.ReassignTarget((MyEntity)target, priority);
+                    ai.Focus.ReassignTarget((MyEntity)target, priority, ai);
             }
             else
             {

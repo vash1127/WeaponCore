@@ -443,9 +443,9 @@ namespace WeaponCore
 
             Projectiles.Clean();
             WeaponPlatforms.Clear();
-            weaponCoreBlockDefs.Clear();
-            weaponCoreFixedBlockDefs.Clear();
-            weaponCoreTurretBlockDefs.Clear();
+            WeaponCoreBlockDefs.Clear();
+            WeaponCoreFixedBlockDefs.Clear();
+            WeaponCoreTurretBlockDefs.Clear();
             Projectiles.CheckPool.Clean();
             Projectiles.ShrapnelToSpawn.Clear();
             Projectiles.ShrapnelPool.Clean();
@@ -482,6 +482,7 @@ namespace WeaponCore
             ControlledEntity = null;
             foreach (var ai in GridTargetingAIs)
             {
+                Log.Line("test");
                 foreach (var comp in ai.Value.WeaponBase.Values)
                 {
                     comp.SinkInfo.RequiredInputFunc = null;

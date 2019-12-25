@@ -27,7 +27,7 @@ namespace WeaponCore
                 InGridAiCockPit = true;
                 return true;
             }
-            TrackingAi?.Focus.IsFocused();
+            TrackingAi?.Focus.IsFocused(TrackingAi);
 
             TrackingAi = null;
             ActiveCockPit = null;
@@ -121,7 +121,7 @@ namespace WeaponCore
         internal void TargetSelection()
         {
             if ((UiInput.AltPressed && UiInput.ShiftReleased || TargetUi.DrawReticle && UiInput.MouseButtonRight) && UpdateLocalAiAndCockpit())
-                TrackingAi.Focus.ReleaseActive();
+                TrackingAi.Focus.ReleaseActive(TrackingAi);
 
             if (UpdateLocalAiAndCockpit())
             {
@@ -132,7 +132,7 @@ namespace WeaponCore
                     if (UiInput.CurrentWheel != UiInput.PreviousWheel)
                         TargetUi.SelectNext();
                     else if (UiInput.LongShift || UiInput.ShiftReleased && !UiInput.LongShift)
-                        TrackingAi.Focus.NextActive(UiInput.LongShift);
+                        TrackingAi.Focus.NextActive(UiInput.LongShift, TrackingAi);
                 }
             }
         }
@@ -201,7 +201,7 @@ namespace WeaponCore
 
         internal bool CheckTarget(GridAi ai)
         {
-            if (!ai.Focus.IsFocused()) return false;
+            if (!ai.Focus.IsFocused(ai)) return false;
 
             if (ai != TrackingAi)
             {
@@ -218,7 +218,7 @@ namespace WeaponCore
         {
             
             TrackingAi = ai;
-            TrackingAi.Focus.AddFocus(entity);
+            TrackingAi.Focus.AddFocus(entity, ai);
 
             GridAi gridAi;
             TargetArmed = false;

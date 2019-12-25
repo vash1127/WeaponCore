@@ -130,7 +130,7 @@ namespace WeaponCore
                                     gunDef.ElevationSpeed = (float)blockDefs.ElevateRate;
                                 }
 
-                                weaponCoreBlockDefs[subTypeId] = def.Id;
+                                WeaponCoreBlockDefs[subTypeId] = def.Id;
                             }
                         }
                         _turretDefinitions[subTypeId] = new Dictionary<string, MyTuple<string, string, string>>
@@ -164,12 +164,12 @@ namespace WeaponCore
                 }
 
                 MyDefinitionId defId;
-                if (weaponCoreBlockDefs.TryGetValue(tDef.Key, out defId))
+                if (WeaponCoreBlockDefs.TryGetValue(tDef.Key, out defId))
                 {
                     if (hasTurret)
-                        weaponCoreTurretBlockDefs.Add(defId);
+                        WeaponCoreTurretBlockDefs.Add(defId);
                     else
-                        weaponCoreFixedBlockDefs.Add(defId);
+                        WeaponCoreFixedBlockDefs.Add(defId);
                 }
 
                 WeaponPlatforms[subTypeIdHash] =  new WeaponStructure(this, tDef, weapons);
