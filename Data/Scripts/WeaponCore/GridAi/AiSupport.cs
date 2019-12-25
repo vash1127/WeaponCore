@@ -579,6 +579,7 @@ namespace WeaponCore.Support
             BlockTypePool.Clean();
             CubePool.Clean();
             TargetInfoPool.Clean();
+            Focus.Clean();
             MyShieldTmp = null;
             MyShield = null;
             MyPlanetTmp = null;

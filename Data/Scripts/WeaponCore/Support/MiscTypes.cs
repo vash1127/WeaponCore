@@ -472,7 +472,7 @@ namespace WeaponCore.Support
         internal HitEntity HitEntity = new HitEntity();
         internal IMySlimBlock HitBlock;
         internal int VirutalId = -1;
-        internal readonly VoxelParallelHits[] VoxelHits;
+        internal VoxelParallelHits[] VoxelHits;
 
         internal WeaponFrameCache(int size)
         {
@@ -735,7 +735,7 @@ namespace WeaponCore.Support
         }
 
         internal readonly BlockTypes[] SubSystem;
-        internal readonly TargetStatus[] TargetState;
+        internal TargetStatus[] TargetState;
         internal readonly long[] PrevTargetId;
         internal MyEntity[] Target;
         internal int ActiveId;
@@ -846,6 +846,12 @@ namespace WeaponCore.Support
                 if (ai.Session.GridTargetingAIs.TryGetValue(sub, out gridAi))
                     gridAi.Focus.Target[ActiveId] = null;
             }
+        }
+
+        internal void Clean()
+        {
+            Target = null;
+            TargetState = null;
         }
     }
 
