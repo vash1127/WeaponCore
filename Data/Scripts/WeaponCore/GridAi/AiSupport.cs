@@ -557,7 +557,6 @@ namespace WeaponCore.Support
 
         internal void DelayedGridCleanUp(object o)
         {
-            _possibleTargets.Clear();
             foreach (var grid in SubGrids)
             {
                 if (grid == MyGrid) continue;
@@ -586,7 +585,6 @@ namespace WeaponCore.Support
             FakeShipController = null;
             TerminalSystem = null;
             MyGrid = null;
-            //Session = null;
         }
 
         internal void UpdateGridPower()

@@ -64,7 +64,6 @@ namespace WeaponCore.Support
                             w.WeaponCache.HitEntity.Clean();
                         }
 
-                        RegisterEvents(false);
                         StopAllSounds();
                         Platform.RemoveParts(this);
                         
