@@ -371,6 +371,26 @@ namespace WeaponCore
             }
         }
 
+        //Fast Remove Method
+        internal void RemoveFromList<T>(T item, List<T> list, Dictionary<T, int> indexer)
+        {
+            int oldPos;
+            if (indexer.TryGetValue(item, out oldPos))
+            {
+                indexer.Remove(item);
+                list.RemoveAtFast(oldPos);
+                var count = list.Count;
+                if (count > 0)
+                {
+                    count--;
+                    if (oldPos <= count)
+                        indexer[list[oldPos]] = oldPos;
+                    else
+                        indexer[list[count]] = count;
+                }
+            }
+        }
+
         internal void PurgeAll()
         {
             FutureEvents.Purge();
@@ -410,6 +430,9 @@ namespace WeaponCore
             AllArmorBaseDefinitions.Clear();
             HeavyArmorBaseDefinitions.Clear();
             AllArmorBaseDefinitions.Clear();
+            AcquireTargets.Clear();
+            ChargingWeapons.Clear();
+            ShootingWeapons.Clear();
             LargeBlockSphereDb.Clear();
             SmallBlockSphereDb.Clear();
             GridToBlockTypeMap.Clear();

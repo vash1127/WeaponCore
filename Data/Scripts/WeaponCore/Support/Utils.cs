@@ -74,8 +74,20 @@ namespace WeaponCore.Support
 
     public class DsUniqueListFastRemove<T>
     {
-        private List<T> _list = new List<T>();
-        private Dictionary<T, int> _dictionary = new Dictionary<T, int>();
+        private List<T> _list;
+        private Dictionary<T, int> _dictionary;
+
+        public DsUniqueListFastRemove(int capacity)
+        {
+            _list = new List<T>(capacity);
+            _dictionary = new Dictionary<T, int>(capacity);
+        }
+
+        public DsUniqueListFastRemove()
+        {
+            _list = new List<T>();
+            _dictionary = new Dictionary<T, int>();
+        }
 
         /// <summary>O(1)</summary>
         public int Count

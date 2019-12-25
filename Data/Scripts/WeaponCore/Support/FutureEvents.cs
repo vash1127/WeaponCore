@@ -48,7 +48,7 @@ namespace WeaponCore.Support
                 {
                     var index = tick % _maxDelay;
                     //if (_callbacks[index].Count > 0) Log.Line($"Tick oldOffSet:{_offset} - Tick:{tick}");
-                    foreach (var e in _callbacks[index]) e.Callback(e.Arg1);
+                    for (int i = 0; i < _callbacks[index].Count; i++) _callbacks[index][i].Callback(_callbacks[index][i].Arg1);
                     _callbacks[index].Clear();
                     _offset = tick + 1;
                 }

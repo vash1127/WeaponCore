@@ -582,6 +582,7 @@ namespace WeaponCore.Support
 
         internal void UpdateGridPower()
         {
+            LastPowerUpdateTick = Session.Tick;
             GridAvailablePower = 0;
             GridMaxPower = 0;
             GridCurrentPower = 0;
@@ -631,9 +632,9 @@ namespace WeaponCore.Support
             GridAvailablePower -= BatteryCurrentInput;
             UpdatePowerSources = false;
 
-            if (Math.Abs((GridMaxPower - CurrentWeaponsDraw) - LastAvailablePower) > 0.001 && CurrentWeaponsDraw > 0) AvailablePowerChange = true;
+            RequestedPowerChanged = Math.Abs(LastRequestedPower - RequestedWeaponsDraw) > 0.001 && LastRequestedPower > 0;
 
-            LastAvailablePower = GridMaxPower - CurrentWeaponsDraw;
+            LastRequestedPower = RequestedWeaponsDraw;
 
             HadPower = HasPower;
             HasPower = GridMaxPower > 0;

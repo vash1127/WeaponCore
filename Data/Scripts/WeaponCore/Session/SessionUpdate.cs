@@ -5,6 +5,7 @@ using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
+using System.Collections.Generic;
 
 namespace WeaponCore
 {
@@ -165,7 +166,8 @@ namespace WeaponCore
 
 
                         w.SeekTarget = w.Target.Expired && w.TrackTarget;
-                        if (w.SeekTarget) AcquireTargets.Enqueue(w);
+                        if (w.SeekTarget)
+                            AcquireTargets.Enqueue(w);
 
                         ///
                         /// Check weapon's turret to see if its time to go home
@@ -207,34 +209,92 @@ namespace WeaponCore
 
                         if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick || comp.Gunner) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
-                            if (gridAi.AvailablePowerChange)
+                            if (gridAi.RequestedPowerChanged)
                                 w.DelayTicks = 0;
 
                             var targetRequested = w.SeekTarget && targetChange;
                             if (!targetRequested && (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick))
                             {
-                                if (!w.DrawingPower)
-                                {
+                                if (!w.DrawingPower && !w.System.MustCharge)
                                     gridAi.RequestedWeaponsDraw += w.RequiredPower;
-                                    w.DrawingPower = true;
-                                }
-                                ShootingWeapons.Enqueue(w);
+
+                                    ShootingWeapons.Enqueue(w);
                             }
-                            else if (w.ChargeUntilTick > Tick)
+                            else if (w.ChargeUntilTick > Tick && !w.System.MustCharge)
+                            {
                                 w.Charging = true;
+                                w.StopShooting(false, false);
+                            }
                         }
                         else if (w.IsShooting)
                             w.StopShooting();
                     }
                 }
 
+                
+
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
                 gridAi.CheckReload = false;
-                gridAi.AvailablePowerChange = false;
             }
 
             if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) 
                 UpdateDbsInQueue();
+        }
+
+        private void UpdateChargeWeapons() //Fully Inlined due to keen's mod profiler
+        {
+            if (ChargingWeapons.Count > 0)
+            {
+                for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
+                {
+                    var w = ChargingWeapons[i];
+                    var gridAi = w.Comp.Ai;
+
+                    if (w.ChargeUntilTick <= Tick)
+                    {
+                        //Log.Line("Reloaded");
+                        Weapon.Reloaded(w);
+                        ChargingWeapons.RemoveAtFast(i);
+                        continue;
+                    }
+
+                    if (!w.Comp.Ai.OverPowered)
+                    {
+                        //Log.Line($"DrawingPower: {w.DrawingPower}");
+                        if (!w.DrawingPower)
+                        {
+                            w.OldUseablePower = w.UseablePower;
+                            w.UseablePower = w.RequiredPower;
+                            w.DrawPower();
+                            w.DrawingPower = true;
+                        }
+                        continue;
+                    }
+
+                    if (gridAi.LastPowerUpdateTick != Tick && (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180))
+                        gridAi.UpdateGridPower();
+
+                    //Log.Line($"w.DrawingPower {w.DrawingPower}");
+
+                    if (gridAi.RequestedPowerChanged || !w.DrawingPower)
+                    {
+                        //Log.Line("Charge Weapon Power Adapting");
+                        var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
+                        w.OldUseablePower = w.UseablePower;
+                        w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
+
+                        var oldDelay = w.DelayTicks;
+                        w.DelayTicks = 1 + ((uint)(w.RequiredPower - w.UseablePower) * 20);
+                        w.ChargeUntilTick -= (oldDelay - w.DelayTicks);
+
+                        if (!w.DrawingPower)
+                            w.DrawPower();
+                        else
+                            w.DrawPower(true);
+                    }
+
+                }
+            }
         }
 
         private void CheckAcquire()
@@ -274,37 +334,35 @@ namespace WeaponCore
             {
                 var w = ShootingWeapons.Dequeue();
                 //TODO add logic for power priority
-                if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid)) {
+                if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
 
                     if (w.DelayTicks == 0) {
-
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
-                        var oldUseable = w.UseablePower;
+                        w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
-                        if (w.IsShooting) {
-                            w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
-                            w.Comp.MyCube.ResourceSink.Update();
-                        }
 
-                        w.DelayTicks = 1 + ((uint)(w.RequiredPower - w.UseablePower) * 20); //arbitrary charge rate ticks/watt should be config
+                        if (w.IsShooting || w.DrawingPower)
+                            w.DrawPower(true);
+                        else
+                            w.DrawPower();
 
+                        
+                        w.DelayTicks = 1 + ((uint)(w.RequiredPower - w.UseablePower) * 20); //charge rate ticks/watt should be config
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                         w.Charging = true;
                     }
                     else if (w.ChargeUntilTick <= Tick) {
-
                         w.Charging = false;
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                     }
-                    w.Comp.TerminalRefresh();
                 }
-                else if(w.RequiredPower - w.UseablePower > 0.0001) {
-
-                    var oldUseable = w.UseablePower;
+                else if((w.Charging || w.DelayTicks > 0 || w.ResetPower) && !w.System.MustCharge) {
+                    w.OldUseablePower = w.UseablePower;
                     w.UseablePower = w.RequiredPower;
-                    w.Comp.SinkPower = (w.Comp.SinkPower - oldUseable) + w.UseablePower;
+                    w.DrawPower(true);
                     w.DelayTicks = 0;
                     w.Charging = false;
+                    w.ResetPower = false;
                 }
 
                 if (w.Charging)

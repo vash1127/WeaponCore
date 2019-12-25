@@ -214,15 +214,12 @@ namespace WeaponCore.Support
             DelayToFire = values.HardPoint.Loading.DelayUntilFire;
             TargetLossTime = values.Ammo.Trajectory.TargetLossTime > 0 ? values.Ammo.Trajectory.TargetLossTime : int.MaxValue;
             MaxObjectsHit = values.Ammo.ObjectsHit.MaxObjectsHit > 0 ? values.Ammo.ObjectsHit.MaxObjectsHit : int.MaxValue;
-            EnergyAmmo = ammoDefId.SubtypeId.String == "Blank";
-            MustCharge = EnergyAmmo && ReloadTime > 0;
-            EnergyMagSize = MustCharge ? values.HardPoint.Loading.ShotsInBurst : 0;
-            BurstMode = values.HardPoint.Loading.ShotsInBurst > 0 && ((EnergyAmmo && !MustCharge) || MagazineDef.Capacity >= values.HardPoint.Loading.ShotsInBurst);
             BaseDamage = values.Ammo.BaseDamage;
             MaxTargets = Values.Ammo.Trajectory.Smarts.MaxTargets;
             TargetLossDegree = Values.Ammo.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(Values.Ammo.Trajectory.TargetLossDegree)) : 0;
 
             Fields(out PulseInterval, out PulseChance);
+            Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out BarrelSpinRate, out HasBarrelRate, out RateOfFire);
             AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect);
@@ -253,6 +250,14 @@ namespace WeaponCore.Support
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out OnDelay);
+        }
+
+        private void Energy(out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode)
+        {
+            energyAmmo = AmmoDefId.SubtypeId.String == "Blank";
+            mustCharge = energyAmmo && ReloadTime > 0;
+            energyMagSize = MustCharge ? Values.HardPoint.Loading.ShotsInBurst : 0;
+            burstMode = Values.HardPoint.Loading.ShotsInBurst > 0 && ((energyAmmo && !mustCharge) || MagazineDef.Capacity >= Values.HardPoint.Loading.ShotsInBurst);
         }
 
         private void Fields(out int pulseInterval, out int pulseChance)

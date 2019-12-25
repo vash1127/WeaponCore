@@ -78,6 +78,7 @@ namespace WeaponCore.Platform
         internal readonly Dictionary<MyEntity, Vector3D> SleepingTargets = new Dictionary<MyEntity, Vector3D>();
         internal float RequiredPower;
         internal float UseablePower;
+        internal float OldUseablePower;
         internal float BaseDamage;
         internal float ShotEnergyCost;
         internal float Dps;
@@ -134,6 +135,7 @@ namespace WeaponCore.Platform
         internal bool AiOnlyWeapon;
         internal bool Charging;
         internal bool DrawingPower;
+        internal bool ResetPower;
         internal HardPointDefinition.Prediction Prediction;
 
         public enum TerminalActionState

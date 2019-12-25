@@ -37,7 +37,6 @@ namespace WeaponCore.Support
 
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventories;
         internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
-        internal readonly DsUniqueListFastRemove<Weapon> ChargingWeapons = new DsUniqueListFastRemove<Weapon>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
         internal readonly HashSet<MyCubeGrid> PrevSubGrids = new HashSet<MyCubeGrid>();
@@ -91,6 +90,7 @@ namespace WeaponCore.Support
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
         internal uint LiveProjectileTick;
+        internal uint LastPowerUpdateTick;
         internal int SourceCount;
         internal int ManualComps;
         internal int BlockCount;
@@ -101,7 +101,7 @@ namespace WeaponCore.Support
         //internal bool ResetPower = true;
         internal bool OverPowered;
         internal bool UpdatePowerSources;
-        internal bool AvailablePowerChange;
+        internal bool RequestedPowerChanged;
         internal bool StaticEntitiesInRange;
         internal bool ShieldNearTmp;
         internal bool ShieldNear;
@@ -122,7 +122,7 @@ namespace WeaponCore.Support
         internal float BatteryCurrentInput;
         internal float CurrentWeaponsDraw;
         internal float RequestedWeaponsDraw;
-        internal float LastAvailablePower;
+        internal float LastRequestedPower;
         internal float OptimalDps;
         internal enum TargetType
         {

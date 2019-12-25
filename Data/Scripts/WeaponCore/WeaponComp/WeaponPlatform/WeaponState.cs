@@ -565,12 +565,9 @@ namespace WeaponCore.Platform
         internal void UpdateRequiredPower()
         {
             if (System.EnergyAmmo || System.IsHybrid)
-                RequiredPower = ((ShotEnergyCost * (RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+                RequiredPower = ((ShotEnergyCost * ((RateOfFire) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
             else
                 RequiredPower = Comp.IdlePower;
-
-            
-            Comp.MaxRequiredPower += RequiredPower;
         }
 
         internal void UpdateShotEnergy()
@@ -721,21 +718,14 @@ namespace WeaponCore.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                if (!Comp.UnlimitedPower)
-                {
-                    if (Comp.SinkPower <= Comp.IdlePower) Comp.SinkPower = 0;
-                    Comp.Ai.CurrentWeaponsDraw += UseablePower;
-                    Comp.SinkPower += UseablePower;
-                    Comp.Ai.GridAvailablePower -= UseablePower;
-                    Comp.MyCube.ResourceSink.Update();
-                }
+                if (System.EnergyAmmo && !System.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
+                    DrawPower();
 
-                Comp.TerminalRefresh();
             }
             IsShooting = true;
         }
 
-        public void StopShooting(bool avOnly = false)
+        public void StopShooting(bool avOnly = false, bool power = true)
         {
             StopFiringSound(false);
             StopRotateSound();
@@ -750,22 +740,41 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
-                    if (!Comp.UnlimitedPower)
-                    {
-                        DrawingPower = false;
-                        Comp.Ai.RequestedWeaponsDraw -= RequiredPower;
-                        Comp.Ai.CurrentWeaponsDraw -= UseablePower;
-                        Comp.SinkPower -= UseablePower;
-                        Comp.Ai.GridAvailablePower += UseablePower;
+                    if (System.EnergyAmmo && !System.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)
+                        StopPowerDraw();
 
-                        DelayTicks = 0;
-                        if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
-                        Comp.MyCube.ResourceSink.Update();
-                    }
-                    Comp.TerminalRefresh();
                 }
                 IsShooting = false;
             }
+        }
+
+        public void DrawPower(bool adapt = false)
+        {
+            if (DrawingPower && !adapt) return;
+
+            var useableDif = adapt ? OldUseablePower - UseablePower: -UseablePower;
+            DrawingPower = true;
+            //yes they are the right signs, weird math at play :P
+            Comp.Ai.CurrentWeaponsDraw -= useableDif;
+            Comp.SinkPower -= useableDif;
+            Comp.Ai.GridAvailablePower += useableDif;
+            Comp.MyCube.ResourceSink.Update();
+            Comp.TerminalRefresh();
+        }
+
+        public void StopPowerDraw()
+        {
+            if (!DrawingPower) return;
+            DrawingPower = false;
+            Comp.Ai.RequestedWeaponsDraw -= RequiredPower;
+            Comp.Ai.CurrentWeaponsDraw -= UseablePower;
+            Comp.SinkPower -= UseablePower;
+            Comp.Ai.GridAvailablePower += UseablePower;
+
+            DelayTicks = 0;
+            if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
+            Comp.MyCube.ResourceSink.Update();
+            Comp.TerminalRefresh();
         }
 
         public void StartReload()
@@ -779,8 +788,9 @@ namespace WeaponCore.Platform
                 StopShooting();
             }
 
-            if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !Comp.Ai.Session.IsCreative))
+            if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !System.MustCharge && !Comp.Ai.Session.IsCreative))
             {
+                //Log.Line($"Out of Ammo");
                 if (!OutOfAmmo)
                 {
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
@@ -790,6 +800,7 @@ namespace WeaponCore.Platform
             }
             else
             {
+                //Log.Line($"Reloading");
                 if (OutOfAmmo)
                 {
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
@@ -797,8 +808,17 @@ namespace WeaponCore.Platform
                 }
 
                 EventTriggerStateChanged(EventTriggers.Reloading, true);
+                
+                if (System.MustCharge)
+                {
+                    Comp.Ai.Session.ChargingWeapons.Add(this);
+                    Comp.Ai.RequestedWeaponsDraw += RequiredPower;
+                    ChargeUntilTick = (uint)System.ReloadTime + Comp.Ai.Session.Tick;
+                    Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
+                }
+                else
+                    Comp.Ai.Session.FutureEvents.Schedule(Reloaded, this, (uint)System.ReloadTime);
 
-                Comp.Ai.Session.FutureEvents.Schedule(Reloaded, this, (uint)System.ReloadTime);
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
                 ReloadEmitter.PlaySound(ReloadSound, true, false, false, false, false, false);
@@ -809,11 +829,28 @@ namespace WeaponCore.Platform
         internal static void Reloaded(object o)
         {
             var w = o as Weapon;
-            w.EventTriggerStateChanged(EventTriggers.Reloading, false);
-            w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId);
-            w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
-            w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
-            w.Reloading = false;
+            if (!w.System.MustCharge)
+            {
+                w.EventTriggerStateChanged(EventTriggers.Reloading, false);
+                w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId);
+                w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
+                w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
+                w.Reloading = false;
+            }
+            else
+            {
+                w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
+                w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.EnergyMagSize;
+
+                w.StopPowerDraw();
+
+                w.Comp.TerminalRefresh();
+                w.Reloading = false;
+                w.DrawingPower = false;
+
+                w.ChargeUntilTick = 0;
+                w.DelayTicks = 0;
+            }
         }
 
         public void StartFiringSound()

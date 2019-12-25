@@ -109,7 +109,11 @@ namespace WeaponCore.Control
                                 if (!on && wState.ManualShoot == ShootOn)
                                 {
                                     wState.ManualShoot = ShootOff;
-                                    w.StopShooting();
+                                    if (w.IsShooting)
+                                        w.StopShooting();
+                                    else if(w.DrawingPower && !w.System.MustCharge)
+                                        w.StopPowerDraw();
+
                                     comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                                     comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }

@@ -89,6 +89,10 @@ namespace WeaponCore
                 if (GameLoaded) AiLoop();
                 DsUtil.Complete("ai", true);
 
+                DsUtil.Start("chargeWeapons");
+                if (GameLoaded) UpdateChargeWeapons();
+                DsUtil.Complete("chargeWeapons", true);
+
                 DsUtil.Start("acquire");
                 CheckAcquire();
                 DsUtil.Complete("acquire", true);
