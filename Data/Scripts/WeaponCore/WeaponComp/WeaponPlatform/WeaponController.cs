@@ -7,7 +7,6 @@ namespace WeaponCore.Platform
     {
         public void AimBarrel(double azimuthChange, double elevationChange)
         {
-            if (Comp?.Ai?.Session == null) return;
             LastTrackedTick = Comp.Ai.Session.Tick;
 
             if (AiOnlyWeapon)
@@ -109,7 +108,7 @@ namespace WeaponCore.Platform
             ReturnHome = ReturnHome && Comp.State.Value.Weapons[WeaponId].ManualShoot == TerminalActionState.ShootOff && !Comp.Gunner && Target.Expired;
 
             if (ReturnHome)
-                Comp?.Ai?.Session?.FutureEvents.Schedule(HomeTurret, null, 1);
+                Comp.Ai.Session.FutureEvents.Schedule(HomeTurret, null, 1);
 
             //weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }

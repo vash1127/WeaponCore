@@ -43,7 +43,7 @@ namespace WeaponCore.Platform
         {
             try
             {
-                if (!Comp.Ai.Session.DedicatedServer && Comp?.Ai?.Session != null)
+                if (!Comp.Ai.Session.DedicatedServer)
                 {
                     switch (state)
                     {

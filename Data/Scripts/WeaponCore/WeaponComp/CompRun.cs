@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                         Log.Line($"Something went wrong with Platform PreInit");
                         break;
                     case MyWeaponPlatform.PlatformState.Delay:
-                        Ai.Session.FutureEvents.Schedule(RePreInit, null, 120);
+                        Ai?.Session?.FutureEvents.Schedule(RePreInit, null, 120);
                         break;
                     case MyWeaponPlatform.PlatformState.Inited:
                         InitPlatform();

@@ -586,7 +586,7 @@ namespace WeaponCore.Support
             FakeShipController = null;
             TerminalSystem = null;
             MyGrid = null;
-            Session = null;
+            //Session = null;
         }
 
         internal void UpdateGridPower()
