@@ -432,6 +432,9 @@ namespace WeaponCore
             BlockTypePool.Clean();
             ConcurrentListPool.Clean();
 
+            GroupInfoPool.Clean();
+            TargetInfoPool.Clean();
+
             foreach (var map in GridToFatMap)
             {
                 map.Value.MyCubeBocks.Clear();

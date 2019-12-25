@@ -262,6 +262,7 @@ namespace WeaponCore
                 else
                 {
                     s.Clean();
+                    _shrinkPool.Return(s);
                     _shrinking.Remove(s);
                     sRemove = true;
                 }

@@ -49,7 +49,7 @@ namespace WeaponCore
                     tInfo.MyAi = null;
                     tInfo.MyGrid = null;
                     tInfo.TargetAi = null;
-                    db.TargetInfoPool.Return(db.SortedTargets[i]);
+                    TargetInfoPool.Return(db.SortedTargets[i]);
                 }
                 db.SortedTargets.Clear();
                 db.Targets.Clear();
@@ -68,7 +68,7 @@ namespace WeaponCore
                     if (grid != null)
                         GridTargetingAIs.TryGetValue(grid, out targetAi);
 
-                    var targetInfo = db.TargetInfoPool.Get();
+                    var targetInfo = TargetInfoPool.Get();
                     targetInfo.Init(ref detectInfo, db.MyGrid, db, targetAi);
 
                     db.SortedTargets.Add(targetInfo);

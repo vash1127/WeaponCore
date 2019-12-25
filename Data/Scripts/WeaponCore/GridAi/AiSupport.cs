@@ -50,7 +50,7 @@ namespace WeaponCore.Support
                         {
                             if (groupInfo == null)
                             {
-                                groupInfo = GroupInfoPool.Get();
+                                groupInfo = Session.GroupInfoPool.Get();
                                 groupInfo.Name = group.Name;
                                 groupInfo.ChangeState = GroupInfo.ChangeStates.Add;
                                 BlockGroups.Add(group.Name, groupInfo);
@@ -71,7 +71,7 @@ namespace WeaponCore.Support
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
                     {
                         group.Value.Comps.Clear();
-                        GroupInfoPool.Return(group.Value);
+                        Session.GroupInfoPool.Return(group.Value);
                         BlockGroups.Remove(group.Key);
                     }
                     else group.Value.ChangeState = GroupInfo.ChangeStates.None;
@@ -575,10 +575,6 @@ namespace WeaponCore.Support
             Targets.Clear();
             SortedTargets.Clear();
             BlockGroups.Clear();
-            GroupInfoPool.Clean();
-            BlockTypePool.Clean();
-            CubePool.Clean();
-            TargetInfoPool.Clean();
             Focus.Clean();
             MyShieldTmp = null;
             MyShield = null;
@@ -586,6 +582,8 @@ namespace WeaponCore.Support
             MyPlanet = null;
             FakeShipController = null;
             TerminalSystem = null;
+            MyGrid = null;
+            Session = null;
         }
 
         internal void UpdateGridPower()
