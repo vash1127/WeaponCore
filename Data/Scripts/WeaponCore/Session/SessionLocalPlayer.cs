@@ -136,29 +136,6 @@ namespace WeaponCore
                 }
             }
         }
-        /*
-
-        internal void ResetGps()
-        {
-            if (TargetGps == null)
-            {
-                Log.Line("resetgps");
-                MyVisualScriptLogicProvider.AddGPS("WEAPONCORE", "", Vector3D.MaxValue, Color.Red);
-                
-                foreach (var t in MyAPIGateway.Session.GPS.GetGpsList(MyAPIGateway.Session.Player.IdentityId))
-                {
-                    if (t.Name == "WEAPONCORE")
-                    {
-                        TargetGps = t;
-                        break;
-                    }
-                }
-                MyAPIGateway.Session.GPS.AddLocalGps(TargetGps);
-                MyVisualScriptLogicProvider.SetGPSColor(TargetGps?.Name, Color.Yellow);
-                if (TargetGps != null) TargetGps.ShowOnHud = false;
-            }
-        }
-        */
 
         internal void RemoveGps()
         {
@@ -205,9 +182,7 @@ namespace WeaponCore
 
             if (ai != TrackingAi)
             {
-                Log.Line("resetting target");
                 TrackingAi = null;
-                //RemoveGps();
                 return false;
             }
 

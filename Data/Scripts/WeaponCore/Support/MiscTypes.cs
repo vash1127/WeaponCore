@@ -685,28 +685,6 @@ namespace WeaponCore.Support
         }
     }
 
-    public struct BlockInfo
-    {
-        public enum BlockType
-        {
-            Player,
-            Grid,
-            Other
-        }
-
-        public readonly MyEntity Entity;
-        public readonly double Distance;
-        public readonly float Size;
-        public readonly BlockType Type;
-        public BlockInfo(MyEntity entity, double distance, float size, BlockType type)
-        {
-            Entity = entity;
-            Distance = distance;
-            Size = size;
-            Type = type;
-        }
-    }
-
     public struct RadiatedBlock
     {
         public Vector3I Center;
