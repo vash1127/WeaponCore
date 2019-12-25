@@ -585,6 +585,7 @@ namespace WeaponCore.Support
             MyPlanetTmp = null;
             MyPlanet = null;
             FakeShipController = null;
+            TerminalSystem = null;
         }
 
         internal void UpdateGridPower()

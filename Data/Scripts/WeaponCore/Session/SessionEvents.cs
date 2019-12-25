@@ -103,6 +103,7 @@ namespace WeaponCore
                 grid.OnFatBlockAdded -= ToFatMap;
                 grid.OnFatBlockRemoved -= FromFatMap;
                 grid.OnClose -= RemoveGridFromMap;
+                grid.AddedToScene -= GridAddedToScene;
                 DirtyGrids.Add(grid);
                 //Log.Line("grid removed and list cleaned");
             }

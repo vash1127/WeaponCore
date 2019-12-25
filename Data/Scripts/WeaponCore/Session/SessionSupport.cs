@@ -431,8 +431,17 @@ namespace WeaponCore
             GridEffectsPool.Clean();
             BlockTypePool.Clean();
             ConcurrentListPool.Clean();
+
+            foreach (var map in GridToFatMap)
+            {
+                map.Value.MyCubeBocks.Clear();
+                map.Value.MyCubeBocks = null;
+                map.Value.Targeting = null;
+                FatMapPool.Return(map.Value);
+            }
             GridToFatMap.Clear();
             FatMapPool.Clean();
+            
             DirtyGrids.Clear();
             DirtyGridsTmp.Clear();
 
