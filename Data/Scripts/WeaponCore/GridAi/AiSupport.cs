@@ -557,7 +557,6 @@ namespace WeaponCore.Support
 
         internal void DelayedGridCleanUp(object o)
         {
-            RegisterMyGridEvents(false);
             _possibleTargets.Clear();
             foreach (var grid in SubGrids)
             {

@@ -123,6 +123,8 @@ namespace WeaponCore.Support
 
         private void GridClose(MyEntity myEntity)
         {
+            RegisterMyGridEvents(false);
+
             if (GridInit)
             {
                 GridInit = false;
