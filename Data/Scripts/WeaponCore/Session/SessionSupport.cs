@@ -407,7 +407,6 @@ namespace WeaponCore
             AcquireTargets.Clear();
             RemoveEffectsFromGrid.Clear();
             WeaponAmmoPullQueue.Clear();
-            DbsToUpdate.Clear();
             AmmoToPullQueue.Clear();
             Hits.Clear();
             AllArmorBaseDefinitions.Clear();
@@ -434,6 +433,8 @@ namespace WeaponCore
             ConcurrentListPool.Clean();
             GridToFatMap.Clear();
             FatMapPool.Clean();
+            DirtyGrids.Clear();
+            DirtyGridsTmp.Clear();
 
             foreach (var structure in WeaponPlatforms.Values)
             {
@@ -466,7 +467,6 @@ namespace WeaponCore
             TargetUi = null;
             Placer = null;
             WheelUi = null;
-            DbsToUpdate = null;
             TargetGps = null;
             SApi.Unload();
             SApi = null;
@@ -480,21 +480,8 @@ namespace WeaponCore
             SoundDefinitions = null;
             ActiveCockPit = null;
             ControlledEntity = null;
-            foreach (var ai in GridTargetingAIs)
-            {
-                Log.Line("test");
-                foreach (var comp in ai.Value.WeaponBase.Values)
-                {
-                    comp.SinkInfo.RequiredInputFunc = null;
-                    comp.MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), comp.SinkInfo);
-                }
-                ai.Value.RegisterMyGridEvents(false);
-                ai.Value.Weapons.Clear();
-                ai.Value.WeaponBase.Clear();
-                ai.Value.BlockTypePool.Clean();
-                ai.Value.BlockGroups.Clear();
-                ai.Value.GroupInfoPool.Clean();
-            }
+            DbsToUpdate.Clear();
+            DbsToUpdate = null;
             GridTargetingAIs.Clear();
         }
     }

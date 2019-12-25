@@ -298,7 +298,6 @@ namespace WeaponCore.Support
         internal class TargetInfo
         {
             internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal MyEntity Target;
             internal Vector3D TargetDir;
             internal Vector3D TargetPos;
             internal Vector3 Velocity;
@@ -311,6 +310,7 @@ namespace WeaponCore.Support
             internal int PartCount;
             internal int FatCount;
             internal float OffenseRating;
+            internal MyEntity Target;
             internal MyCubeGrid MyGrid;
             internal GridAi MyAi;
             internal GridAi TargetAi;
@@ -578,6 +578,7 @@ namespace WeaponCore.Support
             GroupInfoPool.Clean();
             BlockTypePool.Clean();
             CubePool.Clean();
+            TargetInfoPool.Clean();
             MyShieldTmp = null;
             MyShield = null;
             MyPlanetTmp = null;
