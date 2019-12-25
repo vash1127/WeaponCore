@@ -322,6 +322,7 @@ namespace WeaponCore
                 t.BaseDamagePool = damagePool;
                 t.ObjectsHit = objectsHit;
             }
+            if (radiantCascade || nova) _slimsSortedList.Clear();
             hitEnt.Blocks.Clear();
         }
 

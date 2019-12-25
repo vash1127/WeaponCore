@@ -87,8 +87,8 @@ namespace WeaponCore
             var currentItem = GetCurrentMenuItem();
             var foreTexture = currentItem.ForeTexture;
             var backTexture = currentItem.BackTexture;
-            var foreColor = Color.White * Session.UIOpacity;
-            var backColor = Color.White * Session.UIBkOpacity;
+            var foreColor = Color.White * Session.UiOpacity;
+            var backColor = Color.White * Session.UiBkOpacity;
 
             SetCurrentMessage();
             if (backTexture != MyStringId.NullOrEmpty) MyTransparentGeometry.AddBillboardOriented(backTexture, backColor, origin, left, up, (float)scale, BlendTypeEnum.PostPP);

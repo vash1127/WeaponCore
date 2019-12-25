@@ -516,16 +516,17 @@ namespace WeaponCore.Support
             {
                 if (grid == MyGrid) continue;
 
+                grid.OnFatBlockAdded += FatBlockAdded;
+                grid.OnFatBlockRemoved += FatBlockRemoved;
+
                 FatMap fatMap;
                 if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
                 {
-                    grid.OnFatBlockAdded += FatBlockAdded;
-                    grid.OnFatBlockRemoved += FatBlockRemoved;
-
                     var blocks = fatMap.MyCubeBocks;
                     for (int i = 0; i < blocks.Count; i++)
                         FatBlockAdded(blocks[i]);
                 }
+                else Log.Line($"AddSubGrids fatmap already gone");
             }
             AddSubGrids.Clear();
 
@@ -533,16 +534,17 @@ namespace WeaponCore.Support
             {
                 if (grid == MyGrid) continue;
 
+                grid.OnFatBlockAdded -= FatBlockAdded;
+                grid.OnFatBlockRemoved -= FatBlockRemoved;
+
                 FatMap fatMap;
                 if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
                 {
-                    grid.OnFatBlockAdded -= FatBlockAdded;
-                    grid.OnFatBlockRemoved -= FatBlockRemoved;
-
                     var blocks = fatMap.MyCubeBocks;
                     for (int i = 0; i < blocks.Count; i++)
                         FatBlockRemoved(blocks[i]);
                 }
+                else Log.Line($"RemSubGrids fatmap already gone");
             }
             RemSubGrids.Clear();
         }
@@ -584,7 +586,6 @@ namespace WeaponCore.Support
             MyPlanet = null;
             FakeShipController = null;
             TerminalSystem = null;
-            MyGrid = null;
         }
 
         internal void UpdateGridPower()

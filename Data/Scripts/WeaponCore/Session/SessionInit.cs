@@ -24,7 +24,7 @@ namespace WeaponCore
             IsServer = MyAPIGateway.Multiplayer.IsServer;
             DedicatedServer = MyAPIGateway.Utilities.IsDedicated;
 
-            MyAPIGateway.Multiplayer.RegisterMessageHandler(PACKET_ID, ReceivedPacket);
+            MyAPIGateway.Multiplayer.RegisterMessageHandler(PacketId, ReceivedPacket);
 
             if (!DedicatedServer && IsServer) PlayerConnected(MyAPIGateway.Session.Player.IdentityId);
 
@@ -70,7 +70,7 @@ namespace WeaponCore
             Log.Line($"Logging Started");
             HeatEmissives = CreateHeatEmissive();
             
-            foreach (var x in _weaponDefinitions)
+            foreach (var x in WeaponDefinitions)
             {
                 var ae = x.Ammo.AreaEffect;
                 var areaRadius = ae.AreaEffectRadius;
@@ -102,7 +102,7 @@ namespace WeaponCore
                         GenerateBlockSphere(MyCubeSize.Small, ModRadius(detonateRadius / fragments, false));
                 }
             }
-            foreach (var weaponDef in _weaponDefinitions)
+            foreach (var weaponDef in WeaponDefinitions)
             {
                 foreach (var mount in weaponDef.Assignments.MountPoints)
                 {

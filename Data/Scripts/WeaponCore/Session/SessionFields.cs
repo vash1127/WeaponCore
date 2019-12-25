@@ -23,7 +23,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal const ushort PACKET_ID = 62518;
+        internal const ushort PacketId = 62518;
         internal const double TickTimeDiv = 0.0625;
         internal const double VisDirToleranceAngle = 2; //in degrees
         internal const double AimDirToleranceAngle = 5; //in degrees
@@ -33,29 +33,6 @@ namespace WeaponCore
         internal volatile bool SorterControls;
         internal volatile bool DbCallBackComplete = true;
 
-        private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
-        private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
-        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
-        private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
-        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
-        private readonly List<MyTuple<MyInventory, int>> _inventoriesToPull = new List<MyTuple<MyInventory, int>>();
-        private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
-        private readonly List<Vector3D> _offsetList = new List<Vector3D>();
-        private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
-        private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
-        private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
-        private readonly List<AfterGlow> _afterGlow = new List<AfterGlow>();
-        private readonly List<AfterGlow> _glowRemove = new List<AfterGlow>();
-        private readonly MyConcurrentPool<AfterGlow> _glowPool = new MyConcurrentPool<AfterGlow>();
-
-
-        private List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
-
-        private long _prevTargetId;
-        private int _count = -1;
-        private int _lCount;
-        private int _eCount;
-        private double _syncDistSqr;
 
 
         internal readonly MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
@@ -64,64 +41,101 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>();
 
-        internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
-        internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
-        internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
-        internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
-        internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
-        internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
+
+        internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
+
         internal readonly MyConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, FatMap>();
 
-        internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
-        internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
-        internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
 
         internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
         internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
-        
-        internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
+        internal readonly ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
+
+        internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
+        internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
+        internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
+        internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
+        internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
+        internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
+
+        internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
+        internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
+
+        internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
+        internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
+        internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
+        internal readonly List<GridAi> DbsToUpdate = new List<GridAi>();
+
         internal readonly Queue<Weapon> ShootingWeapons = new Queue<Weapon>(100);
         internal readonly Queue<Weapon> AcquireTargets = new Queue<Weapon>(100);
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();
-        internal ApiBackend Api;
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
         internal readonly Guid LogicStateGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811502");
 
         internal readonly double VisDirToleranceCosine;
         internal readonly double AimDirToleranceCosine;
 
-        internal ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
-        internal DsUniqueListFastRemove<PartAnimation> AnimationsToProcess = new DsUniqueListFastRemove<PartAnimation>();
-        internal List<GridAi> DbsToUpdate = new List<GridAi>();
+
+        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
+        private readonly MyConcurrentPool<AfterGlow> _glowPool = new MyConcurrentPool<AfterGlow>();
+        private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
+
+
+        private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
+        private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
+        
+        private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
+        private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
+
+        private readonly List<AfterGlow> _afterGlow = new List<AfterGlow>();
+        private readonly List<AfterGlow> _glowRemove = new List<AfterGlow>();
+        private readonly List<MyTuple<MyInventory, int>> _inventoriesToPull = new List<MyTuple<MyInventory, int>>();
+        private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
+        private readonly List<Vector3D> _offsetList = new List<Vector3D>();
+        private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
+        private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
+
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
-        internal Projectiles.Projectiles Projectiles;
+        internal DsUniqueListFastRemove<PartAnimation> AnimationsToProcess = new DsUniqueListFastRemove<PartAnimation>();
+        internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
 
         internal IMyPhysics Physics;
         internal IMyCamera Camera;
         internal IMyGps TargetGps;
+        internal IMyBlockPlacerBase Placer;
         internal GridAi TrackingAi;
+        internal ApiServer ApiServer;
+        internal MyCockpit ActiveCockPit;
+        internal MyEntity ControlledEntity;
+        internal Projectiles.Projectiles Projectiles;
+        internal ApiBackend Api;
+
+        internal ShieldApi SApi = new ShieldApi();
         internal DSUtils DsUtil { get; set; } = new DSUtils();
         internal DSUtils DsUtil2 { get; set; } = new DSUtils();
+        internal UiInput UiInput;
         internal Wheel WheelUi;
         internal TargetUi TargetUi;
-        internal UiInput UiInput;
-        internal IMyBlockPlacerBase Placer;
+
         internal MatrixD CameraMatrix;
         internal DictionaryValuesReader<MyDefinitionId, MyDefinitionBase> AllDefinitions;
         internal DictionaryValuesReader<MyDefinitionId, MyAudioDefinition> SoundDefinitions;
-        internal HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
-        internal HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal Color[] HeatEmissives;
-        internal ApiServer ApiServer;
+
+        internal Vector3D CameraPos;
+        internal Task PTask = new Task();
+        internal Task GridTask = new Task();
+        internal Task DbTask = new Task();
+        internal Task ITask = new Task();
 
         internal object InitObj = new object();
         internal bool HighLoad;
@@ -145,7 +159,6 @@ namespace WeaponCore
         internal int TargetResets;
         internal int AmmoMoveTriggered;
         internal int AmmoPulls;
-        internal int GridsUpdated;
 
         internal bool ExplosionReady
         {
@@ -176,12 +189,11 @@ namespace WeaponCore
         internal double SyncBufferedDistSqr;
         internal double SyncDist;
         internal double MaxEntitySpeed;
-        internal float UIBkOpacity;
-        internal float UIOpacity;
+        internal float UiBkOpacity;
+        internal float UiOpacity;
         internal bool MpActive;
         internal bool IsServer;
         internal bool DedicatedServer;
-        internal bool WepAction;
         internal bool FirstLoop;
         internal bool GameLoaded;
         internal bool MiscLoaded;
@@ -197,17 +209,6 @@ namespace WeaponCore
         internal bool TargetArmed;
         internal bool InGridAiCockPit;
         internal bool IsCreative;
-        //internal bool ControlChanged;
-
-        internal Vector3D CameraPos;
-        internal MyCockpit ActiveCockPit;
-        internal MyEntity ControlledEntity;
-        internal Task PTask = new Task();
-        internal Task GridTask = new Task();
-        internal Task DbTask = new Task();
-        internal Task ITask = new Task();
-
-        internal ShieldApi SApi = new ShieldApi();
 
         public Session()
         {
@@ -218,5 +219,10 @@ namespace WeaponCore
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
         }
+
+
+        private int _count = -1;
+        private int _lCount;
+        private int _eCount;
     }
 }

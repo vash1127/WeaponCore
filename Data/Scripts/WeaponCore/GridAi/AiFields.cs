@@ -53,9 +53,8 @@ namespace WeaponCore.Support
         internal readonly Dictionary<WeaponComponent, long> Gunners = new Dictionary<WeaponComponent, long>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
-
-        internal Session Session;
-        internal MyCubeGrid MyGrid;
+        internal readonly Session Session;
+        internal readonly MyCubeGrid MyGrid;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal readonly uint CreatedTick;
         internal readonly Focus Focus;

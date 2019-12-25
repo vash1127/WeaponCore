@@ -18,7 +18,7 @@ namespace WeaponCore
                 {
                     var id = p.SteamUserId;
                     if (id != localSteamId && id != packet.SenderId && Vector3D.DistanceSquared(p.GetPosition(), block.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr)
-                        MyAPIGateway.Multiplayer.SendMessageTo(PACKET_ID, bytes, p.SteamUserId);
+                        MyAPIGateway.Multiplayer.SendMessageTo(PacketId, bytes, p.SteamUserId);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in PacketizeToClientsInRange: {ex}"); }
@@ -36,7 +36,7 @@ namespace WeaponCore
                     {
                         var id = p.SteamUserId;
                         if (id != localSteamId && id != packet.SenderId && Vector3D.DistanceSquared(p.GetPosition(), packet.Entity.PositionComp.WorldAABB.Center) <= SyncBufferedDistSqr)
-                            MyAPIGateway.Multiplayer.SendMessageTo(PACKET_ID, rawData, p.SteamUserId);
+                            MyAPIGateway.Multiplayer.SendMessageTo(PacketId, rawData, p.SteamUserId);
                     }
                 }
             }

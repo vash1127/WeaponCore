@@ -36,7 +36,11 @@ namespace WeaponCore
                     ITask = MyAPIGateway.Parallel.StartBackground(AmmoPull, MoveAmmo);
                 }
 
-                if (!CompsToStart.IsEmpty) StartComps();
+                if (!CompsToStart.IsEmpty)
+                {
+                    StartComps();
+                    Log.Line($"compsToStart");
+                }
 
                 if (Tick180)
                 {
@@ -226,7 +230,7 @@ namespace WeaponCore
         {
             try
             {
-                MyAPIGateway.Multiplayer.UnregisterMessageHandler(PACKET_ID, ReceivedPacket);
+                MyAPIGateway.Multiplayer.UnregisterMessageHandler(PacketId, ReceivedPacket);
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7771, Handler);
                 MyAPIGateway.Utilities.UnregisterMessageHandler(7773, UpgradeHandler);
                 MyAPIGateway.TerminalControls.CustomControlGetter -= CustomControlHandler;
