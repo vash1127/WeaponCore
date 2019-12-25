@@ -40,7 +40,7 @@ namespace WeaponCore.Platform
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, bool pause = false, HashSet<string> muzzles = null)
         {
-            if (!Comp.Ai.Session.DedicatedServer)
+            if (!Comp.Ai.Session.DedicatedServer && Comp?.Ai?.Session != null)
             {
                 switch (state)
                 {
