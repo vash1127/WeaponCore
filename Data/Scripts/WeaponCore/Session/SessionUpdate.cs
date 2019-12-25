@@ -209,7 +209,7 @@ namespace WeaponCore
 
                         if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick || comp.Gunner) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
-                            if (gridAi.RequestedPowerChanged)
+                            if (gridAi.RequestedPowerChanged && !w.System.MustCharge)
                                 w.DelayTicks = 0;
 
                             var targetRequested = w.SeekTarget && targetChange;
@@ -250,10 +250,22 @@ namespace WeaponCore
                     var w = ChargingWeapons[i];
                     var gridAi = w.Comp.Ai;
 
-                    if (w.ChargeUntilTick <= Tick)
+                    if (!DedicatedServer && Tick60)
+                    {
+                        w.Comp.CurrentCharge += w.RequiredPower;
+                        if (w.Comp.CurrentCharge > w.System.EnergyMagSize)
+                            w.Comp.CurrentCharge = w.System.EnergyMagSize;
+
+                        Log.Line($"w.System.EnergyMagSize: {w.System.EnergyMagSize}");
+                        w.Comp.TerminalRefresh();
+                    }
+
+                    if (w.ChargeUntilTick <= Tick || !w.Comp.State.Value.Online)
                     {
                         //Log.Line("Reloaded");
-                        Weapon.Reloaded(w);
+                        if(w.ChargeUntilTick <= Tick)
+                            Weapon.Reloaded(w);
+
                         ChargingWeapons.RemoveAtFast(i);
                         continue;
                     }
@@ -263,11 +275,14 @@ namespace WeaponCore
                         //Log.Line($"DrawingPower: {w.DrawingPower}");
                         if (!w.DrawingPower)
                         {
+                            //Log.Line("Reset Power");
                             w.OldUseablePower = w.UseablePower;
                             w.UseablePower = w.RequiredPower;
                             w.DrawPower();
                             w.DrawingPower = true;
+                            w.DelayTicks = 0;
                         }
+
                         continue;
                     }
 
@@ -356,7 +371,9 @@ namespace WeaponCore
                         w.ChargeUntilTick = Tick + w.DelayTicks;
                     }
                 }
-                else if((w.Charging || w.DelayTicks > 0 || w.ResetPower) && !w.System.MustCharge) {
+                //w.System.MustCharge must be first to prevent setting w.ResetPower
+                else if (!w.System.MustCharge && (w.Charging || w.DelayTicks > 0 || w.ResetPower))
+                {
                     w.OldUseablePower = w.UseablePower;
                     w.UseablePower = w.RequiredPower;
                     w.DrawPower(true);

@@ -122,13 +122,15 @@ namespace WeaponCore.Platform
                 //UI elements
                 comp.HasGuidanceToggle = comp.HasGuidanceToggle || (system.Values.HardPoint.Ui.ToggleGuidance && system.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None);
 
-                comp.HasDamageSlider = comp.HasDamageSlider || (system.Values.HardPoint.Ui.DamageModifier && system.EnergyAmmo || system.IsHybrid);
+                comp.HasDamageSlider = comp.HasDamageSlider || (!system.MustCharge && system.Values.HardPoint.Ui.DamageModifier && system.EnergyAmmo || system.IsHybrid);
 
-                comp.HasRofSlider = comp.HasRofSlider || system.Values.HardPoint.Ui.RateOfFire;
+                comp.HasRofSlider = comp.HasRofSlider || (system.Values.HardPoint.Ui.RateOfFire && !system.MustCharge);
 
-                comp.CanOverload = comp.CanOverload || (system.Values.HardPoint.Ui.EnableOverload && system.IsBeamWeapon);
+                comp.CanOverload = comp.CanOverload || (system.Values.HardPoint.Ui.EnableOverload && system.IsBeamWeapon && !system.MustCharge);
 
                 comp.HasTurret = comp.HasTurret || (system.Values.HardPoint.Block.TurretAttached);
+
+                comp.HasChargeWeapon = comp.HasChargeWeapon || system.MustCharge;
 
                 var weapon = Weapons[i];
                 if (weapon.System.Values.HardPoint.Block.TurretController)

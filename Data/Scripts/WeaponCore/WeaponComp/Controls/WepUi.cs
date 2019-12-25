@@ -40,6 +40,8 @@ namespace WeaponCore
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
+                if (!w.System.IsBeamWeapon || w.System.MustCharge) continue;
+
                 comp.Ai.Session.FutureEvents.Schedule(SetWeaponDPS, w, 0);
             }
 
@@ -142,6 +144,8 @@ namespace WeaponCore
             {
                 var w = comp.Platform.Weapons[i];
 
+                if (!w.System.IsBeamWeapon || w.System.MustCharge) continue;
+
                 var newRate = (int)(w.System.RateOfFire * comp.Set.Value.RofModifier);
 
                 if (newRate < 1)
@@ -221,7 +225,7 @@ namespace WeaponCore
             }
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
-                if(comp.Platform.Weapons[i].System.IsBeamWeapon)
+                if(comp.Platform.Weapons[i].System.IsBeamWeapon && !comp.Platform.Weapons[i].System.MustCharge)
                     SetDps(block, comp.Set.Value.DpsModifier);
             }
         }

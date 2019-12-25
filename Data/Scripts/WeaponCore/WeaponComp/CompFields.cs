@@ -49,6 +49,7 @@ namespace WeaponCore.Support
         internal float HeatSinkRate;
         internal float SinkPower;
         internal float MaxRequiredPower;
+        internal float CurrentCharge;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
         internal bool Overheated;
@@ -89,6 +90,7 @@ namespace WeaponCore.Support
         internal bool HasRofSlider;
         internal bool CanOverload;
         internal bool HasTurret;
+        internal bool HasChargeWeapon;
 
         internal CompSettings Set;
         internal CompState State;

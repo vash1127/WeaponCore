@@ -565,9 +565,11 @@ namespace WeaponCore.Platform
         internal void UpdateRequiredPower()
         {
             if (System.EnergyAmmo || System.IsHybrid)
-                RequiredPower = ((ShotEnergyCost * ((RateOfFire) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+                RequiredPower = ((ShotEnergyCost * ((RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
             else
                 RequiredPower = Comp.IdlePower;
+
+            Log.Line($"Required Power: {RequiredPower}");
         }
 
         internal void UpdateShotEnergy()
@@ -782,6 +784,7 @@ namespace WeaponCore.Platform
             if (Reloading) return;
             Reloading = true;
             EventTriggerStateChanged(state: EventTriggers.Firing, active: false);
+            Comp.CurrentCharge = 0;
 
             if (IsShooting)
             {
@@ -841,7 +844,7 @@ namespace WeaponCore.Platform
             {
                 w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
                 w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.EnergyMagSize;
-
+                w.Comp.CurrentCharge = w.System.EnergyMagSize;
                 w.StopPowerDraw();
 
                 w.Comp.TerminalRefresh();

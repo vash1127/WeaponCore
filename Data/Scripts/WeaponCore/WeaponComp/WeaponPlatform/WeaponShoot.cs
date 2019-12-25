@@ -302,7 +302,7 @@ namespace WeaponCore.Platform
             if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
                 StartReload();
 
-            if (state.ManualShoot == TerminalActionState.ShootOnce)
+            if (state.ManualShoot == TerminalActionState.ShootOnce && (!System.MustCharge || (System.MustCharge && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)))
             {
                 state.ManualShoot = TerminalActionState.ShootOff;
                 StopShooting();

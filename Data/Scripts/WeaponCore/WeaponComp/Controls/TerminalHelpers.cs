@@ -114,6 +114,14 @@ namespace WeaponCore.Control
                                     else if(w.DrawingPower && !w.System.MustCharge)
                                         w.StopPowerDraw();
 
+                                    if (w.System.MustCharge)
+                                    {
+                                        if (w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)
+                                            w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
+
+                                        w.Reloading = false;
+                                    }
+
                                     comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                                     comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }

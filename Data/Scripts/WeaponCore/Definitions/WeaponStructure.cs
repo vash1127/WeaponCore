@@ -222,11 +222,11 @@ namespace WeaponCore.Support
             TargetLossDegree = Values.Ammo.Trajectory.TargetLossDegree > 0 ? (float)Math.Cos(MathHelper.ToRadians(Values.Ammo.Trajectory.TargetLossDegree)) : 0;
 
             Fields(out PulseInterval, out PulseChance);
-            Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode);
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out BarrelSpinRate, out HasBarrelRate, out RateOfFire);
             AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect);
-            
+            Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode);
+
             ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             IsHybrid = values.HardPoint.Hybrid;
@@ -259,8 +259,20 @@ namespace WeaponCore.Support
         {
             energyAmmo = AmmoDefId.SubtypeId.String == "Blank";
             mustCharge = energyAmmo && ReloadTime > 0;
-            energyMagSize = MustCharge ? Values.HardPoint.Loading.ShotsInBurst : 0;
-            burstMode = Values.HardPoint.Loading.ShotsInBurst > 0 && ((energyAmmo && !mustCharge) || MagazineDef.Capacity >= Values.HardPoint.Loading.ShotsInBurst);
+            burstMode = Values.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= Values.HardPoint.Loading.ShotsInBurst);
+
+
+
+            if (MustCharge)
+            {
+                var ewar = (int)Values.Ammo.AreaEffect.AreaEffect > 3;
+                var shotEnergyCost = ewar ? Values.HardPoint.EnergyCost * AreaEffectDamage : Values.HardPoint.EnergyCost * BaseDamage;
+                var requiredPower = (((shotEnergyCost * ((RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * Values.HardPoint.Loading.BarrelsPerShot) * Values.HardPoint.Loading.TrajectilesPerBarrel);
+
+                energyMagSize = (int)(requiredPower * (float)(ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
+            }
+            else
+                energyMagSize = 0;
         }
 
 

@@ -120,7 +120,7 @@ namespace WeaponCore.Support
 
             //MaxRequiredPower -= weapon.RequiredPower;
             weapon.RequiredPower *= mulitplier;
-            MaxRequiredPower += weapon.RequiredPower;
+            MaxRequiredPower += weapon.System.MustCharge ? weapon.System.EnergyMagSize : weapon.RequiredPower;
 
             weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
             weapon.TimePerShot = (3600d / weapon.RateOfFire);
