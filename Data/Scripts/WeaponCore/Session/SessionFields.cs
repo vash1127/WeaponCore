@@ -44,7 +44,10 @@ namespace WeaponCore
         private readonly HashSet<IMySlimBlock> _slimsSet = new HashSet<IMySlimBlock>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
         private readonly HashSet<IMySlimBlock> _destroyedSlims = new HashSet<IMySlimBlock>();
-        private readonly CachingList<AfterGlow> _afterGlow = new CachingList<AfterGlow>();
+        private readonly List<AfterGlow> _afterGlow = new List<AfterGlow>();
+        private readonly List<AfterGlow> _glowRemove = new List<AfterGlow>();
+        private readonly MyConcurrentPool<AfterGlow> _glowPool = new MyConcurrentPool<AfterGlow>();
+
 
         private List<WeaponDefinition> _weaponDefinitions = new List<WeaponDefinition>();
 

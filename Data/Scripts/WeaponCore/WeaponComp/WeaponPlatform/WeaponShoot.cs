@@ -175,42 +175,42 @@ namespace WeaponCore.Platform
                             triggerE = ent;
                         }
 
-                        Trajectile t;
-                        session.Projectiles.TrajectilePool.AllocateOrCreate(out t);
-                        t.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
-                        vProjectile.VrTrajectiles.Add(t);
+                        ProInfo info;
+                        session.Projectiles.InfoPool.AllocateOrCreate(out info);
+                        info.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
+                        vProjectile.VrInfos.Add(info);
 
                         if (System.RotateRealBeam && i == _nextVirtual)
                         {
-                            vProjectile.T.Origin = muzzle.Position;
+                            vProjectile.Info.Origin = muzzle.Position;
                             vProjectile.Direction = muzzle.DeviatedDir;
-                            vProjectile.T.WeaponCache.VirutalId = _nextVirtual;
+                            vProjectile.Info.WeaponCache.VirutalId = _nextVirtual;
                         }
                     }
                     else
                     {
                         Projectile p;
                         session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
-                        p.T.System = System;
-                        p.T.Ai = Comp.Ai;
-                        p.T.Overrides = Comp.Set.Value.Overrides;
-                        p.T.Target.Entity = Target.Entity;
-                        p.T.Target.Projectile = Target.Projectile;
-                        p.T.Target.IsProjectile = Target.Projectile != null;
-                        p.T.Target.FiringCube = Comp.MyCube;
-                        p.T.WeaponId = WeaponId;
-                        p.T.MuzzleId = muzzle.MuzzleId;
-                        p.T.BaseDamagePool = BaseDamage;
-                        p.T.EnableGuidance = Comp.Set.Value.Guidance;
-                        p.T.DetonationDamage = DetonateDmg;
-                        p.T.AreaEffectDamage = AreaEffectDmg;
-                        p.T.WeaponCache = WeaponCache;
-                        p.T.WeaponCache.VirutalId = -1;
+                        p.Info.System = System;
+                        p.Info.Ai = Comp.Ai;
+                        p.Info.Overrides = Comp.Set.Value.Overrides;
+                        p.Info.Target.Entity = Target.Entity;
+                        p.Info.Target.Projectile = Target.Projectile;
+                        p.Info.Target.IsProjectile = Target.Projectile != null;
+                        p.Info.Target.FiringCube = Comp.MyCube;
+                        p.Info.WeaponId = WeaponId;
+                        p.Info.MuzzleId = muzzle.MuzzleId;
+                        p.Info.BaseDamagePool = BaseDamage;
+                        p.Info.EnableGuidance = Comp.Set.Value.Guidance;
+                        p.Info.DetonationDamage = DetonateDmg;
+                        p.Info.AreaEffectDamage = AreaEffectDmg;
+                        p.Info.WeaponCache = WeaponCache;
+                        p.Info.WeaponCache.VirutalId = -1;
 
                         p.Gunner = Comp.Gunner;
-                        p.GridVel = Comp.Ai.GridVel;
-                        p.T.Origin = muzzle.Position;
-                        p.T.OriginUp = MyPivotUp;
+                        p.Info.ShooterVel = Comp.Ai.GridVel;
+                        p.Info.Origin = muzzle.Position;
+                        p.Info.OriginUp = MyPivotUp;
                         p.PredictedTargetPos = TargetPos;
                         p.Direction = muzzle.DeviatedDir;
                         p.State = Projectile.ProjectileState.Start;
@@ -224,7 +224,7 @@ namespace WeaponCore.Platform
                                 ent.InScene = true;
                                 ent.Render.AddRenderObjects();
                             }
-                            p.T.PrimeEntity = ent;
+                            p.Info.PrimeEntity = ent;
                         }
                         if (System.TriggerModelId != -1)
                         {
@@ -232,7 +232,7 @@ namespace WeaponCore.Platform
                             session.Projectiles.EntityPool[System.TriggerModelId].AllocateOrCreate(out ent);
                             ent.InScene = false;
                             ent.Render.RemoveRenderObjects();
-                            p.T.TriggerEntity = ent;
+                            p.Info.TriggerEntity = ent;
                         }
                         if (targetable)
                         {
@@ -242,11 +242,11 @@ namespace WeaponCore.Platform
                                 var addProjectile = System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None;
                                 if (!addProjectile)
                                 {
-                                    if (Vector3.Dot(p.Direction, p.T.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
+                                    if (Vector3.Dot(p.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
                                     {
                                         var targetSphere = targetAi.MyGrid.PositionComp.WorldVolume;
                                         targetSphere.Radius *= 3;
-                                        var testRay = new RayD(p.T.Origin, p.Direction);
+                                        var testRay = new RayD(p.Info.Origin, p.Direction);
                                         var quickCheck = Vector3D.IsZero(targetAi.GridVel, 0.025) && targetSphere.Intersects(testRay) != null;
                                         if (!quickCheck)
                                         {
@@ -318,30 +318,30 @@ namespace WeaponCore.Platform
         {
             Projectile p;
             Comp.Ai.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
-            p.T.System = System;
-            p.T.Ai = Comp.Ai;
-            p.T.Overrides = Comp.Set.Value.Overrides;
-            p.T.Target.Entity = Target.Entity;
-            p.T.Target.Projectile = Target.Projectile;
-            p.T.Target.IsProjectile = Target.Projectile != null;
-            p.T.Target.FiringCube = Comp.MyCube;
-            p.T.BaseDamagePool = BaseDamage;
-            p.T.EnableGuidance = Comp.Set.Value.Guidance;
-            p.T.DetonationDamage = DetonateDmg;
-            p.T.AreaEffectDamage = AreaEffectDmg;
+            p.Info.System = System;
+            p.Info.Ai = Comp.Ai;
+            p.Info.Overrides = Comp.Set.Value.Overrides;
+            p.Info.Target.Entity = Target.Entity;
+            p.Info.Target.Projectile = Target.Projectile;
+            p.Info.Target.IsProjectile = Target.Projectile != null;
+            p.Info.Target.FiringCube = Comp.MyCube;
+            p.Info.BaseDamagePool = BaseDamage;
+            p.Info.EnableGuidance = Comp.Set.Value.Guidance;
+            p.Info.DetonationDamage = DetonateDmg;
+            p.Info.AreaEffectDamage = AreaEffectDmg;
 
-            p.T.WeaponCache = WeaponCache;
+            p.Info.WeaponCache = WeaponCache;
 
             WeaponCache.VirtualHit = false;
             WeaponCache.Hits = 0;
             WeaponCache.HitEntity.Entity = null;
-            p.T.WeaponId = WeaponId;
-            p.T.MuzzleId = -1;
+            p.Info.WeaponId = WeaponId;
+            p.Info.MuzzleId = -1;
 
             p.Gunner = Comp.Gunner;
-            p.GridVel = Comp.Ai.GridVel;
-            p.T.Origin = MyPivotPos;
-            p.T.OriginUp = MyPivotUp;
+            p.Info.ShooterVel = Comp.Ai.GridVel;
+            p.Info.Origin = MyPivotPos;
+            p.Info.OriginUp = MyPivotUp;
             p.PredictedTargetPos = TargetPos;
             p.Direction = MyPivotDir;
             p.State = Projectile.ProjectileState.Start;

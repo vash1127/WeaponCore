@@ -112,6 +112,7 @@ namespace WeaponCore.Support
         public readonly bool DrawLine;
         public readonly bool Ewar;
         public readonly bool EwarEffect;
+        public readonly bool NeedsPrediction;
         public readonly double CollisionSize;
         public readonly double MaxTrajectory;
         public readonly double MaxTrajectorySqr;
@@ -125,6 +126,7 @@ namespace WeaponCore.Support
         public readonly double TracerLength;
         public readonly double AzStep;
         public readonly double ElStep;
+        public readonly float DesiredProjectileSpeed;
         public readonly double SmartsDelayDistSqr;
         public readonly float TargetLossDegree;
         public readonly float Barrel1AvTicks;
@@ -136,6 +138,7 @@ namespace WeaponCore.Support
         public readonly float MinTargetRadius;
         public readonly float MaxTargetRadius;
         public readonly float MaxAmmoVolume;
+        public readonly HardPointDefinition.Prediction Prediction;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
         public float BarrelSoundDistSqr;
@@ -228,13 +231,12 @@ namespace WeaponCore.Support
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             IsHybrid = values.HardPoint.Hybrid;
 
+            DesiredProjectileSpeed = values.Ammo.Trajectory.DesiredSpeed;
             MaxTrajectory = values.Ammo.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
             MaxTargetSpeed = values.Targeting.StopTrackingSpeed > 0 ? values.Targeting.StopTrackingSpeed : double.MaxValue;
-
             ClosestFirst = values.Targeting.ClosestFirst;
-
             Sound();
 
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
@@ -246,6 +248,7 @@ namespace WeaponCore.Support
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
+            Predictions(out NeedsPrediction, out Prediction);
 
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
@@ -258,6 +261,13 @@ namespace WeaponCore.Support
             mustCharge = energyAmmo && ReloadTime > 0;
             energyMagSize = MustCharge ? Values.HardPoint.Loading.ShotsInBurst : 0;
             burstMode = Values.HardPoint.Loading.ShotsInBurst > 0 && ((energyAmmo && !mustCharge) || MagazineDef.Capacity >= Values.HardPoint.Loading.ShotsInBurst);
+        }
+
+
+        private void Predictions(out bool needsPrediction, out HardPointDefinition.Prediction type)
+        {
+            type = Values.HardPoint.AimLeadingPrediction;
+            needsPrediction = type != HardPointDefinition.Prediction.Off && !IsBeamWeapon && DesiredProjectileSpeed > 0;
         }
 
         private void Fields(out int pulseInterval, out int pulseChance)

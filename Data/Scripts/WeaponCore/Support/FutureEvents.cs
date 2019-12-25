@@ -57,9 +57,13 @@ namespace WeaponCore.Support
 
         internal void Purge()
         {
-            Active = false;
             lock (_callbacks)
             {
+                for (int i = 0; i < 7200; i++)
+                {
+                    Tick((uint)i);
+                }
+                Active = false;
                 foreach (var list in _callbacks)
                 {
                     foreach (var call in list)

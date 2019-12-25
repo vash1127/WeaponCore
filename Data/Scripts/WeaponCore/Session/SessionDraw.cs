@@ -1,5 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Sandbox.Game;
+using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -13,34 +16,32 @@ namespace WeaponCore
         private void DrawLists()
         {
             var sFound = false;
-            var gFound = false;
             for (int i = 0; i < Projectiles.DrawProjectiles.Count; i++)
             {
-                var t = Projectiles.DrawProjectiles[i];
-
-                if (t.StartSoundActived)
+                var info = Projectiles.DrawProjectiles[i];
+                if (info.StartSoundActived)
                 {
-                    t.StartSoundActived = false;
-                    t.FireEmitter.PlaySound(t.FireSound, true);
+                    info.StartSoundActived = false;
+                    info.FireEmitter.PlaySound(info.FireSound, true);
                 }
 
-                if (t.HasTravelSound)
+                if (info.HasTravelSound)
                 {
-                    if (!t.AmmoSound)
+                    if (!info.AmmoSound)
                     {
                         double dist;
-                        Vector3D.DistanceSquared(ref t.Position, ref CameraPos, out dist);
-                        if (dist <= t.System.AmmoTravelSoundDistSqr) t.AmmoSoundStart();
+                        Vector3D.DistanceSquared(ref info.Position, ref CameraPos, out dist);
+                        if (dist <= info.System.AmmoTravelSoundDistSqr) info.AmmoSoundStart();
                     }
-                    else t.TravelEmitter.SetPosition(t.Position);
+                    else info.TravelEmitter.SetPosition(info.Position);
                 }
 
-                if (t.HitSoundActived)
+                if (info.HitSoundActived)
                 {
-                    t.HitSoundActived = false;
-                    t.HitEmitter.SetPosition(t.Position);
-                    t.HitEmitter.CanPlayLoopSounds = false;
-                    t.HitEmitter.PlaySound(t.HitSound, true);
+                    info.HitSoundActived = false;
+                    info.HitEmitter.SetPosition(info.Position);
+                    info.HitEmitter.CanPlayLoopSounds = false;
+                    info.HitEmitter.PlaySound(info.HitSound, true);
                     /*
                     var prevPos = t.Position + (-t.Direction * t.Length);
                     IHitInfo hitInfo;
@@ -54,55 +55,55 @@ namespace WeaponCore
                     */
                 }
 
-                if (t.FakeExplosion)
+                if (info.FakeExplosion)
                 {
-                    t.FakeExplosion = false;
+                    info.FakeExplosion = false;
                     if (ExplosionReady)
-                        SUtils.CreateFakeExplosion(this, t.System.Values.Ammo.AreaEffect.AreaEffectRadius, t.Position, t.System);
+                        SUtils.CreateFakeExplosion(this, info.System.Values.Ammo.AreaEffect.AreaEffectRadius, info.Position, info.System);
                 }
 
-                if (t.PrimeEntity != null)
+                if (info.PrimeEntity != null)
                 {
-                    if (t.Draw != Trajectile.DrawState.Last && !t.PrimeEntity.InScene && !t.Cloaked)
+                    if (info.Draw != ProInfo.DrawState.Last && !info.PrimeEntity.InScene && !info.Cloaked)
                     {
-                        t.PrimeEntity.InScene = true;
-                        t.PrimeEntity.Render.UpdateRenderObject(true, false);
+                        info.PrimeEntity.InScene = true;
+                        info.PrimeEntity.Render.UpdateRenderObject(true, false);
                     }
-                    t.PrimeEntity.PositionComp.SetWorldMatrix(t.PrimeMatrix, null, false, false, false);
-                    if (t.Draw == Trajectile.DrawState.Last || t.Cloaked && t.PrimeEntity.InScene)
+                    info.PrimeEntity.PositionComp.SetWorldMatrix(info.PrimeMatrix, null, false, false, false);
+                    if (info.Draw == ProInfo.DrawState.Last || info.Cloaked && info.PrimeEntity.InScene)
                     {
-                        t.PrimeEntity.InScene = false;
-                        t.PrimeEntity.Render.RemoveRenderObjects();
+                        info.PrimeEntity.InScene = false;
+                        info.PrimeEntity.Render.RemoveRenderObjects();
                     }
-                    if (!t.System.Values.Graphics.Line.Tracer.Enable && t.TriggerEntity == null) continue;
+                    if (!info.System.Values.Graphics.Line.Tracer.Enable && info.TriggerEntity == null) continue;
                 }
 
-                if (t.Triggered && t.TriggerEntity != null)
+                if (info.Triggered && info.TriggerEntity != null)
                 {
-                    if ((t.Draw != Trajectile.DrawState.Last && !t.TriggerEntity.InScene))
+                    if ((info.Draw != ProInfo.DrawState.Last && !info.TriggerEntity.InScene))
                     {
-                        t.TriggerEntity.InScene = true;
-                        t.TriggerEntity.Render.UpdateRenderObject(true, false);
+                        info.TriggerEntity.InScene = true;
+                        info.TriggerEntity.Render.UpdateRenderObject(true, false);
                     }
 
-                    t.TriggerEntity.PositionComp.SetWorldMatrix(t.TriggerMatrix, null, false, false, false);
-                    if (t.Draw == Trajectile.DrawState.Last)
+                    info.TriggerEntity.PositionComp.SetWorldMatrix(info.TriggerMatrix, null, false, false, false);
+                    if (info.Draw == ProInfo.DrawState.Last)
                     {
-                        t.TriggerEntity.InScene = false;
-                        t.TriggerEntity.Render.RemoveRenderObjects();
+                        info.TriggerEntity.InScene = false;
+                        info.TriggerEntity.Render.RemoveRenderObjects();
                     }
                 }
 
-                if (!t.System.Values.Graphics.Line.Tracer.Enable) continue;
+                if (!info.System.Values.Graphics.Line.Tracer.Enable || info.Shrinking) continue;
 
-                var color = t.Color;
-                var thickness = t.LineWidth;
-                if (t.System.IsBeamWeapon)
+                var color = info.Color;
+                var thickness = info.LineWidth;
+                if (info.System.IsBeamWeapon)
                 {
                     var changeValue = 0.01f;
-                    if (t.System.IsBeamWeapon && t.BaseDamagePool > t.System.Values.Ammo.BaseDamage)
+                    if (info.System.IsBeamWeapon && info.BaseDamagePool > info.System.Values.Ammo.BaseDamage)
                     {
-                        thickness *= t.BaseDamagePool / t.System.Values.Ammo.BaseDamage;
+                        thickness *= info.BaseDamagePool / info.System.Values.Ammo.BaseDamage;
                         changeValue = 0.02f;
                     }
                     if (_lCount < 60)
@@ -126,45 +127,45 @@ namespace WeaponCore
                 }
                 else
                 {
-                    if (t.ReSizing == Trajectile.ReSize.Shrink && t.DrawHit?.HitPos != null)
+                    if (info.ReSizing == ProInfo.ReSize.Shrink && info.DrawHit?.HitPos != null && info.OnScreen != ProInfo.Screen.None)
                     {
+                        info.Shrinking = true;
                         sFound = true;
                         var shrink = _shrinkPool.Get();
-                        shrink.Init(t, thickness);
+                        shrink.Init(info, thickness);
                         _shrinking.Add(shrink);
                     }
-                    else if (t.System.Trail && t.ReSizing != Trajectile.ReSize.Grow)
+                    else if (info.System.Trail && info.ReSizing != ProInfo.ReSize.Grow)
                     {
-                        gFound = true;
-                        var afterGlow = new AfterGlow
-                        {
-                            System = t.System,
-                            StepLength = (t.DistanceTraveled - t.PrevDistanceTraveled),
-                            Direction = t.Direction,
-                            Back = t.LineStart,
-                            FirstTick = Tick,
-                        };
-                        _afterGlow.Add(afterGlow);
+                        var glow = _glowPool.Get();
+                        glow.Parent = info.Glowers.Count > 0 ? info.Glowers.Peek() : null;
+                        glow.Back = info.LineStart;
+                        glow.FirstTick = Tick;
+                        glow.System = info.System;
+                        glow.ShooterVel = info.ShooterVel;
+                        glow.WidthScaler = info.LineScaler;
+                        info.Glowers.Push(glow);
+                        _afterGlow.Add(glow);
                     }
                 }
 
-                if (t.System.OffsetEffect)
-                    LineOffsetEffect(t.System, t.Position, t.Direction, (float)t.DistanceTraveled, t.Length, thickness, color);
-                else
-                    MyTransparentGeometry.AddLineBillboard(t.System.TracerMaterial, color, t.Position, -t.Direction, (float)t.Length, thickness);
+                if (info.System.OffsetEffect && info.OnScreen == ProInfo.Screen.Tracer)
+                    LineOffsetEffect(info.System, info.Position, info.Direction, info.DistanceTraveled, info.Length, thickness, color);
+                else if (info.OnScreen == ProInfo.Screen.Tracer)
+                    MyTransparentGeometry.AddLineBillboard(info.System.TracerMaterial, color, info.Position, -info.Direction, (float)info.Length, thickness);
 
-                if (t.System.IsBeamWeapon && t.System.HitParticle && !(t.MuzzleId != 0 && (t.System.ConvergeBeams || t.System.OneHitParticle)))
+                if (info.System.IsBeamWeapon && info.System.HitParticle && !(info.MuzzleId != 0 && (info.System.ConvergeBeams || info.System.OneHitParticle)))
                 {
-                    var c = t.Target.FiringCube;
+                    var c = info.Target.FiringCube;
                     if (c == null || c.MarkedForClose)
                         continue;
 
                     WeaponComponent weaponComp;
-                    if (t.Ai.WeaponBase.TryGetValue(c, out weaponComp))
+                    if (info.Ai.WeaponBase.TryGetValue(c, out weaponComp))
                     {
-                        var weapon = weaponComp.Platform.Weapons[t.WeaponId];
-                        var effect = weapon.HitEffects[t.MuzzleId];
-                        if (t.DrawHit?.HitPos != null && t.OnScreen)
+                        var weapon = weaponComp.Platform.Weapons[info.WeaponId];
+                        var effect = weapon.HitEffects[info.MuzzleId];
+                        if (info.DrawHit?.HitPos != null && info.OnScreen == ProInfo.Screen.Tail)
                         {
                             if (effect != null)
                             {
@@ -175,54 +176,53 @@ namespace WeaponCore
                                     effect = null;
                                 }
                             }
-                            var hit = t.DrawHit.Value.HitPos.Value;
+                            var hit = info.DrawHit.Value.HitPos.Value;
                             MatrixD matrix;
                             MatrixD.CreateTranslation(ref hit, out matrix);
                             if (effect == null)
                             {
-                                MyParticlesManager.TryCreateParticleEffect(t.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hit, uint.MaxValue, out effect);
+                                MyParticlesManager.TryCreateParticleEffect(info.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hit, uint.MaxValue, out effect);
                                 if (effect == null)
                                 {
-                                    weapon.HitEffects[t.MuzzleId] = null;
+                                    weapon.HitEffects[info.MuzzleId] = null;
                                     continue;
                                 }
 
-                                effect.DistanceMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
-                                effect.DurationMax = t.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
-                                effect.UserColorMultiplier = t.System.Values.Graphics.Particles.Hit.Color;
-                                effect.Loop = t.System.Values.Graphics.Particles.Hit.Extras.Loop;
-                                effect.UserRadiusMultiplier = t.System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
-                                var scale = MathHelper.Lerp(1, 0, (t.DistanceToLine * 2) / t.System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
+                                effect.DistanceMax = info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
+                                effect.DurationMax = info.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
+                                effect.UserColorMultiplier = info.System.Values.Graphics.Particles.Hit.Color;
+                                effect.Loop = info.System.Values.Graphics.Particles.Hit.Extras.Loop;
+                                effect.UserRadiusMultiplier = info.System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
+                                var scale = MathHelper.Lerp(1, 0, (info.DistanceToLine * 2) / info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
                                 effect.UserEmitterScale = scale;
                             }
                             else if (effect.IsEmittingStopped)
                                 effect.Play();
 
                             effect.WorldMatrix = matrix;
-                            if (t.DrawHit.Value.Projectile != null) effect.Velocity = t.DrawHit.Value.Projectile.Velocity;
-                            else if (t.DrawHit.Value.Entity?.GetTopMostParent()?.Physics != null) effect.Velocity = t.DrawHit.Value.Entity.GetTopMostParent().Physics.LinearVelocity;
-                            weapon.HitEffects[t.MuzzleId] = effect;
+                            if (info.DrawHit.Value.Projectile != null) effect.Velocity = info.DrawHit.Value.Projectile.Velocity;
+                            else if (info.DrawHit.Value.Entity?.GetTopMostParent()?.Physics != null) effect.Velocity = info.DrawHit.Value.Entity.GetTopMostParent().Physics.LinearVelocity;
+                            weapon.HitEffects[info.MuzzleId] = effect;
                         }
                         else if (effect != null)
                         {
                             effect.Stop(false);
-                            weapon.HitEffects[t.MuzzleId] = null;
+                            weapon.HitEffects[info.MuzzleId] = null;
                         }
                     }
                 }
             }
             if (sFound) _shrinking.ApplyAdditions();
-            if (gFound) _afterGlow.ApplyAdditions();
             Projectiles.DrawProjectiles.Clear();
         }
 
         private void Shrink()
         {
             var sRemove = false;
-            var gAdd = false;
             foreach (var s in _shrinking)
             {
                 var shrunk = s.GetLine();
+
                 if (shrunk.HasValue)
                 {
                     var color = s.System.Values.Graphics.Line.Tracer.Color;
@@ -244,75 +244,76 @@ namespace WeaponCore
                     }
 
                     if (s.System.OffsetEffect)
-                        LineOffsetEffect(s.System, s.HitPos, s.Direction, (float)shrunk.Value.Reduced, shrunk.Value.Reduced, width, color);
-                    else MyTransparentGeometry.AddLineBillboard(s.System.TracerMaterial, color, shrunk.Value.PrevPosition, s.Direction, (float)shrunk.Value.Reduced, width);
+                        LineOffsetEffect(s.System, s.HitPos, s.Direction, shrunk.Value.Reduced, shrunk.Value.Reduced, width, color);
+                    else MyTransparentGeometry.AddLineBillboard(s.System.TracerMaterial, color, shrunk.Value.BackOfTail, s.Direction, (float)(shrunk.Value.Reduced + shrunk.Value.StepLength), width);
                     if (s.System.Trail)
                     {
-                        var back = shrunk.Value.BackOfTail;
-                        var stepLength = shrunk.Value.StepLength;
-                        var direction = -s.Direction;
-                        gAdd = true;
-                        var afterGlow = new AfterGlow
-                        {
-                            System = s.System,
-                            StepLength = stepLength,
-                            Direction = direction,
-                            Back = back,
-                            FirstTick = Tick,
-                        };
-                        _afterGlow.Add(afterGlow);
+                        var glow = _glowPool.Get();
+                        glow.Parent = s.Glowers.Count > 0 ? s.Glowers.Peek() : null;
+                        glow.Back = shrunk.Value.BackOfTail;
+                        glow.FirstTick = Tick;
+                        glow.System = s.System;
+                        glow.ShooterVel = s.ShooterVel;
+                        glow.WidthScaler = s.LineScaler;
+                        s.Glowers.Push(glow);
+                        _afterGlow.Add(glow);
                     }
                 }
                 else
                 {
+                    s.Clean();
                     _shrinking.Remove(s);
                     sRemove = true;
                 }
             }
-            if (gAdd) _afterGlow.ApplyAdditions();
             if (sRemove) _shrinking.ApplyRemovals();
         }
 
         private void AfterGlow()
         {
-            /*
-            _trailColor = new Vector4(_tracerColor, 1f);
-            const float TrailKillThreshold = 0.01f;
-            _trailDecayMult = MathHelper.Clamp(1f - decayRatio, 0f, 1f);
-            MySimpleObjectDraw.DrawLine(_from, To, _material, ref _trailColor, _tracerScale * 0.1f);
-            _trailColor *= _trailDecayMult;
-            if (_trailColor.LengthSquared() < TrailKillThreshold)
-                Remove = true;
-             */
-            var gRemove = false;
             for (int i = 0; i < _afterGlow.Count; i++)
             {
-                var a = _afterGlow[i];
-                var system = a.System;
-                var fullSize = system.Values.Graphics.Line.Tracer.Width;
-                var steps = system.Values.Graphics.Line.Trail.DecayTime;
-                var thisStep = (Tick - a.FirstTick);
+                var glow = _afterGlow[i];
+                var thisStep = (Tick - glow.FirstTick);
+                if (thisStep != 0) glow.Back += (glow.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
+                if (glow.Parent == null) continue;
+                var steps = glow.System.Values.Graphics.Line.Trail.DecayTime;
+                var fullSize = glow.System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
+
+                var line = new LineD(glow.Back, glow.Parent.Back);
+
+                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref line.From, ref line.To, ref CameraPos)));
+                int scale = 1;
+                if (distanceFromPointSqr > 8000 * 8000) scale = 8;
+                else if (distanceFromPointSqr > 4000 * 4000) scale = 7;
+                else if (distanceFromPointSqr > 2000 * 2000) scale = 6;
+                else if (distanceFromPointSqr > 1000 * 1000) scale = 5;
+                else if (distanceFromPointSqr > 500 * 500) scale = 4;
+                else if (distanceFromPointSqr > 250 * 250) scale = 3;
+                else if (distanceFromPointSqr > 100 * 100) scale = 2;
+                var sliderScale = (glow.WidthScaler * scale);
                 var reduction = (shrinkAmount * thisStep);
-                var thickness = fullSize - reduction;
-                var hitPos = a.Back + (-a.Direction * a.StepLength);
-                var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref a.Back, ref hitPos, ref CameraPos)));
-                if (distanceFromPointSqr > 160000) thickness *= 8f;
-                else if (distanceFromPointSqr > 40000) thickness *= 4f;
-                else if (distanceFromPointSqr > 10000) thickness *= 2f;
-                
+                var thickness = (fullSize - reduction) * sliderScale;
+
                 if (thisStep < steps)
-                    MyTransparentGeometry.AddLineBillboard(system.TrailMaterial, system.Values.Graphics.Line.Trail.Color, a.Back, a.Direction, (float) a.StepLength, thickness);
+                    MyTransparentGeometry.AddLineBillboard(glow.System.TrailMaterial, glow.System.Values.Graphics.Line.Trail.Color, line.From, line.Direction, (float)line.Length, thickness);
                 else
-                {
-                    _afterGlow.Remove(a);
-                    gRemove = true;
-                }
+                    _glowRemove.Add(glow);
             }
-            if (gRemove) _afterGlow.ApplyRemovals();
+
+            for (int i = 0; i < _glowRemove.Count; i++)
+            {
+                var remove = _glowRemove[i];
+
+                remove.Clean();
+                _afterGlow.Remove(remove);
+                _glowPool.Return(remove);
+            }
+            _glowRemove.Clear();
         }
 
-        internal void LineOffsetEffect(WeaponSystem system, Vector3D pos, Vector3D direction, float distanceTraveled, double tracerLength, float beamRadius, Vector4 color)
+        internal void LineOffsetEffect(WeaponSystem system, Vector3D pos, Vector3D direction, double distanceTraveled, double tracerLength, float beamRadius, Vector4 color)
         {
             MatrixD matrix;
             var up = MatrixD.Identity.Up;

@@ -5,6 +5,7 @@ using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
@@ -17,7 +18,7 @@ using static WeaponCore.Support.TargetingDefinition;
 
 namespace WeaponCore.Support
 {
-    internal class Trajectile
+    internal class ProInfo
     {
         public enum DrawState
         {
@@ -41,6 +42,7 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(); 
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool AmmoSound;
         internal bool HasTravelSound;
@@ -56,6 +58,7 @@ namespace WeaponCore.Support
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
         internal Vector3D Position;
+        internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
         internal Vector3D Direction;
@@ -66,6 +69,7 @@ namespace WeaponCore.Support
         internal int MuzzleId;
         internal int TriggerGrowthSteps;
         internal int ObjectsHit;
+        internal int Age;
         internal double Length;
         internal double GrowDistance;
         internal double DistanceTraveled;
@@ -74,11 +78,12 @@ namespace WeaponCore.Support
         internal float DistanceToLine;
         internal float ScaleFov;
         internal float LineWidth;
+        internal float LineScaler;
         internal float BaseDamagePool;
         internal float AreaEffectDamage;
         internal float DetonationDamage;
         internal float BaseHealthPool;
-        internal bool OnScreen;
+        internal Screen OnScreen;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool Triggered;
@@ -87,8 +92,15 @@ namespace WeaponCore.Support
         internal bool HitSoundActived;
         internal bool StartSoundActived;
         internal bool LastHitShield;
+        internal bool Shrinking;
         internal ReSize ReSizing;
         internal DrawState Draw;
+        internal enum Screen
+        {
+            Tracer,
+            Tail,
+            None,
+        }
 
         internal void SetupSounds(double distanceFromCameraSqr)
         {
@@ -143,7 +155,7 @@ namespace WeaponCore.Support
 
             Color = color;
 
-            if (OnScreen)
+            if (OnScreen != Screen.None)
             {
                 var width = System.Values.Graphics.Line.Tracer.Width;
                 if (System.LineWidthVariance)
@@ -154,12 +166,13 @@ namespace WeaponCore.Support
                 }
 
                 var target = Position + (-Direction * Length);
-                var cameraPos = MyAPIGateway.Session.Camera.Position;
-                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref cameraPos);
+                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
                 DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
                 ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-                LineWidth = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
+                LineScaler = Math.Max(1, 0.10f * ScaleFov * (DistanceToLine / 100));
+                LineWidth = width * LineScaler;
             }
+            //if (DistanceTraveled <= 120) Log.Line($"[test] Age:{Age} - moved::{(DistanceTraveled - PrevDistanceTraveled)} - distTraveled:{DistanceTraveled} - pDisplacement:{ProjectileDisplacement} - reSize:{ReSizing} - onScreen:{OnScreen} - dToLine:{DistanceToLine}");
         }
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D direction)
@@ -191,6 +204,7 @@ namespace WeaponCore.Support
         {
             Target.Reset();
             HitList.Clear();
+            Glowers.Clear();
             System = null;
             Ai = null;
             PrimeEntity = null;
@@ -205,14 +219,17 @@ namespace WeaponCore.Support
             HasTravelSound = false;
             LastHitShield = false;
             FakeExplosion = false;
-            OnScreen = false;
+            Shrinking = false;
+            OnScreen = Screen.None;
             IsShrapnel = false;
             WeaponId = 0;
             MuzzleId = 0;
             Length = 0;
+            Age = 0;
             TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
             LineWidth = 0;
+            LineScaler = 0;
             ScaleFov = 0;
             EnableGuidance = true;
             GrowDistance = 0;
@@ -223,6 +240,7 @@ namespace WeaponCore.Support
             Direction = Vector3D.Zero;
             LineStart = Vector3D.Zero;
             Origin = Vector3D.Zero;
+            ShooterVel = Vector3D.Zero;
             ClosestPointOnLine = Vector3D.Zero;
         }
     }
@@ -244,7 +262,7 @@ namespace WeaponCore.Support
         public readonly List<IMySlimBlock> Blocks = new List<IMySlimBlock>();
         public MyEntity Entity;
         internal Projectile Projectile;
-        public Trajectile T;
+        public ProInfo Info;
         public LineD Beam;
         public bool Hit;
         public bool SphereCheck;
@@ -266,7 +284,7 @@ namespace WeaponCore.Support
             Hit = false;
             HitPos = null;
             HitDist = null;
-            T = null;
+            Info = null;
             EventType = Stale;
             PruneSphere = new BoundingSphereD();
             SphereCheck = false;
@@ -366,12 +384,12 @@ namespace WeaponCore.Support
         private bool _idle;
         private Vector3D _endPos = Vector3D.MinValue;
 
-        internal bool Cached(LineD lineTest, Trajectile t)
+        internal bool Cached(LineD lineTest, ProInfo i)
         {
             double dist;
             Vector3D.DistanceSquared(ref _endPos, ref lineTest.To, out dist);
 
-            _maxDelay = t.MuzzleId == -1 ? t.System.Barrels.Length : 1;
+            _maxDelay = i.MuzzleId == -1 ? i.System.Barrels.Length : 1;
             
             var thisTick = (uint)(MyAPIGateway.Session.ElapsedPlayTime.TotalMilliseconds * Session.TickTimeDiv);
             _start = thisTick - LastTick > _maxDelay || dist > 5;
@@ -469,23 +487,23 @@ namespace WeaponCore.Support
 
         internal void Init(Projectile p, MyConcurrentPool<Fragment> fragPool)
         {
-            for (int i = 0; i < p.T.System.Values.Ammo.Shrapnel.Fragments; i++)
+            for (int i = 0; i < p.Info.System.Values.Ammo.Shrapnel.Fragments; i++)
             {
                 var frag = fragPool.Get();
 
-                frag.System = p.T.System;
-                frag.Ai = p.T.Ai;
-                frag.Target = p.T.Target.Entity;
-                frag.WeaponId = p.T.WeaponId;
-                frag.MuzzleId = p.T.MuzzleId;
-                frag.FiringCube = p.T.Target.FiringCube;
-                frag.Guidance = p.T.EnableGuidance;
+                frag.System = p.Info.System;
+                frag.Ai = p.Info.Ai;
+                frag.Target = p.Info.Target.Entity;
+                frag.WeaponId = p.Info.WeaponId;
+                frag.MuzzleId = p.Info.MuzzleId;
+                frag.FiringCube = p.Info.Target.FiringCube;
+                frag.Guidance = p.Info.EnableGuidance;
                 frag.Origin = p.Position;
-                frag.OriginUp = p.T.OriginUp;
+                frag.OriginUp = p.Info.OriginUp;
                 frag.PredictedTargetPos = p.PredictedTargetPos;
                 frag.Velocity = p.Velocity;
                 var dirMatrix = Matrix.CreateFromDir(p.Direction);
-                var shape = p.T.System.Values.Ammo.Shrapnel.Shape;
+                var shape = p.Info.System.Values.Ammo.Shrapnel.Shape;
                 float neg;
                 float pos;
                 switch (shape)
@@ -528,16 +546,16 @@ namespace WeaponCore.Support
                 session = frag.Ai.Session;
                 Projectile p;
                 frag.Ai.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
-                p.T.System = frag.System;
-                p.T.Ai = frag.Ai;
-                p.T.Target.Entity = frag.Target;
-                p.T.Target.FiringCube = frag.FiringCube;
-                p.T.IsShrapnel = true;
-                p.T.EnableGuidance = frag.Guidance;
-                p.T.WeaponId = frag.WeaponId;
-                p.T.MuzzleId = frag.MuzzleId;
-                p.T.Origin = frag.Origin;
-                p.T.OriginUp = frag.OriginUp;
+                p.Info.System = frag.System;
+                p.Info.Ai = frag.Ai;
+                p.Info.Target.Entity = frag.Target;
+                p.Info.Target.FiringCube = frag.FiringCube;
+                p.Info.IsShrapnel = true;
+                p.Info.EnableGuidance = frag.Guidance;
+                p.Info.WeaponId = frag.WeaponId;
+                p.Info.MuzzleId = frag.MuzzleId;
+                p.Info.Origin = frag.Origin;
+                p.Info.OriginUp = frag.OriginUp;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Direction = frag.Direction;
                 p.State = Projectile.ProjectileState.Start;
@@ -570,32 +588,45 @@ namespace WeaponCore.Support
     public class Shrinking
     {
         internal WeaponSystem System;
+        internal Stack<AfterGlow> Glowers = new Stack<AfterGlow>();
+        internal ProInfo Info;
         internal Vector3D HitPos;
         internal Vector3D BackOfTracer;
         internal Vector3D Direction;
+        internal Vector3D ShooterVel;
+        internal Vector3D ShooterDisp;
         internal double ResizeLen;
         internal double TracerSteps;
+        internal double TracerLength;
+        internal float LineScaler;
         internal float Thickness;
         internal int TailSteps;
 
-        internal void Init(Trajectile trajectile, float thickness)
+        internal void Init(ProInfo i, float thickness)
         {
+            System = i.System;
+            Info = i;
             Thickness = thickness;
-            System = trajectile.System;
-            HitPos = trajectile.Position;
-            Direction = trajectile.Direction;
-            ResizeLen = trajectile.DistanceTraveled - trajectile.PrevDistanceTraveled;
-            TracerSteps = trajectile.System.TracerLength / ResizeLen;
-            var frontOfTracer = (trajectile.LineStart + (Direction * ResizeLen));
-            var tracerLength = trajectile.System.TracerLength;
+            HitPos = i.Position;
+            Direction = i.Direction;
+            ShooterVel = i.ShooterVel;
+            LineScaler = i.LineScaler;
+            ResizeLen = (i.DistanceTraveled - i.PrevDistanceTraveled);
+            TracerLength = i.Length;
+            TracerSteps = i.System.TracerLength / ResizeLen;
+            var frontOfTracer = (Info.LineStart + (Direction * ResizeLen));
+            var tracerLength = Info.System.TracerLength;
             BackOfTracer = frontOfTracer + (-Direction * (tracerLength + ResizeLen));
         }
 
         internal Shrunk? GetLine()
         {
-            if (--TracerSteps > 0)
+            if (TracerSteps-- > 0)
             {
                 var stepLength = ResizeLen;
+
+                BackOfTracer += ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+                HitPos += ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
                 var backOfTail = BackOfTracer + (Direction * (TailSteps++ * stepLength));
                 var newTracerBack = HitPos + -(Direction * TracerSteps * stepLength);
                 var reduced = TracerSteps * stepLength;
@@ -604,6 +635,18 @@ namespace WeaponCore.Support
                 return new Shrunk(ref newTracerBack, ref backOfTail, reduced, stepLength);
             }
             return null;
+        }
+
+        internal void Clean()
+        {
+            System = null;
+            Glowers.Clear();
+            Glowers = null;
+            if (Info != null)
+            {
+                Info.Shrinking = false;
+                Info = null;
+            }
         }
     }
 
@@ -623,13 +666,23 @@ namespace WeaponCore.Support
         }
     }
 
-    internal struct AfterGlow
+    internal class AfterGlow
     {
         internal WeaponSystem System;
+        internal AfterGlow Parent;
         internal Vector3D Back;
-        internal Vector3D Direction;
-        internal double StepLength;
+        internal Vector3D ShooterVel;
         internal uint FirstTick;
+        internal float WidthScaler;
+
+        internal void Clean()
+        {
+            System = null;
+            Parent = null;
+            Back = Vector3D.Zero;
+            FirstTick = 0;
+            WidthScaler = 0;
+        }
     }
 
     public struct BlockInfo

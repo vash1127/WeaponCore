@@ -18,13 +18,13 @@ namespace WeaponCore.Projectiles
     {
         internal DrawHit? GetAllEntitiesInLine(Projectile p, LineD beam)
         {
-            var shieldByPass = p.T.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
+            var shieldByPass = p.Info.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
 
-            var ai = p.T.Ai;
+            var ai = p.Info.Ai;
             var found = false;
-            var lineCheck = p.T.System.CollisionIsLine;
+            var lineCheck = p.Info.System.CollisionIsLine;
             var planetBeam = beam;
-            planetBeam.To = p.T.System.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
+            planetBeam.To = p.Info.System.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
 
             for (int i = 0; i < p.SegmentList.Count; i++)
             {
@@ -32,22 +32,22 @@ namespace WeaponCore.Projectiles
                 var grid = ent as MyCubeGrid;
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
-                if (grid == null && p.EwarActive && p.T.System.AreaEffect != DotField && ent is IMyCharacter) continue;
-                if (grid != null && (!(p.T.System.SelfDamage || p.Gunner) || p.SmartsOn) && p.T.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.T.Ai.MyShield) continue;
+                if (grid == null && p.EwarActive && p.Info.System.AreaEffect != DotField && ent is IMyCharacter) continue;
+                if (grid != null && (!(p.Info.System.SelfDamage || p.Gunner) || p.SmartsOn) && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
-                    var shieldInfo = p.T.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
+                    var shieldInfo = p.Info.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);
                     if (shieldInfo != null)
                     {
                         double? dist = null;
                         if (ent.Physics == null)
                             dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
 
-                        if (dist != null && dist.Value < beam.Length && !p.T.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
+                        if (dist != null && dist.Value < beam.Length && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
                         {
                             var hitEntity = HitEntityPool.Get();
                             hitEntity.Clean();
-                            hitEntity.T = p.T;
+                            hitEntity.Info = p.Info;
                             hitEntity.Entity = (MyEntity)shieldInfo.Value.Item1;
                             hitEntity.Beam = beam;
                             hitEntity.EventType = Shield;
@@ -56,7 +56,7 @@ namespace WeaponCore.Projectiles
                             hitEntity.HitPos = beam.From + (beam.Direction * dist.Value);
                             hitEntity.HitDist = dist;
                             found = true;
-                            p.T.HitList.Add(hitEntity);
+                            p.Info.HitList.Add(hitEntity);
                         }
                         else continue;
                     }
@@ -79,7 +79,7 @@ namespace WeaponCore.Projectiles
                             if (p.CachedPlanetHit)
                             {
                                 IHitInfo cachedPlanetResult;
-                                if (p.T.WeaponCache.VoxelHits[p.CachedId].NewResult(out cachedPlanetResult))
+                                if (p.Info.WeaponCache.VoxelHits[p.CachedId].NewResult(out cachedPlanetResult))
                                 {
                                     //Log.Line("cached hit");
                                     voxelHit = cachedPlanetResult.Position;
@@ -101,7 +101,7 @@ namespace WeaponCore.Projectiles
                                 double pDistToCenter;
                                 Vector3D.DistanceSquared(ref p.Position, ref planetCenter, out pDistToCenter);
                                 double mDistToCenter;
-                                Vector3D.DistanceSquared(ref p.T.Origin, ref planetCenter, out mDistToCenter);
+                                Vector3D.DistanceSquared(ref p.Info.Origin, ref planetCenter, out mDistToCenter);
                                 if (cDistToCenter > pDistToCenter || cDistToCenter > Vector3D.DistanceSquared(planetCenter, p.LastPosition) || pDistToCenter > mDistToCenter) check = true;
                                 if (check)
                                 {
@@ -121,7 +121,7 @@ namespace WeaponCore.Projectiles
                     }
                     var hitEntity = HitEntityPool.Get();
                     hitEntity.Clean();
-                    hitEntity.T = p.T;
+                    hitEntity.Info = p.Info;
                     hitEntity.Entity = ent;
                     hitEntity.Beam = beam;
                     hitEntity.SphereCheck = !lineCheck;
@@ -139,30 +139,30 @@ namespace WeaponCore.Projectiles
 
                     if (grid != null)
                     {
-                        if (!(p.EwarActive && p.T.System.EwarEffect))
+                        if (!(p.EwarActive && p.Info.System.EwarEffect))
                             hitEntity.EventType = Grid;
-                        else if (p.T.System.IsBeamWeapon)
+                        else if (p.Info.System.IsBeamWeapon)
                             hitEntity.EventType = Effect;
                         else hitEntity.EventType = Field;
-                        if (p.T.System.AreaEffect == DotField) hitEntity.DamageOverTime = true;
+                        if (p.Info.System.AreaEffect == DotField) hitEntity.DamageOverTime = true;
                     }
                     else if (destroyable != null)
                         hitEntity.EventType = Destroyable;
                     else if (voxel != null)
                         hitEntity.EventType = Voxel;
                     found = true;
-                    p.T.HitList.Add(hitEntity);
+                    p.Info.HitList.Add(hitEntity);
                 }
             }
 
-            if (p.T.Target.IsProjectile && !p.T.System.EwarEffect)
+            if (p.Info.Target.IsProjectile && !p.Info.System.EwarEffect)
             {
-                var sphere = new BoundingSphereD(p.T.Target.Projectile.Position, p.T.Target.Projectile.T.System.CollisionSize);
-                var rayCheck = p.T.System.CollisionIsLine && sphere.Intersects(new RayD(p.LastPosition, p.Direction)) != null;
+                var sphere = new BoundingSphereD(p.Info.Target.Projectile.Position, p.Info.Target.Projectile.Info.System.CollisionSize);
+                var rayCheck = p.Info.System.CollisionIsLine && sphere.Intersects(new RayD(p.LastPosition, p.Direction)) != null;
                 var sphereCheck = !rayCheck && sphere.Intersects(p.PruneSphere);
 
                 if (rayCheck || sphereCheck)
-                    found = ProjectileHit(p, p.T.Target.Projectile, lineCheck);
+                    found = ProjectileHit(p, p.Info.Target.Projectile, lineCheck);
                 
             }
             p.SegmentList.Clear();
@@ -174,7 +174,7 @@ namespace WeaponCore.Projectiles
         {
             var hitEntity = HitEntityPool.Get();
             hitEntity.Clean();
-            hitEntity.T = attacker.T;
+            hitEntity.Info = attacker.Info;
             hitEntity.EventType = HitEntity.Type.Projectile;
             hitEntity.Hit = true;
             hitEntity.Projectile = target;
@@ -183,22 +183,22 @@ namespace WeaponCore.Projectiles
             hitEntity.PruneSphere = attacker.PruneSphere;
 
             hitEntity.Beam = new LineD(attacker.LastPosition, target.Position);
-            attacker.T.HitList.Add(hitEntity);
+            attacker.Info.HitList.Add(hitEntity);
             return true;
         }
 
         internal DrawHit? GenerateHitInfo(Projectile p)
         {
-            var count = p.T.HitList.Count;
-            if (count > 1) p.T.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
-            else GetEntityCompareDist(p.T.HitList[0], null, V3Pool.Get());
+            var count = p.Info.HitList.Count;
+            if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
+            else GetEntityCompareDist(p.Info.HitList[0], null, V3Pool.Get());
 
-            var endOfIndex = p.T.HitList.Count - 1;
+            var endOfIndex = p.Info.HitList.Count - 1;
             var lastValidEntry = int.MaxValue;
 
             for (int i = endOfIndex; i >= 0; i--)
             {
-                if (p.T.HitList[i].Hit)
+                if (p.Info.HitList[i].Hit)
                 {
                     lastValidEntry = i + 1;
                     break;
@@ -209,21 +209,21 @@ namespace WeaponCore.Projectiles
             var howManyToRemove = count - lastValidEntry;
             while (howManyToRemove-- > 0)
             {
-                var ent = p.T.HitList[endOfIndex];
-                p.T.HitList.RemoveAt(endOfIndex);
+                var ent = p.Info.HitList[endOfIndex];
+                p.Info.HitList.RemoveAt(endOfIndex);
                 HitEntityPool.Return(ent);
                 endOfIndex--;
             }
-            var finalCount = p.T.HitList.Count;
+            var finalCount = p.Info.HitList.Count;
             if (finalCount > 0)
             {
-                var hitEntity = p.T.HitList[0];
+                var hitEntity = p.Info.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
                 p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
-                p.T.LastHitShield = hitEntity.EventType == Shield;
+                p.Info.LastHitShield = hitEntity.EventType == Shield;
 
                 IMySlimBlock hitBlock = null;
-                if (p.T.System.VirtualBeams && hitEntity.Entity is MyCubeGrid)
+                if (p.Info.System.VirtualBeams && hitEntity.Entity is MyCubeGrid)
                     hitBlock = hitEntity.Blocks[0];
 
                 return new DrawHit(hitBlock, hitEntity.Entity, null, hitEntity.HitPos);
@@ -275,11 +275,11 @@ namespace WeaponCore.Projectiles
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
                             var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
-                            if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) <= grid.GridSize * grid.GridSize)
+                            if (grid.IsSameConstructAs(hitEnt.Info.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.Info.Origin) <= grid.GridSize * grid.GridSize)
                                 continue;
 
                             if (!ewarActive)
-                                GetAndSortBlocksInSphere(hitEnt.T.System, hitEnt.T.Ai, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
+                                GetAndSortBlocksInSphere(hitEnt.Info.System, hitEnt.Info.Ai, grid, hitEnt.PruneSphere, false, hitEnt.Blocks);
 
                             if (hitEnt.Blocks.Count > 0 || ewarActive)
                             {
@@ -296,7 +296,7 @@ namespace WeaponCore.Projectiles
                             for (int j = 0; j < slims.Count; j++)
                             {
                                 var firstBlock = grid.GetCubeBlock(slims[j]) as IMySlimBlock;
-                                if (firstBlock != null && !firstBlock.IsDestroyed && firstBlock != hitEnt.T.Target.FiringCube.SlimBlock)
+                                if (firstBlock != null && !firstBlock.IsDestroyed && firstBlock != hitEnt.Info.Target.FiringCube.SlimBlock)
                                 {
                                     hitEnt.Blocks.Add(firstBlock);
                                     if (closestBlockFound) continue;
@@ -316,7 +316,7 @@ namespace WeaponCore.Projectiles
 
                                     var hitDist = obb.Intersects(ref beam) ?? Vector3D.Distance(beam.From, obb.Center);
                                     var hitPos = beam.From + (beam.Direction * hitDist);
-                                    if (grid.IsSameConstructAs(hitEnt.T.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.T.Origin) < 10)
+                                    if (grid.IsSameConstructAs(hitEnt.Info.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.Info.Origin) < 10)
                                     {
                                         hitEnt.Blocks.Clear();
                                         break;
@@ -375,7 +375,7 @@ namespace WeaponCore.Projectiles
 
         private void SeekEnemy(Projectile p)
         {
-            var mineInfo = p.T.System.Values.Ammo.Trajectory.Mines;
+            var mineInfo = p.Info.System.Values.Ammo.Trajectory.Mines;
             var detectRadius = mineInfo.DetectRadius;
             var deCloakRadius = mineInfo.DeCloakRadius;
 
@@ -396,7 +396,7 @@ namespace WeaponCore.Projectiles
                     var character = ent as IMyCharacter;
                     if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
                     Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
-                    if (!p.T.Ai.CreateEntInfo(ent, p.T.Ai.MyOwner, out entInfo)) continue;
+                    if (!p.Info.Ai.CreateEntInfo(ent, p.Info.Ai.MyOwner, out entInfo)) continue;
                     switch (entInfo.Relationship)
                     {
                         case MyRelationsBetweenPlayerAndBlock.Owner:
@@ -405,7 +405,7 @@ namespace WeaponCore.Projectiles
                             continue;
                     }
                     var entSphere = ent.PositionComp.WorldVolume;
-                    entSphere.Radius += p.T.System.CollisionSize;
+                    entSphere.Radius += p.Info.System.CollisionSize;
                     var dist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref p.Position, ref entSphere);
                     if (dist >= minDist) continue;
                     minDist = dist;
@@ -415,22 +415,22 @@ namespace WeaponCore.Projectiles
                 if (closestEnt != null)
                 {
                     p.ForceNewTarget();
-                    p.T.Target.Entity = closestEnt;
+                    p.Info.Target.Entity = closestEnt;
                 }
             }
-            else if (p.T.Target.Entity != null && !p.T.Target.Entity.MarkedForClose)
+            else if (p.Info.Target.Entity != null && !p.Info.Target.Entity.MarkedForClose)
             {
-                var entSphere = p.T.Target.Entity.PositionComp.WorldVolume;
-                entSphere.Radius += p.T.System.CollisionSize;
+                var entSphere = p.Info.Target.Entity.PositionComp.WorldVolume;
+                entSphere.Radius += p.Info.System.CollisionSize;
                 minDist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref p.Position, ref entSphere);
             }
             else
                 p.TriggerMine(true);
 
-            if (p.T.Cloaked && minDist <= deCloakRadius) p.T.Cloaked = false;
-            else if (!p.T.Cloaked && minDist > deCloakRadius) p.T.Cloaked = true;
+            if (p.Info.Cloaked && minDist <= deCloakRadius) p.Info.Cloaked = false;
+            else if (!p.Info.Cloaked && minDist > deCloakRadius) p.Info.Cloaked = true;
 
-            if (minDist <= p.T.System.CollisionSize) activate = true;
+            if (minDist <= p.Info.System.CollisionSize) activate = true;
             if (minDist <= detectRadius) inRange = true;
             if (p.MineActivated)
             {
@@ -442,7 +442,7 @@ namespace WeaponCore.Projectiles
             if (activate)
             {
                 p.TriggerMine(false);
-                p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = minDist, Element = p.T.Target.Entity });
+                p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = minDist, Element = p.Info.Target.Entity });
             }
 
             checkList.Clear();

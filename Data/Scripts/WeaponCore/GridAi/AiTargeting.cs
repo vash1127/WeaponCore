@@ -53,11 +53,11 @@ namespace WeaponCore.Support
 
         internal static bool ReacquireTarget(Projectile p)
         {
-            p.ChaseAge = p.Age;
-            var s = p.T.System;
-            var ai = p.T.Ai;
+            p.ChaseAge = p.Info.Age;
+            var s = p.Info.System;
+            var ai = p.Info.Ai;
             var weaponPos = p.Position;
-            var overRides = p.T.Overrides;
+            var overRides = p.Info.Overrides;
             var overActive = overRides.Activate;
             var attackNeutrals = overActive && overRides.Neutrals;
             var attackFriends = overActive && overRides.Friendly;
@@ -77,7 +77,7 @@ namespace WeaponCore.Support
             var numOfTargets = ai.SortedTargets.Count;
             var hasOffset = offset > 0;
             var adjTargetCount = forceFoci && hasOffset ? offset : numOfTargets + offset;
-            var deck = GetDeck(ref p.T.Target.TargetDeck, ref p.T.Target.TargetPrevDeckLen, 0, numOfTargets, p.T.System.Values.Targeting.TopTargets);
+            var deck = GetDeck(ref p.Info.Target.TargetDeck, ref p.Info.Target.TargetPrevDeckLen, 0, numOfTargets, p.Info.System.Values.Targeting.TopTargets);
 
             for (int i = 0; i < adjTargetCount; i++)
             {
@@ -106,7 +106,7 @@ namespace WeaponCore.Support
                 {
                     if (!focusTarget && info.FatCount < 2) continue;
 
-                    if (!AcquireBlock(p.T.System, p.T.Ai, p.T.Target, info, weaponPos, null, !focusTarget)) continue;
+                    if (!AcquireBlock(p.Info.System, p.Info.Ai, p.Info.Target, info, weaponPos, null, !focusTarget)) continue;
                     return true;
                 }
 
@@ -121,10 +121,10 @@ namespace WeaponCore.Support
                 var shortDist = rayDist;
                 var origDist = rayDist;
                 var topEntId = info.Target.GetTopMostParent().EntityId;
-                p.T.Target.Set(info.Target, targetPos, shortDist, origDist, topEntId);
+                p.Info.Target.Set(info.Target, targetPos, shortDist, origDist, topEntId);
                 return true;
             }
-            p.T.Target.Reset();
+            p.Info.Target.Reset();
             return false;
         }
 
@@ -220,7 +220,7 @@ namespace WeaponCore.Support
                     ai.Session.CanShoot++;
                     if (!w.TrackingAi)
                     {
-                        var newCenter = w.Prediction != HardPointDefinition.Prediction.Off ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel, w.Prediction) : targetCenter;
+                        var newCenter = w.System.NeedsPrediction ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
                         var targetSphere = info.Target.PositionComp.WorldVolume;
                         targetSphere.Center = newCenter;
                         if (!MathFuncs.TargetSphereInCone(ref targetSphere, ref w.AimCone)) continue;
@@ -634,7 +634,7 @@ namespace WeaponCore.Support
 
         private static bool Obstruction(ref TargetInfo info, ref Vector3D targetPos, Projectile p)
         {
-            var ai = p.T.Ai;
+            var ai = p.Info.Ai;
             var obstruction = false;
             for (int j = 0; j < ai.Obstructions.Count; j++)
             {

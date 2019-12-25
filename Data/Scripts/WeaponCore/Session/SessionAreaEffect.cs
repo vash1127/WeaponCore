@@ -25,36 +25,36 @@ namespace WeaponCore
         internal readonly HashSet<MyCubeGrid> RemoveEffectsFromGrid = new HashSet<MyCubeGrid>();
         private bool _effectActive;
 
-        private void UpdateField(HitEntity hitEnt, Trajectile t)
+        private void UpdateField(HitEntity hitEnt, ProInfo info)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose) return;
-            var depletable = t.System.Values.Ammo.AreaEffect.EwarFields.Depletable;
-            var healthPool = depletable && t.BaseHealthPool > 0 ? t.BaseHealthPool : float.MaxValue;
+            var depletable = info.System.Values.Ammo.AreaEffect.EwarFields.Depletable;
+            var healthPool = depletable && info.BaseHealthPool > 0 ? info.BaseHealthPool : float.MaxValue;
             if (healthPool <= 0) return;
 
-            var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
-            GetAndSortBlocksInSphere(t.System, hitEnt.T.Ai, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
-            ComputeEffects(t.System, grid, t.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
-            if (depletable) t.BaseHealthPool -= healthPool;
+            var attackerId = info.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
+            GetAndSortBlocksInSphere(info.System, hitEnt.Info.Ai, grid, hitEnt.PruneSphere, !hitEnt.DamageOverTime, hitEnt.Blocks);
+            ComputeEffects(info.System, grid, info.AreaEffectDamage, healthPool, attackerId, hitEnt.Blocks);
+            if (depletable) info.BaseHealthPool -= healthPool;
         }
 
-        private void UpdateEffect(HitEntity hitEnt, Trajectile t)
+        private void UpdateEffect(HitEntity hitEnt, ProInfo info)
         {
             var grid = hitEnt.Entity as MyCubeGrid;
             if (grid == null || grid.MarkedForClose ) return;
             Dictionary<AreaDamage.AreaEffectType, GridEffect> effects;
-            var attackerId = t.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : t.Target.FiringCube.EntityId;
+            var attackerId = info.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass ? grid.EntityId : info.Target.FiringCube.EntityId;
 
             var found = false;
             if (_gridEffects.TryGetValue(grid, out effects))
             {
                 GridEffect gridEffect;
-                if (effects.TryGetValue(t.System.Values.Ammo.AreaEffect.AreaEffect, out gridEffect))
+                if (effects.TryGetValue(info.System.Values.Ammo.AreaEffect.AreaEffect, out gridEffect))
                 {
                     found = true;
-                    gridEffect.Damage += t.AreaEffectDamage;
-                    gridEffect.Ai = t.Ai;
+                    gridEffect.Damage += info.AreaEffectDamage;
+                    gridEffect.Ai = info.Ai;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
                     if (hitEnt.HitPos != null) gridEffect.HitPos = hitEnt.HitPos.Value / gridEffect.Hits;
@@ -65,10 +65,10 @@ namespace WeaponCore
             {
                 if (effects == null) effects = GridEffectsPool.Get();
                 GridEffect gridEffect;
-                if (effects.TryGetValue(t.System.Values.Ammo.AreaEffect.AreaEffect, out gridEffect))
+                if (effects.TryGetValue(info.System.Values.Ammo.AreaEffect.AreaEffect, out gridEffect))
                 {
-                    gridEffect.Damage += t.AreaEffectDamage;
-                    gridEffect.Ai = t.Ai;
+                    gridEffect.Damage += info.AreaEffectDamage;
+                    gridEffect.Ai = info.Ai;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
                     if (hitEnt.HitPos != null) gridEffect.HitPos += hitEnt.HitPos.Value / gridEffect.Hits;
@@ -76,18 +76,18 @@ namespace WeaponCore
                 else
                 {
                     gridEffect = GridEffectPool.Get();
-                    gridEffect.System = t.System;
-                    gridEffect.Damage = t.AreaEffectDamage;
-                    gridEffect.Ai = t.Ai;
+                    gridEffect.System = info.System;
+                    gridEffect.Damage = info.AreaEffectDamage;
+                    gridEffect.Ai = info.Ai;
                     gridEffect.AttackerId = attackerId;
                     gridEffect.Hits++;
                     if (hitEnt.HitPos != null) gridEffect.HitPos = hitEnt.HitPos.Value;
-                    effects.Add(t.System.Values.Ammo.AreaEffect.AreaEffect, gridEffect);
+                    effects.Add(info.System.Values.Ammo.AreaEffect.AreaEffect, gridEffect);
                 }
                 _gridEffects.Add(grid, effects);
             }
-            t.BaseHealthPool = 0;
-            t.BaseDamagePool = 0;
+            info.BaseHealthPool = 0;
+            info.BaseDamagePool = 0;
         }
 
 
