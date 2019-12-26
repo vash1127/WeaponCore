@@ -47,7 +47,6 @@ namespace WeaponCore.Support
                 lock (_callbacks)
                 {
                     var index = tick % _maxDelay;
-                    //if (_callbacks[index].Count > 0) Log.Line($"Tick oldOffSet:{_offset} - Tick:{tick}");
                     foreach (var e in _callbacks[index])
                     {
                         e.Callback(e.Arg1);
@@ -58,14 +57,13 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void Purge()
+        internal void Purge(int tick)
         {
+            for (int i = tick; i < tick + 7200; i++)
+                Tick((uint)i);
+
             lock (_callbacks)
             {
-                for (int i = 0; i < 7200; i++)
-                {
-                    Tick((uint)i);
-                }
                 Active = false;
                 foreach (var list in _callbacks)
                 {

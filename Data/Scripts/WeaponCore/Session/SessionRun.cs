@@ -36,12 +36,6 @@ namespace WeaponCore
                     ITask = MyAPIGateway.Parallel.StartBackground(AmmoPull, MoveAmmo);
                 }
 
-                if (!CompsToStart.IsEmpty)
-                {
-                    StartComps();
-                    Log.Line($"compsToStart");
-                }
-
                 if (Tick180)
                 {
                     HighLoad = false;

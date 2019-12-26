@@ -80,7 +80,7 @@ namespace WeaponCore
                 fatMap.Trash = true;
 
                 fatMap.MyCubeBocks = allFat;
-                GridToFatMap.Add(grid, fatMap);
+                GridToFatMap.TryAdd(grid, fatMap);
                 grid.OnFatBlockAdded += ToFatMap;
                 grid.OnFatBlockRemoved += FromFatMap;
                 grid.OnClose += RemoveGridFromMap;

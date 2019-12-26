@@ -48,7 +48,7 @@ namespace WeaponCore
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
 
-        internal readonly MyConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new MyConcurrentDictionary<MyCubeGrid, FatMap>();
+        internal readonly ConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new ConcurrentDictionary<MyCubeGrid, FatMap>();
 
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
 

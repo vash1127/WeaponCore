@@ -395,9 +395,7 @@ namespace WeaponCore
 
         internal void PurgeAll()
         {
-            FutureEvents.Purge();
-            DsUtil.Purge();
-            DsUtil2.Purge();
+            FutureEvents.Purge((int)Tick);
 
             foreach (var item in _effectedCubes)
             {
@@ -423,21 +421,6 @@ namespace WeaponCore
                 _effectedCubes.Remove(_effectPurge.Dequeue());
             }
 
-            _effectActive = false;
-            ShootingWeapons.Clear();
-            AcquireTargets.Clear();
-            RemoveEffectsFromGrid.Clear();
-            WeaponAmmoPullQueue.Clear();
-            AmmoToPullQueue.Clear();
-            Hits.Clear();
-            AllArmorBaseDefinitions.Clear();
-            HeavyArmorBaseDefinitions.Clear();
-            AllArmorBaseDefinitions.Clear();
-            LargeBlockSphereDb.Clear();
-            SmallBlockSphereDb.Clear();
-            GridToBlockTypeMap.Clear();
-            AnimationsToProcess.Clear();
-
             foreach (var s in _shrinking)
             {
                 s.Clean();
@@ -456,32 +439,13 @@ namespace WeaponCore
             }
             _afterGlow.Clear();
             _glowPool.Clean();
+
+            foreach (var map in GridToFatMap.Keys)
+                DeferedFatMapRemoval(map);
             
-            _subTypeIdToWeaponDefs.Clear();
-            WeaponDefinitions.Clear();
-            _slimsSortedList.Clear();
-            _destroyedSlims.Clear();
-            _slimsSet.Clear();
-            _turretDefinitions.Clear();
-            CompsToStart.ClearImmediate();
-            GridEffectPool.Clean();
-            GridEffectsPool.Clean();
-            BlockTypePool.Clean();
-            ConcurrentListPool.Clean();
-
-            GroupInfoPool.Clean();
-            TargetInfoPool.Clean();
-
-            foreach (var map in GridToFatMap)
-            {
-                map.Value.MyCubeBocks.Clear();
-                map.Value.MyCubeBocks = null;
-                map.Value.Targeting = null;
-                FatMapPool.Return(map.Value);
-            }
             GridToFatMap.Clear();
             FatMapPool.Clean();
-            
+
             DirtyGrids.Clear();
             DirtyGridsTmp.Clear();
 
@@ -490,9 +454,45 @@ namespace WeaponCore
                 structure.WeaponSystems.Clear();
                 structure.AmmoToWeaponIds.Clear();
             }
+            WeaponPlatforms.Clear();
+
+            DsUtil.Purge();
+            DsUtil2.Purge();
+
+            _effectActive = false;
+            ShootingWeapons.Clear();
+            AcquireTargets.Clear();
+            RemoveEffectsFromGrid.Clear();
+            WeaponAmmoPullQueue.Clear();
+            AmmoToPullQueue.Clear();
+            Hits.Clear();
+            AllArmorBaseDefinitions.Clear();
+            HeavyArmorBaseDefinitions.Clear();
+            AllArmorBaseDefinitions.Clear();
+            LargeBlockSphereDb.Clear();
+            SmallBlockSphereDb.Clear();
+            GridToBlockTypeMap.Clear();
+            AnimationsToProcess.Clear();
+            
+            _subTypeIdToWeaponDefs.Clear();
+            WeaponDefinitions.Clear();
+            _slimsSortedList.Clear();
+            _destroyedSlims.Clear();
+            _slimsSet.Clear();
+            _turretDefinitions.Clear();
+
+            if (!CompsToStart.IsEmpty) Log.Line($"CompsToStart not empty");
+            CompsToStart.ClearImmediate();
+            
+            GridEffectPool.Clean();
+            GridEffectsPool.Clean();
+            BlockTypePool.Clean();
+            ConcurrentListPool.Clean();
+
+            GroupInfoPool.Clean();
+            TargetInfoPool.Clean();
 
             Projectiles.Clean();
-            WeaponPlatforms.Clear();
             WeaponCoreBlockDefs.Clear();
             WeaponCoreFixedBlockDefs.Clear();
             WeaponCoreTurretBlockDefs.Clear();
@@ -508,7 +508,9 @@ namespace WeaponCore
             Projectiles.InfoPool.DeallocateAll();
             Projectiles.V3Pool.Clean();
 
-
+            if (DbsToUpdate.Count > 0) Log.Line("DbsToUpdate not empty at purge");
+            DbsToUpdate.Clear();
+            GridTargetingAIs.Clear();
 
             Projectiles.EntityPool = null;
             Projectiles = null;
@@ -532,10 +534,6 @@ namespace WeaponCore
             SoundDefinitions = null;
             ActiveCockPit = null;
             ControlledEntity = null;
-            if (DbsToUpdate.Count > 0) Log.Line("DbsToUpdate not empty at purge");
-            DbsToUpdate.Clear();
-            //DbsToUpdate = null;
-            GridTargetingAIs.Clear();
         }
     }
 }
