@@ -39,6 +39,8 @@
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="Data\Energy_Ammo.sbc" />
+    <None Include="Data\Energy_Magazine.sbc" />
     <None Include="Data\EntityComponents.sbc" />
   </ItemGroup>
   <ItemGroup>
