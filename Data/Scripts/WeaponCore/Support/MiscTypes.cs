@@ -42,7 +42,7 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(); 
+        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(60); 
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool AmmoSound;
         internal bool HasTravelSound;
@@ -310,7 +310,7 @@ namespace WeaponCore.Support
 
     internal class Target
     {
-        internal volatile bool Expired = true;
+        internal volatile Targets State = Targets.Expired;
         internal volatile bool IsProjectile;
         internal bool TargetLock;
         internal MyCubeBlock FiringCube;
@@ -327,6 +327,13 @@ namespace WeaponCore.Support
         internal long TopEntityId;
         internal readonly List<MyCubeBlock> Top5 = new List<MyCubeBlock>();
 
+        public enum Targets
+        {
+            Expired,
+            StillSeeking,
+            Acquired,
+        }
+
         internal Target(MyCubeBlock firingCube = null)
         {
             FiringCube = firingCube;
@@ -341,7 +348,7 @@ namespace WeaponCore.Support
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
-            target.Expired = Expired;
+            target.State = State;
             if (reset) Reset();
         }
 
@@ -354,10 +361,10 @@ namespace WeaponCore.Support
             HitShortDist = shortDist;
             OrigDistance = origDist;
             TopEntityId = topEntId;
-            Expired = false;
+            State = Targets.Acquired;
         }
 
-        internal void Reset()
+        internal void Reset(bool expire = true)
         {
             Entity = null;
             IsProjectile = false;
@@ -366,7 +373,7 @@ namespace WeaponCore.Support
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
-            Expired = true;
+            if (expire) State = Targets.Expired;
             TargetLock = false;
         }
     }

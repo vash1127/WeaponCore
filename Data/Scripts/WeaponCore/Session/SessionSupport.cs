@@ -148,6 +148,14 @@ namespace WeaponCore
             }
         }
 
+        internal int LoadAssigner()
+        {
+            if (_loadCounter + 1 > 119) _loadCounter = 0;
+            else ++_loadCounter;
+
+            return _loadCounter;
+        }
+
         internal void Timings()
         {
             Tick = (uint)(Session.ElapsedPlayTime.TotalMilliseconds * TickTimeDiv);
@@ -159,7 +167,7 @@ namespace WeaponCore
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
             if (Tick60) ExplosionCounter = 0;
-            if (_count++ == 59)
+            if (_count++ == 119)
             {
                 _count = 0;
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
@@ -227,7 +235,7 @@ namespace WeaponCore
                 DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
             }
 
-            if (!w.Target.Expired)
+            if (w.Target.State == Target.Targets.Acquired)
                 DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
         }
 
@@ -432,7 +440,7 @@ namespace WeaponCore
             _shrinking.ClearImmediate();
             _shrinkPool.Clean();
 
-            for (int i = 0; i < _afterGlow.Count; i++)
+            for (int i = _afterGlow.Count - 1; i >= 0; i--)
             {
                 var g = _afterGlow[i];
                 g.Clean();

@@ -254,7 +254,7 @@ namespace WeaponCore.Platform
                     {
                         var w = weapon.Comp.Platform.Weapons[i];
 
-                        if (w.Target.Expired && w != weapon)
+                        if (w.Target.State != Target.Targets.Acquired && w != weapon)
                         {
                             w.WakeTargets();
                             GridAi.AcquireTarget(w, false, weapon.Target.Entity.GetTopMostParent());

@@ -928,9 +928,8 @@ namespace WeaponCore.Platform
 
         internal void WakeTargets()
         {
-            SleepTargets = false;
-            SleepingTargets.Clear();
             LastTargetTick = Comp.Ai.Session.Tick;
+            LoadId = Comp.Ai.Session.LoadAssigner();
         }
     }
 }

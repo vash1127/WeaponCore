@@ -45,10 +45,9 @@ namespace WeaponCore
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
         internal readonly ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> GridToBlockTypeMap = new ConcurrentDictionary<MyCubeGrid, ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
         internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventoriesMaster = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(MyDefinitionId.Comparer);
+        internal readonly ConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new ConcurrentDictionary<MyCubeGrid, FatMap>();
 
         internal readonly MyConcurrentHashSet<MyCubeGrid> DirtyGrids = new MyConcurrentHashSet<MyCubeGrid>();
-
-        internal readonly ConcurrentDictionary<MyCubeGrid, FatMap> GridToFatMap = new ConcurrentDictionary<MyCubeGrid, FatMap>();
 
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
 
@@ -68,15 +67,15 @@ namespace WeaponCore
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
 
+        internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(100);
+        internal readonly List<Weapon> AcquireTargets = new List<Weapon>(100);
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>();
 
-        internal readonly Queue<Weapon> AcquireTargets = new Queue<Weapon>(100);
         internal readonly Queue<Weapon> ShootingWeapons = new Queue<Weapon>(100);
         
-        internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(100);
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();
@@ -87,8 +86,8 @@ namespace WeaponCore
         internal readonly double AimDirToleranceCosine;
 
 
-        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>();
-        private readonly MyConcurrentPool<AfterGlow> _glowPool = new MyConcurrentPool<AfterGlow>();
+        private readonly MyConcurrentPool<Shrinking> _shrinkPool = new MyConcurrentPool<Shrinking>(100);
+        private readonly MyConcurrentPool<AfterGlow> _glowPool = new MyConcurrentPool<AfterGlow>(100);
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
 
 
@@ -98,13 +97,13 @@ namespace WeaponCore
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
 
-        private readonly List<AfterGlow> _afterGlow = new List<AfterGlow>();
-        private readonly List<AfterGlow> _glowRemove = new List<AfterGlow>();
+        private readonly List<AfterGlow> _afterGlow = new List<AfterGlow>(100);
+        private readonly List<AfterGlow> _glowRemove = new List<AfterGlow>(100);
         private readonly List<MyTuple<MyInventory, int>> _inventoriesToPull = new List<MyTuple<MyInventory, int>>();
         private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
-        private readonly List<Vector3D> _offsetList = new List<Vector3D>();
-        private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>();
-        private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>();
+        private readonly List<Vector3D> _offsetList = new List<Vector3D>(10);
+        private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(10);
+        private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>(100);
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         internal DsUniqueListFastRemove<PartAnimation> AnimationsToProcess = new DsUniqueListFastRemove<PartAnimation>();
@@ -226,5 +225,6 @@ namespace WeaponCore
         private int _count = -1;
         private int _lCount;
         private int _eCount;
+        private int _loadCounter = 1;
     }
 }

@@ -105,7 +105,7 @@ namespace WeaponCore.Platform
             TurretHomePosition();
 
             //Log.Line($"{weapon.System.WeaponName}: homing");
-            ReturnHome = ReturnHome && Comp.State.Value.Weapons[WeaponId].ManualShoot == TerminalActionState.ShootOff && !Comp.Gunner && Target.Expired;
+            ReturnHome = ReturnHome && Comp.State.Value.Weapons[WeaponId].ManualShoot == TerminalActionState.ShootOff && !Comp.Gunner && Target.State != Target.Targets.Acquired;
 
             if (ReturnHome)
                 Comp.Ai.Session.FutureEvents.Schedule(HomeTurret, null, 1);
@@ -149,7 +149,7 @@ namespace WeaponCore.Platform
             MyBarrelTestLine = new LineD(weaponCenter, weaponCenter + (MyPivotDir * 18));
             MyPivotTestLine = new LineD(MyPivotPos + (left * 10), MyPivotPos - (left * 10));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
-            if (!Target.Expired)
+            if (Target.State == Target.Targets.Acquired)
                 MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
         }
     }
