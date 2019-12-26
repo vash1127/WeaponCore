@@ -112,7 +112,7 @@ namespace WeaponCore.Projectiles
                     case ProjectileState.Dead:
                         continue;
                     case ProjectileState.Start:
-                        p.Start(this);
+                        p.Start();
                         break;
                     case ProjectileState.OneAndDone:
                     case ProjectileState.Depleted:
@@ -262,7 +262,7 @@ namespace WeaponCore.Projectiles
                     else p.State = ProjectileState.Detonate;
                 }
                 else if (p.MineSeeking && !p.MineTriggered)
-                    SeekEnemy(p);
+                    p.SeekEnemy();
                 else if (p.Info.System.CollisionIsLine)
                 {
                     p.PruneSphere.Center = p.Position;
@@ -301,7 +301,7 @@ namespace WeaponCore.Projectiles
                 {
                     var nearestHitEnt = GetAllEntitiesInLine(p, beam);
 
-                    if (nearestHitEnt != null && p.Intersected(p, nearestHitEnt))
+                    if (nearestHitEnt != null && p.Intersected(nearestHitEnt))
                         continue;
                 }
 
@@ -400,7 +400,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.MuzzleId == -1)
                 {
-                    p.CreateFakeBeams(p, null, DrawProjectiles, true);
+                    p.CreateFakeBeams(null, DrawProjectiles, true);
                     continue;
                 }
 

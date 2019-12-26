@@ -50,7 +50,7 @@ namespace WeaponCore.Support
                         {
                             if (groupInfo == null)
                             {
-                                groupInfo = GroupInfoPool.Get();
+                                groupInfo = Session.GroupInfoPool.Get();
                                 groupInfo.Name = group.Name;
                                 groupInfo.ChangeState = GroupInfo.ChangeStates.Add;
                                 BlockGroups.Add(group.Name, groupInfo);
@@ -71,7 +71,7 @@ namespace WeaponCore.Support
                     if (group.Value.ChangeState == GroupInfo.ChangeStates.None)
                     {
                         group.Value.Comps.Clear();
-                        GroupInfoPool.Return(group.Value);
+                        Session.GroupInfoPool.Return(group.Value);
                         BlockGroups.Remove(group.Key);
                     }
                     else group.Value.ChangeState = GroupInfo.ChangeStates.None;
@@ -298,7 +298,6 @@ namespace WeaponCore.Support
         internal class TargetInfo
         {
             internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal MyEntity Target;
             internal Vector3D TargetDir;
             internal Vector3D TargetPos;
             internal Vector3 Velocity;
@@ -311,6 +310,7 @@ namespace WeaponCore.Support
             internal int PartCount;
             internal int FatCount;
             internal float OffenseRating;
+            internal MyEntity Target;
             internal MyCubeGrid MyGrid;
             internal GridAi MyAi;
             internal GridAi TargetAi;
@@ -516,16 +516,17 @@ namespace WeaponCore.Support
             {
                 if (grid == MyGrid) continue;
 
+                grid.OnFatBlockAdded += FatBlockAdded;
+                grid.OnFatBlockRemoved += FatBlockRemoved;
+
                 FatMap fatMap;
                 if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
                 {
-                    grid.OnFatBlockAdded += FatBlockAdded;
-                    grid.OnFatBlockRemoved += FatBlockRemoved;
-
                     var blocks = fatMap.MyCubeBocks;
                     for (int i = 0; i < blocks.Count; i++)
                         FatBlockAdded(blocks[i]);
                 }
+                else Log.Line($"AddSubGrids fatmap already gone for: {grid.DebugName}");
             }
             AddSubGrids.Clear();
 
@@ -533,16 +534,17 @@ namespace WeaponCore.Support
             {
                 if (grid == MyGrid) continue;
 
+                grid.OnFatBlockAdded -= FatBlockAdded;
+                grid.OnFatBlockRemoved -= FatBlockRemoved;
+
                 FatMap fatMap;
                 if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
                 {
-                    grid.OnFatBlockAdded -= FatBlockAdded;
-                    grid.OnFatBlockRemoved -= FatBlockRemoved;
-
                     var blocks = fatMap.MyCubeBocks;
                     for (int i = 0; i < blocks.Count; i++)
                         FatBlockRemoved(blocks[i]);
                 }
+                else Log.Line($"RemSubGrids fatmap already gone for: {grid.DebugName}");
             }
             RemSubGrids.Clear();
         }
@@ -557,8 +559,6 @@ namespace WeaponCore.Support
 
         internal void DelayedGridCleanUp(object o)
         {
-            RegisterMyGridEvents(false);
-            _possibleTargets.Clear();
             foreach (var grid in SubGrids)
             {
                 if (grid == MyGrid) continue;
@@ -568,27 +568,24 @@ namespace WeaponCore.Support
             SubGridChanges();
             SubGrids.Clear();
             Gunners.Clear();
-            NewEntities.Clear();
             Obstructions.Clear();
-            ObstructionsTmp.Clear();
-            ThreatsTmp.Clear();
-            Threats.Clear();
             TargetAis.Clear();
-            TargetAisTmp.Clear();
             EntitiesInRange.Clear();
             Batteries.Clear();
             Targets.Clear();
-            TargetAisTmp.Clear();
             SortedTargets.Clear();
             BlockGroups.Clear();
-            GroupInfoPool.Clean();
-            BlockTypePool.Clean();
-            CubePool.Clean();
+            Focus.Clean();
+            Weapons.Clear();
+            WeaponsIdx.Clear();
+            WeaponBase.Clear();
+            AmmoInventories.Clear();
             MyShieldTmp = null;
             MyShield = null;
             MyPlanetTmp = null;
             MyPlanet = null;
             FakeShipController = null;
+            TerminalSystem = null;
         }
 
         internal void UpdateGridPower()

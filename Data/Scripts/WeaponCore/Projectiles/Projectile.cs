@@ -95,7 +95,6 @@ namespace WeaponCore.Projectiles
         internal ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
-        internal Projectiles Manager;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
         internal readonly List<ProInfo> VrInfos = new List<ProInfo>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
@@ -103,10 +102,9 @@ namespace WeaponCore.Projectiles
         internal readonly HashSet<Projectile> Seekers = new HashSet<Projectile>();
         internal readonly List<IHitInfo> RayHits = new List<IHitInfo>();
 
-        internal void Start(Projectiles manager)
+        internal void Start()
         {
-            Manager = manager;
-            Id = Manager.CurrentProjectileId++;
+            Id = Info.Ai.Session.Projectiles.CurrentProjectileId++;
             Position = Info.Origin;
             AccelDir = Direction;
             VisualDir = Direction;
@@ -357,60 +355,60 @@ namespace WeaponCore.Projectiles
             hitInfos.Clear();
         }
 
-        internal bool Intersected(Projectile p, DrawHit? drawHit, bool queue = true)
+        internal bool Intersected(DrawHit? drawHit, bool queue = true)
         {
             var hitPos = drawHit?.HitPos;
             if (!hitPos.HasValue) return false;
-            if (p.EnableAv && (Info.System.DrawLine || p.Info.System.PrimeModelId != -1 || p.Info.System.TriggerModelId != -1))
+            if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModelId != -1 || Info.System.TriggerModelId != -1))
             {
-                p.TestSphere.Center = hitPos.Value;
+                TestSphere.Center = hitPos.Value;
                 
-                var length = Vector3D.Distance(p.LastPosition, hitPos.Value);
-                var shrink = !p.Info.System.IsBeamWeapon;
+                var length = Vector3D.Distance(LastPosition, hitPos.Value);
+                var shrink = !Info.System.IsBeamWeapon;
                 var reSize = shrink ? ReSize.Shrink : ReSize.None;
-                p.Info.UpdateShape(hitPos.Value, p.Direction, length, reSize);
+                Info.UpdateShape(hitPos.Value, Direction, length, reSize);
 
-                if (p.Info.OnScreen == Screen.None) CameraCheck(p);
+                if (Info.OnScreen == Screen.None) CameraCheck();
                     
-                if (p.Info.MuzzleId != -1)
+                if (Info.MuzzleId != -1)
                 {
-                    p.Info.Complete(drawHit, DrawState.Hit);
-                    Manager.DrawProjectiles.Add(p.Info);
+                    Info.Complete(drawHit, DrawState.Hit);
+                    Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
                 }
             }
 
-            p.Colliding = true;
-            if (!p.Info.System.VirtualBeams && queue) Info.Ai.Session.Hits.Enqueue(p);
+            Colliding = true;
+            if (!Info.System.VirtualBeams && queue) Info.Ai.Session.Hits.Enqueue(this);
             else
             {
-                p.Info.WeaponCache.VirtualHit = true;
-                p.Info.WeaponCache.HitEntity.Entity = drawHit.Value.Entity;
-                p.Info.WeaponCache.HitEntity.HitPos = drawHit.Value.HitPos;
-                p.Info.WeaponCache.Hits = p.VrInfos.Count;
-                p.Info.WeaponCache.HitDistance = Vector3D.Distance(p.LastPosition, hitPos.Value);
+                Info.WeaponCache.VirtualHit = true;
+                Info.WeaponCache.HitEntity.Entity = drawHit.Value.Entity;
+                Info.WeaponCache.HitEntity.HitPos = drawHit.Value.HitPos;
+                Info.WeaponCache.Hits = VrInfos.Count;
+                Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, hitPos.Value);
 
-                if (drawHit.Value.Entity is MyCubeGrid) p.Info.WeaponCache.HitBlock = drawHit.Value.Block;
-                if (queue) Info.Ai.Session.Hits.Enqueue(p);
-                if (p.EnableAv && p.Info.OnScreen == Screen.Tracer) CreateFakeBeams(p, drawHit, Manager.DrawProjectiles);
+                if (drawHit.Value.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = drawHit.Value.Block;
+                if (queue) Info.Ai.Session.Hits.Enqueue(this);
+                if (EnableAv && Info.OnScreen == Screen.Tracer) CreateFakeBeams(drawHit, Info.Ai.Session.Projectiles.DrawProjectiles);
             }
 
-            if (p.EnableAv)
-                p.HitEffects();
+            if (EnableAv)
+                HitEffects();
 
             return true;
         }
 
-        internal void CreateFakeBeams(Projectile p, DrawHit? drawHit, List<ProInfo> drawList, bool miss = false)
+        internal void CreateFakeBeams(DrawHit? drawHit, List<ProInfo> drawList, bool miss = false)
         {
             Vector3D? hitPos = null;
             if (drawHit?.HitPos != null) hitPos = drawHit.Value.HitPos;
-            for (int i = 0; i < p.VrInfos.Count; i++)
+            for (int i = 0; i < VrInfos.Count; i++)
             {
-                var vt = p.VrInfos[i];
-                vt.OnScreen = p.Info.OnScreen;
+                var vt = VrInfos[i];
+                vt.OnScreen = Info.OnScreen;
                 if (vt.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vt.Origin, hitPos ?? p.Position) : new LineD(vt.LineStart, p.Position);
+                    var beam = !miss ? new LineD(vt.Origin, hitPos ?? Position) : new LineD(vt.LineStart, Position);
                     vt.UpdateShape(beam.To, beam.Direction, beam.Length, ReSize.None);
                 }
                 else
@@ -418,9 +416,9 @@ namespace WeaponCore.Projectiles
                     Vector3D beamEnd;
                     var hit = !miss && hitPos.HasValue;
                     if (!hit)
-                        beamEnd = vt.Origin + (vt.Direction * p.MaxTrajectory);
+                        beamEnd = vt.Origin + (vt.Direction * MaxTrajectory);
                     else
-                        beamEnd = vt.Origin + (vt.Direction * p.Info.WeaponCache.HitDistance);
+                        beamEnd = vt.Origin + (vt.Direction * Info.WeaponCache.HitDistance);
                     var line = new LineD(vt.Origin, beamEnd);
                     //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
                     if (!miss && hitPos.HasValue)
@@ -432,28 +430,28 @@ namespace WeaponCore.Projectiles
             }
         }
 
-        private void CameraCheck(Projectile p)
+        private void CameraCheck()
         {
-            if (p.ModelState == EntityState.Exists)
+            if (ModelState == EntityState.Exists)
             {
-                p.ModelSphereLast.Center = p.LastEntityPos;
-                p.ModelSphereCurrent.Center = p.Position;
-                if (Info.Ai.Session.Camera.IsInFrustum(ref p.ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
+                ModelSphereLast.Center = LastEntityPos;
+                ModelSphereCurrent.Center = Position;
+                if (Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent) || FirstOffScreen)
                 {
-                    p.Info.OnScreen = Screen.Tracer;
-                    p.FirstOffScreen = false;
-                    p.LastEntityPos = p.Position;
+                    Info.OnScreen = Screen.Tracer;
+                    FirstOffScreen = false;
+                    LastEntityPos = Position;
                 }
             }
 
             if (Info.OnScreen == Screen.None && Info.System.DrawLine)
             {
 
-                var bb = new BoundingBoxD(Vector3D.Min(p.Info.LineStart, p.Info.Position), Vector3D.Max(p.Info.LineStart, p.Info.Position));
-                if (Info.Ai.Session.Camera.IsInFrustum(ref bb)) p.Info.OnScreen = Screen.Tracer;
+                var bb = new BoundingBoxD(Vector3D.Min(Info.LineStart, Info.Position), Vector3D.Max(Info.LineStart, Info.Position));
+                if (Info.Ai.Session.Camera.IsInFrustum(ref bb)) Info.OnScreen = Screen.Tracer;
 
-                if (p.Info.OnScreen == Screen.None && p.Info.System.Trail)
-                    p.Info.OnScreen = Screen.Tail;
+                if (Info.OnScreen == Screen.None && Info.System.Trail)
+                    Info.OnScreen = Screen.Tail;
             }
         }
 
@@ -762,6 +760,83 @@ namespace WeaponCore.Projectiles
             }
         }
 
+
+        internal void SeekEnemy()
+        {
+            var mineInfo = Info.System.Values.Ammo.Trajectory.Mines;
+            var detectRadius = mineInfo.DetectRadius;
+            var deCloakRadius = mineInfo.DeCloakRadius;
+
+            var wakeRadius = detectRadius > deCloakRadius ? detectRadius : deCloakRadius;
+            PruneSphere = new BoundingSphereD(Position, wakeRadius);
+            var checkList = Info.Ai.Session.Projectiles.CheckPool.Get();
+            var inRange = false;
+            var activate = false;
+            var minDist = double.MaxValue;
+            if (!MineActivated)
+            {
+                MyEntity closestEnt = null;
+                MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref PruneSphere, checkList, MyEntityQueryType.Dynamic);
+                for (int i = 0; i < checkList.Count; i++)
+                {
+                    var ent = checkList[i];
+                    var grid = ent as MyCubeGrid;
+                    var character = ent as IMyCharacter;
+                    if (grid == null && character == null || ent.MarkedForClose || !ent.InScene) continue;
+                    Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo;
+                    if (!Info.Ai.CreateEntInfo(ent, Info.Ai.MyOwner, out entInfo)) continue;
+                    switch (entInfo.Relationship)
+                    {
+                        case MyRelationsBetweenPlayerAndBlock.Owner:
+                            continue;
+                        case MyRelationsBetweenPlayerAndBlock.FactionShare:
+                            continue;
+                    }
+                    var entSphere = ent.PositionComp.WorldVolume;
+                    entSphere.Radius += Info.System.CollisionSize;
+                    var dist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref Position, ref entSphere);
+                    if (dist >= minDist) continue;
+                    minDist = dist;
+                    closestEnt = ent;
+                }
+
+                if (closestEnt != null)
+                {
+                    ForceNewTarget();
+                    Info.Target.Entity = closestEnt;
+                }
+            }
+            else if (Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose)
+            {
+                var entSphere = Info.Target.Entity.PositionComp.WorldVolume;
+                entSphere.Radius += Info.System.CollisionSize;
+                minDist = MyUtils.GetSmallestDistanceToSphereAlwaysPositive(ref Position, ref entSphere);
+            }
+            else
+                TriggerMine(true);
+
+            if (Info.Cloaked && minDist <= deCloakRadius) Info.Cloaked = false;
+            else if (!Info.Cloaked && minDist > deCloakRadius) Info.Cloaked = true;
+
+            if (minDist <= Info.System.CollisionSize) activate = true;
+            if (minDist <= detectRadius) inRange = true;
+            if (MineActivated)
+            {
+                if (!inRange)
+                    TriggerMine(true);
+            }
+            else if (inRange) ActivateMine();
+
+            if (activate)
+            {
+                TriggerMine(false);
+                SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity> { Distance = minDist, Element = Info.Target.Entity });
+            }
+
+            checkList.Clear();
+            Info.Ai.Session.Projectiles.CheckPool.Return(checkList);
+        }
+
         internal void OffSetTarget(bool roam = false)
         {
             var randAzimuth = MyUtils.GetRandomDouble(0, 1) * 2 * Math.PI;
@@ -894,7 +969,7 @@ namespace WeaponCore.Projectiles
             if (State == ProjectileState.Destroy)
             {
                 ForceHitParticle = true;
-                Intersected(this, new DrawHit(null, null, null, Position), false);
+                Intersected(new DrawHit(null, null, null, Position), false);
             }
 
             State = ProjectileState.Depleted;
@@ -928,16 +1003,16 @@ namespace WeaponCore.Projectiles
                 HitEffects();
             }
             State = ProjectileState.Dead;
-            Manager.CleanUp.Add(this);
+            Info.Ai.Session.Projectiles.CleanUp.Add(this);
 
             if (ModelState == EntityState.Exists)
             {
                 Info.PrimeMatrix = MatrixD.Identity;
                 Info.TriggerMatrix = MatrixD.Identity;
                 Info.Complete(null, DrawState.Last);
-                Manager.DrawProjectiles.Add(Info);
-                if (Info.System.PrimeModelId != -1) Manager.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.PrimeEntity);
-                if (Info.System.TriggerModelId != -1) Manager.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.TriggerEntity);
+                Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
+                if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.PrimeEntity);
+                if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.TriggerEntity);
                 ModelState = EntityState.None;
             }
         }

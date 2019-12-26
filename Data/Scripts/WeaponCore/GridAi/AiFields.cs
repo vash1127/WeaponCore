@@ -22,13 +22,6 @@ namespace WeaponCore.Support
         internal volatile bool Ready;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
-
-        internal readonly MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<Dictionary<BlockTypes, List<MyCubeBlock>>>(8);
-
-        internal readonly MyConcurrentPool<List<MyCubeBlock>> CubePool = new MyConcurrentPool<List<MyCubeBlock>>(10);
-        internal readonly MyConcurrentPool<TargetInfo> TargetInfoPool = new MyConcurrentPool<TargetInfo>();
-        internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
-
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>();
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>();
@@ -48,21 +41,18 @@ namespace WeaponCore.Support
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
-        internal readonly List<GridAi> ThreatsTmp = new List<GridAi>();
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
         internal readonly List<MyEntity> StaticsInRangeTmp = new List<MyEntity>();
         internal readonly List<Projectile> ProjetileCache = new List<Projectile>();
         internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
-        internal readonly List<GridAi> Threats = new List<GridAi>();
         internal readonly List<GridAi> TargetAis = new List<GridAi>();
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
         internal readonly Dictionary<WeaponComponent, long> Gunners = new Dictionary<WeaponComponent, long>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
-
         internal readonly Session Session;
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
@@ -144,7 +134,7 @@ namespace WeaponCore.Support
             Session = session;
             CreatedTick = createdTick;
             RegisterMyGridEvents(true, grid);
-            Focus = new Focus(2, this);
+            Focus = new Focus(2);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }
     }

@@ -66,7 +66,7 @@ namespace WeaponCore.Support
                         Log.Line($"Something went wrong with Platform PreInit");
                         break;
                     case MyWeaponPlatform.PlatformState.Delay:
-                        Ai.Session.FutureEvents.Schedule(RePreInit, null, 120);
+                        Ai?.Session?.FutureEvents.Schedule(RePreInit, null, 120);
                         break;
                     case MyWeaponPlatform.PlatformState.Inited:
                         InitPlatform();
@@ -165,6 +165,8 @@ namespace WeaponCore.Support
 
         public void ReInitPlatform()
         {
+            RegisterEvents();
+
             GridAi gridAi;
             if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
             {
@@ -172,7 +174,6 @@ namespace WeaponCore.Support
                 Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
             }
             Ai = gridAi;
-            RegisterEvents();
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
             {
                 UpdateCompList(add: true, invoke: true);
@@ -193,7 +194,6 @@ namespace WeaponCore.Support
 
             Entity.NeedsWorldMatrix = true;
 
-            //Ai.RecalcPowerPercent = true;
             Ai.UpdatePowerSources = true;
             if (!Ai.GridInit)
             {
@@ -214,6 +214,7 @@ namespace WeaponCore.Support
             {
                 base.OnRemovedFromScene();
                 RemoveComp();
+                RegisterEvents(false);
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
@@ -222,7 +223,7 @@ namespace WeaponCore.Support
         {
             if (_isServer && Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
-                if(BlockInventory != null) Set.Value.Inventory = BlockInventory.GetObjectBuilder();
+                Set.Value.Inventory = BlockInventory.GetObjectBuilder();
                 if (IsSorterTurret)
                 {
                     if (SorterBase?.Storage != null)

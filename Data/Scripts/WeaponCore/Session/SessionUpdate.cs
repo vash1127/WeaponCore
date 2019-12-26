@@ -165,10 +165,14 @@ namespace WeaponCore
                                 w.TargetReset = true;
                         }
 
-
-                        w.SeekTarget = w.Target.Expired && w.TrackTarget;
-                        if (w.SeekTarget)
-                            AcquireTargets.Enqueue(w);
+                        ///
+                        /// Queue for target acquire or set to tracking weapon.
+                        /// 
+                        
+                        w.SeekTarget = w.TrackTarget && w.Target.Expired;
+                        if (w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) AcquireTargets.Enqueue(w);
+                        else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
+                            w.Target = w.Comp.TrackingWeapon.Target;
 
                         ///
                         /// Check weapon's turret to see if its time to go home
@@ -328,25 +332,17 @@ namespace WeaponCore
                 var gridAi = w.Comp.Ai;
                 var comp = w.Comp;
 
-                if ((w.Target.Expired && w.TrackTarget) || gridAi.TargetResetTick == Tick)
-                {
-                    if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset)
-                    {
+                if (!w.SleepTargets || Tick - w.TargetCheckTick > 119 || gridAi.TargetResetTick == Tick || w.TargetReset) {
 
-                        w.TargetReset = false;
-                        if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired)
-                        {
-                            GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
-                        }
-                        else
-                        {
-                            GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
-                        }
+                    w.TargetReset = false;
+                    if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && !comp.TrackingWeapon.Target.Expired) {
+
+                        GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
                     }
-                }
-                else if (w.IsTurret && !w.TrackTarget && w.Target.Expired)
-                {
-                    w.Target = w.Comp.TrackingWeapon.Target;
+                    else {
+
+                        GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
+                    }
                 }
             }
         }

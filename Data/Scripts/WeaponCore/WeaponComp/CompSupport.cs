@@ -58,9 +58,12 @@ namespace WeaponCore.Support
                             wCount.Current--;
 
                         for (int i = 0; i < Platform.Weapons.Length; i++)
-                            Platform.Weapons[i].StopShooting();
+                        {
+                            var w = Platform.Weapons[i];
+                            w.StopShooting();
+                            w.WeaponCache.HitEntity.Clean();
+                        }
 
-                        RegisterEvents(false);
                         StopAllSounds();
                         Platform.RemoveParts(this);
                         

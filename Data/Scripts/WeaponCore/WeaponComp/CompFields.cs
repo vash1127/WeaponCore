@@ -69,13 +69,13 @@ namespace WeaponCore.Support
             WarmingUp,
         }
         
-        internal MyCubeBlock MyCube;
-        internal IMySlimBlock Slim;
+        internal readonly MyCubeBlock MyCube;
+        internal readonly IMySlimBlock Slim;
         internal readonly MyWeaponPlatform Platform = new MyWeaponPlatform();
-        internal IMyLargeMissileTurret MissileBase;
-        internal IMyConveyorSorter SorterBase;
+        internal readonly MyInventory BlockInventory;
+        internal readonly IMyLargeMissileTurret MissileBase;
+        internal readonly IMyConveyorSorter SorterBase;
         internal Weapon TrackingWeapon;
-        internal MyInventory BlockInventory;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
@@ -117,7 +117,8 @@ namespace WeaponCore.Support
                 SorterBase = (IMyConveyorSorter)MyCube;
                 IsSorterTurret = true;
             }
-
+            
+            BlockInventory = (MyInventory)MyCube.GetInventoryBase();
             SinkPower = IdlePower;
         }        
     }

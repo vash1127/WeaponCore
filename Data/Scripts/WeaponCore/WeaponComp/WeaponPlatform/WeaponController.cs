@@ -105,7 +105,7 @@ namespace WeaponCore.Platform
             TurretHomePosition();
 
             //Log.Line($"{weapon.System.WeaponName}: homing");
-            ReturnHome = ReturnHome && Comp.State.Value.Weapons[WeaponId].ManualShoot == Weapon.TerminalActionState.ShootOff && !Comp.Gunner && Target.Expired;
+            ReturnHome = ReturnHome && Comp.State.Value.Weapons[WeaponId].ManualShoot == TerminalActionState.ShootOff && !Comp.Gunner && Target.Expired;
 
             if (ReturnHome)
                 Comp.Ai.Session.FutureEvents.Schedule(HomeTurret, null, 1);

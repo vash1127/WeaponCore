@@ -39,12 +39,18 @@ namespace WeaponCore
                     else if (db.MyPlanet != null) db.MyPlanetInfo(clear: true);
                 }
 
-                //Interlocked.Exchange(ref db.SubGrids, db.PrevSubGrids);
-
                 foreach (var sub in db.PrevSubGrids) db.SubGrids.Add(sub);
                 if (db.SubGridsChanged) db.SubGridChanges();
 
-                for (int i = 0; i < db.SortedTargets.Count; i++) db.TargetInfoPool.Return(db.SortedTargets[i]);
+                for (int i = 0; i < db.SortedTargets.Count; i++)
+                {
+                    var tInfo = db.SortedTargets[i];
+                    tInfo.Target = null;
+                    tInfo.MyAi = null;
+                    tInfo.MyGrid = null;
+                    tInfo.TargetAi = null;
+                    TargetInfoPool.Return(db.SortedTargets[i]);
+                }
                 db.SortedTargets.Clear();
                 db.Targets.Clear();
 
@@ -62,7 +68,7 @@ namespace WeaponCore
                     if (grid != null)
                         GridTargetingAIs.TryGetValue(grid, out targetAi);
 
-                    var targetInfo = db.TargetInfoPool.Get();
+                    var targetInfo = TargetInfoPool.Get();
                     targetInfo.Init(ref detectInfo, db.MyGrid, db, targetAi);
 
                     db.SortedTargets.Add(targetInfo);
@@ -71,29 +77,21 @@ namespace WeaponCore
                 db.NewEntities.Clear();
                 db.SortedTargets.Sort(db.TargetCompare1);
 
-                //Interlocked.Exchange(ref db.Threats, db.ThreatsTmp);
-                db.Threats.Clear();
-                db.Threats.AddRange(db.TargetAisTmp);
-                db.ThreatsTmp.Clear();
-
-                //Interlocked.Exchange(ref db.TargetAis, db.TargetAisTmp);
                 db.TargetAis.Clear();
                 db.TargetAis.AddRange(db.TargetAisTmp);
                 db.TargetAisTmp.Clear();
 
-                //Interlocked.Exchange(ref db.Obstructions, db.ObstructionsTmp);
                 db.Obstructions.Clear();
                 db.Obstructions.AddRange(db.ObstructionsTmp);
                 db.ObstructionsTmp.Clear();
 
                 if (db.PlanetSurfaceInRange) db.StaticsInRangeTmp.Add(db.MyPlanet);
-                //Interlocked.Exchange(ref db.StaticsInRange, db.StaticsInRangeTmp);
                 db.StaticsInRange.Clear();
                 db.StaticsInRange.AddRange(db.StaticsInRangeTmp);
                 db.StaticsInRangeTmp.Clear();
                 db.StaticEntitiesInRange = db.StaticsInRange.Count > 0;
 
-                db.DbReady = db.SortedTargets.Count > 0 || db.Threats.Count > 0 || Tick - db.LiveProjectileTick < 3600|| db.LiveProjectile.Count > 0 || db.FirstRun;
+                db.DbReady = db.SortedTargets.Count > 0 || db.TargetAis.Count > 0 || Tick - db.LiveProjectileTick < 3600|| db.LiveProjectile.Count > 0 || db.FirstRun;
                 db.MyShield = db.MyShieldTmp;
                 db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
                 db.ShieldNear = db.ShieldNearTmp;

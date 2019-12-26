@@ -23,29 +23,27 @@ namespace WeaponCore.Support
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
 
-                if (InventoryInited)
-                    BlockInventory.ContentsChanged += OnContentsChanged;
-
-                //MyCube.ResourceSink.CurrentInputChanged += CurrentInputChanged;
-
-                //MyCube.PositionComp.OnPositionChanged += UpdatePartPos;
+                BlockInventory.ContentsChanged += OnContentsChanged;
 
             }
             else
             {
                 if (IsSorterTurret)
-                    SorterBase.AppendingCustomInfo -= AppendingCustomInfo;
+                {
+                    if (SorterBase == null) Log.Line($"SortBase is null");
+                    else SorterBase.AppendingCustomInfo -= AppendingCustomInfo;
+                }
                 else
-                    MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
+                {
+                    if (MissileBase == null) Log.Line($"MissileBase is null");
+                    else MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
+
+                }
 
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
 
-                if (InventoryInited)
-                    BlockInventory.ContentsChanged -= OnContentsChanged;
-
-                //MyCube.ResourceSink.CurrentInputChanged -= CurrentInputChanged;
-
-                //MyCube.PositionComp.OnPositionChanged -= UpdatePartPos;
+                if (BlockInventory == null) Log.Line($"BlockInventory is null");
+                else BlockInventory.ContentsChanged -= OnContentsChanged;
             }
         }
 

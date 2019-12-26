@@ -197,7 +197,7 @@ namespace WeaponCore
                 else
                     MyAPIGateway.Utilities.SerializeToBinary(new DataCompSettings(MissileBase.EntityId, Value));
 
-                MyAPIGateway.Multiplayer.SendMessageToServer(Session.PACKET_ID, bytes);
+                MyAPIGateway.Multiplayer.SendMessageToServer(Session.PacketId, bytes);
             }
         }
         #endregion

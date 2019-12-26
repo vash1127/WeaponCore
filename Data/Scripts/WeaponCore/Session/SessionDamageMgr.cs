@@ -322,6 +322,7 @@ namespace WeaponCore
                 t.BaseDamagePool = damagePool;
                 t.ObjectsHit = objectsHit;
             }
+            if (radiantCascade || nova) _slimsSortedList.Clear();
             hitEnt.Blocks.Clear();
         }
 
@@ -521,10 +522,7 @@ namespace WeaponCore
 
                 if (slim != null && slim.Position == v3ICheck)
                 {
-                    var radiatedBlock = new RadiatedBlock();
-                    radiatedBlock.Center = center;
-                    radiatedBlock.Slim = slim;
-                    radiatedBlock.Position = v3ICheck;
+                    var radiatedBlock = new RadiatedBlock {Center = center, Slim = slim, Position = v3ICheck};
                     slims.Add(radiatedBlock);
                 }
             }
@@ -550,10 +548,10 @@ namespace WeaponCore
 
                             if (slim != null)
                             {
-                                var radiatedBlock = new RadiatedBlock();
-                                radiatedBlock.Center = center;
-                                radiatedBlock.Slim = slim;
-                                radiatedBlock.Position = vector3I;
+                                var radiatedBlock = new RadiatedBlock
+                                {
+                                    Center = center, Slim = slim, Position = vector3I
+                                };
                                 points.Add(radiatedBlock);
                             }
                         }
@@ -587,10 +585,10 @@ namespace WeaponCore
 
                             if (slim != null && slim.Position == vector3I)
                             {
-                                var radiatedBlock = new RadiatedBlock();
-                                radiatedBlock.Center = center;
-                                radiatedBlock.Slim = slim;
-                                radiatedBlock.Position = vector3I;
+                                var radiatedBlock = new RadiatedBlock
+                                {
+                                    Center = center, Slim = slim, Position = vector3I
+                                };
                                 _slimsSortedList.Add(radiatedBlock);
                             }
                         }
