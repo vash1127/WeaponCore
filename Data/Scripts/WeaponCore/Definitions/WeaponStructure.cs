@@ -225,11 +225,11 @@ namespace WeaponCore.Support
             Heat(out DegRof, out MaxHeat, out WepCoolDown, out HeatPerShot);
             BarrelValues(out BarrelsPerShot, out BarrelSpinRate, out HasBarrelRate, out RateOfFire);
             AreaEffects(out AreaEffect, out AreaEffectDamage, out AreaEffectSize, out DetonationDamage, out AmmoAreaEffect, out AreaRadiusSmall, out AreaRadiusLarge, out DetonateRadiusSmall, out DetonateRadiusLarge, out Ewar, out EwarEffect);
-            Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode);
+            Energy(out EnergyAmmo, out MustCharge, out EnergyMagSize, out BurstMode, out IsHybrid);
 
             ShieldModifier = Values.DamageScales.Shields.Modifier > 0 ? Values.DamageScales.Shields.Modifier : 1;
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
-            IsHybrid = values.HardPoint.Hybrid;
+            
 
             DesiredProjectileSpeed = values.Ammo.Trajectory.DesiredSpeed;
             MaxTrajectory = values.Ammo.Trajectory.MaxTrajectory;
@@ -255,10 +255,11 @@ namespace WeaponCore.Support
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out OnDelay);
         }
 
-        private void Energy(out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode)
+        private void Energy(out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool isHybrid)
         {
             energyAmmo = AmmoDefId.SubtypeId.String == "Blank";
-            mustCharge = energyAmmo && ReloadTime > 0;
+            isHybrid = Values.HardPoint.Hybrid;
+            mustCharge = (energyAmmo || isHybrid) && ReloadTime > 0;
             burstMode = Values.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= Values.HardPoint.Loading.ShotsInBurst);
 
             if (MustCharge)

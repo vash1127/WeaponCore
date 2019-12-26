@@ -110,11 +110,11 @@ namespace WeaponCore.Support
                         maxTrajectory = weapon.System.MaxTrajectory;
 
                     if(!weapon.System.EnergyAmmo || weapon.System.MustCharge)
-                    Session.ComputeStorage(weapon);
+                        Session.ComputeStorage(weapon);
 
                     if (state.CurrentAmmo == 0 && !weapon.Reloading)
                         weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
-                    else if (weapon.System.MustCharge && state.CurrentAmmo == weapon.System.EnergyMagSize)
+                    else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && state.CurrentAmmo == weapon.System.MagazineDef.Capacity) || state.CurrentAmmo == weapon.System.EnergyMagSize))
                     {
                         weapon.CurrentCharge = weapon.System.EnergyMagSize;
                         CurrentCharge += weapon.System.EnergyMagSize;

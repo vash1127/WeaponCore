@@ -825,12 +825,10 @@ namespace WeaponCore.Platform
         {
             if (Reloading) return;
             Reloading = true;
-            EventTriggerStateChanged(state: EventTriggers.Firing, active: false);
+            //EventTriggerStateChanged(state: EventTriggers.Firing, active: false);
 
             if (IsShooting)
-            {
                 StopShooting();
-            }
 
             if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !System.MustCharge && !Comp.Ai.Session.IsCreative))
             {
@@ -875,30 +873,35 @@ namespace WeaponCore.Platform
         internal static void Reloaded(object o)
         {
             var w = o as Weapon;
-            if (!w.System.MustCharge)
+            if (w.System.MustCharge)
             {
-                w.EventTriggerStateChanged(EventTriggers.Reloading, false);
-                w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId);
-                w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
-                w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
-                w.Reloading = false;
-            }
-            else
-            {
-                w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
-                w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.EnergyMagSize;
-                w.Comp.CurrentCharge = w.System.EnergyMagSize;
+                if (!w.System.IsHybrid)
+                {
+                    w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.EnergyMagSize;
+                    w.Comp.CurrentCharge = w.System.EnergyMagSize;
+                }
+
                 w.StopPowerDraw();
 
-                if (!w.Comp.Ai.Session.DedicatedServer)
-                    w.Comp.TerminalRefresh();
-
-                w.Reloading = false;
                 w.DrawingPower = false;
 
                 w.ChargeUntilTick = 0;
-                w.DelayTicks = 0;
+                w.DelayTicks = 0;                
             }
+
+            if (!w.System.EnergyAmmo || w.System.IsHybrid)
+            {
+                if (w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId) > 0 || w.Comp.Ai.Session.IsCreative)
+                {
+                    w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
+                    if(w.System.IsHybrid)
+                        w.Comp.CurrentCharge = w.System.EnergyMagSize;
+                }
+            }
+
+            w.EventTriggerStateChanged(EventTriggers.Reloading, false);
+            w.Reloading = false;
+            w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
         }
 
         public void StartFiringSound()
