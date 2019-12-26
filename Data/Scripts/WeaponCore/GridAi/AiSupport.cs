@@ -526,25 +526,16 @@ namespace WeaponCore.Support
                     for (int i = 0; i < blocks.Count; i++)
                         FatBlockAdded(blocks[i]);
                 }
-                else Log.Line($"AddSubGrids fatmap already gone for: {grid.DebugName}");
+                else Log.Line($"AddSubGrids fatmap didnt exist for: {grid.DebugName}");
             }
             AddSubGrids.Clear();
 
             foreach (var grid in RemSubGrids)
             {
                 if (grid == MyGrid) continue;
-
+                SubGrids.Remove(grid);
                 grid.OnFatBlockAdded -= FatBlockAdded;
                 grid.OnFatBlockRemoved -= FatBlockRemoved;
-
-                FatMap fatMap;
-                if (Session.GridToFatMap.TryGetValue(grid, out fatMap))
-                {
-                    var blocks = fatMap.MyCubeBocks;
-                    for (int i = 0; i < blocks.Count; i++)
-                        FatBlockRemoved(blocks[i]);
-                }
-                else Log.Line($"RemSubGrids fatmap already gone for: {grid.DebugName}");
             }
             RemSubGrids.Clear();
         }
