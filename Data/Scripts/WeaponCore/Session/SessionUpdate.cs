@@ -219,10 +219,12 @@ namespace WeaponCore
                                 if ((!gridAi.RequestIncrease || gridAi.PowerIncrease) && !Tick60)
                                 {
                                     w.RecalcPower = true;
-                                    continue;
                                 }
-                                w.RecalcPower = false;
-                                w.DelayTicks = 0;
+                                else
+                                {
+                                    w.RecalcPower = false;
+                                    w.DelayTicks = 0;
+                                }
                             }
 
                             var targetRequested = w.SeekTarget && targetChange;
