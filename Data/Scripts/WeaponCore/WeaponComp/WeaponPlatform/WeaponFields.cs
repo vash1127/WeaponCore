@@ -137,7 +137,7 @@ namespace WeaponCore.Platform
         internal bool Charging;
         internal bool DrawingPower;
         internal bool ResetPower;
-        internal bool RecalcCharging;
+        internal bool RecalcPower;
 
         public enum TerminalActionState
         {
