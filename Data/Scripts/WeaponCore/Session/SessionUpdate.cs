@@ -302,9 +302,16 @@ namespace WeaponCore
                 if (gridAi.LastPowerUpdateTick != Tick && (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180))
                     gridAi.UpdateGridPower();
 
-                if (gridAi.RequestedPowerChanged || !w.DrawingPower || gridAi.AvailablePowerChanged)
+                if (!w.DrawingPower || gridAi.RequestedPowerChanged || gridAi.AvailablePowerChanged || (w.RecalcCharging && Tick60))
                 {
-                        
+                    if ((!gridAi.RequestIncrease || gridAi.PowerIncrease) && !Tick60)
+                    {
+                        w.RecalcCharging = true;
+                        continue;
+                    }
+
+                    w.RecalcCharging = false;
+
                     var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                     w.OldUseablePower = w.UseablePower;
                     w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;

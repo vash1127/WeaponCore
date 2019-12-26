@@ -92,7 +92,9 @@ namespace WeaponCore.Support
         internal bool OverPowered;
         internal bool UpdatePowerSources;
         internal bool AvailablePowerChanged;
+        internal bool PowerIncrease;
         internal bool RequestedPowerChanged;
+        internal bool RequestIncrease;
         internal bool StaticEntitiesInRange;
         internal bool ShieldNearTmp;
         internal bool ShieldNear;

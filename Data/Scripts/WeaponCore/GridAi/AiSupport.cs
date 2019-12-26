@@ -643,6 +643,9 @@ namespace WeaponCore.Support
             RequestedPowerChanged = Math.Abs(LastRequestedPower - RequestedWeaponsDraw) > 0.001 && LastRequestedPower > 0;
             AvailablePowerChanged = Math.Abs(GridMaxPower - LastAvailablePower) > 0.001 && LastAvailablePower > 0;
 
+            RequestIncrease = LastRequestedPower < RequestedWeaponsDraw;
+            PowerIncrease = LastAvailablePower < GridMaxPower;
+
             LastAvailablePower = GridMaxPower;
             LastRequestedPower = RequestedWeaponsDraw;
 
