@@ -46,7 +46,7 @@ namespace WeaponCore.Support
                 w.NewTarget.Reset();
                 w.SleepTargets = true;
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Reset();
+                w.Target.Reset(false);
             }
             else w.WakeTargets();
         }
@@ -259,7 +259,7 @@ namespace WeaponCore.Support
                 }
                 if (forceTarget) break;
             }
-            if (!attemptReset || w.Target.Expired) targetType = TargetType.None;
+            if (!attemptReset || w.Target.State != Target.Targets.Acquired) targetType = TargetType.None;
             else targetType = w.Target.IsProjectile ? TargetType.Projectile : TargetType.Other;
         }
         
@@ -293,8 +293,7 @@ namespace WeaponCore.Support
                 if (system.OnlySubSystems) return false;
             }
             FatMap fatMap;
-            ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap);
-            return fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, checkPower);
+            return ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, checkPower);
         }
 
         private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, MyConcurrentList<MyCubeBlock> subSystemList, Weapon w, bool checkPower = true)
@@ -542,7 +541,7 @@ namespace WeaponCore.Support
                 target.Set(newEntity, bestCubePos, shortDist, origDist, topEntId);
                 top5.Add(newEntity);
             }
-            else target.Reset();
+            else target.Reset(w == null);
 
             if (newEntity0 != null) top5.Add(newEntity0);
             if (newEntity1 != null) top5.Add(newEntity1);

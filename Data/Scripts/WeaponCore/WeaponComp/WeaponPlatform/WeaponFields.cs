@@ -7,7 +7,7 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
-
+using static WeaponCore.Support.Target;
 namespace WeaponCore.Platform
 {
     public partial class Weapon
@@ -31,6 +31,7 @@ namespace WeaponCore.Platform
         internal bool PreFired;
         internal uint TicksPerShot;
         internal double TimePerShot;
+        internal int LoadId;
 
         //private bool _newCycle;
         //private bool _firstRun = true;
@@ -112,7 +113,6 @@ namespace WeaponCore.Platform
         internal double MinAzimuthRadians;
         internal double MaxElevationRadians;
         internal double MinElevationRadians;
-        internal bool TargetReset;
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
@@ -125,7 +125,7 @@ namespace WeaponCore.Platform
         internal bool PlayTurretAv;
         internal bool AvCapable;
         internal bool DelayCeaseFire;
-        internal bool TargetWasExpired = true;
+        internal Targets TargetState = Targets.Expired;
         internal bool Reloading;
         internal bool OutOfAmmo;
         internal bool ReturnHome;
@@ -164,6 +164,7 @@ namespace WeaponCore.Platform
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
         {
+            LoadId = comp.Ai.Session.LoadAssigner();
             MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> {Item1 = entity };
             AnimationsSet = animationSets;
 

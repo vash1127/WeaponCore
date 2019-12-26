@@ -68,12 +68,12 @@ namespace WeaponCore
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
 
+        internal readonly List<Weapon> AcquireTargets = new List<Weapon>(100);
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>();
 
-        internal readonly Queue<Weapon> AcquireTargets = new Queue<Weapon>(100);
         internal readonly Queue<Weapon> ShootingWeapons = new Queue<Weapon>(100);
         
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(100);
@@ -226,5 +226,6 @@ namespace WeaponCore
         private int _count = -1;
         private int _lCount;
         private int _eCount;
+        private int _loadCounter = 1;
     }
 }

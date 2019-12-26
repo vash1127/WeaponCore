@@ -931,6 +931,7 @@ namespace WeaponCore.Platform
             SleepTargets = false;
             SleepingTargets.Clear();
             LastTargetTick = Comp.Ai.Session.Tick;
+            LoadId = Comp.Ai.Session.LoadAssigner();
         }
     }
 }

@@ -148,6 +148,14 @@ namespace WeaponCore
             }
         }
 
+        internal int LoadAssigner()
+        {
+            if (_loadCounter + 1 > 120) _loadCounter = 1;
+            else ++_loadCounter;
+
+            return _loadCounter;
+        }
+
         internal void Timings()
         {
             Tick = (uint)(Session.ElapsedPlayTime.TotalMilliseconds * TickTimeDiv);
@@ -227,7 +235,7 @@ namespace WeaponCore
                 DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
             }
 
-            if (!w.Target.Expired)
+            if (w.Target.State == Target.Targets.Acquired)
                 DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
         }
 
