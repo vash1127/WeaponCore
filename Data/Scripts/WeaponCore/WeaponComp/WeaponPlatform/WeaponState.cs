@@ -795,7 +795,8 @@ namespace WeaponCore.Platform
             Comp.SinkPower -= useableDif;
             Comp.Ai.GridAvailablePower += useableDif;
             Comp.MyCube.ResourceSink.Update();
-            Comp.TerminalRefresh();
+            if (!Comp.Ai.Session.DedicatedServer)
+                Comp.TerminalRefresh();
         }
 
         public void StopPowerDraw()
@@ -810,7 +811,8 @@ namespace WeaponCore.Platform
             DelayTicks = 0;
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
-            Comp.TerminalRefresh();
+            if(!Comp.Ai.Session.DedicatedServer)
+                Comp.TerminalRefresh();
         }
 
         public void StartReload()
@@ -882,7 +884,9 @@ namespace WeaponCore.Platform
                 w.Comp.CurrentCharge = w.System.EnergyMagSize;
                 w.StopPowerDraw();
 
-                w.Comp.TerminalRefresh();
+                if (!w.Comp.Ai.Session.DedicatedServer)
+                    w.Comp.TerminalRefresh();
+
                 w.Reloading = false;
                 w.DrawingPower = false;
 

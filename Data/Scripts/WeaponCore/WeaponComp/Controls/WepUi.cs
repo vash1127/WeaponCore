@@ -121,7 +121,8 @@ namespace WeaponCore
             comp.OptimalDps -= dpsDif;
             comp.Ai.OptimalDps -= dpsDif;
 
-            comp.TerminalRefresh();
+            if (!comp.Ai.Session.DedicatedServer)
+                comp.TerminalRefresh();
 
             w.DelayTicks = 0;
         }

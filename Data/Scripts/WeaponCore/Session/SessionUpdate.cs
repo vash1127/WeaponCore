@@ -269,7 +269,8 @@ namespace WeaponCore
                             w.Comp.CurrentCharge += (w.System.EnergyMagSize - w.CurrentCharge);
                         }
 
-                        w.Comp.TerminalRefresh();
+                        if (!w.Comp.Ai.Session.DedicatedServer)
+                            w.Comp.TerminalRefresh();
                     }
 
                     if (w.ChargeUntilTick <= Tick || !w.Comp.State.Value.Online)
