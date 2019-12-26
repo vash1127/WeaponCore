@@ -340,15 +340,27 @@ namespace WeaponCore
 
         private void CheckAcquire()
         {
-            for (int i = 0; i < AcquireTargets.Count; i++)
+            for (int i = AcquireTargets.Count - 1; i >= 0; i--)
             {
                 var w = AcquireTargets[i];
                 var gridAi = w.Comp.Ai;
 
                 var sinceCheck = Tick - w.TargetCheckTick;
-                if (sinceCheck > 239 || gridAi.TargetResetTick == Tick || sinceCheck > 60 && _count == w.LoadId) {
+                var reacquire = gridAi.TargetResetTick == Tick;
+
+                if (sinceCheck > 239 || reacquire || sinceCheck > 60 && _count == w.LoadId) {
 
                     var comp = w.Comp;
+                    var hasTarget = w.Target.State == Targets.Acquired;
+                    var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
+                    var weaponEnabled = !comp.State.Value.Online || comp.Set.Value.Weapons[w.WeaponId].Enable;
+
+                    if (hasTarget && !reacquire || !weaponEnabled || !gridAi.DbReady && weaponsInStandby || w.Comp.Gunner || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose || !comp.MyCube.InScene)
+                    {
+                        AcquireTargets.RemoveAtFast(i);
+                        continue;
+                    }
+
                     if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired) {
                         
                         GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
@@ -357,13 +369,6 @@ namespace WeaponCore
 
                         GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
                     }
-             
-                    var hasTarget = w.Target.State == Targets.Acquired;
-                    var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
-                    var weaponEnabled = !comp.State.Value.Online || comp.Set.Value.Weapons[w.WeaponId].Enable;
-
-                    if (hasTarget || !weaponEnabled || !gridAi.DbReady && weaponsInStandby || w.Comp.Gunner || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose || !comp.MyCube.InScene)
-                        AcquireTargets.RemoveAtFast(i);
                 }
             }
         }

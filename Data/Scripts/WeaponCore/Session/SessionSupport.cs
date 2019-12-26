@@ -440,7 +440,7 @@ namespace WeaponCore
             _shrinking.ClearImmediate();
             _shrinkPool.Clean();
 
-            for (int i = 0; i < _afterGlow.Count; i++)
+            for (int i = _afterGlow.Count - 1; i >= 0; i--)
             {
                 var g = _afterGlow[i];
                 g.Clean();
