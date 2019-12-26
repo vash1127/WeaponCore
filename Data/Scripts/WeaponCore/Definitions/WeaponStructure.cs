@@ -261,18 +261,17 @@ namespace WeaponCore.Support
             mustCharge = energyAmmo && ReloadTime > 0;
             burstMode = Values.HardPoint.Loading.ShotsInBurst > 0 && (energyAmmo || MagazineDef.Capacity >= Values.HardPoint.Loading.ShotsInBurst);
 
-
-
             if (MustCharge)
             {
                 var ewar = (int)Values.Ammo.AreaEffect.AreaEffect > 3;
                 var shotEnergyCost = ewar ? Values.HardPoint.EnergyCost * AreaEffectDamage : Values.HardPoint.EnergyCost * BaseDamage;
                 var requiredPower = (((shotEnergyCost * ((RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * Values.HardPoint.Loading.BarrelsPerShot) * Values.HardPoint.Loading.TrajectilesPerBarrel);
 
-                energyMagSize = (int)(requiredPower * (float)(ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
+                energyMagSize = (int)(requiredPower * (ReloadTime / MyEngineConstants.UPDATE_STEPS_PER_SECOND));
+                return;
             }
-            else
-                energyMagSize = 0;
+
+            energyMagSize = 0;
         }
 
 

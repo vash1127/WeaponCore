@@ -181,6 +181,13 @@ namespace WeaponCore.Control
                         
                     }
                     w.StopShooting();
+
+                    if (w.System.MustCharge && w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)
+                    {
+                        w.Reloading = false;
+                        w.Comp.CurrentCharge = 0;
+                        w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
+                    }
                 }
                 else
                     w.FirstFireTick = comp.Ai.Session.Tick + w.System.OnDelay;

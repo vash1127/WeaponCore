@@ -56,7 +56,11 @@ namespace WeaponCore.Support
                 if (LastInventoryChangedTick < Ai.Session.Tick && !IgnoreInvChange)
                 {
                     for (int i = 0; i < Platform.Weapons.Length; i++)
-                        Session.ComputeStorage(Platform.Weapons[i]);
+                    {
+                        var w = Platform.Weapons[i];
+                        if (!w.System.EnergyAmmo)
+                            Session.ComputeStorage(w);
+                    }
                     
                     LastInventoryChangedTick = Ai.Session.Tick;
                 }

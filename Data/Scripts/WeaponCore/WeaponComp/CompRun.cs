@@ -109,12 +109,20 @@ namespace WeaponCore.Support
                     if (weapon.System.MaxTrajectory > maxTrajectory)
                         maxTrajectory = weapon.System.MaxTrajectory;
 
+                    if(!weapon.System.EnergyAmmo || weapon.System.MustCharge)
                     Session.ComputeStorage(weapon);
 
                     if (state.CurrentAmmo == 0 && !weapon.Reloading)
                         weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+                    else if (weapon.System.MustCharge && state.CurrentAmmo == weapon.System.EnergyMagSize)
+                    {
+                        weapon.CurrentCharge = weapon.System.EnergyMagSize;
+                        CurrentCharge += weapon.System.EnergyMagSize;
+                    }
+                    else if (weapon.System.MustCharge)
+                        state.CurrentAmmo = 0;
 
-                    if(state.ManualShoot != Weapon.TerminalActionState.ShootOff)
+                    if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
                     {
                         Ai.ManualComps++;
                         Shooting++;

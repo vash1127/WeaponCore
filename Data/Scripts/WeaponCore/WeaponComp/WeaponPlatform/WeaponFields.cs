@@ -85,6 +85,7 @@ namespace WeaponCore.Platform
         internal float AreaEffectDmg;
         internal float DetonateDmg;
         internal float LastHeat;
+        internal float CurrentCharge;
         internal uint ShotCounter;
         internal uint LastTargetTick;
         internal uint TargetCheckTick;

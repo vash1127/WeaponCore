@@ -101,6 +101,7 @@ namespace WeaponCore.Support
         //internal bool ResetPower = true;
         internal bool OverPowered;
         internal bool UpdatePowerSources;
+        internal bool AvailablePowerChanged;
         internal bool RequestedPowerChanged;
         internal bool StaticEntitiesInRange;
         internal bool ShieldNearTmp;
@@ -123,6 +124,7 @@ namespace WeaponCore.Support
         internal float CurrentWeaponsDraw;
         internal float RequestedWeaponsDraw;
         internal float LastRequestedPower;
+        internal float LastAvailablePower;
         internal float OptimalDps;
         internal enum TargetType
         {

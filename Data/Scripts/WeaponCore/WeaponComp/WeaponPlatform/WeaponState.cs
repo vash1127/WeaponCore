@@ -364,7 +364,10 @@ namespace WeaponCore.Platform
 
                     case EventTriggers.TurnOn:
                         //Threaded event
-                        Session.ComputeStorage(this);
+
+                        if(active && (!System.EnergyAmmo || System.MustCharge))
+                            Session.ComputeStorage(this);
+
                         if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         {
                             for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
@@ -568,8 +571,6 @@ namespace WeaponCore.Platform
                 RequiredPower = ((ShotEnergyCost * ((RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
             else
                 RequiredPower = Comp.IdlePower;
-
-            Log.Line($"Required Power: {RequiredPower}");
         }
 
         internal void UpdateShotEnergy()
@@ -784,7 +785,6 @@ namespace WeaponCore.Platform
             if (Reloading) return;
             Reloading = true;
             EventTriggerStateChanged(state: EventTriggers.Firing, active: false);
-            Comp.CurrentCharge = 0;
 
             if (IsShooting)
             {
@@ -818,6 +818,8 @@ namespace WeaponCore.Platform
                     Comp.Ai.RequestedWeaponsDraw += RequiredPower;
                     ChargeUntilTick = (uint)System.ReloadTime + Comp.Ai.Session.Tick;
                     Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
+                    Comp.CurrentCharge -= CurrentCharge;
+                    CurrentCharge = 0;
                 }
                 else
                     Comp.Ai.Session.FutureEvents.Schedule(Reloaded, this, (uint)System.ReloadTime);
