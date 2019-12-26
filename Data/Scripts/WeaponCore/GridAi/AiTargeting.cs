@@ -316,7 +316,7 @@ namespace WeaponCore.Support
 
             for (int i = 0; i < totalBlocks; i++)
             {
-                if (turretCheck && (blocksChecked > lastBlocks || isPriroity && blocksSighted > 100))
+                if (turretCheck && (blocksChecked > lastBlocks || isPriroity && (blocksSighted > 100 || blocksChecked > 25 && ai.Session.RandomRayCasts > 1000)))
                     break;
 
                 var card = deck[i];
