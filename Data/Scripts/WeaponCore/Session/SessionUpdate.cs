@@ -248,79 +248,76 @@ namespace WeaponCore
 
         private void UpdateChargeWeapons() //Fully Inlined due to keen's mod profiler
         {
-            if (ChargingWeapons.Count > 0)
+            for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
             {
-                for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
-                {
-                    var w = ChargingWeapons[i];
-                    var gridAi = w.Comp.Ai;
+                var w = ChargingWeapons[i];
+                var gridAi = w.Comp.Ai;
 
-                    if (Tick60 && w.DrawingPower)
-                    {   
-                        if ((w.Comp.CurrentCharge + w.UseablePower) < w.System.EnergyMagSize)
-                        {
-                            w.CurrentCharge += w.UseablePower;
-                            w.Comp.CurrentCharge += w.UseablePower;
+                if (Tick60 && w.DrawingPower)
+                {   
+                    if ((w.Comp.CurrentCharge + w.UseablePower) < w.System.EnergyMagSize)
+                    {
+                        w.CurrentCharge += w.UseablePower;
+                        w.Comp.CurrentCharge += w.UseablePower;
                             
-                        }
-                        else
-                        {
-                            w.CurrentCharge = w.System.EnergyMagSize;
-                            w.Comp.CurrentCharge += (w.System.EnergyMagSize - w.CurrentCharge);
-                        }
-
-                        if (!w.Comp.Ai.Session.DedicatedServer)
-                            w.Comp.TerminalRefresh();
+                    }
+                    else
+                    {
+                        w.CurrentCharge = w.System.EnergyMagSize;
+                        w.Comp.CurrentCharge += (w.System.EnergyMagSize - w.CurrentCharge);
                     }
 
-                    if (w.ChargeUntilTick <= Tick || !w.Comp.State.Value.Online)
+                    if (!w.Comp.Ai.Session.DedicatedServer)
+                        w.Comp.TerminalRefresh();
+                }
+
+                if (w.ChargeUntilTick <= Tick || !w.Comp.State.Value.Online)
+                {
+                    //Log.Line("Reloaded");
+                    if (w.ChargeUntilTick <= Tick)
+                        Weapon.Reloaded(w);
+                    else if (w.DrawingPower)
+                        w.StopPowerDraw();
+
+                    w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
+                    ChargingWeapons.RemoveAtFast(i);
+                    continue;
+                }
+
+                if (!w.Comp.Ai.OverPowered)
+                {
+                    //Log.Line($"DrawingPower: {w.DrawingPower}");
+                    if (!w.DrawingPower)
                     {
-                        //Log.Line("Reloaded");
-                        if (w.ChargeUntilTick <= Tick)
-                            Weapon.Reloaded(w);
-                        else if (w.DrawingPower)
-                            w.StopPowerDraw();
-
-                        w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
-                        ChargingWeapons.RemoveAtFast(i);
-                        continue;
-                    }
-
-                    if (!w.Comp.Ai.OverPowered)
-                    {
-                        //Log.Line($"DrawingPower: {w.DrawingPower}");
-                        if (!w.DrawingPower)
-                        {
-                            //Log.Line("Reset Power");
-                            w.OldUseablePower = w.UseablePower;
-                            w.UseablePower = w.RequiredPower;
-                            w.DrawPower();
-                            w.DelayTicks = 0;
-                        }
-
-                        continue;
-                    }
-
-                    if (gridAi.LastPowerUpdateTick != Tick && (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180))
-                        gridAi.UpdateGridPower();
-
-                    if (gridAi.RequestedPowerChanged || !w.DrawingPower || gridAi.AvailablePowerChanged)
-                    {
-                        
-                        var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
+                        //Log.Line("Reset Power");
                         w.OldUseablePower = w.UseablePower;
-                        w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
-                        
-                        w.DelayTicks = (uint)(((w.System.EnergyMagSize - w.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-
-
-                        w.ChargeUntilTick = w.DelayTicks + Tick;
-
-                        if (!w.DrawingPower)
-                            w.DrawPower();
-                        else
-                            w.DrawPower(true);
+                        w.UseablePower = w.RequiredPower;
+                        w.DrawPower();
+                        w.DelayTicks = 0;
                     }
+
+                    continue;
+                }
+
+                if (gridAi.LastPowerUpdateTick != Tick && (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180))
+                    gridAi.UpdateGridPower();
+
+                if (gridAi.RequestedPowerChanged || !w.DrawingPower || gridAi.AvailablePowerChanged)
+                {
+                        
+                    var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
+                    w.OldUseablePower = w.UseablePower;
+                    w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
+                        
+                    w.DelayTicks = (uint)(((w.System.EnergyMagSize - w.CurrentCharge) / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+
+
+                    w.ChargeUntilTick = w.DelayTicks + Tick;
+
+                    if (!w.DrawingPower)
+                        w.DrawPower();
+                    else
+                        w.DrawPower(true);
                 }
             }
         }
