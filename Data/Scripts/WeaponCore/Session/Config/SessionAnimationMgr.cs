@@ -411,7 +411,7 @@ namespace WeaponCore
                         if (animationSet.TriggerOnce != null && animationSet.TriggerOnce.Contains(moves.Key))
                             triggerOnce = true;
 
-                        var partAnim = new PartAnimation(id, rotationSet.ToArray(),
+                        var partAnim = new PartAnimation(moves.Key, id, rotationSet.ToArray(),
                             rotCenterSet.ToArray(), typeSet, currentEmissivePart.ToArray(), moveIndexer.ToArray(), animationSet.SubpartId[t], null, null,
                             animationSet.BarrelId, animationSet.StartupFireDelay, animationSet.AnimationDelays[moves.Key], system, loop, reverse, triggerOnce);
 
@@ -473,12 +473,10 @@ namespace WeaponCore
                                 if (dummyCenter != null)
                                     rotCenters[i] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * rotCenters[i] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
                             }
-
-
                         }
                     }
 
-                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.AnimationId, rotations, rotCenters,
+                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.Event, animation.AnimationId, rotations, rotCenters,
                         animation.TypeSet, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
                         animation.Muzzle, animation.FireDelay, animation.MotionDelay, system, animation.DoesLoop,
                         animation.DoesReverse, animation.TriggerOnce));
@@ -736,6 +734,11 @@ namespace WeaponCore
             {
                 AnimationsToProcess.Remove(animation);
                 animation.Running = false;
+                for (int i = 0; i < animation.EmissiveParts.Length; i++)
+                {
+                    var emissivePart = animation.EmissiveParts[i];
+                    animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
+                }
             }
         }
     }
