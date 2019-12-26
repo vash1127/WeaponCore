@@ -778,6 +778,12 @@ namespace WeaponCore.Platform
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
                     if (System.EnergyAmmo && !System.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
+                    else if (System.MustCharge && Comp.State.Value.Weapons[WeaponId].CurrentAmmo != 0)
+                    {
+                        Comp.State.Value.Weapons[WeaponId].CurrentAmmo = 0;
+                        Comp.CurrentCharge -= CurrentCharge;
+                        CurrentCharge = 0;
+                    }
 
                 }
                 IsShooting = false;
