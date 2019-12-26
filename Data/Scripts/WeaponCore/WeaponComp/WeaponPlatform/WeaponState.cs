@@ -365,9 +365,6 @@ namespace WeaponCore.Platform
                     case EventTriggers.TurnOn:
                         //Threaded event
 
-                        if(active && (!System.EnergyAmmo || System.MustCharge))
-                            Session.ComputeStorage(this);
-
                         if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         {
                             for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
