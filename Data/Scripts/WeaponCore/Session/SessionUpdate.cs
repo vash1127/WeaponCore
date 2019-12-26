@@ -345,7 +345,8 @@ namespace WeaponCore
                 var w = AcquireTargets[i];
                 var gridAi = w.Comp.Ai;
 
-                if (!w.SleepTargets || Tick - w.TargetCheckTick > 300 || Tick % w.LoadId == 0 || gridAi.TargetResetTick == Tick) {
+                var sinceCheck = Tick - w.TargetCheckTick;
+                if (sinceCheck > 239 || gridAi.TargetResetTick == Tick || sinceCheck > 60 && _count == w.LoadId) {
 
                     var comp = w.Comp;
                     if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired) {

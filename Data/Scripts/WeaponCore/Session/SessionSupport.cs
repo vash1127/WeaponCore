@@ -150,7 +150,7 @@ namespace WeaponCore
 
         internal int LoadAssigner()
         {
-            if (_loadCounter + 1 > 120) _loadCounter = 1;
+            if (_loadCounter + 1 > 119) _loadCounter = 0;
             else ++_loadCounter;
 
             return _loadCounter;
@@ -167,7 +167,7 @@ namespace WeaponCore
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
             if (Tick60) ExplosionCounter = 0;
-            if (_count++ == 59)
+            if (_count++ == 119)
             {
                 _count = 0;
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;

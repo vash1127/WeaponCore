@@ -76,7 +76,6 @@ namespace WeaponCore.Platform
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
-        internal readonly Dictionary<MyEntity, Vector3D> SleepingTargets = new Dictionary<MyEntity, Vector3D>();
         internal float RequiredPower;
         internal float UseablePower;
         internal float OldUseablePower;
@@ -130,7 +129,6 @@ namespace WeaponCore.Platform
         internal bool OutOfAmmo;
         internal bool ReturnHome;
         internal bool CurrentlyDegrading;
-        internal bool SleepTargets;
         internal bool HitOther;
         internal bool FixedOffset;
         internal bool AiOnlyWeapon;
