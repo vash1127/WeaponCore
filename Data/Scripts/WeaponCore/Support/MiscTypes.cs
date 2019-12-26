@@ -42,7 +42,7 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(); 
+        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(60); 
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool AmmoSound;
         internal bool HasTravelSound;

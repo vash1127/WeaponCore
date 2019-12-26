@@ -20,14 +20,14 @@ namespace WeaponCore.Projectiles
         internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>();
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>();
 
-        internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>();
+        internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>(30);
         internal readonly ObjectsPool<Projectile> ProjectilePool = new ObjectsPool<Projectile>(150);
         internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>();
         internal readonly ObjectsPool<ProInfo> InfoPool = new ObjectsPool<ProInfo>(150);
-        internal readonly List<ProInfo> DrawProjectiles = new List<ProInfo>();
-        internal readonly List<Projectile> CleanUp = new List<Projectile>();
+        internal readonly List<ProInfo> DrawProjectiles = new List<ProInfo>(300);
+        internal readonly List<Projectile> CleanUp = new List<Projectile>(20);
 
-        internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>();
+        internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>(12);
         internal EntityPool<MyEntity>[] EntityPool;
         internal ulong CurrentProjectileId;
 
