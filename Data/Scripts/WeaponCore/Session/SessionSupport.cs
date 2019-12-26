@@ -437,10 +437,26 @@ namespace WeaponCore
             SmallBlockSphereDb.Clear();
             GridToBlockTypeMap.Clear();
             AnimationsToProcess.Clear();
+
+            foreach (var s in _shrinking)
+            {
+                s.Clean();
+                _shrinkPool.Return(s);
+                _shrinking.Remove(s);
+            }
             _shrinking.ClearImmediate();
-            _glowPool.Clean();
-            _afterGlow.Clear();
             _shrinkPool.Clean();
+
+            for (int i = 0; i < _afterGlow.Count; i++)
+            {
+                var g = _afterGlow[i];
+                g.Clean();
+                _afterGlow.RemoveAtFast(i);
+                _glowPool.Return(g);
+            }
+            _afterGlow.Clear();
+            _glowPool.Clean();
+            
             _subTypeIdToWeaponDefs.Clear();
             WeaponDefinitions.Clear();
             _slimsSortedList.Clear();
@@ -516,6 +532,7 @@ namespace WeaponCore
             SoundDefinitions = null;
             ActiveCockPit = null;
             ControlledEntity = null;
+            if (DbsToUpdate.Count > 0) Log.Line("DbsToUpdate not empty at purge");
             DbsToUpdate.Clear();
             //DbsToUpdate = null;
             GridTargetingAIs.Clear();
