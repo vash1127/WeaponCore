@@ -10,7 +10,7 @@ namespace WeaponCore.Support {
     public class PartAnimation
     {
         internal readonly string AnimationId;
-        internal readonly EventTriggers Event;
+        internal readonly EventTriggers EventTrigger;
         internal readonly Matrix[] RotationSet;
         internal readonly Matrix[] RotCenterSet;
         internal readonly Matrix FinalPos;
@@ -70,7 +70,7 @@ namespace WeaponCore.Support {
 
         internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false)
         {
-            Event = eventTrigger;
+            EventTrigger = eventTrigger;
             RotationSet = rotationSet;
             RotCenterSet = rotCeterSet;
             CurrentEmissivePart = currentEmissivePart;
@@ -129,14 +129,17 @@ namespace WeaponCore.Support {
                         FinalPos *= rotAroundCenter;
                     }
 
-                    for(int j = 0; j < currentEmissive.EmissiveParts.Length; j++)
+                    if (currentEmissive.EmissiveParts != null)
                     {
-                        var currEmissive = currentEmissive.EmissiveParts[j];
+                        for (int j = 0; j < currentEmissive.EmissiveParts.Length; j++)
+                        {
+                            var currEmissive = currentEmissive.EmissiveParts[j];
 
-                        if (emissivePartCheck.Contains(currEmissive)) continue;
+                            if (emissivePartCheck.Contains(currEmissive)) continue;
 
-                        emissivePartCheck.Add(currEmissive);
-                        emissiveParts.Add(currEmissive);
+                            emissivePartCheck.Add(currEmissive);
+                            emissiveParts.Add(currEmissive);
+                        }
                     }
 
                     Next();

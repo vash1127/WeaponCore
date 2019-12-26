@@ -75,11 +75,9 @@ namespace WeaponCore.Platform
             Parts.CheckSubparts();
             for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
             {
-                var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;
-
-                var wepAnimationSet = new Dictionary<EventTriggers, PartAnimation[]>();
-                    if(Structure.WeaponSystems.ContainsKey(Structure.MuzzlePartNames[i]))
-                    wepAnimationSet = comp.Ai.Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
+                var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;                
+                    
+                var wepAnimationSet = comp.Ai.Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
 
                 MyEntity muzzlePartEntity = null;
                 WeaponSystem system;

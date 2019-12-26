@@ -476,7 +476,7 @@ namespace WeaponCore
                         }
                     }
 
-                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.Event, animation.AnimationId, rotations, rotCenters,
+                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.EventTrigger, animation.AnimationId, rotations, rotCenters,
                         animation.TypeSet, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
                         animation.Muzzle, animation.FireDelay, animation.MotionDelay, system, animation.DoesLoop,
                         animation.DoesReverse, animation.TriggerOnce));
