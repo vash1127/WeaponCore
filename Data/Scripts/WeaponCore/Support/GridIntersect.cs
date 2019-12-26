@@ -11,7 +11,6 @@ namespace WeaponCore.Support
     {
         internal static bool BresenhamGridIntersection(MyCubeGrid grid, Vector3D worldStart, Vector3D worldEnd)
         {
-            //if (selfIntersect) worldEnd = worldStart + (-Vector3D.Normalize(worldStart - worldEnd) * (grid.PositionComp.LocalVolume.Radius + grid.GridSize));
             var start = grid.WorldToGridInteger(worldStart);
             var end = grid.WorldToGridInteger(worldEnd);
             Vector3I delta = end - start;
