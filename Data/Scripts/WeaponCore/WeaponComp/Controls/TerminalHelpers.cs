@@ -157,7 +157,9 @@ namespace WeaponCore.Control
         {
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-            comp.CurrentCharge = 0;
+
+            if (!On) comp.CurrentCharge = 0;
+
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];

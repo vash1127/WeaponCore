@@ -754,7 +754,7 @@ namespace WeaponCore.Platform
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
-                if (System.EnergyAmmo && !System.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
+                if ((System.EnergyAmmo || System.IsHybrid) && !System.MustCharge && !Comp.UnlimitedPower && !DrawingPower)
                     DrawPower();
 
             }
@@ -776,7 +776,7 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
-                    if (System.EnergyAmmo && !System.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)
+                    if ((System.EnergyAmmo || System.IsHybrid) && !System.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
                     else if (System.MustCharge && Comp.State.Value.Weapons[WeaponId].CurrentAmmo != 0)
                     {
@@ -809,6 +809,7 @@ namespace WeaponCore.Platform
         {
             if (!DrawingPower) return;
             DrawingPower = false;
+            RequestedPower = false;
             Comp.Ai.RequestedWeaponsDraw -= RequiredPower;
             Comp.Ai.CurrentWeaponsDraw -= UseablePower;
             Comp.SinkPower -= UseablePower;
