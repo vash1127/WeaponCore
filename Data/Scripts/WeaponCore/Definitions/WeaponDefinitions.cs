@@ -538,6 +538,7 @@ namespace WeaponCore.Support
         [ProtoMember(6)] internal EventTriggers[] Loop;
         [ProtoMember(7)] internal Dictionary<EventTriggers, RelMove[]> EventMoveSets;
         [ProtoMember(8)] internal EventTriggers[] TriggerOnce;
+        [ProtoMember(9)] internal bool ResetEmissives;
 
     }
 

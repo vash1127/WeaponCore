@@ -750,7 +750,7 @@ namespace WeaponCore.Platform
         {
 
             if (FiringEmitter != null) StartFiringSound();
-            if (ShotEnergyCost > 0 && !IsShooting && !System.DesignatorWeapon)
+            if (!IsShooting && !System.DesignatorWeapon)
             {
                 EventTriggerStateChanged(EventTriggers.StopFiring, false);
                 Comp.CurrentDps += Dps;
@@ -771,11 +771,12 @@ namespace WeaponCore.Platform
             {
                 _ticksUntilShoot = 0;
                 PreFired = false;
-                if (ShotEnergyCost > 0 && IsShooting && !System.DesignatorWeapon)
+                if (IsShooting && !System.DesignatorWeapon)
                 {
                     EventTriggerStateChanged(EventTriggers.Firing, false);
                     EventTriggerStateChanged(EventTriggers.StopFiring, true);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
+
                     if ((System.EnergyAmmo || System.IsHybrid) && !System.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
                     else if (System.MustCharge && Comp.State.Value.Weapons[WeaponId].CurrentAmmo != 0)
@@ -875,6 +876,8 @@ namespace WeaponCore.Platform
         internal static void Reloaded(object o)
         {
             var w = o as Weapon;
+            if (w == null) return;
+
             if (w.System.MustCharge)
             {
                 if (!w.System.IsHybrid)

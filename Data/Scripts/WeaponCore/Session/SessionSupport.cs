@@ -277,7 +277,7 @@ namespace WeaponCore
         internal void UpdateWeaponHeat(object heatTracker)
         {
             var ht = heatTracker as MyTuple<Weapon, int, bool>?;
-            if (ht != null && ht.Value.Item1.Comp.Status == WeaponComponent.Start.Started)
+            if (ht != null && ht.Value.Item1 != null)
             {
                 var w = ht.Value.Item1;
                 var currentHeat = w.Comp.State.Value.Weapons[w.WeaponId].Heat;

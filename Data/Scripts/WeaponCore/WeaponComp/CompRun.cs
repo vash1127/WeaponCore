@@ -14,6 +14,7 @@ namespace WeaponCore.Support
         {
             try
             {
+                Log.Line("Added To Container");
                 base.OnAddedToContainer();
                 if (Container.Entity.InScene)
                 {
@@ -34,7 +35,7 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 lock (this)
                 {
-                    if (Platform.State == MyWeaponPlatform.PlatformState.Inited) ReInitPlatform();
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready) ReInitPlatform();
                     else MyAPIGateway.Utilities.InvokeOnGameThread(PreInit);
                 }
             }
@@ -66,9 +67,11 @@ namespace WeaponCore.Support
                         Log.Line($"Something went wrong with Platform PreInit");
                         break;
                     case MyWeaponPlatform.PlatformState.Delay:
+                        //Log.Line($"Platform RePreInit in 120");
                         Ai?.Session?.FutureEvents.Schedule(RePreInit, null, 120);
                         break;
                     case MyWeaponPlatform.PlatformState.Inited:
+                        //Log.Line($"Platform Inited");
                         InitPlatform();
                         break;
                 }
@@ -109,7 +112,7 @@ namespace WeaponCore.Support
                     if (weapon.System.MaxTrajectory > maxTrajectory)
                         maxTrajectory = weapon.System.MaxTrajectory;
 
-                    if(!weapon.System.EnergyAmmo || weapon.System.MustCharge)
+                    if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
                         Session.ComputeStorage(weapon);
 
                     if (state.CurrentAmmo == 0 && !weapon.Reloading)
@@ -120,7 +123,15 @@ namespace WeaponCore.Support
                         CurrentCharge += weapon.System.EnergyMagSize;
                     }
                     else if (weapon.System.MustCharge)
+                    {
+                        if (weapon.CurrentCharge > 0)
+                            CurrentCharge -= weapon.CurrentCharge;
+
+                        weapon.CurrentCharge = 0;
                         state.CurrentAmmo = 0;
+                        weapon.Reloading = false;
+                        Session.ComputeStorage(weapon);
+                    }
 
                     if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
                     {
