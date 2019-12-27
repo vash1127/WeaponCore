@@ -134,6 +134,7 @@ namespace WeaponCore.Platform
         internal bool AiOnlyWeapon;
         internal bool Charging;
         internal bool DrawingPower;
+        internal bool RequestedPower;
         internal bool ResetPower;
         internal bool RecalcPower;
 

@@ -118,8 +118,6 @@ namespace WeaponCore.Control
                                     {
                                         if (w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)
                                             w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
-
-                                        w.Reloading = false;
                                     }
 
                                     comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
@@ -160,6 +158,8 @@ namespace WeaponCore.Control
             var comp = blk?.Components?.Get<WeaponComponent>();
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
+            if (!On) comp.CurrentCharge = 0;
+
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];
@@ -182,12 +182,14 @@ namespace WeaponCore.Control
                     }
                     w.StopShooting();
 
-                    if (w.System.MustCharge && w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)
+                    Log.Line($"w.System.EnergyMagSize: {w.System.EnergyMagSize} CurrentAmmo: {w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo}");
+
+                    if (w.System.MustCharge && ((w.System.IsHybrid && w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.MagazineDef.Capacity) || (!w.System.IsHybrid && w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)))
                     {
-                        w.Reloading = false;
-                        w.Comp.CurrentCharge = 0;
+                        w.CurrentCharge = 0;
                         w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
                     }
+                    comp.CurrentCharge += w.CurrentCharge;
                 }
                 else
                 {

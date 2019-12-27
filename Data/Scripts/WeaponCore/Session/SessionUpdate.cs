@@ -233,8 +233,11 @@ namespace WeaponCore
                             var targetRequested = w.SeekTarget && targetChanged;
                             if (!targetRequested && (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick))
                             {
-                                if (!w.DrawingPower && !w.System.MustCharge)
+                                if (!w.RequestedPower && !w.System.MustCharge)
+                                {
                                     gridAi.RequestedWeaponsDraw += w.RequiredPower;
+                                    w.RequestedPower = true;
+                                }
 
                                 ShootingWeapons.Enqueue(w);
                             }
@@ -274,20 +277,20 @@ namespace WeaponCore
                     }
                     else
                     {
-                        w.CurrentCharge = w.System.EnergyMagSize;
                         w.Comp.CurrentCharge += (w.System.EnergyMagSize - w.CurrentCharge);
+                        w.CurrentCharge = w.System.EnergyMagSize;
                     }
 
                     if (!w.Comp.Ai.Session.DedicatedServer)
                         w.Comp.TerminalRefresh();
                 }
 
-                if (w.ChargeUntilTick <= Tick || !w.Comp.State.Value.Online)
+                if (w.ChargeUntilTick <= Tick)
                 {
                     //Log.Line("Reloaded");
-                    if (w.ChargeUntilTick <= Tick)
-                        Weapon.Reloaded(w);
-                    else if (w.DrawingPower)
+                    Weapon.Reloaded(w);
+
+                    if (w.DrawingPower)
                         w.StopPowerDraw();
 
                     w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;
@@ -382,11 +385,12 @@ namespace WeaponCore
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
 
                     if (w.DelayTicks == 0) {
+                        //Log.Line($"Adapting Current Requested: {w.Comp.Ai.RequestedWeaponsDraw}");
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                        if (w.IsShooting || w.DrawingPower)
+                        if (w.DrawingPower)
                             w.DrawPower(true);
                         else
                             w.DrawPower();
