@@ -9,7 +9,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Projectiles.Projectile;
-using static WeaponCore.Support.ProInfo;
+using static WeaponCore.Support.VisualShot;
 namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
@@ -64,13 +64,14 @@ namespace WeaponCore.Projectiles
             for (int j = 0; j < CleanUp.Count; j++)
             {
                 var p = CleanUp[j];
-                for (int i = 0; i < p.VrInfos.Count; i++)
+                for (int i = 0; i < p.VrPros.Count; i++)
                 {
-                    var virtInfo = p.VrInfos[i];
-                    virtInfo.Clean();
-                    InfoPool.MarkForDeallocate(virtInfo);
+                    var virtInfo = p.VrPros[i];
+                    virtInfo.Info.Clean();
+                    InfoPool.MarkForDeallocate(virtInfo.Info);
+                    Session.VisualShotPool.Return(virtInfo.VisualShot);
                 }
-                p.VrInfos.Clear();
+                p.VrPros.Clear();
 
                 if (p.DynamicGuidance)
                     DynTrees.UnregisterProjectile(p);
@@ -124,7 +125,7 @@ namespace WeaponCore.Projectiles
                     if (p.Info.Target.Projectile.State != ProjectileState.Alive)
                         p.UnAssignProjectile(true);
 
-                p.Info.OnScreen = Screen.None;
+                p.Info.VisualShot.OnScreen = Screen.None;
 
                 if (p.AccelLength > 0)
                 {
@@ -351,22 +352,31 @@ namespace WeaponCore.Projectiles
                 if (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle)
                 {
                     if (p.State == ProjectileState.OneAndDone)
-                        p.Info.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
+                    {
+                        //p.Info.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
+                        p.Info.VisualShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.MaxTrajectory, p.Info.ShooterVel, p.Position, p.Direction);
+                    }
                     else if (p.ModelState == EntityState.None && p.Info.System.AmmoParticle && !p.Info.System.DrawLine)
-                        p.Info.UpdateShape(p.Position, p.Direction, p.Info.System.CollisionSize, ReSize.None);
+                    {
+                        //p.Info.UpdateShape(p.Position, p.Direction, p.Info.System.CollisionSize, ReSize.None);
+                        p.Info.VisualShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, p.Info.ShooterVel, p.Position, p.Direction);
+                    }
                     else
                     {
                         p.Info.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Direction, (p.Velocity - p.StartSpeed) * StepConst));
                         var displaceDiff = p.Info.ProjectileDisplacement - p.TracerLength;
                         if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.001)
                         {
-                            p.Info.UpdateShape(p.Position, p.Direction, p.Info.ProjectileDisplacement, ReSize.Grow);
+                            //p.Info.UpdateShape(p.Position, p.Direction, p.Info.ProjectileDisplacement, ReSize.Grow);
+                            p.Info.VisualShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, p.Info.ShooterVel, p.Position, p.Direction);
                         }
                         else
                         {
                             var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
-                            var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;
-                            p.Info.UpdateShape(drawStartPos, pointDir, p.TracerLength, ReSize.None);
+                            //var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;  /// WHY!@?#@!?#@!?
+                            //p.Info.UpdateShape(drawStartPos, pointDir, p.TracerLength, ReSize.None);
+                            p.Info.VisualShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, p.Info.ShooterVel, p.Position, pointDir);
+
                         }
                     }
                 }
@@ -382,20 +392,20 @@ namespace WeaponCore.Projectiles
                     }
                     if (Session.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
                     {
-                        p.Info.OnScreen = Screen.Tracer;
+                        p.Info.VisualShot.OnScreen = Screen.Tracer;
                         p.FirstOffScreen = false;
                         p.LastEntityPos = p.Position;
                     }
                 }
 
-                if (p.Info.OnScreen == Screen.None && (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle))
+                if (p.Info.VisualShot.OnScreen == Screen.None && (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle))
                 {
 
-                    var bb = new BoundingBoxD(Vector3D.Min(p.Info.LineStart, p.Info.Position), Vector3D.Max(p.Info.LineStart, p.Info.Position));
-                    if (Session.Camera.IsInFrustum(ref bb)) p.Info.OnScreen = Screen.Tracer;
+                    var bb = new BoundingBoxD(Vector3D.Min(p.Info.VisualShot.TracerStart, p.Info.VisualShot.Position), Vector3D.Max(p.Info.VisualShot.TracerStart, p.Info.VisualShot.Position));
+                    if (Session.Camera.IsInFrustum(ref bb)) p.Info.VisualShot.OnScreen = Screen.Tracer;
                     
-                    if (p.Info.OnScreen == Screen.None && p.Info.System.Trail)
-                        p.Info.OnScreen = Screen.Tail;
+                    if (p.Info.VisualShot.OnScreen == Screen.None && p.Info.System.Trail)
+                        p.Info.VisualShot.OnScreen = Screen.Tail;
                 }
 
                 if (p.Info.MuzzleId == -1)
@@ -404,10 +414,12 @@ namespace WeaponCore.Projectiles
                     continue;
                 }
 
-                if (p.Info.OnScreen != Screen.None)
+                if (p.Info.VisualShot.OnScreen != Screen.None)
                 {
-                    p.Info.Complete(null, DrawState.Default);
+                    //p.Info.Complete(null);
+                    p.Info.VisualShot.Complete(p.Info);
                     DrawProjectiles.Add(p.Info);
+                    p.Info.Ai.Session.VisualShots.Add(p.Info.VisualShot);
                 }
             }
         }

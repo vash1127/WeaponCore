@@ -64,13 +64,13 @@ namespace WeaponCore
 
                 if (info.PrimeEntity != null)
                 {
-                    if (info.Draw != ProInfo.DrawState.Last && !info.PrimeEntity.InScene && !info.Cloaked)
+                    if (info.VisualShot.Draw != VisualShot.DrawState.Last && !info.PrimeEntity.InScene && !info.Cloaked)
                     {
                         info.PrimeEntity.InScene = true;
                         info.PrimeEntity.Render.UpdateRenderObject(true, false);
                     }
                     info.PrimeEntity.PositionComp.SetWorldMatrix(info.PrimeMatrix, null, false, false, false);
-                    if (info.Draw == ProInfo.DrawState.Last || info.Cloaked && info.PrimeEntity.InScene)
+                    if (info.VisualShot.Draw == VisualShot.DrawState.Last || info.Cloaked && info.PrimeEntity.InScene)
                     {
                         info.PrimeEntity.InScene = false;
                         info.PrimeEntity.Render.RemoveRenderObjects();
@@ -80,79 +80,84 @@ namespace WeaponCore
 
                 if (info.Triggered && info.TriggerEntity != null)
                 {
-                    if ((info.Draw != ProInfo.DrawState.Last && !info.TriggerEntity.InScene))
+                    if ((info.VisualShot.Draw != VisualShot.DrawState.Last && !info.TriggerEntity.InScene))
                     {
                         info.TriggerEntity.InScene = true;
                         info.TriggerEntity.Render.UpdateRenderObject(true, false);
                     }
 
                     info.TriggerEntity.PositionComp.SetWorldMatrix(info.TriggerMatrix, null, false, false, false);
-                    if (info.Draw == ProInfo.DrawState.Last)
+                    if (info.VisualShot.Draw == VisualShot.DrawState.Last)
                     {
                         info.TriggerEntity.InScene = false;
                         info.TriggerEntity.Render.RemoveRenderObjects();
                     }
                 }
-
                 if (!info.System.Values.Graphics.Line.Tracer.Enable || info.Shrinking) continue;
 
-                var color = info.Color;
-                var thickness = info.LineWidth;
-                if (info.System.IsBeamWeapon)
+                if (false)
                 {
-                    var changeValue = 0.01f;
-                    if (info.System.IsBeamWeapon && info.BaseDamagePool > info.System.Values.Ammo.BaseDamage)
+                    var color = info.Color;
+                    var thickness = info.LineWidth;
+                    if (info.System.IsBeamWeapon)
                     {
-                        thickness *= info.BaseDamagePool / info.System.Values.Ammo.BaseDamage;
-                        changeValue = 0.02f;
-                    }
-                    if (_lCount < 60)
-                    {
-                        var adder = (_lCount + 1);
-                        var adder2 = adder * changeValue;
-                        var adder3 = adder2 + 1;
-                        thickness = adder3 * thickness;
-                        color *= adder3;
+                        var changeValue = 0.01f;
+                        if (info.System.IsBeamWeapon && info.BaseDamagePool > info.System.Values.Ammo.BaseDamage)
+                        {
+                            thickness *= info.BaseDamagePool / info.System.Values.Ammo.BaseDamage;
+                            changeValue = 0.02f;
+                        }
+                        if (_lCount < 60)
+                        {
+                            var adder = (_lCount + 1);
+                            var adder2 = adder * changeValue;
+                            var adder3 = adder2 + 1;
+                            thickness = adder3 * thickness;
+                            color *= adder3;
+                        }
+                        else
+                        {
+                            var shrinkFrom = ((60) * changeValue) + 1;
+
+                            var adder = (_lCount - 59);
+                            var adder2 = adder * changeValue;
+                            var scaler = (shrinkFrom - adder2);
+                            thickness = scaler * thickness;
+                            color *= (shrinkFrom - adder2);
+                        }
                     }
                     else
                     {
-                        var shrinkFrom = ((60) * changeValue) + 1;
+                        if (info.ReSizing == ProInfo.ReSize.Shrink && info.VisualShot.DrawHit?.HitPos != null && info.VisualShot.OnScreen != VisualShot.Screen.None)
+                        {
+                            info.Shrinking = true;
+                            sFound = true;
+                            VisualShots.Add(info.VisualShot);
+                            continue;
+                            var shrink = ShrinkPool.Get();
+                            shrink.Init(info, thickness);
+                            _shrinking.Add(shrink);
+                        }
+                        else if (info.System.Trail && info.ReSizing != ProInfo.ReSize.Grow)
+                        {
+                            var glow = GlowPool.Get();
+                            glow.Parent = info.Glowers.Count > 0 ? info.Glowers.Peek() : null;
+                            glow.Back = info.LineStart;
+                            glow.FirstTick = Tick;
+                            glow.System = info.System;
+                            glow.ShooterVel = info.ShooterVel;
+                            glow.WidthScaler = info.LineScaler;
+                            info.Glowers.Push(glow);
+                            _afterGlow.Add(glow);
 
-                        var adder = (_lCount - 59);
-                        var adder2 = adder * changeValue;
-                        var scaler = (shrinkFrom - adder2);
-                        thickness = scaler * thickness;
-                        color *= (shrinkFrom - adder2);
+                        }
                     }
-                }
-                else
-                {
-                    if (info.ReSizing == ProInfo.ReSize.Shrink && info.DrawHit?.HitPos != null && info.OnScreen != ProInfo.Screen.None)
-                    {
-                        info.Shrinking = true;
-                        sFound = true;
-                        var shrink = _shrinkPool.Get();
-                        shrink.Init(info, thickness);
-                        _shrinking.Add(shrink);
-                    }
-                    else if (info.System.Trail && info.ReSizing != ProInfo.ReSize.Grow)
-                    {
-                        var glow = _glowPool.Get();
-                        glow.Parent = info.Glowers.Count > 0 ? info.Glowers.Peek() : null;
-                        glow.Back = info.LineStart;
-                        glow.FirstTick = Tick;
-                        glow.System = info.System;
-                        glow.ShooterVel = info.ShooterVel;
-                        glow.WidthScaler = info.LineScaler;
-                        info.Glowers.Push(glow);
-                        _afterGlow.Add(glow);
-                    }
-                }
 
-                if (info.System.OffsetEffect && info.OnScreen == ProInfo.Screen.Tracer)
-                    LineOffsetEffect(info.System, info.Position, info.Direction, info.DistanceTraveled, info.Length, thickness, color);
-                else if (info.OnScreen == ProInfo.Screen.Tracer)
-                    MyTransparentGeometry.AddLineBillboard(info.System.TracerMaterial, color, info.Position, -info.Direction, (float)info.Length, thickness);
+                    if (info.System.OffsetEffect && info.VisualShot.OnScreen == VisualShot.Screen.Tracer)
+                        LineOffsetEffect(info.System, info.Position, info.Direction, info.DistanceTraveled, info.Length, thickness, color);
+                    else if (info.VisualShot.OnScreen == VisualShot.Screen.Tracer)
+                        MyTransparentGeometry.AddLineBillboard(info.System.TracerMaterial, color, info.Position, -info.Direction, (float)info.Length, thickness);
+                }
 
                 if (info.System.IsBeamWeapon && info.System.HitParticle && !(info.MuzzleId != 0 && (info.System.ConvergeBeams || info.System.OneHitParticle)))
                 {
@@ -165,7 +170,7 @@ namespace WeaponCore
                     {
                         var weapon = weaponComp.Platform.Weapons[info.WeaponId];
                         var effect = weapon.HitEffects[info.MuzzleId];
-                        if (info.DrawHit?.HitPos != null && info.OnScreen == ProInfo.Screen.Tail)
+                        if (info.VisualShot.DrawHit?.HitPos != null && info.VisualShot.OnScreen == VisualShot.Screen.Tail)
                         {
                             if (effect != null)
                             {
@@ -176,7 +181,7 @@ namespace WeaponCore
                                     effect = null;
                                 }
                             }
-                            var hit = info.DrawHit.Value.HitPos.Value;
+                            var hit = info.VisualShot.DrawHit.Value.HitPos.Value;
                             MatrixD matrix;
                             MatrixD.CreateTranslation(ref hit, out matrix);
                             if (effect == null)
@@ -200,8 +205,8 @@ namespace WeaponCore
                                 effect.Play();
 
                             effect.WorldMatrix = matrix;
-                            if (info.DrawHit.Value.Projectile != null) effect.Velocity = info.DrawHit.Value.Projectile.Velocity;
-                            else if (info.DrawHit.Value.Entity?.GetTopMostParent()?.Physics != null) effect.Velocity = info.DrawHit.Value.Entity.GetTopMostParent().Physics.LinearVelocity;
+                            if (info.VisualShot.DrawHit.Value.Projectile != null) effect.Velocity = info.VisualShot.DrawHit.Value.Projectile.Velocity;
+                            else if (info.VisualShot.DrawHit.Value.Entity?.GetTopMostParent()?.Physics != null) effect.Velocity = info.VisualShot.DrawHit.Value.Entity.GetTopMostParent().Physics.LinearVelocity;
                             weapon.HitEffects[info.MuzzleId] = effect;
                         }
                         else if (effect != null)
@@ -212,8 +217,23 @@ namespace WeaponCore
                     }
                 }
             }
-            if (sFound) _shrinking.ApplyAdditions();
+            //if (sFound) _shrinking.ApplyAdditions();
             Projectiles.DrawProjectiles.Clear();
+            DrawLines();
+        }
+
+        private void DrawLines()
+        {
+            for (int i = VisualShots.Count - 1; i >= 0; i--)
+            {
+                var vs = VisualShots[i];
+                DsDebugDraw.DrawSingleVec(vs.TracerStart, 1, Color.Red);
+                DsDebugDraw.DrawSingleVec(vs.Position, 1, Color.Blue);
+
+                vs.DrawTracer();
+                vs.DrawTrail();
+                VisualShots.RemoveAtFast(i);
+            }
         }
 
         private void Shrink()
@@ -248,7 +268,7 @@ namespace WeaponCore
                     else MyTransparentGeometry.AddLineBillboard(s.System.TracerMaterial, color, shrunk.Value.BackOfTail, s.Direction, (float)(shrunk.Value.Reduced + shrunk.Value.StepLength), width);
                     if (s.System.Trail)
                     {
-                        var glow = _glowPool.Get();
+                        var glow = GlowPool.Get();
                         glow.Parent = s.Glowers.Count > 0 ? s.Glowers.Peek() : null;
                         glow.Back = shrunk.Value.BackOfTail;
                         glow.FirstTick = Tick;
@@ -262,7 +282,7 @@ namespace WeaponCore
                 else
                 {
                     s.Clean();
-                    _shrinkPool.Return(s);
+                    ShrinkPool.Return(s);
                     _shrinking.Remove(s);
                     sRemove = true;
                 }
@@ -309,7 +329,7 @@ namespace WeaponCore
 
                 remove.Clean();
                 _afterGlow.Remove(remove);
-                _glowPool.Return(remove);
+                GlowPool.Return(remove);
             }
             _glowRemove.Clear();
         }

@@ -6,9 +6,12 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Data.Scripts.WeaponCore.Support;
 using WeaponCore.Support;
 using static WeaponCore.Support.AreaDamage;
+using static WeaponCore.Support.VisualShot;
 using static WeaponCore.Support.ProInfo;
+
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Projectiles
@@ -92,11 +95,11 @@ namespace WeaponCore.Projectiles
         internal bool CachedPlanetHit;
         internal bool ForceHitParticle;
         internal bool Gunner;
-        internal ProInfo Info = new ProInfo();
+        internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
-        internal readonly List<ProInfo> VrInfos = new List<ProInfo>();
+        internal readonly List<VirtualProjectile> VrPros = new List<VirtualProjectile>();
         internal readonly List<Projectile> EwaredProjectiles = new List<Projectile>();
         internal readonly List<GridAi> Watchers = new List<GridAi>();
         internal readonly HashSet<Projectile> Seekers = new HashSet<Projectile>();
@@ -104,6 +107,7 @@ namespace WeaponCore.Projectiles
 
         internal void Start()
         {
+            Info.VisualShot = Info.Ai.Session.VisualShotPool.Get();
             Id = Info.Ai.Session.Projectiles.CurrentProjectileId++;
             Position = Info.Origin;
             AccelDir = Direction;
@@ -141,7 +145,6 @@ namespace WeaponCore.Projectiles
             MineTriggered = false;
             Info.Cloaked = false;
             HitParticleActive = false;
-            Info.OnScreen = Screen.None;
             LinePlanetCheck = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
@@ -283,6 +286,8 @@ namespace WeaponCore.Projectiles
             else Velocity = StartSpeed + AccelVelocity;
 
             TravelMagnitude = Velocity * StepConst;
+            if (EnableAv)
+                Info.VisualShot.Init(Info.System, Info.Ai, AccelPerSec * StepConst, MaxSpeed);
 
             FieldTime = Info.System.Values.Ammo.Trajectory.FieldTime;
 
@@ -366,14 +371,16 @@ namespace WeaponCore.Projectiles
                 var length = Vector3D.Distance(LastPosition, hitPos.Value);
                 var shrink = !Info.System.IsBeamWeapon;
                 var reSize = shrink ? ReSize.Shrink : ReSize.None;
-                Info.UpdateShape(hitPos.Value, Direction, length, reSize);
+                //Info.UpdateShape(hitPos.Value, Direction, length, reSize);
+                if (Info.VisualShot.OnScreen == Screen.None) CameraCheck();
+                //Info.VisualShot.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, TracerLength, Info.ShooterVel, hitPos.Value, Direction);
 
-                if (Info.OnScreen == Screen.None) CameraCheck();
-                    
                 if (Info.MuzzleId != -1)
                 {
-                    Info.Complete(drawHit, DrawState.Hit);
-                    Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
+                    Info.VisualShot.DrawHit = drawHit;
+                    //Info.Complete(drawHit);
+                    //Info.VisualShot.Complete(Info, drawHit);
+                    //Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
                 }
             }
 
@@ -384,12 +391,12 @@ namespace WeaponCore.Projectiles
                 Info.WeaponCache.VirtualHit = true;
                 Info.WeaponCache.HitEntity.Entity = drawHit.Value.Entity;
                 Info.WeaponCache.HitEntity.HitPos = drawHit.Value.HitPos;
-                Info.WeaponCache.Hits = VrInfos.Count;
+                Info.WeaponCache.Hits = VrPros.Count;
                 Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, hitPos.Value);
 
                 if (drawHit.Value.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = drawHit.Value.Block;
                 if (queue) Info.Ai.Session.Hits.Enqueue(this);
-                if (EnableAv && Info.OnScreen == Screen.Tracer) CreateFakeBeams(drawHit, Info.Ai.Session.Projectiles.DrawProjectiles);
+                if (EnableAv && Info.VisualShot.OnScreen == Screen.Tracer) CreateFakeBeams(drawHit, Info.Ai.Session.Projectiles.DrawProjectiles);
             }
 
             if (EnableAv)
@@ -402,31 +409,48 @@ namespace WeaponCore.Projectiles
         {
             Vector3D? hitPos = null;
             if (drawHit?.HitPos != null) hitPos = drawHit.Value.HitPos;
-            for (int i = 0; i < VrInfos.Count; i++)
+            for (int i = 0; i < VrPros.Count; i++)
             {
-                var vt = VrInfos[i];
-                vt.OnScreen = Info.OnScreen;
-                if (vt.System.ConvergeBeams)
+                var vp = VrPros[i];
+                var info = vp.Info;
+                var vs = vp.VisualShot;
+                vs.OnScreen = Info.VisualShot.OnScreen;
+                if (info.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vt.Origin, hitPos ?? Position) : new LineD(vt.LineStart, Position);
-                    vt.UpdateShape(beam.To, beam.Direction, beam.Length, ReSize.None);
+                    var beam = !miss ? new LineD(info.Origin, hitPos ?? Position) : new LineD(info.LineStart, Position);
+                    //vt.UpdateShape(beam.To, beam.Direction, beam.Length, ReSize.None);
+                    if (miss) vs.Update(beam.Length, beam.Length, info.ShooterVel, beam.To, beam.Direction);
+
                 }
                 else
                 {
                     Vector3D beamEnd;
                     var hit = !miss && hitPos.HasValue;
                     if (!hit)
-                        beamEnd = vt.Origin + (vt.Direction * MaxTrajectory);
+                        beamEnd = info.Origin + (vs.Direction * MaxTrajectory);
                     else
-                        beamEnd = vt.Origin + (vt.Direction * Info.WeaponCache.HitDistance);
-                    var line = new LineD(vt.Origin, beamEnd);
+                        beamEnd = info.Origin + (vs.Direction * Info.WeaponCache.HitDistance);
+                    var line = new LineD(info.Origin, beamEnd);
                     //DsDebugDraw.DrawSingleVec(vt.PrevPosition, 0.5f, Color.Red);
                     if (!miss && hitPos.HasValue)
-                        vt.UpdateShape(beamEnd, line.Direction, line.Length, ReSize.None);
-                    else vt.UpdateShape(line.To, line.Direction, line.Length, ReSize.None);
+                    {
+                        //vt.UpdateShape(beamEnd, line.Direction, line.Length, ReSize.None);
+                        //vs.Update(line.Length, line.Length, info.ShooterVel, beamEnd, line.Direction);
+
+                    }
+
+                    else
+                    {
+                        //vt.UpdateShape(line.To, line.Direction, line.Length, ReSize.None);
+                        vs.Update(line.Length, line.Length, info.ShooterVel, line.To, line.Direction);
+                    }
                 }
-                vt.Complete(drawHit, DrawState.Hit);
-                drawList.Add(vt);
+
+                if (miss) vs.Complete(Info, drawHit);
+                else vs.DrawHit = drawHit;
+
+                info.Ai.Session.VisualShots.Add(vs);
+                //drawList.Add(vt);
             }
         }
 
@@ -438,20 +462,20 @@ namespace WeaponCore.Projectiles
                 ModelSphereCurrent.Center = Position;
                 if (Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent) || FirstOffScreen)
                 {
-                    Info.OnScreen = Screen.Tracer;
+                    Info.VisualShot.OnScreen = Screen.Tracer;
                     FirstOffScreen = false;
                     LastEntityPos = Position;
                 }
             }
 
-            if (Info.OnScreen == Screen.None && Info.System.DrawLine)
+            if (Info.VisualShot.OnScreen == Screen.None && Info.System.DrawLine)
             {
 
-                var bb = new BoundingBoxD(Vector3D.Min(Info.LineStart, Info.Position), Vector3D.Max(Info.LineStart, Info.Position));
-                if (Info.Ai.Session.Camera.IsInFrustum(ref bb)) Info.OnScreen = Screen.Tracer;
+                var bb = new BoundingBoxD(Vector3D.Min(Info.VisualShot.TracerStart, Info.VisualShot.Position), Vector3D.Max(Info.VisualShot.TracerStart, Info.VisualShot.Position));
+                if (Info.Ai.Session.Camera.IsInFrustum(ref bb)) Info.VisualShot.OnScreen = Screen.Tracer;
 
-                if (Info.OnScreen == Screen.None && Info.System.Trail)
-                    Info.OnScreen = Screen.Tail;
+                if (Info.VisualShot.OnScreen == Screen.None && Info.System.Trail)
+                    Info.VisualShot.OnScreen = Screen.Tail;
             }
         }
 
@@ -859,11 +883,11 @@ namespace WeaponCore.Projectiles
                 var closeToCamera = distToCameraSqr < 360000;
                 if (ForceHitParticle) LastHitPos = Position;
 
-                if (Info.OnScreen == Screen.Tracer && HitParticleActive && Info.System.HitParticle) PlayHitParticle();
-                else if (HitParticleActive && (Info.OnScreen == Screen.Tracer || closeToCamera)) Info.FakeExplosion = true;
+                if (Info.VisualShot.OnScreen == Screen.Tracer && HitParticleActive && Info.System.HitParticle) PlayHitParticle();
+                else if (HitParticleActive && (Info.VisualShot.OnScreen == Screen.Tracer || closeToCamera)) Info.FakeExplosion = true;
                 Info.HitSoundActived = Info.System.HitSound && (Info.HitSoundActive && (ForceHitParticle || distToCameraSqr < Info.System.HitSoundDistSqr || LastHitPos.HasValue && (!Info.LastHitShield || Info.System.Values.Audio.Ammo.HitPlayShield)));
 
-                if (Info.HitSoundActived) Info.HitEmitter.Entity = Info.DrawHit?.Entity;
+                if (Info.HitSoundActived) Info.HitEmitter.Entity = Info.VisualShot.DrawHit?.Entity;
                 Info.LastHitShield = false;
             }
             Colliding = false;
@@ -1009,10 +1033,11 @@ namespace WeaponCore.Projectiles
             {
                 Info.PrimeMatrix = MatrixD.Identity;
                 Info.TriggerMatrix = MatrixD.Identity;
-                Info.Complete(null, DrawState.Last);
+                Info.VisualShot.Complete(Info);
                 Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
                 if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.PrimeEntity);
                 if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.TriggerEntity);
+                Info.Ai.Session.VisualShotPool.Return(Info.VisualShot);
                 ModelState = EntityState.None;
             }
         }

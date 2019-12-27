@@ -20,12 +20,14 @@ namespace WeaponCore.Support
 {
     internal class ProInfo
     {
+        /*
         public enum DrawState
         {
             Last,
             Hit,
             Default
         }
+        */
 
         public enum ReSize
         {
@@ -42,7 +44,9 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(60); 
+        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(60);
+        internal VisualShot VisualShot;
+
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool AmmoSound;
         internal bool HasTravelSound;
@@ -53,7 +57,7 @@ namespace WeaponCore.Support
         internal CompGroupOverrides Overrides;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
-        internal DrawHit? DrawHit;
+        //internal DrawHit? DrawHit;
         internal WeaponFrameCache WeaponCache;
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
@@ -83,7 +87,7 @@ namespace WeaponCore.Support
         internal float AreaEffectDamage;
         internal float DetonationDamage;
         internal float BaseHealthPool;
-        internal Screen OnScreen;
+        //internal Screen OnScreen;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
         internal bool Triggered;
@@ -94,14 +98,15 @@ namespace WeaponCore.Support
         internal bool LastHitShield;
         internal bool Shrinking;
         internal ReSize ReSizing;
-        internal DrawState Draw;
+        //internal DrawState Draw;
+        /*
         internal enum Screen
         {
             Tracer,
             Tail,
             None,
         }
-
+        */
         internal void SetupSounds(double distanceFromCameraSqr)
         {
             FiringSoundState = System.FiringSound;
@@ -138,10 +143,12 @@ namespace WeaponCore.Support
             AmmoSound = true;
         }
 
-        internal void Complete(DrawHit? drawHit, DrawState draw)
+        //internal void Complete(DrawHit? drawHit, DrawState draw)
+        internal void Complete()
         {
-            DrawHit = drawHit;
-            Draw = draw;
+            /*
+            //DrawHit = drawHit;
+            //Draw = draw;
 
             var color = System.Values.Graphics.Line.Tracer.Color;
             if (System.LineColorVariance)
@@ -154,8 +161,8 @@ namespace WeaponCore.Support
             }
 
             Color = color;
-
-            if (OnScreen != Screen.None)
+            VisualShot.Color = color;
+            if (VisualShot.OnScreen != Screen.None)
             {
                 var width = System.Values.Graphics.Line.Tracer.Width;
                 if (System.LineWidthVariance)
@@ -171,8 +178,12 @@ namespace WeaponCore.Support
                 ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
                 LineScaler = Math.Max(1, 0.10f * ScaleFov * (DistanceToLine / 100));
                 LineWidth = width * LineScaler;
+                VisualShot.Thickness = LineWidth;
+                VisualShot.LineScaler = LineScaler;
+
             }
             //if (DistanceTraveled <= 120) Log.Line($"[test] Age:{Age} - moved::{(DistanceTraveled - PrevDistanceTraveled)} - distTraveled:{DistanceTraveled} - pDisplacement:{ProjectileDisplacement} - reSize:{ReSizing} - onScreen:{OnScreen} - dToLine:{DistanceToLine}");
+            */
         }
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D direction)
@@ -205,6 +216,7 @@ namespace WeaponCore.Support
             Target.Reset();
             HitList.Clear();
             Glowers.Clear();
+            VisualShot = null;
             System = null;
             Ai = null;
             PrimeEntity = null;
@@ -220,7 +232,7 @@ namespace WeaponCore.Support
             LastHitShield = false;
             FakeExplosion = false;
             Shrinking = false;
-            OnScreen = Screen.None;
+            //VisualShot.OnScreen = Screen.None;
             IsShrapnel = false;
             WeaponId = 0;
             MuzzleId = 0;
@@ -235,7 +247,7 @@ namespace WeaponCore.Support
             GrowDistance = 0;
             DistanceToLine = 0;
             ReSizing = ReSize.None;
-            Draw = DrawState.Default;
+            //Draw = DrawState.Default;
             Position = Vector3D.Zero;
             Direction = Vector3D.Zero;
             LineStart = Vector3D.Zero;
@@ -243,6 +255,12 @@ namespace WeaponCore.Support
             ShooterVel = Vector3D.Zero;
             ClosestPointOnLine = Vector3D.Zero;
         }
+    }
+
+    internal struct VirtualProjectile
+    {
+        internal ProInfo Info;
+        internal VisualShot VisualShot;
     }
 
     internal class HitEntity
@@ -678,8 +696,11 @@ namespace WeaponCore.Support
         internal AfterGlow Parent;
         internal Vector3D Back;
         internal Vector3D ShooterVel;
+        internal LineD Line;
         internal uint FirstTick;
         internal float WidthScaler;
+        internal float Length;
+        internal float Thickness;
 
         internal void Clean()
         {
@@ -688,8 +709,11 @@ namespace WeaponCore.Support
             Back = Vector3D.Zero;
             FirstTick = 0;
             WidthScaler = 0;
+            Length = 0;
+            Thickness = 0;
         }
     }
+
 
     public struct RadiatedBlock
     {

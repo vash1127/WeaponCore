@@ -414,6 +414,7 @@ namespace WeaponCore.Support
         [ProtoMember(2)] internal string Material;
         [ProtoMember(3)] internal int DecayTime;
         [ProtoMember(4)] internal Vector4 Color;
+        [ProtoMember(5)] internal bool Back;
     }
 
     [ProtoContract]

@@ -110,7 +110,7 @@ namespace WeaponCore.Support
                         maxTrajectory = weapon.System.MaxTrajectory;
 
                     if(!weapon.System.EnergyAmmo || weapon.System.MustCharge)
-                    Session.ComputeStorage(weapon);
+                        Session.ComputeStorage(weapon);
 
                     if (state.CurrentAmmo == 0 && !weapon.Reloading)
                         weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);

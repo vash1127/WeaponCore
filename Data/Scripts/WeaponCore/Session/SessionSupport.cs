@@ -434,21 +434,21 @@ namespace WeaponCore
             foreach (var s in _shrinking)
             {
                 s.Clean();
-                _shrinkPool.Return(s);
+                ShrinkPool.Return(s);
                 _shrinking.Remove(s);
             }
             _shrinking.ClearImmediate();
-            _shrinkPool.Clean();
+            ShrinkPool.Clean();
 
             for (int i = _afterGlow.Count - 1; i >= 0; i--)
             {
                 var g = _afterGlow[i];
                 g.Clean();
                 _afterGlow.RemoveAtFast(i);
-                _glowPool.Return(g);
+                GlowPool.Return(g);
             }
             _afterGlow.Clear();
-            _glowPool.Clean();
+            GlowPool.Clean();
 
             foreach (var map in GridToFatMap.Keys)
                 DeferedFatMapRemoval(map);
