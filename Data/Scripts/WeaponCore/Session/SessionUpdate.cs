@@ -274,20 +274,20 @@ namespace WeaponCore
                     }
                     else
                     {
-                        w.CurrentCharge = w.System.EnergyMagSize;
                         w.Comp.CurrentCharge += (w.System.EnergyMagSize - w.CurrentCharge);
+                        w.CurrentCharge = w.System.EnergyMagSize;
                     }
 
                     if (!w.Comp.Ai.Session.DedicatedServer)
                         w.Comp.TerminalRefresh();
                 }
 
-                if (w.ChargeUntilTick <= Tick || !w.Comp.State.Value.Online)
+                if (w.ChargeUntilTick <= Tick)
                 {
                     //Log.Line("Reloaded");
-                    if (w.ChargeUntilTick <= Tick)
-                        Weapon.Reloaded(w);
-                    else if (w.DrawingPower)
+                    Weapon.Reloaded(w);
+
+                    if (w.DrawingPower)
                         w.StopPowerDraw();
 
                     w.Comp.Ai.OverPowered = w.Comp.Ai.RequestedWeaponsDraw > 0 && w.Comp.Ai.RequestedWeaponsDraw > w.Comp.Ai.GridMaxPower;

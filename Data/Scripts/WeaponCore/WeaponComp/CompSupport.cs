@@ -62,6 +62,8 @@ namespace WeaponCore.Support
                             var w = Platform.Weapons[i];
                             w.StopShooting();
                             w.WeaponCache.HitEntity.Clean();
+                            if (w.DrawingPower)
+                                w.StopPowerDraw();
                         }
 
                         StopAllSounds();

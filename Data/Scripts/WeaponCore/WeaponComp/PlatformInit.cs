@@ -6,6 +6,9 @@ using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
+using static WeaponCore.Platform.Weapon;
+using System.Collections.Generic;
+
 namespace WeaponCore.Platform
 {
     public class MyWeaponPlatform
@@ -72,10 +75,9 @@ namespace WeaponCore.Platform
             Parts.CheckSubparts();
             for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
             {
-                var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;
-
-                var wepAnimationSet =
-                    comp.Ai.Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
+                var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;                
+                    
+                var wepAnimationSet = comp.Ai.Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
 
                 MyEntity muzzlePartEntity = null;
                 WeaponSystem system;
@@ -112,7 +114,7 @@ namespace WeaponCore.Platform
 
                 Weapons[i] = new Weapon(muzzlePartEntity, system, i, comp, wepAnimationSet)
                 {
-                    Muzzles = new Weapon.Muzzle[barrelCount],
+                    Muzzles = new Muzzle[barrelCount],
                     Dummies = new Dummy[barrelCount],
                     AzimuthPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = azimuthPart },
                     ElevationPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = elevationPart },
