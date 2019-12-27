@@ -857,7 +857,8 @@ namespace WeaponCore.Platform
                     Comp.Ai.RequestedWeaponsDraw += RequiredPower;
                     ChargeUntilTick = (uint)System.ReloadTime + Comp.Ai.Session.Tick;
                     Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
-                    Comp.CurrentCharge -= CurrentCharge;
+                    var currDif = Comp.CurrentCharge - CurrentCharge;
+                    Comp.CurrentCharge = currDif > 0 ? currDif : 0;
                     CurrentCharge = 0;
                 }
                 else
@@ -879,6 +880,7 @@ namespace WeaponCore.Platform
                 {
                     w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.EnergyMagSize;
                     w.Comp.CurrentCharge = w.System.EnergyMagSize;
+                    w.CurrentCharge = w.System.EnergyMagSize;
                 }
 
                 w.StopPowerDraw();
@@ -894,8 +896,11 @@ namespace WeaponCore.Platform
                 if (w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId) > 0 || w.Comp.Ai.Session.IsCreative)
                 {
                     w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
-                    if(w.System.IsHybrid)
+                    if (w.System.IsHybrid)
+                    {
                         w.Comp.CurrentCharge = w.System.EnergyMagSize;
+                        w.CurrentCharge = w.System.EnergyMagSize;
+                    }
                 }
             }
 
