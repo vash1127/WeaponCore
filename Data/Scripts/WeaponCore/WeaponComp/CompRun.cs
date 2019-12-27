@@ -188,6 +188,11 @@ namespace WeaponCore.Support
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
             {
                 UpdateCompList(add: true, invoke: true);
+                if (!gridAi.WeaponCounter.ContainsKey(MyCube.BlockDefinition.Id.SubtypeId))
+                    gridAi.WeaponCounter.TryAdd(MyCube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
+
+                gridAi.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current++;
+
                 MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
             }
         }
