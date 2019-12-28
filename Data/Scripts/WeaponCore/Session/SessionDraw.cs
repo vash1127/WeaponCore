@@ -178,34 +178,23 @@ namespace WeaponCore
 
                 if (vs.Trail != TrailState.Off)
                 {
-                    var removeGlowStep = false;
                     var steps = vs.System.Values.Graphics.Line.Trail.DecayTime;
                     for (int j = 0; j < vs.GlowSteps.Count; j++)
                     {
                         var glow = vs.GlowSteps[j];
 
                         MyTransparentGeometry.AddLineBillboard(vs.System.TrailMaterial, vs.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
-                        var thisStep = (Tick - glow.FirstTick);
-                        if (thisStep >= steps)
-                            removeGlowStep = true;
-                    }
-
-                    if (removeGlowStep)
-                    {
-                        AfterGlow glow;
-                        if (vs.GlowSteps.TryDequeue(out glow))
+                        if (Tick - glow.FirstTick >= steps)
                         {
+                            vs.GlowSteps.Dequeue();
                             glow.Clean();
                             GlowPool.Return(glow);
                         }
                     }
                 }
 
-                if (vs.Trail == TrailState.Off && vs.GlowSteps.Count > 0) Log.Line($"GlowStops but its off!");
-
                 if (vs.EndTick <= vs.Ai.Session.Tick && vs.GlowSteps.Count == 0)
                 {
-                    if (!vs.Active) Log.Line($"EndTick and is Active?:{vs.Active}");
                     if (vs.Active)
                     {
                         vs.Active = false;
