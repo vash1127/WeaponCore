@@ -41,7 +41,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
         internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>();
-        internal readonly MyConcurrentPool<VisualShot> VisualShotPool = new MyConcurrentPool<VisualShot>();
+        internal readonly MyConcurrentPool<AvShot> VisualShotPool = new MyConcurrentPool<AvShot>();
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
@@ -75,7 +75,7 @@ namespace WeaponCore
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>();
-        internal readonly List<VisualShot> VisualShots = new List<VisualShot>(100);
+        internal readonly List<AvShot> VisualShots = new List<AvShot>(100);
 
         internal readonly Queue<Weapon> ShootingWeapons = new Queue<Weapon>(100);
         

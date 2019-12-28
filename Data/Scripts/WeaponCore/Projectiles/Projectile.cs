@@ -9,7 +9,7 @@ using VRageMath;
 using WeaponCore.Data.Scripts.WeaponCore.Support;
 using WeaponCore.Support;
 using static WeaponCore.Support.AreaDamage;
-using static WeaponCore.Support.VisualShot;
+using static WeaponCore.Support.AvShot;
 using static WeaponCore.Support.ProInfo;
 
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
@@ -107,7 +107,7 @@ namespace WeaponCore.Projectiles
 
         internal void Start()
         {
-            Info.VisualShot = Info.Ai.Session.VisualShotPool.Get();
+            Info.AvShot = Info.Ai.Session.VisualShotPool.Get();
             Id = Info.Ai.Session.Projectiles.CurrentProjectileId++;
             Position = Info.Origin;
             AccelDir = Direction;
@@ -287,7 +287,7 @@ namespace WeaponCore.Projectiles
 
             TravelMagnitude = Velocity * StepConst;
             if (EnableAv)
-                Info.VisualShot.Init(Info.System, Info.Ai, AccelPerSec * StepConst, MaxSpeed);
+                Info.AvShot.Init(Info, AccelPerSec * StepConst, MaxSpeed);
 
             FieldTime = Info.System.Values.Ammo.Trajectory.FieldTime;
 
@@ -360,26 +360,24 @@ namespace WeaponCore.Projectiles
             hitInfos.Clear();
         }
 
-        internal bool Intersected(DrawHit? drawHit, bool queue = true)
+        internal bool Intersected(bool queue = true)
         {
-            var hitPos = drawHit?.HitPos;
-            if (!hitPos.HasValue) return false;
+            if (Info.AvShot.DrawHit.HitPos == Vector3D.Zero) return false;
             if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModelId != -1 || Info.System.TriggerModelId != -1))
             {
-                TestSphere.Center = hitPos.Value;
+                TestSphere.Center = Info.AvShot.DrawHit.HitPos;
                 
-                var length = Vector3D.Distance(LastPosition, hitPos.Value);
+                var length = Vector3D.Distance(LastPosition, Info.AvShot.DrawHit.HitPos);
                 var shrink = !Info.System.IsBeamWeapon;
                 var reSize = shrink ? ReSize.Shrink : ReSize.None;
                 //Info.UpdateShape(hitPos.Value, Direction, length, reSize);
-                if (Info.VisualShot.OnScreen == Screen.None) CameraCheck();
-                //Info.VisualShot.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, TracerLength, Info.ShooterVel, hitPos.Value, Direction);
+                if (Info.AvShot.OnScreen == Screen.None) CameraCheck();
+                Info.AvShot.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, TracerLength, ref Info.ShooterVel, ref Info.AvShot.DrawHit.HitPos, ref Direction);
 
                 if (Info.MuzzleId != -1)
                 {
-                    Info.VisualShot.DrawHit = drawHit;
+                    Info.AvShot.Complete(Info, true);
                     //Info.Complete(drawHit);
-                    //Info.VisualShot.Complete(Info, drawHit);
                     //Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
                 }
             }
@@ -389,14 +387,14 @@ namespace WeaponCore.Projectiles
             else
             {
                 Info.WeaponCache.VirtualHit = true;
-                Info.WeaponCache.HitEntity.Entity = drawHit.Value.Entity;
-                Info.WeaponCache.HitEntity.HitPos = drawHit.Value.HitPos;
+                Info.WeaponCache.HitEntity.Entity = Info.AvShot.DrawHit.Entity;
+                Info.WeaponCache.HitEntity.HitPos = Info.AvShot.DrawHit.HitPos;
                 Info.WeaponCache.Hits = VrPros.Count;
-                Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, hitPos.Value);
+                Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, Info.AvShot.DrawHit.HitPos);
 
-                if (drawHit.Value.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = drawHit.Value.Block;
+                if (Info.AvShot.DrawHit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Info.AvShot.DrawHit.Block;
                 if (queue) Info.Ai.Session.Hits.Enqueue(this);
-                if (EnableAv && Info.VisualShot.OnScreen == Screen.Tracer) CreateFakeBeams(drawHit, Info.Ai.Session.Projectiles.DrawProjectiles);
+                if (EnableAv && Info.AvShot.OnScreen == Screen.Tracer) CreateFakeBeams(Info.Ai.Session.Projectiles.DrawProjectiles);
             }
 
             if (EnableAv)
@@ -405,21 +403,21 @@ namespace WeaponCore.Projectiles
             return true;
         }
 
-        internal void CreateFakeBeams(DrawHit? drawHit, List<ProInfo> drawList, bool miss = false)
+        internal void CreateFakeBeams(List<ProInfo> drawList, bool miss = false)
         {
             Vector3D? hitPos = null;
-            if (drawHit?.HitPos != null) hitPos = drawHit.Value.HitPos;
+            if (Info.AvShot.DrawHit.HitPos != Vector3D.Zero) hitPos = Info.AvShot.DrawHit.HitPos;
             for (int i = 0; i < VrPros.Count; i++)
             {
                 var vp = VrPros[i];
                 var info = vp.Info;
                 var vs = vp.VisualShot;
-                vs.OnScreen = Info.VisualShot.OnScreen;
+                vs.OnScreen = Info.AvShot.OnScreen;
                 if (info.System.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(info.Origin, hitPos ?? Position) : new LineD(info.LineStart, Position);
                     //vt.UpdateShape(beam.To, beam.Direction, beam.Length, ReSize.None);
-                    if (miss) vs.Update(beam.Length, beam.Length, info.ShooterVel, beam.To, beam.Direction);
+                    if (miss) vs.Update(beam.Length, beam.Length, ref info.ShooterVel, ref beam.To, ref beam.Direction);
 
                 }
                 else
@@ -442,12 +440,11 @@ namespace WeaponCore.Projectiles
                     else
                     {
                         //vt.UpdateShape(line.To, line.Direction, line.Length, ReSize.None);
-                        vs.Update(line.Length, line.Length, info.ShooterVel, line.To, line.Direction);
+                        vs.Update(line.Length, line.Length, ref info.ShooterVel, ref line.To, ref line.Direction);
                     }
                 }
 
-                if (miss) vs.Complete(Info, drawHit);
-                else vs.DrawHit = drawHit;
+                vs.Complete(Info, !miss);
 
                 info.Ai.Session.VisualShots.Add(vs);
                 //drawList.Add(vt);
@@ -462,20 +459,20 @@ namespace WeaponCore.Projectiles
                 ModelSphereCurrent.Center = Position;
                 if (Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent) || FirstOffScreen)
                 {
-                    Info.VisualShot.OnScreen = Screen.Tracer;
+                    Info.AvShot.OnScreen = Screen.Tracer;
                     FirstOffScreen = false;
                     LastEntityPos = Position;
                 }
             }
 
-            if (Info.VisualShot.OnScreen == Screen.None && Info.System.DrawLine)
+            if (Info.AvShot.OnScreen == Screen.None && Info.System.DrawLine)
             {
 
-                var bb = new BoundingBoxD(Vector3D.Min(Info.VisualShot.TracerStart, Info.VisualShot.Position), Vector3D.Max(Info.VisualShot.TracerStart, Info.VisualShot.Position));
-                if (Info.Ai.Session.Camera.IsInFrustum(ref bb)) Info.VisualShot.OnScreen = Screen.Tracer;
+                var bb = new BoundingBoxD(Vector3D.Min(Info.AvShot.TracerStart, Info.AvShot.Position), Vector3D.Max(Info.AvShot.TracerStart, Info.AvShot.Position));
+                if (Info.Ai.Session.Camera.IsInFrustum(ref bb)) Info.AvShot.OnScreen = Screen.Tracer;
 
-                if (Info.VisualShot.OnScreen == Screen.None && Info.System.Trail)
-                    Info.VisualShot.OnScreen = Screen.Tail;
+                if (Info.AvShot.OnScreen == Screen.None && Info.System.Trail)
+                    Info.AvShot.OnScreen = Screen.Tail;
             }
         }
 
@@ -883,11 +880,11 @@ namespace WeaponCore.Projectiles
                 var closeToCamera = distToCameraSqr < 360000;
                 if (ForceHitParticle) LastHitPos = Position;
 
-                if (Info.VisualShot.OnScreen == Screen.Tracer && HitParticleActive && Info.System.HitParticle) PlayHitParticle();
-                else if (HitParticleActive && (Info.VisualShot.OnScreen == Screen.Tracer || closeToCamera)) Info.FakeExplosion = true;
+                if (Info.AvShot.OnScreen == Screen.Tracer && HitParticleActive && Info.System.HitParticle) PlayHitParticle();
+                else if (HitParticleActive && (Info.AvShot.OnScreen == Screen.Tracer || closeToCamera)) Info.FakeExplosion = true;
                 Info.HitSoundActived = Info.System.HitSound && (Info.HitSoundActive && (ForceHitParticle || distToCameraSqr < Info.System.HitSoundDistSqr || LastHitPos.HasValue && (!Info.LastHitShield || Info.System.Values.Audio.Ammo.HitPlayShield)));
 
-                if (Info.HitSoundActived) Info.HitEmitter.Entity = Info.VisualShot.DrawHit?.Entity;
+                if (Info.HitSoundActived) Info.HitEmitter.Entity = Info.AvShot.DrawHit.Entity;
                 Info.LastHitShield = false;
             }
             Colliding = false;
@@ -993,7 +990,8 @@ namespace WeaponCore.Projectiles
             if (State == ProjectileState.Destroy)
             {
                 ForceHitParticle = true;
-                Intersected(new DrawHit(null, null, null, Position), false);
+                Info.AvShot.DrawHit = new DrawHit {Block = null, Entity = null, Projectile = null, HitPos = Position, HitVelocity = Velocity};
+                Intersected(false);
             }
 
             State = ProjectileState.Depleted;
@@ -1033,11 +1031,11 @@ namespace WeaponCore.Projectiles
             {
                 Info.PrimeMatrix = MatrixD.Identity;
                 Info.TriggerMatrix = MatrixD.Identity;
-                Info.VisualShot.Complete(Info);
+                Info.AvShot.Complete(Info, false, true);
                 Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
                 if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.PrimeEntity);
                 if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.TriggerEntity);
-                Info.Ai.Session.VisualShotPool.Return(Info.VisualShot);
+                Info.Ai.Session.VisualShotPool.Return(Info.AvShot);
                 ModelState = EntityState.None;
             }
         }

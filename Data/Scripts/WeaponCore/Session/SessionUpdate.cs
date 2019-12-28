@@ -345,30 +345,24 @@ namespace WeaponCore
                 var w = AcquireTargets[i];
                 var gridAi = w.Comp.Ai;
 
-                var sinceCheck = Tick - w.TargetCheckTick;
+                var sinceCheck = Tick - w.Target.CheckTick;
                 var reacquire = gridAi.TargetResetTick == Tick;
 
-                if (sinceCheck > 239 || reacquire || sinceCheck > 60 && _count == w.LoadId) {
+                if (sinceCheck > 239 || reacquire && w.Target.State == Targets.Acquired || sinceCheck > 60 && _count == w.LoadId) {
 
                     var comp = w.Comp;
-                    var hasTarget = w.Target.State == Targets.Acquired;
                     var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
                     var weaponEnabled = !comp.State.Value.Online || comp.Set.Value.Weapons[w.WeaponId].Enable;
 
-                    if (hasTarget && !reacquire || !weaponEnabled || !gridAi.DbReady && weaponsInStandby || w.Comp.Gunner || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose || !comp.MyCube.InScene)
-                    {
-                        AcquireTargets.RemoveAtFast(i);
+                    if (!weaponEnabled || !gridAi.DbReady && weaponsInStandby || w.Comp.Gunner || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose || !comp.MyCube.InScene)
                         continue;
-                    }
-
-                    if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired) {
-                        
+                    
+                    if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired)
                         GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
-                    }
-                    else {
-
+                    else 
                         GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
-                    }
+                    
+                    if (w.Target.State == Targets.Acquired) AcquireTargets.RemoveAtFast(i);
                 }
             }
         }

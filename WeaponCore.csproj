@@ -73,7 +73,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\CustomController.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MathFuncs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\VisualShot.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Support\AvShot.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VoxelIntersect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiSelect.cs" />

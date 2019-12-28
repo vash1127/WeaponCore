@@ -74,9 +74,6 @@ namespace WeaponCore
                 if (info.BaseDamagePool <= 0)
                     p.State = Projectile.ProjectileState.Depleted;
 
-                if (p.Info.VisualShot.OnScreen != VisualShot.Screen.None)
-                    p.Info.VisualShot.Complete(p.Info, null, VisualShot.DrawState.Default, true);
-
                 info.HitList.Clear();
             }
         }
@@ -87,7 +84,6 @@ namespace WeaponCore
             var system = info.System;
             if (shield == null || !hitEnt.HitPos.HasValue) return;
             info.ObjectsHit++;
-            var needDraw = info.VisualShot.OnScreen != VisualShot.Screen.None && info.VisualShot.DistanceToLine < 2000 && (info.VisualShot.Tracer != VisualShot.TracerState.Off || info.VisualShot.Trail != VisualShot.TrailState.Off);
 
             var damageScale = 1;
             if (system.VirtualBeams) damageScale *= info.WeaponCache.Hits;
@@ -108,23 +104,10 @@ namespace WeaponCore
                 if (heal)
                 {
                     info.BaseDamagePool = 0;
-                    if (needDraw)
-                    {
-                        info.VisualShot.Draw = VisualShot.DrawState.Hit;
-                        info.VisualShot.HitVelocity = shield.CubeGrid.Physics.LinearVelocity;
-                    }
                     return;
                 }
                 var objHp = hit.Value;
-                if (scaledDamage < objHp)
-                {
-                    info.BaseDamagePool = 0;
-                    if (needDraw)
-                    {
-                        info.VisualShot.Draw = VisualShot.DrawState.Hit;
-                        info.VisualShot.HitVelocity = shield.CubeGrid.Physics.LinearVelocity;
-                    }
-                }
+                if (scaledDamage < objHp) info.BaseDamagePool = 0;
                 else if (objHp > 0) info.BaseDamagePool -= (float)scaledDamage - objHp;
                 else info.BaseDamagePool -= ((float)scaledDamage - (objHp * -1));
 
@@ -150,7 +133,6 @@ namespace WeaponCore
                 return;
             }
 
-            var needDraw = t.VisualShot.OnScreen != VisualShot.Screen.None && t.VisualShot.DistanceToLine < 2000 && (t.VisualShot.Tracer != VisualShot.TracerState.Off || t.VisualShot.Trail != VisualShot.TrailState.Off);
             _destroyedSlims.Clear();
             //grid.Physics.Gravity = (Vector3D.Normalize(hitEnt.Beam.From - grid.Physics.CenterOfMassWorld) * 10);
             var largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
@@ -285,13 +267,6 @@ namespace WeaponCore
                         {
                             outOfPew = true;
                             damagePool = 0;
-
-                            if (needDraw)
-                            {
-                                t.VisualShot.Draw = VisualShot.DrawState.Hit;
-                                t.VisualShot.HitPosition = grid.GridIntegerToWorld(rootBlock.Position);
-                                t.VisualShot.HitVelocity = grid.Physics.LinearVelocity;
-                            }
                         }
                         else
                         {

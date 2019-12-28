@@ -22,7 +22,7 @@ namespace WeaponCore.Support
         {
             w.HitOther = false;
             var tick = w.Comp.Ai.Session.Tick;
-            w.TargetCheckTick = tick;
+            w.Target.CheckTick = tick;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
             var targetType = TargetType.None;
             w.UpdatePivotPos();

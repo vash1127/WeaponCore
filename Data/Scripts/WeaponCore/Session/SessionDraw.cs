@@ -64,13 +64,13 @@ namespace WeaponCore
 
                 if (info.PrimeEntity != null)
                 {
-                    if (info.VisualShot.Draw != VisualShot.DrawState.Last && !info.PrimeEntity.InScene && !info.Cloaked)
+                    if (info.AvShot.EndTick == Tick && !info.PrimeEntity.InScene && !info.Cloaked)
                     {
                         info.PrimeEntity.InScene = true;
                         info.PrimeEntity.Render.UpdateRenderObject(true, false);
                     }
                     info.PrimeEntity.PositionComp.SetWorldMatrix(info.PrimeMatrix, null, false, false, false);
-                    if (info.VisualShot.Draw == VisualShot.DrawState.Last || info.Cloaked && info.PrimeEntity.InScene)
+                    if (info.AvShot.EndTick == Tick || info.Cloaked && info.PrimeEntity.InScene)
                     {
                         info.PrimeEntity.InScene = false;
                         info.PrimeEntity.Render.RemoveRenderObjects();
@@ -80,14 +80,14 @@ namespace WeaponCore
 
                 if (info.Triggered && info.TriggerEntity != null)
                 {
-                    if ((info.VisualShot.Draw != VisualShot.DrawState.Last && !info.TriggerEntity.InScene))
+                    if ((info.AvShot.EndTick == Tick && !info.TriggerEntity.InScene))
                     {
                         info.TriggerEntity.InScene = true;
                         info.TriggerEntity.Render.UpdateRenderObject(true, false);
                     }
 
                     info.TriggerEntity.PositionComp.SetWorldMatrix(info.TriggerMatrix, null, false, false, false);
-                    if (info.VisualShot.Draw == VisualShot.DrawState.Last)
+                    if (info.AvShot.EndTick == Tick)
                     {
                         info.TriggerEntity.InScene = false;
                         info.TriggerEntity.Render.RemoveRenderObjects();
@@ -128,11 +128,11 @@ namespace WeaponCore
                     }
                     else
                     {
-                        if (info.ReSizing == ProInfo.ReSize.Shrink && info.VisualShot.DrawHit?.HitPos != null && info.VisualShot.OnScreen != VisualShot.Screen.None)
+                        if (info.ReSizing == ProInfo.ReSize.Shrink && info.AvShot.DrawHit.HitPos != Vector3D.Zero && info.AvShot.OnScreen != AvShot.Screen.None)
                         {
                             info.Shrinking = true;
                             sFound = true;
-                            VisualShots.Add(info.VisualShot);
+                            VisualShots.Add(info.AvShot);
                             continue;
                             var shrink = ShrinkPool.Get();
                             shrink.Init(info, thickness);
@@ -142,7 +142,7 @@ namespace WeaponCore
                         {
                             var glow = GlowPool.Get();
                             glow.Parent = info.Glowers.Count > 0 ? info.Glowers.Peek() : null;
-                            glow.Back = info.LineStart;
+                            glow.TailPos = info.LineStart;
                             glow.FirstTick = Tick;
                             glow.System = info.System;
                             glow.ShooterVel = info.ShooterVel;
@@ -153,69 +153,13 @@ namespace WeaponCore
                         }
                     }
 
-                    if (info.System.OffsetEffect && info.VisualShot.OnScreen == VisualShot.Screen.Tracer)
+                    if (info.System.OffsetEffect && info.AvShot.OnScreen == AvShot.Screen.Tracer)
                         LineOffsetEffect(info.System, info.Position, info.Direction, info.DistanceTraveled, info.Length, thickness, color);
-                    else if (info.VisualShot.OnScreen == VisualShot.Screen.Tracer)
+                    else if (info.AvShot.OnScreen == AvShot.Screen.Tracer)
                         MyTransparentGeometry.AddLineBillboard(info.System.TracerMaterial, color, info.Position, -info.Direction, (float)info.Length, thickness);
                 }
 
-                if (info.System.IsBeamWeapon && info.System.HitParticle && !(info.MuzzleId != 0 && (info.System.ConvergeBeams || info.System.OneHitParticle)))
-                {
-                    var c = info.Target.FiringCube;
-                    if (c == null || c.MarkedForClose)
-                        continue;
 
-                    WeaponComponent weaponComp;
-                    if (info.Ai.WeaponBase.TryGetValue(c, out weaponComp))
-                    {
-                        var weapon = weaponComp.Platform.Weapons[info.WeaponId];
-                        var effect = weapon.HitEffects[info.MuzzleId];
-                        if (info.VisualShot.DrawHit?.HitPos != null && info.VisualShot.OnScreen == VisualShot.Screen.Tail)
-                        {
-                            if (effect != null)
-                            {
-                                var elapsedTime = effect.GetElapsedTime();
-                                if (elapsedTime <= 0 || elapsedTime >= 1)
-                                {
-                                    effect.Stop(true);
-                                    effect = null;
-                                }
-                            }
-                            var hit = info.VisualShot.DrawHit.Value.HitPos.Value;
-                            MatrixD matrix;
-                            MatrixD.CreateTranslation(ref hit, out matrix);
-                            if (effect == null)
-                            {
-                                MyParticlesManager.TryCreateParticleEffect(info.System.Values.Graphics.Particles.Hit.Name, ref matrix, ref hit, uint.MaxValue, out effect);
-                                if (effect == null)
-                                {
-                                    weapon.HitEffects[info.MuzzleId] = null;
-                                    continue;
-                                }
-
-                                effect.DistanceMax = info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance;
-                                effect.DurationMax = info.System.Values.Graphics.Particles.Hit.Extras.MaxDuration;
-                                effect.UserColorMultiplier = info.System.Values.Graphics.Particles.Hit.Color;
-                                effect.Loop = info.System.Values.Graphics.Particles.Hit.Extras.Loop;
-                                effect.UserRadiusMultiplier = info.System.Values.Graphics.Particles.Hit.Extras.Scale * 1;
-                                var scale = MathHelper.Lerp(1, 0, (info.DistanceToLine * 2) / info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance);
-                                effect.UserEmitterScale = scale;
-                            }
-                            else if (effect.IsEmittingStopped)
-                                effect.Play();
-
-                            effect.WorldMatrix = matrix;
-                            if (info.VisualShot.DrawHit.Value.Projectile != null) effect.Velocity = info.VisualShot.DrawHit.Value.Projectile.Velocity;
-                            else if (info.VisualShot.DrawHit.Value.Entity?.GetTopMostParent()?.Physics != null) effect.Velocity = info.VisualShot.DrawHit.Value.Entity.GetTopMostParent().Physics.LinearVelocity;
-                            weapon.HitEffects[info.MuzzleId] = effect;
-                        }
-                        else if (effect != null)
-                        {
-                            effect.Stop(false);
-                            weapon.HitEffects[info.MuzzleId] = null;
-                        }
-                    }
-                }
             }
             //if (sFound) _shrinking.ApplyAdditions();
             Projectiles.DrawProjectiles.Clear();
@@ -227,12 +171,11 @@ namespace WeaponCore
             for (int i = VisualShots.Count - 1; i >= 0; i--)
             {
                 var vs = VisualShots[i];
-                DsDebugDraw.DrawSingleVec(vs.TracerStart, 1, Color.Red);
-                DsDebugDraw.DrawSingleVec(vs.Position, 1, Color.Blue);
+                //DsDebugDraw.DrawSingleVec(vs.TracerStart, 1, Color.Red);
+                //DsDebugDraw.DrawSingleVec(vs.Position, 1, Color.Blue);
 
-                vs.DrawTracer();
-                vs.DrawTrail();
-                VisualShots.RemoveAtFast(i);
+                if (!vs.DrawAll())
+                    VisualShots.RemoveAtFast(i);
             }
         }
 
@@ -270,7 +213,7 @@ namespace WeaponCore
                     {
                         var glow = GlowPool.Get();
                         glow.Parent = s.Glowers.Count > 0 ? s.Glowers.Peek() : null;
-                        glow.Back = shrunk.Value.BackOfTail;
+                        glow.TailPos = shrunk.Value.BackOfTail;
                         glow.FirstTick = Tick;
                         glow.System = s.System;
                         glow.ShooterVel = s.ShooterVel;
@@ -296,13 +239,13 @@ namespace WeaponCore
             {
                 var glow = _afterGlow[i];
                 var thisStep = (Tick - glow.FirstTick);
-                if (thisStep != 0) glow.Back += (glow.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
+                if (thisStep != 0) glow.TailPos += (glow.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
                 if (glow.Parent == null) continue;
                 var steps = glow.System.Values.Graphics.Line.Trail.DecayTime;
                 var fullSize = glow.System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
 
-                var line = new LineD(glow.Back, glow.Parent.Back);
+                var line = new LineD(glow.TailPos, glow.Parent.TailPos);
 
                 var distanceFromPointSqr = Vector3D.DistanceSquared(CameraPos, (MyUtils.GetClosestPointOnLine(ref line.From, ref line.To, ref CameraPos)));
                 int scale = 1;

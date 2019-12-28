@@ -178,12 +178,13 @@ namespace WeaponCore
                     }
 
                     DrawLists();
-
+                    /*
                     if (_shrinking.Count > 0)
                         Shrink();
 
                     if (_afterGlow.Count > 0)
                         AfterGlow();
+                        */
                 }
                 DsUtil.Complete("draw", true);
             }

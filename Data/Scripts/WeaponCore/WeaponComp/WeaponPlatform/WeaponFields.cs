@@ -88,7 +88,6 @@ namespace WeaponCore.Platform
         internal float CurrentCharge;
         internal uint ShotCounter;
         internal uint LastTargetTick;
-        internal uint TargetCheckTick;
         internal uint FirstFireTick;
         internal uint LastTrackedTick;
         internal uint DelayTicks;

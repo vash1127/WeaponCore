@@ -45,7 +45,7 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(60);
-        internal VisualShot VisualShot;
+        internal AvShot AvShot;
 
         internal WeaponSystem.FiringSoundState FiringSoundState;
         internal bool AmmoSound;
@@ -216,7 +216,7 @@ namespace WeaponCore.Support
             Target.Reset();
             HitList.Clear();
             Glowers.Clear();
-            VisualShot = null;
+            AvShot = null;
             System = null;
             Ai = null;
             PrimeEntity = null;
@@ -260,7 +260,7 @@ namespace WeaponCore.Support
     internal struct VirtualProjectile
     {
         internal ProInfo Info;
-        internal VisualShot VisualShot;
+        internal AvShot VisualShot;
     }
 
     internal class HitEntity
@@ -312,18 +312,11 @@ namespace WeaponCore.Support
 
     internal struct DrawHit
     {
-        internal readonly IMySlimBlock Block;
-        internal readonly MyEntity Entity;
-        internal readonly Projectile Projectile;
-        internal readonly Vector3D? HitPos;
-
-        internal DrawHit(IMySlimBlock block, MyEntity entity, Projectile projectile, Vector3D? hitPos)
-        {
-            Block = block;
-            Entity = entity;
-            Projectile = projectile;
-            HitPos = hitPos;
-        }
+        internal IMySlimBlock Block;
+        internal MyEntity Entity;
+        internal Projectile Projectile;
+        internal Vector3D HitPos;
+        internal Vector3D HitVelocity;
     }
 
     internal class Target
@@ -338,6 +331,7 @@ namespace WeaponCore.Support
         internal int[] BlockDeck = new int[0];
         internal int TargetPrevDeckLen;
         internal int BlockPrevDeckLen;
+        internal uint CheckTick;
         internal BlockTypes LastBlockType;
         internal Vector3D HitPos;
         internal double HitShortDist;
@@ -391,7 +385,11 @@ namespace WeaponCore.Support
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
-            if (expire) State = Targets.Expired;
+            if (expire)
+            {
+                CheckTick = 0;
+                State = Targets.Expired;
+            }
             TargetLock = false;
         }
     }
@@ -689,31 +687,6 @@ namespace WeaponCore.Support
             StepLength = stepLength;
         }
     }
-
-    internal class AfterGlow
-    {
-        internal WeaponSystem System;
-        internal AfterGlow Parent;
-        internal Vector3D Back;
-        internal Vector3D ShooterVel;
-        internal LineD Line;
-        internal uint FirstTick;
-        internal float WidthScaler;
-        internal float Length;
-        internal float Thickness;
-
-        internal void Clean()
-        {
-            System = null;
-            Parent = null;
-            Back = Vector3D.Zero;
-            FirstTick = 0;
-            WidthScaler = 0;
-            Length = 0;
-            Thickness = 0;
-        }
-    }
-
 
     public struct RadiatedBlock
     {
