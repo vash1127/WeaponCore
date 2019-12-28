@@ -738,10 +738,14 @@ namespace WeaponCore
             {
                 AnimationsToProcess.Remove(animation);
                 animation.Running = false;
-                for (int i = 0; i < animation.EmissiveParts.Length; i++)
+
+                if (animation.ResetEmissives)
                 {
-                    var emissivePart = animation.EmissiveParts[i];
-                    animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
+                    for (int i = 0; i < animation.EmissiveParts.Length; i++)
+                    {
+                        var emissivePart = animation.EmissiveParts[i];
+                        animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
+                    }
                 }
             }
         }
