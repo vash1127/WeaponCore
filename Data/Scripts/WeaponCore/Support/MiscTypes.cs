@@ -320,6 +320,7 @@ namespace WeaponCore.Support
         internal int[] BlockDeck = new int[0];
         internal int TargetPrevDeckLen;
         internal int BlockPrevDeckLen;
+        internal uint CheckTick;
         internal BlockTypes LastBlockType;
         internal Vector3D HitPos;
         internal double HitShortDist;
@@ -373,6 +374,7 @@ namespace WeaponCore.Support
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
+            CheckTick = 0;
             if (expire) State = Targets.Expired;
             TargetLock = false;
         }

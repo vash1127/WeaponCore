@@ -348,7 +348,7 @@ namespace WeaponCore
                 var w = AcquireTargets[i];
                 var gridAi = w.Comp.Ai;
 
-                var sinceCheck = Tick - w.TargetCheckTick;
+                var sinceCheck = Tick - w.Target.CheckTick;
                 var reacquire = gridAi.TargetResetTick == Tick;
 
                 if (sinceCheck > 239 || reacquire || sinceCheck > 60 && _count == w.LoadId) {
