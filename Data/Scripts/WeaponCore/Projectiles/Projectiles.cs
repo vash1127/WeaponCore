@@ -398,7 +398,6 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.AvShot.OnScreen == Screen.None && (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle))
                 {
-
                     var bb = new BoundingBoxD(Vector3D.Min(p.Info.AvShot.TracerStart, p.Info.AvShot.Position), Vector3D.Max(p.Info.AvShot.TracerStart, p.Info.AvShot.Position));
                     if (Session.Camera.IsInFrustum(ref bb)) p.Info.AvShot.OnScreen = Screen.Tracer;
                     

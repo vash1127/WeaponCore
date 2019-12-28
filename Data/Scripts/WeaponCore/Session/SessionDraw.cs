@@ -173,7 +173,8 @@ namespace WeaponCore
             for (int i = VisualShots.Count - 1; i >= 0; i--)
             {
                 var vs = VisualShots[i];
-                if (vs.Tracer != TracerState.Off)
+                if (vs.OnScreen != Screen.None) Log.Line($"OnScreen:{vs.OnScreen}");
+                if (vs.Tracer != TracerState.Off && vs.OnScreen != Screen.None)
                     MyTransparentGeometry.AddLineBillboard(vs.System.TracerMaterial, vs.Color, vs.Position, -vs.Direction, (float)vs.TracerLength, (float)vs.Thickness);
 
                 if (vs.Trail != TrailState.Off)
@@ -183,7 +184,7 @@ namespace WeaponCore
                     {
                         var glow = vs.GlowSteps[j];
 
-                        MyTransparentGeometry.AddLineBillboard(vs.System.TrailMaterial, vs.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
+                        if (vs.OnScreen != Screen.None) MyTransparentGeometry.AddLineBillboard(vs.System.TrailMaterial, vs.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
                         if (Tick - glow.FirstTick >= steps)
                         {
                             vs.GlowSteps.Dequeue();

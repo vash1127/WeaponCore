@@ -111,7 +111,7 @@ namespace WeaponCore.Support
                 Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
             }
             else Trail = TrailState.Off;
-            TotalLength = MaxTracerLength;
+            TotalLength = MaxTracerLength + MaxTracerLength;
         }
 
         internal void Update(double stepSize, double visualLength, ref Vector3D shooterVelocity, ref Vector3D position, ref Vector3D direction)
@@ -122,7 +122,6 @@ namespace WeaponCore.Support
             ShooterVelocity = shooterVelocity;
             VisualLength = visualLength;
             TracerStart = Position + (-Direction * VisualLength);
-
             LifeTime++;
         }
 
@@ -190,7 +189,7 @@ namespace WeaponCore.Support
                 width += randomValue;
             }
 
-            var target = Position + (-Direction * TotalLength);
+            var target = Position + (-Direction * MaxTracerLength);
             ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
             ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
@@ -202,6 +201,15 @@ namespace WeaponCore.Support
                 TracerLength = VisualLength;
             }
 
+            if (OnScreen == Screen.Tail)
+            {
+                Ai.Session.DsUtil2.Start("");
+                var totalLen = TracerStart + (-Direction * MaxGlowLength);
+                var bb = new BoundingBoxD(Vector3D.Min(totalLen, Position), Vector3D.Max(totalLen, Position));
+                if (!Ai.Session.Camera.IsInFrustum(ref bb)) OnScreen = Screen.None;
+                Ai.Session.DsUtil2.Complete("", false, true);
+
+            }
         }
 
         internal void RunTracer()
@@ -335,7 +343,7 @@ namespace WeaponCore.Support
 
         private void Close()
         {
-            Log.Line($"VsShot Closed");
+            //Log.Line($"VsShot Closed");
             Active = false;
             Ai.Session.VisualShotPool.Return(this);
         }
