@@ -350,7 +350,7 @@ namespace WeaponCore
                 var sinceCheck = Tick - w.Target.CheckTick;
                 var reacquire = gridAi.TargetResetTick == Tick;
 
-                if (true || sinceCheck > 239 || reacquire || sinceCheck > 60 && _count == w.LoadId) {
+                if (sinceCheck > 239 || reacquire || sinceCheck > 60 && _count == w.LoadId) {
 
                     var comp = w.Comp;
                     var hasTarget = w.Target.State == Targets.Acquired;
