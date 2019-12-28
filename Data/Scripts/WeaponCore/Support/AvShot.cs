@@ -203,12 +203,9 @@ namespace WeaponCore.Support
 
             if (OnScreen == Screen.Tail)
             {
-                Ai.Session.DsUtil2.Start("");
                 var totalLen = TracerStart + (-Direction * MaxGlowLength);
                 var bb = new BoundingBoxD(Vector3D.Min(totalLen, Position), Vector3D.Max(totalLen, Position));
                 if (!Ai.Session.Camera.IsInFrustum(ref bb)) OnScreen = Screen.None;
-                Ai.Session.DsUtil2.Complete("", false, true);
-
             }
         }
 
