@@ -261,7 +261,7 @@ namespace WeaponCore.Support
         internal void RunGlow()
         {
             var glowCount = GlowSteps.Count;
-            if (glowCount < System.Values.Graphics.Line.Trail.DecayTime)
+            if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime + 1)
             {
                 var glow = Ai.Session.GlowPool.Get();
                 LastGlowIdx = glowCount - 1;
@@ -270,7 +270,7 @@ namespace WeaponCore.Support
                 if (glow.Parent == null)
                 {
                     glow.TracerStart = TracerStart;
-                    glow.TailPos = TracerStart + (Direction * StepSize);
+                    glow.TailPos = TracerStart;
                 }
                 else glow.TailPos = glow.Parent.TailPos + (Direction * StepSize);
 
@@ -290,6 +290,27 @@ namespace WeaponCore.Support
                 var fullSize = glow.System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
                 glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
+                if (glow.Parent == null)
+                {
+                    DsDebugDraw.DrawSingleVec(glow.TracerStart, 0.125f, VRageMath.Color.Orange);
+                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
+                    Log.Line("test");
+                }
+                else if (i == 0)
+                {
+                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Orange);
+                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
+                }
+                else if (i == 1)
+                {
+                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
+                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
+                }
+                else if (i == 2)
+                {
+                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
+                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
+                }
                 var distanceFromPointSqr = Vector3D.DistanceSquared(Ai.Session.CameraPos, (MyUtils.GetClosestPointOnLine(ref glow.Line.From, ref glow.Line.To, ref Ai.Session.CameraPos)));
                 int scale = 1;
                 if (distanceFromPointSqr > 8000 * 8000) scale = 8;
@@ -351,14 +372,13 @@ namespace WeaponCore.Support
             {
                 var removeGlowStep = false;
                 var steps = System.Values.Graphics.Line.Trail.DecayTime;
-                var removes = 0;
                 for (int i = 0; i < GlowSteps.Count; i++)
                 {
                     var glow = GlowSteps[i];
 
                     MyTransparentGeometry.AddLineBillboard(System.TrailMaterial, System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
                     var thisStep = (Ai.Session.Tick - glow.FirstTick);
-                    if (thisStep > steps)
+                    if (thisStep >= steps)
                         removeGlowStep = true;
                 }
 

@@ -452,7 +452,14 @@ namespace WeaponCore
             if (detonateOnEnd)
             {
                 var det = system.Values.Ammo.AreaEffect.Detonation;
-                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, det.DetonationRadius, true);
+                var dRadius = det.DetonationRadius;
+                var dObjHp = (int)MathHelper.Clamp(SUtils.VolumeCube(SUtils.LargestCubeInSphere(dRadius)), 1, double.MaxValue);
+                var dDamage = det.DetonationDamage;
+                var reduceBy = dObjHp / dDamage;
+                dRadius /= reduceBy;
+                if (dRadius < 1) dRadius = 1;
+
+                destObj.PerformCutOutSphereFast(hitEnt.HitPos.Value, dRadius, true);
             }
         }
 
