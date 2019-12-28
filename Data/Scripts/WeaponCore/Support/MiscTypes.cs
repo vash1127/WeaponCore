@@ -374,8 +374,11 @@ namespace WeaponCore.Support
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
-            CheckTick = 0;
-            if (expire) State = Targets.Expired;
+            if (expire)
+            {
+                CheckTick = 0;
+                State = Targets.Expired;
+            }
             TargetLock = false;
         }
     }
