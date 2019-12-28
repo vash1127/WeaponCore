@@ -160,6 +160,9 @@ namespace WeaponCore
 
                         if (targetChanged) {
 
+                            if (targetLost)
+                                w.Target.CheckTick = 0;
+
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, w.Target.State == Targets.Acquired);
                             w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.State != Targets.Acquired);
                         }
