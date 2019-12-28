@@ -363,7 +363,7 @@ namespace WeaponCore.Projectiles
                     {
                         p.Info.ProjectileDisplacement += Math.Abs(Vector3D.Dot(p.Direction, (p.Velocity - p.StartSpeed) * StepConst));
                         var displaceDiff = p.Info.ProjectileDisplacement - p.TracerLength;
-                        if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.001)
+                        if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {
                             //p.Info.UpdateShape(p.Position, p.Direction, p.Info.ProjectileDisplacement, ReSize.Grow);
                             p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Info.ShooterVel, ref p.Position, ref p.Direction);

@@ -174,30 +174,7 @@ namespace WeaponCore
             {
                 var vs = VisualShots[i];
                 if (vs.Tracer != TracerState.Off)
-                {
-                    var width = vs.Thickness;
-                    var color = vs.Color;
-                    if (vs.Tracer == TracerState.Shrink)
-                    {
-                        if (vs.System.LineColorVariance)
-                        {
-                            var cv = vs.System.Values.Graphics.Line.ColorVariance;
-                            var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
-                            color.X *= randomValue;
-                            color.Y *= randomValue;
-                            color.Z *= randomValue;
-                        }
-
-                        if (vs.System.LineWidthVariance)
-                        {
-                            var wv = vs.System.Values.Graphics.Line.WidthVariance;
-                            var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
-                            width += randomValue;
-                        }
-
-                    }
-                    MyTransparentGeometry.AddLineBillboard(vs.System.TracerMaterial, color, vs.Position, -vs.Direction, (float)vs.TracerLength, (float)width);
-                }
+                    MyTransparentGeometry.AddLineBillboard(vs.System.TracerMaterial, vs.Color, vs.Position, -vs.Direction, (float)vs.TracerLength, (float)vs.Thickness);
 
                 if (vs.Trail != TrailState.Off)
                 {

@@ -82,7 +82,7 @@ namespace WeaponCore.Support
             MuzzleId = info.MuzzleId;
             WeaponId = info.WeaponId;
             MaxSpeed = maxSpeed;
-            MaxStepSize = MaxSpeed / MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+            MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
 
             FiringWeapon = null;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
@@ -111,7 +111,7 @@ namespace WeaponCore.Support
                 Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
             }
             else Trail = TrailState.Off;
-            TotalLength = MaxTracerLength + MaxGlowLength;
+            TotalLength = MaxTracerLength;
         }
 
         internal void Update(double stepSize, double visualLength, ref Vector3D shooterVelocity, ref Vector3D position, ref Vector3D direction)
@@ -143,12 +143,7 @@ namespace WeaponCore.Support
                 var tracerDiff = TracerLength - StepSize;
                 var visable = totalDiff > 0 && !MyUtils.IsZero(totalDiff);
                 var tracerVisable = tracerDiff > 0 && !MyUtils.IsZero(tracerDiff);
-                if (!visable)
-                {
-                    Tracer = TracerState.Off;
-                    Trail = TrailState.Off;
-                }
-                else if (!tracerVisable)
+                if (!visable || !tracerVisable)
                 {
                     Tracer = TracerState.Off;
                 }
@@ -187,25 +182,20 @@ namespace WeaponCore.Support
                 color.Z *= randomValue;
             }
             Color = color;
-            if (OnScreen != Screen.None)
+            var width = System.Values.Graphics.Line.Tracer.Width;
+            if (System.LineWidthVariance)
             {
-                var width = System.Values.Graphics.Line.Tracer.Width;
-                if (System.LineWidthVariance)
-                {
-                    var wv = System.Values.Graphics.Line.WidthVariance;
-                    var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
-                    width += randomValue;
-                }
-
-                var target = Position + (-Direction * TotalLength);
-                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
-                DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
-                ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-                Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
-                LineScaler = (Thickness / width);
-                //Log.Line($"{DistanceToLine} - Thickness:{Thickness} - width:{width} - Scaler:{LineScaler}");
-
+                var wv = System.Values.Graphics.Line.WidthVariance;
+                var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
+                width += randomValue;
             }
+
+            var target = Position + (-Direction * TotalLength);
+            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
+            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
+            ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
+            Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
+            LineScaler = (Thickness / width);
 
             if (Tracer == TracerState.Grow)
             {
@@ -295,11 +285,14 @@ namespace WeaponCore.Support
             
             var distanceFromPointSqr = Vector3D.DistanceSquared(Ai.Session.CameraPos, ClosestPointOnLine);
 
-            if (distanceFromPointSqr > 2000 * 2000) scale = 1f;
-            else if (distanceFromPointSqr > 1000 * 1000) scale = 1f;
-            else if (distanceFromPointSqr > 500 * 500) scale = 1.5f;
-            else if (distanceFromPointSqr > 250 * 250) scale = 1.25f;
-            else if (distanceFromPointSqr > 125 * 125) scale = 1.125f;
+            if (distanceFromPointSqr > 1500 * 1500) scale = 1.0f;
+            if (distanceFromPointSqr > 1250 * 1250) scale = 1.1f;
+            else if (distanceFromPointSqr > 1000 * 1000) scale = 1.2f;
+            else if (distanceFromPointSqr > 750 * 750) scale = 1.3f;
+            else if (distanceFromPointSqr > 500 * 500) scale = 1.4f;
+            else if (distanceFromPointSqr > 250 * 250) scale = 1.3f;
+            else if (distanceFromPointSqr > 125 * 125) scale = 1.2f;
+            else if (distanceFromPointSqr > 75 * 75) scale = 1.1f;
 
             var sliderScale = ((float)LineScaler * scale);
 
@@ -366,6 +359,7 @@ namespace WeaponCore.Support
         {
             System = null;
             Parent = null;
+            TracerStart = Vector3D.Zero;
             TailPos = Vector3D.Zero;
             FirstTick = 0;
             WidthScaler = 0;
