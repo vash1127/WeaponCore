@@ -415,9 +415,9 @@ namespace WeaponCore.Projectiles
                 if (p.Info.AvShot.OnScreen != Screen.None)
                 {
                     //p.Info.Complete(null);
+                    if (!p.Info.AvShot.Active) p.Info.Ai.Session.VisualShots.Add(p.Info.AvShot);
                     p.Info.AvShot.Complete(p.Info);
                     DrawProjectiles.Add(p.Info);
-                    p.Info.Ai.Session.VisualShots.Add(p.Info.AvShot);
                 }
             }
         }

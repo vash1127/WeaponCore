@@ -9,12 +9,14 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using BlendTypeEnum = VRageRender.MyBillboard.BlendTypeEnum;
+using static WeaponCore.Support.AvShot;
 namespace WeaponCore
 {
     public partial class Session
     {
         private void DrawLists()
         {
+            if (Tick180) Log.Line($"{Projectiles.DrawProjectiles.Count} - {VisualShots.Count}");
             var sFound = false;
             for (int i = 0; i < Projectiles.DrawProjectiles.Count; i++)
             {
@@ -171,11 +173,69 @@ namespace WeaponCore
             for (int i = VisualShots.Count - 1; i >= 0; i--)
             {
                 var vs = VisualShots[i];
-                //DsDebugDraw.DrawSingleVec(vs.TracerStart, 1, Color.Red);
-                //DsDebugDraw.DrawSingleVec(vs.Position, 1, Color.Blue);
+                if (vs.Tracer != TracerState.Off)
+                {
+                    var width = vs.Thickness;
+                    var color = vs.Color;
+                    if (vs.Tracer == TracerState.Shrink)
+                    {
+                        if (vs.System.LineColorVariance)
+                        {
+                            var cv = vs.System.Values.Graphics.Line.ColorVariance;
+                            var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
+                            color.X *= randomValue;
+                            color.Y *= randomValue;
+                            color.Z *= randomValue;
+                        }
 
-                if (!vs.DrawAll())
+                        if (vs.System.LineWidthVariance)
+                        {
+                            var wv = vs.System.Values.Graphics.Line.WidthVariance;
+                            var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
+                            width += randomValue;
+                        }
+
+                    }
+                    MyTransparentGeometry.AddLineBillboard(vs.System.TracerMaterial, color, vs.Position, -vs.Direction, (float)vs.TracerLength, (float)width);
+                }
+
+                if (vs.Trail != TrailState.Off)
+                {
+                    var removeGlowStep = false;
+                    var steps = vs.System.Values.Graphics.Line.Trail.DecayTime;
+                    for (int j = 0; j < vs.GlowSteps.Count; j++)
+                    {
+                        var glow = vs.GlowSteps[j];
+
+                        MyTransparentGeometry.AddLineBillboard(vs.System.TrailMaterial, vs.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
+                        var thisStep = (Tick - glow.FirstTick);
+                        if (thisStep >= steps)
+                            removeGlowStep = true;
+                    }
+
+                    if (removeGlowStep)
+                    {
+                        AfterGlow glow;
+                        if (vs.GlowSteps.TryDequeue(out glow))
+                        {
+                            glow.Clean();
+                            GlowPool.Return(glow);
+                        }
+                    }
+                }
+
+                if (vs.Trail == TrailState.Off && vs.GlowSteps.Count > 0) Log.Line($"GlowStops but its off!");
+
+                if (vs.EndTick <= vs.Ai.Session.Tick && vs.GlowSteps.Count == 0)
+                {
+                    if (!vs.Active) Log.Line($"EndTick and is Active?:{vs.Active}");
+                    if (vs.Active)
+                    {
+                        vs.Active = false;
+                        VisualShotPool.Return(vs);
+                    }
                     VisualShots.RemoveAtFast(i);
+                }
             }
         }
 

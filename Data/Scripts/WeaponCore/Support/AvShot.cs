@@ -27,7 +27,7 @@ namespace WeaponCore.Support
         internal double FirstStepSize;
         internal double StepSize;
         internal double TotalLength;
-        internal float Thickness;
+        internal double Thickness;
         internal double LineScaler;
         internal double DistanceToLine;
         internal double ScaleFov;
@@ -96,8 +96,8 @@ namespace WeaponCore.Support
             OnScreen = Screen.None;
             Tracer = TracerState.Off;
             Trail = TrailState.Off;
-            Active = true;
-            EndTick = 0;
+            Active = false;
+            EndTick = uint.MaxValue;
             LifeTime = 0;
             LastGlowIdx = 0;
             //
@@ -128,7 +128,7 @@ namespace WeaponCore.Support
 
         internal void Complete(ProInfo info, bool saveHit = false, bool end = false)
         {
-            if (end) EndTick = info.System.Session.Tick;
+            Active = true;
             if (DrawHit.HitPos != Vector3D.Zero)
             {
                 if (saveHit)
@@ -164,6 +164,13 @@ namespace WeaponCore.Support
                 TracerLength = MaxTracerLength;
             }
 
+            if (end)
+            {
+                EndTick = info.System.Session.Tick;
+                if (Trail == TrailState.Off) Close();
+                Tracer = TracerState.Off;
+            }
+
             if (Tracer != TracerState.Off)
                 RunTracer();
 
@@ -190,18 +197,21 @@ namespace WeaponCore.Support
                     width += randomValue;
                 }
 
-                var target = Position + (-Direction * MaxTracerLength);
+                var target = Position + (-Direction * TotalLength);
                 ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
                 DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
                 ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-                LineScaler = Math.Max(1, 0.10f * ScaleFov * (DistanceToLine / 100));
-                Thickness = (float)(width * LineScaler);
+                Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
+                LineScaler = (Thickness / width);
+                //Log.Line($"{DistanceToLine} - Thickness:{Thickness} - width:{width} - Scaler:{LineScaler}");
+
             }
 
             if (Tracer == TracerState.Grow)
             {
                 TracerLength = VisualLength;
             }
+
         }
 
         internal void RunTracer()
@@ -281,6 +291,18 @@ namespace WeaponCore.Support
                 ++glowCount;
             }
 
+            float scale = 1;
+            
+            var distanceFromPointSqr = Vector3D.DistanceSquared(Ai.Session.CameraPos, ClosestPointOnLine);
+
+            if (distanceFromPointSqr > 2000 * 2000) scale = 1f;
+            else if (distanceFromPointSqr > 1000 * 1000) scale = 1f;
+            else if (distanceFromPointSqr > 500 * 500) scale = 1.5f;
+            else if (distanceFromPointSqr > 250 * 250) scale = 1.25f;
+            else if (distanceFromPointSqr > 125 * 125) scale = 1.125f;
+
+            var sliderScale = ((float)LineScaler * scale);
+
             for (int i = 0; i < glowCount; i++)
             {
                 var glow = GlowSteps[i];
@@ -290,11 +312,11 @@ namespace WeaponCore.Support
                 var fullSize = glow.System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
                 glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
+                /*
                 if (glow.Parent == null)
                 {
                     DsDebugDraw.DrawSingleVec(glow.TracerStart, 0.125f, VRageMath.Color.Orange);
                     DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
-                    Log.Line("test");
                 }
                 else if (i == 0)
                 {
@@ -311,89 +333,18 @@ namespace WeaponCore.Support
                     DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
                     DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
                 }
-                var distanceFromPointSqr = Vector3D.DistanceSquared(Ai.Session.CameraPos, (MyUtils.GetClosestPointOnLine(ref glow.Line.From, ref glow.Line.To, ref Ai.Session.CameraPos)));
-                int scale = 1;
-                if (distanceFromPointSqr > 8000 * 8000) scale = 8;
-                else if (distanceFromPointSqr > 4000 * 4000) scale = 7;
-                else if (distanceFromPointSqr > 2000 * 2000) scale = 6;
-                else if (distanceFromPointSqr > 1000 * 1000) scale = 5;
-                else if (distanceFromPointSqr > 500 * 500) scale = 4;
-                else if (distanceFromPointSqr > 250 * 250) scale = 3;
-                else if (distanceFromPointSqr > 100 * 100) scale = 2;
-                var sliderScale = ((float)LineScaler * scale);
+                */
+
                 var reduction = (shrinkAmount * thisStep);
                 glow.Thickness = (fullSize - reduction) * sliderScale;
             }
         }
 
-
-        internal bool DrawAll()
+        private void Close()
         {
-            DrawTracer();
-            var tailActive = DrawTrail();
-            Active = DrawHit.HitPos != Vector3D.Zero && tailActive; 
-            return Active;
-        }
-
-        internal bool DrawTracer()
-        {
-            if (Tracer != TracerState.Off)
-            {
-                var width = Thickness;
-                var color = Color;
-                if (Tracer == TracerState.Shrink)
-                {
-                    if (System.LineColorVariance)
-                    {
-                        var cv = System.Values.Graphics.Line.ColorVariance;
-                        var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
-                        color.X *= randomValue;
-                        color.Y *= randomValue;
-                        color.Z *= randomValue;
-                    }
-
-                    if (System.LineWidthVariance)
-                    {
-                        var wv = System.Values.Graphics.Line.WidthVariance;
-                        var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
-                        width += randomValue;
-                    }
-
-                }
-                MyTransparentGeometry.AddLineBillboard(System.TracerMaterial, color, Position, -Direction, (float)TracerLength, width);
-            }
-
-            return false;
-        }
-
-        internal bool DrawTrail()
-        {
-            if (Trail != TrailState.Off)
-            {
-                var removeGlowStep = false;
-                var steps = System.Values.Graphics.Line.Trail.DecayTime;
-                for (int i = 0; i < GlowSteps.Count; i++)
-                {
-                    var glow = GlowSteps[i];
-
-                    MyTransparentGeometry.AddLineBillboard(System.TrailMaterial, System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
-                    var thisStep = (Ai.Session.Tick - glow.FirstTick);
-                    if (thisStep >= steps)
-                        removeGlowStep = true;
-                }
-
-                if (removeGlowStep)
-                {
-                    AfterGlow glow;
-                    if (GlowSteps.TryDequeue(out glow))
-                    {
-                        glow.Clean();
-                        Ai.Session.GlowPool.Return(glow);
-                    }
-                }
-            }
-
-            return GlowSteps.Count > 0;
+            Log.Line($"VsShot Closed");
+            Active = false;
+            Ai.Session.VisualShotPool.Return(this);
         }
     }
 

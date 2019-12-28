@@ -378,7 +378,7 @@ namespace WeaponCore.Projectiles
                 {
                     Info.AvShot.Complete(Info, true);
                     //Info.Complete(drawHit);
-                    //Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
+                    Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
                 }
             }
 
@@ -444,9 +444,9 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
+                if (!info.AvShot.Active) info.Ai.Session.VisualShots.Add(vs);
                 vs.Complete(Info, !miss);
 
-                info.Ai.Session.VisualShots.Add(vs);
                 //drawList.Add(vt);
             }
         }
@@ -1026,16 +1026,15 @@ namespace WeaponCore.Projectiles
             }
             State = ProjectileState.Dead;
             Info.Ai.Session.Projectiles.CleanUp.Add(this);
+            Info.AvShot.Complete(Info, false, true);
 
             if (ModelState == EntityState.Exists)
             {
                 Info.PrimeMatrix = MatrixD.Identity;
                 Info.TriggerMatrix = MatrixD.Identity;
-                Info.AvShot.Complete(Info, false, true);
                 Info.Ai.Session.Projectiles.DrawProjectiles.Add(Info);
                 if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.PrimeEntity);
                 if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.TriggerEntity);
-                Info.Ai.Session.VisualShotPool.Return(Info.AvShot);
                 ModelState = EntityState.None;
             }
         }
