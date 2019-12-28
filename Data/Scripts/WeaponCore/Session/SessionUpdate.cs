@@ -159,10 +159,6 @@ namespace WeaponCore
                         }
 
                         if (targetChanged) {
-
-                            if (targetLost)
-                                w.Target.CheckTick = 0;
-
                             w.EventTriggerStateChanged(Weapon.EventTriggers.Tracking, w.Target.State == Targets.Acquired);
                             w.EventTriggerStateChanged(Weapon.EventTriggers.StopTracking, w.Target.State != Targets.Acquired);
                         }
@@ -354,7 +350,7 @@ namespace WeaponCore
                 var sinceCheck = Tick - w.Target.CheckTick;
                 var reacquire = gridAi.TargetResetTick == Tick;
 
-                if (sinceCheck > 239 || reacquire || sinceCheck > 60 && _count == w.LoadId) {
+                if (true || sinceCheck > 239 || reacquire || sinceCheck > 60 && _count == w.LoadId) {
 
                     var comp = w.Comp;
                     var hasTarget = w.Target.State == Targets.Acquired;
