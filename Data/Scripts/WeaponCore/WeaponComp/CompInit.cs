@@ -143,7 +143,7 @@ namespace WeaponCore.Support
             }
 
             weapon.UseablePower = weapon.RequiredPower;
-            HeatPerSecond += (60 / (float)weapon.TicksPerShot) * weapon.HeatPShot * weapon.System.BarrelsPerShot;
+            HeatPerSecond += (weapon.RateOfFire / 60) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
             OptimalDps += weapon.Dps;
 
             HeatSinkRate += weapon.HsRate;

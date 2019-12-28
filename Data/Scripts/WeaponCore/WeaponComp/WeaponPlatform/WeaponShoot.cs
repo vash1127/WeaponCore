@@ -275,7 +275,8 @@ namespace WeaponCore.Platform
                 _muzzlesToFire.Add(MuzzleIdToName[current]);
 
                 if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
-                    Comp.Ai.Session.UpdateWeaponHeat(MyTuple.Create(this, 0, true));
+                    UpdateWeaponHeat(true);
+                
 
                 Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
                 Comp.CurrentHeat += HeatPShot;
@@ -286,7 +287,7 @@ namespace WeaponCore.Platform
                         var dmg = .02f * Comp.MaxIntegrity;
                         Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
                     }
-
+                    Log.Line($"Overheated");
                     EventTriggerStateChanged(EventTriggers.Overheated, true);
                     Comp.Overheated = true;
                     StopShooting();

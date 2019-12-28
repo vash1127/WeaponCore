@@ -169,7 +169,7 @@ namespace WeaponCore
                         /// 
                         
                         w.SeekTarget = w.TrackTarget && w.Target.State == Targets.Expired;
-                        Log.Line($"w.Target.State: {w.Target.State}");
+                        //Log.Line($"w.Target.State: {w.Target.State}");
                         if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && w.Target.State != Targets.StillSeeking && !gunner)
                         {
                             w.Target.State = Targets.StillSeeking;

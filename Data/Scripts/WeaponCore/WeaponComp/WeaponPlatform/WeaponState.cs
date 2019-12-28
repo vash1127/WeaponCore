@@ -616,10 +616,12 @@ namespace WeaponCore.Platform
         {
             if (Comp.MyCube != null && !Comp.MyCube.MarkedForClose)
             {
+                var axis = System.Values.HardPoint.RotateBarrelAxis;
+                if (axis == 0) return;
+
                 var rof = System.HasBarrelRate ? BarrelSpinRate < 3599 ? BarrelSpinRate : 3599 : RateOfFire < 3599 ? RateOfFire : 3599;
 
-                var axis = System.Values.HardPoint.RotateBarrelAxis;
-                if (axis != 0 && MuzzlePart.Item1 != Comp.MyCube)
+                if (MuzzlePart.Item1 != Comp.MyCube)
                 {
                     for (int i = 0; i < 10; i++)
                     {

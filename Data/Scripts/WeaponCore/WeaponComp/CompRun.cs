@@ -14,7 +14,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                Log.Line("Added To Container");
                 base.OnAddedToContainer();
                 if (Container.Entity.InScene)
                 {
@@ -94,6 +93,7 @@ namespace WeaponCore.Support
                 MaxRequiredPower = 0;
                 HeatPerSecond = 0;
                 OptimalDps = 0;
+                MaxHeat = 0;
 
                 InventoryInit();
 

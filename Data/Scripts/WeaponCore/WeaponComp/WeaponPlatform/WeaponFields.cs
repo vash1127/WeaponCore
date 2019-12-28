@@ -23,6 +23,7 @@ namespace WeaponCore.Platform
         //private int _shotsInCycle;
         private int _nextVirtual;
         private int _barrelRate;
+        private int _fakeHeatTick;
         private uint _ticksUntilShoot;
         private uint _shootTick;
         private uint _posChangedTick = 1;
