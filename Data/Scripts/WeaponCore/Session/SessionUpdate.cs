@@ -389,7 +389,7 @@ namespace WeaponCore
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
 
-                        if (w.IsShooting || w.DrawingPower)
+                        if (w.DrawingPower)
                             w.DrawPower(true);
                         else
                             w.DrawPower();
