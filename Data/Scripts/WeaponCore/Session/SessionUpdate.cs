@@ -233,8 +233,11 @@ namespace WeaponCore
                             var targetRequested = w.SeekTarget && targetChanged;
                             if (!targetRequested && (w.DelayTicks == 0 || w.ChargeUntilTick <= Tick))
                             {
-                                if (!w.DrawingPower && !w.System.MustCharge)
+                                if (!w.RequestedPower && !w.System.MustCharge)
+                                {
                                     gridAi.RequestedWeaponsDraw += w.RequiredPower;
+                                    w.RequestedPower = true;
+                                }
 
                                 ShootingWeapons.Enqueue(w);
                             }
