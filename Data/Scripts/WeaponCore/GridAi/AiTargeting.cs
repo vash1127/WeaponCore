@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO.IsolatedStorage;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -252,7 +250,7 @@ namespace WeaponCore.Support
 
                 foreach (var bt in subSystems)
                 {
-                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> blockTypeMap;
+                    ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
                     if (bt != Any && blockTypeMap != null && blockTypeMap[bt].Count > 0)
                     {
@@ -275,7 +273,7 @@ namespace WeaponCore.Support
             return ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, checkPower);
         }
 
-        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, MyConcurrentList<MyCubeBlock> subSystemList, Weapon w, bool checkPower = true)
+        private static bool FindRandomBlock(WeaponSystem system, GridAi ai, Target target, Vector3D weaponPos, TargetInfo info, ConcurrentCachingList<MyCubeBlock> subSystemList, Weapon w, bool checkPower = true)
         {
             var totalBlocks = subSystemList.Count;
 
@@ -388,7 +386,7 @@ namespace WeaponCore.Support
             return foundBlock;
         }
 
-        internal static bool GetClosestHitableBlockOfType(MyConcurrentList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null, bool checkPower = true)
+        internal static bool GetClosestHitableBlockOfType(ConcurrentCachingList<MyCubeBlock> cubes, GridAi ai, Target target, Vector3D currentPos, Vector3D targetLinVel, Vector3D targetAccel, WeaponSystem system, Weapon w = null, bool checkPower = true)
         {
             var minValue = double.MaxValue;
             var minValue0 = double.MaxValue;

@@ -284,12 +284,12 @@ namespace WeaponCore
             });
         }
 
-        private static MyConcurrentList<MyCubeBlock> QueryBlockCaches(GridAi ai, MyCubeGrid targetGrid, AreaDamage.AreaEffectType effectType)
+        private static ConcurrentCachingList<MyCubeBlock> QueryBlockCaches(GridAi ai, MyCubeGrid targetGrid, AreaDamage.AreaEffectType effectType)
         {
-            ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> blockTypeMap;
+            ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
             if (!ai.Session.GridToBlockTypeMap.TryGetValue(targetGrid, out blockTypeMap)) return null;
 
-            MyConcurrentList<MyCubeBlock> cubes;
+            ConcurrentCachingList<MyCubeBlock> cubes;
             switch (effectType)
             {
                 case JumpNullField:

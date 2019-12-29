@@ -69,10 +69,11 @@ namespace WeaponCore
             MyCubeGrid grid;
             while (NewGrids.TryDequeue(out grid))
             {
-                //Log.Line($"added grid");
-
                 var allFat = ConcurrentListPool.Get();
-                allFat.AddRange(grid.GetFatBlocks());
+                var gridFat = grid.GetFatBlocks();
+                for (int i = 0; i < gridFat.Count; i++) allFat.Add(gridFat[i]);
+                allFat.ApplyAdditions();
+
                 var fatMap = FatMapPool.Get();
 
                 if (grid.Components.TryGet(out fatMap.Targeting))
@@ -95,15 +96,14 @@ namespace WeaponCore
 
         private void ToFatMap(MyCubeBlock myCubeBlock)
         {
-            //Log.Line("added to fat map");
             GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Add(myCubeBlock);
+            GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.ApplyAdditions();
             DirtyGrids.Add(myCubeBlock.CubeGrid);
         }
 
         private void FromFatMap(MyCubeBlock myCubeBlock)
         {
-            //Log.Line("removed from fat map");
-            GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock);
+            GridToFatMap[myCubeBlock.CubeGrid].MyCubeBocks.Remove(myCubeBlock, true);
             DirtyGrids.Add(myCubeBlock.CubeGrid);
         }
 

@@ -254,10 +254,10 @@ namespace WeaponCore.Support
                 {
                     isGrid = true;
                     largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                    ConcurrentDictionary<BlockTypes, MyConcurrentList<MyCubeBlock>> blockTypeMap;
+                    ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
                     {
-                        MyConcurrentList<MyCubeBlock> weaponBlocks;
+                        ConcurrentCachingList<MyCubeBlock> weaponBlocks;
                         if (blockTypeMap.TryGetValue(BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
                             armed = true;
                     }
@@ -544,7 +544,7 @@ namespace WeaponCore.Support
         internal void InitFakeShipController()
         {
             FatMap fatMap;
-            if (FakeShipController != null && Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && !fatMap.MyCubeBocks.Empty)
+            if (FakeShipController != null && Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
                 FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
         }
 
@@ -610,15 +610,11 @@ namespace WeaponCore.Support
 
             if (FakeShipController.GridResourceDistributor == null)
             {
-                Log.Line($"{MyGrid.DebugName} - broken GridResourceDistributor - Marked:{MyGrid.MarkedForClose} - InScene:{MyGrid.InScene} - FakeValid:{FakeShipController != null} - GridValid:{FakeShipController?.CubeGrid != null} TopGridValid:{FakeShipController?.TopGrid != null}");
-                
                 FatMap fatMap;
-                if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && !fatMap.MyCubeBocks.Empty)
+                if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
                 {
                     FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
                     if (FakeShipController.GridResourceDistributor == null) return;
-
-                    Log.Line($"fixed GridResourceDistributor");
                 }
                 else return;
             }

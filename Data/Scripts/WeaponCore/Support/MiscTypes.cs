@@ -531,7 +531,7 @@ namespace WeaponCore.Support
 
     public class FatMap
     {
-        public MyConcurrentList<MyCubeBlock> MyCubeBocks;
+        public ConcurrentCachingList<MyCubeBlock> MyCubeBocks;
         public MyGridTargeting Targeting;
         public volatile bool Trash;
         public int MostBlocks;

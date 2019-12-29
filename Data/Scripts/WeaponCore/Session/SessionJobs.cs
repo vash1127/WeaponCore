@@ -139,7 +139,7 @@ namespace WeaponCore
                 newTypeMap[Power] = ConcurrentListPool.Get();
                 newTypeMap[Production] = ConcurrentListPool.Get();
 
-                ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> noFatTypeMap;
+                ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> noFatTypeMap;
 
                 FatMap fatMap;
                 if (GridToFatMap.TryGetValue(grid, out fatMap))
@@ -170,18 +170,23 @@ namespace WeaponCore
                             else if (fat is MyGyro) newTypeMap[Steering].Add(fat);
                             else if (fat is MyJumpDrive) newTypeMap[Jumping].Add(fat);
                         }
-                    }   
+                    }
+
+                    foreach (var type in newTypeMap)
+                        type.Value.ApplyAdditions();
+                    
+                    fatMap.MyCubeBocks.ApplyAdditions();
+
                     fatMap.Trash = terminals == 0;
                     var gridBlocks = grid.BlocksCount;
                     if (gridBlocks > fatMap.MostBlocks) fatMap.MostBlocks = gridBlocks;
-
-                    ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> oldTypeMap; 
+                    ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> oldTypeMap; 
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
                     {
                         GridToBlockTypeMap[grid] = newTypeMap;
                         foreach (var item in oldTypeMap)
                         {
-                            item.Value.Clear();
+                            item.Value.ClearImmediate();
                             ConcurrentListPool.Return(item.Value);
                         }
                         BlockTypePool.Return(oldTypeMap);
@@ -192,7 +197,7 @@ namespace WeaponCore
                 {
                     foreach (var item in noFatTypeMap)
                     {
-                        item.Value.Clear();
+                        item.Value.ClearImmediate();
                         ConcurrentListPool.Return(item.Value);
                     }
                     BlockTypePool.Return(noFatTypeMap);
