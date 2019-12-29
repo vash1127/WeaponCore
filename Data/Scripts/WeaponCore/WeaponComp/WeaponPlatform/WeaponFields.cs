@@ -23,6 +23,7 @@ namespace WeaponCore.Platform
         //private int _shotsInCycle;
         private int _nextVirtual;
         private int _barrelRate;
+        private int _fakeHeatTick;
         private uint _ticksUntilShoot;
         private uint _shootTick;
         private uint _posChangedTick = 1;
@@ -133,6 +134,7 @@ namespace WeaponCore.Platform
         internal bool AiOnlyWeapon;
         internal bool Charging;
         internal bool DrawingPower;
+        internal bool RequestedPower;
         internal bool ResetPower;
         internal bool RecalcPower;
 

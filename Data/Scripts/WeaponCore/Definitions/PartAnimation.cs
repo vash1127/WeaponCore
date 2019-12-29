@@ -26,6 +26,7 @@ namespace WeaponCore.Support {
         internal readonly bool DoesReverse;
         internal readonly bool TriggerOnce;
         internal readonly bool HasMovement;
+        internal readonly bool ResetEmissives;
         internal readonly string Muzzle;
         internal readonly string SubpartId;
         internal readonly string[] EmissiveParts;
@@ -68,13 +69,14 @@ namespace WeaponCore.Support {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false)
+        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
         {
             EventTrigger = eventTrigger;
             RotationSet = rotationSet;
             RotCenterSet = rotCeterSet;
             CurrentEmissivePart = currentEmissivePart;
             AnimationId = animationId;
+            ResetEmissives = resetEmissives;
 
             //Unique Animation ID
             Guid guid = Guid.NewGuid();

@@ -169,6 +169,7 @@ namespace WeaponCore
                         /// 
                         
                         w.SeekTarget = w.TrackTarget && w.Target.State == Targets.Expired;
+                        //Log.Line($"w.Target.State: {w.Target.State}");
                         if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && w.Target.State != Targets.StillSeeking && !gunner)
                         {
                             w.Target.State = Targets.StillSeeking;
@@ -385,6 +386,7 @@ namespace WeaponCore
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
 
                     if (w.DelayTicks == 0) {
+                        //Log.Line($"Adapting Current Requested: {w.Comp.Ai.RequestedWeaponsDraw}");
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;
