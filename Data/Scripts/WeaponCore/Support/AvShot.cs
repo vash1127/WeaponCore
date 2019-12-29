@@ -68,6 +68,7 @@ namespace WeaponCore.Support
         internal Vector3D HitPosition;
         internal Vector3D ShooterVelocity;
         internal Vector3D TracerStart;
+        internal Vector3D ShooterVelStep;
         internal Vector4 Color;
         internal Vector3 ClosestPointOnLine;
         internal Hit Hit;
@@ -119,7 +120,7 @@ namespace WeaponCore.Support
             WeaponId = info.WeaponId;
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-
+            ShooterVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
 
 
@@ -210,6 +211,7 @@ namespace WeaponCore.Support
             ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
             if (System.IsBeamWeapon && DistanceToLine < 1000) DistanceToLine = 1000;
+            else if (DistanceToLine < 350) DistanceToLine = 350;
             ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
             Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
             LineScaler = (Thickness / width);
@@ -237,6 +239,79 @@ namespace WeaponCore.Support
 
         }
 
+        internal void RunGlow()
+        {
+            var glowCount = GlowSteps.Count;
+            if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime + 1)
+            {
+                var glow = Ai.Session.GlowPool.Get();
+                LastGlowIdx = glowCount - 1;
+
+                glow.Parent = glowCount > 0 ? GlowSteps[LastGlowIdx] : null;
+                if (glow.Parent == null)
+                {
+                    glow.TracerStart = TracerStart;
+                    glow.TailPos = TracerStart;
+                }
+                else glow.TailPos = glow.Parent.TailPos + (Direction * StepSize);
+
+                glow.FirstTick = Ai.Session.Tick;
+                glow.ShooterVel = ShooterVelocity;
+                GlowSteps.Enqueue(glow);
+                ++glowCount;
+            }
+
+            float scale = 1;
+            
+            var distanceFromPointSqr = Vector3D.DistanceSquared(Ai.Session.CameraPos, ClosestPointOnLine);
+            if (distanceFromPointSqr > 1500 * 1500) scale = 1.0f;
+            if (distanceFromPointSqr > 1250 * 1250) scale = 1.1f;
+            else if (distanceFromPointSqr > 1000 * 1000) scale = 1.2f;
+            else if (distanceFromPointSqr > 750 * 750) scale = 1.3f;
+            else if (distanceFromPointSqr > 500 * 500) scale = 1.4f;
+            else if (distanceFromPointSqr > 250 * 250) scale = 1.3f;
+            else if (distanceFromPointSqr > 125 * 125) scale = 1.2f;
+            else if (distanceFromPointSqr > 75 * 75) scale = 1.1f;
+            var sliderScale = ((float)LineScaler * scale);
+
+            for (int i = 0; i < glowCount; i++)
+            {
+                var glow = GlowSteps[i];
+                var thisStep = (Ai.Session.Tick - glow.FirstTick);
+                var steps = System.Values.Graphics.Line.Trail.DecayTime;
+                var fullSize = System.Values.Graphics.Line.Tracer.Width;
+                var shrinkAmount = fullSize / steps;
+                glow.TailPos += (ShooterVelStep);
+                glow.TracerStart += (ShooterVelStep);
+                glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
+
+
+                /*
+                if (glow.Parent == null)
+                {
+                    DsDebugDraw.DrawSingleVec(glow.TracerStart, 0.125f, VRageMath.Color.Orange);
+                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
+                }
+                else if (i == 0)
+                {
+                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Orange);
+                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
+                }
+                else if (i == 1)
+                {
+                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
+                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
+                }
+                else if (i == 2)
+                {
+                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
+                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
+                }
+                */
+                var reduction = (shrinkAmount * thisStep);
+                glow.Thickness = (fullSize - reduction) * sliderScale;
+            }
+        }
         internal void RunBeam()
         {
             TracerLength = VisualLength;
@@ -293,104 +368,6 @@ namespace WeaponCore.Support
                 }
             }
         }
-
-        internal void RunGlow()
-        {
-            if (Ai?.Session == null)
-            {
-                Log.Line($"Ai Or Session null");
-                return;
-            }
-
-            if (System == null)
-            {
-                Log.Line($"System null");
-                return;
-            }
-
-            if (GlowSteps == null)
-            {
-                Log.Line($"GlowSteps null");
-                return;
-            }
-
-            var glowCount = GlowSteps.Count;
-            if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime + 1)
-            {
-                var glow = Ai.Session.GlowPool.Get();
-                LastGlowIdx = glowCount - 1;
-
-                glow.Parent = glowCount > 0 ? GlowSteps[LastGlowIdx] : null;
-                if (glow.Parent == null)
-                {
-                    glow.TracerStart = TracerStart;
-                    glow.TailPos = TracerStart;
-                }
-                else glow.TailPos = glow.Parent.TailPos + (Direction * StepSize);
-
-                glow.FirstTick = Ai.Session.Tick;
-                glow.ShooterVel = ShooterVelocity;
-                GlowSteps.Enqueue(glow);
-                ++glowCount;
-            }
-
-            float scale = 1;
-            
-            var distanceFromPointSqr = Vector3D.DistanceSquared(Ai.Session.CameraPos, ClosestPointOnLine);
-
-            if (distanceFromPointSqr > 1500 * 1500) scale = 1.0f;
-            if (distanceFromPointSqr > 1250 * 1250) scale = 1.1f;
-            else if (distanceFromPointSqr > 1000 * 1000) scale = 1.2f;
-            else if (distanceFromPointSqr > 750 * 750) scale = 1.3f;
-            else if (distanceFromPointSqr > 500 * 500) scale = 1.4f;
-            else if (distanceFromPointSqr > 250 * 250) scale = 1.3f;
-            else if (distanceFromPointSqr > 125 * 125) scale = 1.2f;
-            else if (distanceFromPointSqr > 75 * 75) scale = 1.1f;
-
-            var sliderScale = ((float)LineScaler * scale);
-
-            for (int i = 0; i < glowCount; i++)
-            {
-                var glow = GlowSteps[i];
-                if (Ai?.Session == null || System == null)
-                {
-                    Log.Line($"Glow Ai, Session or System ({System == null}) null");
-                    continue;
-                }
-                var thisStep = (Ai.Session.Tick - glow.FirstTick);
-                //if (thisStep != 0) glow.Back += (glow.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
-                var steps = System.Values.Graphics.Line.Trail.DecayTime;
-                var fullSize = System.Values.Graphics.Line.Tracer.Width;
-                var shrinkAmount = fullSize / steps;
-                glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
-                /*
-                if (glow.Parent == null)
-                {
-                    DsDebugDraw.DrawSingleVec(glow.TracerStart, 0.125f, VRageMath.Color.Orange);
-                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
-                }
-                else if (i == 0)
-                {
-                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Orange);
-                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
-                }
-                else if (i == 1)
-                {
-                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
-                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
-                }
-                else if (i == 2)
-                {
-                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
-                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
-                }
-                */
-
-                var reduction = (shrinkAmount * thisStep);
-                glow.Thickness = (fullSize - reduction) * sliderScale;
-            }
-        }
-
 
         internal void SetupSounds(double distanceFromCameraSqr)
         {
@@ -472,7 +449,6 @@ namespace WeaponCore.Support
         internal Vector3D TailPos;
         internal Vector3D ShooterVel;
         internal LineD Line;
-        internal int LifeTime;
         internal uint FirstTick;
         internal float WidthScaler;
         internal float Length;
@@ -487,7 +463,6 @@ namespace WeaponCore.Support
             WidthScaler = 0;
             Length = 0;
             Thickness = 0;
-            LifeTime = 0;
         }
     }
 }

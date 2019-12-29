@@ -97,7 +97,6 @@ namespace WeaponCore
 
         private void RunAv()
         {
-            if (Tick180) Log.Line($"{AvShots.Count}");
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
@@ -115,7 +114,8 @@ namespace WeaponCore
                     {
                         var glow = av.GlowSteps[j];
 
-                        if (av.OnScreen != Screen.None) MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
+                        if (av.OnScreen != Screen.None)
+                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
                         if (Tick - glow.FirstTick >= steps)
                         {
                             glowCnt--;
@@ -217,7 +217,7 @@ namespace WeaponCore
 
 
                 var noNextStep = glowCnt == 0 && av.Model == ModelState.None;
-                if (noNextStep && !refreshed)
+                if (noNextStep && (!refreshed || av.System.IsBeamWeapon))
                 {
                     av.Close();
                     AvShots.RemoveAtFast(i);
