@@ -18,9 +18,9 @@ namespace WeaponCore
     {
         internal void ProcessHits()
         {
-            Projectile p;
-            while (Hits.TryDequeue(out p))
+            for (int x = 0; x < Hits.Count; x++)
             {
+                var p = Hits[x];
                 var info = p.Info;
                 var maxObjects = info.System.MaxObjectsHit;
                 var phantom = info.System.Values.Ammo.BaseDamage <= 0;
@@ -76,6 +76,7 @@ namespace WeaponCore
 
                 info.HitList.Clear();
             }
+            Hits.Clear();
         }
 
         private void DamageShield(HitEntity hitEnt, ProInfo info)

@@ -42,6 +42,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>();
         internal readonly MyConcurrentPool<AvShot> AvShotPool = new MyConcurrentPool<AvShot>();
+        internal readonly MyConcurrentPool<AfterGlow> GlowPool = new MyConcurrentPool<AfterGlow>(100);
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
@@ -53,7 +54,6 @@ namespace WeaponCore
 
         internal readonly ConcurrentCachingList<WeaponComponent> CompsToStart = new ConcurrentCachingList<WeaponComponent>();
 
-        internal readonly ConcurrentQueue<Projectile> Hits = new ConcurrentQueue<Projectile>();
         internal readonly ConcurrentQueue<Weapon> WeaponAmmoPullQueue = new ConcurrentQueue<Weapon>();
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
@@ -69,6 +69,7 @@ namespace WeaponCore
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
 
+        internal readonly List<Projectile> Hits = new List<Projectile>();
         internal readonly List<Weapon> ChargingWeapons = new List<Weapon>(100);
         internal readonly List<Weapon> AcquireTargets = new List<Weapon>(100);
         internal readonly List<MyDefinitionId> WeaponCoreFixedBlockDefs = new List<MyDefinitionId>();
@@ -76,8 +77,7 @@ namespace WeaponCore
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>();
         internal readonly List<AvShot> AvShots = new List<AvShot>(100);
-
-        internal readonly Queue<Weapon> ShootingWeapons = new Queue<Weapon>(100);
+        internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(100);
         
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
@@ -90,7 +90,6 @@ namespace WeaponCore
 
 
         //internal readonly MyConcurrentPool<Shrinking> ShrinkPool = new MyConcurrentPool<Shrinking>(100);
-        internal readonly MyConcurrentPool<AfterGlow> GlowPool = new MyConcurrentPool<AfterGlow>(100);
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
 
 

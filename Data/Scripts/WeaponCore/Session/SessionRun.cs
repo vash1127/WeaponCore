@@ -43,13 +43,14 @@ namespace WeaponCore
                 {
                     HighLoad = false;
                     var projectileTime = DsUtil.GetValue("projectiles");
-                    var updateTime = DsUtil.GetValue("update");
+                    var updateTime = DsUtil.GetValue("shoot");
                     var damageTime = DsUtil.GetValue("damage");
                     var drawTime = DsUtil.GetValue("draw");
                     var db = DsUtil.GetValue("db");
                     var ai = DsUtil.GetValue("ai");
+                    var charge = DsUtil.GetValue("charge");
                     var acquire = DsUtil.GetValue("acquire");
-                    Log.Line($"AiRequests:[{TargetRequests}] Targets:[{TargetChecks}] Blocks:[{BlockChecks}] CanShoots:[{CanShoot}] CCasts:[{ClosestRayCasts}] RandCasts[{RandomRayCasts}] TopCasts[{TopRayCasts}] <Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <UP>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <PO>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DW>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}");
+                    Log.Line($"<Acq>{acquire.Median:0.0000}/{acquire.Min:0.0000}/{acquire.Max:0.0000} <DM>{damageTime.Median:0.0000}/{damageTime.Min:0.0000}/{damageTime.Max:0.0000} <DR>{drawTime.Median:0.0000}/{drawTime.Min:0.0000}/{drawTime.Max:0.0000} <AI>{ai.Median:0.0000}/{ai.Min:0.0000}/{ai.Max:0.0000} <SH>{updateTime.Median:0.0000}/{updateTime.Min:0.0000}/{updateTime.Max:0.0000} <CH>{charge.Median:0.0000}/{charge.Min:0.0000}/{charge.Max:0.0000} <PR>{projectileTime.Median:0.0000}/{projectileTime.Min:0.0000}/{projectileTime.Max:0.0000} <DB>{db.Median:0.0000}/{db.Min:0.0000}/{db.Max:0.0000}> AiReq:[{TargetRequests}] Targ:[{TargetChecks}] Bloc:[{BlockChecks}] Aim:[{CanShoot}] CCast:[{ClosestRayCasts}] RndCast[{RandomRayCasts}] TopCast[{TopRayCasts}]");
                     TargetRequests = 0;
                     TargetChecks = 0;
                     BlockChecks = 0;
@@ -87,17 +88,17 @@ namespace WeaponCore
                 if (GameLoaded) AiLoop();
                 DsUtil.Complete("ai", true);
 
-                DsUtil.Start("chargeWeapons");
-                if (GameLoaded && ChargingWeapons.Count > 0) UpdateChargeWeapons();
-                DsUtil.Complete("chargeWeapons", true);
+                DsUtil.Start("charge");
+                if (ChargingWeapons.Count > 0) UpdateChargeWeapons();
+                DsUtil.Complete("charge", true);
 
                 DsUtil.Start("acquire");
-                CheckAcquire();
+                if (AcquireTargets.Count > 0) CheckAcquire();
                 DsUtil.Complete("acquire", true);
 
-                DsUtil.Start("update");
-                if (GameLoaded) ShootWeapons();
-                DsUtil.Complete("update", true);
+                DsUtil.Start("shoot");
+                if (ShootingWeapons.Count > 0) ShootWeapons();
+                DsUtil.Complete("shoot", true);
                 if (UiInput.PlayerCamera && !WheelUi.WheelActive && !InMenu) TargetSelection();
                 PTask = MyAPIGateway.Parallel.StartBackground(Projectiles.Update);
             }
@@ -154,7 +155,7 @@ namespace WeaponCore
                     CheckDirtyGrids();
 
                 DsUtil.Start("damage");
-                if (!Hits.IsEmpty) ProcessHits();
+                if (Hits.Count > 0) ProcessHits();
                 DsUtil.Complete("damage", true);
 
             }

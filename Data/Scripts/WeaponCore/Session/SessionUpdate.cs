@@ -240,7 +240,7 @@ namespace WeaponCore
                                     w.RequestedPower = true;
                                 }
 
-                                ShootingWeapons.Enqueue(w);
+                                ShootingWeapons.Add(w);
                             }
                             else if (w.ChargeUntilTick > Tick && !w.System.MustCharge)
                             {
@@ -379,9 +379,9 @@ namespace WeaponCore
 
         private void ShootWeapons() 
         {
-            while (ShootingWeapons.Count > 0)
+            for (int i = 0; i < ShootingWeapons.Count; i++)
             {
-                var w = ShootingWeapons.Dequeue();
+                var w = ShootingWeapons[i];
                 //TODO add logic for power priority
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
 
@@ -425,6 +425,7 @@ namespace WeaponCore
                 if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) 
                     w.ShootGraphics();
             }
+            ShootingWeapons.Clear();
         }
     }
 }

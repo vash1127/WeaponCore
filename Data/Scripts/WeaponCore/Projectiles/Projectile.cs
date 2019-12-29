@@ -361,7 +361,7 @@ namespace WeaponCore.Projectiles
             hitInfos.Clear();
         }
 
-        internal bool Intersected(bool queue = true)
+        internal bool Intersected(bool add = true)
         {
             if (Hit.HitPos == Vector3D.Zero) return false;
             if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModelId != -1 || Info.System.TriggerModelId != -1))
@@ -383,7 +383,7 @@ namespace WeaponCore.Projectiles
             }
 
             Colliding = true;
-            if (!Info.System.VirtualBeams && queue) Info.Ai.Session.Hits.Enqueue(this);
+            if (!Info.System.VirtualBeams && add) Info.Ai.Session.Hits.Add(this);
             else
             {
                 Info.WeaponCache.VirtualHit = true;
@@ -393,7 +393,7 @@ namespace WeaponCore.Projectiles
                 Info.WeaponCache.HitDistance = Vector3D.Distance(LastPosition, Hit.HitPos);
 
                 if (Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Hit.Block;
-                if (queue) Info.Ai.Session.Hits.Enqueue(this);
+                if (add) Info.Ai.Session.Hits.Add(this);
                 if (EnableAv && Info.AvShot.OnScreen == Screen.Tracer) CreateFakeBeams();
             }
 
