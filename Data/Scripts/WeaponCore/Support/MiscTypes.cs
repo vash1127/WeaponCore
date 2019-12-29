@@ -3,188 +3,52 @@ using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
-using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
+using WeaponCore.Projectiles;
 using WeaponCore.Platform;
 using static WeaponCore.Support.HitEntity.Type;
-using Projectile = WeaponCore.Projectiles.Projectile;
-using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 using static WeaponCore.Support.TargetingDefinition;
+using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Support
 {
     internal class ProInfo
     {
-        /*
-        public enum DrawState
-        {
-            Last,
-            Hit,
-            Default
-        }
-        */
-
-        public enum ReSize
-        {
-            Grow,
-            Shrink,
-            None
-        }
-
         internal readonly Target Target = new Target();
         internal readonly List<HitEntity> HitList = new List<HitEntity>();
-        internal readonly MySoundPair FireSound = new MySoundPair();
-        internal readonly MySoundPair TravelSound = new MySoundPair();
-        internal readonly MySoundPair HitSound = new MySoundPair();
-        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
-        internal readonly Stack<AfterGlow> Glowers = new Stack<AfterGlow>(60);
         internal AvShot AvShot;
-
-        internal WeaponSystem.FiringSoundState FiringSoundState;
-        internal bool AmmoSound;
-        internal bool HasTravelSound;
-        internal bool HitSoundActive;
-
         internal WeaponSystem System;
         internal GridAi Ai;
-        internal CompGroupOverrides Overrides;
         internal MyEntity PrimeEntity;
         internal MyEntity TriggerEntity;
-        //internal DrawHit? DrawHit;
+        internal CompGroupOverrides Overrides;
         internal WeaponFrameCache WeaponCache;
-        internal MatrixD PrimeMatrix = MatrixD.Identity;
-        internal MatrixD TriggerMatrix = MatrixD.Identity;
-        internal Vector3D Position;
         internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
         internal Vector3D Direction;
-        internal Vector3D LineStart;
-        internal Vector3D ClosestPointOnLine;
-        internal Vector4 Color;
+        internal int TriggerGrowthSteps;
         internal int WeaponId;
         internal int MuzzleId;
-        internal int TriggerGrowthSteps;
         internal int ObjectsHit;
         internal int Age;
-        internal double Length;
-        internal double GrowDistance;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
         internal double ProjectileDisplacement;
-        internal float DistanceToLine;
-        internal float ScaleFov;
-        internal float LineWidth;
-        internal float LineScaler;
         internal float BaseDamagePool;
         internal float AreaEffectDamage;
         internal float DetonationDamage;
         internal float BaseHealthPool;
-        //internal Screen OnScreen;
         internal bool IsShrapnel;
         internal bool EnableGuidance = true;
-        internal bool Triggered;
-        internal bool Cloaked;
-        internal bool FakeExplosion;
-        internal bool HitSoundActived;
-        internal bool StartSoundActived;
         internal bool LastHitShield;
-        internal bool Shrinking;
-        internal ReSize ReSizing;
-        //internal DrawState Draw;
-        /*
-        internal enum Screen
-        {
-            Tracer,
-            Tail,
-            None,
-        }
-        */
-        internal void SetupSounds(double distanceFromCameraSqr)
-        {
-            FiringSoundState = System.FiringSound;
+        internal MatrixD TriggerMatrix = MatrixD.Identity;
 
-            if (!System.IsBeamWeapon && System.AmmoTravelSound)
-            {
-                HasTravelSound = true;
-                TravelSound.Init(System.Values.Audio.Ammo.TravelSound, false);
-            }
-            else HasTravelSound = false;
-
-            if (System.HitSound)
-            {
-                var hitSoundChance = System.Values.Audio.Ammo.HitPlayChance;
-                HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f));
-                if (HitSoundActive)
-                    HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
-            }
-
-            if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr)
-            {
-                StartSoundActived = true;
-                FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
-                FireEmitter.SetPosition(Origin);
-                FireEmitter.Entity = Target.FiringCube;
-            }
-        }
-
-        internal void AmmoSoundStart()
-        {
-            TravelEmitter.SetPosition(Position);
-            TravelEmitter.Entity = PrimeEntity;
-            TravelEmitter.PlaySound(TravelSound, true);
-            AmmoSound = true;
-        }
-
-        //internal void Complete(DrawHit? drawHit, DrawState draw)
-        internal void Complete()
-        {
-            /*
-            //DrawHit = drawHit;
-            //Draw = draw;
-
-            var color = System.Values.Graphics.Line.Tracer.Color;
-            if (System.LineColorVariance)
-            {
-                var cv = System.Values.Graphics.Line.ColorVariance;
-                var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
-                color.X *= randomValue;
-                color.Y *= randomValue;
-                color.Z *= randomValue;
-            }
-
-            Color = color;
-            VisualShot.Color = color;
-            if (VisualShot.OnScreen != Screen.None)
-            {
-                var width = System.Values.Graphics.Line.Tracer.Width;
-                if (System.LineWidthVariance)
-                {
-                    var wv = System.Values.Graphics.Line.WidthVariance;
-                    var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
-                    width += randomValue;
-                }
-
-                var target = Position + (-Direction * Length);
-                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
-                DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
-                ScaleFov = (float)Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-                LineScaler = Math.Max(1, 0.10f * ScaleFov * (DistanceToLine / 100));
-                LineWidth = width * LineScaler;
-                VisualShot.Thickness = LineWidth;
-                VisualShot.LineScaler = LineScaler;
-
-            }
-            //if (DistanceTraveled <= 120) Log.Line($"[test] Age:{Age} - moved::{(DistanceTraveled - PrevDistanceTraveled)} - distTraveled:{DistanceTraveled} - pDisplacement:{ProjectileDisplacement} - reSize:{ReSizing} - onScreen:{OnScreen} - dToLine:{DistanceToLine}");
-            */
-        }
 
         internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D direction)
         {
@@ -199,61 +63,30 @@ namespace WeaponCore.Support
             MuzzleId = muzzleId;
             Direction = direction;
             Origin = origin;
-            Position = origin;
-        }
-
-        internal void UpdateShape(Vector3D position, Vector3D direction, double length, ReSize resizing)
-        {
-            Position = position;
-            Direction = direction;
-            Length = length;
-            ReSizing = resizing;
-            LineStart = position + -(direction * length);
         }
 
         internal void Clean()
         {
             Target.Reset();
             HitList.Clear();
-            Glowers.Clear();
             AvShot = null;
             System = null;
-            Ai = null;
             PrimeEntity = null;
             TriggerEntity = null;
+            Ai = null;
             WeaponCache = null;
-            Triggered = false;
-            Cloaked = false;
-            AmmoSound = false;
-            HitSoundActive = false;
-            HitSoundActived = false;
-            StartSoundActived = false;
-            HasTravelSound = false;
             LastHitShield = false;
-            FakeExplosion = false;
-            Shrinking = false;
-            //VisualShot.OnScreen = Screen.None;
             IsShrapnel = false;
+            TriggerGrowthSteps = 0;
             WeaponId = 0;
             MuzzleId = 0;
-            Length = 0;
             Age = 0;
-            TriggerGrowthSteps = 0;
             ProjectileDisplacement = 0;
-            LineWidth = 0;
-            LineScaler = 0;
-            ScaleFov = 0;
             EnableGuidance = true;
-            GrowDistance = 0;
-            DistanceToLine = 0;
-            ReSizing = ReSize.None;
-            //Draw = DrawState.Default;
-            Position = Vector3D.Zero;
             Direction = Vector3D.Zero;
-            LineStart = Vector3D.Zero;
             Origin = Vector3D.Zero;
             ShooterVel = Vector3D.Zero;
-            ClosestPointOnLine = Vector3D.Zero;
+            TriggerMatrix = MatrixD.Identity;
         }
     }
 
@@ -294,6 +127,7 @@ namespace WeaponCore.Support
         {
             Entity = null;
             Projectile = null;
+
             Beam.Length = 0;
             Beam.Direction = Vector3D.Zero;
             Beam.From = Vector3D.Zero;
@@ -310,7 +144,7 @@ namespace WeaponCore.Support
         }
     }
 
-    internal struct DrawHit
+    internal struct Hit
     {
         internal IMySlimBlock Block;
         internal MyEntity Entity;
@@ -581,7 +415,7 @@ namespace WeaponCore.Support
                 p.Info.OriginUp = frag.OriginUp;
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Direction = frag.Direction;
-                p.State = Projectile.ProjectileState.Start;
+                p.State = Projectiles.Projectile.ProjectileState.Start;
 
                 p.StartSpeed = frag.Velocity;
                 frag.Ai.Session.Projectiles.FragmentPool.Return(frag);
@@ -607,7 +441,7 @@ namespace WeaponCore.Support
         public int MuzzleId;
         internal bool Guidance;
     }
-
+    /*
     public class Shrinking
     {
         internal WeaponSystem System;
@@ -633,7 +467,7 @@ namespace WeaponCore.Support
             HitPos = i.Position;
             Direction = i.Direction;
             ShooterVel = i.ShooterVel;
-            LineScaler = i.LineScaler;
+            //LineScaler = i.LineScaler;
             ResizeLen = (i.DistanceTraveled - i.PrevDistanceTraveled);
             TracerLength = i.Length;
             TracerSteps = i.System.TracerLength / ResizeLen;
@@ -666,7 +500,7 @@ namespace WeaponCore.Support
             Glowers.Clear();
             if (Info != null)
             {
-                Info.Shrinking = false;
+                //Info.Shrinking = false;
                 Info = null;
             }
         }
@@ -687,7 +521,7 @@ namespace WeaponCore.Support
             StepLength = stepLength;
         }
     }
-
+    */
     public struct RadiatedBlock
     {
         public Vector3I Center;

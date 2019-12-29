@@ -247,6 +247,7 @@ namespace WeaponCore
 
         private void Paused()
         {
+            Pause = true;
             Log.Line($"Stopping all AV due to pause");
             foreach (var aiPair in GridTargetingAIs)
             {
@@ -430,7 +431,7 @@ namespace WeaponCore
             {
                 _effectedCubes.Remove(_effectPurge.Dequeue());
             }
-
+            /*
             foreach (var s in _shrinking)
             {
                 s.Clean();
@@ -439,7 +440,7 @@ namespace WeaponCore
             }
             _shrinking.ClearImmediate();
             ShrinkPool.Clean();
-
+            */
             for (int i = _afterGlow.Count - 1; i >= 0; i--)
             {
                 var g = _afterGlow[i];

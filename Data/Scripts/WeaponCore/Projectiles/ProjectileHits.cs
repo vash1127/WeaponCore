@@ -25,7 +25,6 @@ namespace WeaponCore.Projectiles
             var lineCheck = p.Info.System.CollisionIsLine;
             var planetBeam = beam;
             planetBeam.To = p.Info.System.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
-
             for (int i = 0; i < p.SegmentList.Count; i++)
             {
                 var ent = p.SegmentList[i].Element;
@@ -226,7 +225,8 @@ namespace WeaponCore.Projectiles
                 IMySlimBlock hitBlock = null;
                 if (p.Info.System.VirtualBeams && hitEntity.Entity is MyCubeGrid)
                     hitBlock = hitEntity.Blocks[0];
-                p.Info.AvShot.DrawHit = new DrawHit { Block = hitBlock, Entity = hitEntity.Entity, Projectile = null, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero };
+                p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, Projectile = null, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero };
+                if (p.EnableAv) p.Info.AvShot.Hit = p.Hit;
                 return true;
             }
             return false;

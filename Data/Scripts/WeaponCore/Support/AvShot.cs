@@ -1,26 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
-
 namespace WeaponCore.Support
 {
     internal class AvShot
     {
         internal WeaponSystem System;
         internal GridAi Ai;
+        internal MyEntity PrimeEntity;
+        internal MyEntity TriggerEntity;
+        internal readonly MySoundPair FireSound = new MySoundPair();
+        internal readonly MySoundPair TravelSound = new MySoundPair();
+        internal readonly MySoundPair HitSound = new MySoundPair();
+        internal readonly MyEntity3DSoundEmitter FireEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+
         internal MyQueue<AfterGlow> GlowSteps = new MyQueue<AfterGlow>();
-        internal Stack<Shrinking> ShrinkSteps = new Stack<Shrinking>();
+        //internal Stack<Shrinking> ShrinkSteps = new Stack<Shrinking>();
         internal WeaponComponent FiringWeapon;
+        internal WeaponSystem.FiringSoundState FiringSoundState;
+
         internal bool Offset;
         internal bool Accelerates;
+        internal bool AmmoSound;
+        internal bool HasTravelSound;
+        internal bool HitSoundActive;
+        internal bool HitSoundActived;
+        internal bool StartSoundActived;
+        internal bool FakeExplosion;
+        internal bool Triggered;
+        internal bool Cloaked;
         internal bool Active;
-        internal TracerState Tracer;
-        internal TrailState Trail;
-        internal Screen OnScreen;
         internal double MaxTracerLength;
         internal double TracerLength;
         internal double MaxGlowLength;
@@ -29,16 +46,22 @@ namespace WeaponCore.Support
         internal double TotalLength;
         internal double Thickness;
         internal double LineScaler;
-        internal double DistanceToLine;
         internal double ScaleFov;
         internal double VisualLength;
         internal double MaxSpeed;
         internal double MaxStepSize;
+        internal float DistanceToLine;
         internal int LifeTime;
         internal int MuzzleId;
         internal int WeaponId;
-        internal int LastGlowIdx = 0;
-        internal uint EndTick;
+        internal int LastGlowIdx;
+        internal uint LastTick;
+        internal uint InitTick;
+        internal TracerState Tracer;
+        internal TrailState Trail;
+        internal ModelState Model;
+        internal Screen OnScreen;
+        internal Vector3D Origin;
         internal Vector3D Position;
         internal Vector3D Direction;
         internal Vector3D HitVelocity;
@@ -47,14 +70,22 @@ namespace WeaponCore.Support
         internal Vector3D TracerStart;
         internal Vector4 Color;
         internal Vector3 ClosestPointOnLine;
-        internal DrawHit DrawHit;
-
+        internal Hit Hit;
+        internal MatrixD PrimeMatrix = MatrixD.Identity;
+        internal MatrixD TriggerMatrix = MatrixD.Identity;
         internal enum TracerState
         {
             Full,
             Grow,
             Shrink,
             Off,
+        }
+
+        internal enum ModelState
+        {
+            None,
+            Exists,
+            Close,
         }
 
         internal enum TrailState
@@ -71,10 +102,15 @@ namespace WeaponCore.Support
             None,
         }
 
-        internal void Init(ProInfo info,  double firstStepSize, double maxSpeed)
+        internal void Init(ProInfo info, double firstStepSize, double maxSpeed)
         {
             System = info.System;
             Ai = info.Ai;
+            Model = (info.System.PrimeModelId != -1 || info.System.TriggerModelId != -1) ? Model = ModelState.Exists : Model = ModelState.None;
+            PrimeEntity = info.PrimeEntity;
+            TriggerEntity = info.TriggerEntity;
+            InitTick = Ai.Session.Tick;
+            Origin = info.Origin;
             Offset = System.OffsetEffect;
             MaxTracerLength = System.TracerLength;
             FirstStepSize = firstStepSize;
@@ -84,25 +120,10 @@ namespace WeaponCore.Support
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
 
-            FiringWeapon = null;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
-            // Reset to zero
-            DrawHit = new DrawHit();
-            HitVelocity = Vector3D.Zero;
-            HitPosition = Vector3D.Zero;
-            Position = Vector3D.Zero;
-            Direction = Vector3D.Zero;
-            TracerStart = Vector3D.Zero;
-            OnScreen = Screen.None;
-            Tracer = TracerState.Off;
-            Trail = TrailState.Off;
-            Active = false;
-            EndTick = uint.MaxValue;
-            LifeTime = 0;
-            LastGlowIdx = 0;
-            //
 
-            if (System.DrawLine) Tracer = firstStepSize < MaxTracerLength ? TracerState.Grow : TracerState.Full;
+
+            if (System.DrawLine) Tracer = !System.IsBeamWeapon && firstStepSize < MaxTracerLength ? TracerState.Grow : TracerState.Full;
             else Tracer = TracerState.Off;
 
             if (System.Trail)
@@ -111,11 +132,12 @@ namespace WeaponCore.Support
                 Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
             }
             else Trail = TrailState.Off;
-            TotalLength = MaxTracerLength + MaxTracerLength;
+            TotalLength = MaxTracerLength + MaxGlowLength;
         }
 
         internal void Update(double stepSize, double visualLength, ref Vector3D shooterVelocity, ref Vector3D position, ref Vector3D direction)
         {
+            LastTick = Ai.Session.Tick;
             Position = position;
             Direction = direction;
             StepSize = stepSize;
@@ -125,24 +147,32 @@ namespace WeaponCore.Support
             LifeTime++;
         }
 
-        internal void Complete(ProInfo info, bool saveHit = false, bool end = false)
+        internal void Complete(bool saveHit = false, bool closeModel = false)
         {
-            Active = true;
-            if (DrawHit.HitPos != Vector3D.Zero)
+            if (!Active)
+            {
+                Active = true;
+                Ai.Session.AvShots.Add(this);
+            }
+
+            if (Hit.HitPos != Vector3D.Zero)
             {
                 if (saveHit)
                 {
-                    if (DrawHit.Entity == null)
-                        HitVelocity = DrawHit.Projectile.Velocity;
-                    else HitVelocity = DrawHit.Entity?.GetTopMostParent()?.Physics?.LinearVelocity ?? Vector3D.Zero;
-                    HitPosition = DrawHit.HitPos;
+                    if (Hit.Entity != null)
+                        HitVelocity = Hit.Entity.GetTopMostParent()?.Physics?.LinearVelocity ?? Vector3D.Zero;
+                    else if (Hit.Projectile != null) 
+                        HitVelocity = Hit.Projectile.Velocity;
+
+                    HitPosition = Hit.HitPos;
                 }
 
                 var totalDiff = TotalLength - StepSize;
                 var tracerDiff = TracerLength - StepSize;
                 var visable = totalDiff > 0 && !MyUtils.IsZero(totalDiff);
                 var tracerVisable = tracerDiff > 0 && !MyUtils.IsZero(tracerDiff);
-                if (!visable || !tracerVisable)
+                if (System.IsBeamWeapon) Tracer = TracerState.Full;
+                else if (!visable || !tracerVisable)
                 {
                     Tracer = TracerState.Off;
                 }
@@ -157,19 +187,6 @@ namespace WeaponCore.Support
                 Tracer = TracerState.Full;
                 TracerLength = MaxTracerLength;
             }
-
-            if (end)
-            {
-                EndTick = info.System.Session.Tick;
-                if (Trail == TrailState.Off) Close();
-                Tracer = TracerState.Off;
-            }
-
-            if (Tracer != TracerState.Off)
-                RunTracer();
-
-            if (Trail != TrailState.Off && Tracer != TracerState.Grow)
-                RunGlow();
 
             var color = System.Values.Graphics.Line.Tracer.Color;
             if (System.LineColorVariance)
@@ -189,9 +206,10 @@ namespace WeaponCore.Support
                 width += randomValue;
             }
 
-            var target = Position + (-Direction * MaxTracerLength);
+            var target = System.IsBeamWeapon ? Position + -Direction * TracerLength : Position + -Direction * MaxTracerLength;
             ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
+            if (System.IsBeamWeapon && DistanceToLine < 1000) DistanceToLine = 1000;
             ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
             Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
             LineScaler = (Thickness / width);
@@ -207,17 +225,30 @@ namespace WeaponCore.Support
                 var bb = new BoundingBoxD(Vector3D.Min(totalLen, Position), Vector3D.Max(totalLen, Position));
                 if (!Ai.Session.Camera.IsInFrustum(ref bb)) OnScreen = Screen.None;
             }
+
+            if (closeModel)
+                Model = ModelState.Close;
+
+            if (Tracer != TracerState.Off && System.IsBeamWeapon && Hit.HitPos != Vector3D.Zero)
+                RunBeam();
+
+            if (Trail != TrailState.Off && Tracer != TracerState.Grow)
+                RunGlow();
+
         }
 
-        internal void RunTracer()
+        internal void RunBeam()
         {
-            if (DrawHit.HitPos != Vector3D.Zero && System.IsBeamWeapon && System.HitParticle && !(MuzzleId != 0 && (System.ConvergeBeams || System.OneHitParticle)))
+            TracerLength = VisualLength;
+
+            if (System.HitParticle && !(MuzzleId != 0 && (System.ConvergeBeams || System.OneHitParticle)))
             {
+
                 if (FiringWeapon != null)
                 {
                     var weapon = FiringWeapon.Platform.Weapons[WeaponId];
                     var effect = weapon.HitEffects[MuzzleId];
-                    if (DrawHit.HitPos != Vector3D.Zero && OnScreen == Screen.Tail)
+                    if (OnScreen != Screen.None)
                     {
                         if (effect != null)
                         {
@@ -265,6 +296,24 @@ namespace WeaponCore.Support
 
         internal void RunGlow()
         {
+            if (Ai?.Session == null)
+            {
+                Log.Line($"Ai Or Session null");
+                return;
+            }
+
+            if (System == null)
+            {
+                Log.Line($"System null");
+                return;
+            }
+
+            if (GlowSteps == null)
+            {
+                Log.Line($"GlowSteps null");
+                return;
+            }
+
             var glowCount = GlowSteps.Count;
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime + 1)
             {
@@ -281,7 +330,6 @@ namespace WeaponCore.Support
 
                 glow.FirstTick = Ai.Session.Tick;
                 glow.ShooterVel = ShooterVelocity;
-                glow.System = System;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
             }
@@ -304,10 +352,15 @@ namespace WeaponCore.Support
             for (int i = 0; i < glowCount; i++)
             {
                 var glow = GlowSteps[i];
+                if (Ai?.Session == null || System == null)
+                {
+                    Log.Line($"Glow Ai, Session or System ({System == null}) null");
+                    continue;
+                }
                 var thisStep = (Ai.Session.Tick - glow.FirstTick);
                 //if (thisStep != 0) glow.Back += (glow.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS);
-                var steps = glow.System.Values.Graphics.Line.Trail.DecayTime;
-                var fullSize = glow.System.Values.Graphics.Line.Tracer.Width;
+                var steps = System.Values.Graphics.Line.Trail.DecayTime;
+                var fullSize = System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
                 glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
                 /*
@@ -338,17 +391,82 @@ namespace WeaponCore.Support
             }
         }
 
-        private void Close()
+
+        internal void SetupSounds(double distanceFromCameraSqr)
         {
-            //Log.Line($"VsShot Closed");
+            FiringSoundState = System.FiringSound;
+
+            if (!System.IsBeamWeapon && System.AmmoTravelSound)
+            {
+                HasTravelSound = true;
+                TravelSound.Init(System.Values.Audio.Ammo.TravelSound, false);
+            }
+            else HasTravelSound = false;
+
+            if (System.HitSound)
+            {
+                var hitSoundChance = System.Values.Audio.Ammo.HitPlayChance;
+                HitSoundActive = (hitSoundChance >= 1 || hitSoundChance >= MyUtils.GetRandomDouble(0.0f, 1f));
+                if (HitSoundActive)
+                    HitSound.Init(System.Values.Audio.Ammo.HitSound, false);
+            }
+
+            if (FiringSoundState == WeaponSystem.FiringSoundState.PerShot && distanceFromCameraSqr < System.FiringSoundDistSqr)
+            {
+                StartSoundActived = true;
+                FireSound.Init(System.Values.Audio.HardPoint.FiringSound, false);
+                FireEmitter.SetPosition(Origin);
+                FireEmitter.Entity = FiringWeapon.MyCube;
+            }
+        }
+
+        internal void AmmoSoundStart()
+        {
+            TravelEmitter.SetPosition(Position);
+            TravelEmitter.Entity = PrimeEntity;
+            TravelEmitter.PlaySound(TravelSound, true);
+            AmmoSound = true;
+        }
+
+        internal void Close()
+        {
+            // Reset to zero
+            PrimeMatrix = MatrixD.Identity;
+            TriggerMatrix = MatrixD.Identity;
+            Hit = new Hit();
+            HitVelocity = Vector3D.Zero;
+            HitPosition = Vector3D.Zero;
+            Position = Vector3D.Zero;
+            Direction = Vector3D.Zero;
+            TracerStart = Vector3D.Zero;
+            OnScreen = Screen.None;
+            Tracer = TracerState.Off;
+            Trail = TrailState.Off;
+            Model = ModelState.None;
+            LastTick = 0;
+            LifeTime = 0;
+            LastGlowIdx = 0;
+            FiringWeapon = null;
+            PrimeEntity = null;
+            TriggerEntity = null;
+            AmmoSound = false;
+            HitSoundActive = false;
+            HitSoundActived = false;
+            StartSoundActived = false;
+            HasTravelSound = false;
+            FakeExplosion = false;
+            Triggered = false;
+            Cloaked = false;
             Active = false;
-            Ai.Session.VisualShotPool.Return(this);
+            //
+            Ai.Session.AvShotPool.Return(this);
+            Ai = null;
+            System = null;
         }
     }
 
     internal class AfterGlow
     {
-        internal WeaponSystem System;
         internal AfterGlow Parent;
         internal Vector3D TracerStart;
         internal Vector3D TailPos;
@@ -362,7 +480,6 @@ namespace WeaponCore.Support
 
         internal void Clean()
         {
-            System = null;
             Parent = null;
             TracerStart = Vector3D.Zero;
             TailPos = Vector3D.Zero;

@@ -240,10 +240,10 @@ namespace WeaponCore.Support
             Sound();
 
             DamageScales(out DamageScaling, out ArmorScaling, out CustomDamageScales, out CustomBlockDefinitionBasesToScales, out SelfDamage, out VoxelDamage);
+            Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             CollisionShape(out CollisionIsLine, out CollisionSize, out TracerLength);
             SmartsDelayDistSqr = (CollisionSize * Values.Ammo.Trajectory.Smarts.TrackingDelay) * (CollisionSize * Values.Ammo.Trajectory.Smarts.TrackingDelay);
             Models(out PrimeModelId, out TriggerModelId);
-            Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
@@ -474,7 +474,11 @@ namespace WeaponCore.Support
         {
             var isLine = Values.Ammo.Shape.Shape == ShapeDefinition.Shapes.Line;
             var size = Values.Ammo.Shape.Diameter;
-            tracerLength = Values.Graphics.Line.Tracer.Length > 0 ? Values.Graphics.Line.Tracer.Length : 0.1;
+            
+            if (IsBeamWeapon)
+                tracerLength = MaxTrajectory;
+            else tracerLength = Values.Graphics.Line.Tracer.Length > 0 ? Values.Graphics.Line.Tracer.Length : 0.1;
+
             if (size <= 0)
             {
                 if (!isLine) isLine = true;

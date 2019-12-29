@@ -177,7 +177,7 @@ namespace WeaponCore
                         TargetUi.DrawTargetUi();
                     }
 
-                    DrawLists();
+                    RunAv();
                     /*
                     if (_shrinking.Count > 0)
                         Shrink();

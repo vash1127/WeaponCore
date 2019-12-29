@@ -262,6 +262,12 @@ namespace WeaponCore
             for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
             {
                 var w = ChargingWeapons[i];
+                if (!w.Comp.MyCube.InScene || w.Comp.MyCube.MarkedForClose)
+                {
+                    ChargingWeapons.RemoveAtFast(i);
+                    continue;
+                }
+
                 var gridAi = w.Comp.Ai;
 
                 if (Tick60 && w.DrawingPower)

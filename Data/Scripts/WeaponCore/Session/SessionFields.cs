@@ -33,7 +33,7 @@ namespace WeaponCore
         internal volatile bool TurretControls;
         internal volatile bool SorterControls;
         internal volatile bool DbCallBackComplete = true;
-
+        internal volatile bool Pause;
 
 
         internal readonly MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>>>();
@@ -41,7 +41,7 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>();
         internal readonly MyConcurrentPool<MyConcurrentList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<MyConcurrentList<MyCubeBlock>>();
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>();
-        internal readonly MyConcurrentPool<AvShot> VisualShotPool = new MyConcurrentPool<AvShot>();
+        internal readonly MyConcurrentPool<AvShot> AvShotPool = new MyConcurrentPool<AvShot>();
 
         internal readonly ConcurrentDictionary<long, IMyPlayer> Players = new ConcurrentDictionary<long, IMyPlayer>();
         internal readonly ConcurrentDictionary<MyCubeGrid, GridAi> GridTargetingAIs = new ConcurrentDictionary<MyCubeGrid, GridAi>();
@@ -75,7 +75,7 @@ namespace WeaponCore
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>();
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>();
-        internal readonly List<AvShot> VisualShots = new List<AvShot>(100);
+        internal readonly List<AvShot> AvShots = new List<AvShot>(100);
 
         internal readonly Queue<Weapon> ShootingWeapons = new Queue<Weapon>(100);
         
@@ -89,7 +89,7 @@ namespace WeaponCore
         internal readonly double AimDirToleranceCosine;
 
 
-        internal readonly MyConcurrentPool<Shrinking> ShrinkPool = new MyConcurrentPool<Shrinking>(100);
+        //internal readonly MyConcurrentPool<Shrinking> ShrinkPool = new MyConcurrentPool<Shrinking>(100);
         internal readonly MyConcurrentPool<AfterGlow> GlowPool = new MyConcurrentPool<AfterGlow>(100);
         private readonly MyConcurrentPool<List<Vector3I>> _blockSpherePool = new MyConcurrentPool<List<Vector3I>>(25);
 
@@ -106,7 +106,7 @@ namespace WeaponCore
         private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
         private readonly List<Vector3D> _offsetList = new List<Vector3D>(10);
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(10);
-        private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>(100);
+        //private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>(100);
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         internal DsUniqueListFastRemove<PartAnimation> AnimationsToProcess = new DsUniqueListFastRemove<PartAnimation>();

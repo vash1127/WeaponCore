@@ -69,7 +69,6 @@ namespace WeaponCore.Projectiles
                     var virtInfo = p.VrPros[i];
                     virtInfo.Info.Clean();
                     InfoPool.MarkForDeallocate(virtInfo.Info);
-                    Session.VisualShotPool.Return(virtInfo.VisualShot);
                 }
                 p.VrPros.Clear();
 
@@ -125,7 +124,8 @@ namespace WeaponCore.Projectiles
                     if (p.Info.Target.Projectile.State != ProjectileState.Alive)
                         p.UnAssignProjectile(true);
 
-                p.Info.AvShot.OnScreen = Screen.None;
+                if (p.EnableAv) 
+                    p.Info.AvShot.OnScreen = Screen.None;
 
                 if (p.AccelLength > 0)
                 {
@@ -185,14 +185,14 @@ namespace WeaponCore.Projectiles
                     var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
 
                     if (p.Info.System.PrimeModelId != -1)
-                        p.Info.PrimeMatrix = matrix;
+                        p.Info.AvShot.PrimeMatrix = matrix;
                     if (p.Info.System.TriggerModelId != -1 && p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize)
-                        p.Info.TriggerMatrix = matrix;
+                        p.Info.AvShot.TriggerMatrix = matrix;
 
                     if (p.EnableAv && p.AmmoEffect != null && p.Info.System.AmmoParticle && p.Info.System.PrimeModelId != -1)
                     {
-                        var offVec = p.Position + Vector3D.Rotate(p.Info.System.Values.Graphics.Particles.Ammo.Offset, p.Info.PrimeMatrix);
-                        p.AmmoEffect.WorldMatrix = p.Info.PrimeMatrix;
+                        var offVec = p.Position + Vector3D.Rotate(p.Info.System.Values.Graphics.Particles.Ammo.Offset, p.Info.AvShot.PrimeMatrix);
+                        p.AmmoEffect.WorldMatrix = p.Info.AvShot.PrimeMatrix;
                         p.AmmoEffect.SetTranslation(offVec);
                     }
                 }
@@ -211,7 +211,7 @@ namespace WeaponCore.Projectiles
                             p.FieldTime--;
                             if (p.Info.System.IsMine && !p.MineSeeking && !p.MineActivated)
                             {
-                                p.Info.Cloaked = p.Info.System.Values.Ammo.Trajectory.Mines.Cloak;
+                                if (p.EnableAv) p.Info.AvShot.Cloaked = p.Info.System.Values.Ammo.Trajectory.Mines.Cloak;
                                 p.MineSeeking = true;
                             }
                         }
@@ -268,7 +268,7 @@ namespace WeaponCore.Projectiles
                 {
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.Info.System.CollisionSize;
-                    if (p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
+                    if (p.Info.System.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
                         MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
                 }
                 else
@@ -338,7 +338,7 @@ namespace WeaponCore.Projectiles
                     if (Session.Camera.IsInFrustum(ref p.TestSphere))
                     {
                         if (!p.Info.System.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.System.AmmoParticleShrinks)
-                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.DistanceToLine / p.Info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
+                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
 
                         if ((p.ParticleStopped || p.ParticleLateStart))
                             p.PlayAmmoParticle();
@@ -351,12 +351,10 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.State == ProjectileState.OneAndDone)
                     {
-                        //p.Info.UpdateShape(p.Position, p.Direction, p.MaxTrajectory, ReSize.None);
                         p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.MaxTrajectory, ref p.Info.ShooterVel, ref p.Position, ref p.Direction);
                     }
                     else if (p.ModelState == EntityState.None && p.Info.System.AmmoParticle && !p.Info.System.DrawLine)
                     {
-                        //p.Info.UpdateShape(p.Position, p.Direction, p.Info.System.CollisionSize, ReSize.None);
                         p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Info.ShooterVel, ref p.Position, ref p.Direction);
                     }
                     else
@@ -382,9 +380,10 @@ namespace WeaponCore.Projectiles
                 {
                     p.ModelSphereLast.Center = p.LastEntityPos;
                     p.ModelSphereCurrent.Center = p.Position;
-                    if (p.Info.Triggered)
+                    p.Info.AvShot.LastTick = p.Info.Ai.Session.Tick;
+                    if (p.Info.AvShot.Triggered)
                     {
-                        var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.TriggerMatrix.Scale.AbsMax() : p.Info.System.AreaEffectSize;
+                        var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.AvShot.TriggerMatrix.Scale.AbsMax() : p.Info.System.AreaEffectSize;
                         p.ModelSphereLast.Radius = currentRadius;
                         p.ModelSphereCurrent.Radius = currentRadius;
                     }
@@ -407,16 +406,13 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.MuzzleId == -1)
                 {
-                    p.CreateFakeBeams(DrawProjectiles, true);
+                    p.CreateFakeBeams(true);
                     continue;
                 }
 
                 if (p.Info.AvShot.OnScreen != Screen.None)
                 {
-                    //p.Info.Complete(null);
-                    if (!p.Info.AvShot.Active) p.Info.Ai.Session.VisualShots.Add(p.Info.AvShot);
-                    p.Info.AvShot.Complete(p.Info);
-                    DrawProjectiles.Add(p.Info);
+                    p.Info.AvShot.Complete();
                 }
             }
         }
