@@ -19,17 +19,14 @@ namespace WeaponCore.Support
     public partial class GridAi
     {
         internal volatile bool Scanning;
-        internal volatile bool Ready;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
-        internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>();
-        internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
+        internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventories;
+
         internal readonly CachingDictionary<string, GroupInfo> BlockGroups = new CachingDictionary<string, GroupInfo>();
 
-        internal readonly ConcurrentDictionary<MyDefinitionId, Dictionary<MyInventory, MyFixedPoint>> AmmoInventories;
-        internal readonly ConcurrentQueue<Projectile> DeadProjectiles = new ConcurrentQueue<Projectile>();
         internal readonly HashSet<MyEntity> ValidGrids = new HashSet<MyEntity>();
         internal readonly HashSet<MyBatteryBlock> Batteries = new HashSet<MyBatteryBlock>();
         internal readonly HashSet<MyCubeGrid> PrevSubGrids = new HashSet<MyCubeGrid>();
@@ -40,6 +37,8 @@ namespace WeaponCore.Support
 
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
+        internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>();
+        internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
         internal readonly List<MyEntity> ObstructionsTmp = new List<MyEntity>();
@@ -49,9 +48,12 @@ namespace WeaponCore.Support
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
         internal readonly List<GridAi> TargetAis = new List<GridAi>();
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
+        internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
+
         internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
         internal readonly Dictionary<WeaponComponent, long> Gunners = new Dictionary<WeaponComponent, long>();
-        internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
+        internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>();
+
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
         internal readonly Session Session;
         internal readonly MyCubeGrid MyGrid;
@@ -76,7 +78,6 @@ namespace WeaponCore.Support
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
         internal uint TargetsUpdatedTick;
-        //internal uint ResetPowerTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
         internal uint NewProjectileTick;
@@ -89,7 +90,6 @@ namespace WeaponCore.Support
         internal bool DbReady;
         internal bool ScanBlockGroups = true;
         internal bool SupressMouseShoot;
-        //internal bool ResetPower = true;
         internal bool OverPowered;
         internal bool UpdatePowerSources;
         internal bool AvailablePowerChanged;
@@ -103,13 +103,12 @@ namespace WeaponCore.Support
         internal bool HasPower;
         internal bool HadPower;
         internal bool CheckProjectiles;
-        //internal bool ActiveTarget;
+        internal bool PointDefense;
         internal bool WeaponTerminalAccess;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double GridRadius;
         internal float GridMaxPower;
-        //internal float WeaponCleanPower;
         internal float GridCurrentPower;
         internal float GridAvailablePower;
         internal float BatteryMaxPower;

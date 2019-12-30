@@ -239,8 +239,8 @@ namespace WeaponCore.Platform
                             for (int t = 0; t < targetAiCnt; t++)
                             {
                                 var targetAi = Comp.Ai.TargetAis[t];
-                                var addProjectile = System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None;
-                                if (!addProjectile)
+                                var addProjectile = System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None && targetAi.PointDefense;
+                                if (!addProjectile && targetAi.PointDefense)
                                 {
                                     if (Vector3.Dot(p.Direction, p.Info.Origin - targetAi.MyGrid.PositionComp.WorldMatrix.Translation) < 0)
                                     {

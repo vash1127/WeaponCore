@@ -112,6 +112,9 @@ namespace WeaponCore.Support
                     if (weapon.System.MaxTrajectory > maxTrajectory)
                         maxTrajectory = weapon.System.MaxTrajectory;
 
+                    if (weapon.TrackProjectiles)
+                        Ai.PointDefense = true;
+
                     if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
                         Session.ComputeStorage(weapon);
 
@@ -146,7 +149,6 @@ namespace WeaponCore.Support
                 {
                     Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
                     Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
-                    Log.Line($"MaxRange:{Ai.MaxTargetingRange}");
                 }
 
                 Ai.OptimalDps += OptimalDps;
@@ -202,6 +204,7 @@ namespace WeaponCore.Support
         {
             if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
             {
+                Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap");
                 MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
                 return;
             }
@@ -216,10 +219,14 @@ namespace WeaponCore.Support
             {
                 Ai.GridInit = true;
                 Ai.InitFakeShipController();
-                foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
+                try
                 {
-                    Ai.FatBlockAdded(cubeBlock);
+                    foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
+                    {
+                        Ai.FatBlockAdded(cubeBlock);
+                    }
                 }
+                catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks GridInit: {ex}"); }
             }
 
             Status = !IsWorking ? Start.Starting : Start.ReInit;

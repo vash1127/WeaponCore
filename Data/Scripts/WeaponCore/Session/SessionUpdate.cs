@@ -8,7 +8,6 @@ using static WeaponCore.Platform.Weapon.TerminalActionState;
 using System.Collections.Generic;
 using VRage.Game;
 using static WeaponCore.Support.Target;
-using static WeaponCore.Platform.Weapon;
 
 namespace WeaponCore
 {
@@ -27,20 +26,21 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!gridAi.GridInit || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) 
                     continue;
+
                 var dbIsStale = Tick - gridAi.TargetsUpdatedTick > 100;
                 var readyToUpdate = dbIsStale && DbCallBackComplete && DbTask.IsComplete;
+                
                 if (readyToUpdate && gridAi.UpdateOwner())
                     gridAi.RequestDbUpdate();
                 
-                gridAi.CheckProjectiles = Tick - gridAi.NewProjectileTick <= 1;
-                if (!gridAi.DeadProjectiles.IsEmpty) 
+                if (gridAi.DeadProjectiles.Count > 0)
                 {
-                    Projectile p;
-                    while (gridAi.DeadProjectiles.TryDequeue(out p)) 
-                        gridAi.LiveProjectile.Remove(p);
-
+                    for (int i = 0; i < gridAi.DeadProjectiles.Count; i++) gridAi.LiveProjectile.Remove(gridAi.DeadProjectiles[i]);
+                    gridAi.DeadProjectiles.Clear();
                     gridAi.LiveProjectileTick = Tick;
                 }
+
+                gridAi.CheckProjectiles = Tick - gridAi.NewProjectileTick <= 1;
 
                 var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
                 if (!gridAi.DbReady && weaponsInStandby) 
@@ -358,7 +358,7 @@ namespace WeaponCore
                 var gridAi = w.Comp.Ai;
 
                 var sinceCheck = Tick - w.Target.CheckTick;
-                var reacquire = gridAi.TargetResetTick == Tick || gridAi.CheckProjectiles;
+                var reacquire = gridAi.TargetResetTick == Tick || w.TrackProjectiles && gridAi.CheckProjectiles;
 
                 if (sinceCheck > 239 || reacquire && w.Target.State == Targets.Acquired || sinceCheck > 60 && _count == w.LoadId) 
                 {

@@ -275,23 +275,6 @@ namespace WeaponCore
             return false;
         }
 
-        internal void WeaponShootOff(object obj)
-        {
-            var gridAi = obj as GridAi;
-            if (gridAi == null) return;
-
-            for (int i = 0; i < gridAi.Weapons.Count; i++)
-            {
-                var comp = gridAi.Weapons[i];
-                for (int x = 0; x < comp.Platform.Weapons.Length; x++)
-                {
-                    var w = comp.Platform.Weapons[x];
-                    w.StopReloadSound();
-                    w.StopShooting();
-                }
-            }
-        }
-
         internal void DeferedFatMapRemoval(object obj)
         {
             var grid = (MyCubeGrid)obj;

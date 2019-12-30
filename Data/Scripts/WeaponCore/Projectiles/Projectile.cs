@@ -981,7 +981,7 @@ namespace WeaponCore.Projectiles
             if (!Info.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
             else Info.IsShrapnel = false;
 
-            for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Enqueue(this);
+            for (int i = 0; i < Watchers.Count; i++) Watchers[i].DeadProjectiles.Add(this);
             Watchers.Clear();
 
             foreach (var seeker in Seekers) seeker.Info.Target.Reset();

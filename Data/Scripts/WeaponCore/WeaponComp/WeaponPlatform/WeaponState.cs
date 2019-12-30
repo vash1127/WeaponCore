@@ -671,8 +671,6 @@ namespace WeaponCore.Platform
                     var entityExists = MuzzlePart.Item1?.Parent != null && !MuzzlePart.Item1.MarkedForClose;
                     var matrix = MatrixD.Zero;
                     if (entityExists) matrix = MatrixD.CreateWorld(pos, MuzzlePart.Item1.WorldMatrix.Forward, MuzzlePart.Item1.Parent.WorldMatrix.Up);
-                    if (!entityExists) Log.Line($"ShootGraphics entity doesn't exist");
-                    if (muzzle == null) Log.Line($"muzzle is null");
                     if (System.BarrelEffect1)
                     {
                         if (entityExists && ticksAgo <= System.Barrel1AvTicks && !stop)

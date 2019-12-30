@@ -641,8 +641,24 @@ namespace WeaponCore.Support
 
             if (HasPower) return;
             if (HadPower)
-                Session.FutureEvents.Schedule(Session.WeaponShootOff, this, 1);
+                WeaponShootOff();
         }
+
+        private void WeaponShootOff()
+        {
+
+            for (int i = 0; i < Weapons.Count; i++)
+            {
+                var comp = Weapons[i];
+                for (int x = 0; x < comp.Platform.Weapons.Length; x++)
+                {
+                    var w = comp.Platform.Weapons[x];
+                    w.StopReloadSound();
+                    w.StopShooting();
+                }
+            }
+        }
+
 
         internal void TurnMouseShootOff()
         {
