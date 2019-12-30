@@ -256,6 +256,7 @@ namespace WeaponCore
 
                 gridAi.OverPowered = gridAi.RequestedWeaponsDraw > 0 && gridAi.RequestedWeaponsDraw > gridAi.GridMaxPower;
                 gridAi.CheckReload = false;
+                gridAi.NewProjectiles = false;
             }
 
             if (DbCallBackComplete && DbsToUpdate.Count > 0 && DbTask.IsComplete) 
@@ -357,7 +358,7 @@ namespace WeaponCore
                 var gridAi = w.Comp.Ai;
 
                 var sinceCheck = Tick - w.Target.CheckTick;
-                var reacquire = gridAi.TargetResetTick == Tick || gridAi.LiveProjectileTick == Tick;
+                var reacquire = gridAi.TargetResetTick == Tick || gridAi.NewProjectiles;
 
                 if (sinceCheck > 239 || reacquire && w.Target.State == Targets.Acquired || sinceCheck > 60 && _count == w.LoadId) 
                 {
