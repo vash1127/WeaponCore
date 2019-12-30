@@ -146,6 +146,7 @@ namespace WeaponCore.Support
                 {
                     Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
                     Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
+                    Log.Line($"MaxRange:{Ai.MaxTargetingRange}");
                 }
 
                 Ai.OptimalDps += OptimalDps;
