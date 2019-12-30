@@ -178,7 +178,7 @@ namespace WeaponCore.Platform
                                 if (active)
                                 {
                                     _muzzlesFiring.Clear();
-                                    _delayTick = Comp.Ai.Session.Tick + System.WeaponAnimationLengths[EventTriggers.StopFiring];
+                                    ShootDelayTick = Comp.Ai.Session.Tick + System.WeaponAnimationLengths[EventTriggers.StopFiring];
                                 }
                             }
 
@@ -822,7 +822,7 @@ namespace WeaponCore.Platform
             Comp.SinkPower -= UseablePower;
             Comp.Ai.GridAvailablePower += UseablePower;
 
-            DelayTicks = 0;
+            ChargeDelayTicks = 0;
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
             if(!Comp.Ai.Session.DedicatedServer)
@@ -898,7 +898,7 @@ namespace WeaponCore.Platform
                 w.DrawingPower = false;
 
                 w.ChargeUntilTick = 0;
-                w.DelayTicks = 0;                
+                w.ChargeDelayTicks = 0;                
             }
 
             if (!w.System.EnergyAmmo || w.System.IsHybrid)

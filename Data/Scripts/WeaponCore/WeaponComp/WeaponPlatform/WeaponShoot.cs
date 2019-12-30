@@ -24,7 +24,7 @@ namespace WeaponCore.Platform
             var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
 
 
-            if (_delayTick > tick) return;
+            if (ShootDelayTick > tick) return;
 
             //if (ShotCounter == 0 && _newCycle)
             //_newCycle = false;
