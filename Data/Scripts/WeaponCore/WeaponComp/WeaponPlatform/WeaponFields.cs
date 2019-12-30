@@ -77,6 +77,8 @@ namespace WeaponCore.Platform
         internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
+        internal readonly bool TrackProjectiles;
+
         internal float RequiredPower;
         internal float UseablePower;
         internal float OldUseablePower;
@@ -231,6 +233,7 @@ namespace WeaponCore.Platform
             Target = new Target(comp.MyCube);
             NewTarget = new Target(comp.MyCube);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
+            TrackProjectiles = System.TrackProjectile;
         }
     }
 }

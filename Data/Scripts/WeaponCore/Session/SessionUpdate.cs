@@ -33,11 +33,12 @@ namespace WeaponCore
                 if (readyToUpdate && gridAi.UpdateOwner())
                     gridAi.RequestDbUpdate();
 
-                if (!gridAi.DeadProjectiles.IsEmpty) {
+                if (!gridAi.DeadProjectiles.IsEmpty) 
+                {
                     Projectile p;
-                    while (gridAi.DeadProjectiles.TryDequeue(out p)) {
+                    while (gridAi.DeadProjectiles.TryDequeue(out p)) 
                         gridAi.LiveProjectile.Remove(p);
-                    }
+
                     gridAi.LiveProjectileTick = Tick;
                 }
 
@@ -357,7 +358,7 @@ namespace WeaponCore
                 var gridAi = w.Comp.Ai;
 
                 var sinceCheck = Tick - w.Target.CheckTick;
-                var reacquire = gridAi.TargetResetTick == Tick;
+                var reacquire = gridAi.TargetResetTick == Tick || gridAi.LiveProjectileTick == Tick;
 
                 if (sinceCheck > 239 || reacquire && w.Target.State == Targets.Acquired || sinceCheck > 60 && _count == w.LoadId) 
                 {
