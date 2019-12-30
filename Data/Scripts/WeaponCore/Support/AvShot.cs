@@ -289,8 +289,9 @@ namespace WeaponCore.Support
                 var steps = System.Values.Graphics.Line.Trail.DecayTime;
                 var fullSize = System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
-                glow.TailPos += (ShooterVelStep);
+                //glow.TailPos += (ShooterVelStep);
                 //glow.TracerStart += (ShooterVelStep);
+                //glow.TailPos += glow.VelStep;
                 glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
 
 
