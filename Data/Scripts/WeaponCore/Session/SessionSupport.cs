@@ -366,7 +366,6 @@ namespace WeaponCore
             GridToFatMap.Clear();
             FatMapPool.Clean();
 
-            DirtyGrids.Clear();
             DirtyGridsTmp.Clear();
 
             foreach (var structure in WeaponPlatforms.Values)
@@ -375,6 +374,20 @@ namespace WeaponCore
                 structure.AmmoToWeaponIds.Clear();
             }
             WeaponPlatforms.Clear();
+
+            foreach (var gridToMap in GridToBlockTypeMap)
+            {
+                foreach (var map in gridToMap.Value)
+                {
+                    map.Value.ClearImmediate();
+                    ConcurrentListPool.Return(map.Value);
+                }
+                gridToMap.Value.Clear();
+                BlockTypePool.Return(gridToMap.Value);
+            }
+            GridToBlockTypeMap.Clear();
+
+            DirtyGrids.Clear();
 
             DsUtil.Purge();
             DsUtil2.Purge();
@@ -394,9 +407,7 @@ namespace WeaponCore
             ShootingWeapons.Clear();
             LargeBlockSphereDb.Clear();
             SmallBlockSphereDb.Clear();
-            GridToBlockTypeMap.Clear();
             AnimationsToProcess.Clear();
-            
             _subTypeIdToWeaponDefs.Clear();
             WeaponDefinitions.Clear();
             _slimsSortedList.Clear();

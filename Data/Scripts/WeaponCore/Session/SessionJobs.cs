@@ -200,6 +200,7 @@ namespace WeaponCore
                         item.Value.ClearImmediate();
                         ConcurrentListPool.Return(item.Value);
                     }
+                    noFatTypeMap.Clear();
                     BlockTypePool.Return(noFatTypeMap);
                 }
             }
