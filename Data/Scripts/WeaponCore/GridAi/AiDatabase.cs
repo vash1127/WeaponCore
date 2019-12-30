@@ -90,7 +90,7 @@ namespace WeaponCore.Support
                                 if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))
                                 {
                                     targetAi.TargetAisTmp.Add(this);
-                                    TargetAisTmp.Add(this);
+                                    TargetAisTmp.Add(targetAi);
                                 }
                             }
                             else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
