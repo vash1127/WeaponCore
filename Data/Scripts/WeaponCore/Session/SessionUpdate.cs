@@ -8,6 +8,7 @@ using static WeaponCore.Platform.Weapon.TerminalActionState;
 using System.Collections.Generic;
 using VRage.Game;
 using static WeaponCore.Support.Target;
+using static WeaponCore.Platform.Weapon;
 
 namespace WeaponCore
 {
@@ -416,7 +417,15 @@ namespace WeaponCore
                     continue;
 
                 w.Shoot();
-                
+
+                if (!w.System.MustCharge && w.Comp.State.Value.Weapons[w.WeaponId].ManualShoot == ShootOnce)
+                {
+                    w.Comp.State.Value.Weapons[w.WeaponId].ManualShoot = ShootOff;
+                    w.StopShooting();
+                    w.Comp.Ai.ManualComps = w.Comp.Ai.ManualComps - 1 > 0 ? w.Comp.Ai.ManualComps - 1 : 0;
+                    w.Comp.Shooting = w.Comp.Shooting - 1 > 0 ? w.Comp.Shooting - 1 : 0;
+                }
+
                 if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) 
                     w.ShootGraphics();
             }

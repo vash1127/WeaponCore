@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
                 _muzzlesToFire.Clear();
                 PreFired = false;
-            }                
+            }
 
             if (_shootTick > tick) return;
             _shootTick = tick + TicksPerShot;
@@ -303,7 +303,7 @@ namespace WeaponCore.Platform
             if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
                 StartReload();
 
-            if (state.ManualShoot == TerminalActionState.ShootOnce && (!System.MustCharge || (System.MustCharge && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)))
+            if (System.MustCharge && state.ManualShoot == TerminalActionState.ShootOnce && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
             {
                 state.ManualShoot = TerminalActionState.ShootOff;
                 StopShooting();
