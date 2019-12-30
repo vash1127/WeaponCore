@@ -80,7 +80,6 @@ namespace WeaponCore.Support
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
         internal bool IsWorking;
-        internal bool AiMoving;
         internal bool HasEnergyWeapon;
         internal bool IgnoreInvChange;
 

@@ -276,7 +276,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics.LinearVelocity;
                 Comp.Ai.VelocityUpdateTick = Comp.Ai.Session.Tick;
             }
-            var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, System.DesiredProjectileSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction == Prediction.Basic);
+            var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, System.DesiredProjectileSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction != Prediction.Advanced);
             //DsDebugDraw.DrawSingleVec(predictedPos, 2.5f, Color.Red);
             return predictedPos;
         }
@@ -353,7 +353,6 @@ namespace WeaponCore.Platform
             Vector3D gravityStep = gravity * gravityMultiplier * dt;
             Vector3D aimOffset = Vector3D.Zero; 
             double minDiff = double.MaxValue;
-            double timeSum = 0;
             for (int i = 0; i < 600; ++i)
             {
                 targetVel += targetAccStep;
@@ -377,7 +376,6 @@ namespace WeaponCore.Platform
                 projectilePos += projectileVel * dt;
                 Vector3D diff = (targetPos - projectilePos);
                 double diffLenSq = diff.LengthSquared();
-                timeSum += dt;
                 if (diffLenSq < projectileMaxSpeedSqr * dtSqr)
                 {
                     aimOffset = diff;

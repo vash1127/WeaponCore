@@ -202,34 +202,34 @@ namespace WeaponCore.Support
 
         private void OnAddedToSceneTasks()
         {
-            if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
+            try
             {
-                Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap");
-                MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
-                return;
-            }
-
-            if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
-                Platform.ResetParts(this);
-
-            Entity.NeedsWorldMatrix = true;
-
-            Ai.UpdatePowerSources = true;
-            if (!Ai.GridInit)
-            {
-                Ai.GridInit = true;
-                Ai.InitFakeShipController();
-                try
+                if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
                 {
+                    Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap");
+                    MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
+                    return;
+                }
+
+                if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
+                    Platform.ResetParts(this);
+
+                Entity.NeedsWorldMatrix = true;
+
+                Ai.UpdatePowerSources = true;
+                if (!Ai.GridInit)
+                {
+                    Ai.GridInit = true;
+                    Ai.InitFakeShipController();
                     foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
                     {
                         Ai.FatBlockAdded(cubeBlock);
                     }
                 }
-                catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks GridInit: {ex}"); }
-            }
 
-            Status = !IsWorking ? Start.Starting : Start.ReInit;
+                Status = !IsWorking ? Start.Starting : Start.ReInit;
+            }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Ai?.Session == null} EntNull{Entity == null} MyCubeNull:{MyCube?.CubeGrid == null}"); }
         }
 
         public override void OnRemovedFromScene()
