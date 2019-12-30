@@ -27,17 +27,18 @@ namespace WeaponCore
                 var gridAi = aiPair.Value;
                 if (!gridAi.GridInit || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose) 
                     continue;
-
                 var dbIsStale = Tick - gridAi.TargetsUpdatedTick > 100;
                 var readyToUpdate = dbIsStale && DbCallBackComplete && DbTask.IsComplete;
                 if (readyToUpdate && gridAi.UpdateOwner())
                     gridAi.RequestDbUpdate();
-
-                if (!gridAi.DeadProjectiles.IsEmpty) {
+                
+                gridAi.CheckProjectiles = Tick - gridAi.NewProjectileTick <= 1;
+                if (!gridAi.DeadProjectiles.IsEmpty) 
+                {
                     Projectile p;
-                    while (gridAi.DeadProjectiles.TryDequeue(out p)) {
+                    while (gridAi.DeadProjectiles.TryDequeue(out p)) 
                         gridAi.LiveProjectile.Remove(p);
-                    }
+
                     gridAi.LiveProjectileTick = Tick;
                 }
 
@@ -353,7 +354,7 @@ namespace WeaponCore
                 var gridAi = w.Comp.Ai;
 
                 var sinceCheck = Tick - w.Target.CheckTick;
-                var reacquire = gridAi.TargetResetTick == Tick;
+                var reacquire = gridAi.TargetResetTick == Tick || gridAi.CheckProjectiles;
 
                 if (sinceCheck > 239 || reacquire && w.Target.State == Targets.Acquired || sinceCheck > 60 && _count == w.LoadId) 
                 {

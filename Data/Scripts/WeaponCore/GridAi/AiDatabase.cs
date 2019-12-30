@@ -28,7 +28,6 @@ namespace WeaponCore.Support
                         RemSubGrids.Add(grid);
 
                     PrevSubGrids.Clear();
-                    TargetAisTmp.Clear();
                     for (int i = 0; i < _possibleTargets.Count; i++)
                     {
                         var ent = _possibleTargets[i];
@@ -91,6 +90,7 @@ namespace WeaponCore.Support
                                 if (Session.GridTargetingAIs.TryGetValue(grid, out targetAi))
                                 {
                                     targetAi.TargetAisTmp.Add(this);
+                                    TargetAisTmp.Add(targetAi);
                                 }
                             }
                             else NewEntities.Add(new DetectInfo(Session, ent, entInfo, 1, 0));
