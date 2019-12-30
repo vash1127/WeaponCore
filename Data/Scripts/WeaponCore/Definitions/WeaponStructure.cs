@@ -30,6 +30,7 @@ namespace WeaponCore.Support
         public readonly Session Session;
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
+        public readonly Dictionary<Weapon.EventTriggers, uint> WeaponAnimationLengths;
         public readonly HashSet<string> AnimationIdLookup;
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
         public readonly Dictionary<string, Matrix[]> WeaponLinearMoveSet;
@@ -37,7 +38,6 @@ namespace WeaponCore.Support
         public readonly AreaDamage.AreaEffectType AreaEffect;
         public readonly string WeaponName;
         public readonly string[] Barrels;
-        public readonly uint OnDelay;
         public readonly int ReloadTime;
         public readonly int DelayToFire;
         public readonly int TimeToCeaseFire;
@@ -252,7 +252,7 @@ namespace WeaponCore.Support
 
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
-            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out OnDelay);
+            Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths);
         }
 
         private void Energy(out bool energyAmmo, out bool mustCharge, out int energyMagSize, out bool burstMode, out bool isHybrid)

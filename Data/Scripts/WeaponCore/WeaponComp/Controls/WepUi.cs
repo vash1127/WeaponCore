@@ -124,7 +124,7 @@ namespace WeaponCore
             if (!comp.Ai.Session.DedicatedServer)
                 comp.TerminalRefresh();
 
-            w.DelayTicks = 0;
+            w.ChargeDelayTicks = 0;
         }
 
         internal static float GetRof(IMyTerminalBlock block)

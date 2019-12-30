@@ -195,9 +195,12 @@ namespace WeaponCore.Control
                 }
                 else
                 {
-                    w.FirstFireTick = comp.Ai.Session.Tick + w.System.OnDelay;
                     if (!w.System.EnergyAmmo || w.System.MustCharge)
                         Session.ComputeStorage(w);
+
+                    uint delay;
+                    if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOn, out delay))
+                        w.ShootDelayTick = comp.Ai.Session.Tick + delay;
                 }
 
                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);

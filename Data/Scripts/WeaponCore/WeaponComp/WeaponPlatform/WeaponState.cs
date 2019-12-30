@@ -175,7 +175,11 @@ namespace WeaponCore.Platform
                                     }
                                 }
 
-                                if (active) _muzzlesFiring.Clear();
+                                if (active)
+                                {
+                                    _muzzlesFiring.Clear();
+                                    ShootDelayTick = Comp.Ai.Session.Tick + System.WeaponAnimationLengths[EventTriggers.StopFiring];
+                                }
                             }
 
                             break;
@@ -817,7 +821,7 @@ namespace WeaponCore.Platform
             Comp.SinkPower -= UseablePower;
             Comp.Ai.GridAvailablePower += UseablePower;
 
-            DelayTicks = 0;
+            ChargeDelayTicks = 0;
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
             if(!Comp.Ai.Session.DedicatedServer)
@@ -893,7 +897,7 @@ namespace WeaponCore.Platform
                 w.DrawingPower = false;
 
                 w.ChargeUntilTick = 0;
-                w.DelayTicks = 0;                
+                w.ChargeDelayTicks = 0;                
             }
 
             if (!w.System.EnergyAmmo || w.System.IsHybrid)
@@ -911,7 +915,7 @@ namespace WeaponCore.Platform
 
             w.EventTriggerStateChanged(EventTriggers.Reloading, false);
             w.Reloading = false;
-            w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
+            w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 0;
         }
 
         public void StartFiringSound()

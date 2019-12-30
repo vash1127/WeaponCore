@@ -27,8 +27,7 @@ namespace WeaponCore.Platform
         private uint _ticksUntilShoot;
         private uint _shootTick;
         private uint _posChangedTick = 1;
-        private uint _lastShotTick;
-        private uint _delayShootTick;
+        private uint _prefiredTick;
         internal bool PreFired;
         internal uint TicksPerShot;
         internal double TimePerShot;
@@ -91,11 +90,11 @@ namespace WeaponCore.Platform
         internal float CurrentCharge;
         internal uint ShotCounter;
         internal uint LastTargetTick;
-        internal uint FirstFireTick;
         internal uint LastTrackedTick;
-        internal uint DelayTicks;
+        internal uint ChargeDelayTicks;
         internal uint ChargeUntilTick;
         internal uint OffDelay;
+        internal uint ShootDelayTick;
         internal int RateOfFire;
         internal int BarrelSpinRate;
         internal int DelayFireCount;
