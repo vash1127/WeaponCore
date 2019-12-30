@@ -43,6 +43,7 @@ namespace WeaponCore.Control
                         if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                         for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                         {
+                            if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
                             comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                             comp.Ai.ManualComps++;
                             comp.Shooting++;
@@ -88,6 +89,7 @@ namespace WeaponCore.Control
                             
                             for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                             {
+                                if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
                                 comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                                 comp.Ai.ManualComps++;
                                 comp.Shooting++;
