@@ -23,38 +23,8 @@ namespace WeaponCore.Platform
             var userControlled = Comp.Gunner || state.ManualShoot != TerminalActionState.ShootOff;
             var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
 
-            if (System.BurstMode)
-            {
-                if (state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
-                {
-                    if (tick - _lastShotTick > System.Values.HardPoint.Loading.DelayAfterBurst)
-                    {
-                        state.ShotsFired = 1;
-                        EventTriggerStateChanged(EventTriggers.BurstReload, false);
-                    }
-                    else
-                    {
-                        EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                        if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
-                        return;
-                    }
-                }
-                _lastShotTick = tick;
-            }
 
-            if (AvCapable && (!PlayTurretAv || session.Tick60))
-                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos) < System.HardPointAvMaxDistSqr;
-
-            if (System.BarrelAxisRotation)
-            {
-                if (session.Tick10 && _barrelRate < 9)
-                    _barrelRate++;
-
-                MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[_barrelRate];
-
-                if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
-                    StartRotateSound();
-            }
+            if (_delayTick > tick) return;
 
             //if (ShotCounter == 0 && _newCycle)
             //_newCycle = false;
@@ -74,13 +44,20 @@ namespace WeaponCore.Platform
                         nxtMuzzle = (nxtMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
                     }
 
-                    EventTriggerStateChanged(EventTriggers.PreFire, true, false, _muzzlesToFire);
+                    uint prefireLength;
+                    if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.PreFire, out prefireLength))
+                    {
+                        if (_prefiredTick + prefireLength <= tick)
+                        {
+                            EventTriggerStateChanged(EventTriggers.PreFire, true, false, _muzzlesToFire);
+                            _prefiredTick = tick;
+                        }
+                    }
                     PreFired = true;
                 }
                 return;
             }
-            
-            if (PreFired)
+            else if (PreFired)
             {
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
                 _muzzlesToFire.Clear();
@@ -89,9 +66,39 @@ namespace WeaponCore.Platform
 
             if (_shootTick > tick) return;
             _shootTick = tick + TicksPerShot;
-            
+
+            if (AvCapable && (!PlayTurretAv || session.Tick60))
+                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos) < System.HardPointAvMaxDistSqr;
+
+            if (System.BarrelAxisRotation)
+            {
+                if (session.Tick10 && _barrelRate < 9)
+                    _barrelRate++;
+
+                MuzzlePart.Item1.PositionComp.LocalMatrix *= BarrelRotationPerShot[_barrelRate];
+
+                if (PlayTurretAv && RotateEmitter != null && !RotateEmitter.IsPlaying)
+                    StartRotateSound();
+            }
+
             if (!IsShooting) StartShooting();
             state.ShotsFired++;
+
+            if (System.BurstMode)
+            {
+                if (state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+                {                  
+                    _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+                    EventTriggerStateChanged(EventTriggers.BurstReload, true);
+                    if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
+                    return;
+                }
+                else if (state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
+                {
+                    state.ShotsFired = 0;
+                    EventTriggerStateChanged(EventTriggers.BurstReload, false);
+                }
+            }
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
@@ -287,7 +294,6 @@ namespace WeaponCore.Platform
                         var dmg = .02f * Comp.MaxIntegrity;
                         Comp.Slim.DoDamage(dmg, MyDamageType.Environment, true, null, Comp.Ai.MyGrid.EntityId);
                     }
-                    Log.Line($"Overheated");
                     EventTriggerStateChanged(EventTriggers.Overheated, true);
                     Comp.Overheated = true;
                     StopShooting();

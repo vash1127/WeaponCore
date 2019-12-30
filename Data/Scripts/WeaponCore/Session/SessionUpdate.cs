@@ -184,23 +184,19 @@ namespace WeaponCore
                         /// 
 
                         var wState = comp.State.Value.Weapons[w.WeaponId];
-                        if (w.TurretMode) {
+                        if (w.TurretMode && comp.State.Value.Online) {                                
+                            if (targetChanged && w.Target.State != Targets.Acquired || gunner != lastGunner && !gunner) 
+                                FutureEvents.Schedule(w.HomeTurret, null, 240);
 
-                            if (comp.State.Value.Online) {
-                                
-                                if (targetChanged && w.Target.State != Targets.Acquired || gunner != lastGunner && !gunner) 
-                                    FutureEvents.Schedule(w.HomeTurret, null, 240);
+                            if (gunner != lastGunner && gunner) {
 
-                                if (gunner != lastGunner && gunner) {
+                                gridAi.ManualComps++;
+                                comp.Shooting++;
+                            }
+                            else if (gunner != lastGunner && !gunner) {
 
-                                    gridAi.ManualComps++;
-                                    comp.Shooting++;
-                                }
-                                else if (gunner != lastGunner && !gunner) {
-
-                                    gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
-                                    comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
-                                }
+                                gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
+                                comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                             }
                         }
 

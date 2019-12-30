@@ -195,7 +195,6 @@ namespace WeaponCore.Control
                 }
                 else
                 {
-                    w.FirstFireTick = comp.Ai.Session.Tick + w.System.OnDelay;
                     if (!w.System.EnergyAmmo || w.System.MustCharge)
                         Session.ComputeStorage(w);
                 }

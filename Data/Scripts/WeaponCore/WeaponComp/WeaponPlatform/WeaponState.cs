@@ -175,7 +175,11 @@ namespace WeaponCore.Platform
                                     }
                                 }
 
-                                if (active) _muzzlesFiring.Clear();
+                                if (active)
+                                {
+                                    _muzzlesFiring.Clear();
+                                    _delayTick = Comp.Ai.Session.Tick + System.WeaponAnimationLengths[EventTriggers.StopFiring];
+                                }
                             }
 
                             break;
@@ -912,7 +916,7 @@ namespace WeaponCore.Platform
 
             w.EventTriggerStateChanged(EventTriggers.Reloading, false);
             w.Reloading = false;
-            w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 1;
+            w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 0;
         }
 
         public void StartFiringSound()

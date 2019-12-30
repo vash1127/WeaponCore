@@ -13,14 +13,13 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out uint onDelay)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<Weapon.EventTriggers, uint> animationLengths)
         {
 
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
             var allEmissivesSet = new Dictionary<string, EmissiveState>();
             animationIdLookup = new HashSet<string>();
-
-            onDelay = 0;
+            animationLengths = new Dictionary<Weapon.EventTriggers, uint>();
 
             var wepAnimationSets = animations.WeaponAnimationSets;
             var wepEmissivesSet = animations.Emissives;
@@ -48,7 +47,10 @@ namespace WeaponCore
                     foreach (var moves in animationSet.EventMoveSets)
                     {
                         if (!allAnimationSet.ContainsKey(moves.Key))
+                        {
                             allAnimationSet[moves.Key] = new HashSet<PartAnimation>();
+                            animationLengths[moves.Key] = 0;
+                        }
 
                         List<Matrix> moveSet = new List<Matrix>();
                         List<Matrix> rotationSet = new List<Matrix>();
@@ -69,13 +71,13 @@ namespace WeaponCore
 
                         var moveIndexer = new List<int[]>();
                         var currentEmissivePart = new List<int>();
-
+                        uint totalPlayLength = 0;
+                        
                         for (int i = 0; i < moves.Value.Length; i++)
                         {
                             var move = moves.Value[i];
 
-                            if (moves.Key == Weapon.EventTriggers.TurnOn)
-                                onDelay += move.TicksToMove;
+                            totalPlayLength += move.TicksToMove;
 
                             var hasEmissive = !string.IsNullOrEmpty(move.EmissiveName);
 
@@ -107,7 +109,13 @@ namespace WeaponCore
                                     WeaponEmissive emissive;
                                     if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                     {
-                                        createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                        var progress = 0f;
+                                        if (move.TicksToMove == 1)
+                                            progress = 1;
+                                        else
+                                            progress = (float)j / (move.TicksToMove - 1);
+
+                                        createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                     }
                                     else
                                     {
@@ -397,6 +405,9 @@ namespace WeaponCore
                             }
 
                         }
+
+                        if (animationLengths[moves.Key] < totalPlayLength)
+                            animationLengths[moves.Key] = totalPlayLength;
 
                         var loop = false;
                         var reverse = false;
@@ -727,6 +738,7 @@ namespace WeaponCore
                 }
                 else
                 {
+                    
                     for (int i = 0; i < currentEmissive.EmissiveParts.Length; i++)
                     {
                         animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[i], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
@@ -741,6 +753,7 @@ namespace WeaponCore
 
                 if (animation.ResetEmissives)
                 {
+                    Log.Line("Reset Emissive");
                     for (int i = 0; i < animation.EmissiveParts.Length; i++)
                     {
                         var emissivePart = animation.EmissiveParts[i];
