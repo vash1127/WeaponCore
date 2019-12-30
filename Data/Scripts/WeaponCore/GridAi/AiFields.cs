@@ -79,6 +79,7 @@ namespace WeaponCore.Support
         //internal uint ResetPowerTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
+        internal uint NewProjectileTick;
         internal uint LiveProjectileTick;
         internal uint LastPowerUpdateTick;
         internal int SourceCount;
@@ -101,7 +102,7 @@ namespace WeaponCore.Support
         internal bool CheckReload;
         internal bool HasPower;
         internal bool HadPower;
-        internal bool NewProjectiles;
+        internal bool CheckProjectiles;
         //internal bool ActiveTarget;
         internal bool WeaponTerminalAccess;
         internal double MaxTargetingRange;
