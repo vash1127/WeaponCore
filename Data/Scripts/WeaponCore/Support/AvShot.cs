@@ -120,7 +120,7 @@ namespace WeaponCore.Support
             WeaponId = info.WeaponId;
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-            ShooterVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+            ShooterVelStep = info.ShooterVel;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
 
 
@@ -136,13 +136,12 @@ namespace WeaponCore.Support
             TotalLength = MaxTracerLength + MaxGlowLength;
         }
 
-        internal void Update(double stepSize, double visualLength, ref Vector3D shooterVelocity, ref Vector3D position, ref Vector3D direction)
+        internal void Update(double stepSize, double visualLength, ref Vector3D position, ref Vector3D direction)
         {
             LastTick = Ai.Session.Tick;
             Position = position;
             Direction = direction;
             StepSize = stepSize;
-            ShooterVelocity = shooterVelocity;
             VisualLength = visualLength;
             TracerStart = Position + (-Direction * VisualLength);
             LifeTime++;
@@ -253,10 +252,12 @@ namespace WeaponCore.Support
                     glow.TracerStart = TracerStart;
                     glow.TailPos = TracerStart;
                 }
-                else glow.TailPos = glow.Parent.TailPos + (Direction * StepSize);
+                else
+                    glow.TailPos = glow.Parent.TailPos + (Direction * StepSize);
 
                 glow.FirstTick = Ai.Session.Tick;
-                glow.ShooterVel = ShooterVelocity;
+                glow.Direction = Direction;
+                glow.VelStep = Direction * StepSize;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
             }
@@ -281,8 +282,8 @@ namespace WeaponCore.Support
                 var steps = System.Values.Graphics.Line.Trail.DecayTime;
                 var fullSize = System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
-                glow.TailPos += (ShooterVelStep);
-                glow.TracerStart += (ShooterVelStep);
+                glow.TailPos += (glow.VelStep);
+                //glow.TracerStart += (ShooterVelStep);
                 glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
 
 
@@ -447,8 +448,9 @@ namespace WeaponCore.Support
         internal AfterGlow Parent;
         internal Vector3D TracerStart;
         internal Vector3D TailPos;
-        internal Vector3D ShooterVel;
+        internal Vector3D Direction;
         internal LineD Line;
+        internal Vector3D VelStep;
         internal uint FirstTick;
         internal float WidthScaler;
         internal float Length;

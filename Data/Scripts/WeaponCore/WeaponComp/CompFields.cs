@@ -111,6 +111,7 @@ namespace WeaponCore.Support
                 MissileBase = cube;
                 IsSorterTurret = false;
                 MissileBase.EnableIdleRotation = false;
+                if (MissileBase.AIEnabled) Log.Line($"ai is enabled");
             }
             else if (MyCube is IMyConveyorSorter)
             {

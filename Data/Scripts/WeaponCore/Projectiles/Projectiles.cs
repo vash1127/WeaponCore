@@ -351,11 +351,11 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.State == ProjectileState.OneAndDone)
                     {
-                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.MaxTrajectory, ref p.Info.ShooterVel, ref p.Position, ref p.Direction);
+                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.MaxTrajectory, ref p.Position, ref p.Direction);
                     }
                     else if (p.ModelState == EntityState.None && p.Info.System.AmmoParticle && !p.Info.System.DrawLine)
                     {
-                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Info.ShooterVel, ref p.Position, ref p.Direction);
+                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Position, ref p.Direction);
                     }
                     else
                     {
@@ -363,13 +363,13 @@ namespace WeaponCore.Projectiles
                         var displaceDiff = p.Info.ProjectileDisplacement - p.TracerLength;
                         if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Info.ShooterVel, ref p.Position, ref p.Direction);
+                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction);
                         }
                         else
                         {
                             var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
                             //var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;  /// WHY!@?#@!?#@!?
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Info.ShooterVel, ref p.Position, ref pointDir);
+                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref pointDir);
 
                         }
                     }

@@ -373,7 +373,7 @@ namespace WeaponCore.Projectiles
                 var remainingTracer =  TracerLength - travelToHit;
                 remainingTracer = remainingTracer > 0 ? remainingTracer : 0;
 
-                Info.AvShot.Update(travelDist, remainingTracer, ref Info.ShooterVel, ref Hit.HitPos, ref Direction);
+                Info.AvShot.Update(travelDist, remainingTracer, ref Hit.HitPos, ref Direction);
                 if (Info.AvShot.OnScreen == Screen.None) CameraCheck();
 
                 if (Info.MuzzleId != -1)
@@ -418,7 +418,7 @@ namespace WeaponCore.Projectiles
                 if (vs.System.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerStart, Position);
-                    vs.Update(0, beam.Length, ref info.ShooterVel, ref beam.To, ref beam.Direction);
+                    vs.Update(0, beam.Length, ref beam.To, ref beam.Direction);
                 }
                 else
                 {
@@ -432,11 +432,11 @@ namespace WeaponCore.Projectiles
                     var line = new LineD(vs.Origin, beamEnd);
                     if (!miss && hitPos.HasValue)
                     {
-                        vs.Update(0, Info.WeaponCache.HitDistance, ref info.ShooterVel, ref beamEnd, ref line.Direction);
+                        vs.Update(0, Info.WeaponCache.HitDistance, ref beamEnd, ref line.Direction);
                     }
 
                     else
-                        vs.Update(0, line.Length, ref info.ShooterVel, ref line.To, ref line.Direction);
+                        vs.Update(0, line.Length, ref line.To, ref line.Direction);
                 }
                 vs.Complete(!miss);
             }
