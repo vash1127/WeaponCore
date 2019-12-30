@@ -330,6 +330,7 @@ namespace WeaponCore
                 {
                     if (comp.Platform.Weapons[weaponId].System.WeaponId == id)
                     {
+                        if (comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot != ShootOff) return;
                         comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
                         comp.Ai.ManualComps++;
                         comp.Shooting++;
