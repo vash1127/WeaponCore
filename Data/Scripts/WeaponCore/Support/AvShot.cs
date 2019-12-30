@@ -124,7 +124,8 @@ namespace WeaponCore.Support
             WeaponId = info.WeaponId;
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-            ShooterVelStep = info.ShooterVel;
+            ShooterVelocity = info.ShooterVel;
+            ShooterVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
 
 
@@ -147,7 +148,7 @@ namespace WeaponCore.Support
             Direction = direction;
             StepSize = stepSize;
             VisualLength = visualLength;
-            TracerStart = Position + (-Direction * VisualLength);
+            TracerStart = Position + -(Direction * VisualLength);
             LifeTime++;
         }
 
@@ -237,7 +238,7 @@ namespace WeaponCore.Support
             if (Tracer != TracerState.Off && System.IsBeamWeapon && Hit.HitPos != Vector3D.Zero)
                 RunBeam();
             else if (Tracer != TracerState.Off && OnScreen == Screen.Tracer && System.OffsetEffect)
-                LineOffsetEffect(TracerStart, Direction, TracerLength);
+                LineOffsetEffect(TracerStart, -Direction, TracerLength);
 
             if (Trail != TrailState.Off && Tracer != TracerState.Grow)
                 RunGlow();
@@ -288,7 +289,7 @@ namespace WeaponCore.Support
                 var steps = System.Values.Graphics.Line.Trail.DecayTime;
                 var fullSize = System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
-                glow.TailPos += (glow.VelStep);
+                glow.TailPos += (ShooterVelStep);
                 //glow.TracerStart += (ShooterVelStep);
                 glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
 
@@ -384,7 +385,7 @@ namespace WeaponCore.Support
             TracerLengthSqr = tracerLength * tracerLength;
             var maxOffset = System.Values.Graphics.Line.OffsetEffect.MaxOffset;
             var minLength = System.Values.Graphics.Line.OffsetEffect.MinLength;
-            var maxLength = System.Values.Graphics.Line.OffsetEffect.MaxLength;
+            var maxLength = MathHelperD.Clamp(System.Values.Graphics.Line.OffsetEffect.MaxLength, 0, TracerLength);
 
             double currentForwardDistance = 0;
 

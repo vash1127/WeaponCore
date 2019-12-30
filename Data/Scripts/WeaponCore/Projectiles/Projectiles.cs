@@ -369,7 +369,8 @@ namespace WeaponCore.Projectiles
                         {
                             var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
                             //var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;  /// WHY!@?#@!?#@!?
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref pointDir);
+                            var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;
+                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref drawStartPos, ref pointDir);
 
                         }
                     }
