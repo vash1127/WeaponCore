@@ -73,6 +73,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\CustomController.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MathFuncs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Support\AvShot.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VoxelIntersect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiSelect.cs" />
@@ -192,9 +193,6 @@
     <Reference Include="VRage.Math.XmlSerializers, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Math.XmlSerializers.dll</HintPath>
-    </Reference>
-    <Reference Include="VRage.Mod.Io">
-      <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.Mod.Io.dll</HintPath>
     </Reference>
     <Reference Include="VRage.NativeAftermath">
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.NativeAftermath.dll</HintPath>

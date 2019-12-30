@@ -206,11 +206,11 @@ namespace WeaponCore
 
                 GridAi.TargetInfo info;
                 if (!ai.Targets.TryGetValue(entity, out info)) return;
-                ConcurrentDictionary<TargetingDefinition.BlockTypes, MyConcurrentList<MyCubeBlock>> typeDict;
+                ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
                 
                 if (info.IsGrid && ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict)) {
 
-                    MyConcurrentList<MyCubeBlock> fatList;
+                    ConcurrentCachingList<MyCubeBlock> fatList;
                     if (typeDict.TryGetValue(TargetingDefinition.BlockTypes.Offense, out fatList))
                         TargetArmed = fatList.Count > 0;
                     else TargetArmed = false;

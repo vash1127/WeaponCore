@@ -178,7 +178,7 @@ namespace WeaponCore.Platform
                         ProInfo info;
                         session.Projectiles.InfoPool.AllocateOrCreate(out info);
                         info.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
-                        vProjectile.VrInfos.Add(info);
+                        vProjectile.VrPros.Add(new VirtualProjectile { Info = info, VisualShot = session.AvShotPool.Get() });
 
                         if (System.RotateRealBeam && i == _nextVirtual)
                         {

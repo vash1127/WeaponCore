@@ -17,8 +17,8 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        private void BeforeStartInit()
-        {
+            private void BeforeStartInit()
+            {
 
             MpActive = MyAPIGateway.Multiplayer.MultiplayerActive;
             IsServer = MyAPIGateway.Multiplayer.IsServer;

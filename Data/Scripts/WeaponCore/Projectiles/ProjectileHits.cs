@@ -16,7 +16,7 @@ namespace WeaponCore.Projectiles
 {
     public partial class Projectiles
     {
-        internal DrawHit? GetAllEntitiesInLine(Projectile p, LineD beam)
+        internal bool GetAllEntitiesInLine(Projectile p, LineD beam)
         {
             var shieldByPass = p.Info.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
 
@@ -25,7 +25,6 @@ namespace WeaponCore.Projectiles
             var lineCheck = p.Info.System.CollisionIsLine;
             var planetBeam = beam;
             planetBeam.To = p.Info.System.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
-
             for (int i = 0; i < p.SegmentList.Count; i++)
             {
                 var ent = p.SegmentList[i].Element;
@@ -167,7 +166,8 @@ namespace WeaponCore.Projectiles
             }
             p.SegmentList.Clear();
 
-            return found ? GenerateHitInfo(p) : null;
+
+            return found && GenerateHitInfo(p);
         }
 
         internal bool ProjectileHit(Projectile attacker, Projectile target, bool lineCheck)
@@ -187,7 +187,7 @@ namespace WeaponCore.Projectiles
             return true;
         }
 
-        internal DrawHit? GenerateHitInfo(Projectile p)
+        internal bool GenerateHitInfo(Projectile p)
         {
             var count = p.Info.HitList.Count;
             if (count > 1) p.Info.HitList.Sort((x, y) => GetEntityCompareDist(x, y, V3Pool.Get()));
@@ -219,16 +219,17 @@ namespace WeaponCore.Projectiles
             {
                 var hitEntity = p.Info.HitList[0];
                 p.LastHitPos = hitEntity.HitPos;
-                p.LastHitEntVel = hitEntity.Entity?.Physics?.LinearVelocity;
+                p.LastHitEntVel = hitEntity.Projectile?.Velocity ?? hitEntity.Entity?.Physics?.LinearVelocity ?? Vector3D.Zero;
                 p.Info.LastHitShield = hitEntity.EventType == Shield;
 
                 IMySlimBlock hitBlock = null;
                 if (p.Info.System.VirtualBeams && hitEntity.Entity is MyCubeGrid)
                     hitBlock = hitEntity.Blocks[0];
-
-                return new DrawHit(hitBlock, hitEntity.Entity, null, hitEntity.HitPos);
+                p.Hit = new Hit { Block = hitBlock, Entity = hitEntity.Entity, Projectile = null, HitPos = p.LastHitPos ?? Vector3D.Zero, HitVelocity = p.LastHitEntVel ?? Vector3D.Zero };
+                if (p.EnableAv) p.Info.AvShot.Hit = p.Hit;
+                return true;
             }
-            return null;
+            return false;
         }
 
         internal int GetEntityCompareDist(HitEntity x, HitEntity y, List<Vector3I> slims)

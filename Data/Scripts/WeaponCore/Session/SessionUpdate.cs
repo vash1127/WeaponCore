@@ -241,7 +241,7 @@ namespace WeaponCore
                                     w.RequestedPower = true;
                                 }
 
-                                ShootingWeapons.Enqueue(w);
+                                ShootingWeapons.Add(w);
                             }
                             else if (w.ChargeUntilTick > Tick && !w.System.MustCharge)
                             {
@@ -267,6 +267,12 @@ namespace WeaponCore
             for (int i = ChargingWeapons.Count - 1; i >= 0; i--)
             {
                 var w = ChargingWeapons[i];
+                if (!w.Comp.MyCube.InScene || w.Comp.MyCube.MarkedForClose)
+                {
+                    ChargingWeapons.RemoveAtFast(i);
+                    continue;
+                }
+
                 var gridAi = w.Comp.Ai;
 
                 if (Tick60 && w.DrawingPower)
@@ -353,21 +359,20 @@ namespace WeaponCore
                 var sinceCheck = Tick - w.Target.CheckTick;
                 var reacquire = gridAi.TargetResetTick == Tick;
 
-                if (sinceCheck > 239 || reacquire && w.Target.State == Targets.Acquired || sinceCheck > 60 && _count == w.LoadId)
+                if (sinceCheck > 239 || reacquire && w.Target.State == Targets.Acquired || sinceCheck > 60 && _count == w.LoadId) 
                 {
-
                     var comp = w.Comp;
                     var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
                     var weaponEnabled = !comp.State.Value.Online || comp.Set.Value.Weapons[w.WeaponId].Enable;
 
                     if (!weaponEnabled || !gridAi.DbReady && weaponsInStandby || w.Comp.Gunner || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose || !comp.MyCube.InScene)
                         continue;
-
+                    
                     if (comp.TrackingWeapon != null && comp.TrackingWeapon.System.DesignatorWeapon && comp.TrackingWeapon != w && comp.TrackingWeapon.Target.State == Targets.Acquired)
                         GridAi.AcquireTarget(w, false, comp.TrackingWeapon.Target.Entity.GetTopMostParent());
-                    else
+                    else 
                         GridAi.AcquireTarget(w, gridAi.TargetResetTick == Tick);
-
+                    
                     if (w.Target.State == Targets.Acquired) AcquireTargets.RemoveAtFast(i);
                 }
             }
@@ -375,9 +380,9 @@ namespace WeaponCore
 
         private void ShootWeapons() 
         {
-            while (ShootingWeapons.Count > 0)
+            for (int i = 0; i < ShootingWeapons.Count; i++)
             {
-                var w = ShootingWeapons.Dequeue();
+                var w = ShootingWeapons[i];
                 //TODO add logic for power priority
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
 
@@ -429,6 +434,7 @@ namespace WeaponCore
                 if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) 
                     w.ShootGraphics();
             }
+            ShootingWeapons.Clear();
         }
     }
 }
