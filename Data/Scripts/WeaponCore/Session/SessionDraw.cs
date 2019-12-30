@@ -103,7 +103,37 @@ namespace WeaponCore
                 var refreshed = av.LastTick == Tick;
 
                 if (refreshed && av.Tracer != TracerState.Off && av.OnScreen != Screen.None)
-                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.Position, -av.Direction, (float)av.TracerLength, (float)av.Thickness);
+                {
+                    if (!av.System.OffsetEffect)
+                        MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.Position, -av.Direction, (float)av.TracerLength, (float)av.Thickness);
+                    else
+                    {
+                        for (int x = 0; x < av.Offsets.Count; x++)
+                        {
+                            Vector3D fromBeam;
+                            Vector3D toBeam;
+
+                            if (x == 0)
+                            {
+                                fromBeam = av.OffsetMatrix.Translation;
+                                toBeam = Vector3D.Transform(av.Offsets[x], av.OffsetMatrix);
+                            }
+                            else
+                            {
+                                fromBeam = Vector3D.Transform(av.Offsets[x - 1], av.OffsetMatrix);
+                                toBeam = Vector3D.Transform(av.Offsets[x], av.OffsetMatrix);
+                            }
+
+                            Vector3 dir = (toBeam - fromBeam);
+                            var length = dir.Length();
+                            var normDir = dir / length;
+                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, fromBeam, normDir, length, (float)av.Thickness);
+
+                            if (Vector3D.DistanceSquared(av.OffsetMatrix.Translation, toBeam) > av.TracerLengthSqr) break;
+                        }
+                        av.Offsets.Clear();
+                    }
+                }
 
                 var glowCnt = av.GlowSteps.Count;
 

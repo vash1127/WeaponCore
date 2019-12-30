@@ -52,7 +52,20 @@ namespace WeaponCore.Platform
                     return State;
                 }
             }
-            else State = PlatformState.Valid; 
+            else
+            {
+                if (comp.MissileBase != null && comp.MissileBase.AIEnabled)
+                {
+                    Log.Line($"ai is enabled in SBC! WEAPON DISABELED for: {comp.MissileBase.BlockDefinition.SubtypeName}");
+                    State = PlatformState.Invalid;
+                    WeaponComponent removed;
+                    if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
+                        comp.UpdateCompList(add: false);
+
+                    return State;
+                }
+                State = PlatformState.Valid;
+            } 
 
             Structure = structure;
             Parts = new RecursiveSubparts();

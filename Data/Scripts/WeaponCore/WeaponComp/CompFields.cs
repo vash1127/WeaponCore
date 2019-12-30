@@ -80,7 +80,6 @@ namespace WeaponCore.Support
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
         internal bool IsWorking;
-        internal bool AiMoving;
         internal bool HasEnergyWeapon;
         internal bool IgnoreInvChange;
 
@@ -111,7 +110,6 @@ namespace WeaponCore.Support
                 MissileBase = cube;
                 IsSorterTurret = false;
                 MissileBase.EnableIdleRotation = false;
-                if (MissileBase.AIEnabled) Log.Line($"ai is enabled");
             }
             else if (MyCube is IMyConveyorSorter)
             {

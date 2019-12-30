@@ -23,6 +23,8 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
 
         internal MyQueue<AfterGlow> GlowSteps = new MyQueue<AfterGlow>();
+        internal List<Vector3D> Offsets = new List<Vector3D>();
+
         //internal Stack<Shrinking> ShrinkSteps = new Stack<Shrinking>();
         internal WeaponComponent FiringWeapon;
         internal WeaponSystem.FiringSoundState FiringSoundState;
@@ -50,6 +52,7 @@ namespace WeaponCore.Support
         internal double VisualLength;
         internal double MaxSpeed;
         internal double MaxStepSize;
+        internal double TracerLengthSqr;
         internal float DistanceToLine;
         internal int LifeTime;
         internal int MuzzleId;
@@ -61,6 +64,7 @@ namespace WeaponCore.Support
         internal TrailState Trail;
         internal ModelState Model;
         internal Screen OnScreen;
+        internal MatrixD OffsetMatrix;
         internal Vector3D Origin;
         internal Vector3D Position;
         internal Vector3D Direction;
@@ -232,6 +236,8 @@ namespace WeaponCore.Support
 
             if (Tracer != TracerState.Off && System.IsBeamWeapon && Hit.HitPos != Vector3D.Zero)
                 RunBeam();
+            else if (Tracer != TracerState.Off && OnScreen == Screen.Tracer && System.OffsetEffect)
+                LineOffsetEffect(TracerStart, Direction, TracerLength);
 
             if (Trail != TrailState.Off && Tracer != TracerState.Grow)
                 RunGlow();
@@ -367,6 +373,27 @@ namespace WeaponCore.Support
                         weapon.HitEffects[MuzzleId] = null;
                     }
                 }
+            }
+        }
+
+        internal void LineOffsetEffect(Vector3D pos, Vector3D direction, double tracerLength)
+        {
+            var up = MatrixD.Identity.Up;
+            var startPos = pos + -(direction * tracerLength);
+            MatrixD.CreateWorld(ref startPos, ref direction, ref up, out OffsetMatrix);
+            TracerLengthSqr = tracerLength * tracerLength;
+            var maxOffset = System.Values.Graphics.Line.OffsetEffect.MaxOffset;
+            var minLength = System.Values.Graphics.Line.OffsetEffect.MinLength;
+            var maxLength = System.Values.Graphics.Line.OffsetEffect.MaxLength;
+
+            double currentForwardDistance = 0;
+
+            while (currentForwardDistance < tracerLength)
+            {
+                currentForwardDistance += MyUtils.GetRandomDouble(minLength, maxLength);
+                var lateralXDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
+                var lateralYDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
+                Offsets.Add(new Vector3D(lateralXDistance, lateralYDistance, currentForwardDistance * -1));
             }
         }
 
