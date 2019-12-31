@@ -56,6 +56,7 @@ namespace WeaponCore
                         List<Matrix> rotationSet = new List<Matrix>();
                         List<Matrix> rotCenterSet = new List<Matrix>();
                         List<string> rotCenterNameSet = new List<string>();
+                        List<string> emissiveIdSet = new List<string>();
 
                         var id = $"{moves.Key}{animationSet.SubpartId[t]}";
                         animationIdLookup.Add(id);
@@ -123,8 +124,10 @@ namespace WeaponCore
                                         currentEmissivePart.Add(-1);
                                     }
 
+                                    emissiveIdSet.Add(id + moveIndexer.Count);
+
                                     moveIndexer.Add(new[]
-                                        {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, currentEmissivePart.Count - 1});
+                                        {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, type, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
                                 }
                             }
                             else
@@ -226,7 +229,13 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                var progress = 0f;
+                                                if (move.TicksToMove == 1)
+                                                    progress = 1;
+                                                else
+                                                    progress = (float)j / (move.TicksToMove - 1);
+
+                                                createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -234,8 +243,10 @@ namespace WeaponCore
                                                 currentEmissivePart.Add(-1);
                                             }
 
+                                            emissiveIdSet.Add(id + moveIndexer.Count);
+
                                             moveIndexer.Add(new[]
-                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, currentEmissivePart.Count - 1});
+                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
 
                                             if (remaining > 0)
                                                 vectorCount++;
@@ -294,7 +305,13 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                var progress = 0f;
+                                                if (move.TicksToMove == 1)
+                                                    progress = 1;
+                                                else
+                                                    progress = (float)j / (move.TicksToMove - 1);
+
+                                                createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -302,8 +319,10 @@ namespace WeaponCore
                                                 currentEmissivePart.Add(-1);
                                             }
 
+                                            emissiveIdSet.Add(id + moveIndexer.Count);
+
                                             moveIndexer.Add(new[]
-                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, currentEmissivePart.Count - 1});
+                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
 
                                             if (remaining > 0)
                                                 vectorCount++;
@@ -343,7 +362,13 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                var progress = 0f;
+                                                if (move.TicksToMove == 1)
+                                                    progress = 1;
+                                                else
+                                                    progress = (float)j / (move.TicksToMove - 1);
+
+                                                createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -351,8 +376,10 @@ namespace WeaponCore
                                                 currentEmissivePart.Add(-1);
                                             }
 
+                                            emissiveIdSet.Add(id + moveIndexer.Count);
+
                                             moveIndexer.Add(new[]
-                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, currentEmissivePart.Count - 1});
+                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
 
                                             if (remaining > 0)
                                                 vectorCount++;
@@ -367,7 +394,13 @@ namespace WeaponCore
                                             WeaponEmissive emissive;
                                             if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                             {
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                                var progress = 0f;
+                                                if (move.TicksToMove == 1)
+                                                    progress = 1;
+                                                else
+                                                    progress = (float)j / (move.TicksToMove - 1);
+
+                                                createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -375,8 +408,10 @@ namespace WeaponCore
                                                 currentEmissivePart.Add(-1);
                                             }
 
+                                            emissiveIdSet.Add(id + moveIndexer.Count);
+
                                             moveIndexer.Add(new[]
-                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, allEmissivesSet.Count - 1});
+                                                {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
                                         }
                                     }
 
@@ -390,7 +425,13 @@ namespace WeaponCore
                                         WeaponEmissive emissive;
                                         if (hasEmissive && emissiveLookup.TryGetValue(move.EmissiveName, out emissive))
                                         {
-                                            createEmissiveStep(emissive, id + moveIndexer.Count, (float)j / (move.TicksToMove - 1), ref allEmissivesSet, ref currentEmissivePart);
+                                            var progress = 0f;
+                                            if (move.TicksToMove == 1)
+                                                progress = 1;
+                                            else
+                                                progress = (float)j / (move.TicksToMove - 1);
+
+                                            createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                         }
                                         else
                                         {
@@ -398,8 +439,10 @@ namespace WeaponCore
                                             currentEmissivePart.Add(-1);
                                         }
 
+                                        emissiveIdSet.Add(id + moveIndexer.Count);
+
                                         moveIndexer.Add(new[]
-                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, currentEmissivePart.Count - 1});
+                                            {moveSet.Count - 1, rotationSet.Count - 1, rotCenterSet.Count - 1, 0, emissiveIdSet.Count - 1, currentEmissivePart.Count - 1});
                                     }
                                 }
                             }
@@ -427,8 +470,8 @@ namespace WeaponCore
                             resetEmissives = true;
 
                         var partAnim = new PartAnimation(moves.Key, id, rotationSet.ToArray(),
-                            rotCenterSet.ToArray(), typeSet, currentEmissivePart.ToArray(), moveIndexer.ToArray(), animationSet.SubpartId[t], null, null,
-                            animationSet.BarrelId, animationSet.StartupFireDelay, animationSet.AnimationDelays[moves.Key], system, loop, reverse, triggerOnce, resetEmissives);
+                            rotCenterSet.ToArray(), typeSet, emissiveIdSet.ToArray(), currentEmissivePart.ToArray(), moveIndexer.ToArray(), animationSet.SubpartId[t], null, null,
+                            animationSet.BarrelId, animationSet.AnimationDelays[moves.Key], system, loop, reverse, triggerOnce, resetEmissives);
 
                         weaponLinearMoveSet.Add(id, moveSet.ToArray());
 
@@ -492,8 +535,8 @@ namespace WeaponCore
                     }
 
                     allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.EventTrigger, animation.AnimationId, rotations, rotCenters,
-                        animation.TypeSet, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
-                        animation.Muzzle, animation.FireDelay, animation.MotionDelay, system, animation.DoesLoop,
+                        animation.TypeSet,animation.EmissiveIds, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
+                        animation.Muzzle, animation.MotionDelay, system, animation.DoesLoop,
                         animation.DoesReverse, animation.TriggerOnce, animation.ResetEmissives));
                 }
             }
@@ -651,7 +694,7 @@ namespace WeaponCore
                 {
                     if (!animation.PauseAnimation && (animation.MotionDelay == 0 || animation.CurrentMove > 0 || (animation.MotionDelay > 0 && animation.StartTick <= Tick && animation.StartTick > 0)))
                     {
-                        AnimateParts(animation);
+                        AnimateParts(animation, i);
                         animation.StartTick = 0;
                     }
                     else if (animation.MotionDelay > 0 && animation.StartTick == 0)
@@ -661,7 +704,7 @@ namespace WeaponCore
             }
         }
 
-        internal void AnimateParts(PartAnimation animation)
+        internal void AnimateParts(PartAnimation animation, int index)
         {
             var localMatrix = animation.Part.PositionComp.LocalMatrix;
             Matrix rotation;
@@ -748,12 +791,11 @@ namespace WeaponCore
 
             if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
             {
-                AnimationsToProcess.Remove(animation);
+                AnimationsToProcess.RemoveAt(index);
                 animation.Running = false;
 
                 if (animation.ResetEmissives)
                 {
-                    Log.Line("Reset Emissive");
                     for (int i = 0; i < animation.EmissiveParts.Length; i++)
                     {
                         var emissivePart = animation.EmissiveParts[i];

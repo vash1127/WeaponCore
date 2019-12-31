@@ -19,7 +19,6 @@ namespace WeaponCore.Support {
         internal readonly int[] CurrentEmissivePart;
         internal readonly int[][] MoveToSetIndexer;
         internal readonly int NumberOfMoves;
-        internal readonly uint FireDelay;
         internal readonly uint MotionDelay;
         internal readonly MyEntity MainEnt;
         internal readonly bool DoesLoop;
@@ -29,6 +28,7 @@ namespace WeaponCore.Support {
         internal readonly bool ResetEmissives;
         internal readonly string Muzzle;
         internal readonly string SubpartId;
+        internal readonly string[] EmissiveIds;
         internal readonly string[] EmissiveParts;
 
         internal enum indexer
@@ -38,6 +38,7 @@ namespace WeaponCore.Support {
             RotCenterIndex,
             TypeIndex,
             EmissiveIndex,
+            EmissivePartIndex,
         }
 
         public struct EmissiveState
@@ -69,7 +70,7 @@ namespace WeaponCore.Support {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
+        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet,string[] emissiveIds, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
         {
             EventTrigger = eventTrigger;
             RotationSet = rotationSet;
@@ -77,6 +78,7 @@ namespace WeaponCore.Support {
             CurrentEmissivePart = currentEmissivePart;
             AnimationId = animationId;
             ResetEmissives = resetEmissives;
+            EmissiveIds = emissiveIds;
 
             //Unique Animation ID
             Guid guid = Guid.NewGuid();
@@ -91,7 +93,6 @@ namespace WeaponCore.Support {
             SubpartId = subpartId;
 
             MotionDelay = motionDelay;
-            FireDelay = fireDelay;
 
             MainEnt = mainEnt;
             DoesLoop = loop;
@@ -176,9 +177,9 @@ namespace WeaponCore.Support {
                 rotAroundCenter = Matrix.Zero;
             }
 
-            if (System.WeaponEmissiveSet.TryGetValue(AnimationId + _currentMove, out emissiveState))
+            if (System.WeaponEmissiveSet.TryGetValue(EmissiveIds[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]], out emissiveState))
             {
-                emissiveState.CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissiveIndex]];
+                emissiveState.CurrentPart = CurrentEmissivePart[MoveToSetIndexer[_currentMove][(int)indexer.EmissivePartIndex]];
 
                 if (emissiveState.EmissiveParts != null && LastEmissive.EmissiveParts != null && emissiveState.CurrentPart == LastEmissive.CurrentPart && emissiveState.CurrentColor == LastEmissive.CurrentColor && Math.Abs(emissiveState.CurrentIntensity - LastEmissive.CurrentIntensity) < 0.001)
                     emissiveState = new EmissiveState();
