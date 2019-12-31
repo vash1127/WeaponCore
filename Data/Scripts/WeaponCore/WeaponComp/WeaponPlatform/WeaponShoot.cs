@@ -102,7 +102,7 @@ namespace WeaponCore.Platform
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
-                Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics.LinearVelocity;
+                Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
