@@ -18,28 +18,10 @@ namespace WeaponCore.Platform
             _posChangedTick = Comp.Ai.Session.Tick;
         }
 
-        internal void AzPartClose(MyEntity obj)
-        {
-            obj.PositionComp.OnPositionChanged -= UpdatePartPos;
-            obj.OnMarkForClose -= AzPartClose;
-        }
-
         internal void EntPartClose(MyEntity obj)
         {
             obj.PositionComp.OnPositionChanged -= PositionChanged;
             obj.OnMarkForClose -= EntPartClose;
-        }
-
-        internal void UpdatePartPos(MyPositionComponentBase pComp)
-        {
-            var tick = Comp.Ai.Session.Tick;
-
-            if (Comp.PositionUpdateTick != tick)
-            {
-                var parentMatrix = AzimuthPart.Item1.Parent.PositionComp.WorldMatrix;
-                AzimuthPart.Item1.PositionComp.UpdateWorldMatrix(ref parentMatrix);
-                Comp.PositionUpdateTick = tick;
-            }
         }
 
         public class Muzzle
@@ -117,9 +99,10 @@ namespace WeaponCore.Platform
                                     else if (active && animation.Looping && pause)
                                         animation.PauseAnimation = true;
 
-                                    else if (active && animation.Looping)
+                                    else if (active && animation.Looping && animation.PauseAnimation)
                                         animation.PauseAnimation = false;
-
+                                    else if (active && !animation.Looping && animation.DoesLoop)
+                                        animation.Looping = true;
                                     else
                                     {
                                         animation.PauseAnimation = false;

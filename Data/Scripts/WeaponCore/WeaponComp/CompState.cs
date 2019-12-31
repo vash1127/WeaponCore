@@ -55,7 +55,7 @@ namespace WeaponCore.Support
                 {
                     if (IsSorterTurret && !SorterBase.Enabled)
                         w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                    else if(!MissileBase.Enabled)
+                    else if(MissileBase != null && !MissileBase.Enabled)
                         w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
 
                     if (State.Value.Weapons[w.WeaponId].CurrentAmmo == 0)
