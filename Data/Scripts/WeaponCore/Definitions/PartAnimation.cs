@@ -19,7 +19,6 @@ namespace WeaponCore.Support {
         internal readonly int[] CurrentEmissivePart;
         internal readonly int[][] MoveToSetIndexer;
         internal readonly int NumberOfMoves;
-        internal readonly uint FireDelay;
         internal readonly uint MotionDelay;
         internal readonly MyEntity MainEnt;
         internal readonly bool DoesLoop;
@@ -69,7 +68,7 @@ namespace WeaponCore.Support {
             get { return _currentMove; }
         }
 
-        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint fireDelay, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
+        internal PartAnimation(EventTriggers eventTrigger, string animationId, Matrix[] rotationSet, Matrix[] rotCeterSet, AnimationType[] typeSet, int[] currentEmissivePart, int[][] moveToSetIndexer, string subpartId, MyEntitySubpart part, MyEntity mainEnt, string muzzle, uint motionDelay, WeaponSystem system, bool loop = false, bool reverse = false, bool triggerOnce = false, bool resetEmissives = false)
         {
             EventTrigger = eventTrigger;
             RotationSet = rotationSet;
@@ -91,7 +90,6 @@ namespace WeaponCore.Support {
             SubpartId = subpartId;
 
             MotionDelay = motionDelay;
-            FireDelay = fireDelay;
 
             MainEnt = mainEnt;
             DoesLoop = loop;

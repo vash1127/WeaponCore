@@ -477,9 +477,10 @@ namespace WeaponCore.Platform
                                                 animCheck.Reverse = true;
                                             else
                                             {
-                                                animation.Part.PositionComp.LocalMatrix = animation.HomePos;
+                                                //animation.Part.PositionComp.LocalMatrix = animation.HomePos;
                                                 Comp.Ai.Session.ThreadedAnimations.Enqueue(animation);
                                                 //Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                                if (ShootDelayTick > Comp.Ai.Session.Tick) animation.StartTick = ShootDelayTick;
                                                 animation.Running = true;
                                             }
 
@@ -495,7 +496,7 @@ namespace WeaponCore.Platform
                                     else
                                         animation.Reverse = false;
                                 }
-
+                                /*
                                 foreach (var set in AnimationsSet)
                                 {
                                     for (int j = 0; j < set.Value.Length; j++)
@@ -522,7 +523,7 @@ namespace WeaponCore.Platform
                                         else if (animation.Running)
                                             animation.Looping = false;
                                     }
-                                }
+                                }*/
                             }
 
                             break;

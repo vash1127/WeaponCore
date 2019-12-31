@@ -428,7 +428,7 @@ namespace WeaponCore
 
                         var partAnim = new PartAnimation(moves.Key, id, rotationSet.ToArray(),
                             rotCenterSet.ToArray(), typeSet, currentEmissivePart.ToArray(), moveIndexer.ToArray(), animationSet.SubpartId[t], null, null,
-                            animationSet.BarrelId, animationSet.StartupFireDelay, animationSet.AnimationDelays[moves.Key], system, loop, reverse, triggerOnce, resetEmissives);
+                            animationSet.BarrelId, animationSet.AnimationDelays[moves.Key], system, loop, reverse, triggerOnce, resetEmissives);
 
                         weaponLinearMoveSet.Add(id, moveSet.ToArray());
 
@@ -493,7 +493,7 @@ namespace WeaponCore
 
                     allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.EventTrigger, animation.AnimationId, rotations, rotCenters,
                         animation.TypeSet, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
-                        animation.Muzzle, animation.FireDelay, animation.MotionDelay, system, animation.DoesLoop,
+                        animation.Muzzle, animation.MotionDelay, system, animation.DoesLoop,
                         animation.DoesReverse, animation.TriggerOnce, animation.ResetEmissives));
                 }
             }
