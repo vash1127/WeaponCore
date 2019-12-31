@@ -108,7 +108,7 @@ namespace WeaponCore
         //private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>(100);
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
-        internal DsUniqueListFastRemove<PartAnimation> AnimationsToProcess = new DsUniqueListFastRemove<PartAnimation>();
+        internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(100);
         internal List<WeaponDefinition> WeaponDefinitions = new List<WeaponDefinition>();
 
         internal IMyPhysics Physics;
