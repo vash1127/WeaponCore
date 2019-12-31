@@ -10,7 +10,6 @@ namespace WeaponCore
     {
         private void RunAv()
         {
-            if (Tick60) Log.Line($"{AvShots.Count}");
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];

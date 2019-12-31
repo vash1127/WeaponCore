@@ -665,8 +665,11 @@ namespace WeaponCore.Support
 
         internal void Clean()
         {
-            Target = null;
-            TargetState = null;
+            for (int i = 0; i < Target.Length; i++)
+            {
+                Target[i] = null;
+                TargetState[i] = null;
+            }
         }
     }
 
