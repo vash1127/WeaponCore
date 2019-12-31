@@ -274,12 +274,12 @@ namespace WeaponCore.Support
             for (int i = glowCount - 1; i >= 0; i--)
             {
                 var glow = GlowSteps[i];
-                if (i == 0) glow.Color = VRageMath.Color.Red;
-                else if (i == 1) glow.Color = VRageMath.Color.Red;
-                else if (i == 2) glow.Color = VRageMath.Color.Red;
+                if (i == 0) glow.Color = VRageMath.Color.White;
+                else if (i == 1) glow.Color = VRageMath.Color.White;
+                else if (i == 2) glow.Color = VRageMath.Color.White;
                 if (i == 0 && glowCount > 1) glow.Parent = GlowSteps[1];
                 var steps = System.Values.Graphics.Line.Trail.DecayTime;
-                var fullSize = System.Values.Graphics.Line.Tracer.Width;
+                var fullSize = 0.25f;
                 var shrinkAmount = fullSize / steps;
                 glow.Line = new LineD(glow.TailPos, glow.Parent?.TailPos ?? TracerStart);
 
