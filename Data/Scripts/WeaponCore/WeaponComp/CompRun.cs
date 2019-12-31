@@ -2,6 +2,7 @@
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRage.ModAPI;
 using VRage.Utils;
 using WeaponCore.Platform;
