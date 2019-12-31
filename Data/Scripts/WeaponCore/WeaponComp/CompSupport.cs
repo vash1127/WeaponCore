@@ -81,8 +81,33 @@ namespace WeaponCore.Support
                     if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
                     {
                         Log.Line($"cube matches different grid: marked:{MyCube.MarkedForClose}({gridAi.MyGrid.MarkedForClose}) - gridMisMatch: {gridAi.MyGrid != MyCube.CubeGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
-                        if(gridAi.WeaponBase.TryRemove(MyCube, out comp))
+                        if (gridAi.WeaponBase.TryRemove(MyCube, out comp))
+                        {
+                            Log.Line($"cube found on second try????");
                             UpdateCompList(add: false, invoke: onThread);
+                            if (Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                            {
+                                GridAi.WeaponCount wCount;
+
+                                if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                                    wCount.Current--;
+
+                                for (int i = 0; i < Platform.Weapons.Length; i++)
+                                {
+                                    var w = Platform.Weapons[i];
+                                    w.StopShooting();
+                                    w.WeaponCache.HitEntity.Clean();
+                                    if (w.DrawingPower)
+                                        w.StopPowerDraw();
+                                }
+
+                                StopAllSounds();
+                                Platform.RemoveParts(this);
+
+                                Ai.OptimalDps -= OptimalDps;
+
+                            }
+                        }
                     }
                 }
 

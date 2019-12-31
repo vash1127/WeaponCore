@@ -104,7 +104,7 @@ namespace WeaponCore
         private readonly List<MyTuple<MyInventory, int>> _inventoriesToPull = new List<MyTuple<MyInventory, int>>();
         private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
         private readonly List<Vector3D> _offsetList = new List<Vector3D>(10);
-        private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(10);
+        private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1000);
         //private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>(100);
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);

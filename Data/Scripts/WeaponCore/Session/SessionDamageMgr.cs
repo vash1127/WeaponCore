@@ -284,10 +284,11 @@ namespace WeaponCore
                     block.DoDamage(scaledDamage, damageType, true, null, attackerId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
 
-                    if (explosive && !nova && ((!detonateOnEnd && blockIsRoot) || detonateOnEnd && theEnd))
+                    if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
-                        var damage = detonateOnEnd && theEnd ? detonateDmg : areaEffectDmg;
-                        var radius = detonateOnEnd && theEnd ? detonateRadius : areaRadius;
+                        var detonate = detonateOnEnd && theEnd;
+                        var damage = detonate ? detonateDmg : areaEffectDmg;
+                        var radius = detonate ? detonateRadius : areaRadius;
                         SUtils.CreateMissileExplosion(this, damage, radius, hitEnt.HitPos.Value, t.Direction, attacker, grid, system, true);
                     }
                     else if (!nova)
@@ -529,12 +530,13 @@ namespace WeaponCore
                 var v3ICheck = center + sphereOfCubes[i];
                 var contained = gMinX <= v3ICheck.X && v3ICheck.X <= gMaxX && (gMinY <= v3ICheck.Y && v3ICheck.Y <= gMaxY) && (gMinZ <= v3ICheck.Z && v3ICheck.Z <= gMaxZ);
                 if (!contained) continue;
-                IMySlimBlock slim = grid.GetCubeBlock(v3ICheck);
 
-                if (slim != null && slim.Position == v3ICheck)
+                MyCube cube;
+                if (grid.TryGetCube(v3ICheck, out cube))
                 {
-                    var radiatedBlock = new RadiatedBlock {Center = center, Slim = slim, Position = v3ICheck};
-                    slims.Add(radiatedBlock);
+                    IMySlimBlock slim = cube.CubeBlock;
+                    if (slim.Position == v3ICheck)
+                        slims.Add(new RadiatedBlock { Center = center, Slim = slim, Position = v3ICheck });
                 }
             }
         }
