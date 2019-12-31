@@ -248,16 +248,15 @@ namespace WeaponCore.Support
         internal void RunGlow()
         {
             var glowCount = GlowSteps.Count;
-            if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
+            if (glowCount < System.Values.Graphics.Line.Trail.DecayTime)
             {
                 var glow = Ai.Session.GlowPool.Get();
-                glow.Direction = -Direction;
-                glow.VelStep = glow.Direction * StepSize;
+                glow.VelStep = -Direction * StepSize;
                 glow.TailPos = TracerStart + glow.VelStep;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
             }
-
+            /*
             float scale = 1;
             
             var distanceFromPointSqr = Vector3D.DistanceSquared(Ai.Session.CameraPos, ClosestPointOnLine);
@@ -270,10 +269,14 @@ namespace WeaponCore.Support
             else if (distanceFromPointSqr > 125 * 125) scale = 1.2f;
             else if (distanceFromPointSqr > 75 * 75) scale = 1.1f;
             var sliderScale = ((float)LineScaler * scale);
-
+            */
+            Log.Line($"{glowCount}");
             for (int i = glowCount - 1; i >= 0; i--)
             {
                 var glow = GlowSteps[i];
+                if (i == 0) glow.Color = VRageMath.Color.Red;
+                else if (i == 1) glow.Color = VRageMath.Color.Red;
+                else if (i == 2) glow.Color = VRageMath.Color.Red;
                 if (i == 0 && glowCount > 1) glow.Parent = GlowSteps[1];
                 var steps = System.Values.Graphics.Line.Trail.DecayTime;
                 var fullSize = System.Values.Graphics.Line.Tracer.Width;
@@ -281,7 +284,9 @@ namespace WeaponCore.Support
                 glow.Line = new LineD(glow.TailPos, glow.Parent?.TailPos ?? TracerStart);
 
                 var reduction = (shrinkAmount * glow.Step);
-                glow.Thickness = (fullSize - reduction) * sliderScale;
+                //glow.Thickness = (fullSize - reduction) * sliderScale;
+                glow.Thickness = (fullSize - reduction);
+
                 /*
                 if (glow.Parent == null)
                 {
@@ -460,24 +465,18 @@ namespace WeaponCore.Support
     internal class AfterGlow
     {
         internal AfterGlow Parent;
-        internal Vector3D TracerStart;
         internal Vector3D TailPos;
-        internal Vector3D Direction;
-        internal LineD Line;
         internal Vector3D VelStep;
+        internal Vector4 Color;
+        internal LineD Line;
         internal int Step;
-        internal float WidthScaler;
-        internal float Length;
         internal float Thickness;
 
         internal void Clean()
         {
             Parent = null;
-            TracerStart = Vector3D.Zero;
             TailPos = Vector3D.Zero;
             Step =  0;
-            WidthScaler = 0;
-            Length = 0;
             Thickness = 0;
         }
     }

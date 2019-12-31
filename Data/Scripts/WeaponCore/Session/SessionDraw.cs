@@ -61,7 +61,7 @@ namespace WeaponCore
                         var glow = av.GlowSteps[j];
 
                         if (av.OnScreen != Screen.None)
-                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
+                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, glow.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
                         if (++glow.Step >= steps)
                         {
                             glowCnt--;
