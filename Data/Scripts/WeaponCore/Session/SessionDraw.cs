@@ -50,22 +50,21 @@ namespace WeaponCore
 
                 var glowCnt = av.GlowSteps.Count;
 
-                if (av.Trail != TrailState.Off)
+                if (av.Trail != TrailState.Off && false)
                 {
-                    var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
                     for (int j = 0; j < glowCnt; j++)
                     {
                         var glow = av.GlowSteps[j];
 
                         if (av.OnScreen != Screen.None)
                             MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
-                        if (glow.Step >= steps)
+
+                        if (++glow.Draws >= glow.Updates)
                         {
-                            glowCnt--;
-                            av.GlowSteps.Dequeue();
-                            glow.Clean();
-                            GlowPool.Return(glow);
+                            //glowCnt--;
+                            //Log.Line($"{AvShots.Count} - {glowCnt}");
                         }
+                        //else Log.Line($"{glow.Draws} - {glow.Updates}");
                     }
                 }
 

@@ -285,8 +285,6 @@ namespace WeaponCore
                 fatMap.MyCubeBocks.ClearImmediate();
                 ConcurrentListPool.Return(fatMap.MyCubeBocks);
                 fatMap.Trash = true;
-                fatMap.MyCubeBocks = null;
-                fatMap.Targeting = null;
                 FatMapPool.Return(fatMap);
                 grid.OnFatBlockAdded -= ToFatMap;
                 grid.OnFatBlockRemoved -= FromFatMap;

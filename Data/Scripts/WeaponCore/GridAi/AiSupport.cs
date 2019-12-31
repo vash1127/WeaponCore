@@ -566,11 +566,12 @@ namespace WeaponCore.Support
             Targets.Clear();
             SortedTargets.Clear();
             BlockGroups.Clear();
-            Focus.Clean();
             Weapons.Clear();
             WeaponsIdx.Clear();
             WeaponBase.Clear();
             AmmoInventories.Clear();
+
+            Focus.Clean();
             MyShieldTmp = null;
             MyShield = null;
             MyPlanetTmp = null;
