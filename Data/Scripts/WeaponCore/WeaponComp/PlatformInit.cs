@@ -332,9 +332,6 @@ namespace WeaponCore.Platform
                             Weapons[c].AzimuthPart.Item1.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
                             Weapons[c].AzimuthPart.Item1.OnMarkForClose += Weapons[c].EntPartClose;
                         }
-
-                        Weapons[c].AzimuthPart.Item1.PositionComp.OnPositionChanged += Weapons[c].UpdatePartPos;
-                        Weapons[c].AzimuthPart.Item1.OnMarkForClose += Weapons[c].AzPartClose;
                     }
 
                     for (int i = 0; i < barrelCount; i++)
@@ -373,9 +370,7 @@ namespace WeaponCore.Platform
             {
                 if (w.MuzzlePart.Item1 == null) continue;
                 w.MuzzlePart.Item1.PositionComp.OnPositionChanged -= w.PositionChanged;
-
-                if (w.AzimuthPart.Item1 == null) continue;
-                w.AzimuthPart.Item1.PositionComp.OnPositionChanged -= w.UpdatePartPos;
+                
             }
             Parts.Reset(comp.Entity as MyEntity);
             comp.Status = Stopped;

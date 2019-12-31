@@ -71,7 +71,7 @@ namespace WeaponCore
 
                         var moveIndexer = new List<int[]>();
                         var currentEmissivePart = new List<int>();
-                        uint totalPlayLength = 0;
+                        uint totalPlayLength = animationSet.AnimationDelays[moves.Key];
                         
                         for (int i = 0; i < moves.Value.Length; i++)
                         {

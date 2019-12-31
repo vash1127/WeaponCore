@@ -184,8 +184,6 @@ namespace WeaponCore.Control
                     }
                     w.StopShooting();
 
-                    Log.Line($"w.System.EnergyMagSize: {w.System.EnergyMagSize} CurrentAmmo: {w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo}");
-
                     if (w.System.MustCharge && ((w.System.IsHybrid && w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.MagazineDef.Capacity) || (!w.System.IsHybrid && w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)))
                     {
                         w.CurrentCharge = 0;
