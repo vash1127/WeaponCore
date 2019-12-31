@@ -93,6 +93,7 @@ namespace WeaponCore.Platform
         internal uint LastTrackedTick;
         internal uint ChargeDelayTicks;
         internal uint ChargeUntilTick;
+        internal uint AnimationDelayTick;
         internal uint OffDelay;
         internal uint ShootDelayTick;
         internal int RateOfFire;
@@ -125,6 +126,7 @@ namespace WeaponCore.Platform
         internal bool PlayTurretAv;
         internal bool AvCapable;
         internal bool DelayCeaseFire;
+        internal bool Scheduled;
         internal Targets TargetState = Targets.Expired;
         internal bool Reloading;
         internal bool OutOfAmmo;

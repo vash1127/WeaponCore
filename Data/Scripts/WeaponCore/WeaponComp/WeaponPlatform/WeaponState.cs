@@ -70,15 +70,6 @@ namespace WeaponCore.Platform
                                                     animCheck.Reverse = true;
                                                 else
                                                 {
-                                                    /*if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
-                                                    {
-                                                        var matrix = animation.Part.PositionComp.LocalMatrix;
-                                                        matrix.Translation = animation.HomePos.Translation;
-                                                        animation.Part.PositionComp.LocalMatrix = matrix;
-                                                    }
-                                                    else
-                                                        animation.Part.PositionComp.LocalMatrix = animation.HomePos;
-                                                    */
                                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                                     animation.Running = true;
                                                 }
@@ -133,18 +124,6 @@ namespace WeaponCore.Platform
                                                     animCheck.Reverse = true;
                                                 else
                                                 {
-                                                    animCheck.Reset(false, false);
-                                                    animCheck.Running = false;
-                                                    Comp.Ai.Session.AnimationsToProcess.Remove(animCheck);
-                                                    /*if (animation.Part == AzimuthPart.Item1 || animation.Part == ElevationPart.Item1)
-                                                    {
-                                                        var matrix = animation.Part.PositionComp.LocalMatrix;
-                                                        matrix.Translation = animCheck.FinalPos.Translation;
-                                                        animation.Part.PositionComp.LocalMatrix = matrix;
-                                                    }
-                                                    else
-                                                        animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
-                                                        */
                                                     Comp.Ai.Session.AnimationsToProcess.Add(animation);
                                                     animation.Running = true;
                                                 }
@@ -158,7 +137,7 @@ namespace WeaponCore.Platform
                                                 animation.Triggered = true;
                                             }
 
-                                            if (animation.DoesLoop && !animation.TriggerOnce)
+                                            if (animation.DoesLoop)
                                                 animation.Looping = true;
                                         }
                                     }
@@ -830,10 +809,19 @@ namespace WeaponCore.Platform
                 Comp.TerminalRefresh();
         }
 
-        public void StartReload()
+        public void StartReload(object o = null)
         {
-            if (Reloading) return;
+            var reset = o != null && ((bool?)o).Value;
+
+            if (Reloading && !reset) return;
             Reloading = true;
+
+            if (AnimationDelayTick > Comp.Ai.Session.Tick)
+            {
+                Comp.Ai.Session.FutureEvents.Schedule(StartReload, true, AnimationDelayTick - Comp.Ai.Session.Tick);
+                return;
+            }
+            
             //EventTriggerStateChanged(state: EventTriggers.Firing, active: false);
 
             if (IsShooting)
