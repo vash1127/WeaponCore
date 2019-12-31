@@ -228,5 +228,7 @@ namespace WeaponCore
         private int _lCount;
         private int _eCount;
         private int _loadCounter = 1;
+        private uint _lastDrawTick;
+        private bool _paused;
     }
 }

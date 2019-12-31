@@ -262,7 +262,6 @@ namespace WeaponCore.Support
                 else
                     glow.TailPos = glow.Parent.TailPos + (Direction * StepSize);
 
-                glow.FirstTick = Ai.Session.Tick;
                 glow.Direction = Direction;
                 glow.VelStep = Direction * StepSize;
                 GlowSteps.Enqueue(glow);
@@ -285,15 +284,13 @@ namespace WeaponCore.Support
             for (int i = 0; i < glowCount; i++)
             {
                 var glow = GlowSteps[i];
-                var thisStep = (Ai.Session.Tick - glow.FirstTick);
                 var steps = System.Values.Graphics.Line.Trail.DecayTime;
                 var fullSize = System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
-                glow.TailPos += (ShooterVelStep);
-                //glow.TracerStart += (ShooterVelStep);
                 glow.Line = new LineD(glow.Parent?.TailPos ?? glow.TracerStart, glow.TailPos);
 
-
+                var reduction = (shrinkAmount * ++glow.Step);
+                glow.Thickness = (fullSize - reduction) * sliderScale;
                 /*
                 if (glow.Parent == null)
                 {
@@ -316,8 +313,7 @@ namespace WeaponCore.Support
                     DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
                 }
                 */
-                var reduction = (shrinkAmount * thisStep);
-                glow.Thickness = (fullSize - reduction) * sliderScale;
+
             }
         }
         internal void RunBeam()
@@ -479,7 +475,7 @@ namespace WeaponCore.Support
         internal Vector3D Direction;
         internal LineD Line;
         internal Vector3D VelStep;
-        internal uint FirstTick;
+        internal int Step;
         internal float WidthScaler;
         internal float Length;
         internal float Thickness;
@@ -489,7 +485,7 @@ namespace WeaponCore.Support
             Parent = null;
             TracerStart = Vector3D.Zero;
             TailPos = Vector3D.Zero;
-            FirstTick = 0;
+            Step =  -1;
             WidthScaler = 0;
             Length = 0;
             Thickness = 0;

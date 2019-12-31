@@ -26,6 +26,18 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in BeforeStart: {ex}"); }
         }
 
+        public override void UpdatingStopped()
+        {
+            try
+            {
+                Log.Line($"Paused:{Tick}");
+                Paused();
+                _paused = true;
+            }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }
+        }
+
+
         public override void UpdateBeforeSimulation()
         {
             try
@@ -108,15 +120,6 @@ namespace WeaponCore
             catch (Exception ex) { Log.Line($"Exception in SessionSim: {ex}"); }
         }
 
-        public override void UpdatingStopped()
-        {
-            try
-            {
-                Paused();
-            }
-            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex}"); }
-        }
-
         public override void UpdateAfterSimulation()
         {
             try
@@ -169,6 +172,10 @@ namespace WeaponCore
         {
             try
             {
+
+                if (_lastDrawTick == Tick || _paused)return;
+                _lastDrawTick = Tick;
+
                 DsUtil.Start("draw");
                 if (!DedicatedServer)
                 {
@@ -194,6 +201,7 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in SessionDraw: {ex}"); }
         }
+
 
         public override void HandleInput()
         {

@@ -76,7 +76,7 @@ namespace WeaponCore.Support
                 }
                 else
                 {
-                    //Log.Line($"no comp found to remove: {MyCube.DebugName} - [marked](cube:{MyCube.MarkedForClose}) - (grid:{MyCube.CubeGrid.MarkedForClose}) - (MyGrid:{Ai.MyGrid.MarkedForClose}) - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
+                    Log.Line($"no comp found to remove: {MyCube.DebugName} - [marked](cube:{MyCube.MarkedForClose}) - (grid:{MyCube.CubeGrid.MarkedForClose}) - (MyGrid:{Ai.MyGrid.MarkedForClose}) - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
                     GridAi gridAi;
                     if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
                     {
