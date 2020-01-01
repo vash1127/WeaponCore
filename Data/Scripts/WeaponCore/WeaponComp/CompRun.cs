@@ -1,11 +1,8 @@
 ﻿using System;
 using Sandbox.Definitions;
-using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
-using VRage.Game.Entity;
 using VRage.ModAPI;
-using VRage.Utils;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -69,7 +66,12 @@ namespace WeaponCore.Support
                         break;
                     case MyWeaponPlatform.PlatformState.Delay:
                         //Log.Line($"Platform RePreInit in 120");
-                        Ai?.Session?.FutureEvents.Schedule(RePreInit, null, 120);
+                        if (Ai == null)
+                        {
+                            Log.Line($"Ai null in PreInit");
+                            break;
+                        }
+                        Ai.Session.FutureEvents.Schedule(RePreInit, null, 120);
                         break;
                     case MyWeaponPlatform.PlatformState.Inited:
                         //Log.Line($"Platform Inited");
@@ -192,6 +194,7 @@ namespace WeaponCore.Support
                 gridAi = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
                 Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
             }
+            else Log.Line($"reinit didn't have cubegrid in GridTargetingAi...");
             Ai = gridAi;
             if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
             {
@@ -203,12 +206,23 @@ namespace WeaponCore.Support
 
                 MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
             }
+            else Log.Line("ReInitPlatform failed");
         }
 
         private void OnAddedToSceneTasks()
         {
             try
             {
+                if (MyCube.CubeGrid != Ai.MyGrid)
+                {
+                    Log.Line($"OnAddedToSceneTasks cubeGrid not Match AI Grid? {MyCube.CubeGrid.DebugName} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - CubeMarked:{MyCube.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} ");
+                    return;
+                }
+                if (Entity == null)
+                {
+                    Log.Line($"OnAddedToSceneTasks had a null Entity how? {MyCube.CubeGrid.DebugName} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - CubeMarked:{MyCube.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} ");
+                    return;
+                }
                 if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
                 {
                     Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap");

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using ParallelTasks;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -9,6 +10,7 @@ using WeaponCore.Support;
 using WeaponCore.Platform;
 using Sandbox.Definitions;
 using System.Collections.Generic;
+using VRage.Collections;
 using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Utils;
 
@@ -163,23 +165,24 @@ namespace WeaponCore
             Tick10 = Tick % 10 == 0;
             Tick20 = Tick % 20 == 0;
             Tick60 = Tick % 60 == 0;
+            Tick120 = Tick % 120 == 0;
             Tick180 = Tick % 180 == 0;
             Tick300 = Tick % 300 == 0;
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
             if (Tick60) ExplosionCounter = 0;
-            if (_count++ == 119)
+            if (Count++ == 119)
             {
-                _count = 0;
+                Count = 0;
                 UiBkOpacity = MyAPIGateway.Session.Config.UIBkOpacity;
                 UiOpacity = MyAPIGateway.Session.Config.UIOpacity;
             }
-            _lCount++;
-            if (_lCount == 129)
+            LCount++;
+            if (LCount == 129)
             {
-                _lCount = 0;
-                _eCount++;
-                if (_eCount == 10) _eCount = 0;
+                LCount = 0;
+                ECount++;
+                if (ECount == 10) ECount = 0;
             }
             if (!GameLoaded)
             {
@@ -230,11 +233,8 @@ namespace WeaponCore
             DsDebugDraw.DrawLine(w.MyCenterTestLine, Color.Blue, 0.05f);
             DsDebugDraw.DrawLine(w.MyAimTestLine, Color.Black, 0.07f);
             //DsDebugDraw.DrawSingleVec(w.MyPivotPos, 1f, Color.White);
-            if (w.TargetBox != null)
-            {
-                //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
-                DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
-            }
+            //DsDebugDraw.DrawBox(w.targetBox, Color.Plum);
+            DsDebugDraw.DrawLine(w.LimitLine.From, w.LimitLine.To, Color.Orange, 0.05f);
 
             if (w.Target.State == Target.Targets.Acquired)
                 DsDebugDraw.DrawLine(w.MyShootAlignmentLine, Color.Yellow, 0.05f);
@@ -295,6 +295,26 @@ namespace WeaponCore
             else Log.Line($"grid not removed and list not cleaned");
         }
 
+        private void DeferedUpBlockTypeCleanUp(bool force = false)
+        {
+            foreach (var clean in BlockTypeCleanUp)
+            {
+                if (force || Tick - clean.RequestTick > 120)
+                {
+                    foreach (var item in clean.Collection)
+                    {
+                        item.Value.ClearImmediate();
+                        ConcurrentListPool.Return(item.Value);
+                    }
+                    clean.Collection.Clear();
+                    BlockTypePool.Return(clean.Collection);
+
+                    DeferedTypeCleaning removed;
+                    BlockTypeCleanUp.TryDequeue(out removed);
+                }
+            }
+        }
+
         internal void PurgeAll()
         {
             FutureEvents.Purge((int)Tick);
@@ -341,6 +361,8 @@ namespace WeaponCore
             }
             _afterGlow.Clear();
             GlowPool.Clean();
+
+            DeferedUpBlockTypeCleanUp(true);
 
             foreach (var map in GridToFatMap.Keys)
                 DeferedFatMapRemoval(map);

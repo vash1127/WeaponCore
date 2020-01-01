@@ -134,6 +134,7 @@ namespace WeaponCore
         {
             //Log.Line($"[UpdateGrids] DirtTmp:{DirtyGridsTmp.Count} - Dirt:{DirtyGrids.Count}");
             //DsUtil2.Start("UpdateGrids");
+            DeferedUpBlockTypeCleanUp();
 
             DirtyGridsTmp.Clear();
             DirtyGridsTmp.AddRange(DirtyGrids);
@@ -195,24 +196,14 @@ namespace WeaponCore
                     if (GridToBlockTypeMap.TryGetValue(grid, out oldTypeMap))
                     {
                         GridToBlockTypeMap[grid] = newTypeMap;
-                        foreach (var item in oldTypeMap)
-                        {
-                            item.Value.ClearImmediate();
-                            ConcurrentListPool.Return(item.Value);
-                        }
-                        BlockTypePool.Return(oldTypeMap);
+                        
+                        BlockTypeCleanUp.Enqueue(new DeferedTypeCleaning {Collection = oldTypeMap, RequestTick = Tick});
                     }
                     else GridToBlockTypeMap[grid] = newTypeMap;
                 }
                 else if (GridToBlockTypeMap.TryRemove(grid, out noFatTypeMap))
                 {
-                    foreach (var item in noFatTypeMap)
-                    {
-                        item.Value.ClearImmediate();
-                        ConcurrentListPool.Return(item.Value);
-                    }
-                    noFatTypeMap.Clear();
-                    BlockTypePool.Return(noFatTypeMap);
+                    BlockTypeCleanUp.Enqueue(new DeferedTypeCleaning { Collection = noFatTypeMap, RequestTick = Tick });
                 }
             }
             DirtyGridsTmp.Clear();

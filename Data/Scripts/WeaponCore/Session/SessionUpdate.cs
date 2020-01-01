@@ -351,7 +351,7 @@ namespace WeaponCore
                 var gridAi = w.Comp.Ai;
 
                 var sinceCheck = Tick - w.Target.CheckTick;
-                var checkTime = sinceCheck > 239 || sinceCheck > 60 && _count == w.LoadId || w.TrackProjectiles && gridAi.CheckProjectiles;
+                var checkTime = sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || w.TrackProjectiles && gridAi.CheckProjectiles;
                 if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired) 
                 {
                     var comp = w.Comp;

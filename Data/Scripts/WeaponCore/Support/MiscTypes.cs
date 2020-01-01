@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.Game.EntityComponents;
@@ -527,6 +528,12 @@ namespace WeaponCore.Support
         public Vector3I Center;
         public IMySlimBlock Slim;
         public Vector3I Position;
+    }
+
+    internal struct DeferedTypeCleaning
+    {
+        internal uint RequestTick;
+        internal ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> Collection;
     }
 
     public class FatMap
