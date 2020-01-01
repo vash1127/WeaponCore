@@ -55,6 +55,7 @@ namespace WeaponCore.Support
         internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>();
 
         internal readonly TargetCompare TargetCompare1 = new TargetCompare();
+        internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly Session Session;
         internal readonly MyCubeGrid MyGrid;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;

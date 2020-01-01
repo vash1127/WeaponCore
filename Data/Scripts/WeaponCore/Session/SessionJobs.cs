@@ -3,6 +3,7 @@ using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
+using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using WeaponCore.Support;
@@ -32,6 +33,9 @@ namespace WeaponCore
             for (int d = 0; d < DbsToUpdate.Count; d++)
             {
                 var db = DbsToUpdate[d];
+
+                db.TargetingInfo.Clean();
+
                 if (db.MyPlanetTmp != null)
                 {
                     var gridBox = db.MyGrid.PositionComp.WorldAABB;
@@ -73,6 +77,12 @@ namespace WeaponCore
 
                     db.SortedTargets.Add(targetInfo);
                     db.Targets[ent] = targetInfo;
+
+                    if (targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.OffenseRating > 0 && (targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Friends || targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.FactionShare))
+                    {
+                        db.TargetingInfo.TargetInRange = true;
+                        db.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
+                    }
                 }
                 db.NewEntities.Clear();
                 db.SortedTargets.Sort(db.TargetCompare1);

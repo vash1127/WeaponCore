@@ -10,6 +10,7 @@ namespace WeaponCore
     {
         private void RunAv()
         {
+            if (Tick1800) Log.Line($"AvShots:{AvShots.Count}");
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
@@ -47,7 +48,6 @@ namespace WeaponCore
                         av.Offsets.Clear();
                     }
                 }
-
                 var glowCnt = av.GlowSteps.Count;
                 if (av.Trail != TrailState.Off)
                 {
@@ -58,7 +58,11 @@ namespace WeaponCore
                         var glow = av.GlowSteps[j];
 
                         if (av.OnScreen != Screen.None)
-                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
+                        {
+                            var reduction = (glow.ShrinkAmount * glow.Step);
+                            var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
+                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
+                        }
                         if (++glow.Step >= steps)
                         {
                             remove = true;
@@ -70,7 +74,6 @@ namespace WeaponCore
                    
                     if (remove) av.GlowSteps.Dequeue();
                 }
-
 
                 if (av.PrimeEntity != null)
                 {

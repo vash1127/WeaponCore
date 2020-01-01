@@ -355,7 +355,8 @@ namespace WeaponCore
 
                 var sinceCheck = Tick - w.Target.CheckTick;
                 var reacquire = gridAi.TargetResetTick == Tick || w.TrackProjectiles && gridAi.CheckProjectiles;
-                if (sinceCheck > 239 || reacquire && w.Target.State == Targets.Acquired || sinceCheck > 60 && _count == w.LoadId) 
+                var checkTime = gridAi.TargetingInfo.TargetInRange && (sinceCheck > 239 || sinceCheck > 60 && _count == w.LoadId) && gridAi.TargetingInfo.ValidTargetExists(w);
+                if (checkTime || reacquire && w.Target.State == Targets.Acquired) 
                 {
                     var comp = w.Comp;
                     var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
