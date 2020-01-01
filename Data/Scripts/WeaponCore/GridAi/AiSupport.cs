@@ -573,7 +573,7 @@ namespace WeaponCore.Support
 
                 var weaponRangeSqr = comp.Set.Value.Range * comp.Set.Value.Range;
 
-                return ThreatRangeSqr <= weaponRangeSqr;
+                return ThreatRangeSqr <= weaponRangeSqr || ai.Focus.HasFocus;
             }
 
             internal void Clean()

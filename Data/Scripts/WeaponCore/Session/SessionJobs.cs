@@ -79,7 +79,7 @@ namespace WeaponCore
                     db.SortedTargets.Add(targetInfo);
                     db.Targets[ent] = targetInfo;
 
-                    if (targetInfo.DistSqr < db.MaxTargetingRangeSqr && targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.OffenseRating > 0 && (targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Friends || targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.FactionShare))
+                    if (targetInfo.Target == db.Focus.Target[0] || targetInfo.Target ==  db.Focus.Target[1] || targetInfo.DistSqr < db.MaxTargetingRangeSqr && targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.OffenseRating > 0 && (targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Friends || targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.FactionShare))
                     {
                         db.TargetingInfo.TargetInRange = true;
                         db.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
