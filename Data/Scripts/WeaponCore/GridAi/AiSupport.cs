@@ -573,7 +573,7 @@ namespace WeaponCore.Support
 
                 var weaponRangeSqr = comp.Set.Value.Range * comp.Set.Value.Range;
 
-                return ThreatRangeSqr <= weaponRangeSqr || w.TrackProjectiles && ai.Session.Tick - ai.LiveProjectileTick < 120;
+                return ThreatRangeSqr <= weaponRangeSqr;
             }
 
             internal void Clean()

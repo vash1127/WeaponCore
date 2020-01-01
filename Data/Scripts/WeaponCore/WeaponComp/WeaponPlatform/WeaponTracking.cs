@@ -186,7 +186,7 @@ namespace WeaponCore.Platform
                 targetPos = targetCenter;
 
             weapon.TargetPos = targetPos;
-           
+
             double rangeToTarget;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var targetDir = targetPos - weapon.MyPivotPos;

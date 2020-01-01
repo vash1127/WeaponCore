@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Threading;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -78,7 +79,7 @@ namespace WeaponCore
                     db.SortedTargets.Add(targetInfo);
                     db.Targets[ent] = targetInfo;
 
-                    if (targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.OffenseRating > 0 && (targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Friends || targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.FactionShare))
+                    if (targetInfo.DistSqr < db.MaxTargetingRangeSqr && targetInfo.DistSqr < db.TargetingInfo.ThreatRangeSqr && targetInfo.OffenseRating > 0 && (targetInfo.EntInfo.Relationship != MyRelationsBetweenPlayerAndBlock.Friends || targetInfo.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.FactionShare))
                     {
                         db.TargetingInfo.TargetInRange = true;
                         db.TargetingInfo.ThreatRangeSqr = targetInfo.DistSqr;
