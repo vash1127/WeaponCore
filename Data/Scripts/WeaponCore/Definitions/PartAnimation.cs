@@ -16,11 +16,12 @@ namespace WeaponCore.Support {
         internal readonly Matrix FinalPos;
         internal readonly Matrix HomePos;
         internal readonly AnimationType[] TypeSet;
+        internal readonly MyEntity MainEnt;
+        internal readonly Dictionary<EventTriggers, string> EventIdLookup = new Dictionary<EventTriggers, string>(); 
         internal readonly int[] CurrentEmissivePart;
         internal readonly int[][] MoveToSetIndexer;
         internal readonly int NumberOfMoves;
         internal readonly uint MotionDelay;
-        internal readonly MyEntity MainEnt;
         internal readonly bool DoesLoop;
         internal readonly bool DoesReverse;
         internal readonly bool TriggerOnce;
@@ -149,6 +150,13 @@ namespace WeaponCore.Support {
                 }
                 EmissiveParts = emissiveParts.ToArray();
                 Reset();
+
+                foreach (var evnt in Enum.GetNames(typeof(EventTriggers)))
+                {
+                    EventTriggers trigger;
+                    Enum.TryParse(evnt, out trigger);
+                    EventIdLookup.Add(trigger, evnt + SubpartId);
+                }
             }
 
         }

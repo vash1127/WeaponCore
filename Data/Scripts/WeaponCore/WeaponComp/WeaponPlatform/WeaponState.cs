@@ -64,8 +64,7 @@ namespace WeaponCore.Platform
 
                                             if (animation.Muzzle != "Any") _muzzlesFiring.Add(animation.Muzzle);
                                             PartAnimation animCheck;
-                                            if (AnimationLookup.TryGetValue(
-                                                EventTriggers.StopFiring + animation.SubpartId, out animCheck))
+                                            if (AnimationLookup.TryGetValue(animation.EventIdLookup[EventTriggers.StopFiring], out animCheck))
                                             {
                                                 if (animCheck.Running)
                                                     animCheck.Reverse = true;
@@ -119,7 +118,7 @@ namespace WeaponCore.Platform
                                         {
                                             if (animation.TriggerOnce && animation.Triggered) continue;
                                             PartAnimation animCheck;
-                                            if (AnimationLookup.TryGetValue(EventTriggers.Firing + animation.SubpartId,
+                                            if (AnimationLookup.TryGetValue(animation.EventIdLookup[EventTriggers.Firing],
                                                 out animCheck))
                                             {
                                                 if (animCheck.Running && animCheck.HasMovement)
@@ -213,7 +212,7 @@ namespace WeaponCore.Platform
 
                                             PartAnimation animCheck;
                                             if (AnimationLookup.TryGetValue(
-                                                EventTriggers.Tracking + animation.SubpartId, out animCheck))
+                                                animation.EventIdLookup[EventTriggers.Tracking], out animCheck))
                                             {
                                                 if (animCheck.Running)
                                                     animCheck.Reverse = true;
@@ -273,7 +272,7 @@ namespace WeaponCore.Platform
 
                                             PartAnimation animCheck;
                                             if (AnimationLookup.TryGetValue(
-                                                EventTriggers.StopTracking + animation.SubpartId, out animCheck))
+                                                animation.EventIdLookup[EventTriggers.StopTracking], out animCheck))
                                             {
                                                 if (animCheck.Running)
                                                     animCheck.Reverse = true;
@@ -360,7 +359,7 @@ namespace WeaponCore.Platform
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
                                         PartAnimation animCheck;
-                                        if (AnimationLookup.TryGetValue(EventTriggers.TurnOff + animation.SubpartId,
+                                        if (AnimationLookup.TryGetValue(animation.EventIdLookup[EventTriggers.TurnOff],
                                             out animCheck))
                                         {
                                             if (animCheck.Running)
@@ -404,7 +403,7 @@ namespace WeaponCore.Platform
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
                                         PartAnimation animCheck;
-                                        if (AnimationLookup.TryGetValue(EventTriggers.TurnOn + animation.SubpartId,
+                                        if (AnimationLookup.TryGetValue(animation.EventIdLookup[EventTriggers.TurnOn],
                                             out animCheck))
                                         {
                                             if (animCheck.Running)
