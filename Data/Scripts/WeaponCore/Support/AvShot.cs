@@ -248,15 +248,14 @@ namespace WeaponCore.Support
         internal void RunGlow()
         {
             var glowCount = GlowSteps.Count;
-            if (glowCount < System.Values.Graphics.Line.Trail.DecayTime)
+            if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
             {
                 var glow = Ai.Session.GlowPool.Get();
-                glow.VelStep = -Direction * StepSize;
-                glow.TailPos = TracerStart + glow.VelStep;
+                glow.VelStep = Direction * StepSize;
+                glow.TailPos = TracerStart + -glow.VelStep;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
             }
-            /*
             float scale = 1;
             
             var distanceFromPointSqr = Vector3D.DistanceSquared(Ai.Session.CameraPos, ClosestPointOnLine);
@@ -269,46 +268,27 @@ namespace WeaponCore.Support
             else if (distanceFromPointSqr > 125 * 125) scale = 1.2f;
             else if (distanceFromPointSqr > 75 * 75) scale = 1.1f;
             var sliderScale = ((float)LineScaler * scale);
-            */
-            Log.Line($"{glowCount}");
             for (int i = glowCount - 1; i >= 0; i--)
             {
                 var glow = GlowSteps[i];
-                if (i == 0) glow.Color = VRageMath.Color.White;
-                else if (i == 1) glow.Color = VRageMath.Color.White;
-                else if (i == 2) glow.Color = VRageMath.Color.White;
-                if (i == 0 && glowCount > 1) glow.Parent = GlowSteps[1];
+                /*
+                if (i == 0 && i < glowCount - 3 && i % 2 == 0) glow.Color = VRageMath.Color.HotPink;
+                else if (i < glowCount - 3 && i % 2 == 0) glow.Color = VRageMath.Color.Orange;
+                else if (i < glowCount - 3 && i % 2 == 1) glow.Color = VRageMath.Color.Blue;
+                else if (i == glowCount - 3) glow.Color = VRageMath.Color.Red;
+                else if (i == glowCount - 2) glow.Color = VRageMath.Color.Purple;
+                else if (i == glowCount - 1) glow.Color = VRageMath.Color.Green;
+                else glow.Color = VRageMath.Color.DarkRed;
+                */
+                if (i != 0) glow.Parent = GlowSteps[i - 1];
+
                 var steps = System.Values.Graphics.Line.Trail.DecayTime;
-                var fullSize = 0.25f;
+                var fullSize = System.Values.Graphics.Line.Tracer.Width;
                 var shrinkAmount = fullSize / steps;
-                glow.Line = new LineD(glow.TailPos, glow.Parent?.TailPos ?? TracerStart);
+                glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos) : new LineD(glow.TailPos - glow.VelStep, glow.TailPos);
 
                 var reduction = (shrinkAmount * glow.Step);
-                //glow.Thickness = (fullSize - reduction) * sliderScale;
-                glow.Thickness = (fullSize - reduction);
-
-                /*
-                if (glow.Parent == null)
-                {
-                    DsDebugDraw.DrawSingleVec(glow.TracerStart, 0.125f, VRageMath.Color.Orange);
-                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
-                }
-                else if (i == 0)
-                {
-                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Orange);
-                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Purple);
-                }
-                else if (i == 1)
-                {
-                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
-                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
-                }
-                else if (i == 2)
-                {
-                    DsDebugDraw.DrawSingleVec(glow.Parent.TailPos, 0.125f, VRageMath.Color.Red);
-                    DsDebugDraw.DrawSingleVec(glow.TailPos, 0.125f, VRageMath.Color.Green);
-                }
-                */
+               glow.Thickness = (fullSize - reduction) * sliderScale;
             }
         }
         internal void RunBeam()
@@ -467,7 +447,6 @@ namespace WeaponCore.Support
         internal AfterGlow Parent;
         internal Vector3D TailPos;
         internal Vector3D VelStep;
-        internal Vector4 Color;
         internal LineD Line;
         internal int Step;
         internal float Thickness;
@@ -476,6 +455,7 @@ namespace WeaponCore.Support
         {
             Parent = null;
             TailPos = Vector3D.Zero;
+            VelStep = Vector3D.Zero;
             Step =  0;
             Thickness = 0;
         }

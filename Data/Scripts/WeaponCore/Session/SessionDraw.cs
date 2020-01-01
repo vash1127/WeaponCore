@@ -10,10 +10,6 @@ namespace WeaponCore
     {
         private void RunAv()
         {
-            //if (Tick180) Log.Line($"ShotCnt:{AvShots.Count}");
-            //var watch = (Tick % 300 == 0 || Tick % 301 == 0 || Tick % 302 == 0 || Tick % 303 == 0 || Tick % 304 == 0 || Tick % 305 == 0 || Tick % 306 == 0 || Tick % 307 == 0 || Tick % 308 == 0 || Tick % 309 == 0);
-            var watch = (Tick % 300 == 0 || Tick % 301 == 0 || Tick % 302 == 0 || Tick % 303 == 0 || Tick % 304 == 0);
-            if (Tick % 300 == 0) Log.Line($"[Start watch]");
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
@@ -56,22 +52,23 @@ namespace WeaponCore
                 if (av.Trail != TrailState.Off)
                 {
                     var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
-                    for (int j = 0; j < glowCnt; j++)
+                    var remove = false;
+                    for (int j = glowCnt - 1; j >= 0; j--)
                     {
                         var glow = av.GlowSteps[j];
 
                         if (av.OnScreen != Screen.None)
-                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, glow.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
+                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, glow.Thickness);
                         if (++glow.Step >= steps)
                         {
+                            remove = true;
                             glowCnt--;
-                            if (watch) Log.Line($"[removing] step:{glow.Step}({steps}) - remaining:{glowCnt} - index:{j}");
-                            av.GlowSteps.Dequeue();
                             glow.Clean();
                             GlowPool.Return(glow);
                         }
-                        else if (watch) Log.Line($"[continue] step:{glow.Step}({steps}) - remaining:{glowCnt} - index:{j}");
                     }
+                   
+                    if (remove) av.GlowSteps.Dequeue();
                 }
 
 
