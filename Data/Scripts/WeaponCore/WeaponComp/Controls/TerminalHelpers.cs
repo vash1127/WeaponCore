@@ -201,8 +201,24 @@ namespace WeaponCore.Control
                         Session.ComputeStorage(w);
                 }
 
-                w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
-                w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
+
+                Log.Line($"w.AnimationDelayTick: {w.AnimationDelayTick} Tick: {comp.Ai.Session.Tick}");
+                if (w.AnimationDelayTick < comp.Ai.Session.Tick || w.LastEvent == Weapon.EventTriggers.TurnOn || w.LastEvent == Weapon.EventTriggers.TurnOff)
+                {
+                    w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
+                    w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
+                }
+                else
+                {
+                    comp.Ai.Session.FutureEvents.Schedule((object o) => 
+                        {
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
+                        }, 
+                        null, 
+                        w.AnimationDelayTick - comp.Ai.Session.Tick
+                    );
+                }
 
                 comp.Set.Value.Weapons[w.WeaponId].Enable = On;
             }

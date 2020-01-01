@@ -78,6 +78,8 @@ namespace WeaponCore.Platform
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
         internal readonly bool TrackProjectiles;
 
+        internal Targets TargetState = Targets.Expired;
+        internal EventTriggers LastEvent;
         internal float RequiredPower;
         internal float UseablePower;
         internal float OldUseablePower;
@@ -127,7 +129,6 @@ namespace WeaponCore.Platform
         internal bool AvCapable;
         internal bool DelayCeaseFire;
         internal bool Scheduled;
-        internal Targets TargetState = Targets.Expired;
         internal bool Reloading;
         internal bool OutOfAmmo;
         internal bool ReturnHome;

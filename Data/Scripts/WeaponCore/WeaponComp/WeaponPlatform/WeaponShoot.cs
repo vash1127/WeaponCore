@@ -81,12 +81,11 @@ namespace WeaponCore.Platform
                     StartRotateSound();
             }
 
-            if (!IsShooting) StartShooting();
-            state.ShotsFired++;
+            if (!IsShooting) StartShooting();            
 
             if (System.BurstMode)
             {
-                if (state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+                if (state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst && Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0)
                 {                  
                     _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
@@ -99,6 +98,7 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
                 }
             }
+            state.ShotsFired++;
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {

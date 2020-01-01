@@ -101,7 +101,7 @@ namespace WeaponCore
 
         private readonly List<AfterGlow> _afterGlow = new List<AfterGlow>(100);
         private readonly List<AfterGlow> _glowRemove = new List<AfterGlow>(100);
-        private readonly List<MyTuple<MyInventory, int>> _inventoriesToPull = new List<MyTuple<MyInventory, int>>();
+        //private readonly MyConcurrentList<MyTuple<MyInventory, int>> _inventoriesToPull = new MyConcurrentList<MyTuple<MyInventory, int>>();
         private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
         private readonly List<Vector3D> _offsetList = new List<Vector3D>(10);
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1000);

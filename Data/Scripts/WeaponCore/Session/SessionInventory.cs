@@ -1,4 +1,5 @@
 ﻿using Sandbox.Game;
+using System.Collections.Generic;
 using VRage;
 using VRage.Game.ModAPI;
 using WeaponCore.Platform;
@@ -48,37 +49,37 @@ namespace WeaponCore
 
                 var magsAdded = 0;
 
-                var currentInventory = weapon.Comp.Ai.AmmoInventories[def].GetEnumerator();
-                while (magsNeeded > 0 && currentInventory.MoveNext())
+                lock (weapon.Comp.Ai.AmmoInventories[def])
                 {
-                    var magsAvailable = (int)currentInventory.Current.Value;
-                    var inventory = currentInventory.Current.Key;
-
-                    if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
+                    List<MyTuple<MyInventory, int>> inventories = new List<MyTuple<MyInventory, int>>();
+                    foreach(var currentInventory in weapon.Comp.Ai.AmmoInventories[def])
                     {
-                        if (magsAvailable > magsNeeded)
+                        var magsAvailable = (int)currentInventory.Value;
+                        var inventory = currentInventory.Key;
+
+                        if (((IMyInventory)inventory).CanTransferItemTo(weaponInventory, def))
                         {
-                            _inventoriesToPull.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsNeeded });
-                            magsNeeded = 0;
-                            magsAdded += magsNeeded;
-                        }
-                        else
-                        {
-                            _inventoriesToPull.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsAvailable });
-                            magsNeeded -= magsAvailable;
-                            magsAdded += magsAvailable;
+                            if (magsAvailable >= magsNeeded)
+                            {
+                                inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsNeeded });
+                                magsNeeded = 0;
+                                magsAdded += magsNeeded;
+                            }
+                            else
+                            {
+                                inventories.Add(new MyTuple<MyInventory, int> { Item1 = inventory, Item2 = magsAvailable });
+                                magsNeeded -= magsAvailable;
+                                magsAdded += magsAvailable;
+                            }
                         }
                     }
-                }
-                currentInventory.Dispose();
+                    weapon.CurrentAmmoVolume += magsAdded * itemVolume;
 
-                weapon.CurrentAmmoVolume += magsAdded * itemVolume;
+                    if (inventories.Count > 0)
+                        AmmoToPullQueue.Enqueue(new MyTuple<Weapon, MyTuple<MyInventory, int>[]> { Item1 = weapon, Item2 = inventories.ToArray() });
 
-                if (_inventoriesToPull.Count > 0)
-                    AmmoToPullQueue.Enqueue(new MyTuple<Weapon, MyTuple<MyInventory, int>[]> {Item1 = weapon, Item2 = _inventoriesToPull.ToArray() });
-
-                _inventoriesToPull.Clear();
-                weapon.Comp.Ai.Session.AmmoPulls++;
+                    weapon.Comp.Ai.Session.AmmoPulls++;
+                }                
             }
         }
 
