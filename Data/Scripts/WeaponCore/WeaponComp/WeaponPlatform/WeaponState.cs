@@ -347,7 +347,7 @@ namespace WeaponCore.Platform
                     case EventTriggers.TurnOn:
                         //Threaded event
 
-                        if (active && Comp.State.Value.Online && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                        if (AnimationsSet.ContainsKey(EventTriggers.TurnOn) && active && Comp.State.Value.Online && LastEvent == EventTriggers.TurnOff)
                         {
                             LastEvent = EventTriggers.TurnOn;
                             for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
