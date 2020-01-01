@@ -30,6 +30,13 @@ namespace WeaponCore.Platform
 
         internal PlatformState PreInit(WeaponComponent comp)
         {
+            if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
+            {
+                State = PlatformState.Valid;
+                Log.Line("closed, init platform invalid");
+
+                return State;
+            }
             var structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
 
             var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];

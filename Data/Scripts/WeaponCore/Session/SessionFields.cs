@@ -34,6 +34,7 @@ namespace WeaponCore
         internal volatile bool SorterControls;
         internal volatile bool DbCallBackComplete = true;
         internal volatile bool Pause;
+        internal volatile uint TypeCleanTick;
 
 
         internal readonly MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>();
@@ -58,6 +59,7 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>> AmmoToPullQueue = new ConcurrentQueue<MyTuple<Weapon, MyTuple<MyInventory, int>[]>>();
         internal readonly ConcurrentQueue<MyCubeGrid> NewGrids = new ConcurrentQueue<MyCubeGrid>();
         internal readonly ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
+        internal ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
 
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
@@ -162,6 +164,9 @@ namespace WeaponCore
         internal int TargetResets;
         internal int AmmoMoveTriggered;
         internal int AmmoPulls;
+        internal int Count = -1;
+        internal int LCount;
+        internal int ECount;
 
         internal bool ExplosionReady
         {
@@ -203,6 +208,7 @@ namespace WeaponCore
         internal bool Tick10;
         internal bool Tick20;
         internal bool Tick60;
+        internal bool Tick120;
         internal bool Tick180;
         internal bool Tick300;
         internal bool Tick600;
@@ -224,9 +230,7 @@ namespace WeaponCore
         }
 
 
-        private int _count = -1;
-        private int _lCount;
-        private int _eCount;
+
         private int _loadCounter = 1;
         private uint _lastDrawTick;
         private bool _paused;
