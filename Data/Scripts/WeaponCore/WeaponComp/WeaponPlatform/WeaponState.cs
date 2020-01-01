@@ -54,7 +54,7 @@ namespace WeaponCore.Platform
                                 for (int i = 0; i < AnimationsSet[EventTriggers.Firing].Length; i++)
                                 {
                                     var animation = AnimationsSet[EventTriggers.Firing][i];
-                                    if (active && animation.Looping != true && !pause)
+                                    if (active && !animation.Looping && !pause)
                                     {
                                         if (!animation.Running &&
                                             (animation.Muzzle == "Any" ||
@@ -83,7 +83,7 @@ namespace WeaponCore.Platform
                                                 animation.Triggered = true;
                                             }
 
-                                            if (animation.DoesLoop && !animation.TriggerOnce)
+                                            if (animation.DoesLoop)
                                                 animation.Looping = true;
                                         }
                                     }
@@ -111,7 +111,7 @@ namespace WeaponCore.Platform
                                 for (int i = 0; i < AnimationsSet[EventTriggers.StopFiring].Length; i++)
                                 {
                                     var animation = AnimationsSet[EventTriggers.StopFiring][i];
-                                    if (active && animation.Looping != true && !pause)
+                                    if (active && !animation.Looping && !pause)
                                     {
                                         if (!animation.Running &&
                                             (animation.Muzzle == "Any" || _muzzlesFiring.Contains(animation.Muzzle)))
@@ -324,7 +324,7 @@ namespace WeaponCore.Platform
                                 for (int i = 0; i < AnimationsSet[EventTriggers.Overheated].Length; i++)
                                 {
                                     var animation = AnimationsSet[EventTriggers.Overheated][i];
-                                    if (active && !animation.Running && animation.Looping != true)
+                                    if (active && !animation.Running && !animation.Looping)
                                     {
                                         if (animation.TriggerOnce && animation.Triggered) continue;
 
@@ -347,7 +347,7 @@ namespace WeaponCore.Platform
                     case EventTriggers.TurnOn:
                         //Threaded event
 
-                        if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
+                        if (active && Comp.State.Value.Online && AnimationsSet.ContainsKey(EventTriggers.TurnOn))
                         {
                             LastEvent = EventTriggers.TurnOn;
                             for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
@@ -391,7 +391,7 @@ namespace WeaponCore.Platform
 
                         case EventTriggers.TurnOff:
                             //Threaded event
-                            if (active && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
+                            if (active && !Comp.State.Value.Online && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
                             {
                                 LastEvent = EventTriggers.TurnOff;
                                 for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)

@@ -190,6 +190,10 @@ namespace WeaponCore.Control
                         w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
                     }
                     comp.CurrentCharge += w.CurrentCharge;
+
+                    uint delay;
+                    if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOff, out delay))
+                        w.AnimationDelayTick = w.ShootDelayTick = comp.Ai.Session.Tick + delay;
                 }
                 else
                 {
@@ -201,8 +205,7 @@ namespace WeaponCore.Control
                         Session.ComputeStorage(w);
                 }
 
-
-                Log.Line($"w.AnimationDelayTick: {w.AnimationDelayTick} Tick: {comp.Ai.Session.Tick}");
+                
                 if (w.AnimationDelayTick < comp.Ai.Session.Tick || w.LastEvent == Weapon.EventTriggers.TurnOn || w.LastEvent == Weapon.EventTriggers.TurnOff)
                 {
                     w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
