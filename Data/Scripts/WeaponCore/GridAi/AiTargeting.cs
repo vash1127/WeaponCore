@@ -135,7 +135,7 @@ namespace WeaponCore.Support
             ai.Session.TargetRequests++;
             var physics = ai.Session.Physics;
             var weaponPos = w.MyPivotPos;
-            var weaponRangeSqr = comp.Set.Value.Range * comp.Set.Value.Range;
+            var weaponRange = comp.Set.Value.Range;
             var target = w.NewTarget;
             var s = w.System;
             var accelPrediction = (int) s.Values.HardPoint.AimLeadingPrediction > 1;
@@ -179,12 +179,11 @@ namespace WeaponCore.Support
                         else info = ai.SortedTargets[deck[x - offset]];
                     }
                     if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
-                    var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
 
-                    if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
+                    if (info.TargetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
 
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
-                    if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > weaponRangeSqr) continue;
+                    if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > ((weaponRange + info.TargetRadius) * (weaponRange + info.TargetRadius))) continue;
                     w.Comp.Ai.Session.TargetChecks++;
 
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;

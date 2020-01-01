@@ -556,11 +556,6 @@ namespace WeaponCore.Support
         internal int ActiveId;
         internal bool HasFocus;
 
-        internal int FocusSlots()
-        {
-            return Target.Length;
-        }
-
         internal void AddFocus(MyEntity target, GridAi ai)
         {
             Target[ActiveId] = target;

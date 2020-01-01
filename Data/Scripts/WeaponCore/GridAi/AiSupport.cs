@@ -230,129 +230,6 @@ namespace WeaponCore.Support
             return false;
         }
 
-        internal struct DetectInfo
-        {
-            internal readonly MyEntity Parent;
-            internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal readonly int PartCount;
-            internal readonly int FatCount;
-            internal readonly bool Armed;
-            internal readonly bool IsGrid;
-            internal readonly bool LargeGrid;
-
-            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount)
-            {
-                Parent = parent;
-                EntInfo = entInfo;
-                PartCount = partCount;
-                FatCount = fatCount;
-                var armed = false;
-                var isGrid = false;
-                var largeGrid = false;
-                var grid = parent as MyCubeGrid;
-                if (grid != null)
-                {
-                    isGrid = true;
-                    largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
-                    ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
-                    if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
-                    {
-                        ConcurrentCachingList<MyCubeBlock> weaponBlocks;
-                        if (blockTypeMap.TryGetValue(BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
-                            armed = true;
-                    }
-                }
-                else if (parent is MyMeteor || parent is IMyCharacter) armed = true;
-
-                Armed = armed;
-                IsGrid = isGrid;
-                LargeGrid = largeGrid;
-            }
-        }
-
-        internal class TargetCompare : IComparer<TargetInfo>
-        {
-            public int Compare(TargetInfo x, TargetInfo y)
-            {
-                var xCollision = x.Approaching && x.CollisionDistSqr < 90000 && x.VelLenSqr > 100;
-                var yCollision = y.Approaching && y.CollisionDistSqr < 90000 && y.VelLenSqr > 100;
-                var collisionRisk = xCollision.CompareTo(yCollision);
-                if (collisionRisk != 0) return collisionRisk;
-
-                var xIsImminentThreat = x.Approaching && x.DistSqr < 640000 && x.OffenseRating > 0;
-                var yIsImminentThreat = y.Approaching && y.DistSqr < 640000 && y.OffenseRating > 0;
-                var imminentThreat = -xIsImminentThreat.CompareTo(yIsImminentThreat);
-                if (imminentThreat != 0) return imminentThreat;
-
-                var compareOffense = x.OffenseRating.CompareTo(y.OffenseRating);
-                return -compareOffense;
-            }
-        }
-
-        internal class WeaponCount
-        {
-            internal int Current;
-            internal int Max;
-        }
-
-        internal class TargetInfo
-        {
-            internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
-            internal Vector3D TargetDir;
-            internal Vector3D TargetPos;
-            internal Vector3 Velocity;
-            internal double DistSqr;
-            internal double CollisionDistSqr;
-            internal float VelLenSqr;
-            internal bool IsGrid;
-            internal bool LargeGrid;
-            internal bool Approaching;
-            internal int PartCount;
-            internal int FatCount;
-            internal float OffenseRating;
-            internal MyEntity Target;
-            internal MyCubeGrid MyGrid;
-            internal GridAi MyAi;
-            internal GridAi TargetAi;
-
-            internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
-            {
-                EntInfo = detectInfo.EntInfo;
-                Target = detectInfo.Parent;
-                PartCount = detectInfo.PartCount;
-                FatCount = detectInfo.FatCount;
-                IsGrid = detectInfo.IsGrid;
-                LargeGrid = detectInfo.LargeGrid;
-                MyGrid = myGrid;
-                MyAi = myAi;
-                TargetAi = targetAi;
-                Velocity = Target.Physics.LinearVelocity;
-                VelLenSqr = Velocity.LengthSquared();
-                TargetPos = Target.PositionComp.WorldAABB.Center;
-                if (!MyUtils.IsZero(Velocity, 1E-02F))
-                {
-                    TargetDir = Vector3D.Normalize(Velocity);
-                    var refDir = Vector3D.Normalize(myAi.GridCenter - TargetPos);
-                    Approaching = MathFuncs.IsDotProductWithinTolerance(ref TargetDir, ref refDir, myAi.Session.ApproachDegrees);
-                }
-                else
-                {
-                    TargetDir = Vector3D.Zero;
-                    Approaching = false;
-                }
-
-                if (targetAi != null)
-                {
-                    OffenseRating = targetAi.OptimalDps / myAi.OptimalDps;
-                }
-                else if (detectInfo.Armed) OffenseRating = 0.01f;
-                else OffenseRating = 0;
-                Vector3D.DistanceSquared(ref TargetPos, ref myAi.GridCenter, out DistSqr);
-                var adjustedDist = DistSqr - (MyAi.GridRadius * MyAi.GridRadius);
-                CollisionDistSqr = adjustedDist > 0 ? adjustedDist : 0;
-            }
-        }
-
         internal List<Projectile> GetProCache()
         {
             if (LiveProjectileTick > _pCacheTick)
@@ -682,6 +559,157 @@ namespace WeaponCore.Support
                 }
             }
         }
+
+        internal class AiTargetingInfo
+        {
+            internal bool TargetInRange;
+            internal double ThreatRangeSqr;
+
+            internal bool ValidTargetExists(Weapon w)
+            {
+                var comp = w.Comp;
+                var ai = comp.Ai;
+
+
+                var weaponRangeSqr = comp.Set.Value.Range * comp.Set.Value.Range;
+
+                return ThreatRangeSqr <= weaponRangeSqr || ai.Focus.HasFocus;
+            }
+
+            internal void Clean()
+            {
+                ThreatRangeSqr = double.MaxValue;
+                TargetInRange = false;
+            }
+        }
+
+        internal struct DetectInfo
+        {
+            internal readonly MyEntity Parent;
+            internal readonly Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
+            internal readonly int PartCount;
+            internal readonly int FatCount;
+            internal readonly bool Armed;
+            internal readonly bool IsGrid;
+            internal readonly bool LargeGrid;
+
+            public DetectInfo(Session session, MyEntity parent, Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo, int partCount, int fatCount)
+            {
+                Parent = parent;
+                EntInfo = entInfo;
+                PartCount = partCount;
+                FatCount = fatCount;
+                var armed = false;
+                var isGrid = false;
+                var largeGrid = false;
+                var grid = parent as MyCubeGrid;
+                if (grid != null)
+                {
+                    isGrid = true;
+                    largeGrid = grid.GridSizeEnum == MyCubeSize.Large;
+                    ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
+                    if (session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)Parent, out blockTypeMap))
+                    {
+                        ConcurrentCachingList<MyCubeBlock> weaponBlocks;
+                        if (blockTypeMap.TryGetValue(BlockTypes.Offense, out weaponBlocks) && weaponBlocks.Count > 0)
+                            armed = true;
+                    }
+                }
+                else if (parent is MyMeteor || parent is IMyCharacter) armed = true;
+
+                Armed = armed;
+                IsGrid = isGrid;
+                LargeGrid = largeGrid;
+            }
+        }
+
+        internal class TargetCompare : IComparer<TargetInfo>
+        {
+            public int Compare(TargetInfo x, TargetInfo y)
+            {
+                var xCollision = x.Approaching && x.DistSqr < 90000 && x.VelLenSqr > 100;
+                var yCollision = y.Approaching && y.DistSqr < 90000 && y.VelLenSqr > 100;
+                var collisionRisk = xCollision.CompareTo(yCollision);
+                if (collisionRisk != 0) return collisionRisk;
+
+                var xIsImminentThreat = x.Approaching && x.DistSqr < 640000 && x.OffenseRating > 0;
+                var yIsImminentThreat = y.Approaching && y.DistSqr < 640000 && y.OffenseRating > 0;
+                var imminentThreat = -xIsImminentThreat.CompareTo(yIsImminentThreat);
+                if (imminentThreat != 0) return imminentThreat;
+
+                var compareOffense = x.OffenseRating.CompareTo(y.OffenseRating);
+                return -compareOffense;
+            }
+        }
+
+        internal class WeaponCount
+        {
+            internal int Current;
+            internal int Max;
+        }
+
+        internal class TargetInfo
+        {
+            internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;
+            internal Vector3D TargetDir;
+            internal Vector3D TargetPos;
+            internal Vector3 Velocity;
+            internal double DistSqr;
+            internal float VelLenSqr;
+            internal double TargetRadius;
+            internal bool IsGrid;
+            internal bool LargeGrid;
+            internal bool Approaching;
+            internal int PartCount;
+            internal int FatCount;
+            internal float OffenseRating;
+            internal MyEntity Target;
+            internal MyCubeGrid MyGrid;
+            internal GridAi MyAi;
+            internal GridAi TargetAi;
+
+            internal void Init(ref DetectInfo detectInfo, MyCubeGrid myGrid, GridAi myAi, GridAi targetAi)
+            {
+                EntInfo = detectInfo.EntInfo;
+                Target = detectInfo.Parent;
+                PartCount = detectInfo.PartCount;
+                FatCount = detectInfo.FatCount;
+                IsGrid = detectInfo.IsGrid;
+                LargeGrid = detectInfo.LargeGrid;
+                MyGrid = myGrid;
+                MyAi = myAi;
+                TargetAi = targetAi;
+                Velocity = Target.Physics.LinearVelocity;
+                VelLenSqr = Velocity.LengthSquared();
+                var targetSphere = Target.PositionComp.WorldVolume;
+                TargetPos = targetSphere.Center;
+                TargetRadius = targetSphere.Radius;
+                if (!MyUtils.IsZero(Velocity, 1E-02F))
+                {
+                    TargetDir = Vector3D.Normalize(Velocity);
+                    var refDir = Vector3D.Normalize(myAi.GridCenter - TargetPos);
+                    Approaching = MathFuncs.IsDotProductWithinTolerance(ref TargetDir, ref refDir, myAi.Session.ApproachDegrees);
+                }
+                else
+                {
+                    TargetDir = Vector3D.Zero;
+                    Approaching = false;
+                }
+
+                if (targetAi != null)
+                {
+                    OffenseRating = targetAi.OptimalDps / myAi.OptimalDps;
+                }
+                else if (detectInfo.Armed) OffenseRating = 0.01f;
+                else OffenseRating = 0;
+
+                var targetDist = Vector3D.Distance(myAi.GridCenter, TargetPos) - TargetRadius;
+                targetDist -= myAi.GridRadius;
+                if (targetDist < 0) targetDist = 0;
+                DistSqr = targetDist * targetDist;
+            }
+        }
+
         #endregion
     }
 }

@@ -79,9 +79,11 @@ namespace WeaponCore.Support
                     if (myCubeBlock.TryGetInventory(out inventory))
                     {
                         inventory.InventoryContentChanged -= CheckAmmoInventory;
-                        foreach (var ammoInvetory in AmmoInventories) {
+                        foreach (var ammoInvetory in AmmoInventories)
+                        {
+                            MyFixedPoint pointRemoved;
                             if (ammoInvetory.Value.ContainsKey(inventory))
-                                ammoInvetory.Value.Remove(inventory);
+                                ammoInvetory.Value.TryRemove(inventory, out pointRemoved);
                         }
                     }
                 }
@@ -114,8 +116,11 @@ namespace WeaponCore.Support
                         else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
                             AmmoInventories[magId][myInventory] += amount;
 
-                        else if (hasIntentory)
-                            AmmoInventories[magId].Remove(myInventory);
+                    else if (hasIntentory)
+                    {
+                        MyFixedPoint pointRemoved;
+                        AmmoInventories[magId].TryRemove(myInventory, out pointRemoved);
+                    }
 
                         CheckReload = true;
                         NewAmmoType = magId;

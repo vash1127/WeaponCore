@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Game;
@@ -624,7 +625,7 @@ namespace WeaponCore.Support
 
                 weaponDef.HardPoint.DeviateShotAngle = MathHelper.ToRadians(weaponDef.HardPoint.DeviateShotAngle);
 
-                Session.AmmoInventoriesMaster[ammoDefId] = new Dictionary<MyInventory, MyFixedPoint>();
+                Session.AmmoInventoriesMaster[ammoDefId] = new ConcurrentDictionary<MyInventory, MyFixedPoint>();
 
                 var weaponId = (tDef.Key + myElevationNameHash + myMuzzleNameHash + myAzimuthNameHash).GetHashCode();
                 HashToId.Add(weaponId, mapIndex);

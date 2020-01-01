@@ -1,4 +1,5 @@
 ﻿using System;
+using Sandbox.Definitions;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
@@ -100,6 +101,7 @@ namespace WeaponCore.Support
 
                 //range slider fix
                 var maxTrajectory = 0d;
+                var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var weapon = Platform.Weapons[i];
@@ -110,7 +112,9 @@ namespace WeaponCore.Support
                     weapon.UpdateBarrelRotation();
 
                     //range slider fix
-                    if (weapon.System.MaxTrajectory > maxTrajectory)
+                    if (ob != null && ob.MaxRangeMeters > maxTrajectory)
+                        maxTrajectory = ob.MaxRangeMeters;
+                    else if (weapon.System.MaxTrajectory > maxTrajectory)
                         maxTrajectory = weapon.System.MaxTrajectory;
 
                     if (weapon.TrackProjectiles)
