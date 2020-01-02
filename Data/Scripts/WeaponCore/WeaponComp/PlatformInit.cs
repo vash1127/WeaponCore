@@ -33,7 +33,7 @@ namespace WeaponCore.Platform
 
             if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
             {
-                State = PlatformState.Valid;
+                State = PlatformState.Invalid;
                 Log.Line("closed, init platform invalid");
 
                 return State;
@@ -80,8 +80,9 @@ namespace WeaponCore.Platform
             } 
 
             Structure = structure;
+            Log.Line($"new parts, already exists:{Parts != null}");
+
             Parts = new RecursiveSubparts();
-            Log.Line($"new parts");
             var partCount = Structure.MuzzlePartNames.Length;
             Weapons = new Weapon[partCount];
             Parts.Entity = comp.Entity as MyEntity;

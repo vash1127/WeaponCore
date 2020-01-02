@@ -14,7 +14,6 @@ namespace WeaponCore.Support
     public partial class WeaponComponent
     {
         private int _count = -1;
-        private int _onAddedAttempts;
         private bool _allInited;
         private bool _isServer;
         private bool _isDedicated;
@@ -31,6 +30,8 @@ namespace WeaponCore.Support
 
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Ai.Session.LastTerminalId == MyCube.EntityId;
+
+        internal int OnAddedAttempts;
 
         internal MatrixD CubeMatrix;
         internal uint LastRayCastTick;

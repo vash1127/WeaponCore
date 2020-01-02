@@ -34,6 +34,11 @@ namespace WeaponCore.Support
                                 return;
                             }
                         }
+                        if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
+                        {
+                            Log.Line($"OnAddedToContainer didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
+                            return;
+                        }
 
                         if (Platform.State == MyWeaponPlatform.PlatformState.Fresh)
                             PlatformInit(null);
@@ -66,6 +71,12 @@ namespace WeaponCore.Support
                             return;
                         }
                     }
+                    if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
+                    {
+                        Log.Line($"OnAddedToScene didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
+                        return;
+                    }
+
                     if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
                         //MyAPIGateway.Utilities.InvokeOnGameThread(ReInit);
                         Ai.Session.CompChanges.Enqueue(new CompChange {Ai = Ai, Comp = this, Change = CompChange.ChangeType.Reinit});
@@ -304,15 +315,6 @@ namespace WeaponCore.Support
                     Log.Line($"OnAddedToSceneTasks had a null Entity how? {MyCube.CubeGrid.DebugName} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - CubeMarked:{MyCube.MarkedForClose} - InitState:{Platform.State}");
                     return;
                 }
-                if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
-                {
-                    Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap");
-                    //MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
-                    if (++_onAddedAttempts > 300) return;
-                    Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.OnAddedToSceneTasks });
-
-                    return;
-                }
 
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                     Platform.ResetParts(this);
@@ -335,7 +337,7 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Ai?.Session == null} EntNull{Entity == null} MyCubeNull:{MyCube?.CubeGrid == null}"); }
         }
 
-        internal void OnRemovedToSceneTasks()
+        internal void OnRemovedFromSceneQueue()
         {
             RemoveComp();
             RegisterEvents(false);
@@ -347,7 +349,7 @@ namespace WeaponCore.Support
             {
                 base.OnRemovedFromScene();
                 //MyAPIGateway.Utilities.InvokeOnGameThread(OnRemovedToSceneTasks);
-                Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.OnRemovedToSceneTasks });
+                Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.OnRemovedFromSceneQueue });
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }

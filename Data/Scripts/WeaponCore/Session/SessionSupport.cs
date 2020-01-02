@@ -160,25 +160,32 @@ namespace WeaponCore
 
         private void ChangeComps()
         {
-            CompChange change;
-            while (CompChanges.TryDequeue(out change))
+            foreach (var change in CompChanges)
             {
+                if (!GridToFatMap.ContainsKey(change.Comp.MyCube.CubeGrid))
+                {
+                    Log.Line($"OnAddedToContainer didn't exist in GridToFatMap - Marked:{change.Comp.MyCube.CubeGrid.MarkedForClose} - Closed:{change.Comp.MyCube.CubeGrid.Closed} - InScene:{change.Comp.MyCube.CubeGrid.InScene} - Preview:{change.Comp.MyCube.CubeGrid.IsPreview} - Physics:{change.Comp.MyCube.CubeGrid.Physics != null}");
+                    if (++change.Comp.OnAddedAttempts > 300) continue;
+                }
+
+                CompChange removed;
                 switch (change.Change)
                 {
                     case CompChange.ChangeType.PlatformInit:
+                        CompChanges.TryDequeue(out removed);
                         change.Comp.PlatformInit(null);
                         break;
                     case CompChange.ChangeType.Init:
+                        CompChanges.TryDequeue(out removed);
                         change.Comp.Init();
                         break;
                     case CompChange.ChangeType.Reinit:
+                        CompChanges.TryDequeue(out removed);
                         change.Comp.ReInit();
                         break;
-                    case CompChange.ChangeType.OnAddedToSceneTasks:
-                        change.Comp.OnAddedToSceneTasks();
-                        break;
-                    case CompChange.ChangeType.OnRemovedToSceneTasks:
-                        change.Comp.OnRemovedToSceneTasks();
+                    case CompChange.ChangeType.OnRemovedFromSceneQueue:
+                        CompChanges.TryDequeue(out removed);
+                        change.Comp.OnRemovedFromSceneQueue();
                         break;
                 }
             }

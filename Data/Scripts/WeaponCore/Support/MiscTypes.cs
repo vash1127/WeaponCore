@@ -541,8 +541,7 @@ namespace WeaponCore.Support
             Reinit,
             Init,
             PlatformInit,
-            OnRemovedToSceneTasks,
-            OnAddedToSceneTasks,
+            OnRemovedFromSceneQueue,
         }
     }
 

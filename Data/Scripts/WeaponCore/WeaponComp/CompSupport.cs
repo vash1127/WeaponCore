@@ -129,15 +129,19 @@ namespace WeaponCore.Support
         internal void AddCompList()
         {
             GridAi gridAi;
-            if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && (gridAi != Ai || MyCube.MarkedForClose))
+            if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && gridAi != Ai)
             {
                 Log.Line($"AddCompList grid mismatch");
-                RemoveCompList();
-                return;
             }
             if (Ai.WeaponsIdx.ContainsKey(this))
             {
-                Log.Line($"add failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid} - hasGridAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
+                Log.Line($"add failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - Marked:{MyCube.MarkedForClose} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid} - hasGridAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
+
+                GridAi gridAiTmp;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAiTmp))
+                {
+                    Log.Line($"gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(MyCube)}");
+                }
                 return;
             }
             Ai.WeaponsIdx.Add(this, Ai.Weapons.Count);
@@ -146,10 +150,21 @@ namespace WeaponCore.Support
 
         internal void RemoveCompList()
         {
+            GridAi gridAi;
+            if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && gridAi != Ai)
+            {
+                Log.Line($"RemoveCompList grid mismatch");
+            }
+
             int idx;
             if (!Ai.WeaponsIdx.TryGetValue(this, out idx))
             {
-                Log.Line($"remove failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid}  - hasGridAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
+                Log.Line($"remove failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - Marked:{MyCube.MarkedForClose} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid}  - hasGridAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
+                GridAi gridAiTmp;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAiTmp))
+                {
+                    Log.Line($"gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(MyCube)}");
+                }
                 return;
             }
 
