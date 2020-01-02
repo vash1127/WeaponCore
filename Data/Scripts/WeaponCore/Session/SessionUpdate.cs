@@ -385,7 +385,8 @@ namespace WeaponCore
                 //TODO add logic for power priority
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
 
-                    if (w.ChargeDelayTicks == 0) {
+                    if (w.ChargeDelayTicks == 0)
+                    {
                         //Log.Line($"Adapting Current Requested: {w.Comp.Ai.RequestedWeaponsDraw}");
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         w.OldUseablePower = w.UseablePower;

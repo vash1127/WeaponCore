@@ -106,12 +106,15 @@ namespace WeaponCore.Support
                 var magId = ammoMag.GetObjectId();
                 if (AmmoInventories.ContainsKey(magId))
                 {
-                    var hasIntentory = AmmoInventories[magId].ContainsKey(myInventory);
-                    if (!hasIntentory && amount > 0)
-                        AmmoInventories[magId][myInventory] = amount;
+                    lock (AmmoInventories[magId])
+                    {
+                        var hasIntentory = AmmoInventories[magId].ContainsKey(myInventory);
 
-                    else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
-                        AmmoInventories[magId][myInventory] += amount;
+                        if (!hasIntentory && amount > 0)
+                            AmmoInventories[magId][myInventory] = amount;
+
+                        else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
+                            AmmoInventories[magId][myInventory] += amount;
 
                     else if (hasIntentory)
                     {
@@ -119,8 +122,9 @@ namespace WeaponCore.Support
                         AmmoInventories[magId].TryRemove(myInventory, out pointRemoved);
                     }
 
-                    CheckReload = true;
-                    NewAmmoType = magId;
+                        CheckReload = true;
+                        NewAmmoType = magId;
+                    }
                 }
             }
             Session.AmmoMoveTriggered++;
