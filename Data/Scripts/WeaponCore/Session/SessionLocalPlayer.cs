@@ -104,7 +104,7 @@ namespace WeaponCore
                     if (MyCubeBuilder.Static.CurrentBlockDefinition != null)
                     {
                         var subtypeIdHash = MyCubeBuilder.Static.CurrentBlockDefinition.Id.SubtypeId;
-                        GridAi.WeaponCount weaponCount;
+                        WeaponCount weaponCount;
                         if (gridAi.WeaponCounter.TryGetValue(subtypeIdHash, out weaponCount))
                         {
                             if (weaponCount.Current >= weaponCount.Max && weaponCount.Max > 0)

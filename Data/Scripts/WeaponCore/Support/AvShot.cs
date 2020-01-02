@@ -270,7 +270,6 @@ namespace WeaponCore.Support
                 if (i == endIdx)
                     glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos) : new LineD(glow.TailPos - glow.VelStep, glow.TailPos);
             }
-            
         }
 
         internal void RunBeam()

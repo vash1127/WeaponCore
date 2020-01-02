@@ -20,7 +20,7 @@ namespace WeaponCore.Platform
 
         internal enum PlatformState
         {
-            Refresh,
+            Fresh,
             Invalid,
             Delay,
             Valid,
@@ -28,7 +28,7 @@ namespace WeaponCore.Platform
             Ready,
         }
 
-        internal PlatformState PreInit(WeaponComponent comp)
+        internal PlatformState Init(WeaponComponent comp)
         {
             if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
             {
@@ -51,10 +51,7 @@ namespace WeaponCore.Platform
                 else
                 {
                     State = PlatformState.Invalid;
-                    WeaponComponent removed;
-                    if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
-                        comp.UpdateCompList(add: false);
-
+                    comp.RemoveCompList();
                     Log.Line("init platform invalid");
                     return State;
                 }
@@ -67,7 +64,7 @@ namespace WeaponCore.Platform
                     State = PlatformState.Invalid;
                     WeaponComponent removed;
                     if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
-                        comp.UpdateCompList(add: false);
+                        comp.RemoveCompList();
 
                     return State;
                 }
@@ -362,7 +359,7 @@ namespace WeaponCore.Platform
             foreach (var w in Weapons)
             {
                 w.MuzzleIdToName.Clear();
-                w.Muzzles = new Weapon.Muzzle[w.System.Barrels.Length];
+                w.Muzzles = new Muzzle[w.System.Barrels.Length];
                 w.Dummies = new Dummy[w.System.Barrels.Length];
             }
 

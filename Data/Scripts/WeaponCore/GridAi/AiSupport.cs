@@ -642,12 +642,6 @@ namespace WeaponCore.Support
             }
         }
 
-        internal class WeaponCount
-        {
-            internal int Current;
-            internal int Max;
-        }
-
         internal class TargetInfo
         {
             internal Sandbox.ModAPI.Ingame.MyDetectedEntityInfo EntInfo;

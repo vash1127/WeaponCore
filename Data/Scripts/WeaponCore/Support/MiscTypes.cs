@@ -523,6 +523,29 @@ namespace WeaponCore.Support
         }
     }
     */
+
+    internal class WeaponCount
+    {
+        internal int Current;
+        internal int Max;
+    }
+
+    public struct CompChange
+    {
+        public WeaponComponent Comp;
+        public GridAi Ai;
+        public ChangeType Change;
+
+        public enum ChangeType
+        {
+            Reinit,
+            Init,
+            PlatformInit,
+            OnRemovedToSceneTasks,
+            OnAddedToSceneTasks,
+        }
+    }
+
     public struct RadiatedBlock
     {
         public Vector3I Center;
