@@ -14,6 +14,7 @@ namespace WeaponCore.Support
     public partial class WeaponComponent
     {
         private int _count = -1;
+        private int _onAddedAttempts;
         private bool _allInited;
         private bool _isServer;
         private bool _isDedicated;

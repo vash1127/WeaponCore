@@ -30,6 +30,7 @@ namespace WeaponCore.Platform
 
         internal PlatformState Init(WeaponComponent comp)
         {
+
             if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
             {
                 State = PlatformState.Valid;
@@ -37,6 +38,13 @@ namespace WeaponCore.Platform
 
                 return State;
             }
+
+            if (!comp.MyCube.IsFunctional)
+            {
+                State = PlatformState.Delay;
+                return State;
+            }
+
             var structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
 
             var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
@@ -73,16 +81,10 @@ namespace WeaponCore.Platform
 
             Structure = structure;
             Parts = new RecursiveSubparts();
-
+            Log.Line($"new parts");
             var partCount = Structure.MuzzlePartNames.Length;
             Weapons = new Weapon[partCount];
             Parts.Entity = comp.Entity as MyEntity;
-
-            if (!comp.MyCube.IsFunctional)
-            {
-                State = PlatformState.Delay;
-                return State;
-            }
 
             return GetParts(comp);
         }
@@ -343,7 +345,7 @@ namespace WeaponCore.Platform
                         var barrel = m.Value.Barrels[i];
                         Weapons[c].Dummies[i] = new Dummy(Weapons[c].MuzzlePart.Item1, barrel);
                         Weapons[c].MuzzleIdToName.Add(i, barrel);
-                        Weapons[c].Muzzles[i] = new Weapon.Muzzle(i);
+                        Weapons[c].Muzzles[i] = new Muzzle(i);
                     }
 
                     c++;
@@ -376,7 +378,7 @@ namespace WeaponCore.Platform
                 w.MuzzlePart.Item1.PositionComp.OnPositionChanged -= w.PositionChanged;
                 
             }
-            Parts.Reset(comp.Entity as MyEntity);
+            Parts.Clean(comp.Entity as MyEntity);
             comp.Status = Stopped;
         }
     }

@@ -308,6 +308,7 @@ namespace WeaponCore.Support
                 {
                     Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap");
                     //MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
+                    if (++_onAddedAttempts > 300) return;
                     Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.OnAddedToSceneTasks });
 
                     return;

@@ -20,7 +20,7 @@ namespace WeaponCore.Support
         private IMyModel _trackedModel;
         internal MyEntity Entity;
 
-        internal void Reset(MyEntity myEntity)
+        internal void Clean(MyEntity myEntity)
         {
             GetEnumerator().Dispose();
             _subparts.Clear();
