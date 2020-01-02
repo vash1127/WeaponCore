@@ -49,8 +49,8 @@ namespace WeaponCore.Support
                             switch (entInfo.Relationship)
                             {
                                 case MyRelationsBetweenPlayerAndBlock.Owner:
-                                    continue;
                                 case MyRelationsBetweenPlayerAndBlock.FactionShare:
+                                case MyRelationsBetweenPlayerAndBlock.Friends:
                                     continue;
                             }
                             if (grid != null)

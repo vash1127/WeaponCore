@@ -8,6 +8,7 @@ namespace WeaponCore
 {
     public partial class Session
     {
+
         private void RunAv()
         {
             for (int i = AvShots.Count - 1; i >= 0; i--)
@@ -58,7 +59,7 @@ namespace WeaponCore
 
                         if (av.OnScreen != Screen.None)
                         {
-                            var reduction = (glow.ShrinkAmount * glow.Step);
+                            var reduction = (av.GlowShrinkSize * glow.Step);
                             var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
                             MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
                         }
@@ -66,8 +67,7 @@ namespace WeaponCore
                         {
                             remove = true;
                             glowCnt--;
-                            glow.Clean();
-                            GlowPool.Return(glow);
+                            Glows.Push(glow);
                         }
                     }
                    
@@ -166,7 +166,7 @@ namespace WeaponCore
                 var noNextStep = glowCnt == 0 && av.Model == ModelState.None;
                 if (noNextStep && (!refreshed || av.System.IsBeamWeapon))
                 {
-                    av.Close();
+                    AvShotPool.Return(av);
                     AvShots.RemoveAtFast(i);
                 }
             }

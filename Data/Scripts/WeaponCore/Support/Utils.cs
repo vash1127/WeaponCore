@@ -511,11 +511,16 @@ namespace WeaponCore.Support
 
     internal class DSUtils
     {
+        internal DSUtils(Session session)
+        {
+            Session = session;
+        }
         internal struct Results
         {
             public double Min;
             public double Max;
             public double Median;
+            public uint MaxTick;
         }
 
         internal class Timings
@@ -525,6 +530,7 @@ namespace WeaponCore.Support
             public double Total;
             public double Average;
             public int Events;
+            public uint MaxTick;
             public readonly List<int> Values = new List<int>();
             public int[] TmpArray = new int[1];
 
@@ -538,8 +544,11 @@ namespace WeaponCore.Support
             }
         }
 
+        internal Session Session;
         private double _last;
         private bool _time;
+        private bool _showTick;
+
         private Stopwatch Sw { get; } = new Stopwatch();
         private readonly Dictionary<string, Timings> _timings = new Dictionary<string, Timings>();
         public void Start(string name, bool time = true)
@@ -552,6 +561,7 @@ namespace WeaponCore.Support
         {
             Clean();
             Clear();
+            Session = null;
         }
 
         public void Clear()
@@ -580,7 +590,7 @@ namespace WeaponCore.Support
                 times.Values.Clear();
                 var median = SUtils.GetMedian(times.TmpArray);
 
-                return new Results { Median = median / 1000000.0, Min = times.Min, Max = times.Max };
+                return new Results { Median = median / 1000000.0, Min = times.Min, Max = times.Max, MaxTick = times.MaxTick};
             }
 
             return new Results();
@@ -601,7 +611,11 @@ namespace WeaponCore.Support
                     timings.Values.Add((int)ns);
                     timings.Events++;
                     timings.Average = (timings.Total / timings.Events);
-                    if (ms > timings.Max) timings.Max = ms;
+                    if (ms > timings.Max)
+                    {
+                        timings.Max = ms;
+                        timings.MaxTick = Session.Tick;
+                    }
                     if (ms < timings.Min || timings.Min <= 0) timings.Min = ms;
                 }
                 else
@@ -612,6 +626,7 @@ namespace WeaponCore.Support
                     timings.Events++;
                     timings.Average = ms;
                     timings.Max = ms;
+                    timings.MaxTick = Session.Tick;
                     timings.Min = ms;
                     _timings[name] = timings;
                 }

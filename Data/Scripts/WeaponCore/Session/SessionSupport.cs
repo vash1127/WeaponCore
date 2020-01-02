@@ -355,12 +355,11 @@ namespace WeaponCore
             for (int i = _afterGlow.Count - 1; i >= 0; i--)
             {
                 var g = _afterGlow[i];
-                g.Clean();
                 _afterGlow.RemoveAtFast(i);
-                GlowPool.Return(g);
             }
             _afterGlow.Clear();
-            GlowPool.Clean();
+            Glows.Clear();
+            AvShotPool.Clean();
 
             DeferedUpBlockTypeCleanUp(true);
 
