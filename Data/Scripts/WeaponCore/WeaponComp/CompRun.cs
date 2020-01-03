@@ -260,7 +260,6 @@ namespace WeaponCore.Support
                 Log.Line($"ReInit didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
                 //return;
             }
-            if (Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid) && Ai.Session.GridTargetingAIs[MyCube.CubeGrid] != Ai) Log.Line($"ReInit Ai malfunction");
 
             var gridAiAdded = false;
 
