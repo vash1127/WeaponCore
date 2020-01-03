@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Concurrent;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
@@ -13,7 +8,7 @@ using VRage.Game.ModAPI;
 using VRage.Input;
 using VRageMath;
 using WeaponCore.Support;
-
+using static WeaponCore.Support.GridAi;
 namespace WeaponCore
 {
     public partial class Session

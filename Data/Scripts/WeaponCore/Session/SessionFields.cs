@@ -42,7 +42,6 @@ namespace WeaponCore
         internal readonly MyConcurrentPool<GroupInfo> GroupInfoPool = new MyConcurrentPool<GroupInfo>(128);
         internal readonly MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>> ConcurrentListPool = new MyConcurrentPool<ConcurrentCachingList<MyCubeBlock>>(100);
         internal readonly MyConcurrentPool<FatMap> FatMapPool = new MyConcurrentPool<FatMap>(128);
-        internal readonly MyConcurrentPool<AvShot> AvShotPool = new MyConcurrentPool<AvShot>(128, shot => shot.Close());
         internal readonly MyConcurrentPool<WeaponCount> WeaponCountPool = new MyConcurrentPool<WeaponCount>(64, count => count.Current = 0);
         internal readonly MyConcurrentPool<GridAi> GridAiPool = new MyConcurrentPool<GridAi>(128);
         
@@ -82,9 +81,8 @@ namespace WeaponCore
         internal readonly List<MyDefinitionId> WeaponCoreTurretBlockDefs = new List<MyDefinitionId>();
         internal readonly List<MyCubeGrid> DirtyGridsTmp = new List<MyCubeGrid>(10);
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>(16);
-        internal readonly List<AvShot> AvShots = new List<AvShot>(128);
         internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
-        internal readonly Stack<AfterGlow> Glows = new Stack<AfterGlow>();
+
 
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();
@@ -127,6 +125,7 @@ namespace WeaponCore
         internal ApiBackend Api;
 
         internal ShieldApi SApi = new ShieldApi();
+        internal RunAv Av;
         internal DSUtils DsUtil;
         internal DSUtils DsUtil2;
         internal UiInput UiInput;
@@ -152,7 +151,6 @@ namespace WeaponCore
         internal uint Tick;
         internal int PlayerEventId;
         internal int ModelCount;
-        internal int ExplosionCounter;
 
         internal int TargetRequests;
         internal int TargetChecks;
@@ -169,18 +167,6 @@ namespace WeaponCore
         internal int Count = -1;
         internal int LCount;
         internal int ECount;
-
-        internal bool ExplosionReady
-        {
-            get
-            {
-                if (++ExplosionCounter <= 5)
-                {
-                    return true;
-                }
-                return false;
-            }
-        }
 
         internal enum AnimationType
         {
@@ -228,6 +214,8 @@ namespace WeaponCore
             WheelUi = new Wheel(this);
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);
+            Av = new RunAv(this);
+
             Projectiles = new Projectiles.Projectiles(this);
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));

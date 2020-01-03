@@ -11,6 +11,38 @@ using VRage.Library.Collections;
 
 namespace WeaponCore.Support
 {
+    internal class RunningAverage
+    {
+        private readonly int _size;
+        private readonly int[] _values;
+        private int _valuesIndex;
+        private int _valueCount;
+        private int _sum;
+
+        internal RunningAverage(int size)
+        {
+            _size = Math.Max(size, 1);
+            _values = new int[_size];
+        }
+
+        internal int Add(int newValue)
+        {
+            // calculate new value to add to sum by subtracting the 
+            // value that is replaced from the new value; 
+            var temp = newValue - _values[_valuesIndex];
+            _values[_valuesIndex] = newValue;
+            _sum += temp;
+
+            _valuesIndex++;
+            _valuesIndex %= _size;
+
+            if (_valueCount < _size)
+                _valueCount++;
+
+            return _sum / _valueCount;
+        }
+    }
+
     internal static class ConcurrentQueueExtensions
     {
         public static void Clear<T>(this ConcurrentQueue<T> queue)
@@ -588,7 +620,7 @@ namespace WeaponCore.Support
                     times.TmpArray[i] = times.Values[i];
 
                 times.Values.Clear();
-                var median = SUtils.GetMedian(times.TmpArray);
+                var median = MathFuncs.GetMedian(times.TmpArray);
 
                 return new Results { Median = median / 1000000.0, Min = times.Min, Max = times.Max, MaxTick = times.MaxTick};
             }
@@ -639,38 +671,6 @@ namespace WeaponCore.Support
                 if (_time) Log.LineShortDate(message);
                 else Log.CleanLine(message);
             }
-        }
-    }
-
-    internal class RunningAverage
-    {
-        private readonly int _size;
-        private readonly int[] _values;
-        private int _valuesIndex;
-        private int _valueCount;
-        private int _sum;
-
-        internal RunningAverage(int size)
-        {
-            _size = Math.Max(size, 1);
-            _values = new int[_size];
-        }
-
-        internal int Add(int newValue)
-        {
-            // calculate new value to add to sum by subtracting the 
-            // value that is replaced from the new value; 
-            var temp = newValue - _values[_valuesIndex];
-            _values[_valuesIndex] = newValue;
-            _sum += temp;
-
-            _valuesIndex++;
-            _valuesIndex %= _size;
-
-            if (_valueCount < _size)
-                _valueCount++;
-
-            return _sum / _valueCount;
         }
     }
 
