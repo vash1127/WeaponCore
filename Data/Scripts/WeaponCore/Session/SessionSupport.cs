@@ -170,7 +170,6 @@ namespace WeaponCore
 
         private void ChangeComps()
         {
-            DsUtil2.Start("ChangeComps");
             foreach (var change in CompChanges)
             {
                 if (change.Change != CompChange.ChangeType.OnRemovedFromSceneQueue && !GridToFatMap.ContainsKey(change.Comp.MyCube.CubeGrid))
@@ -197,7 +196,6 @@ namespace WeaponCore
                         break;
                 }
             }
-            DsUtil2.Complete("ChangeComps", false, true);
         }
 
         private void DelayedComps()

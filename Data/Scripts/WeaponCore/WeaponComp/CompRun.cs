@@ -121,7 +121,10 @@ namespace WeaponCore.Support
                     }
                     else Log.Line($"Comp ReInit() failed stage2!");
                 }
-                else Log.Line($"Comp ReInit() failed stage1! - marked:{MyCube.MarkedForClose} - Entity:{Entity != null}");
+                else
+                {
+                    Log.Line($"Comp ReInit() failed stage1! - marked:{MyCube.MarkedForClose} - Entity:{Entity != null} - hasAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)} - hasMe:{Ai.WeaponBase.ContainsKey(MyCube)}");
+                }
             }
         }
 
