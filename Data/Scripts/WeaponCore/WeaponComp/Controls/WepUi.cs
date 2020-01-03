@@ -66,7 +66,7 @@ namespace WeaponCore
 
             w.BaseDamage = newBase;
             var oldRequired = w.RequiredPower;
-            var oldHeatPSec = (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
+            var oldHeatPSec = (60f / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
 
             w.UpdateShotEnergy();
             w.UpdateRequiredPower();
@@ -85,7 +85,7 @@ namespace WeaponCore
             w.TimePerShot = (3600d / w.RateOfFire);
 
             var oldDps = w.Dps;
-            w.Dps = (60 / (float)w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
+            w.Dps = (60f / w.TicksPerShot) * w.BaseDamage * w.System.BarrelsPerShot;
 
             if (w.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
             {
@@ -102,7 +102,7 @@ namespace WeaponCore
                                       : 1);
             }
             
-            var heatPShot = (60 / (float)w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
+            var heatPShot = (60f / w.TicksPerShot) * w.HeatPShot * w.System.BarrelsPerShot;
 
             var heatDif = oldHeatPSec - heatPShot;
             var dpsDif = oldDps - w.Dps;

@@ -126,7 +126,7 @@ namespace WeaponCore.Support
             weapon.TicksPerShot = (uint)(3600f / weapon.RateOfFire);
             weapon.TimePerShot = (3600d / weapon.RateOfFire);
 
-            weapon.Dps = (60 / (float)weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
+            weapon.Dps = (60f / weapon.TicksPerShot) * weapon.BaseDamage * weapon.System.BarrelsPerShot;
 
             if (weapon.System.Values.Ammo.AreaEffect.AreaEffect != AreaDamage.AreaEffectType.Disabled)
             {
@@ -144,7 +144,7 @@ namespace WeaponCore.Support
             }
 
             weapon.UseablePower = weapon.RequiredPower;
-            HeatPerSecond += (weapon.RateOfFire / 60) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
+            HeatPerSecond += (weapon.RateOfFire / 60f) * (weapon.HeatPShot * weapon.System.BarrelsPerShot);
             OptimalDps += weapon.Dps;
 
             HeatSinkRate += weapon.HsRate;
