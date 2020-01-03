@@ -101,7 +101,7 @@ namespace WeaponCore
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
 
-                var weaponComp = new WeaponComponent(this, gridAi, cube);
+                var weaponComp = new WeaponComponent(gridAi, cube);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
                 {
                     weaponComp.AddCompList(); // thread safe because on first add nothing can access list from main thread?

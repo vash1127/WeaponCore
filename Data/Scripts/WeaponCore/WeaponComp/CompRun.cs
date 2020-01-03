@@ -42,7 +42,7 @@ namespace WeaponCore.Support
         {
             base.OnBeforeRemovedFromContainer();
             if (!Container.Entity.InScene)
-                Session?.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
+                Ai.Session.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
         }
 
         internal void PlatformInit()
@@ -76,8 +76,9 @@ namespace WeaponCore.Support
 
                     Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
                     Ai.FirstRun = true;
+
                     StorageSetup();
-                    Set.ComputeRange();
+
                     InventoryInit();
                     PowerInit();
                     OnAddedToSceneTasks();
@@ -131,6 +132,8 @@ namespace WeaponCore.Support
         {
             try
             {
+                RegisterEvents();
+
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                     Platform.ResetParts(this);
 
@@ -140,7 +143,6 @@ namespace WeaponCore.Support
                 if (!Ai.GridInit)
                 {
                     Ai.GridInit = true;
-                    Ai.RegisterMyGridEvents(true, Ai.MyGrid);
                     Ai.InitFakeShipController();
                     Ai.ScanBlockGroups = true;
                     var fatList = Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
@@ -201,6 +203,7 @@ namespace WeaponCore.Support
         internal void OnRemovedFromSceneQueue()
         {
             RemoveComp();
+            RegisterEvents(false);
         }
 
         public override void OnRemovedFromScene()

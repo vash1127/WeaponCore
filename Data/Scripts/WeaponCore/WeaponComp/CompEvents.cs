@@ -20,11 +20,11 @@ namespace WeaponCore.Support
                 else
                     MissileBase.AppendingCustomInfo += AppendingCustomInfo;
 
-                MyCube.OnClose += OnClose;
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
 
                 BlockInventory.ContentsChanged += OnContentsChanged;
+
             }
             else
             {
@@ -39,7 +39,7 @@ namespace WeaponCore.Support
                     else MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
 
                 }
-                MyCube.OnClose -= OnClose;
+
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
 
                 if (BlockInventory == null) Log.Line($"BlockInventory is null");
@@ -47,16 +47,11 @@ namespace WeaponCore.Support
             }
         }
 
-        private void OnClose(MyEntity myEntity)
-        {
-            RegisterEvents(false);
-        }
-
         private void OnContentsChanged(MyInventoryBase obj)
         {
             try
             {
-                if (LastInventoryChangedTick < Session.Tick && !IgnoreInvChange)
+                if (LastInventoryChangedTick < Ai.Session.Tick && !IgnoreInvChange)
                 {
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
@@ -65,7 +60,7 @@ namespace WeaponCore.Support
                             Session.ComputeStorage(w);
                     }
                     
-                    LastInventoryChangedTick = Session.Tick;
+                    LastInventoryChangedTick = Ai.Session.Tick;
                 }
             }
             catch (Exception ex)
@@ -83,20 +78,18 @@ namespace WeaponCore.Support
                 if (!wasFunctional && IsFunctional && IsWorkingChangedTick > 0)
                     Status = Start.ReInit;
                 IsWorking = myCubeBlock.IsWorking;
-                if (!Session.DedicatedServer)
+                State.Value.Online = IsWorking && IsFunctional;
+                if (MyCube.ResourceSink.CurrentInputByType(GId) < 0) Log.Line($"IsWorking:{IsWorking}(was:{wasFunctional}) - online:{State.Value.Online} - Func:{IsFunctional} - GridAvailPow:{Ai.GridAvailablePower} - SinkPow:{SinkPower} - SinkReq:{MyCube.ResourceSink.RequiredInputByType(GId)} - SinkCur:{MyCube.ResourceSink.CurrentInputByType(GId)}");
+
+                if(!Ai.Session.DedicatedServer)
                     TerminalRefresh();
 
-                if (State != null)
+                if (!IsWorking)
                 {
-                    State.Value.Online = IsWorking && IsFunctional;
-                    if (MyCube.ResourceSink.CurrentInputByType(GId) < 0) Log.Line($"IsWorking:{IsWorking}(was:{wasFunctional}) - online:{State.Value.Online} - Func:{IsFunctional} - GridAvailPow:{Ai.GridAvailablePower} - SinkPow:{SinkPower} - SinkReq:{MyCube.ResourceSink.RequiredInputByType(GId)} - SinkCur:{MyCube.ResourceSink.CurrentInputByType(GId)}");
-                    if (!IsWorking)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            w.StopShooting();
-                    }
+                    foreach (var w in Platform.Weapons)
+                        w.StopShooting();
                 }
-                IsWorkingChangedTick = Session.Tick;
+                IsWorkingChangedTick = Ai.Session.Tick;
             }
             catch (Exception ex) { Log.ThreadedWrite($"Exception in IsWorkingChanged: {ex}"); }
         }
