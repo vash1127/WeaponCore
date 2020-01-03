@@ -26,6 +26,7 @@ namespace WeaponCore.Support {
         internal readonly bool DoesReverse;
         internal readonly bool TriggerOnce;
         internal readonly bool HasMovement;
+        internal readonly bool MovesPivotPos;
         internal readonly bool ResetEmissives;
         internal readonly string Muzzle;
         internal readonly string SubpartId;
@@ -91,9 +92,7 @@ namespace WeaponCore.Support {
             Part = part;
             System = system;
             SubpartId = subpartId;
-
             MotionDelay = motionDelay;
-
             MainEnt = mainEnt;
             DoesLoop = loop;
             DoesReverse = reverse;
