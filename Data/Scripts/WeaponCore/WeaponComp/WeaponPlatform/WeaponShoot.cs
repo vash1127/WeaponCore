@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
 
             if (System.BurstMode)
             {
-                if (state.ShotsFired++ > System.Values.HardPoint.Loading.ShotsInBurst)
+                if (++state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     state.ShotsFired = 0;
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
