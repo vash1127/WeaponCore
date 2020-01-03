@@ -50,8 +50,6 @@ namespace WeaponCore.Support
         private void OnClose(MyEntity myEntity)
         {
             RegisterEvents(false);
-            Ai = null;
-            Session = null;
         }
 
         private void OnContentsChanged(MyInventoryBase obj)
