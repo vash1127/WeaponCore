@@ -55,27 +55,6 @@ namespace WeaponCore.Support
                 base.OnAddedToScene();
                 lock (this)
                 {
-                    using (MyCube.Pin())
-                    {
-                        if (MyCube.MarkedForClose)
-                        {
-                            Log.Line($"OnAddedToScene cube marked for close,");
-                            return;
-                        }
-                    }
-                    using (MyCube.CubeGrid.Pin())
-                    {
-                        if (MyCube.CubeGrid.MarkedForClose)
-                        {
-                            Log.Line($"OnAddedToScene CubeGrid marked for close");
-                            return;
-                        }
-                    }
-                    if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
-                    {
-                        Log.Line($"OnAddedToScene didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
-                        return;
-                    }
 
                     if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
                         //MyAPIGateway.Utilities.InvokeOnGameThread(ReInit);
@@ -115,7 +94,11 @@ namespace WeaponCore.Support
                         return;
                     }
                 }
-
+                if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
+                {
+                    Log.Line($"PlatformInit didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
+                    //return;
+                }
                 switch (Platform.Init(this))
                 {
                     case MyWeaponPlatform.PlatformState.Invalid:
@@ -148,6 +131,11 @@ namespace WeaponCore.Support
 
         internal void Init()
         {
+            if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
+            {
+                Log.Line($"Init didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
+                //return;
+            }
             lock (this)
             {
                 _isServer = Ai.Session.IsServer;
@@ -251,7 +239,6 @@ namespace WeaponCore.Support
 
         internal void ReInit()
         {
-            Ai.Session.DsUtil2.Start("ReInit");
             using (MyCube.Pin())
             {
                 if (MyCube.MarkedForClose)
@@ -268,21 +255,43 @@ namespace WeaponCore.Support
                     return;
                 }
             }
+            if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
+            {
+                Log.Line($"ReInit didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
+                //return;
+            }
+            if (Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid) && Ai.Session.GridTargetingAIs[MyCube.CubeGrid] != Ai) Log.Line($"ReInit Ai malfunction");
 
-            RegisterEvents();
+            var gridAiAdded = false;
 
-            Ai = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
-            Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, Ai);
-            AddCompList();
+            GridAi ai;
+            if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
+            {
+                gridAiAdded = true;
+                Ai.Session.DsUtil2.Start("ReInit");
+                var newAi = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
+                Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
+                Ai = newAi;
+            }
+            else Ai = ai;
 
-            var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
-            if (!Ai.WeaponCounter.ContainsKey(blockDef))
-                Ai.WeaponCounter.TryAdd(blockDef, Ai.Session.WeaponCountPool.Get());
+            if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this))
+            {
+                if (!gridAiAdded) Ai.Session.DsUtil2.Start("ReInit");
+                RegisterEvents();
+                AddCompList();
 
-            Ai.WeaponCounter[blockDef].Current++;
+                var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
+                if (!Ai.WeaponCounter.ContainsKey(blockDef))
+                    Ai.WeaponCounter.TryAdd(blockDef, Ai.Session.WeaponCountPool.Get());
 
-            OnAddedToSceneTasks();
-            Ai.Session.DsUtil2.Complete("ReInit", false, true);
+                Ai.WeaponCounter[blockDef].Current++;
+
+                OnAddedToSceneTasks();
+                Ai.Session.DsUtil2.Complete("ReInit", false, true);
+            }
+            else Log.Line($"ReInit failed!");
+
         }
 
         internal void OnAddedToSceneTasks()
@@ -315,7 +324,11 @@ namespace WeaponCore.Support
                     Log.Line($"OnAddedToSceneTasks had a null Entity how? {MyCube.CubeGrid.DebugName} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - CubeMarked:{MyCube.MarkedForClose} - InitState:{Platform.State}");
                     return;
                 }
-
+                if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
+                {
+                    Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
+                    //return;
+                }
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                     Platform.ResetParts(this);
 

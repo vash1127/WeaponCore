@@ -24,7 +24,7 @@ namespace WeaponCore.Support
         internal volatile bool InventoryInited;
         internal volatile bool IsSorterTurret;
 
-        internal GridAi Ai { get; set; }
+        internal GridAi Ai;
         internal MySoundPair RotationSound;
         internal MyEntity3DSoundEmitter RotationEmitter; 
 

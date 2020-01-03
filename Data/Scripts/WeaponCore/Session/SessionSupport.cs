@@ -160,12 +160,16 @@ namespace WeaponCore
 
         private void ChangeComps()
         {
+
             foreach (var change in CompChanges)
             {
                 if (!GridToFatMap.ContainsKey(change.Comp.MyCube.CubeGrid))
                 {
-                    Log.Line($"ChangeComps didn't exist in GridToFatMap - Marked:{change.Comp.MyCube.CubeGrid.MarkedForClose} - Closed:{change.Comp.MyCube.CubeGrid.Closed} - InScene:{change.Comp.MyCube.CubeGrid.InScene} - Preview:{change.Comp.MyCube.CubeGrid.IsPreview} - Physics:{change.Comp.MyCube.CubeGrid.Physics != null}");
-                    if (++change.Comp.OnAddedAttempts > 300) continue;
+                    if (change.Change != CompChange.ChangeType.OnRemovedFromSceneQueue && ++change.Comp.OnAddedAttempts < 300)
+                    {
+                        Log.Line($"ChangeComps didn't exist in GridToFatMap - Change:{change.Change} - Marked:{change.Comp.MyCube.CubeGrid.MarkedForClose} - Closed:{change.Comp.MyCube.CubeGrid.Closed} - InScene:{change.Comp.MyCube.CubeGrid.InScene} - Preview:{change.Comp.MyCube.CubeGrid.IsPreview} - Physics:{change.Comp.MyCube.CubeGrid.Physics != null}");
+                        continue;
+                    }
                 }
 
                 CompChange removed;
