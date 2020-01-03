@@ -22,8 +22,8 @@ namespace WeaponCore.Support
         internal readonly MyEntity3DSoundEmitter TravelEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal readonly MyEntity3DSoundEmitter HitEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
 
-        internal MyQueue<AfterGlow> GlowSteps = new MyQueue<AfterGlow>();
-        internal List<Vector3D> Offsets = new List<Vector3D>();
+        internal MyQueue<AfterGlow> GlowSteps = new MyQueue<AfterGlow>(64);
+        internal List<Vector3D> Offsets = new List<Vector3D>(64);
 
         //internal Stack<Shrinking> ShrinkSteps = new Stack<Shrinking>();
         internal WeaponComponent FiringWeapon;
@@ -47,12 +47,13 @@ namespace WeaponCore.Support
         internal double StepSize;
         internal double TotalLength;
         internal double Thickness;
-        internal float LineScaler;
         internal double ScaleFov;
         internal double VisualLength;
         internal double MaxSpeed;
         internal double MaxStepSize;
         internal double TracerLengthSqr;
+        internal float LineScaler;
+        internal float GlowShrinkSize;
         internal float DistanceToLine;
         internal int LifeTime;
         internal int MuzzleId;
@@ -136,6 +137,7 @@ namespace WeaponCore.Support
             {
                 MaxGlowLength = System.Values.Graphics.Line.Trail.DecayTime * MaxStepSize;
                 Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
+                GlowShrinkSize = System.Values.Graphics.Line.Tracer.Width / System.Values.Graphics.Line.Trail.DecayTime;
             }
             else Trail = TrailState.Off;
             TotalLength = MaxTracerLength + MaxGlowLength;
@@ -250,24 +252,23 @@ namespace WeaponCore.Support
             var glowCount = GlowSteps.Count;
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
             {
-                var glow = Ai.Session.GlowPool.Get();
+                //var glow = Ai.Session.GlowPool.Get();
+                var glow = Ai.Session.Glows.Count > 0 ? Ai.Session.Glows.Pop() : new AfterGlow();
+                glow.Step = 0;
                 glow.VelStep = Direction * StepSize;
                 glow.TailPos = TracerStart + -glow.VelStep;
-                glow.ShrinkAmount = System.Values.Graphics.Line.Tracer.Width / System.Values.Graphics.Line.Trail.DecayTime;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
             }
 
-            for (int i = glowCount - 1; i >= 0; i--)
+            var endIdx = glowCount - 1;
+            for (int i = endIdx; i >= 0; i--)
             {
                 var glow = GlowSteps[i];
 
                 if (i != 0) glow.Parent = GlowSteps[i - 1];
-                if (glow.First)
-                {
+                if (i == endIdx)
                     glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos) : new LineD(glow.TailPos - glow.VelStep, glow.TailPos);
-                    glow.First = false;
-                }
             }
         }
 
@@ -415,8 +416,9 @@ namespace WeaponCore.Support
             Triggered = false;
             Cloaked = false;
             Active = false;
+            GlowSteps.Clear();
+            Offsets.Clear();
             //
-            Ai.Session.AvShotPool.Return(this);
             Ai = null;
             System = null;
         }
@@ -429,14 +431,5 @@ namespace WeaponCore.Support
         internal Vector3D VelStep;
         internal LineD Line;
         internal int Step;
-        internal float ShrinkAmount;
-        internal bool First = true;
-
-        internal void Clean()
-        {
-            First = true;
-            Parent = null;
-            Step =  0;
-        }
     }
 }

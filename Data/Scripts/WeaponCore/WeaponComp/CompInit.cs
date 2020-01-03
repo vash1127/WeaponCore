@@ -1,4 +1,5 @@
-﻿using Sandbox.Game;
+﻿using Sandbox.Definitions;
+using Sandbox.Game;
 using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
@@ -88,7 +89,7 @@ namespace WeaponCore.Support
             }
         }
 
-        private void DpsAndHeatInit(Weapon weapon)
+        private void DpsAndHeatInit(Weapon weapon, MyLargeTurretBaseDefinition ob, out double maxTrajectory)
         {
             MaxHeat += weapon.System.MaxHeat;
             weapon.RateOfFire = (int)(weapon.System.RateOfFire * Set.Value.RofModifier);
@@ -147,6 +148,44 @@ namespace WeaponCore.Support
             OptimalDps += weapon.Dps;
 
             HeatSinkRate += weapon.HsRate;
+
+            var state = State.Value.Weapons[weapon.WeaponId];
+            //range slider fix
+            maxTrajectory = 0;
+            if (ob != null && ob.MaxRangeMeters > maxTrajectory)
+                maxTrajectory = ob.MaxRangeMeters;
+            else if (weapon.System.MaxTrajectory > maxTrajectory)
+                maxTrajectory = weapon.System.MaxTrajectory;
+
+            if (weapon.TrackProjectiles)
+                Ai.PointDefense = true;
+
+            if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
+                Session.ComputeStorage(weapon);
+
+            if (state.CurrentAmmo == 0 && !weapon.Reloading)
+                weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+            else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && state.CurrentAmmo == weapon.System.MagazineDef.Capacity) || state.CurrentAmmo == weapon.System.EnergyMagSize))
+            {
+                weapon.CurrentCharge = weapon.System.EnergyMagSize;
+                CurrentCharge += weapon.System.EnergyMagSize;
+            }
+            else if (weapon.System.MustCharge)
+            {
+                if (weapon.CurrentCharge > 0)
+                    CurrentCharge -= weapon.CurrentCharge;
+
+                weapon.CurrentCharge = 0;
+                state.CurrentAmmo = 0;
+                weapon.Reloading = false;
+                Session.ComputeStorage(weapon);
+            }
+
+            if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
+            {
+                Ai.ManualComps++;
+                Shooting++;
+            }
         }
 
         private void InventoryInit()

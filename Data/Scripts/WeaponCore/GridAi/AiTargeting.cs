@@ -310,7 +310,7 @@ namespace WeaponCore.Support
             var foundBlock = false;
             var blocksChecked = 0;
             var blocksSighted = 0;
-
+            var weaponRangeSqr = turretCheck ? w.Comp.Set.Value.Range * w.Comp.Set.Value.Range : 0;
             for (int i = 0; i < totalBlocks; i++)
             {
                 if (turretCheck && (blocksChecked > lastBlocks || isPriroity && (blocksSighted > 100 || blocksChecked > 50 && ai.Session.RandomRayCasts > 500 || blocksChecked > 25 && ai.Session.RandomRayCasts > 1000) ))
@@ -324,17 +324,20 @@ namespace WeaponCore.Support
                 ai.Session.BlockChecks++;
 
                 var blockPos = block.CubeGrid.GridIntegerToWorld(block.Position);
-
                 double rayDist;
                 if (turretCheck)
                 {
+                    double distSqr;
+                    Vector3D.DistanceSquared(ref blockPos, ref weaponPos, out distSqr);
+                    if (distSqr > weaponRangeSqr)
+                        continue;
+
                     blocksChecked++;
                     ai.Session.CanShoot++;
                     if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel)) continue;
 
                     blocksSighted++;
-
-                    if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, weaponPos, blockPos))
+                    if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref weaponPos, ref blockPos))
                         continue;
 
                     ai.Session.RandomRayCasts++;
@@ -429,7 +432,7 @@ namespace WeaponCore.Support
                             var castRay = false;
 
                             if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
-                              castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, testPos, cubePos);
+                              castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref testPos, ref cubePos);
 
                             if (castRay)
                             {

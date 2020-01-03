@@ -1,26 +1,24 @@
 ﻿using Sandbox.Game.Entities;
 using System;
-using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon;
-using System.Collections.Generic;
 
 namespace WeaponCore.Platform
 {
     public class MyWeaponPlatform
     {
-        internal Weapon[] Weapons;
-        internal RecursiveSubparts Parts;
-        internal WeaponStructure Structure;
+        internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
+        internal readonly WeaponStructure Structure;
+        internal readonly Weapon[] Weapons;
         internal PlatformState State;
 
         internal enum PlatformState
         {
-            Refresh,
+            Fresh,
             Invalid,
             Delay,
             Valid,
@@ -28,19 +26,31 @@ namespace WeaponCore.Platform
             Ready,
         }
 
-        internal PlatformState PreInit(WeaponComponent comp)
+        internal MyWeaponPlatform(WeaponComponent comp)
         {
+            Structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
+            Weapons = new Weapon[Structure.MuzzlePartNames.Length];
+        }
+
+        internal PlatformState Init(WeaponComponent comp)
+        {
+
             if (comp.MyCube.MarkedForClose || comp.MyCube.CubeGrid.MarkedForClose)
             {
-                State = PlatformState.Valid;
+                State = PlatformState.Invalid;
                 Log.Line("closed, init platform invalid");
-
                 return State;
             }
-            var structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
+
+            if (!comp.MyCube.IsFunctional)
+            {
+                State = PlatformState.Delay;
+                return State;
+            }
+
 
             var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
-            wCounter.Max = structure.GridWeaponCap;
+            wCounter.Max = Structure.GridWeaponCap;
             if (wCounter.Max > 0)
             {
                 if (wCounter.Current + 1 <= wCounter.Max)
@@ -51,10 +61,7 @@ namespace WeaponCore.Platform
                 else
                 {
                     State = PlatformState.Invalid;
-                    WeaponComponent removed;
-                    if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
-                        comp.UpdateCompList(add: false);
-
+                    comp.RemoveCompList();
                     Log.Line("init platform invalid");
                     return State;
                 }
@@ -67,25 +74,14 @@ namespace WeaponCore.Platform
                     State = PlatformState.Invalid;
                     WeaponComponent removed;
                     if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
-                        comp.UpdateCompList(add: false);
+                        comp.RemoveCompList();
 
                     return State;
                 }
                 State = PlatformState.Valid;
             } 
 
-            Structure = structure;
-            Parts = new RecursiveSubparts();
-
-            var partCount = Structure.MuzzlePartNames.Length;
-            Weapons = new Weapon[partCount];
             Parts.Entity = comp.Entity as MyEntity;
-
-            if (!comp.MyCube.IsFunctional)
-            {
-                State = PlatformState.Delay;
-                return State;
-            }
 
             return GetParts(comp);
         }
@@ -166,11 +162,7 @@ namespace WeaponCore.Platform
                         comp.TrackingWeapon = weapon;
 
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
-                    {
-                        comp.RotationEmitter = new MyEntity3DSoundEmitter(comp.MyCube, true, 1f);
-                        comp.RotationSound = new MySoundPair();
                         comp.RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
-                    }
                 }
                 weapon.UpdatePivotPos();
             }
@@ -190,26 +182,26 @@ namespace WeaponCore.Platform
                 {
                     var azimuthPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
                     var elevationPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
-
+                    var weapon = Weapons[c];
                     if (reset)
                     {
                         MyEntity azimuthPartEntity;
                         if (Parts.NameToEntity.TryGetValue(azimuthPartName, out azimuthPartEntity))
-                            Weapons[c].AzimuthPart.Item1 = azimuthPartEntity;
+                            weapon.AzimuthPart.Item1 = azimuthPartEntity;
 
                         MyEntity elevationPartEntity;
                         if (Parts.NameToEntity.TryGetValue(elevationPartName, out elevationPartEntity))
-                            Weapons[c].ElevationPart.Item1 = elevationPartEntity;
+                            weapon.ElevationPart.Item1 = elevationPartEntity;
                     }
 
                     var muzzlePartName  = m.Key.String;
                     if (m.Value.DesignatorWeapon)
                     {
-                        muzzlePart = Weapons[c].ElevationPart.Item1;
+                        muzzlePart = weapon.ElevationPart.Item1;
                         muzzlePartName = elevationPartName;
                     }
 
-                    Weapons[c].MuzzlePart.Item1 = muzzlePart;
+                    weapon.MuzzlePart.Item1 = muzzlePart;
 
                     if (muzzlePartName != "None")
                     {
@@ -218,24 +210,22 @@ namespace WeaponCore.Platform
                         var muzzlePartPosTo = Matrix.CreateTranslation(-muzzlePartLocation);
                         var muzzlePartPosFrom = Matrix.CreateTranslation(muzzlePartLocation);
 
-                        Weapons[c].MuzzlePart.Item2 = muzzlePartPosTo;
-                        Weapons[c].MuzzlePart.Item3 = muzzlePartPosFrom;
-                        Weapons[c].MuzzlePart.Item4 = muzzlePartLocation;
+                        weapon.MuzzlePart.Item2 = muzzlePartPosTo;
+                        weapon.MuzzlePart.Item3 = muzzlePartPosFrom;
+                        weapon.MuzzlePart.Item4 = muzzlePartLocation;
 
                         try
                         {
-                            Weapons[c].MuzzlePart.Item1.SetEmissiveParts("Heating", Color.Transparent, 0);
+                            weapon.MuzzlePart.Item1.SetEmissiveParts("Heating", Color.Transparent, 0);
                         }
-                        catch (Exception e)
-                        {
-                            // no emissive parts for barrel
-                        }
+                        catch (Exception ex) { Log.Line($"Exception in no emissive parts for barrel: {ex}"); }
+
                     }
 
-                    if (Weapons[c].AiOnlyWeapon)
+                    if (weapon.AiOnlyWeapon)
                     {
-                        var azimuthPart = Weapons[c].AzimuthPart.Item1;
-                        var elevationPart = Weapons[c].ElevationPart.Item1;
+                        var azimuthPart = weapon.AzimuthPart.Item1;
+                        var elevationPart = weapon.ElevationPart.Item1;
 
                         if (azimuthPart != null && azimuthPartName != "None")
                         {
@@ -245,19 +235,19 @@ namespace WeaponCore.Platform
                             var fullStepAzRotation = azPartPosTo * MatrixD.CreateRotationY(-m.Value.AzStep) * azPrtPosFrom;
                             var rFullStepAzRotation = Matrix.Invert(fullStepAzRotation);
 
-                            Weapons[c].AzimuthPart.Item2 = azPartPosTo;
-                            Weapons[c].AzimuthPart.Item3 = azPrtPosFrom;
-                            Weapons[c].AzimuthPart.Item4 = fullStepAzRotation;
-                            Weapons[c].AzimuthPart.Item5 = rFullStepAzRotation;
-                            Weapons[c].AzimuthPart.Item6 = azimuthPartLocation;
+                            weapon.AzimuthPart.Item2 = azPartPosTo;
+                            weapon.AzimuthPart.Item3 = azPrtPosFrom;
+                            weapon.AzimuthPart.Item4 = fullStepAzRotation;
+                            weapon.AzimuthPart.Item5 = rFullStepAzRotation;
+                            weapon.AzimuthPart.Item6 = azimuthPartLocation;
                         }
                         else if (azimuthPartName == "None")
                         {
-                            Weapons[c].AzimuthPart.Item2 = Matrix.Zero;
-                            Weapons[c].AzimuthPart.Item3 = Matrix.Zero;
-                            Weapons[c].AzimuthPart.Item4 = Matrix.Zero;
-                            Weapons[c].AzimuthPart.Item5 = Matrix.Zero;
-                            Weapons[c].AzimuthPart.Item6 = Vector3.Zero;
+                            weapon.AzimuthPart.Item2 = Matrix.Zero;
+                            weapon.AzimuthPart.Item3 = Matrix.Zero;
+                            weapon.AzimuthPart.Item4 = Matrix.Zero;
+                            weapon.AzimuthPart.Item5 = Matrix.Zero;
+                            weapon.AzimuthPart.Item6 = Vector3.Zero;
                         }
 
 
@@ -272,19 +262,19 @@ namespace WeaponCore.Platform
 
                             var rFullStepElRotation = Matrix.Invert(fullStepElRotation);
 
-                            Weapons[c].ElevationPart.Item2 = elPartPosTo;
-                            Weapons[c].ElevationPart.Item3 = elPartPosFrom;
-                            Weapons[c].ElevationPart.Item4 = fullStepElRotation;
-                            Weapons[c].ElevationPart.Item5 = rFullStepElRotation;
-                            Weapons[c].ElevationPart.Item6 = elevationPartLocation;
+                            weapon.ElevationPart.Item2 = elPartPosTo;
+                            weapon.ElevationPart.Item3 = elPartPosFrom;
+                            weapon.ElevationPart.Item4 = fullStepElRotation;
+                            weapon.ElevationPart.Item5 = rFullStepElRotation;
+                            weapon.ElevationPart.Item6 = elevationPartLocation;
                         }
                         else if (elevationPartName == "None")
                         {
-                            Weapons[c].ElevationPart.Item2 = Matrix.Zero;
-                            Weapons[c].ElevationPart.Item3 = Matrix.Zero;
-                            Weapons[c].ElevationPart.Item4 = Matrix.Zero;
-                            Weapons[c].ElevationPart.Item5 = Matrix.Zero;
-                            Weapons[c].ElevationPart.Item6 = Vector3.Zero;
+                            weapon.ElevationPart.Item2 = Matrix.Zero;
+                            weapon.ElevationPart.Item3 = Matrix.Zero;
+                            weapon.ElevationPart.Item4 = Matrix.Zero;
+                            weapon.ElevationPart.Item5 = Matrix.Zero;
+                            weapon.ElevationPart.Item6 = Vector3.Zero;
                         }
                     }
 
@@ -294,7 +284,7 @@ namespace WeaponCore.Platform
                         var registered = false;
                         try
                         {
-                            foreach (var animationSet in Weapons[c].AnimationsSet)
+                            foreach (var animationSet in weapon.AnimationsSet)
                             {
                                 foreach (var animation in animationSet.Value)
                                 {
@@ -324,29 +314,35 @@ namespace WeaponCore.Platform
 
                     if (m.Key.String != "Designator")
                     {
-                        Weapons[c].MuzzlePart.Item1.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
-                        Weapons[c].MuzzlePart.Item1.OnMarkForClose += Weapons[c].EntPartClose;
+                        weapon.MuzzlePart.Item1.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                        weapon.MuzzlePart.Item1.OnMarkForClose += weapon.EntPartClose;
                     }
                     else
                     {
-                        if(Weapons[c].ElevationPart.Item1 != null)
+                        if(weapon.ElevationPart.Item1 != null)
                         {
-                            Weapons[c].ElevationPart.Item1.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
-                            Weapons[c].ElevationPart.Item1.OnMarkForClose += Weapons[c].EntPartClose;
+                            weapon.ElevationPart.Item1.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                            weapon.ElevationPart.Item1.OnMarkForClose += weapon.EntPartClose;
                         }
                         else
                         {
-                            Weapons[c].AzimuthPart.Item1.PositionComp.OnPositionChanged += Weapons[c].PositionChanged;
-                            Weapons[c].AzimuthPart.Item1.OnMarkForClose += Weapons[c].EntPartClose;
+                            weapon.AzimuthPart.Item1.PositionComp.OnPositionChanged += weapon.PositionChanged;
+                            weapon.AzimuthPart.Item1.OnMarkForClose += weapon.EntPartClose;
                         }
                     }
 
                     for (int i = 0; i < barrelCount; i++)
                     {
                         var barrel = m.Value.Barrels[i];
-                        Weapons[c].Dummies[i] = new Dummy(Weapons[c].MuzzlePart.Item1, barrel);
-                        Weapons[c].MuzzleIdToName.Add(i, barrel);
-                        Weapons[c].Muzzles[i] = new Weapon.Muzzle(i);
+
+                        weapon.MuzzleIdToName.Add(i, barrel);
+                        if (weapon.Muzzles[i] == null)
+                        {
+                            weapon.Dummies[i] = new Dummy(weapon.MuzzlePart.Item1, barrel);
+                            weapon.Muzzles[i] = new Muzzle(i);
+                        }
+                        else
+                            weapon.Dummies[i].Entity = weapon.MuzzlePart.Item1;
                     }
 
                     c++;
@@ -354,21 +350,21 @@ namespace WeaponCore.Platform
             }
         }
 
-        internal bool ResetParts(WeaponComponent comp)
+        internal void ResetParts(WeaponComponent comp)
         {
-            //Log.Line("Resetting parts!!!!!!!!!!");
-            RemoveParts(comp);
-            Parts.CheckSubparts();
-            foreach (var w in Weapons)
+            for (int i = 0; i < Weapons.Length; i++)
             {
+                var w = Weapons[i];
                 w.MuzzleIdToName.Clear();
-                w.Muzzles = new Weapon.Muzzle[w.System.Barrels.Length];
-                w.Dummies = new Dummy[w.System.Barrels.Length];
+                if (w.MuzzlePart.Item1 == null) continue;
+                w.MuzzlePart.Item1.PositionComp.OnPositionChanged -= w.PositionChanged;
             }
+
+            Parts.Clean(comp.Entity as MyEntity);
+            Parts.CheckSubparts();
 
             CompileTurret(comp, true);
             comp.Status = Started;
-            return true;
         }
 
         internal void RemoveParts(WeaponComponent comp)
@@ -379,7 +375,7 @@ namespace WeaponCore.Platform
                 w.MuzzlePart.Item1.PositionComp.OnPositionChanged -= w.PositionChanged;
                 
             }
-            Parts.Reset(comp.Entity as MyEntity);
+            Parts.Clean(comp.Entity as MyEntity);
             comp.Status = Stopped;
         }
     }

@@ -20,7 +20,8 @@ namespace WeaponCore.Support
                     Startup();
                     break;
                 case Start.ReInit:
-                    ReInit();
+                    Platform.ResetParts(this);
+                    Status = Start.Started;
                     break;
             }
 
@@ -49,7 +50,8 @@ namespace WeaponCore.Support
             if (ent != null && MyCube != null && !MyCube.MarkedForClose && Platform != null && Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
                 ent.OnClose -= SubpartClosed;
-                ReInit();
+                Platform.ResetParts(this);
+                Status = Start.Started;
 
                 foreach (var w in Platform.Weapons)
                 {
@@ -62,14 +64,6 @@ namespace WeaponCore.Support
                         w.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
                 }
             }
-        }
-
-        private bool ReInit()
-        {
-            //Log.Line($"ReInit");
-            Platform.ResetParts(this);
-            Status = Start.Started;
-            return true;
         }
 
         internal void UpdateSettings(CompSettingsValues newSettings)

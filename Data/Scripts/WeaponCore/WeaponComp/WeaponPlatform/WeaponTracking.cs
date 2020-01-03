@@ -28,7 +28,7 @@ namespace WeaponCore.Platform
             double rangeToTarget;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
-            var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
+            var inRange = rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range;
 
             bool canTrack;
 
@@ -84,11 +84,14 @@ namespace WeaponCore.Platform
             obb.Center = targetPos;
             weapon.TargetBox = obb;
 
+            var maxRangeSqr = obb.HalfExtent.AbsMax() + weapon.Comp.Set.Value.Range;
+
+            maxRangeSqr *= maxRangeSqr;
             double rangeToTarget;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
 
             bool canTrack = false;
-            if (rangeToTarget <= weapon.System.MaxTrajectorySqr)
+            if (rangeToTarget <= maxRangeSqr)
             {
                 var targetDir = targetPos - weapon.MyPivotPos;
                 if (weapon == trackingWeapon)
@@ -148,7 +151,7 @@ namespace WeaponCore.Platform
 
             double rangeToTarget;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
-            var inRange = rangeToTarget <= weapon.System.MaxTrajectorySqr;
+            var inRange = rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range;
 
             var isAligned = inRange && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
@@ -191,7 +194,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var targetDir = targetPos - weapon.MyPivotPos;
 
-            if (rangeToTarget <= system.MaxTrajectorySqr)
+            if (rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
             {
                 var maxAzimuthStep = system.AzStep;
                 var maxElevationStep = system.ElStep;

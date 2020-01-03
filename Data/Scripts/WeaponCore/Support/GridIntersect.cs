@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Game.Entities;
+using VRage.Game;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
@@ -9,7 +10,7 @@ namespace WeaponCore.Support
 
     public static class GridIntersection
     {
-        internal static bool BresenhamGridIntersection(MyCubeGrid grid, Vector3D worldStart, Vector3D worldEnd)
+        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd)
         {
             var start = grid.WorldToGridInteger(worldStart);
             var end = grid.WorldToGridInteger(worldEnd);
@@ -48,7 +49,8 @@ namespace WeaponCore.Support
                     var contained = gMinX <= start.X && start.X <= gMaxX && (gMinY <= start.Y && start.Y <= gMaxY) && (gMinZ <= start.Z && start.Z <= gMaxZ);
                     if (!contained) return false;
 
-                    if (grid.GetCubeBlock(start) != null) return true;
+                    MyCube cube;
+                    if (grid.TryGetCube(start, out cube)) return true;
                 }
             }
             else if (max == delta.Y)
@@ -75,7 +77,8 @@ namespace WeaponCore.Support
                     var contained = gMinX <= start.X && start.X <= gMaxX && (gMinY <= start.Y && start.Y <= gMaxY) && (gMinZ <= start.Z && start.Z <= gMaxZ);
                     if (!contained) return false;
 
-                    if (grid.GetCubeBlock(start) != null) return true;
+                    MyCube cube;
+                    if (grid.TryGetCube(start, out cube)) return true;
                 }
             }
             else
@@ -102,7 +105,8 @@ namespace WeaponCore.Support
                     var contained = gMinX <= start.X && start.X <= gMaxX && (gMinY <= start.Y && start.Y <= gMaxY) && (gMinZ <= start.Z && start.Z <= gMaxZ);
                     if (!contained) return false;
 
-                    if (grid.GetCubeBlock(start) != null) return true;
+                    MyCube cube;
+                    if (grid.TryGetCube(start, out cube)) return true;
                 }
             }
             return false;

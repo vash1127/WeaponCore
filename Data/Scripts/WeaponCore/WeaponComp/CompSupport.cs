@@ -43,20 +43,23 @@ namespace WeaponCore.Support
             MyCube.ResourceSink.Init(MyStringHash.GetOrCompute("Charging"), SinkInfo);
         }
 
-        internal void RemoveComp(bool onThread = true)
+        internal void RemoveComp()
         {
             try
             {
                 WeaponComponent comp;
                 if (Ai.WeaponBase.TryRemove(MyCube, out comp))
                 {
-                    UpdateCompList(add: false, invoke: onThread);
+                    comp.RemoveCompList();
                     if (Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     {
-                        GridAi.WeaponCount wCount;
-
+                        WeaponCount wCount;
                         if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                        {
                             wCount.Current--;
+                            WeaponCount cntRemoved;
+                            if (wCount.Current == 0) Ai.WeaponCounter.TryRemove(MyCube.BlockDefinition.Id.SubtypeId, out cntRemoved);
+                        }
 
                         for (int i = 0; i < Platform.Weapons.Length; i++)
                         {
@@ -73,24 +76,29 @@ namespace WeaponCore.Support
                         Ai.OptimalDps -= OptimalDps;
                         
                     }
+                    else Log.Line($"RemoveComp platform not ready");
                 }
                 else
                 {
-                    Log.Line($"no comp found to remove: {MyCube.DebugName} - [marked](cube:{MyCube.MarkedForClose}) - (grid:{MyCube.CubeGrid.MarkedForClose}) - (MyGrid:{Ai.MyGrid.MarkedForClose}) - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
+                    Log.Line($"no comp found to remove: {MyCube.DebugName} - [marked](myCube:{MyCube.MarkedForClose} - myGrid:{MyCube.CubeGrid.MarkedForClose} - AiGrid:{Ai.MyGrid.MarkedForClose}) - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid})");
                     GridAi gridAi;
                     if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
                     {
-                        Log.Line($"cube matches different grid: marked:{MyCube.MarkedForClose}({gridAi.MyGrid.MarkedForClose}) - gridMisMatch: {gridAi.MyGrid != MyCube.CubeGrid} - grid:{MyCube.CubeGrid.DebugName}({Ai.MyGrid.DebugName})");
+                        Log.Line($"cube matches different grid {MyCube.DebugName} - [marked](myCube:{MyCube.MarkedForClose} - myGrid:{MyCube.CubeGrid.MarkedForClose} - AiGrid:{Ai.MyGrid.MarkedForClose}) - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid})");
                         if (gridAi.WeaponBase.TryRemove(MyCube, out comp))
                         {
-                            Log.Line($"cube found on second try????");
-                            UpdateCompList(add: false, invoke: onThread);
+                            Log.Line($"cube FOUND in other grid's Ai");
+                            comp.RemoveCompList();
+
                             if (Platform.State == MyWeaponPlatform.PlatformState.Ready)
                             {
-                                GridAi.WeaponCount wCount;
-
+                                WeaponCount wCount;
                                 if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                                {
                                     wCount.Current--;
+                                    WeaponCount cntRemoved;
+                                    if (wCount.Current == 0) Ai.WeaponCounter.TryRemove(MyCube.BlockDefinition.Id.SubtypeId, out cntRemoved);
+                                }
 
                                 for (int i = 0; i < Platform.Weapons.Length; i++)
                                 {
@@ -108,11 +116,16 @@ namespace WeaponCore.Support
 
                             }
                         }
+                        else Log.Line($"cube NOT found in other grid's Ai");
                     }
                 }
 
                 if (Ai.WeaponBase.Count == 0)
                 {
+                    WeaponCount wCount;
+                    if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                        Ai.Session.WeaponCountPool.Return(wCount);
+
                     GridAi gridAi;
                     Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
                 }
@@ -120,34 +133,47 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
         }
 
-        internal void UpdateCompList(bool add, bool invoke = true)
-        {
-            if (invoke)
-            {
-                if (add) MyAPIGateway.Utilities.InvokeOnGameThread(AddCompList);
-                else MyAPIGateway.Utilities.InvokeOnGameThread(RemoveCompList);
-            }
-            else
-            {
-                if (add) AddCompList();
-                else RemoveCompList();
-            }
-
-        }
-
         internal void AddCompList()
         {
+            GridAi gridAi;
+            if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && gridAi != Ai)
+            {
+                Log.Line($"AddCompList grid mismatch");
+            }
             if (Ai.WeaponsIdx.ContainsKey(this))
+            {
+                Log.Line($"add failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - Marked:{MyCube.MarkedForClose} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid} - hasGridAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
+
+                GridAi gridAiTmp;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAiTmp))
+                {
+                    Log.Line($"gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(MyCube)}");
+                }
                 return;
+            }
             Ai.WeaponsIdx.Add(this, Ai.Weapons.Count);
             Ai.Weapons.Add(this);
         }
 
         internal void RemoveCompList()
         {
+            GridAi gridAi;
+            if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && gridAi != Ai)
+            {
+                Log.Line($"RemoveCompList grid mismatch");
+            }
+
             int idx;
             if (!Ai.WeaponsIdx.TryGetValue(this, out idx))
+            {
+                Log.Line($"remove failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - Marked:{MyCube.MarkedForClose} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid}  - hasGridAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
+                GridAi gridAiTmp;
+                if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAiTmp))
+                {
+                    Log.Line($"gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(MyCube)}");
+                }
                 return;
+            }
 
             Ai.Weapons.RemoveAtFast(idx);
             if (idx < Ai.Weapons.Count)

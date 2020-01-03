@@ -10,6 +10,7 @@ using WeaponCore.Support;
 using WeaponCore.Platform;
 using Sandbox.Definitions;
 using System.Collections.Generic;
+using Sandbox.Game;
 using VRage.Collections;
 using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Utils;
@@ -78,8 +79,9 @@ namespace WeaponCore
                 var weaponComp = CompsToStart[i];
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
-                    //Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
-                    weaponComp.RemoveComp(onThread: false);
+                    Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    weaponComp.Ai.DelayedGridCleanUp(null);
+                    weaponComp.RemoveCompList();
                     CompsToStart.Remove(weaponComp);
                     continue;
                 }
@@ -93,17 +95,23 @@ namespace WeaponCore
                         continue;
                     }
 
-                    Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
-                    weaponComp.RemoveComp(onThread: false);
+                    Log.Line($"[StartComps - gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
+                    weaponComp.RemoveCompList();
                     InitComp(weaponComp.MyCube, false);
                     reassign = true;
                     CompsToStart.Remove(weaponComp);
                 }
-                else if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Refresh)
+                else if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh)
                 {
+                    if (weaponComp.MyCube.MarkedForClose)
+                    {
+                        weaponComp.Ai.DelayedGridCleanUp(null);
+                        CompsToStart.Remove(weaponComp);
+                        continue;
+                    }
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                     {
-                        //Log.Line($"grid not in map2: marked:{weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - working:{weaponComp.MyCube.IsWorking} - functional:{weaponComp.MyCube.IsFunctional} - {weaponComp.MyCube.CubeGrid.DebugName} - gridMisMatch:{weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid}");
+                        //Log.Line($"grid not in map and Platform state is fresh: marked:{weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - working:{weaponComp.MyCube.IsWorking} - functional:{weaponComp.MyCube.IsFunctional} - {weaponComp.MyCube.CubeGrid.DebugName} - gridMisMatch:{weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid}");
                         continue;
                     }
                     //Log.Line($"[Init] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
@@ -112,7 +120,9 @@ namespace WeaponCore
                 }
                 else
                 {
+                    Log.Line($"comp didn't match CompsToStart condition, removing");
                     //Log.Line($"[Other] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    weaponComp.Ai.DelayedGridCleanUp(null);
                     CompsToStart.Remove(weaponComp);
                 }
             }
@@ -124,28 +134,82 @@ namespace WeaponCore
             }
         }
 
-        private void InitComp(MyCubeBlock cube, bool apply = true)
+        private void InitComp(MyCubeBlock cube, bool thread = true)
         {
             if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
 
             using (cube.Pin())
             {
-                if (cube.MarkedForClose) return;
+                if (cube.MarkedForClose)
+                {
+                    Log.Line($"cube marked for close in InitComp");
+                    return;
+                }
                 GridAi gridAi;
                 if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                 {
-                    gridAi = new GridAi(cube.CubeGrid, this, Tick);
+                    gridAi = GridAiPool.Get();
+                    gridAi.Init(cube.CubeGrid, this);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
+
                 var weaponComp = new WeaponComponent(gridAi, cube);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
                 {
-                    weaponComp.UpdateCompList(add: true, invoke: apply);
-                    if (!gridAi.WeaponCounter.ContainsKey(cube.BlockDefinition.Id.SubtypeId))
-                        gridAi.WeaponCounter.TryAdd(cube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
+                    weaponComp.AddCompList(); // thread safe because on first add nothing can access list from main thread?
+                    var blockDef = cube.BlockDefinition.Id.SubtypeId;
+                    if (!gridAi.WeaponCounter.ContainsKey(blockDef))
+                        gridAi.WeaponCounter.TryAdd(blockDef, WeaponCountPool.Get());
 
                     CompsToStart.Add(weaponComp);
-                    if (apply) CompsToStart.ApplyAdditions();
+                    if (thread) CompsToStart.ApplyAdditions();
+                }
+                else Log.Line($"gridAi not found/created in InitComp");
+            }
+        }
+
+        private void ChangeComps()
+        {
+            foreach (var change in CompChanges)
+            {
+                if (change.Change != CompChange.ChangeType.OnRemovedFromSceneQueue && !GridToFatMap.ContainsKey(change.Comp.MyCube.CubeGrid))
+                    continue;
+
+                CompChange removed;
+                switch (change.Change)
+                {
+                    case CompChange.ChangeType.PlatformInit:
+                        CompChanges.TryDequeue(out removed);
+                        change.Comp.PlatformInit();
+                        break;
+                    case CompChange.ChangeType.Init:
+                        CompChanges.TryDequeue(out removed);
+                        change.Comp.Init();
+                        break;
+                    case CompChange.ChangeType.Reinit:
+                        CompChanges.TryDequeue(out removed);
+                        change.Comp.ReInit();
+                        break;
+                    case CompChange.ChangeType.OnRemovedFromSceneQueue:
+                        CompChanges.TryDequeue(out removed);
+                        change.Comp.OnRemovedFromSceneQueue();
+                        break;
+                }
+            }
+        }
+
+        private void DelayedComps()
+        {
+            foreach (var delayed in CompsDelayed)
+            {
+                WeaponComponent remove;
+                if (delayed.MyCube.MarkedForClose)
+                    CompsDelayed.TryDequeue(out remove);
+                else if (delayed.MyCube.IsFunctional)
+                {
+                    Log.Line($"delayed released");
+                    CompsDelayed.TryDequeue(out remove);
+                    CompChanges.Enqueue(new CompChange { Ai = delayed.Ai, Comp = delayed, Change = CompChange.ChangeType.PlatformInit });
                 }
             }
         }
@@ -156,6 +220,18 @@ namespace WeaponCore
             else ++_loadCounter;
 
             return _loadCounter;
+        }
+
+        internal ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> GetMasterInventory()
+        {
+
+            if (InventoryPool.Count > 0) return InventoryPool.Pop();
+            return new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(AmmoInventoriesMaster, MyDefinitionId.Comparer);
+        }
+
+        internal void ReturnMasterInventory(ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> inventory)
+        {
+            InventoryPool.Push(inventory);
         }
 
         internal void Timings()
@@ -276,24 +352,6 @@ namespace WeaponCore
             return false;
         }
 
-        internal void DeferedFatMapRemoval(object obj)
-        {
-            var grid = (MyCubeGrid)obj;
-            FatMap fatMap;
-            if (GridToFatMap.TryRemove(grid, out fatMap))
-            {
-                fatMap.MyCubeBocks.ClearImmediate();
-                ConcurrentListPool.Return(fatMap.MyCubeBocks);
-                fatMap.Trash = true;
-                FatMapPool.Return(fatMap);
-                grid.OnFatBlockAdded -= ToFatMap;
-                grid.OnFatBlockRemoved -= FromFatMap;
-                grid.OnClose -= RemoveGridFromMap;
-                grid.AddedToScene -= GridAddedToScene;
-                DirtyGrids.Add(grid);
-            }
-            else Log.Line($"grid not removed and list not cleaned");
-        }
 
         private void DeferedUpBlockTypeCleanUp(bool force = false)
         {
@@ -355,17 +413,16 @@ namespace WeaponCore
             for (int i = _afterGlow.Count - 1; i >= 0; i--)
             {
                 var g = _afterGlow[i];
-                g.Clean();
                 _afterGlow.RemoveAtFast(i);
-                GlowPool.Return(g);
             }
             _afterGlow.Clear();
-            GlowPool.Clean();
+            Glows.Clear();
+            AvShotPool.Clean();
 
             DeferedUpBlockTypeCleanUp(true);
 
             foreach (var map in GridToFatMap.Keys)
-                DeferedFatMapRemoval(map);
+                RemoveGridFromMap(map);
             
             GridToFatMap.Clear();
             FatMapPool.Clean();

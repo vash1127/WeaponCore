@@ -91,7 +91,22 @@ namespace WeaponCore
 
         private void RemoveGridFromMap(MyEntity myEntity)
         {
-            FutureEvents.Schedule(DeferedFatMapRemoval, (MyCubeGrid)myEntity, 120);
+            var grid = (MyCubeGrid)myEntity;
+            FatMap fatMap;
+            if (GridToFatMap.TryRemove(grid, out fatMap))
+            {
+                fatMap.MyCubeBocks.ClearImmediate();
+                ConcurrentListPool.Return(fatMap.MyCubeBocks);
+                fatMap.Trash = true;
+                FatMapPool.Return(fatMap);
+                grid.OnFatBlockAdded -= ToFatMap;
+                grid.OnFatBlockRemoved -= FromFatMap;
+                grid.OnClose -= RemoveGridFromMap;
+                grid.AddedToScene -= GridAddedToScene;
+                DirtyGrids.Add(grid);
+            }
+            else Log.Line($"grid not removed and list not cleaned");
+            //FutureEvents.Schedule(DeferedFatMapRemoval, (MyCubeGrid)myEntity, 120);
         }
 
         private void ToFatMap(MyCubeBlock myCubeBlock)

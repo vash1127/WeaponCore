@@ -54,6 +54,12 @@ namespace WeaponCore
                 if (!CompsToStart.IsEmpty)
                     StartComps();
 
+                if (Tick120 && !CompsDelayed.IsEmpty)
+                    DelayedComps();
+
+                if (!CompChanges.IsEmpty)
+                    ChangeComps();
+                
                 if (Tick180)
                 {
                     HighLoad = false;

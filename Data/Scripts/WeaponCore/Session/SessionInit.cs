@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using Sandbox.Common.ObjectBuilders;
@@ -46,6 +47,9 @@ namespace WeaponCore
                 SyncDistSqr = SyncDist * SyncDist;
                 SyncBufferedDistSqr = SyncDistSqr + 250000;
             }
+
+            for (int i = 0; i < 128; i++)
+                InventoryPool.Push(new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(AmmoInventoriesMaster, MyDefinitionId.Comparer));
 
             foreach (var mod in MyAPIGateway.Session.Mods)
                 if (mod.PublishedFileId == 1365616918) ShieldMod = true;

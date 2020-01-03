@@ -71,6 +71,21 @@ namespace WeaponCore.Support
             }
         }
 
+        public static void LineShortDate(string text)
+        {
+            try
+            {
+                if (GetInstance()._file != null)
+                {
+                    var time = $"{DateTime.Now:HH-mm-ss-fff} - ";
+                    GetInstance()._file.WriteLine(time + text);
+                    GetInstance()._file.Flush();
+                }
+            }
+            catch (Exception e)
+            {
+            }
+        }
         public static void Chars(string text)
         {
             try

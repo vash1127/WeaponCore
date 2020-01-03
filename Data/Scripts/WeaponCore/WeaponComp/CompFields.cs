@@ -24,12 +24,14 @@ namespace WeaponCore.Support
         internal volatile bool InventoryInited;
         internal volatile bool IsSorterTurret;
 
-        internal GridAi Ai { get; set; }
-        internal MySoundPair RotationSound;
-        internal MyEntity3DSoundEmitter RotationEmitter; 
+        internal readonly MySoundPair RotationSound;
+        internal readonly MyEntity3DSoundEmitter RotationEmitter;
 
+        internal GridAi Ai;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Ai.Session.LastTerminalId == MyCube.EntityId;
+
+        internal int OnAddedAttempts;
 
         internal MatrixD CubeMatrix;
         internal uint LastRayCastTick;
@@ -71,7 +73,7 @@ namespace WeaponCore.Support
         
         internal readonly MyCubeBlock MyCube;
         internal readonly IMySlimBlock Slim;
-        internal readonly MyWeaponPlatform Platform = new MyWeaponPlatform();
+        internal readonly MyWeaponPlatform Platform;
         internal readonly MyInventory BlockInventory;
         internal readonly IMyLargeMissileTurret MissileBase;
         internal readonly IMyConveyorSorter SorterBase;
@@ -119,6 +121,9 @@ namespace WeaponCore.Support
             
             BlockInventory = (MyInventory)MyCube.GetInventoryBase();
             SinkPower = IdlePower;
+            RotationEmitter = new MyEntity3DSoundEmitter(MyCube, true, 1f);
+            RotationSound = new MySoundPair();
+            Platform = new MyWeaponPlatform(this);
         }        
     }
 }

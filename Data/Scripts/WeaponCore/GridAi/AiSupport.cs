@@ -447,14 +447,29 @@ namespace WeaponCore.Support
             WeaponsIdx.Clear();
             WeaponBase.Clear();
             AmmoInventories.Clear();
+            Session.ReturnMasterInventory(AmmoInventories);
 
+            SourceCount = 0;
+            ManualComps = 0;
+            BlockCount = 0;
+            MyOwner = 0;
+            PointDefense = false;
+            SupressMouseShoot = false;
+            OverPowered = false;
+            UpdatePowerSources = false;
+            AvailablePowerChanged = false;
+            PowerIncrease = false;
+            RequestedPowerChanged = false;
+            RequestIncrease = false;
+            CheckReload = false;
+            DbReady = false;
             Focus.Clean();
             MyShieldTmp = null;
             MyShield = null;
             MyPlanetTmp = null;
             MyPlanet = null;
-            FakeShipController = null;
             TerminalSystem = null;
+            Session.GridAiPool.Return(this);
         }
 
         internal void UpdateGridPower()
@@ -640,12 +655,6 @@ namespace WeaponCore.Support
                 var compareOffense = x.OffenseRating.CompareTo(y.OffenseRating);
                 return -compareOffense;
             }
-        }
-
-        internal class WeaponCount
-        {
-            internal int Current;
-            internal int Max;
         }
 
         internal class TargetInfo

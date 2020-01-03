@@ -8,7 +8,7 @@ namespace WeaponCore.Support
     // Courtesy of Equinox
     public class Dummy
     {
-        internal readonly MyEntity Entity;
+        internal MyEntity Entity;
 
         private IMyModel _cachedModel;
         private IMyModel _cachedSubpartModel;

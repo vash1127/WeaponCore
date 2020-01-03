@@ -86,7 +86,7 @@ namespace WeaponCore
                     }
                 }
                 db.NewEntities.Clear();
-                db.SortedTargets.Sort(db.TargetCompare1);
+                db.SortedTargets.Sort(TargetCompare);
 
                 db.TargetAis.Clear();
                 db.TargetAis.AddRange(db.TargetAisTmp);

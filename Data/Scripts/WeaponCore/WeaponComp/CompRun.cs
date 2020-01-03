@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Definitions;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
@@ -16,11 +17,8 @@ namespace WeaponCore.Support
                 base.OnAddedToContainer();
                 if (Container.Entity.InScene)
                 {
-                    lock (this)
-                    {
-                        if (Platform.State == MyWeaponPlatform.PlatformState.Refresh)
-                            PreInit();
-                    }
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Fresh)
+                        PlatformInit();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
@@ -31,11 +29,11 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
-                lock (this)
-                {
-                    if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready) ReInitPlatform();
-                    else MyAPIGateway.Utilities.InvokeOnGameThread(PreInit);
-                }
+
+                if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                    Ai.Session.CompChanges.Enqueue(new CompChange {Ai = Ai, Comp = this, Change = CompChange.ChangeType.Reinit});
+                else
+                    Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.PlatformInit });
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -47,188 +45,94 @@ namespace WeaponCore.Support
                 Ai.Session.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
         }
 
-        public void RePreInit(object o)
+        internal void PlatformInit()
         {
-            PreInit();
-        }
-
-        public void PreInit()
-        {
-            lock (this)
+            switch (Platform.Init(this))
             {
-                switch (Platform.PreInit(this))
-                {
-                    case MyWeaponPlatform.PlatformState.Invalid:
-                        Log.Line($"Platform PreInit is in an invalid state");
-                        break;
-                    case MyWeaponPlatform.PlatformState.Valid:
-                        Log.Line($"Something went wrong with Platform PreInit");
-                        break;
-                    case MyWeaponPlatform.PlatformState.Delay:
-                        //Log.Line($"Platform RePreInit in 120");
-                        if (Ai == null)
-                        {
-                            Log.Line($"Ai null in PreInit");
-                            break;
-                        }
-                        Ai.Session.FutureEvents.Schedule(RePreInit, null, 120);
-                        break;
-                    case MyWeaponPlatform.PlatformState.Inited:
-                        //Log.Line($"Platform Inited");
-                        InitPlatform();
-                        break;
-                }
+                case MyWeaponPlatform.PlatformState.Invalid:
+                    Log.Line($"Platform PreInit is in an invalid state");
+                    break;
+                case MyWeaponPlatform.PlatformState.Valid:
+                    Log.Line($"Something went wrong with Platform PreInit");
+                    break;
+                case MyWeaponPlatform.PlatformState.Delay:
+                    Ai.Session.CompsDelayed.Enqueue(this);
+                    break;
+                case MyWeaponPlatform.PlatformState.Inited:
+                    Init();
+                    break;
             }
         }
 
-        public void InitPlatform()
+        internal void Init()
         {
-            lock (this)
+            using (MyCube.Pin())
             {
-                _isServer = Ai.Session.IsServer;
-                _isDedicated = Ai.Session.DedicatedServer;
-                _mpActive = Ai.Session.MpActive;
-
-                Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
-                Ai.FirstRun = true;
-
-                StorageSetup();
-
-                MaxRequiredPower = 0;
-                HeatPerSecond = 0;
-                OptimalDps = 0;
-                MaxHeat = 0;
-
-                InventoryInit();
-
-                //range slider fix
-                var maxTrajectory = 0d;
-                var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
-                for (int i = 0; i < Platform.Weapons.Length; i++)
+                if (!MyCube.MarkedForClose && Entity != null)
                 {
-                    var weapon = Platform.Weapons[i];
-                    var state = State.Value.Weapons[weapon.WeaponId];
+                    _isServer = Ai.Session.IsServer;
+                    _isDedicated = Ai.Session.DedicatedServer;
+                    _mpActive = Ai.Session.MpActive;
 
-                    weapon.InitTracking();
-                    DpsAndHeatInit(weapon);
-                    weapon.UpdateBarrelRotation();
+                    Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
+                    Ai.FirstRun = true;
 
-                    //range slider fix
-                    if (ob != null && ob.MaxRangeMeters > maxTrajectory)
-                        maxTrajectory = ob.MaxRangeMeters;
-                    else if (weapon.System.MaxTrajectory > maxTrajectory)
-                        maxTrajectory = weapon.System.MaxTrajectory;
+                    StorageSetup();
 
-                    if (weapon.TrackProjectiles)
-                        Ai.PointDefense = true;
+                    InventoryInit();
+                    PowerInit();
+                    OnAddedToSceneTasks();
 
-                    if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
-                        Session.ComputeStorage(weapon);
-
-                    if (state.CurrentAmmo == 0 && !weapon.Reloading)
-                        weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
-                    else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && state.CurrentAmmo == weapon.System.MagazineDef.Capacity) || state.CurrentAmmo == weapon.System.EnergyMagSize))
-                    {
-                        weapon.CurrentCharge = weapon.System.EnergyMagSize;
-                        CurrentCharge += weapon.System.EnergyMagSize;
-                    }
-                    else if (weapon.System.MustCharge)
-                    {
-                        if (weapon.CurrentCharge > 0)
-                            CurrentCharge -= weapon.CurrentCharge;
-
-                        weapon.CurrentCharge = 0;
-                        state.CurrentAmmo = 0;
-                        weapon.Reloading = false;
-                        Session.ComputeStorage(weapon);
-                    }
-
-                    if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
-                    {
-                        Ai.ManualComps++;
-                        Shooting++;
-                    }
-
+                    Platform.State = MyWeaponPlatform.PlatformState.Ready;
                 }
+                else Log.Line($"Comp Init() failed");
+            }
+        }
 
-                //range slider fix - removed from weaponFields.cs
-                if (maxTrajectory + Ai.GridRadius > Ai.MaxTargetingRange)
+        internal void ReInit()
+        {
+            using (MyCube.Pin())
+            {
+                if (!MyCube.MarkedForClose && Entity != null)
                 {
-                    Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
-                    Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
-                }
-
-                Ai.OptimalDps += OptimalDps;
-
-                
-                PowerInit();
-                RegisterEvents();
-                OnAddedToSceneTasks();
-                if (IsSorterTurret)
-                {
-                    if (!SorterBase.Enabled)
+                    GridAi ai;
+                    if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
                     {
-                        foreach (var w in Platform.Weapons)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                        var newAi = Ai.Session.GridAiPool.Get();
+                        newAi.Init(MyCube.CubeGrid, Ai.Session);
+                        Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
+                        Ai = newAi;
                     }
+                    else Ai = ai;
+
+                    if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this))
+                    {
+                        Ai.FirstRun = true;
+
+                        AddCompList();
+
+                        var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
+                        if (!Ai.WeaponCounter.ContainsKey(blockDef))
+                            Ai.WeaponCounter.TryAdd(blockDef, Ai.Session.WeaponCountPool.Get());
+
+                        Ai.WeaponCounter[blockDef].Current++;
+
+                        OnAddedToSceneTasks();
+                    }
+                    else Log.Line($"Comp ReInit() failed stage2!");
                 }
                 else
                 {
-                    if (!MissileBase.Enabled)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                    }
+                    Log.Line($"Comp ReInit() failed stage1! - marked:{MyCube.MarkedForClose} - Entity:{Entity != null} - hasAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)} - hasMe:{Ai.WeaponBase.ContainsKey(MyCube)}");
                 }
-                Platform.State = MyWeaponPlatform.PlatformState.Ready;
             }
         }
 
-        public void ReInitPlatform()
-        {
-            RegisterEvents();
-
-            GridAi gridAi;
-            if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
-            {
-                gridAi = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
-                Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, gridAi);
-            }
-            else Log.Line($"reinit didn't have cubegrid in GridTargetingAi...");
-            Ai = gridAi;
-            if (gridAi != null && gridAi.WeaponBase.TryAdd(MyCube, this))
-            {
-                UpdateCompList(add: true, invoke: true);
-                if (!gridAi.WeaponCounter.ContainsKey(MyCube.BlockDefinition.Id.SubtypeId))
-                    gridAi.WeaponCounter.TryAdd(MyCube.BlockDefinition.Id.SubtypeId, new GridAi.WeaponCount());
-
-                gridAi.WeaponCounter[MyCube.BlockDefinition.Id.SubtypeId].Current++;
-
-                MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
-            }
-            else Log.Line("ReInitPlatform failed");
-        }
-
-        private void OnAddedToSceneTasks()
+        internal void OnAddedToSceneTasks()
         {
             try
             {
-                if (MyCube.CubeGrid != Ai.MyGrid)
-                {
-                    Log.Line($"OnAddedToSceneTasks cubeGrid not Match AI Grid? {MyCube.CubeGrid.DebugName} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - CubeMarked:{MyCube.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} ");
-                    return;
-                }
-                if (Entity == null)
-                {
-                    Log.Line($"OnAddedToSceneTasks had a null Entity how? {MyCube.CubeGrid.DebugName} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - CubeMarked:{MyCube.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} ");
-                    return;
-                }
-                if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
-                {
-                    Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap");
-                    MyAPIGateway.Utilities.InvokeOnGameThread(OnAddedToSceneTasks);
-                    return;
-                }
+                RegisterEvents();
 
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                     Platform.ResetParts(this);
@@ -240,10 +144,55 @@ namespace WeaponCore.Support
                 {
                     Ai.GridInit = true;
                     Ai.InitFakeShipController();
-                    foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
+                    Ai.ScanBlockGroups = true;
+                    var fatList = Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
+                    for (int i = 0; i < fatList.Count; i++)
                     {
-                        Ai.FatBlockAdded(cubeBlock);
+                        var cubeBlock = fatList[i];
+                        if (cubeBlock is MyBatteryBlock || cubeBlock is IMyCargoContainer || cubeBlock is IMyAssembler || cubeBlock is IMyShipConnector)
+                            Ai.FatBlockAdded(cubeBlock);
                     }
+                }
+
+                MaxRequiredPower = 0;
+                HeatPerSecond = 0;
+                OptimalDps = 0;
+                MaxHeat = 0;
+
+                //range slider fix - removed from weaponFields.cs
+                var maxTrajectory = 0d;
+                var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
+                for (int i = 0; i < Platform.Weapons.Length; i++)
+                {
+                    var weapon = Platform.Weapons[i];
+
+                    weapon.InitTracking();
+                    
+                    double weaponMaxRange;
+                    DpsAndHeatInit(weapon, ob, out weaponMaxRange);
+                    maxTrajectory += weaponMaxRange;
+
+                    weapon.UpdateBarrelRotation();
+                }
+
+                if (maxTrajectory + Ai.GridRadius > Ai.MaxTargetingRange)
+                {
+                    Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
+                    Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
+                }
+                Ai.OptimalDps += OptimalDps;
+
+                if (IsSorterTurret)
+                {
+                    if (!SorterBase.Enabled)
+                        for (int i = 0; i < Platform.Weapons.Length; i++)
+                            Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                }
+                else
+                {
+                    if (!MissileBase.Enabled)
+                        for (int i = 0; i < Platform.Weapons.Length; i++)
+                            Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                 }
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
@@ -251,13 +200,18 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Ai?.Session == null} EntNull{Entity == null} MyCubeNull:{MyCube?.CubeGrid == null}"); }
         }
 
+        internal void OnRemovedFromSceneQueue()
+        {
+            RemoveComp();
+            RegisterEvents(false);
+        }
+
         public override void OnRemovedFromScene()
         {
             try
             {
                 base.OnRemovedFromScene();
-                RemoveComp();
-                RegisterEvents(false);
+                Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.OnRemovedFromSceneQueue });
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
