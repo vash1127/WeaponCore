@@ -10,6 +10,7 @@ using WeaponCore.Support;
 using WeaponCore.Platform;
 using Sandbox.Definitions;
 using System.Collections.Generic;
+using Sandbox.Game;
 using VRage.Collections;
 using VRage.Game.ObjectBuilders.Definitions;
 using VRage.Utils;
@@ -139,7 +140,8 @@ namespace WeaponCore
                 GridAi gridAi;
                 if (!GridTargetingAIs.TryGetValue(cube.CubeGrid, out gridAi))
                 {
-                    gridAi = new GridAi(cube.CubeGrid, this, Tick);
+                    gridAi = GridAiPool.Get();
+                    gridAi.Init(cube.CubeGrid, this);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
 
@@ -160,16 +162,13 @@ namespace WeaponCore
 
         private void ChangeComps()
         {
-
+            DsUtil2.Start("ChangeComps");
             foreach (var change in CompChanges)
             {
                 if (!GridToFatMap.ContainsKey(change.Comp.MyCube.CubeGrid))
                 {
-                    if (change.Change != CompChange.ChangeType.OnRemovedFromSceneQueue && ++change.Comp.OnAddedAttempts < 300)
-                    {
-                        Log.Line($"ChangeComps didn't exist in GridToFatMap - Change:{change.Change} - Marked:{change.Comp.MyCube.CubeGrid.MarkedForClose} - Closed:{change.Comp.MyCube.CubeGrid.Closed} - InScene:{change.Comp.MyCube.CubeGrid.InScene} - Preview:{change.Comp.MyCube.CubeGrid.IsPreview} - Physics:{change.Comp.MyCube.CubeGrid.Physics != null}");
+                    if (change.Change != CompChange.ChangeType.OnRemovedFromSceneQueue)
                         continue;
-                    }
                 }
 
                 CompChange removed;
@@ -193,6 +192,7 @@ namespace WeaponCore
                         break;
                 }
             }
+            DsUtil2.Complete("ChangeComps", false, true);
         }
 
         internal int LoadAssigner()
@@ -201,6 +201,18 @@ namespace WeaponCore
             else ++_loadCounter;
 
             return _loadCounter;
+        }
+
+        internal ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> GetMasterInventory()
+        {
+
+            if (InventoryPool.Count > 0) return InventoryPool.Pop();
+            return new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(AmmoInventoriesMaster, MyDefinitionId.Comparer);
+        }
+
+        internal void ReturnMasterInventory(ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> inventory)
+        {
+            InventoryPool.Push(inventory);
         }
 
         internal void Timings()

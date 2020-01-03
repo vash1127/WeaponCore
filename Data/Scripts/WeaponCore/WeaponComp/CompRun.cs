@@ -95,7 +95,8 @@ namespace WeaponCore.Support
             GridAi ai;
             if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
             {
-                var newAi = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
+                var newAi = Ai.Session.GridAiPool.Get();
+                newAi.Init(MyCube.CubeGrid, Ai.Session);
                 Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
                 Ai = newAi;
             }
@@ -103,6 +104,8 @@ namespace WeaponCore.Support
 
             if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this))
             {
+                Ai.FirstRun = true;
+
                 AddCompList();
 
                 var blockDef = MyCube.BlockDefinition.Id.SubtypeId;

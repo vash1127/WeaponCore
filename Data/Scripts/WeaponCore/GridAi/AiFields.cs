@@ -21,9 +21,13 @@ namespace WeaponCore.Support
         internal volatile bool Scanning;
         internal volatile bool GridInit;
         internal volatile bool SubGridsChanged;
+
+        internal readonly Focus Focus = new Focus(2);
+        internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
+        internal readonly MyShipController FakeShipController = new MyShipController();
+
         internal readonly ConcurrentDictionary<MyCubeBlock, WeaponComponent> WeaponBase = new ConcurrentDictionary<MyCubeBlock, WeaponComponent>();
         internal readonly ConcurrentDictionary<MyStringHash, WeaponCount> WeaponCounter = new ConcurrentDictionary<MyStringHash, WeaponCount>(MyStringHash.Comparer);
-        internal readonly ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventories;
 
         internal readonly CachingDictionary<string, GroupInfo> BlockGroups = new CachingDictionary<string, GroupInfo>();
 
@@ -34,10 +38,9 @@ namespace WeaponCore.Support
         internal readonly HashSet<MyCubeGrid> RemSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> AddSubGrids = new HashSet<MyCubeGrid>();
         internal readonly HashSet<MyCubeGrid> TmpSubGrids = new HashSet<MyCubeGrid>();
-
         internal readonly HashSet<Projectile> LiveProjectile = new HashSet<Projectile>();
 
-        internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>();
+        internal readonly List<WeaponComponent> Weapons = new List<WeaponComponent>(32);
         internal readonly List<Projectile> DeadProjectiles = new List<Projectile>();
         internal readonly List<GridAi> TargetAisTmp = new List<GridAi>();
         internal readonly List<MyEntity> EntitiesInRange = new List<MyEntity>();
@@ -46,21 +49,19 @@ namespace WeaponCore.Support
         internal readonly List<Projectile> ProjetileCache = new List<Projectile>();
         internal readonly List<MyEntity> StaticsInRange = new List<MyEntity>();
         internal readonly List<MyEntity> Obstructions = new List<MyEntity>();
-        internal readonly List<GridAi> TargetAis = new List<GridAi>();
+        internal readonly List<GridAi> TargetAis = new List<GridAi>(32);
         internal readonly List<TargetInfo> SortedTargets = new List<TargetInfo>();
         internal readonly List<DetectInfo> NewEntities = new List<DetectInfo>();
 
-        internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>();
+        internal readonly Dictionary<MyEntity, TargetInfo> Targets = new Dictionary<MyEntity, TargetInfo>(32);
         internal readonly Dictionary<WeaponComponent, long> Gunners = new Dictionary<WeaponComponent, long>();
-        internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>();
+        internal readonly Dictionary<WeaponComponent, int> WeaponsIdx = new Dictionary<WeaponComponent, int>(32);
 
-        internal readonly TargetCompare TargetCompare1 = new TargetCompare();
-        internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
-        internal readonly Session Session;
-        internal readonly MyCubeGrid MyGrid;
+
+        internal Session Session;
+        internal MyCubeGrid MyGrid;
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
-        internal readonly uint CreatedTick;
-        internal readonly Focus Focus;
+        internal uint CreatedTick;
         
         internal Vector3D GridCenter;
         internal Vector3 GridVel;
@@ -68,7 +69,6 @@ namespace WeaponCore.Support
         internal IMyGridTerminalSystem TerminalSystem;
         internal IMyTerminalBlock LastWeaponTerminal;
         internal IMyTerminalBlock LastTerminal;
-        internal MyShipController FakeShipController = new MyShipController();
         internal MyEntity MyShieldTmp;
         internal MyEntity MyShield;
         internal MyPlanet MyPlanetTmp;
@@ -78,20 +78,24 @@ namespace WeaponCore.Support
         internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
+        internal bool ScanBlockGroups = true;
+
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;
         internal uint NewProjectileTick;
         internal uint LiveProjectileTick;
         internal uint LastPowerUpdateTick;
+
         internal int SourceCount;
         internal int ManualComps;
         internal int BlockCount;
         internal long MyOwner;
-        internal bool DbReady;
-        internal bool ScanBlockGroups = true;
+        internal bool PointDefense;
         internal bool SupressMouseShoot;
         internal bool OverPowered;
+
+        internal bool DbReady;
         internal bool UpdatePowerSources;
         internal bool AvailablePowerChanged;
         internal bool PowerIncrease;
@@ -104,7 +108,6 @@ namespace WeaponCore.Support
         internal bool HasPower;
         internal bool HadPower;
         internal bool CheckProjectiles;
-        internal bool PointDefense;
         internal bool WeaponTerminalAccess;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
@@ -127,19 +130,20 @@ namespace WeaponCore.Support
             None,
         }
 
+        internal ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> AmmoInventories;
+
         private readonly List<MyEntity> _possibleTargets = new List<MyEntity>();
         private readonly FastResourceLock _scanLock = new FastResourceLock();
         private uint _lastScan;
         private uint _pCacheTick;
 
-        internal GridAi(MyCubeGrid grid, Session session, uint createdTick)
+        internal void Init(MyCubeGrid grid, Session session)
         {
             MyGrid = grid;
             Session = session;
-            CreatedTick = createdTick;
+            CreatedTick = session.Tick;
             RegisterMyGridEvents(true, grid);
-            Focus = new Focus(2);
-            AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(Session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
+            AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }
     }
 }
