@@ -121,6 +121,8 @@ namespace WeaponCore.Support
             
             BlockInventory = (MyInventory)MyCube.GetInventoryBase();
             SinkPower = IdlePower;
+            RotationEmitter = new MyEntity3DSoundEmitter(MyCube, true, 1f);
+            RotationSound = new MySoundPair();
         }        
     }
 }

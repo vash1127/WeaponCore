@@ -13,8 +13,8 @@ namespace WeaponCore.Platform
 {
     public class MyWeaponPlatform
     {
+        internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal Weapon[] Weapons;
-        internal RecursiveSubparts Parts;
         internal WeaponStructure Structure;
         internal PlatformState State;
 
@@ -80,9 +80,6 @@ namespace WeaponCore.Platform
             } 
 
             Structure = structure;
-            Log.Line($"new parts, already exists:{Parts != null}");
-
-            Parts = new RecursiveSubparts();
             var partCount = Structure.MuzzlePartNames.Length;
             Weapons = new Weapon[partCount];
             Parts.Entity = comp.Entity as MyEntity;
@@ -226,10 +223,8 @@ namespace WeaponCore.Platform
                         {
                             Weapons[c].MuzzlePart.Item1.SetEmissiveParts("Heating", Color.Transparent, 0);
                         }
-                        catch (Exception e)
-                        {
-                            // no emissive parts for barrel
-                        }
+                        catch (Exception ex) { Log.Line($"Exception in no emissive parts for barrel: {ex}"); }
+
                     }
 
                     if (Weapons[c].AiOnlyWeapon)

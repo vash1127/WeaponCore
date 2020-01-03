@@ -16,33 +16,8 @@ namespace WeaponCore.Support
                 base.OnAddedToContainer();
                 if (Container.Entity.InScene)
                 {
-                    lock (this)
-                    {
-                        using (MyCube.Pin())
-                        {
-                            if (MyCube.MarkedForClose)
-                            {
-                                Log.Line($"OnAddedToContainer cube marked for close,");
-                                return;
-                            }
-                        }
-                        using (MyCube.CubeGrid.Pin())
-                        {
-                            if (MyCube.CubeGrid.MarkedForClose)
-                            {
-                                Log.Line($"OnAddedToContainer CubeGrid marked for close");
-                                return;
-                            }
-                        }
-                        if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
-                        {
-                            Log.Line($"OnAddedToContainer didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
-                            return;
-                        }
-
-                        if (Platform.State == MyWeaponPlatform.PlatformState.Fresh)
-                            PlatformInit(null);
-                    }
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Fresh)
+                        PlatformInit(null);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
@@ -53,16 +28,11 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
-                lock (this)
-                {
 
-                    if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
-                        //MyAPIGateway.Utilities.InvokeOnGameThread(ReInit);
-                        Ai.Session.CompChanges.Enqueue(new CompChange {Ai = Ai, Comp = this, Change = CompChange.ChangeType.Reinit});
-                    else
-                        //MyAPIGateway.Utilities.InvokeOnGameThread(PlatformInit);
-                        Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.PlatformInit });
-                }
+                if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
+                    Ai.Session.CompChanges.Enqueue(new CompChange {Ai = Ai, Comp = this, Change = CompChange.ChangeType.Reinit});
+                else
+                    Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.PlatformInit });
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -76,51 +46,27 @@ namespace WeaponCore.Support
 
         internal void PlatformInit(object o)
         {
-            lock (this)
+            switch (Platform.Init(this))
             {
-                using (MyCube.Pin())
-                {
-                    if (MyCube.MarkedForClose)
+                case MyWeaponPlatform.PlatformState.Invalid:
+                    Log.Line($"Platform PreInit is in an invalid state");
+                    break;
+                case MyWeaponPlatform.PlatformState.Valid:
+                    Log.Line($"Something went wrong with Platform PreInit");
+                    break;
+                case MyWeaponPlatform.PlatformState.Delay:
+                    //Log.Line($"Platform RePreInit in 120");
+                    if (Ai == null)
                     {
-                        Log.Line($"PreInit cube marked for close,");
-                        return;
+                        Log.Line($"Ai null in PreInit");
+                        break;
                     }
-                }
-                using (MyCube.CubeGrid.Pin())
-                {
-                    if (MyCube.CubeGrid.MarkedForClose)
-                    {
-                        Log.Line($"PreInit CubeGrid marked for close");
-                        return;
-                    }
-                }
-                if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
-                {
-                    Log.Line($"PlatformInit didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
-                    //return;
-                }
-                switch (Platform.Init(this))
-                {
-                    case MyWeaponPlatform.PlatformState.Invalid:
-                        Log.Line($"Platform PreInit is in an invalid state");
-                        break;
-                    case MyWeaponPlatform.PlatformState.Valid:
-                        Log.Line($"Something went wrong with Platform PreInit");
-                        break;
-                    case MyWeaponPlatform.PlatformState.Delay:
-                        //Log.Line($"Platform RePreInit in 120");
-                        if (Ai == null)
-                        {
-                            Log.Line($"Ai null in PreInit");
-                            break;
-                        }
-                        Ai.Session.FutureEvents.Schedule(DelayedPlatformInit, null, 120);
-                        break;
-                    case MyWeaponPlatform.PlatformState.Inited:
-                        //Log.Line($"Platform Inited");
-                        Init();
-                        break;
-                }
+                    Ai.Session.FutureEvents.Schedule(DelayedPlatformInit, null, 120);
+                    break;
+                case MyWeaponPlatform.PlatformState.Inited:
+                    //Log.Line($"Platform Inited");
+                    Init();
+                    break;
             }
         }
 
@@ -131,11 +77,6 @@ namespace WeaponCore.Support
 
         internal void Init()
         {
-            if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
-            {
-                Log.Line($"Init didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
-                //return;
-            }
             lock (this)
             {
                 _isServer = Ai.Session.IsServer;
@@ -192,38 +133,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                using (MyCube.Pin())
-                {
-                    if (MyCube.MarkedForClose)
-                    {
-                        Log.Line($"cubeMarked for close in ONAddedToSceneTasks");
-                        return;
-                    }
-                }
-                using (MyCube.CubeGrid.Pin())
-                {
-                    if (MyCube.CubeGrid.MarkedForClose)
-                    {
-                        Log.Line($"cubeMarked for close in ONAddedToSceneTasks");
-                        return;
-                    }
-                }
-                if (MyCube.CubeGrid != Ai.MyGrid)
-                {
-                    Log.Line($"OnAddedToSceneTasks cubeGrid not Match AI Grid? {MyCube.CubeGrid.DebugName} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - CubeMarked:{MyCube.MarkedForClose} - GridMatch:{MyCube.CubeGrid == Ai.MyGrid} ");
-                    return;
-                }
-                if (Entity == null)
-                {
-                    Log.Line($"OnAddedToSceneTasks had a null Entity how? {MyCube.CubeGrid.DebugName} - GridMarked:{MyCube.CubeGrid.MarkedForClose} - CubeMarked:{MyCube.MarkedForClose} - InitState:{Platform.State}");
-                    return;
-                }
-                if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
-                {
-                    Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
-                    //return;
-                }
-
                 RegisterEvents();
 
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
@@ -338,7 +247,6 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                //MyAPIGateway.Utilities.InvokeOnGameThread(OnRemovedToSceneTasks);
                 Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.OnRemovedFromSceneQueue });
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
