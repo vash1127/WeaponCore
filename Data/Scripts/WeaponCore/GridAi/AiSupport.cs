@@ -578,53 +578,47 @@ namespace WeaponCore.Support
 
         internal void DelayedGridCleanUp(object o)
         {
-            //Session.ReturnMasterInventory(AmmoInventories);
-            if (GridInit)
+            foreach (var grid in SubGrids)
             {
-                foreach (var grid in SubGrids)
-                {
-                    if (grid == MyGrid) continue;
-                    RemSubGrids.Add(grid);
-                }
-                AddSubGrids.Clear();
-                SubGridChanges();
-                SubGrids.Clear();
-                Gunners.Clear();
-                Obstructions.Clear();
-                TargetAis.Clear();
-                EntitiesInRange.Clear();
-                Batteries.Clear();
-                Targets.Clear();
-                SortedTargets.Clear();
-                BlockGroups.Clear();
-                Weapons.Clear();
-                WeaponsIdx.Clear();
-                WeaponBase.Clear();
-
-                SourceCount = 0;
-                ManualComps = 0;
-                BlockCount = 0;
-                MyOwner = 0;
-                PointDefense = false;
-                SupressMouseShoot = false;
-                OverPowered = false;
-                UpdatePowerSources = false;
-                AvailablePowerChanged = false;
-                PowerIncrease = false;
-                RequestedPowerChanged = false;
-                RequestIncrease = false;
-                CheckReload = false;
-                DbReady = false;
-                Focus.Clean();
-                MyShieldTmp = null;
-                MyShield = null;
-                MyPlanetTmp = null;
-                MyPlanet = null;
-                TerminalSystem = null;
-                RegisterMyGridEvents(false);
-                GridInit = false;
+                if (grid == MyGrid) continue;
+                RemSubGrids.Add(grid);
             }
+            AddSubGrids.Clear();
+            SubGridChanges();
+            SubGrids.Clear();
+            Gunners.Clear();
+            Obstructions.Clear();
+            TargetAis.Clear();
+            EntitiesInRange.Clear();
+            Batteries.Clear();
+            Targets.Clear();
+            SortedTargets.Clear();
+            BlockGroups.Clear();
+            Weapons.Clear();
+            WeaponsIdx.Clear();
+            WeaponBase.Clear();
             AmmoInventories.Clear();
+
+            SourceCount = 0;
+            ManualComps = 0;
+            BlockCount = 0;
+            MyOwner = 0;
+            PointDefense = false;
+            SupressMouseShoot = false;
+            OverPowered = false;
+            UpdatePowerSources = false;
+            AvailablePowerChanged = false;
+            PowerIncrease = false;
+            RequestedPowerChanged = false;
+            RequestIncrease = false;
+            CheckReload = false;
+            DbReady = false;
+            Focus.Clean();
+            MyShieldTmp = null;
+            MyShield = null;
+            MyPlanetTmp = null;
+            MyPlanet = null;
+            TerminalSystem = null;
             Session.GridAiPool.Return(this);
         }
 
