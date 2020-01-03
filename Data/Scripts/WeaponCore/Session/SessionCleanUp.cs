@@ -73,8 +73,8 @@ namespace WeaponCore
                 _afterGlow.RemoveAtFast(i);
             }
             _afterGlow.Clear();
-            Glows.Clear();
-            AvShotPool.Clean();
+            Av.Glows.Clear();
+            Av.AvShotPool.Clean();
 
             DeferedUpBlockTypeCleanUp(true);
 

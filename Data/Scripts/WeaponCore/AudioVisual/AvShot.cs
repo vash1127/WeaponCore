@@ -159,7 +159,7 @@ namespace WeaponCore.Support
             if (!Active)
             {
                 Active = true;
-                Ai.Session.AvShots.Add(this);
+                Ai.Session.Av.AvShots.Add(this);
             }
 
             if (Hit.HitPos != Vector3D.Zero)
@@ -253,7 +253,7 @@ namespace WeaponCore.Support
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
             {
                 //var glow = Ai.Session.GlowPool.Get();
-                var glow = Ai.Session.Glows.Count > 0 ? Ai.Session.Glows.Pop() : new AfterGlow();
+                var glow = Ai.Session.Av.Glows.Count > 0 ? Ai.Session.Av.Glows.Pop() : new AfterGlow();
                 glow.Step = 0;
                 glow.VelStep = Direction * StepSize;
                 glow.TailPos = TracerStart + -glow.VelStep;

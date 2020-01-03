@@ -274,7 +274,7 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                Info.AvShot = Info.Ai.Session.AvShotPool.Get();
+                Info.AvShot = Info.Ai.Session.Av.AvShotPool.Get();
                 Info.AvShot.Init(Info, AccelPerSec * StepConst, MaxSpeed);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
             }

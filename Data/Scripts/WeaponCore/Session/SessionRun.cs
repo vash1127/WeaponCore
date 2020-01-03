@@ -194,7 +194,7 @@ namespace WeaponCore
                         TargetUi.DrawTargetUi();
                     }
 
-                    RunAv();
+                    Av.Run();
                     /*
                     if (_shrinking.Count > 0)
                         Shrink();
