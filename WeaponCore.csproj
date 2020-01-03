@@ -48,7 +48,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\PbApiWrapper.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\AudioVisual\SupportClasses.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\SupportClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiBlockGroups.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\PartAnimation.cs" />
