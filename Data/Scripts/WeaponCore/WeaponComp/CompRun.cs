@@ -42,7 +42,7 @@ namespace WeaponCore.Support
         {
             base.OnBeforeRemovedFromContainer();
             if (!Container.Entity.InScene)
-                Ai.Session.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
+                Session?.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
         }
 
         internal void PlatformInit()
@@ -76,9 +76,8 @@ namespace WeaponCore.Support
 
                     Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
                     Ai.FirstRun = true;
-
                     StorageSetup();
-
+                    Set.ComputeRange();
                     InventoryInit();
                     PowerInit();
                     OnAddedToSceneTasks();
