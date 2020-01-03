@@ -636,7 +636,7 @@ namespace WeaponCore.Support
             {
                 var message = $"[{name}] ms:{(float)ms} last-ms:{(float)_last}";
                 _last = ms;
-                if (_time) Log.Line(message);
+                if (_time) Log.LineShortDate(message);
                 else Log.CleanLine(message);
             }
         }

@@ -147,120 +147,16 @@ namespace WeaponCore.Support
 
                 StorageSetup();
 
-                MaxRequiredPower = 0;
-                HeatPerSecond = 0;
-                OptimalDps = 0;
-                MaxHeat = 0;
-
                 InventoryInit();
-
-                //range slider fix
-                var maxTrajectory = 0d;
-                var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
-                for (int i = 0; i < Platform.Weapons.Length; i++)
-                {
-                    var weapon = Platform.Weapons[i];
-                    var state = State.Value.Weapons[weapon.WeaponId];
-
-                    weapon.InitTracking();
-                    DpsAndHeatInit(weapon);
-                    weapon.UpdateBarrelRotation();
-
-                    //range slider fix
-                    if (ob != null && ob.MaxRangeMeters > maxTrajectory)
-                        maxTrajectory = ob.MaxRangeMeters;
-                    else if (weapon.System.MaxTrajectory > maxTrajectory)
-                        maxTrajectory = weapon.System.MaxTrajectory;
-
-                    if (weapon.TrackProjectiles)
-                        Ai.PointDefense = true;
-
-                    if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
-                        Session.ComputeStorage(weapon);
-
-                    if (state.CurrentAmmo == 0 && !weapon.Reloading)
-                        weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
-                    else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && state.CurrentAmmo == weapon.System.MagazineDef.Capacity) || state.CurrentAmmo == weapon.System.EnergyMagSize))
-                    {
-                        weapon.CurrentCharge = weapon.System.EnergyMagSize;
-                        CurrentCharge += weapon.System.EnergyMagSize;
-                    }
-                    else if (weapon.System.MustCharge)
-                    {
-                        if (weapon.CurrentCharge > 0)
-                            CurrentCharge -= weapon.CurrentCharge;
-
-                        weapon.CurrentCharge = 0;
-                        state.CurrentAmmo = 0;
-                        weapon.Reloading = false;
-                        Session.ComputeStorage(weapon);
-                    }
-
-                    if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
-                    {
-                        Ai.ManualComps++;
-                        Shooting++;
-                    }
-
-                }
-
-                //range slider fix - removed from weaponFields.cs
-                if (maxTrajectory + Ai.GridRadius > Ai.MaxTargetingRange)
-                {
-                    Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
-                    Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
-                }
-
-                Ai.OptimalDps += OptimalDps;
-
-                
                 PowerInit();
-                RegisterEvents();
                 OnAddedToSceneTasks();
-                if (IsSorterTurret)
-                {
-                    if (!SorterBase.Enabled)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                    }
-                }
-                else
-                {
-                    if (!MissileBase.Enabled)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                    }
-                }
+
                 Platform.State = MyWeaponPlatform.PlatformState.Ready;
             }
         }
 
         internal void ReInit()
         {
-            using (MyCube.Pin())
-            {
-                if (MyCube.MarkedForClose)
-                {
-                    Log.Line($"ReInitPlatform cube marked for close");
-                    return;
-                }
-            }
-            using (MyCube.CubeGrid.Pin())
-            {
-                if (MyCube.CubeGrid.MarkedForClose)
-                {
-                    Log.Line($"ReInitPlatform cubeGrid marked for close");
-                    return;
-                }
-            }
-            if (!Ai.Session.GridToFatMap.ContainsKey(MyCube.CubeGrid))
-            {
-                Log.Line($"ReInit didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
-                //return;
-            }
-
             var gridAiAdded = false;
 
             GridAi ai;
@@ -277,7 +173,6 @@ namespace WeaponCore.Support
             if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this))
             {
                 if (!gridAiAdded) Ai.Session.DsUtil2.Start("ReInit");
-                RegisterEvents();
                 AddCompList();
 
                 var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
@@ -328,6 +223,9 @@ namespace WeaponCore.Support
                     Log.Line($"OnAddedToSceneTasks didn't exist in GridToFatMap - Marked:{MyCube.CubeGrid.MarkedForClose} - Closed:{MyCube.CubeGrid.Closed} - InScene:{MyCube.CubeGrid.InScene} - Preview:{MyCube.CubeGrid.IsPreview} - Physics:{MyCube.CubeGrid.Physics != null}");
                     //return;
                 }
+
+                RegisterEvents();
+
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                     Platform.ResetParts(this);
 
@@ -341,6 +239,86 @@ namespace WeaponCore.Support
                     foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
                     {
                         Ai.FatBlockAdded(cubeBlock);
+                    }
+                }
+
+                MaxRequiredPower = 0;
+                HeatPerSecond = 0;
+                OptimalDps = 0;
+                MaxHeat = 0;
+
+                //range slider fix
+                var maxTrajectory = 0d;
+                var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
+                for (int i = 0; i < Platform.Weapons.Length; i++)
+                {
+                    var weapon = Platform.Weapons[i];
+                    var state = State.Value.Weapons[weapon.WeaponId];
+
+                    weapon.InitTracking();
+                    DpsAndHeatInit(weapon);
+                    weapon.UpdateBarrelRotation();
+
+                    //range slider fix
+                    if (ob != null && ob.MaxRangeMeters > maxTrajectory)
+                        maxTrajectory = ob.MaxRangeMeters;
+                    else if (weapon.System.MaxTrajectory > maxTrajectory)
+                        maxTrajectory = weapon.System.MaxTrajectory;
+
+                    if (weapon.TrackProjectiles)
+                        Ai.PointDefense = true;
+
+                    if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
+                        Session.ComputeStorage(weapon);
+
+                    if (state.CurrentAmmo == 0 && !weapon.Reloading)
+                        weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+                    else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && state.CurrentAmmo == weapon.System.MagazineDef.Capacity) || state.CurrentAmmo == weapon.System.EnergyMagSize))
+                    {
+                        weapon.CurrentCharge = weapon.System.EnergyMagSize;
+                        CurrentCharge += weapon.System.EnergyMagSize;
+                    }
+                    else if (weapon.System.MustCharge)
+                    {
+                        if (weapon.CurrentCharge > 0)
+                            CurrentCharge -= weapon.CurrentCharge;
+
+                        weapon.CurrentCharge = 0;
+                        state.CurrentAmmo = 0;
+                        weapon.Reloading = false;
+                        Session.ComputeStorage(weapon);
+                    }
+
+                    if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
+                    {
+                        Ai.ManualComps++;
+                        Shooting++;
+                    }
+                }
+
+                //range slider fix - removed from weaponFields.cs
+                if (maxTrajectory + Ai.GridRadius > Ai.MaxTargetingRange)
+                {
+                    Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
+                    Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
+                }
+
+                Ai.OptimalDps += OptimalDps;
+
+                if (IsSorterTurret)
+                {
+                    if (!SorterBase.Enabled)
+                    {
+                        foreach (var w in Platform.Weapons)
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                    }
+                }
+                else
+                {
+                    if (!MissileBase.Enabled)
+                    {
+                        foreach (var w in Platform.Weapons)
+                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                     }
                 }
 

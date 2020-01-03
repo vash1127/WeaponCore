@@ -68,6 +68,7 @@ namespace WeaponCore
                     end = offetPosition + (dir * ai.MaxTargetingRange);
                 }
             }
+            Log.Line($"{ai.Targets.Count} - {ai.GridInit} - {ai.GridAvailablePower} - {ai.DbReady} - {ai.MaxTargetingRange} - {ai.MaxTargetingRangeSqr} - {ai.GridCurrentPower} - {ai.FirstRun} - {ai.Weapons.Count}");
             _session.Physics.CastRay(start, end, _hitInfo);
             for (int i = 0; i < _hitInfo.Count; i++)
             {
