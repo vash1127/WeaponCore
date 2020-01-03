@@ -49,7 +49,7 @@ namespace WeaponCore.Platform
                     {
                         if (_prefiredTick + prefireLength <= tick)
                         {
-                            EventTriggerStateChanged(EventTriggers.PreFire, true, false, _muzzlesToFire);
+                            EventTriggerStateChanged(EventTriggers.PreFire, true, _muzzlesToFire);
                             _prefiredTick = tick;
                         }
                     }
@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
 
             if (System.BurstMode)
             {
-                if (state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst && Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0)
+                if (state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst && (Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)))
                 {                  
                     _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                     EventTriggerStateChanged(EventTriggers.BurstReload, true);
@@ -298,6 +298,7 @@ namespace WeaponCore.Platform
                     EventTriggerStateChanged(EventTriggers.Overheated, true);
                     Comp.Overheated = true;
                     StopShooting();
+                    break;
                 }
 
                 if (i == bps) NextMuzzle++;

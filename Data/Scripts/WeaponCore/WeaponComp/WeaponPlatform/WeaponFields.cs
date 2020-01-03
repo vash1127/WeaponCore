@@ -80,6 +80,7 @@ namespace WeaponCore.Platform
 
         internal Targets TargetState = Targets.Expired;
         internal EventTriggers LastEvent;
+        internal PartAnimation CurLgstAnimPlaying;
         internal float RequiredPower;
         internal float UseablePower;
         internal float OldUseablePower;

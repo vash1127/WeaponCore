@@ -689,18 +689,8 @@ namespace WeaponCore
             for (int i = AnimationsToProcess.Count - 1; i >= 0; i--)
             {
                 var animation = AnimationsToProcess[i];
-                //var data = new AnimationParallelData(ref animation);
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null)
-                {
-                    if (!animation.PauseAnimation && (animation.MotionDelay == 0 || animation.CurrentMove > 0 || (animation.MotionDelay > 0 && animation.StartTick <= Tick && animation.StartTick > 0)))
-                    {
-                        AnimateParts(animation, i);
-                        animation.StartTick = 0;
-                    }
-                    else if (animation.MotionDelay > 0 && animation.StartTick == 0)
-                        animation.StartTick = Tick + animation.MotionDelay;
-
-                }
+                    AnimateParts(animation, i);
             }
         }
 
@@ -712,6 +702,8 @@ namespace WeaponCore
             Vector3D translation;
             AnimationType animationType;
             EmissiveState currentEmissive;
+
+            if (animation.StartTick > Tick) return;
 
             animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
 

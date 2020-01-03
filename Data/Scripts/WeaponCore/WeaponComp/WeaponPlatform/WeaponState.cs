@@ -39,476 +39,191 @@ namespace WeaponCore.Platform
             public int MuzzleId;
         }
 
-        internal void EventTriggerStateChanged(EventTriggers state, bool active, bool pause = false, HashSet<string> muzzles = null)
+        internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
-            try
+            var session = Comp.Ai.Session;
+            switch (state)
             {
-                if (!Comp.Ai.Session.DedicatedServer)
-                {
-                    switch (state)
+                case EventTriggers.StopFiring:
+                case EventTriggers.PreFire:
+                case EventTriggers.Firing:
+                    if (AnimationsSet.ContainsKey(state))
                     {
-                        case EventTriggers.Firing:
-                            if (AnimationsSet.ContainsKey(EventTriggers.Firing))
-                            {
-                                if (active) LastEvent = EventTriggers.Firing;
-                                for (int i = 0; i < AnimationsSet[EventTriggers.Firing].Length; i++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.Firing][i];
-                                    if (active && !animation.Looping && !pause)
-                                    {
-                                        if (!animation.Running &&
-                                            (animation.Muzzle == "Any" ||
-                                             muzzles != null && muzzles.Contains(animation.Muzzle)))
-                                        {
-                                            if (animation.TriggerOnce && animation.Triggered) continue;
-
-                                            if (animation.Muzzle != "Any") _muzzlesFiring.Add(animation.Muzzle);
-                                            PartAnimation animCheck;
-                                            if (AnimationLookup.TryGetValue(animation.EventIdLookup[EventTriggers.StopFiring], out animCheck))
-                                            {
-                                                if (animCheck.Running)
-                                                    animCheck.Reverse = true;
-                                                else
-                                                {
-                                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                    animation.Running = true;
-                                                }
-
-                                                animation.Triggered = true;
-                                            }
-                                            else
-                                            {
-                                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                animation.Running = true;
-                                                animation.Triggered = true;
-                                            }
-
-                                            if (animation.DoesLoop)
-                                                animation.Looping = true;
-                                        }
-                                    }
-                                    else if (active && animation.Looping && pause)
-                                        animation.PauseAnimation = true;
-
-                                    else if (active && animation.Looping && animation.PauseAnimation)
-                                        animation.PauseAnimation = false;
-                                    else if (active && !animation.Looping && animation.DoesLoop)
-                                        animation.Looping = true;
-                                    else
-                                    {
-                                        animation.PauseAnimation = false;
-                                        animation.Looping = false;
-                                        animation.Triggered = false;
-                                    }
-                                }
-                            }
-
-                            break;
-                        case EventTriggers.StopFiring:
-                            if (AnimationsSet.ContainsKey(EventTriggers.StopFiring))
-                            {
-                                if (active) LastEvent = EventTriggers.StopFiring;
-                                for (int i = 0; i < AnimationsSet[EventTriggers.StopFiring].Length; i++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.StopFiring][i];
-                                    if (active && !animation.Looping && !pause)
-                                    {
-                                        if (!animation.Running &&
-                                            (animation.Muzzle == "Any" || _muzzlesFiring.Contains(animation.Muzzle)))
-                                        {
-                                            if (animation.TriggerOnce && animation.Triggered) continue;
-                                            PartAnimation animCheck;
-                                            if (AnimationLookup.TryGetValue(animation.EventIdLookup[EventTriggers.Firing],
-                                                out animCheck))
-                                            {
-                                                if (animCheck.Running && animCheck.HasMovement)
-                                                    animCheck.Reverse = true;
-                                                else
-                                                {
-                                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                    animation.Running = true;
-                                                }
-
-                                                animation.Triggered = true;
-                                            }
-                                            else
-                                            {
-                                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                animation.Running = true;
-                                                animation.Triggered = true;
-                                            }
-
-                                            if (animation.DoesLoop)
-                                                animation.Looping = true;
-                                        }
-                                    }
-                                    else if (active && animation.Looping && pause)
-                                        animation.PauseAnimation = true;
-
-                                    else if (active && animation.Looping)
-                                        animation.PauseAnimation = false;
-
-                                    else
-                                    {
-                                        animation.PauseAnimation = false;
-                                        animation.Looping = false;
-                                        animation.Triggered = false;
-                                    }
-                                }
-
-                                if (active)
-                                {
-                                    _muzzlesFiring.Clear();
-                                    ShootDelayTick = Comp.Ai.Session.Tick + System.WeaponAnimationLengths[EventTriggers.StopFiring];
-                                }
-                            }
-
-                            break;
-                        case EventTriggers.Reloading:
-                            //possible Threaded event
-                            if (AnimationsSet.ContainsKey(EventTriggers.Reloading))
-                            {
-                                if (active) LastEvent = EventTriggers.Reloading;
-                                for (int i = 0; i < AnimationsSet[EventTriggers.Reloading].Length; i++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.Reloading][i];
-                                    if (active && !animation.Running)
-                                    {
-                                        if (animation.TriggerOnce && animation.Triggered) continue;
-                                        Comp.Ai.Session.ThreadedAnimations.Enqueue(animation);
-                                        //Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                        animation.Running = true;
-                                        animation.Triggered = true;
-                                        if (animation.DoesLoop && !animation.TriggerOnce)
-                                            animation.Looping = true;
-                                    }
-                                    else if (active && animation.Looping && pause)
-                                        animation.PauseAnimation = true;
-
-                                    else if (active && animation.Looping)
-                                        animation.PauseAnimation = false;
-
-                                    else
-                                    {
-                                        animation.PauseAnimation = false;
-                                        animation.Looping = false;
-                                    }
-                                }                                
-                            }
-
-                            break;
-                        case EventTriggers.StopTracking:
-                            if (AnimationsSet.ContainsKey(EventTriggers.StopTracking))
-                            {
-                                if (active) LastEvent = EventTriggers.StopTracking;
-                                for (int i = 0; i < AnimationsSet[EventTriggers.StopTracking].Length; i++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.StopTracking][i];
-                                    if (active)
-                                    {
-                                        if (!animation.Running)
-                                        {
-                                            if (animation.TriggerOnce && animation.Triggered) continue;
-
-                                            PartAnimation animCheck;
-                                            if (AnimationLookup.TryGetValue(
-                                                animation.EventIdLookup[EventTriggers.Tracking], out animCheck))
-                                            {
-                                                if (animCheck.Running)
-                                                    animCheck.Reverse = true;
-                                                else
-                                                {
-                                                    if (animation.Part == AzimuthPart.Item1 ||
-                                                        animation.Part == ElevationPart.Item1)
-                                                    {
-                                                        var matrix = animation.Part.PositionComp.LocalMatrix;
-                                                        matrix.Translation = animCheck.FinalPos.Translation;
-                                                        animation.Part.PositionComp.LocalMatrix = matrix;
-                                                    }
-                                                    else
-                                                        animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
-
-                                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                    animation.Running = true;
-                                                }
-
-                                                animation.Triggered = true;
-                                            }
-                                            else
-                                            {
-                                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                animation.Running = true;
-                                                animation.Triggered = true;
-                                            }
-
-                                            if (animation.DoesLoop && !animation.TriggerOnce)
-                                                animation.Looping = true;
-                                        }
-                                        else if (animation.DoesLoop && !animation.TriggerOnce)
-                                            animation.Looping = true;
-                                    }
-                                    else
-                                    {
-                                        animation.Looping = false;
-                                        animation.Triggered = false;
-                                    }
-
-                                }
-                            }
-
-                            break;
-                        case EventTriggers.Tracking:
-                            if (AnimationsSet.ContainsKey(EventTriggers.Tracking))
-                            {
-                                if (active) LastEvent = EventTriggers.Tracking;
-                                for (int i = 0; i < AnimationsSet[EventTriggers.Tracking].Length; i++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.Tracking][i];
-                                    if (active)
-                                    {
-                                        if (!animation.Running)
-                                        {
-                                            if (animation.TriggerOnce && animation.Triggered) continue;
-
-                                            PartAnimation animCheck;
-                                            if (AnimationLookup.TryGetValue(
-                                                animation.EventIdLookup[EventTriggers.StopTracking], out animCheck))
-                                            {
-                                                if (animCheck.Running)
-                                                    animCheck.Reverse = true;
-                                                else
-                                                {
-                                                    if (animation.Part == AzimuthPart.Item1 ||
-                                                        animation.Part == ElevationPart.Item1)
-                                                    {
-                                                        var matrix = animation.Part.PositionComp.LocalMatrix;
-                                                        matrix.Translation = animation.HomePos.Translation;
-                                                        animation.Part.PositionComp.LocalMatrix = matrix;
-                                                    }
-                                                    else
-                                                        animation.Part.PositionComp.LocalMatrix = animation.HomePos;
-
-                                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                    animation.Running = true;
-                                                }
-
-                                                animation.Triggered = true;
-                                            }
-                                            else
-                                            {
-                                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                animation.Running = true;
-                                                animation.Triggered = true;
-                                            }
-
-                                            if (animation.DoesLoop && !animation.TriggerOnce)
-                                                animation.Looping = true;
-                                        }
-                                        else if (animation.DoesLoop && !animation.TriggerOnce)
-                                            animation.Looping = true;
-                                    }
-                                    else
-                                    {
-                                        animation.Looping = false;
-                                        animation.Triggered = false;
-                                    }
-
-                                }
-                            }
-
-                            break;
-                        case EventTriggers.Overheated:
-                            if (AnimationsSet.ContainsKey(EventTriggers.Overheated))
-                            {
-                                if (active) LastEvent = EventTriggers.Overheated;
-                                for (int i = 0; i < AnimationsSet[EventTriggers.Overheated].Length; i++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.Overheated][i];
-                                    if (active && !animation.Running && !animation.Looping)
-                                    {
-                                        if (animation.TriggerOnce && animation.Triggered) continue;
-
-                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                        animation.Running = true;
-                                        animation.Triggered = true;
-                                        if (animation.DoesLoop)
-                                            animation.Looping = true;
-                                    }
-                                    else if (!active)
-                                    {
-                                        animation.Looping = false;
-                                        animation.Triggered = false;
-                                    }
-                                }
-                            }
-
-                            break;
-
-                    case EventTriggers.TurnOn:
-                        //Threaded event
-
-                        if (AnimationsSet.ContainsKey(EventTriggers.TurnOn) && active && Comp.State.Value.Online && LastEvent == EventTriggers.TurnOff)
+                        var stopFiring = AnimationsSet.ContainsKey(EventTriggers.StopFiring) && state == EventTriggers.Firing;
+                        uint delay = 0;
+                        if (active)
                         {
-                            LastEvent = EventTriggers.TurnOn;
-                            for (int i = 0; i < AnimationsSet[EventTriggers.TurnOn].Length; i ++)
+                            if (state == EventTriggers.StopFiring)
                             {
-                                var animation = AnimationsSet[EventTriggers.TurnOn][i];
-
-                                    if (!animation.Running)
-                                    {
-                                        if (animation.TriggerOnce && animation.Triggered) continue;
-
-                                        PartAnimation animCheck;
-                                        if (AnimationLookup.TryGetValue(animation.EventIdLookup[EventTriggers.TurnOff],
-                                            out animCheck))
-                                        {
-                                            if (animCheck.Running)
-                                                animCheck.Reverse = true;
-                                            else
-                                            {
-                                                animation.Part.PositionComp.LocalMatrix = animCheck.FinalPos;
-                                                Comp.Ai.Session.ThreadedAnimations.Enqueue(animation);
-                                                //Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                animation.Running = true;
-                                            }
-
-                                            animation.Triggered = true;
-                                        }
-                                        else
-                                        {
-                                            Comp.Ai.Session.ThreadedAnimations.Enqueue(animation);
-                                            //Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                            animation.Running = true;
-                                            animation.Triggered = true;
-                                        }
-                                    }
-                                    else
-                                        animation.Reverse = false;
-                                }
-                            }
-
-                            break;
-
-                        case EventTriggers.TurnOff:
-                            //Threaded event
-                            if (active && !Comp.State.Value.Online && AnimationsSet.ContainsKey(EventTriggers.TurnOff))
-                            {
-                                LastEvent = EventTriggers.TurnOff;
-                                for (int i = 0; i < AnimationsSet[EventTriggers.TurnOff].Length; i++)
+                                ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
+                                if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
                                 {
-                                    var animation = AnimationsSet[EventTriggers.TurnOff][i];
-
-                                    if (!animation.Running)
-                                    {
-                                        if (animation.TriggerOnce && animation.Triggered) continue;
-
-                                        PartAnimation animCheck;
-                                        if (AnimationLookup.TryGetValue(animation.EventIdLookup[EventTriggers.TurnOn],
-                                            out animCheck))
-                                        {
-                                            if (animCheck.Running)
-                                                animCheck.Reverse = true;
-                                            else
-                                            {
-                                                //animation.Part.PositionComp.LocalMatrix = animation.HomePos;
-                                                Comp.Ai.Session.ThreadedAnimations.Enqueue(animation);
-                                                //Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                                if (ShootDelayTick > Comp.Ai.Session.Tick) animation.StartTick = ShootDelayTick;
-                                                animation.Running = true;
-                                            }
-
-                                            animation.Triggered = true;
-                                        }
-                                        else
-                                        {
-                                            Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                            animation.Running = true;
-                                            animation.Triggered = true;
-                                        }
-                                    }
-                                    else
-                                        animation.Reverse = false;
+                                    delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                                    Log.Line($"delay: {delay}");
+                                    ShootDelayTick += delay;
                                 }
                             }
+                            LastEvent = state;
+                        }
 
-                            break;
-
-                        case EventTriggers.EmptyOnGameLoad:
-                            //Threaded event
-                            if (AnimationsSet.ContainsKey(EventTriggers.EmptyOnGameLoad))
+                        for (int i = 0; i < AnimationsSet[state].Length; i++)
+                        {
+                            var animation = AnimationsSet[state][i];
+                            if (active && !animation.Running && (animation.Muzzle == "Any" || muzzles != null && muzzles.Contains(animation.Muzzle)))
                             {
-                                for (int i = 0; i < AnimationsSet[EventTriggers.EmptyOnGameLoad].Length; i++)
-                                {
-                                    var animation = AnimationsSet[EventTriggers.EmptyOnGameLoad][i];
-                                    if (active && !animation.Running)
-                                    {
-                                        //Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                        Comp.Ai.Session.ThreadedAnimations.Enqueue(animation);
-                                        animation.Running = true;
-                                    }
-                                }
+                                if (animation.TriggerOnce && animation.Triggered) continue;
+                                animation.Triggered = true;
+
+                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                    CurLgstAnimPlaying = animation;
+
+                                if (animation.Muzzle != "Any" && stopFiring) _muzzlesFiring.Add(animation.Muzzle);
+
+                                animation.StartTick = session.Tick + animation.MotionDelay + delay;
+                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                animation.Running = true;
+
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
                             }
-
-                            break;
-
-                        case EventTriggers.OutOfAmmo:
-                        case EventTriggers.BurstReload:
-                            if (AnimationsSet.ContainsKey(state))
+                            else if (active && animation.DoesLoop)
+                                animation.Looping = true;
+                            else
                             {
-                                if (active) LastEvent = state;
-                                for (int i = 0; i < AnimationsSet[state].Length; i++)
-                                {
-                                    var animation = AnimationsSet[state][i];
-                                    if (active && !animation.Running)
-                                    {
-                                        if (animation.TriggerOnce && animation.Triggered) continue;
-
-                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                        animation.Running = true;
-                                        animation.Triggered = true;
-                                        if (animation.DoesLoop)
-                                            animation.Looping = true;
-                                    }
-                                    else
-                                    {
-                                        animation.Looping = false;
-                                        animation.Triggered = false;
-                                    }
-                                }
+                                animation.Looping = false;
+                                animation.Triggered = false;
                             }
-
-                            break;
-                        case EventTriggers.PreFire:
-                            if (AnimationsSet.ContainsKey(state))
-                            {
-                                if (active) LastEvent = EventTriggers.PreFire;
-                                for (int i = 0; i < AnimationsSet[state].Length; i++)
-                                {
-                                    var animation = AnimationsSet[state][i];
-                                    if (active && !animation.Running &&
-                                        (animation.Muzzle == "Any" || muzzles.Contains(animation.Muzzle)))
-                                    {
-                                        if (animation.TriggerOnce && animation.Triggered) continue;
-
-                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
-                                        animation.Running = true;
-                                        animation.Triggered = true;
-                                        if (animation.DoesLoop)
-                                            animation.Looping = true;
-                                    }
-                                    else
-                                    {
-                                        animation.Looping = false;
-                                        animation.Triggered = false;
-                                    }
-                                }
-                            }
-
-                            break;
+                        }
                     }
-                }
+                    break;
+                case EventTriggers.StopTracking:
+                case EventTriggers.Tracking:
+                    if (AnimationsSet.ContainsKey(state))
+                    {
+                        var oppositeEvnt = state == EventTriggers.Tracking ? EventTriggers.StopTracking : EventTriggers.Tracking;
+                        if (active) LastEvent = state;
+                        for (int i = 0; i < AnimationsSet[state].Length; i++)
+                        {
+                            var animation = AnimationsSet[state][i];
+                            if (active && !animation.Running)
+                            {
+                                if (animation.TriggerOnce && animation.Triggered) continue;
+                                animation.Triggered = true;
+
+                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                    CurLgstAnimPlaying = animation;
+
+                                PartAnimation animCheck;
+                                animation.Running = true;
+                                if (AnimationLookup.TryGetValue(
+                                    animation.EventIdLookup[oppositeEvnt], out animCheck) && animCheck.Running)
+                                {
+                                    animCheck.Reverse = true;
+
+                                    if (!animation.DoesLoop)
+                                        animation.Running = false;
+                                    else
+                                    {
+                                        animation.StartTick = Comp.Ai.Session.Tick + (uint)animCheck.CurrentMove + animation.MotionDelay;
+                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                    }
+                                }
+                                else
+                                {
+                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                    animation.StartTick = session.Tick + animation.MotionDelay;
+                                }
+
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                            else if (active && animation.DoesLoop)
+                                animation.Looping = true;
+                            else
+                            {
+                                animation.Looping = false;
+                                animation.Triggered = false;
+                            }
+                        }
+                    }
+                    break;
+                case EventTriggers.TurnOn:
+                case EventTriggers.TurnOff:
+                    //Threaded event
+                    if (active && !Comp.State.Value.Online && AnimationsSet.ContainsKey(state))
+                    {
+                        var oppositeEvnt = state == EventTriggers.TurnOff ? EventTriggers.TurnOn : EventTriggers.TurnOff;
+                        LastEvent = state;
+                        for (int i = 0; i < AnimationsSet[state].Length; i++)
+                        {
+                            var animation = AnimationsSet[state][i];
+
+                            if (!animation.Running)
+                            {
+                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                    CurLgstAnimPlaying = animation;
+
+                                PartAnimation animCheck;
+                                animation.Running = true;
+                                if (AnimationLookup.TryGetValue(animation.EventIdLookup[oppositeEvnt],
+                                    out animCheck))
+                                {
+                                    if (animCheck.Running)
+                                    {
+                                        animCheck.Reverse = true;
+                                        animation.Running = false;
+                                    }
+                                    else
+                                        session.ThreadedAnimations.Enqueue(animation);
+                                }
+                                else
+                                    session.ThreadedAnimations.Enqueue(animation);
+
+                                animation.StartTick = session.Tick + animation.MotionDelay;
+                            }
+                            else
+                                animation.Reverse = false;
+                        }
+                    }
+                    break;
+                case EventTriggers.EmptyOnGameLoad:
+                case EventTriggers.Overheated:
+                case EventTriggers.OutOfAmmo:
+                case EventTriggers.BurstReload:
+                case EventTriggers.Reloading:
+                    if (AnimationsSet.ContainsKey(state))
+                    {
+                        if (active) LastEvent = state;
+                        for (int i = 0; i < AnimationsSet[state].Length; i++)
+                        {
+                            var animation = AnimationsSet[state][i];
+                            if (active && !animation.Running)
+                            {
+                                if (animation.TriggerOnce && animation.Triggered) continue;
+                                animation.Triggered = true;
+
+                                if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
+                                    CurLgstAnimPlaying = animation;
+
+                                animation.StartTick = session.Tick + animation.MotionDelay;
+                                session.ThreadedAnimations.Enqueue(animation);
+
+                                animation.Running = true;
+
+                                if (animation.DoesLoop)
+                                    animation.Looping = true;
+                            }
+                            else if (active && animation.DoesLoop)
+                                animation.Looping = true;
+                            else
+                            {
+                                animation.Looping = false;
+                                animation.Triggered = false;
+                            }
+                        }
+                    }
+                    break;
             }
-            catch (Exception ex) { Log.Line($"Exception in EventTriggerStateChanged: {ex}"); }
         }
 
         internal void UpdateRequiredPower()
@@ -688,7 +403,7 @@ namespace WeaponCore.Platform
                 if (IsShooting && !System.DesignatorWeapon)
                 {
                     EventTriggerStateChanged(EventTriggers.Firing, false);
-                    EventTriggerStateChanged(EventTriggers.StopFiring, true);
+                    EventTriggerStateChanged(EventTriggers.StopFiring, true, _muzzlesFiring);
                     Comp.CurrentDps = Comp.CurrentDps - Dps > 0 ? Comp.CurrentDps - Dps : 0;
 
                     if ((System.EnergyAmmo || System.IsHybrid) && !System.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)

@@ -57,7 +57,6 @@ namespace WeaponCore.Support {
         internal string[] RotCenterNameSet;
         internal bool Reverse;
         internal bool Looping;
-        internal bool PauseAnimation;
         internal bool Running;
         internal bool Triggered;
         internal uint StartTick;
@@ -227,7 +226,6 @@ namespace WeaponCore.Support {
             Looping = false;
             Reverse = reverse;
             LastEmissive = new EmissiveState();
-            PauseAnimation = false;
 
             if (resetMove) _currentMove = 0;
             if (resetPos) Part.PositionComp.LocalMatrix = HomePos;
