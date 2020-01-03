@@ -59,7 +59,6 @@ namespace WeaponCore.Platform
                                 if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
                                 {
                                     delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                                    Log.Line($"delay: {delay}");
                                     ShootDelayTick += delay;
                                 }
                             }
@@ -231,7 +230,10 @@ namespace WeaponCore.Platform
         internal void UpdateRequiredPower()
         {
             if (System.EnergyAmmo || System.IsHybrid)
-                RequiredPower = ((ShotEnergyCost * ((RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND) * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+            {
+                var rofPerSecond = RateOfFire / MyEngineConstants.UPDATE_STEPS_PER_SECOND;
+                RequiredPower = ((ShotEnergyCost * (rofPerSecond * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * System.Values.HardPoint.Loading.BarrelsPerShot) * System.Values.HardPoint.Loading.TrajectilesPerBarrel;
+            }
             else
                 RequiredPower = Comp.IdlePower;
         }

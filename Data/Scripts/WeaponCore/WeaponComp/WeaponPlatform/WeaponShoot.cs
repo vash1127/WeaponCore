@@ -81,24 +81,24 @@ namespace WeaponCore.Platform
                     StartRotateSound();
             }
 
-            if (!IsShooting) StartShooting();            
+            if (!IsShooting) StartShooting();         
 
             if (System.BurstMode)
             {
-                if (state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst && (Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)))
-                {                  
-                    _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
-                    EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                    if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
-                    return;
-                }
-                else if (state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
+                if (++state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
                 {
                     state.ShotsFired = 0;
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
                 }
+                else if (state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst && (Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)))
+                {
+                    _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+                    EventTriggerStateChanged(EventTriggers.BurstReload, true);
+                    if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
+                    if (IsShooting) StopShooting();
+                    return;
+                }
             }
-            state.ShotsFired++;
 
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
