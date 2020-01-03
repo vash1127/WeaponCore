@@ -207,5 +207,208 @@ namespace WeaponCore.Support
                 return MathHelper.Clamp(a.Dot(b) / Math.Sqrt(a.LengthSquared() * b.LengthSquared()), -1, 1);
         }
 
+
+        public static Vector3D NearestPointOnLine(Vector3D start, Vector3D end, Vector3D pnt)
+        {
+            var line = (end - start);
+            var len = line.Length();
+            line.Normalize();
+
+            var v = pnt - start;
+            var d = Vector3.Dot(v, line);
+            MathHelper.Clamp(d, 0f, len);
+            return start + line * d;
+        }
+
+        /*
+        ** Returns the point on the line formed by (point1 + dir1 * x) that is closest to the point
+        ** on the line formed by line (point2 + dir2 * t)
+        */
+
+        public static Vector3D GetClosestPointOnLine1(Vector3D point1, Vector3D dir1, Vector3D point2, Vector3D dir2)
+        {
+            Vector3D axis = Vector3D.Cross(dir1, dir2);
+            if (Vector3D.IsZero(axis))
+                return point1;
+            Vector3D perpDir2 = Vector3D.Cross(dir2, axis);
+            Vector3D point1To2 = point2 - point1;
+            return point1 + Vector3D.Dot(point1To2, perpDir2) / Vector3D.Dot(dir1, perpDir2) * dir1;
+        }
+
+        /*
+        ** Returns the point on the line1 that is closest to the point on line2
+        */
+
+        public static Vector3D GetClosestPointOnLine2(Vector3D line1Start, Vector3D line1End, Vector3D line2Start, Vector3D line2End)
+        {
+            Vector3D dir1 = line1End - line1Start;
+            Vector3D dir2 = line2End - line2Start;
+            Vector3D axis = Vector3D.Cross(dir1, dir2);
+            if (Vector3D.IsZero(axis))
+                return line1Start;
+            Vector3D perpDir2 = Vector3D.Cross(dir2, axis);
+            Vector3D point1To2 = line2Start - line1Start;
+            return line1Start + Vector3D.Dot(point1To2, perpDir2) / Vector3D.Dot(dir1, perpDir2) * dir1;
+        }
+
+        public static Vector3D VectorProjection(Vector3D a, Vector3D b)
+        {
+            if (Vector3D.IsZero(b))
+                return Vector3D.Zero;
+
+            return a.Dot(b) / b.LengthSquared() * b;
+        }
+
+        public static bool SameSign(float num1, double num2)
+        {
+            if (num1 > 0 && num2 < 0)
+                return false;
+            if (num1 < 0 && num2 > 0)
+                return false;
+            return true;
+        }
+
+        public static bool NearlyEqual(double f1, double f2)
+        {
+            // Equal if they are within 0.00001 of each other
+            return Math.Abs(f1 - f2) < 0.00001;
+        }
+
+
+        public static double InverseSqrDist(Vector3D source, Vector3D target, double range)
+        {
+            var rangeSq = range * range;
+            var distSq = (target - source).LengthSquared();
+            if (distSq > rangeSq)
+                return 0.0;
+            return 1.0 - (distSq / rangeSq);
+        }
+
+        public static double GetIntersectingSurfaceArea(MatrixD matrix, Vector3D hitPosLocal)
+        {
+            var surfaceArea = -1d;
+
+            var boxMax = matrix.Backward + matrix.Right + matrix.Up;
+            var boxMin = -boxMax;
+            var box = new BoundingBoxD(boxMin, boxMax);
+
+            var maxWidth = box.Max.LengthSquared();
+            var testLine = new LineD(Vector3D.Zero, Vector3D.Normalize(hitPosLocal) * maxWidth);
+            LineD testIntersection;
+            box.Intersect(ref testLine, out testIntersection);
+
+            var intersection = testIntersection.To;
+
+            var epsilon = 1e-6;
+            var projFront = MathFuncs.VectorProjection(intersection, matrix.Forward);
+            if (Math.Abs(projFront.LengthSquared() - matrix.Forward.LengthSquared()) < epsilon)
+            {
+                var a = Vector3D.Distance(matrix.Left, matrix.Right);
+                var b = Vector3D.Distance(matrix.Up, matrix.Down);
+                surfaceArea = a * b;
+            }
+
+            var projLeft = MathFuncs.VectorProjection(intersection, matrix.Left);
+            if (Math.Abs(projLeft.LengthSquared() - matrix.Left.LengthSquared()) < epsilon)
+            {
+                var a = Vector3D.Distance(matrix.Forward, matrix.Backward);
+                var b = Vector3D.Distance(matrix.Up, matrix.Down);
+                surfaceArea = a * b;
+            }
+
+            var projUp = MathFuncs.VectorProjection(intersection, matrix.Up);
+            if (Math.Abs(projUp.LengthSquared() - matrix.Up.LengthSquared()) < epsilon)
+            {
+                var a = Vector3D.Distance(matrix.Forward, matrix.Backward);
+                var b = Vector3D.Distance(matrix.Left, matrix.Right);
+                surfaceArea = a * b;
+            }
+            return surfaceArea;
+        }
+
+        public static void FibonacciSeq(int magicNum)
+        {
+            var root5 = Math.Sqrt(5);
+            var phi = (1 + root5) / 2;
+
+            var n = 0;
+            int Fn;
+            do
+            {
+                Fn = (int)((Math.Pow(phi, n) - Math.Pow(-phi, -n)) / ((2 * phi) - 1));
+                //Console.Write("{0} ", Fn);
+                ++n;
+            }
+            while (Fn < magicNum);
+        }
+
+        public static double LargestCubeInSphere(double r)
+        {
+
+            // radius cannot be negative  
+            if (r < 0)
+                return -1;
+
+            // side of the cube  
+            var a = (2 * r) / Math.Sqrt(3);
+            return a;
+        }
+
+        public static double AreaCube(double a)
+        {
+            return (a * a * a);
+        }
+
+        public static double SurfaceCube(double a)
+        {
+            return (6 * a * a);
+        }
+
+        public static double VolumeCube(double len)
+        {
+            return Math.Pow(len, 3);
+        }
+
+        public static double Percentile(double[] sequence, double excelPercentile)
+        {
+            Array.Sort(sequence);
+            int N = sequence.Length;
+            double n = (N - 1) * excelPercentile + 1;
+            // Another method: double n = (N + 1) * excelPercentile;
+            if (n == 1d) return sequence[0];
+            else if (n == N) return sequence[N - 1];
+            else
+            {
+                int k = (int)n;
+                double d = n - k;
+                return sequence[k - 1] + d * (sequence[k] - sequence[k - 1]);
+            }
+        }
+
+        public static double GetMedian(int[] array)
+        {
+            int[] tempArray = array;
+            int count = tempArray.Length;
+
+            Array.Sort(tempArray);
+
+            double medianValue = 0;
+
+            if (count % 2 == 0)
+            {
+                // count is even, need to get the middle two elements, add them together, then divide by 2
+                int middleElement1 = tempArray[(count / 2) - 1];
+                int middleElement2 = tempArray[(count / 2)];
+                medianValue = (middleElement1 + middleElement2) / 2;
+            }
+            else
+            {
+                // count is odd, simply get the middle element.
+                medianValue = tempArray[(count / 2)];
+            }
+
+            return medianValue;
+        }
     }
+
 }
