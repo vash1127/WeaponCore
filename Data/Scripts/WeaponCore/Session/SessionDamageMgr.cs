@@ -7,13 +7,20 @@ using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Game.ModAPI.Interfaces;
-using VRage.Utils;
 using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 
 namespace WeaponCore
 {
+    public struct RadiatedBlock
+    {
+        public Vector3I Center;
+        public IMySlimBlock Slim;
+        public Vector3I Position;
+    }
+
+
     public partial class Session
     {
         internal void ProcessHits()

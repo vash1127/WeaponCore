@@ -164,16 +164,5 @@ namespace WeaponCore
             }
             catch (Exception ex) { Log.Line($"Exception in PlayerDisconnected: {ex}"); }
         }
-
-        private bool FindPlayer(IMyPlayer player, long id)
-        {
-            if (player.IdentityId == id)
-            {
-                Players[id] = player;
-                PlayerEventId++;
-                if (player.SteamUserId == AuthorSteamId) AuthorPlayerId = player.IdentityId;
-            }
-            return false;
-        }
     }
 }

@@ -48,12 +48,16 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\WeaponCoreApi.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\PbApiWrapper.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\AudioVisual\SupportClasses.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiBlockGroups.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\PartAnimation.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Definitions\UpgradeDefinitions.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFields.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\GridAi\AiFocus.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiSupport.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileHits.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectilePool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\EntityPool.cs" />
@@ -62,6 +66,8 @@
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializedValues.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SessionAnimationMgr.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionAreaEffect.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionCleanUp.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionCompMgr.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionDamageMgr.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionEvents.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionInventory.cs" />
@@ -70,10 +76,11 @@
     <Compile Include="Data\Scripts\WeaponCore\Definitions\WeaponStructure.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionJobs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\SessionLocalPlayer.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Session\SessionModHandlers.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\CustomController.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\MathFuncs.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Spawn.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Support\AvShot.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\AudioVisual\AvShot.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\VoxelIntersect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiDraw.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\TargetUiSelect.cs" />
@@ -227,6 +234,7 @@
       <HintPath>E:\Steam\steamapps\common\SpaceEngineers\Bin64\VRage.XmlSerializers.dll</HintPath>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />

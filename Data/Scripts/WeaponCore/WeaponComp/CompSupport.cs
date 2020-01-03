@@ -8,7 +8,7 @@ using VRage.Game.VisualScripting;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
-
+using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
 {
     public partial class WeaponComponent 

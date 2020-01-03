@@ -6,12 +6,9 @@ using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Data.Scripts.WeaponCore.Support;
 using WeaponCore.Support;
 using static WeaponCore.Support.AreaDamage;
 using static WeaponCore.Support.AvShot;
-using static WeaponCore.Support.ProInfo;
-
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
 
 namespace WeaponCore.Projectiles

@@ -5,7 +5,7 @@ using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
 using WeaponCore.Platform;
-
+using static WeaponCore.Session;
 namespace WeaponCore.Support
 {
     public partial class WeaponComponent : MyEntityComponentBase
