@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
@@ -22,7 +23,7 @@ namespace WeaponCore.Support
 
         internal void Clean(MyEntity myEntity)
         {
-            GetEnumerator().Dispose();
+            //GetEnumerator().Dispose(); // Don't this this is needed?
             _subparts.Clear();
             _tmp.Clear();
             NameToEntity.Clear();
@@ -52,7 +53,7 @@ namespace WeaponCore.Support
                     ((IMyEntity)query).Model.GetDummies(_tmp);
                     foreach (var kv in _tmp)
                     {
-                        if (kv.Key.StartsWith("subpart_"))
+                        if (kv.Key.StartsWith("subpart_", StringComparison.Ordinal))
                         {
                             var name = kv.Key.Substring("subpart_".Length);
                             MyEntitySubpart res;
