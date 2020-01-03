@@ -65,6 +65,8 @@ namespace WeaponCore.Platform
                             }
                             LastEvent = state;
                         }
+                        else if (state == EventTriggers.StopFiring)
+                            _muzzlesFiring.Clear();
 
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {
