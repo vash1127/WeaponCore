@@ -25,14 +25,8 @@ namespace WeaponCore
                 ///
                 
                 var gridAi = aiPair.Value;
-                if (!gridAi.GridInit) 
+                if (!gridAi.GridInit || gridAi.MyGrid.MarkedForClose) 
                     continue;
-
-                if (!gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose)
-                {
-                    Log.Line($"gridClosed: {gridAi.MyGrid.DebugName}");
-                    continue;
-                }
 
                 var dbIsStale = Tick - gridAi.TargetsUpdatedTick > 100;
                 var readyToUpdate = dbIsStale && DbCallBackComplete && DbTask.IsComplete;
@@ -67,7 +61,10 @@ namespace WeaponCore
                 for (int i = 0; i < gridAi.Weapons.Count; i++)
                 {
                     var comp = gridAi.Weapons[i];
-                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose || !comp.MyCube.InScene || comp.MyCube.CubeGrid != comp.Ai.MyGrid)
+                    if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose)
+                        continue;
+
+                    if (comp.MyCube.CubeGrid != comp.Ai.MyGrid)
                     {
                         Log.Line($"[myCube] - InitState:{comp.Platform.State} - marked:{comp.MyCube.MarkedForClose} - inScene:{comp.MyCube.InScene} - gridMarked:{comp.MyCube.CubeGrid.MarkedForClose} - inWeaponBase:{gridAi.WeaponBase.ContainsKey(comp.MyCube)} - inGridTargeting: {GridTargetingAIs.ContainsKey(comp.MyCube.CubeGrid)} - gridMismatch:{comp.MyCube.CubeGrid != comp.Ai.MyGrid}");
                         continue;
@@ -279,9 +276,12 @@ namespace WeaponCore
                 }
 
                 var comp = w.Comp;
-                if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose || !comp.MyCube.InScene || comp.MyCube.CubeGrid != comp.Ai.MyGrid)
+                if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose)
+                    continue;
+
+                if (comp.MyCube.CubeGrid != comp.Ai.MyGrid)
                 {
-                    Log.Line($"[UpdateChargeWeapons] - InitState:{comp.Platform.State} - marked:{comp.MyCube.MarkedForClose} - inScene:{comp.MyCube.InScene} - gridMarked:{comp.MyCube.CubeGrid.MarkedForClose} - inWeaponBase:{comp.Ai.WeaponBase.ContainsKey(comp.MyCube)} - inGridTargeting: {GridTargetingAIs.ContainsKey(comp.MyCube.CubeGrid)} - gridMismatch:{comp.MyCube.CubeGrid != comp.Ai.MyGrid}");
+                    Log.Line($"[UpdateChargeWeapons] - InitState:{comp.Platform.State}  - gridMarked:{comp.MyCube.CubeGrid.MarkedForClose} - inWeaponBase:{comp.Ai.WeaponBase.ContainsKey(comp.MyCube)} - inGridTargeting: {GridTargetingAIs.ContainsKey(comp.MyCube.CubeGrid)} - gridMismatch:{comp.MyCube.CubeGrid != comp.Ai.MyGrid}");
                     continue;
                 }
 
@@ -401,11 +401,15 @@ namespace WeaponCore
             {
                 var w = ShootingWeapons[i];
                 var comp = w.Comp;
-                if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose || !comp.MyCube.InScene || comp.MyCube.CubeGrid != comp.Ai.MyGrid)
+                if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose )
+                    continue;
+
+                if (comp.MyCube.CubeGrid != comp.Ai.MyGrid)
                 {
-                    Log.Line($"[ShootWeapons] - InitState:{comp.Platform.State} - marked:{comp.MyCube.MarkedForClose} - inScene:{comp.MyCube.InScene} - gridMarked:{comp.MyCube.CubeGrid.MarkedForClose} - inWeaponBase:{comp.Ai.WeaponBase.ContainsKey(comp.MyCube)} - inGridTargeting: {GridTargetingAIs.ContainsKey(comp.MyCube.CubeGrid)} - gridMismatch:{comp.MyCube.CubeGrid != comp.Ai.MyGrid}");
+                    Log.Line($"[ShootWeapons] - InitState:{comp.Platform.State}  - gridMarked:{comp.MyCube.CubeGrid.MarkedForClose} - inWeaponBase:{comp.Ai.WeaponBase.ContainsKey(comp.MyCube)} - inGridTargeting: {GridTargetingAIs.ContainsKey(comp.MyCube.CubeGrid)} - gridMismatch:{comp.MyCube.CubeGrid != comp.Ai.MyGrid}");
                     continue;
                 }
+
                 //TODO add logic for power priority
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
 
