@@ -19,7 +19,7 @@ namespace WeaponCore.Support
         internal static void AcquireTarget(Weapon w, bool attemptReset, MyEntity targetGrid = null)
         {
             w.HitOther = false;
-            var tick = w.Comp.Ai.Session.Tick;
+            var tick = w.Comp.Session.Tick;
 
             w.Target.CheckTick = tick;
             var pCount = w.Comp.Ai.LiveProjectile.Count;
@@ -131,10 +131,10 @@ namespace WeaponCore.Support
             var attackFriends = overActive && overRides.Friendly;
             var attackNoOwner = overActive && overRides.Unowned;
             var forceFoci = overActive && overRides.FocusTargets;
-
+            var session = w.Comp.Session;
             var ai = comp.Ai;
-            ai.Session.TargetRequests++;
-            var physics = ai.Session.Physics;
+            session.TargetRequests++;
+            var physics = session.Physics;
             var weaponPos = w.MyPivotPos;
             var weaponRange = comp.Set.Value.Range;
             var target = w.NewTarget;
@@ -185,14 +185,14 @@ namespace WeaponCore.Support
 
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                     if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > ((weaponRange + info.TargetRadius) * (weaponRange + info.TargetRadius))) continue;
-                    w.Comp.Ai.Session.TargetChecks++;
+                    session.TargetChecks++;
 
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
                     if (info.IsGrid)
                     {
                         if (!s.TrackGrids || !focusTarget && info.FatCount < 2) continue;
-                        ai.Session.CanShoot++;
+                        session.CanShoot++;
                         if (!w.TrackingAi)
                         {
                             var newCenter = w.System.NeedsPrediction ? w.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel) : targetCenter;
@@ -216,7 +216,7 @@ namespace WeaponCore.Support
                     if (character != null && !s.TrackCharacters) continue;
                     if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
-                    ai.Session.TopRayCasts++;
+                    session.TopRayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
                     if (hitInfo != null && hitInfo.HitEntity == info.Target)

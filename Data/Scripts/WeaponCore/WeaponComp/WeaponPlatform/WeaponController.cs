@@ -7,7 +7,7 @@ namespace WeaponCore.Platform
     {
         public void AimBarrel(double azimuthChange, double elevationChange)
         {
-            LastTrackedTick = Comp.Ai.Session.Tick;
+            LastTrackedTick = Comp.Session.Tick;
 
             if (AiOnlyWeapon)
             {
@@ -108,16 +108,16 @@ namespace WeaponCore.Platform
             ReturnHome = ReturnHome && Comp.State.Value.Weapons[WeaponId].ManualShoot == TerminalActionState.ShootOff && !Comp.Gunner && Target.State != Target.Targets.Acquired;
 
             if (ReturnHome)
-                Comp.Ai.Session.FutureEvents.Schedule(HomeTurret, null, 1);
+                Comp.Session.FutureEvents.Schedule(HomeTurret, null, 1);
 
             //weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
 
         internal void UpdatePivotPos()
         {
-            if (Comp.MatrixUpdateTick < Comp.Ai.Session.Tick)
+            if (Comp.MatrixUpdateTick < Comp.Session.Tick)
             {
-                Comp.MatrixUpdateTick = Comp.Ai.Session.Tick;
+                Comp.MatrixUpdateTick = Comp.Session.Tick;
                 Comp.CubeMatrix = Comp.MyCube.PositionComp.WorldMatrix;
             }
 
@@ -162,7 +162,7 @@ namespace WeaponCore.Platform
             var val = o as bool?;
             var reset = val.HasValue && val.Value == true;
 
-            if (!Comp.Ai.Session.DedicatedServer)
+            if (!Comp.Session.DedicatedServer)
             {
                 var heatPercent = currentHeat / System.MaxHeat;
 
@@ -174,7 +174,7 @@ namespace WeaponCore.Platform
 
                     var intensity = .7f * heatPercent;
 
-                    var color = Comp.Ai.Session.HeatEmissives[(int)(heatPercent * 100)];
+                    var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
 
                     MuzzlePart.Item1.SetEmissiveParts("Heating", color, intensity);
                 }
@@ -214,7 +214,7 @@ namespace WeaponCore.Platform
 
             if (_fakeHeatTick * 30 == 60)
             {
-                if (!Comp.Ai.Session.DedicatedServer)
+                if (!Comp.Session.DedicatedServer)
                     Comp.TerminalRefresh();
 
                 var weaponValue = Comp.State.Value.Weapons[WeaponId];
@@ -238,9 +238,9 @@ namespace WeaponCore.Platform
                 else
                     _fakeHeatTick++;
 
-                Comp.Ai.Session.FutureEvents.Schedule(UpdateWeaponHeat, false, 20);
+                Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, false, 20);
             }
-            else if (!Comp.Ai.Session.DedicatedServer)
+            else if (!Comp.Session.DedicatedServer)
                     Comp.TerminalRefresh();
         }
     }

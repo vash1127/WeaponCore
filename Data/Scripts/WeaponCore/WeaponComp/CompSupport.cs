@@ -82,7 +82,7 @@ namespace WeaponCore.Support
                 {
                     Log.Line($"no comp found to remove: {MyCube.DebugName} - [marked](myCube:{MyCube.MarkedForClose} - myGrid:{MyCube.CubeGrid.MarkedForClose} - AiGrid:{Ai.MyGrid.MarkedForClose}) - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid})");
                     GridAi gridAi;
-                    if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
+                    if (Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi))
                     {
                         Log.Line($"cube matches different grid {MyCube.DebugName} - [marked](myCube:{MyCube.MarkedForClose} - myGrid:{MyCube.CubeGrid.MarkedForClose} - AiGrid:{Ai.MyGrid.MarkedForClose}) - gridMismatch:{MyCube.CubeGrid != Ai.MyGrid})");
                         if (gridAi.WeaponBase.TryRemove(MyCube, out comp))
@@ -124,10 +124,10 @@ namespace WeaponCore.Support
                 {
                     WeaponCount wCount;
                     if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
-                        Ai.Session.WeaponCountPool.Return(wCount);
+                        Session.WeaponCountPool.Return(wCount);
 
                     GridAi gridAi;
-                    Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
+                    Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
@@ -136,16 +136,16 @@ namespace WeaponCore.Support
         internal void AddCompList()
         {
             GridAi gridAi;
-            if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && gridAi != Ai)
+            if (Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && gridAi != Ai)
             {
                 Log.Line($"AddCompList grid mismatch");
             }
             if (Ai.WeaponsIdx.ContainsKey(this))
             {
-                Log.Line($"add failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - Marked:{MyCube.MarkedForClose} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid} - hasGridAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
+                Log.Line($"add failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - Marked:{MyCube.MarkedForClose} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid} - hasGridAi:{Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
 
                 GridAi gridAiTmp;
-                if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAiTmp))
+                if (Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAiTmp))
                 {
                     Log.Line($"gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(MyCube)}");
                 }
@@ -158,7 +158,7 @@ namespace WeaponCore.Support
         internal void RemoveCompList()
         {
             GridAi gridAi;
-            if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && gridAi != Ai)
+            if (Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAi) && gridAi != Ai)
             {
                 Log.Line($"RemoveCompList grid mismatch");
             }
@@ -166,9 +166,9 @@ namespace WeaponCore.Support
             int idx;
             if (!Ai.WeaponsIdx.TryGetValue(this, out idx))
             {
-                Log.Line($"remove failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - Marked:{MyCube.MarkedForClose} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid}  - hasGridAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
+                Log.Line($"remove failure: aiContains:{Ai.WeaponBase.ContainsKey(MyCube)} - Marked:{MyCube.MarkedForClose} - AiGridMatch:{Ai.MyGrid == MyCube.CubeGrid}  - hasGridAi:{Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
                 GridAi gridAiTmp;
-                if (Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAiTmp))
+                if (Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out gridAiTmp))
                 {
                     Log.Line($"gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(MyCube)}");
                 }

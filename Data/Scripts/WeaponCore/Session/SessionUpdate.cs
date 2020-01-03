@@ -269,7 +269,7 @@ namespace WeaponCore
             {
                 var w = ChargingWeapons[i];
 
-                if (w.Comp.MyCube.MarkedForClose)
+                if (w.Comp.Ai == null || w.Comp.MyCube.MarkedForClose)
                 {
                     ChargingWeapons.RemoveAtFast(i);
                     continue;
@@ -301,7 +301,7 @@ namespace WeaponCore
                         w.CurrentCharge = w.System.EnergyMagSize;
                     }
 
-                    if (!w.Comp.Ai.Session.DedicatedServer)
+                    if (!w.Comp.Session.DedicatedServer)
                         w.Comp.TerminalRefresh();
                 }
 
@@ -366,8 +366,13 @@ namespace WeaponCore
             for (int i = AcquireTargets.Count - 1; i >= 0; i--)
             {
                 var w = AcquireTargets[i];
-                var gridAi = w.Comp.Ai;
+                if (w.Comp.Ai == null || w.Comp.MyCube.MarkedForClose)
+                {
+                    ChargingWeapons.RemoveAtFast(i);
+                    continue;
+                }
 
+                var gridAi = w.Comp.Ai;
                 var sinceCheck = Tick - w.Target.CheckTick;
                 var checkTime = sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || w.TrackProjectiles && gridAi.CheckProjectiles;
                 if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired) 
@@ -400,15 +405,17 @@ namespace WeaponCore
             for (int i = 0; i < ShootingWeapons.Count; i++)
             {
                 var w = ShootingWeapons[i];
+                if (w.Comp.Ai == null || w.Comp.MyCube.MarkedForClose)
+                {
+                    ChargingWeapons.RemoveAtFast(i);
+                    continue;
+                }
+
                 var comp = w.Comp;
                 if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose )
                     continue;
 
-                if (comp.MyCube.CubeGrid != comp.Ai.MyGrid)
-                {
-                    Log.Line($"[ShootWeapons] - InitState:{comp.Platform.State}  - gridMarked:{comp.MyCube.CubeGrid.MarkedForClose} - inWeaponBase:{comp.Ai.WeaponBase.ContainsKey(comp.MyCube)} - inGridTargeting: {GridTargetingAIs.ContainsKey(comp.MyCube.CubeGrid)} - gridMismatch:{comp.MyCube.CubeGrid != comp.Ai.MyGrid}");
-                    continue;
-                }
+
 
                 //TODO add logic for power priority
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {
