@@ -1,5 +1,6 @@
 ﻿using System;
 using Sandbox.Definitions;
+using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
@@ -55,16 +56,9 @@ namespace WeaponCore.Support
                     Log.Line($"Something went wrong with Platform PreInit");
                     break;
                 case MyWeaponPlatform.PlatformState.Delay:
-                    //Log.Line($"Platform RePreInit in 120");
-                    if (Ai == null)
-                    {
-                        Log.Line($"Ai null in PreInit");
-                        break;
-                    }
                     Ai.Session.FutureEvents.Schedule(DelayedPlatformInit, null, 120);
                     break;
                 case MyWeaponPlatform.PlatformState.Inited:
-                    //Log.Line($"Platform Inited");
                     Init();
                     break;
             }
@@ -98,13 +92,9 @@ namespace WeaponCore.Support
 
         internal void ReInit()
         {
-            var gridAiAdded = false;
-
             GridAi ai;
             if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
             {
-                gridAiAdded = true;
-                Ai.Session.DsUtil2.Start("ReInit");
                 var newAi = new GridAi(MyCube.CubeGrid, Ai.Session, Ai.Session.Tick);
                 Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
                 Ai = newAi;
@@ -113,7 +103,6 @@ namespace WeaponCore.Support
 
             if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this))
             {
-                if (!gridAiAdded) Ai.Session.DsUtil2.Start("ReInit");
                 AddCompList();
 
                 var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
@@ -123,10 +112,8 @@ namespace WeaponCore.Support
                 Ai.WeaponCounter[blockDef].Current++;
 
                 OnAddedToSceneTasks();
-                Ai.Session.DsUtil2.Complete("ReInit", false, true);
             }
             else Log.Line($"ReInit failed!");
-
         }
 
         internal void OnAddedToSceneTasks()
@@ -145,9 +132,13 @@ namespace WeaponCore.Support
                 {
                     Ai.GridInit = true;
                     Ai.InitFakeShipController();
-                    foreach (var cubeBlock in Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks)
+                    Ai.ScanBlockGroups = true;
+                    var fatList = Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
+                    for (int i = 0; i < fatList.Count; i++)
                     {
-                        Ai.FatBlockAdded(cubeBlock);
+                        var cubeBlock = fatList[i];
+                        if (cubeBlock is MyBatteryBlock || cubeBlock is IMyCargoContainer || cubeBlock is IMyAssembler || cubeBlock is IMyShipConnector)
+                            Ai.FatBlockAdded(cubeBlock);
                     }
                 }
 
@@ -156,79 +147,40 @@ namespace WeaponCore.Support
                 OptimalDps = 0;
                 MaxHeat = 0;
 
-                //range slider fix
+                //range slider fix - removed from weaponFields.cs
                 var maxTrajectory = 0d;
                 var ob = MyCube.BlockDefinition as MyLargeTurretBaseDefinition;
                 for (int i = 0; i < Platform.Weapons.Length; i++)
                 {
                     var weapon = Platform.Weapons[i];
-                    var state = State.Value.Weapons[weapon.WeaponId];
 
                     weapon.InitTracking();
-                    DpsAndHeatInit(weapon);
+                    
+                    double weaponMaxRange;
+                    DpsAndHeatInit(weapon, ob, out weaponMaxRange);
+                    maxTrajectory += weaponMaxRange;
+
                     weapon.UpdateBarrelRotation();
-
-                    //range slider fix
-                    if (ob != null && ob.MaxRangeMeters > maxTrajectory)
-                        maxTrajectory = ob.MaxRangeMeters;
-                    else if (weapon.System.MaxTrajectory > maxTrajectory)
-                        maxTrajectory = weapon.System.MaxTrajectory;
-
-                    if (weapon.TrackProjectiles)
-                        Ai.PointDefense = true;
-
-                    if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
-                        Session.ComputeStorage(weapon);
-
-                    if (state.CurrentAmmo == 0 && !weapon.Reloading)
-                        weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
-                    else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && state.CurrentAmmo == weapon.System.MagazineDef.Capacity) || state.CurrentAmmo == weapon.System.EnergyMagSize))
-                    {
-                        weapon.CurrentCharge = weapon.System.EnergyMagSize;
-                        CurrentCharge += weapon.System.EnergyMagSize;
-                    }
-                    else if (weapon.System.MustCharge)
-                    {
-                        if (weapon.CurrentCharge > 0)
-                            CurrentCharge -= weapon.CurrentCharge;
-
-                        weapon.CurrentCharge = 0;
-                        state.CurrentAmmo = 0;
-                        weapon.Reloading = false;
-                        Session.ComputeStorage(weapon);
-                    }
-
-                    if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
-                    {
-                        Ai.ManualComps++;
-                        Shooting++;
-                    }
                 }
 
-                //range slider fix - removed from weaponFields.cs
                 if (maxTrajectory + Ai.GridRadius > Ai.MaxTargetingRange)
                 {
                     Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
                     Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
                 }
-
                 Ai.OptimalDps += OptimalDps;
 
                 if (IsSorterTurret)
                 {
                     if (!SorterBase.Enabled)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                    }
+                        for (int i = 0; i < Platform.Weapons.Length; i++)
+                            Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                 }
                 else
                 {
                     if (!MissileBase.Enabled)
-                    {
-                        foreach (var w in Platform.Weapons)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                    }
+                        for (int i = 0; i < Platform.Weapons.Length; i++)
+                            Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                 }
 
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
