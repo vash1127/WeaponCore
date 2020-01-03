@@ -56,7 +56,7 @@ namespace WeaponCore.Support
                     Log.Line($"Something went wrong with Platform PreInit");
                     break;
                 case MyWeaponPlatform.PlatformState.Delay:
-                    Ai.Session.FutureEvents.Schedule(DelayedPlatformInit, null, 120);
+                    Ai.Session.FutureEvents.Schedule(DelayedPlatformInit, null, 180);
                     break;
                 case MyWeaponPlatform.PlatformState.Inited:
                     Init();
@@ -71,52 +71,63 @@ namespace WeaponCore.Support
 
         internal void Init()
         {
-            lock (this)
+            using (MyCube.Pin())
             {
-                _isServer = Ai.Session.IsServer;
-                _isDedicated = Ai.Session.DedicatedServer;
-                _mpActive = Ai.Session.MpActive;
+                if (!MyCube.MarkedForClose && Entity != null)
+                {
+                    _isServer = Ai.Session.IsServer;
+                    _isDedicated = Ai.Session.DedicatedServer;
+                    _mpActive = Ai.Session.MpActive;
 
-                Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
-                Ai.FirstRun = true;
+                    Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
+                    Ai.FirstRun = true;
 
-                StorageSetup();
+                    StorageSetup();
 
-                InventoryInit();
-                PowerInit();
-                OnAddedToSceneTasks();
+                    InventoryInit();
+                    PowerInit();
+                    OnAddedToSceneTasks();
 
-                Platform.State = MyWeaponPlatform.PlatformState.Ready;
+                    Platform.State = MyWeaponPlatform.PlatformState.Ready;
+                }
+                else Log.Line($"Comp Init() failed");
             }
         }
 
         internal void ReInit()
         {
-            GridAi ai;
-            if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
+            using (MyCube.Pin())
             {
-                var newAi = Ai.Session.GridAiPool.Get();
-                newAi.Init(MyCube.CubeGrid, Ai.Session);
-                Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
-                Ai = newAi;
+                if (!MyCube.MarkedForClose && Entity != null)
+                {
+                    GridAi ai;
+                    if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
+                    {
+                        var newAi = Ai.Session.GridAiPool.Get();
+                        newAi.Init(MyCube.CubeGrid, Ai.Session);
+                        Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
+                        Ai = newAi;
+                    }
+                    else Ai = ai;
+
+                    if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this))
+                    {
+                        Ai.FirstRun = true;
+
+                        AddCompList();
+
+                        var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
+                        if (!Ai.WeaponCounter.ContainsKey(blockDef))
+                            Ai.WeaponCounter.TryAdd(blockDef, Ai.Session.WeaponCountPool.Get());
+
+                        Ai.WeaponCounter[blockDef].Current++;
+
+                        OnAddedToSceneTasks();
+                    }
+                    else Log.Line($"Comp ReInit() failed stage2!");
+                }
+                else Log.Line($"Comp ReInit() failed stage1! - marked:{MyCube.MarkedForClose} - Entity:{Entity != null}");
             }
-            else Ai = ai;
-
-            if (Ai != null && Ai.WeaponBase.TryAdd(MyCube, this))
-            {
-                Ai.FirstRun = true;
-
-                AddCompList();
-
-                var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
-                if (!Ai.WeaponCounter.ContainsKey(blockDef))
-                    Ai.WeaponCounter.TryAdd(blockDef, Ai.Session.WeaponCountPool.Get());
-
-                Ai.WeaponCounter[blockDef].Current++;
-
-                OnAddedToSceneTasks();
-            }
-            else Log.Line($"ReInit failed!");
         }
 
         internal void OnAddedToSceneTasks()
