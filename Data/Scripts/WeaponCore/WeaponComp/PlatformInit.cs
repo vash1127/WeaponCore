@@ -12,8 +12,8 @@ namespace WeaponCore.Platform
     public class MyWeaponPlatform
     {
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
-        internal Weapon[] Weapons;
-        internal WeaponStructure Structure;
+        internal readonly WeaponStructure Structure;
+        internal readonly Weapon[] Weapons;
         internal PlatformState State;
 
         internal enum PlatformState
@@ -26,6 +26,12 @@ namespace WeaponCore.Platform
             Ready,
         }
 
+        internal MyWeaponPlatform(WeaponComponent comp)
+        {
+            Structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
+            Weapons = new Weapon[Structure.MuzzlePartNames.Length];
+        }
+
         internal PlatformState Init(WeaponComponent comp)
         {
 
@@ -33,7 +39,6 @@ namespace WeaponCore.Platform
             {
                 State = PlatformState.Invalid;
                 Log.Line("closed, init platform invalid");
-
                 return State;
             }
 
@@ -43,10 +48,9 @@ namespace WeaponCore.Platform
                 return State;
             }
 
-            var structure = comp.Ai.Session.WeaponPlatforms[comp.Ai.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
 
             var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
-            wCounter.Max = structure.GridWeaponCap;
+            wCounter.Max = Structure.GridWeaponCap;
             if (wCounter.Max > 0)
             {
                 if (wCounter.Current + 1 <= wCounter.Max)
@@ -77,9 +81,6 @@ namespace WeaponCore.Platform
                 State = PlatformState.Valid;
             } 
 
-            Structure = structure;
-            var partCount = Structure.MuzzlePartNames.Length;
-            Weapons = new Weapon[partCount];
             Parts.Entity = comp.Entity as MyEntity;
 
             return GetParts(comp);
@@ -161,11 +162,7 @@ namespace WeaponCore.Platform
                         comp.TrackingWeapon = weapon;
 
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
-                    {
-                        comp.RotationEmitter = new MyEntity3DSoundEmitter(comp.MyCube, true, 1f);
-                        comp.RotationSound = new MySoundPair();
                         comp.RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
-                    }
                 }
                 weapon.UpdatePivotPos();
             }

@@ -79,7 +79,8 @@ namespace WeaponCore
                 var weaponComp = CompsToStart[i];
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
-                    //Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    weaponComp.Ai.DelayedGridCleanUp(null);
                     weaponComp.RemoveCompList();
                     CompsToStart.Remove(weaponComp);
                     continue;
@@ -94,7 +95,7 @@ namespace WeaponCore
                         continue;
                     }
 
-                    Log.Line($"[gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
+                    Log.Line($"[StartComps - gridMisMatch] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.MyCube.BlockDefinition.Id.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid} - {weaponComp.Ai.MyGrid.MarkedForClose}");
                     weaponComp.RemoveCompList();
                     InitComp(weaponComp.MyCube, false);
                     reassign = true;
@@ -102,6 +103,12 @@ namespace WeaponCore
                 }
                 else if (weaponComp.Platform.State == MyWeaponPlatform.PlatformState.Fresh)
                 {
+                    if (weaponComp.MyCube.MarkedForClose)
+                    {
+                        weaponComp.Ai.DelayedGridCleanUp(null);
+                        CompsToStart.Remove(weaponComp);
+                        continue;
+                    }
                     if (!GridToFatMap.ContainsKey(weaponComp.MyCube.CubeGrid))
                     {
                         //Log.Line($"grid not in map and Platform state is fresh: marked:{weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - working:{weaponComp.MyCube.IsWorking} - functional:{weaponComp.MyCube.IsFunctional} - {weaponComp.MyCube.CubeGrid.DebugName} - gridMisMatch:{weaponComp.Ai.MyGrid != weaponComp.MyCube.CubeGrid}");
@@ -115,6 +122,7 @@ namespace WeaponCore
                 {
                     Log.Line($"comp didn't match CompsToStart condition, removing");
                     //Log.Line($"[Other] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - WeaponName:{weaponComp.Ob.SubtypeId.String} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    weaponComp.Ai.DelayedGridCleanUp(null);
                     CompsToStart.Remove(weaponComp);
                 }
             }
@@ -165,18 +173,15 @@ namespace WeaponCore
             DsUtil2.Start("ChangeComps");
             foreach (var change in CompChanges)
             {
-                if (!GridToFatMap.ContainsKey(change.Comp.MyCube.CubeGrid))
-                {
-                    if (change.Change != CompChange.ChangeType.OnRemovedFromSceneQueue)
-                        continue;
-                }
+                if (change.Change != CompChange.ChangeType.OnRemovedFromSceneQueue && !GridToFatMap.ContainsKey(change.Comp.MyCube.CubeGrid))
+                    continue;
 
                 CompChange removed;
                 switch (change.Change)
                 {
                     case CompChange.ChangeType.PlatformInit:
                         CompChanges.TryDequeue(out removed);
-                        change.Comp.PlatformInit(null);
+                        change.Comp.PlatformInit();
                         break;
                     case CompChange.ChangeType.Init:
                         CompChanges.TryDequeue(out removed);
@@ -193,6 +198,22 @@ namespace WeaponCore
                 }
             }
             DsUtil2.Complete("ChangeComps", false, true);
+        }
+
+        private void DelayedComps()
+        {
+            foreach (var delayed in CompsDelayed)
+            {
+                WeaponComponent remove;
+                if (delayed.MyCube.MarkedForClose)
+                    CompsDelayed.TryDequeue(out remove);
+                else if (delayed.MyCube.IsFunctional)
+                {
+                    Log.Line($"delayed released");
+                    CompsDelayed.TryDequeue(out remove);
+                    CompChanges.Enqueue(new CompChange { Ai = delayed.Ai, Comp = delayed, Change = CompChange.ChangeType.PlatformInit });
+                }
+            }
         }
 
         internal int LoadAssigner()

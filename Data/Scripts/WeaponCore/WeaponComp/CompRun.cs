@@ -18,7 +18,7 @@ namespace WeaponCore.Support
                 if (Container.Entity.InScene)
                 {
                     if (Platform.State == MyWeaponPlatform.PlatformState.Fresh)
-                        PlatformInit(null);
+                        PlatformInit();
                 }
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToContainer: {ex}"); }
@@ -45,7 +45,7 @@ namespace WeaponCore.Support
                 Ai.Session.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
         }
 
-        internal void PlatformInit(object o)
+        internal void PlatformInit()
         {
             switch (Platform.Init(this))
             {
@@ -56,17 +56,12 @@ namespace WeaponCore.Support
                     Log.Line($"Something went wrong with Platform PreInit");
                     break;
                 case MyWeaponPlatform.PlatformState.Delay:
-                    Ai.Session.FutureEvents.Schedule(DelayedPlatformInit, null, Ai.Session.Tick % 180);
+                    Ai.Session.CompsDelayed.Enqueue(this);
                     break;
                 case MyWeaponPlatform.PlatformState.Inited:
                     Init();
                     break;
             }
-        }
-
-        internal void DelayedPlatformInit(object o)
-        {
-            Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.PlatformInit });
         }
 
         internal void Init()

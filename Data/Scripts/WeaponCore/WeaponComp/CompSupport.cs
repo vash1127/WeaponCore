@@ -55,7 +55,11 @@ namespace WeaponCore.Support
                     {
                         WeaponCount wCount;
                         if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                        {
                             wCount.Current--;
+                            WeaponCount cntRemoved;
+                            if (wCount.Current == 0) Ai.WeaponCounter.TryRemove(MyCube.BlockDefinition.Id.SubtypeId, out cntRemoved);
+                        }
 
                         for (int i = 0; i < Platform.Weapons.Length; i++)
                         {
@@ -89,9 +93,12 @@ namespace WeaponCore.Support
                             if (Platform.State == MyWeaponPlatform.PlatformState.Ready)
                             {
                                 WeaponCount wCount;
-
                                 if (Ai.WeaponCounter.TryGetValue(MyCube.BlockDefinition.Id.SubtypeId, out wCount))
+                                {
                                     wCount.Current--;
+                                    WeaponCount cntRemoved;
+                                    if (wCount.Current == 0) Ai.WeaponCounter.TryRemove(MyCube.BlockDefinition.Id.SubtypeId, out cntRemoved);
+                                }
 
                                 for (int i = 0; i < Platform.Weapons.Length; i++)
                                 {

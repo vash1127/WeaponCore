@@ -63,6 +63,7 @@ namespace WeaponCore
         internal readonly ConcurrentQueue<PartAnimation> ThreadedAnimations = new ConcurrentQueue<PartAnimation>();
         internal readonly ConcurrentQueue<DeferedTypeCleaning> BlockTypeCleanUp = new ConcurrentQueue<DeferedTypeCleaning>();
         internal readonly ConcurrentQueue<CompChange> CompChanges = new ConcurrentQueue<CompChange>();
+        internal readonly ConcurrentQueue<WeaponComponent> CompsDelayed = new ConcurrentQueue<WeaponComponent>();
 
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
