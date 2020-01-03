@@ -130,15 +130,9 @@ namespace WeaponCore.Support
             Session.AmmoMoveTriggered++;
         }
 
-        private void GridClose(MyEntity myEntity)
+        internal void GridClose(MyEntity myEntity)
         {
-            RegisterMyGridEvents(false);
-
-            if (GridInit)
-            {
-                GridInit = false;
-                Session.FutureEvents.Schedule(DelayedGridCleanUp, null, 120);
-            }
+            Session.FutureEvents.Schedule(DelayedGridCleanUp, null, 120);
         }
     }
 }

@@ -128,7 +128,9 @@ namespace WeaponCore.Support
 
                     GridAi gridAi;
                     Ai.Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
+                    Ai.GridClose(Ai.MyGrid);
                 }
+
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
         }

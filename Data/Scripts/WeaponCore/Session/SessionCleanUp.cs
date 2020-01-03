@@ -133,8 +133,29 @@ namespace WeaponCore
             _slimsSet.Clear();
             _turretDefinitions.Clear();
 
-            if (!CompsToStart.IsEmpty) Log.Line($"CompsToStart not empty");
+            if (!CompsToStart.IsEmpty)
+                foreach (var toStart in CompsToStart)
+                    toStart.Ai.DelayedGridCleanUp(null);
             CompsToStart.ClearImmediate();
+
+            if (!CompsDelayed.IsEmpty)
+                foreach (var delayed in CompsDelayed)
+                    delayed.Ai.DelayedGridCleanUp(null);
+            CompsDelayed.Clear();
+
+            if (!CompChanges.IsEmpty)
+                foreach (var change in CompChanges)
+                    change.Ai.DelayedGridCleanUp(null);
+            CompChanges.Clear();
+            
+            GridAiPool.Clean();
+
+            foreach (var av in Av.AvShots)
+            {
+                av.GlowSteps.Clear();
+                Av.AvShotPool.Return(av);
+            }
+            Av.AvShotPool.Clean();
 
             GridEffectPool.Clean();
             GridEffectsPool.Clean();

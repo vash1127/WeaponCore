@@ -132,8 +132,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                RegisterEvents();
-
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
                     Platform.ResetParts(this);
 
@@ -143,6 +141,7 @@ namespace WeaponCore.Support
                 if (!Ai.GridInit)
                 {
                     Ai.GridInit = true;
+                    Ai.RegisterMyGridEvents(true, Ai.MyGrid);
                     Ai.InitFakeShipController();
                     Ai.ScanBlockGroups = true;
                     var fatList = Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
@@ -203,7 +202,6 @@ namespace WeaponCore.Support
         internal void OnRemovedFromSceneQueue()
         {
             RemoveComp();
-            RegisterEvents(false);
         }
 
         public override void OnRemovedFromScene()

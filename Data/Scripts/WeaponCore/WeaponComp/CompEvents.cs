@@ -20,11 +20,11 @@ namespace WeaponCore.Support
                 else
                     MissileBase.AppendingCustomInfo += AppendingCustomInfo;
 
+                MyCube.OnClose += OnClose;
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
 
                 BlockInventory.ContentsChanged += OnContentsChanged;
-
             }
             else
             {
@@ -39,12 +39,19 @@ namespace WeaponCore.Support
                     else MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
 
                 }
-
+                MyCube.OnClose -= OnClose;
                 MyCube.IsWorkingChanged -= IsWorkingChanged;
 
                 if (BlockInventory == null) Log.Line($"BlockInventory is null");
                 else BlockInventory.ContentsChanged -= OnContentsChanged;
             }
+        }
+
+        private void OnClose(MyEntity myEntity)
+        {
+            RegisterEvents(false);
+            Ai = null;
+            Session = null;
         }
 
         private void OnContentsChanged(MyInventoryBase obj)

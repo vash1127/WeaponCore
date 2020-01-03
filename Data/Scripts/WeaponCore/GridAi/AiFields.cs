@@ -142,7 +142,6 @@ namespace WeaponCore.Support
             MyGrid = grid;
             Session = session;
             CreatedTick = session.Tick;
-            RegisterMyGridEvents(true, grid);
             AmmoInventories = new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(session.AmmoInventoriesMaster, MyDefinitionId.Comparer);
         }
     }
