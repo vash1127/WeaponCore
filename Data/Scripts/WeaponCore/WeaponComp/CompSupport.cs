@@ -57,9 +57,7 @@ namespace WeaponCore.Support
                             if (wCount.Current == 0) Ai.WeaponCounter.TryRemove(MyCube.BlockDefinition.Id.SubtypeId, out cntRemoved);
                         }
                     }
-
                     else Log.Line($"RemoveComp platform not ready");
-
                 }
                 else
                     Log.Line($"RemoveComp Weaponbase didn't have my comp");

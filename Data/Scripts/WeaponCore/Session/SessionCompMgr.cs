@@ -26,7 +26,7 @@ namespace WeaponCore
                 var weaponComp = CompsToStart[i];
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
-                    Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    //Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
                     PlatFormPool.Return(weaponComp.Platform);
                     weaponComp.Platform = null;
                     CompsToStart.Remove(weaponComp);
