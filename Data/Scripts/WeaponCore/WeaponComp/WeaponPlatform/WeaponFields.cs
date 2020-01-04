@@ -169,7 +169,7 @@ namespace WeaponCore.Platform
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
         {
-            LoadId = comp.Ai.Session.LoadAssigner();
+            LoadId = comp.Session.LoadAssigner();
             MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> {Item1 = entity };
             AnimationsSet = animationSets;
 
@@ -190,7 +190,7 @@ namespace WeaponCore.Platform
             Comp = comp;
             comp.HasEnergyWeapon = comp.HasEnergyWeapon || System.EnergyAmmo || System.IsHybrid;
 
-            AvCapable = System.HasBarrelShootAv && !Comp.Ai.Session.DedicatedServer;
+            AvCapable = System.HasBarrelShootAv && !Comp.Session.DedicatedServer;
 
             if (AvCapable && system.FiringSound == WeaponSystem.FiringSoundState.WhenDone)
             {

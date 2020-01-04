@@ -42,7 +42,7 @@ namespace WeaponCore
                 var w = comp.Platform.Weapons[i];
                 if (!w.System.IsBeamWeapon || w.System.MustCharge) continue;
 
-                comp.Ai.Session.FutureEvents.Schedule(SetWeaponDPS, w, 0);
+                comp.Session.FutureEvents.Schedule(SetWeaponDPS, w, 0);
             }
 
             comp.Ai.UpdatePowerSources = true;
@@ -121,7 +121,7 @@ namespace WeaponCore
             comp.OptimalDps -= dpsDif;
             comp.Ai.OptimalDps -= dpsDif;
 
-            if (!comp.Ai.Session.DedicatedServer)
+            if (!comp.Session.DedicatedServer)
                 comp.TerminalRefresh();
 
             w.ChargeDelayTicks = 0;

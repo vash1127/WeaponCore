@@ -15,7 +15,8 @@ namespace WeaponCore.Support
         {
             if (register)
             {
-                if(IsSorterTurret)
+                Registered = true;
+                if (IsSorterTurret)
                     SorterBase.AppendingCustomInfo += AppendingCustomInfo;
                 else
                     MissileBase.AppendingCustomInfo += AppendingCustomInfo;
@@ -28,22 +29,26 @@ namespace WeaponCore.Support
             }
             else
             {
-                if (IsSorterTurret)
+                if (Registered)
                 {
-                    if (SorterBase == null) Log.Line($"SortBase is null");
-                    else SorterBase.AppendingCustomInfo -= AppendingCustomInfo;
+                    Registered = false;
+                    if (IsSorterTurret)
+                    {
+                        if (SorterBase == null) Log.Line($"SortBase is null");
+                        else SorterBase.AppendingCustomInfo -= AppendingCustomInfo;
+                    }
+                    else
+                    {
+                        if (MissileBase == null) Log.Line($"MissileBase is null");
+                        else MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
+
+                    }
+
+                    MyCube.IsWorkingChanged -= IsWorkingChanged;
+
+                    if (BlockInventory == null) Log.Line($"BlockInventory is null");
+                    else BlockInventory.ContentsChanged -= OnContentsChanged;
                 }
-                else
-                {
-                    if (MissileBase == null) Log.Line($"MissileBase is null");
-                    else MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
-
-                }
-
-                MyCube.IsWorkingChanged -= IsWorkingChanged;
-
-                if (BlockInventory == null) Log.Line($"BlockInventory is null");
-                else BlockInventory.ContentsChanged -= OnContentsChanged;
             }
         }
 
@@ -51,7 +56,7 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (LastInventoryChangedTick < Ai.Session.Tick && !IgnoreInvChange)
+                if (LastInventoryChangedTick < Session.Tick && !IgnoreInvChange && Registered)
                 {
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
@@ -60,7 +65,7 @@ namespace WeaponCore.Support
                             Session.ComputeStorage(w);
                     }
                     
-                    LastInventoryChangedTick = Ai.Session.Tick;
+                    LastInventoryChangedTick = Session.Tick;
                 }
             }
             catch (Exception ex)
@@ -81,15 +86,15 @@ namespace WeaponCore.Support
                 State.Value.Online = IsWorking && IsFunctional;
                 if (MyCube.ResourceSink.CurrentInputByType(GId) < 0) Log.Line($"IsWorking:{IsWorking}(was:{wasFunctional}) - online:{State.Value.Online} - Func:{IsFunctional} - GridAvailPow:{Ai.GridAvailablePower} - SinkPow:{SinkPower} - SinkReq:{MyCube.ResourceSink.RequiredInputByType(GId)} - SinkCur:{MyCube.ResourceSink.CurrentInputByType(GId)}");
 
-                if(!Ai.Session.DedicatedServer)
+                if(!Session.DedicatedServer)
                     TerminalRefresh();
 
-                if (!IsWorking)
+                if (!IsWorking && Registered)
                 {
                     foreach (var w in Platform.Weapons)
                         w.StopShooting();
                 }
-                IsWorkingChangedTick = Ai.Session.Tick;
+                IsWorkingChangedTick = Session.Tick;
             }
             catch (Exception ex) { Log.ThreadedWrite($"Exception in IsWorkingChanged: {ex}"); }
         }
@@ -139,7 +144,7 @@ namespace WeaponCore.Support
             {
 
                 var currentInput = sink.CurrentInputByType(changedResourceTypeId);
-                var tick = Ai.Session.Tick;
+                var tick = Session.Tick;
                 if (Ai.ResetPower && tick != LastUpdateTick)
                 {
                     if (currentInput < CurrentSinkPowerRequested && currentInput > IdlePower)

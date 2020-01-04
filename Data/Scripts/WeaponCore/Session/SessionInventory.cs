@@ -25,9 +25,9 @@ namespace WeaponCore
             weapon.CurrentAmmoVolume = (float)comp.State.Value.Weapons[weapon.WeaponId].CurrentMags * itemVolume;
 
             if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
-                weapon.Comp.Ai.Session.WeaponAmmoPullQueue.Enqueue(weapon);
+                weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
-            if (comp.State.Value.Weapons[weapon.WeaponId].CurrentAmmo == 0 && (weapon.System.MustCharge || comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0 || comp.Ai.Session.IsCreative))
+            if (comp.State.Value.Weapons[weapon.WeaponId].CurrentAmmo == 0 && (weapon.System.MustCharge || comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0 || comp.Session.IsCreative))
                 weapon.StartReload();
         }
 
@@ -78,7 +78,7 @@ namespace WeaponCore
                     if (inventories.Count > 0)
                         AmmoToPullQueue.Enqueue(new MyTuple<Weapon, MyTuple<MyInventory, int>[]> { Item1 = weapon, Item2 = inventories.ToArray() });
 
-                    weapon.Comp.Ai.Session.AmmoPulls++;
+                    weapon.Comp.Session.AmmoPulls++;
                 }                
             }
         }

@@ -123,13 +123,11 @@ namespace WeaponCore.Support
                     gridAi.Focus.Target[ActiveId] = null;
             }
         }
-
         internal void Clean()
         {
             for (int i = 0; i < Target.Length; i++)
             {
                 Target[i] = null;
-                TargetState[i] = null;
             }
         }
     }

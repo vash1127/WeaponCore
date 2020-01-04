@@ -233,6 +233,45 @@ namespace WeaponCore.Support
         }
 
 
+        internal void CompChange(bool add, WeaponComponent comp)
+        {
+            if (add)
+            {
+                if (WeaponsIdx.ContainsKey(comp))
+                {
+                    GridAi gridAiTmp;
+                    if (Session.GridTargetingAIs.TryGetValue(comp.MyCube.CubeGrid, out gridAiTmp))
+                    {
+                        Log.Line($"add - gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(comp.MyCube)}");
+                    }
+                    return;
+                }
+                WeaponsIdx.Add(comp, Weapons.Count);
+                Weapons.Add(comp);
+            }
+            else
+            {
+
+                int idx;
+                if (!WeaponsIdx.TryGetValue(comp, out idx))
+                {
+                    GridAi gridAiTmp;
+                    if (Session.GridTargetingAIs.TryGetValue(comp.MyCube.CubeGrid, out gridAiTmp))
+                    {
+                        Log.Line($"remove - gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(comp.MyCube)}");
+                    }
+                    return;
+                }
+
+                Weapons.RemoveAtFast(idx);
+                if (idx < Weapons.Count)
+                    WeaponsIdx[Weapons[idx]] = idx;
+
+                WeaponsIdx.Remove(comp);
+            }
+        }
+
+
         internal bool WeaponTerminalReleased()
         {
             if (LastWeaponTerminal != null && WeaponTerminalAccess)
@@ -578,6 +617,12 @@ namespace WeaponCore.Support
 
         internal void DelayedGridCleanUp(object o)
         {
+            Session.GridAiPool.Return(this);
+        }
+
+        internal void CleanUp()
+        {
+            RegisterMyGridEvents(false);
             foreach (var grid in SubGrids)
             {
                 if (grid == MyGrid) continue;
@@ -598,7 +643,6 @@ namespace WeaponCore.Support
             WeaponsIdx.Clear();
             WeaponBase.Clear();
             AmmoInventories.Clear();
-            Session.ReturnMasterInventory(AmmoInventories);
 
             SourceCount = 0;
             ManualComps = 0;
@@ -620,9 +664,7 @@ namespace WeaponCore.Support
             MyPlanetTmp = null;
             MyPlanet = null;
             TerminalSystem = null;
-            Session.GridAiPool.Return(this);
         }
-
         internal void UpdateGridPower()
         {
             LastPowerUpdateTick = Session.Tick;

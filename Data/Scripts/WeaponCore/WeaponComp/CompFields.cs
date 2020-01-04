@@ -29,7 +29,7 @@ namespace WeaponCore.Support
 
         internal GridAi Ai;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
-        internal bool InThisTerminal => Ai.Session.LastTerminalId == MyCube.EntityId;
+        internal bool InThisTerminal => Session.LastTerminalId == MyCube.EntityId;
 
         internal int OnAddedAttempts;
 
@@ -61,6 +61,7 @@ namespace WeaponCore.Support
         internal bool Debug;
         internal bool MouseShoot;
         internal bool UnlimitedPower;
+        internal bool Registered;
         internal Start Status;
         internal enum Start
         {
@@ -95,12 +96,13 @@ namespace WeaponCore.Support
 
         internal CompSettings Set;
         internal CompState State;
-        internal MyResourceSinkInfo SinkInfo;
+        internal Session Session;
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
-        public WeaponComponent(GridAi ai, MyCubeBlock myCube)
+        public WeaponComponent(Session session, GridAi ai, MyCubeBlock myCube)
         {
             Ai = ai;
+            Session = session;
             MyCube = myCube;
             Slim = myCube.SlimBlock;
 
@@ -124,6 +126,7 @@ namespace WeaponCore.Support
             RotationEmitter = new MyEntity3DSoundEmitter(MyCube, true, 1f);
             RotationSound = new MySoundPair();
             Platform = new MyWeaponPlatform(this);
+            MyCube.OnClose += Session.CloseComps;
         }        
     }
 }

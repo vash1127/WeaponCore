@@ -193,33 +193,33 @@ namespace WeaponCore.Control
 
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOff, out delay))
-                        w.AnimationDelayTick = w.ShootDelayTick = comp.Ai.Session.Tick + delay;
+                        w.AnimationDelayTick = w.ShootDelayTick = comp.Session.Tick + delay;
                 }
                 else
                 {
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOn, out delay))
-                        w.AnimationDelayTick = w.ShootDelayTick = comp.Ai.Session.Tick + delay;
+                        w.AnimationDelayTick = w.ShootDelayTick = comp.Session.Tick + delay;
 
                     if (!w.System.EnergyAmmo || w.System.MustCharge)
                         Session.ComputeStorage(w);
                 }
 
                 
-                if (w.AnimationDelayTick < comp.Ai.Session.Tick || w.LastEvent == Weapon.EventTriggers.TurnOn || w.LastEvent == Weapon.EventTriggers.TurnOff)
+                if (w.AnimationDelayTick < comp.Session.Tick || w.LastEvent == Weapon.EventTriggers.TurnOn || w.LastEvent == Weapon.EventTriggers.TurnOff)
                 {
                     w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                     w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
                 }
                 else
                 {
-                    comp.Ai.Session.FutureEvents.Schedule((object o) => 
+                    comp.Session.FutureEvents.Schedule((object o) => 
                         {
                             w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOn, On);
                             w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, !On);
                         }, 
                         null, 
-                        w.AnimationDelayTick - comp.Ai.Session.Tick
+                        w.AnimationDelayTick - comp.Session.Tick
                     );
                 }
 

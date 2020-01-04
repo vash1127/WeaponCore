@@ -80,18 +80,6 @@ namespace WeaponCore
             return _loadCounter;
         }
 
-        internal ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> GetMasterInventory()
-        {
-
-            if (InventoryPool.Count > 0) return InventoryPool.Pop();
-            return new ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>>(AmmoInventoriesMaster, MyDefinitionId.Comparer);
-        }
-
-        internal void ReturnMasterInventory(ConcurrentDictionary<MyDefinitionId, ConcurrentDictionary<MyInventory, MyFixedPoint>> inventory)
-        {
-            InventoryPool.Push(inventory);
-        }
-
         private bool FindPlayer(IMyPlayer player, long id)
         {
             if (player.IdentityId == id)

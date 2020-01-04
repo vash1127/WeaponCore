@@ -274,12 +274,12 @@ namespace WeaponCore.Platform
 
         public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Vector3D targetAccel)
         {
-            if (Comp.Ai.VelocityUpdateTick != Comp.Ai.Session.Tick)
+            if (Comp.Ai.VelocityUpdateTick != Comp.Session.Tick)
             {
                 Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
-                Comp.Ai.VelocityUpdateTick = Comp.Ai.Session.Tick;
+                Comp.Ai.VelocityUpdateTick = Comp.Session.Tick;
             }
-            var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Ai.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, System.DesiredProjectileSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction != Prediction.Advanced);
+            var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, System.DesiredProjectileSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction != Prediction.Advanced);
             //DsDebugDraw.DrawSingleVec(predictedPos, 2.5f, Color.Red);
             return predictedPos;
         }

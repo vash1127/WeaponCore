@@ -16,7 +16,7 @@ namespace WeaponCore.Platform
     {
         internal void Shoot() // Inlined due to keens mod profiler
         {
-            var session = Comp.Ai.Session;
+            var session = Comp.Session;
             var tick = session.Tick;
             var state = Comp.State.Value.Weapons[WeaponId];
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
@@ -332,7 +332,7 @@ namespace WeaponCore.Platform
         private Projectile CreateVirtualProjectile()
         {
             Projectile p;
-            Comp.Ai.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
+            Comp.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
             p.Info.System = System;
             p.Info.Ai = Comp.Ai;
             p.Info.Overrides = Comp.Set.Value.Overrides;
@@ -365,7 +365,7 @@ namespace WeaponCore.Platform
 
         private void ShootRayCheck()
         {
-            Comp.LastRayCastTick = Comp.Ai.Session.Tick;
+            Comp.LastRayCastTick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
 
             if (Target.Projectile != null)
@@ -414,7 +414,7 @@ namespace WeaponCore.Platform
                 return;
             }
             Casting = true;
-            Comp.Ai.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
+            Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
         }
 
         public void ShootRayCheckCallBack(IHitInfo hitInfo)

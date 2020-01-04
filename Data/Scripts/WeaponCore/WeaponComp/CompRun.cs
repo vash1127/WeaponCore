@@ -29,11 +29,10 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
-
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
-                    Ai.Session.CompChanges.Enqueue(new CompChange {Ai = Ai, Comp = this, Change = CompChange.ChangeType.Reinit});
+                    ReInit();
                 else
-                    Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.PlatformInit });
+                   PlatformInit();
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -41,8 +40,6 @@ namespace WeaponCore.Support
         public override void OnBeforeRemovedFromContainer()
         {
             base.OnBeforeRemovedFromContainer();
-            if (!Container.Entity.InScene)
-                Ai.Session.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
         }
 
         internal void PlatformInit()
@@ -56,7 +53,7 @@ namespace WeaponCore.Support
                     Log.Line($"Something went wrong with Platform PreInit");
                     break;
                 case MyWeaponPlatform.PlatformState.Delay:
-                    Ai.Session.CompsDelayed.Enqueue(this);
+                    Session.CompsDelayed.Add(this);
                     break;
                 case MyWeaponPlatform.PlatformState.Inited:
                     Init();
@@ -70,9 +67,9 @@ namespace WeaponCore.Support
             {
                 if (!MyCube.MarkedForClose && Entity != null)
                 {
-                    _isServer = Ai.Session.IsServer;
-                    _isDedicated = Ai.Session.DedicatedServer;
-                    _mpActive = Ai.Session.MpActive;
+                    _isServer = Session.IsServer;
+                    _isDedicated = Session.DedicatedServer;
+                    _mpActive = Session.MpActive;
 
                     Entity.NeedsUpdate = ~MyEntityUpdateEnum.EACH_10TH_FRAME;
                     Ai.FirstRun = true;
@@ -81,9 +78,18 @@ namespace WeaponCore.Support
 
                     InventoryInit();
                     PowerInit();
-                    OnAddedToSceneTasks();
+                    Ai.CompChange(true, this);
+                    RegisterEvents();
 
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
+                        Platform.ResetParts(this);
+
+                    Entity.NeedsWorldMatrix = true;
+
+                    if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
+                    else OnAddedToSceneTasks();
                     Platform.State = MyWeaponPlatform.PlatformState.Ready;
+
                 }
                 else Log.Line($"Comp Init() failed");
             }
@@ -96,11 +102,11 @@ namespace WeaponCore.Support
                 if (!MyCube.MarkedForClose && Entity != null)
                 {
                     GridAi ai;
-                    if (!Ai.Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
+                    if (!Session.GridTargetingAIs.TryGetValue(MyCube.CubeGrid, out ai))
                     {
-                        var newAi = Ai.Session.GridAiPool.Get();
-                        newAi.Init(MyCube.CubeGrid, Ai.Session);
-                        Ai.Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
+                        var newAi = Session.GridAiPool.Get();
+                        newAi.Init(MyCube.CubeGrid, Session);
+                        Session.GridTargetingAIs.TryAdd(MyCube.CubeGrid, newAi);
                         Ai = newAi;
                     }
                     else Ai = ai;
@@ -109,21 +115,27 @@ namespace WeaponCore.Support
                     {
                         Ai.FirstRun = true;
 
-                        AddCompList();
-
                         var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
                         if (!Ai.WeaponCounter.ContainsKey(blockDef))
-                            Ai.WeaponCounter.TryAdd(blockDef, Ai.Session.WeaponCountPool.Get());
+                            Ai.WeaponCounter.TryAdd(blockDef, Session.WeaponCountPool.Get());
 
                         Ai.WeaponCounter[blockDef].Current++;
+                        Ai.CompChange(true, this);
+                        RegisterEvents();
 
-                        OnAddedToSceneTasks();
+
+                        if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
+                            Platform.ResetParts(this);
+
+                        Entity.NeedsWorldMatrix = true;
+                        if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
+                        else OnAddedToSceneTasks();
                     }
                     else Log.Line($"Comp ReInit() failed stage2!");
                 }
                 else
                 {
-                    Log.Line($"Comp ReInit() failed stage1! - marked:{MyCube.MarkedForClose} - Entity:{Entity != null} - hasAi:{Ai.Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)} - hasMe:{Ai.WeaponBase.ContainsKey(MyCube)}");
+                    Log.Line($"Comp ReInit() failed stage1! - marked:{MyCube.MarkedForClose} - Entity:{Entity != null} - hasAi:{Session.GridTargetingAIs.ContainsKey(MyCube.CubeGrid)}");
                 }
             }
         }
@@ -132,20 +144,13 @@ namespace WeaponCore.Support
         {
             try
             {
-                RegisterEvents();
-
-                if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
-                    Platform.ResetParts(this);
-
-                Entity.NeedsWorldMatrix = true;
-
                 Ai.UpdatePowerSources = true;
                 if (!Ai.GridInit)
                 {
                     Ai.GridInit = true;
                     Ai.InitFakeShipController();
                     Ai.ScanBlockGroups = true;
-                    var fatList = Ai.Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
+                    var fatList = Session.GridToFatMap[MyCube.CubeGrid].MyCubeBocks;
                     for (int i = 0; i < fatList.Count; i++)
                     {
                         var cubeBlock = fatList[i];
@@ -194,16 +199,13 @@ namespace WeaponCore.Support
                         for (int i = 0; i < Platform.Weapons.Length; i++)
                             Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                 }
-
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
-            catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Ai?.Session == null} EntNull{Entity == null} MyCubeNull:{MyCube?.CubeGrid == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Session == null} EntNull{Entity == null} MyCubeNull:{MyCube?.CubeGrid == null}"); }
         }
 
         internal void OnRemovedFromSceneQueue()
         {
-            RemoveComp();
-            RegisterEvents(false);
         }
 
         public override void OnRemovedFromScene()
@@ -211,7 +213,7 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                Ai.Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.OnRemovedFromSceneQueue });
+                RemoveComp();
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }

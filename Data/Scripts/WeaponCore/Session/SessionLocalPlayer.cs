@@ -203,7 +203,7 @@ namespace WeaponCore
                 if (!ai.Targets.TryGetValue(entity, out info)) return;
                 ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
                 
-                if (info.IsGrid && ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict)) {
+                if (info.IsGrid && GridToBlockTypeMap.TryGetValue((MyCubeGrid)info.Target, out typeDict)) {
 
                     ConcurrentCachingList<MyCubeBlock> fatList;
                     if (typeDict.TryGetValue(TargetingDefinition.BlockTypes.Offense, out fatList))

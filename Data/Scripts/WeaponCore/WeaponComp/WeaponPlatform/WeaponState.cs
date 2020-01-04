@@ -12,10 +12,10 @@ namespace WeaponCore.Platform
     {
         public void PositionChanged(MyPositionComponentBase pComp)
         {
-            if (_posChangedTick != Comp.Ai.Session.Tick)
+            if (_posChangedTick != Comp.Session.Tick)
                 UpdatePivotPos();
 
-            _posChangedTick = Comp.Ai.Session.Tick;
+            _posChangedTick = Comp.Session.Tick;
         }
 
         internal void EntPartClose(MyEntity obj)
@@ -41,7 +41,7 @@ namespace WeaponCore.Platform
 
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
-            var session = Comp.Ai.Session;
+            var session = Comp.Session;
             switch (state)
             {
                 case EventTriggers.StopFiring:
@@ -81,7 +81,7 @@ namespace WeaponCore.Platform
                                 if (animation.Muzzle != "Any" && stopFiring) _muzzlesFiring.Add(animation.Muzzle);
 
                                 animation.StartTick = session.Tick + animation.MotionDelay + delay;
-                                Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                Comp.Session.AnimationsToProcess.Add(animation);
                                 animation.Running = true;
 
                                 if (animation.DoesLoop)
@@ -125,13 +125,13 @@ namespace WeaponCore.Platform
                                         animation.Running = false;
                                     else
                                     {
-                                        animation.StartTick = Comp.Ai.Session.Tick + (uint)animCheck.CurrentMove + animation.MotionDelay;
-                                        Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                        animation.StartTick = Comp.Session.Tick + (uint)animCheck.CurrentMove + animation.MotionDelay;
+                                        Comp.Session.AnimationsToProcess.Add(animation);
                                     }
                                 }
                                 else
                                 {
-                                    Comp.Ai.Session.AnimationsToProcess.Add(animation);
+                                    Comp.Session.AnimationsToProcess.Add(animation);
                                     animation.StartTick = session.Tick + animation.MotionDelay;
                                 }
 
@@ -283,8 +283,8 @@ namespace WeaponCore.Platform
             if (System.BarrelEffect1 || System.BarrelEffect2)
             {
                 var removal = false;
-                var tick = Comp.Ai.Session.Tick;
-                if (Comp.Ai.VelocityUpdateTick != tick)
+                var tick = Comp.Session.Tick;
+                if (Comp.Ai != null && Comp.Ai.VelocityUpdateTick != tick)
                 {
                     Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Comp.Ai.VelocityUpdateTick = tick;
@@ -326,7 +326,7 @@ namespace WeaponCore.Platform
                             if (BarrelEffects1[id] != null)
                             {
                                 BarrelEffects1[id].WorldMatrix = matrix;
-                                BarrelEffects1[id].Velocity = Comp.Ai.GridVel;
+                                BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
                             }
                         }
                         else if (BarrelEffects1[id] != null)
@@ -359,7 +359,7 @@ namespace WeaponCore.Platform
                             if (BarrelEffects2[id] != null)
                             {
                                 BarrelEffects2[id].WorldMatrix = matrix;
-                                BarrelEffects2[id].Velocity = Comp.Ai.GridVel;
+                                BarrelEffects2[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
                             }
                         }
                         else if (BarrelEffects2[id] != null)
@@ -435,7 +435,7 @@ namespace WeaponCore.Platform
             Comp.SinkPower -= useableDif;
             Comp.Ai.GridAvailablePower += useableDif;
             Comp.MyCube.ResourceSink.Update();
-            if (!Comp.Ai.Session.DedicatedServer)
+            if (!Comp.Session.DedicatedServer)
                 Comp.TerminalRefresh();
         }
 
@@ -452,7 +452,7 @@ namespace WeaponCore.Platform
             ChargeDelayTicks = 0;
             if (Comp.SinkPower < Comp.IdlePower) Comp.SinkPower = Comp.IdlePower;
             Comp.MyCube.ResourceSink.Update();
-            if(!Comp.Ai.Session.DedicatedServer)
+            if(!Comp.Session.DedicatedServer)
                 Comp.TerminalRefresh();
         }
 
@@ -467,9 +467,9 @@ namespace WeaponCore.Platform
 
             Reloading = true;
 
-            if (AnimationDelayTick > Comp.Ai.Session.Tick && LastEvent != EventTriggers.Reloading)
+            if (AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
-                Comp.Ai.Session.FutureEvents.Schedule((object o)=> { StartReload(true); }, null, AnimationDelayTick - Comp.Ai.Session.Tick);
+                Comp.Session.FutureEvents.Schedule((object o)=> { StartReload(true); }, null, AnimationDelayTick - Comp.Session.Tick);
                 return;
             }
             
@@ -478,7 +478,7 @@ namespace WeaponCore.Platform
             if (IsShooting)
                 StopShooting();
 
-            if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !System.MustCharge && !Comp.Ai.Session.IsCreative))
+            if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !System.MustCharge && !Comp.Session.IsCreative))
             {
                 //Log.Line($"Out of Ammo");
                 if (!OutOfAmmo)
@@ -500,22 +500,22 @@ namespace WeaponCore.Platform
                 uint delay;
                 if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Reloading, out delay))
                 {
-                    AnimationDelayTick = Comp.Ai.Session.Tick + delay;
+                    AnimationDelayTick = Comp.Session.Tick + delay;
                     EventTriggerStateChanged(EventTriggers.Reloading, true);
                 }
 
                 if (System.MustCharge)
                 {
-                    Comp.Ai.Session.ChargingWeapons.Add(this);
+                    Comp.Session.ChargingWeapons.Add(this);
                     Comp.Ai.RequestedWeaponsDraw += RequiredPower;
-                    ChargeUntilTick = (uint)System.ReloadTime + Comp.Ai.Session.Tick;
+                    ChargeUntilTick = (uint)System.ReloadTime + Comp.Session.Tick;
                     Comp.Ai.OverPowered = Comp.Ai.RequestedWeaponsDraw > 0 && Comp.Ai.RequestedWeaponsDraw > Comp.Ai.GridMaxPower;
                     var currDif = Comp.CurrentCharge - CurrentCharge;
                     Comp.CurrentCharge = currDif > 0 ? currDif : 0;
                     CurrentCharge = 0;
                 }
                 else
-                    Comp.Ai.Session.FutureEvents.Schedule(Reloaded, this, (uint)System.ReloadTime);
+                    Comp.Session.FutureEvents.Schedule(Reloaded, this, (uint)System.ReloadTime);
 
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
@@ -548,7 +548,7 @@ namespace WeaponCore.Platform
 
             if (!w.System.EnergyAmmo || w.System.IsHybrid)
             {
-                if (w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId) > 0 || w.Comp.Ai.Session.IsCreative)
+                if (w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId) > 0 || w.Comp.Session.IsCreative)
                 {
                     w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
                     if (w.System.IsHybrid)
@@ -591,8 +591,8 @@ namespace WeaponCore.Platform
 
         internal void WakeTargets()
         {
-            LastTargetTick = Comp.Ai.Session.Tick;
-            LoadId = Comp.Ai.Session.LoadAssigner();
+            LastTargetTick = Comp.Session.Tick;
+            LoadId = Comp.Session.LoadAssigner();
         }
     }
 }
