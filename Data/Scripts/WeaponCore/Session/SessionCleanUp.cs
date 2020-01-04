@@ -165,7 +165,6 @@ namespace WeaponCore
             Projectiles.CheckPool.Clean();
             Projectiles.ProjectilePool.DeallocateAll();
             Projectiles.HitEntityPool.Clean();
-            Projectiles.DrawProjectiles.Clear();
             Projectiles.CleanUp.Clear();
             Projectiles.InfoPool.DeallocateAll();
             Projectiles.V3Pool.Clean();

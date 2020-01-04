@@ -16,18 +16,17 @@ namespace WeaponCore.Projectiles
     {
         private const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
         internal readonly Session Session;
-        internal readonly MyConcurrentPool<Fragments> ShrapnelPool = new MyConcurrentPool<Fragments>();
-        internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>();
-        internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>();
+        internal readonly MyConcurrentPool<Fragments> ShrapnelPool = new MyConcurrentPool<Fragments>(32);
+        internal readonly MyConcurrentPool<Fragment> FragmentPool = new MyConcurrentPool<Fragment>(32);
+        internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
 
         internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>(30);
-        internal readonly ObjectsPool<Projectile> ProjectilePool = new ObjectsPool<Projectile>(150);
-        internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>();
-        internal readonly ObjectsPool<ProInfo> InfoPool = new ObjectsPool<ProInfo>(150);
-        internal readonly List<ProInfo> DrawProjectiles = new List<ProInfo>(300);
-        internal readonly List<Projectile> CleanUp = new List<Projectile>(20);
+        internal readonly ObjectsPool<Projectile> ProjectilePool = new ObjectsPool<Projectile>(256);
+        internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32);
+        internal readonly ObjectsPool<ProInfo> InfoPool = new ObjectsPool<ProInfo>(256);
+        internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
 
-        internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>(12);
+        internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>(32);
         internal EntityPool<MyEntity>[] EntityPool;
         internal ulong CurrentProjectileId;
 
@@ -138,7 +137,7 @@ namespace WeaponCore.Projectiles
                         {
                             var distToMax = p.MaxTrajectory - p.Info.DistanceTraveled;
 
-                            var stopDist = p.VelocityLengthSqr / 2 / (p.AccelPerSec);
+                            var stopDist = p.VelocityLengthSqr / 2 / (p.StepPerSec);
                             if (distToMax <= stopDist)
                                 accel = false;
 
@@ -232,7 +231,6 @@ namespace WeaponCore.Projectiles
 
                 if (!p.Active || (int)p.State > 3) continue;
                 var beam = new LineD(p.LastPosition, p.Position);
-
                 if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
                 {
                     var dInfo = p.Info.System.Values.Ammo.AreaEffect.Detonation;
@@ -251,8 +249,7 @@ namespace WeaponCore.Projectiles
 
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
-                                if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint &&
-                                    lp != p.Info.Target.Projectile)
+                                if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
                                     ProjectileHit(p, lp, p.Info.System.CollisionIsLine);
 
                         checkList.Clear();
@@ -303,7 +300,6 @@ namespace WeaponCore.Projectiles
                     if (GetAllEntitiesInLine(p, beam) && p.Intersected())
                         continue;
                 }
-
                 p.Miss = true;
                 p.Info.HitList.Clear();
             }
@@ -351,11 +347,11 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.State == ProjectileState.OneAndDone)
                     {
-                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.MaxTrajectory, ref p.Position, ref p.Direction);
+                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.MaxTrajectory, ref p.Position, ref p.Direction, ref p.VisualDir);
                     }
                     else if (p.ModelState == EntityState.None && p.Info.System.AmmoParticle && !p.Info.System.DrawLine)
                     {
-                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Position, ref p.Direction);
+                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Position, ref p.Direction, ref p.VisualDir);
                     }
                     else
                     {
@@ -363,14 +359,11 @@ namespace WeaponCore.Projectiles
                         var displaceDiff = p.Info.ProjectileDisplacement - p.TracerLength;
                         if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction);
+                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction, ref p.VisualDir, true);
                         }
                         else
                         {
-                            var pointDir = (p.SmartsOn) ? p.VisualDir : p.Direction;
-                            var drawStartPos = p.ConstantSpeed && p.AccelLength > p.TracerLength ? p.LastPosition : p.Position;
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref drawStartPos, ref pointDir);
-
+                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                     }
                 }

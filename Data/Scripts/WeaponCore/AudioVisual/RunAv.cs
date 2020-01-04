@@ -39,18 +39,37 @@ namespace WeaponCore.Support
 
         internal void Run()
         {
+            //if (Session.Tick300) Log.Line($"{AvShots.Count}");
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
                 var refreshed = av.LastTick == Session.Tick;
 
-                if (refreshed && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
+                if ((refreshed  || av.TracerShrinks.Count > 0) && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
                 {
                     if (!av.System.OffsetEffect)
-                        MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.Position, -av.Direction, (float)av.TracerLength, (float)av.Thickness);
+                    {
+                        if (av.Tracer != AvShot.TracerState.Shrink)
+                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.Position, -av.PointDir, (float)av.TracerLength, (float)av.Thickness);
+                        else
+                        {
+                            var s = av.TracerShrinks.Dequeue();
+                            Log.Line($"drawining non-offset shrink: Color:{s.Color} - Start:{s.Start} - Len:{s.Length} - Thickness:{s.Thickness}");
+
+                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
+                        }
+                    }
                     else
                     {
-                        for (int x = 0; x < av.Offsets.Count; x++)
+                        Shrinks s = new Shrinks();
+                        List<Vector3D> list;
+                        if (av.Tracer == AvShot.TracerState.Shrink)
+                        {
+                            s = av.TracerShrinks.Dequeue();
+                            list = av.ShrinkOffsets.Dequeue();
+                        }
+                        else list = av.Offsets;
+                        for (int x = 0; x < list.Count; x++)
                         {
                             Vector3D fromBeam;
                             Vector3D toBeam;
@@ -58,24 +77,28 @@ namespace WeaponCore.Support
                             if (x == 0)
                             {
                                 fromBeam = av.OffsetMatrix.Translation;
-                                toBeam = Vector3D.Transform(av.Offsets[x], av.OffsetMatrix);
+                                toBeam = Vector3D.Transform(list[x], av.OffsetMatrix);
                             }
                             else
                             {
-                                fromBeam = Vector3D.Transform(av.Offsets[x - 1], av.OffsetMatrix);
-                                toBeam = Vector3D.Transform(av.Offsets[x], av.OffsetMatrix);
+                                fromBeam = Vector3D.Transform(list[x - 1], av.OffsetMatrix);
+                                toBeam = Vector3D.Transform(list[x], av.OffsetMatrix);
                             }
 
                             Vector3 dir = (toBeam - fromBeam);
                             var length = dir.Length();
                             var normDir = dir / length;
-                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, fromBeam, normDir, length, (float)av.Thickness);
+                            if (av.Tracer != AvShot.TracerState.Shrink)
+                                MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, fromBeam, normDir, length, (float)av.Thickness);
+                            else
+                                MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
 
                             if (Vector3D.DistanceSquared(av.OffsetMatrix.Translation, toBeam) > av.TracerLengthSqr) break;
                         }
-                        av.Offsets.Clear();
+                        list.Clear();
                     }
                 }
+
                 var glowCnt = av.GlowSteps.Count;
                 if (av.Trail != AvShot.TrailState.Off)
                 {
@@ -191,7 +214,7 @@ namespace WeaponCore.Support
                 }
 
 
-                var noNextStep = glowCnt == 0 && av.Model == AvShot.ModelState.None;
+                var noNextStep = glowCnt == 0 && av.Model == AvShot.ModelState.None && av.TracerShrinks.Count == 0;
                 if (noNextStep && (!refreshed || av.System.IsBeamWeapon))
                 {
                     AvShotPool.Return(av);

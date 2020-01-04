@@ -51,7 +51,7 @@ namespace WeaponCore.Projectiles
         internal double VelocityLengthSqr;
         internal double DistanceFromCameraSqr;
         internal double OffsetSqr;
-        internal double AccelPerSec;
+        internal double StepPerSec;
         internal double MaxSpeedSqr;
         internal double MaxSpeed;
         internal double VisualStep;
@@ -247,11 +247,11 @@ namespace WeaponCore.Projectiles
 
             var accelPerSec = Info.System.Values.Ammo.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
-            AccelPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
+            StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
             MaxVelocity = StartSpeed + (Direction * DesiredSpeed);
             MaxSpeed = MaxVelocity.Length();
             MaxSpeedSqr = MaxSpeed * MaxSpeed;
-            AccelLength = Info.System.Values.Ammo.Trajectory.AccelPerSec * StepConst;
+            AccelLength = accelPerSec * StepConst;
             AccelVelocity = (Direction * AccelLength);
 
             if (ConstantSpeed)
@@ -275,7 +275,7 @@ namespace WeaponCore.Projectiles
             if (EnableAv)
             {
                 Info.AvShot = Info.Ai.Session.Av.AvShotPool.Get();
-                Info.AvShot.Init(Info, AccelPerSec * StepConst, MaxSpeed);
+                Info.AvShot.Init(Info, StepPerSec * StepConst, MaxSpeed);
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
             }
 
@@ -365,12 +365,10 @@ namespace WeaponCore.Projectiles
             {
                 TestSphere.Center = Hit.HitPos;
 
-                var travelDist = Info.DistanceTraveled - Info.PrevDistanceTraveled;
-                var travelToHit = Vector3D.Distance(Position, Hit.HitPos);
-                var remainingTracer =  TracerLength - travelToHit;
-                remainingTracer = remainingTracer > 0 ? remainingTracer : 0;
+                var travelToHit = Vector3D.Distance(LastPosition, Hit.HitPos);
+                var remainingTracer = TracerLength - travelToHit <= TracerLength ? MathHelperD.Clamp(TracerLength - travelToHit, 0, double.MaxValue) : 0;
 
-                Info.AvShot.Update(travelDist, remainingTracer, ref Hit.HitPos, ref Direction);
+                Info.AvShot.Update(travelToHit, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
                 if (Info.AvShot.OnScreen == Screen.None) CameraCheck();
 
                 if (Info.MuzzleId != -1)
@@ -409,13 +407,13 @@ namespace WeaponCore.Projectiles
                 var vp = VrPros[i];
                 var info = vp.Info;
                 var vs = vp.VisualShot;
-                vs.Init(vp.Info, AccelPerSec * StepConst, MaxSpeed);
+                vs.Init(vp.Info, StepPerSec * StepConst, MaxSpeed);
                 vs.OnScreen = Info.AvShot.OnScreen;
                 vs.Hit = Hit;
                 if (vs.System.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerStart, Position);
-                    vs.Update(0, beam.Length, ref beam.To, ref beam.Direction);
+                    vs.Update(0, beam.Length, ref beam.To, ref beam.Direction, ref VisualDir);
                 }
                 else
                 {
@@ -429,11 +427,11 @@ namespace WeaponCore.Projectiles
                     var line = new LineD(vs.Origin, beamEnd);
                     if (!miss && hitPos.HasValue)
                     {
-                        vs.Update(0, Info.WeaponCache.HitDistance, ref beamEnd, ref line.Direction);
+                        vs.Update(0, Info.WeaponCache.HitDistance, ref beamEnd, ref line.Direction, ref VisualDir);
                     }
 
                     else
-                        vs.Update(0, line.Length, ref line.To, ref line.Direction);
+                        vs.Update(0, line.Length, ref line.To, ref line.Direction, ref VisualDir);
                 }
                 vs.Complete(!miss);
             }
@@ -619,9 +617,9 @@ namespace WeaponCore.Projectiles
                     PrevTargetVel = tVel;
                 }
                 else UpdateZombie();
-                var commandedAccel = MathFuncs.CalculateMissileIntercept(PrevTargetPos, PrevTargetVel, Position, Velocity, AccelPerSec, Info.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, Info.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
+                var commandedAccel = MathFuncs.CalculateMissileIntercept(PrevTargetPos, PrevTargetVel, Position, Velocity, StepPerSec, Info.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, Info.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
                 newVel = Velocity + (commandedAccel * StepConst);
-                AccelDir = commandedAccel / AccelPerSec;
+                AccelDir = commandedAccel / StepPerSec;
                 Vector3D.Normalize(ref Velocity, out Direction);
             }
             else newVel = Velocity += (Direction * AccelLength);
