@@ -87,16 +87,8 @@ namespace WeaponCore.Platform
             {
                 if (++state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
                 {
-                    state.ShotsFired = 0;
-                    EventTriggerStateChanged(EventTriggers.BurstReload, false);
-                }
-                else if (state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst && (Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)))
-                {
-                    _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
-                    EventTriggerStateChanged(EventTriggers.BurstReload, true);
-                    if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
-                    if (IsShooting) StopShooting();
-                    return;
+                    state.ShotsFired = 1;                    
+                    EventTriggerStateChanged(EventTriggers.BurstReload, false);                    
                 }
             }
 
@@ -280,6 +272,8 @@ namespace WeaponCore.Platform
                     }
                 }
 
+                if (PlayTurretAv && BarrelAvUpdater.Reader.Count > 0)
+                    ShootGraphics();
                 _muzzlesToFire.Add(MuzzleIdToName[current]);
 
                 if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
@@ -308,7 +302,19 @@ namespace WeaponCore.Platform
 
             EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-            if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
+            if (System.BurstMode && (Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+            {
+                uint delay = 0;
+                if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
+                    session.FutureEvents.Schedule((object o) => { EventTriggerStateChanged(EventTriggers.BurstReload, true); }, null, delay);
+                else
+                    EventTriggerStateChanged(EventTriggers.BurstReload, true);
+
+                if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
+                if (IsShooting) StopShooting();
+                _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+            }
+            else if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
                 StartReload();
 
             if (System.MustCharge && state.ManualShoot == TerminalActionState.ShootOnce && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
