@@ -92,7 +92,6 @@ namespace WeaponCore
                     gridAi.Init(cube.CubeGrid, this);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
-
                 var weaponComp = new WeaponComponent(this, gridAi, cube);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
                 {
@@ -138,9 +137,12 @@ namespace WeaponCore
         {
             try
             {
-                var comp = ((MyCubeBlock)ent).Components.Get<WeaponComponent>();
-                comp.MyCube.OnClose -= CloseComps;
+                var cube = (MyCubeBlock)ent;
+                cube.OnClose -= CloseComps;
+                if (cube.CubeGrid.IsPreview)
+                    return;
 
+                var comp = cube.Components.Get<WeaponComponent>();
                 if (comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)

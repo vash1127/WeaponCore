@@ -238,14 +238,7 @@ namespace WeaponCore.Support
             if (add)
             {
                 if (WeaponsIdx.ContainsKey(comp))
-                {
-                    GridAi gridAiTmp;
-                    if (Session.GridTargetingAIs.TryGetValue(comp.MyCube.CubeGrid, out gridAiTmp))
-                    {
-                        Log.Line($"add - gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(comp.MyCube)}");
-                    }
                     return;
-                }
                 WeaponsIdx.Add(comp, Weapons.Count);
                 Weapons.Add(comp);
             }
@@ -254,14 +247,7 @@ namespace WeaponCore.Support
 
                 int idx;
                 if (!WeaponsIdx.TryGetValue(comp, out idx))
-                {
-                    GridAi gridAiTmp;
-                    if (Session.GridTargetingAIs.TryGetValue(comp.MyCube.CubeGrid, out gridAiTmp))
-                    {
-                        Log.Line($"remove - gridAiHasMyComp:{gridAiTmp.WeaponBase.ContainsKey(comp.MyCube)}");
-                    }
                     return;
-                }
 
                 Weapons.RemoveAtFast(idx);
                 if (idx < Weapons.Count)
