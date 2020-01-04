@@ -368,7 +368,7 @@ namespace WeaponCore
                 var w = AcquireTargets[i];
                 if (w.Comp.Ai == null || w.Comp.MyCube.MarkedForClose)
                 {
-                    ChargingWeapons.RemoveAtFast(i);
+                    AcquireTargets.RemoveAtFast(i);
                     continue;
                 }
 
@@ -402,12 +402,12 @@ namespace WeaponCore
 
         private void ShootWeapons() 
         {
-            for (int i = 0; i < ShootingWeapons.Count; i++)
+            for (int i = ShootingWeapons.Count - 1; i >= 0; i--)
             {
                 var w = ShootingWeapons[i];
                 if (w.Comp.Ai == null || w.Comp.MyCube.MarkedForClose)
                 {
-                    ChargingWeapons.RemoveAtFast(i);
+                    ShootingWeapons.RemoveAtFast(i);
                     continue;
                 }
 
