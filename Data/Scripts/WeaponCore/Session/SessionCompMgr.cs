@@ -27,6 +27,8 @@ namespace WeaponCore
                 if (weaponComp.MyCube.CubeGrid.IsPreview)
                 {
                     Log.Line($"[IsPreview] MyCubeId:{weaponComp.MyCube.EntityId} - Grid:{weaponComp.MyCube.CubeGrid.DebugName} - !Marked:{!weaponComp.MyCube.MarkedForClose} - inScene:{weaponComp.MyCube.InScene} - gridMatch:{weaponComp.MyCube.CubeGrid == weaponComp.Ai.MyGrid}");
+                    PlatFormPool.Return(weaponComp.Platform);
+                    weaponComp.Platform = null;
                     CompsToStart.Remove(weaponComp);
                     continue;
                 }
@@ -113,7 +115,8 @@ namespace WeaponCore
                 if (!GridToFatMap.ContainsKey(reAdd.Comp.MyCube.CubeGrid))
                     continue;
 
-                reAdd.Comp.OnAddedToSceneTasks();
+                if (reAdd.Comp.Ai != null && reAdd.Comp.Entity != null) 
+                    reAdd.Comp.OnAddedToSceneTasks();
                 CompReAdds.RemoveAtFast(i);
             }
         }
@@ -123,7 +126,7 @@ namespace WeaponCore
             for (int i = CompsDelayed.Count - 1; i >= 0; i--)
             {
                 var delayed = CompsDelayed[i];
-                if (delayed.MyCube.MarkedForClose || forceRemove)
+                if (delayed.MyCube.MarkedForClose || delayed.Ai == null || delayed.Entity == null || forceRemove)
                     CompsDelayed.RemoveAtFast(i);
                 else if (delayed.MyCube.IsFunctional)
                 {
@@ -170,7 +173,9 @@ namespace WeaponCore
                     Log.Line($"comp still registered");
                     comp.RegisterEvents(false);
                 }
-                //comp.Session = null;
+
+                PlatFormPool.Return(comp.Platform);
+                comp.Platform = null;
 
                 var sinkInfo = new MyResourceSinkInfo()
                 {

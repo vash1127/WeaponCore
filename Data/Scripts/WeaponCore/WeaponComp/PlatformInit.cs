@@ -12,8 +12,11 @@ namespace WeaponCore.Platform
     public class MyWeaponPlatform
     {
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
-        internal readonly WeaponStructure Structure;
-        internal readonly Weapon[] Weapons;
+        internal readonly MySoundPair RotationSound = new MySoundPair();
+        internal readonly MyEntity3DSoundEmitter RotationEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
+        internal Weapon[] Weapons = new Weapon[1];
+        internal WeaponStructure Structure;
+        internal WeaponComponent Comp;
         internal PlatformState State;
 
         internal enum PlatformState
@@ -26,10 +29,22 @@ namespace WeaponCore.Platform
             Ready,
         }
 
-        internal MyWeaponPlatform(WeaponComponent comp)
+        internal void Setup(WeaponComponent comp)
         {
             Structure = comp.Session.WeaponPlatforms[comp.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
-            Weapons = new Weapon[Structure.MuzzlePartNames.Length];
+            if (Weapons.Length != Structure.MuzzlePartNames.Length) Array.Resize(ref Weapons, Structure.MuzzlePartNames.Length);
+            RotationEmitter.Entity = comp.MyCube;
+            Comp = comp;
+        }
+
+        internal void Clean()
+        {
+            for (int i = 0; i < Weapons.Length; i++) Weapons[i] = null;
+            Parts.Clean(Comp.MyCube);
+            Structure = null;
+            RotationEmitter.Entity = null;
+            State = PlatformState.Fresh;
+            Comp = null;
         }
 
         internal PlatformState Init(WeaponComponent comp)
@@ -159,7 +174,7 @@ namespace WeaponCore.Platform
                         comp.TrackingWeapon = weapon;
 
                     if (weapon.AvCapable && weapon.System.HardPointRotationSound)
-                        comp.RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
+                        RotationSound.Init(weapon.System.Values.Audio.HardPoint.HardPointRotationSound, false);
                 }
                 weapon.UpdatePivotPos();
             }

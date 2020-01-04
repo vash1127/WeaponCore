@@ -81,17 +81,17 @@ namespace WeaponCore.Support
 
         public void StopRotSound(bool force)
         {
-            if (RotationEmitter != null)
+            if (Platform.RotationEmitter != null)
             {
-                if (!RotationEmitter.IsPlaying)
+                if (!Platform.RotationEmitter.IsPlaying)
                     return;
-                RotationEmitter.StopSound(force);
+                Platform.RotationEmitter.StopSound(force);
             }
         }
 
         public void StopAllSounds()
         {
-            RotationEmitter?.StopSound(true, true);
+            Platform.RotationEmitter?.StopSound(true, true);
             foreach (var w in Platform.Weapons)
             {
                 w.StopReloadSound();
