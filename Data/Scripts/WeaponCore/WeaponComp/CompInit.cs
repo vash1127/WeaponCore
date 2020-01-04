@@ -160,7 +160,7 @@ namespace WeaponCore.Support
             if (weapon.TrackProjectiles)
                 Ai.PointDefense = true;
 
-            if (!weapon.System.EnergyAmmo && !weapon.System.MustCharge)
+            if (!weapon.System.EnergyAmmo || weapon.System.MustCharge)
                 Session.ComputeStorage(weapon);
 
             if (state.CurrentAmmo == 0 && !weapon.Reloading)
