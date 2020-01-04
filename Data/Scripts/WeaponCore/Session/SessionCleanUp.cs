@@ -134,6 +134,7 @@ namespace WeaponCore
             _turretDefinitions.Clear();
 
             CompsToStart.ClearImmediate();
+
             CompsDelayed.Clear();
             CompReAdds.Clear();
             GridAiPool.Clean();
