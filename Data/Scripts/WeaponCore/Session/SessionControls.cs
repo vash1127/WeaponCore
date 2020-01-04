@@ -65,8 +65,7 @@ namespace WeaponCore
                             else
                                 continue;
 
-                            TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon,
-                                (block, i) =>
+                            TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, (block, i) =>
                                 {
                                     var comp = block?.Components?.Get<WeaponComponent>();
                                     if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;

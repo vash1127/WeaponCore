@@ -82,7 +82,6 @@ namespace WeaponCore
         internal readonly List<GridAi> DbsToUpdate = new List<GridAi>(16);
         internal readonly List<Weapon> ShootingWeapons = new List<Weapon>(128);
 
-
         internal readonly double ApproachDegrees = Math.Cos(MathHelper.ToRadians(50));
         internal readonly FutureEvents FutureEvents = new FutureEvents();
         internal readonly Guid LogicSettingsGuid = new Guid("75BBB4F5-4FB9-4230-BEEF-BB79C9811501");
