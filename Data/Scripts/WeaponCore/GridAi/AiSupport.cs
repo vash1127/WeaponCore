@@ -629,7 +629,8 @@ namespace WeaponCore.Support
             WeaponsIdx.Clear();
             WeaponBase.Clear();
             AmmoInventories.Clear();
-
+            LiveProjectile.Clear();
+            DeadProjectiles.Clear();
             SourceCount = 0;
             ManualComps = 0;
             BlockCount = 0;
