@@ -83,6 +83,12 @@ namespace WeaponCore.Platform
 
             if (!IsShooting) StartShooting();         
 
+            if (System.BurstMode && ++state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
+            {
+                    state.ShotsFired = 1;                    
+                    EventTriggerStateChanged(EventTriggers.BurstReload, false);
+            }
+
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
                 Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
@@ -293,7 +299,7 @@ namespace WeaponCore.Platform
 
             EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-            if (System.BurstMode && (Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && ++state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+            if (System.BurstMode && (Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
             {
                 uint delay = 0;
                 if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
@@ -304,11 +310,6 @@ namespace WeaponCore.Platform
                 if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
                 if (IsShooting) StopShooting();
                 _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
-            }
-            else if (System.BurstMode && state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
-            {
-                state.ShotsFired = 1;
-                EventTriggerStateChanged(EventTriggers.BurstReload, false);
             }
             else if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
                 StartReload();
