@@ -464,10 +464,7 @@ namespace WeaponCore
                     w.StopShooting();
                     w.Comp.Ai.ManualComps = w.Comp.Ai.ManualComps - 1 > 0 ? w.Comp.Ai.ManualComps - 1 : 0;
                     w.Comp.Shooting = w.Comp.Shooting - 1 > 0 ? w.Comp.Shooting - 1 : 0;
-                }
-
-                if (w.AvCapable && w.BarrelAvUpdater.Reader.Count > 0) 
-                    w.ShootGraphics();
+                }                
             }
             ShootingWeapons.Clear();
         }
