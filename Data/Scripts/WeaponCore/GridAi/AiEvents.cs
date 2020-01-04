@@ -18,6 +18,7 @@ namespace WeaponCore.Support
             if (grid == null) grid = MyGrid;
             if (register)
             {
+                Registered = true;
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
                 //grid.OnMarkForClose += GridClose;
@@ -25,10 +26,14 @@ namespace WeaponCore.Support
             }
             else
             {
-                grid.OnFatBlockAdded -= FatBlockAdded;
-                grid.OnFatBlockRemoved -= FatBlockRemoved;
-                //grid.OnMarkForClose -= GridClose;
-                grid.OnClose -= GridClose;
+                if (Registered)
+                {
+                    Registered = false;
+                    grid.OnFatBlockAdded -= FatBlockAdded;
+                    grid.OnFatBlockRemoved -= FatBlockRemoved;
+                    //grid.OnMarkForClose -= GridClose;
+                    grid.OnClose -= GridClose;
+                }
             }
         }
 
@@ -116,11 +121,11 @@ namespace WeaponCore.Support
                         else if (hasIntentory && AmmoInventories[magId][myInventory] + amount > 0)
                             AmmoInventories[magId][myInventory] += amount;
 
-                    else if (hasIntentory)
-                    {
-                        MyFixedPoint pointRemoved;
-                        AmmoInventories[magId].TryRemove(myInventory, out pointRemoved);
-                    }
+                        else if (hasIntentory)
+                        {
+                            MyFixedPoint pointRemoved;
+                            AmmoInventories[magId].TryRemove(myInventory, out pointRemoved);    
+                        }
 
                         CheckReload = true;
                         NewAmmoType = magId;
@@ -132,6 +137,7 @@ namespace WeaponCore.Support
 
         internal void GridClose(MyEntity myEntity)
         {
+            RegisterMyGridEvents(false);
             Session.FutureEvents.Schedule(DelayedGridCleanUp, null, 120);
         }
     }

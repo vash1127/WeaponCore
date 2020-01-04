@@ -54,11 +54,11 @@ namespace WeaponCore
                 if (!CompsToStart.IsEmpty)
                     StartComps();
 
-                if (Tick120 && !CompsDelayed.IsEmpty)
+                if (Tick120 && CompsDelayed.Count > 0)
                     DelayedComps();
 
-                if (!CompChanges.IsEmpty)
-                    ChangeComps();
+                if (CompReAdds.Count > 0)
+                    ChangeReAdds();
                 
                 if (Tick180)
                 {

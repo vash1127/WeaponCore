@@ -79,7 +79,7 @@ namespace WeaponCore.Support
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
         internal bool ScanBlockGroups = true;
-
+        internal bool Registered;
         internal uint TargetsUpdatedTick;
         internal uint VelocityUpdateTick;
         internal uint TargetResetTick;

@@ -284,7 +284,7 @@ namespace WeaponCore.Platform
             {
                 var removal = false;
                 var tick = Comp.Session.Tick;
-                if (Comp.Ai.VelocityUpdateTick != tick)
+                if (Comp.Ai != null && Comp.Ai.VelocityUpdateTick != tick)
                 {
                     Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Comp.Ai.VelocityUpdateTick = tick;
@@ -326,7 +326,7 @@ namespace WeaponCore.Platform
                             if (BarrelEffects1[id] != null)
                             {
                                 BarrelEffects1[id].WorldMatrix = matrix;
-                                BarrelEffects1[id].Velocity = Comp.Ai.GridVel;
+                                BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
                             }
                         }
                         else if (BarrelEffects1[id] != null)
@@ -359,7 +359,7 @@ namespace WeaponCore.Platform
                             if (BarrelEffects2[id] != null)
                             {
                                 BarrelEffects2[id].WorldMatrix = matrix;
-                                BarrelEffects2[id].Velocity = Comp.Ai.GridVel;
+                                BarrelEffects2[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
                             }
                         }
                         else if (BarrelEffects2[id] != null)

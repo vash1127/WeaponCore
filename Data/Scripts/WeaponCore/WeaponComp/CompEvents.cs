@@ -15,7 +15,8 @@ namespace WeaponCore.Support
         {
             if (register)
             {
-                if(IsSorterTurret)
+                Registered = true;
+                if (IsSorterTurret)
                     SorterBase.AppendingCustomInfo += AppendingCustomInfo;
                 else
                     MissileBase.AppendingCustomInfo += AppendingCustomInfo;
@@ -28,23 +29,26 @@ namespace WeaponCore.Support
             }
             else
             {
-                if (IsSorterTurret)
+                if (Registered)
                 {
-                    if (SorterBase == null) Log.Line($"SortBase is null");
-                    else SorterBase.AppendingCustomInfo -= AppendingCustomInfo;
+                    Registered = false;
+                    if (IsSorterTurret)
+                    {
+                        if (SorterBase == null) Log.Line($"SortBase is null");
+                        else SorterBase.AppendingCustomInfo -= AppendingCustomInfo;
+                    }
+                    else
+                    {
+                        if (MissileBase == null) Log.Line($"MissileBase is null");
+                        else MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
+
+                    }
+
+                    MyCube.IsWorkingChanged -= IsWorkingChanged;
+
+                    if (BlockInventory == null) Log.Line($"BlockInventory is null");
+                    else BlockInventory.ContentsChanged -= OnContentsChanged;
                 }
-                else
-                {
-                    if (MissileBase == null) Log.Line($"MissileBase is null");
-                    else MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
-
-                }
-
-                MyCube.IsWorkingChanged -= IsWorkingChanged;
-
-                if (BlockInventory == null) Log.Line($"BlockInventory is null");
-                else BlockInventory.ContentsChanged -= OnContentsChanged;
-                Ai = null;
             }
         }
 
@@ -52,7 +56,7 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (LastInventoryChangedTick < Session.Tick && !IgnoreInvChange)
+                if (LastInventoryChangedTick < Session.Tick && !IgnoreInvChange && Registered)
                 {
                     for (int i = 0; i < Platform.Weapons.Length; i++)
                     {
@@ -85,7 +89,7 @@ namespace WeaponCore.Support
                 if(!Session.DedicatedServer)
                     TerminalRefresh();
 
-                if (!IsWorking)
+                if (!IsWorking && Registered)
                 {
                     foreach (var w in Platform.Weapons)
                         w.StopShooting();

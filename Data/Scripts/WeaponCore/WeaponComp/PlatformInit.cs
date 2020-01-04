@@ -61,7 +61,6 @@ namespace WeaponCore.Platform
                 else
                 {
                     State = PlatformState.Invalid;
-                    comp.RemoveCompList();
                     Log.Line("init platform invalid");
                     return State;
                 }
@@ -74,9 +73,7 @@ namespace WeaponCore.Platform
                     State = PlatformState.Invalid;
                     WeaponComponent removed;
                     if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
-                        comp.RemoveCompList();
-
-                    return State;
+                        return State;
                 }
                 State = PlatformState.Valid;
             } 

@@ -61,6 +61,7 @@ namespace WeaponCore.Support
         internal bool Debug;
         internal bool MouseShoot;
         internal bool UnlimitedPower;
+        internal bool Registered;
         internal Start Status;
         internal enum Start
         {
@@ -96,7 +97,6 @@ namespace WeaponCore.Support
         internal CompSettings Set;
         internal CompState State;
         internal Session Session;
-        internal MyResourceSinkInfo SinkInfo;
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
         public WeaponComponent(Session session, GridAi ai, MyCubeBlock myCube)
@@ -126,6 +126,7 @@ namespace WeaponCore.Support
             RotationEmitter = new MyEntity3DSoundEmitter(MyCube, true, 1f);
             RotationSound = new MySoundPair();
             Platform = new MyWeaponPlatform(this);
+            MyCube.OnClose += Session.CloseComps;
         }        
     }
 }

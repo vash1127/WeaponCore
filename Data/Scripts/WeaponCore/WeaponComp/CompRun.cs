@@ -29,11 +29,10 @@ namespace WeaponCore.Support
             try
             {
                 base.OnAddedToScene();
-
                 if (Platform.State == MyWeaponPlatform.PlatformState.Inited || Platform.State == MyWeaponPlatform.PlatformState.Ready)
-                    Session.CompChanges.Enqueue(new CompChange {Ai = Ai, Comp = this, Change = CompChange.ChangeType.Reinit});
+                    ReInit();
                 else
-                    Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.PlatformInit });
+                   PlatformInit();
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToScene: {ex}"); }
         }
@@ -41,8 +40,6 @@ namespace WeaponCore.Support
         public override void OnBeforeRemovedFromContainer()
         {
             base.OnBeforeRemovedFromContainer();
-            if (!Container.Entity.InScene)
-                Session.FutureEvents.Schedule(RemoveSinkDelegate, null, 100);
         }
 
         internal void PlatformInit()
@@ -56,7 +53,7 @@ namespace WeaponCore.Support
                     Log.Line($"Something went wrong with Platform PreInit");
                     break;
                 case MyWeaponPlatform.PlatformState.Delay:
-                    Session.CompsDelayed.Enqueue(this);
+                    Session.CompsDelayed.Add(this);
                     break;
                 case MyWeaponPlatform.PlatformState.Inited:
                     Init();
@@ -81,9 +78,18 @@ namespace WeaponCore.Support
 
                     InventoryInit();
                     PowerInit();
-                    OnAddedToSceneTasks();
+                    Ai.CompChange(true, this);
+                    RegisterEvents();
 
+                    if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
+                        Platform.ResetParts(this);
+
+                    Entity.NeedsWorldMatrix = true;
+
+                    if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
+                    else OnAddedToSceneTasks();
                     Platform.State = MyWeaponPlatform.PlatformState.Ready;
+
                 }
                 else Log.Line($"Comp Init() failed");
             }
@@ -109,15 +115,21 @@ namespace WeaponCore.Support
                     {
                         Ai.FirstRun = true;
 
-                        AddCompList();
-
                         var blockDef = MyCube.BlockDefinition.Id.SubtypeId;
                         if (!Ai.WeaponCounter.ContainsKey(blockDef))
                             Ai.WeaponCounter.TryAdd(blockDef, Session.WeaponCountPool.Get());
 
                         Ai.WeaponCounter[blockDef].Current++;
+                        Ai.CompChange(true, this);
+                        RegisterEvents();
 
-                        OnAddedToSceneTasks();
+
+                        if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
+                            Platform.ResetParts(this);
+
+                        Entity.NeedsWorldMatrix = true;
+                        if (!Ai.GridInit) Session.CompReAdds.Add(new CompReAdd { Ai = Ai, Comp = this });
+                        else OnAddedToSceneTasks();
                     }
                     else Log.Line($"Comp ReInit() failed stage2!");
                 }
@@ -132,13 +144,6 @@ namespace WeaponCore.Support
         {
             try
             {
-                RegisterEvents();
-
-                if (Platform.State == MyWeaponPlatform.PlatformState.Inited)
-                    Platform.ResetParts(this);
-
-                Entity.NeedsWorldMatrix = true;
-
                 Ai.UpdatePowerSources = true;
                 if (!Ai.GridInit)
                 {
@@ -194,7 +199,6 @@ namespace WeaponCore.Support
                         for (int i = 0; i < Platform.Weapons.Length; i++)
                             Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
                 }
-
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Session == null} EntNull{Entity == null} MyCubeNull:{MyCube?.CubeGrid == null}"); }
@@ -202,8 +206,6 @@ namespace WeaponCore.Support
 
         internal void OnRemovedFromSceneQueue()
         {
-            RemoveComp();
-            RegisterEvents(false);
         }
 
         public override void OnRemovedFromScene()
@@ -211,7 +213,7 @@ namespace WeaponCore.Support
             try
             {
                 base.OnRemovedFromScene();
-                Session.CompChanges.Enqueue(new CompChange { Ai = Ai, Comp = this, Change = CompChange.ChangeType.OnRemovedFromSceneQueue });
+                RemoveComp();
             }
             catch (Exception ex) { Log.Line($"Exception in OnRemovedFromScene: {ex}"); }
         }
