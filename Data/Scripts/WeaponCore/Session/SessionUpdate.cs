@@ -453,7 +453,7 @@ namespace WeaponCore
                     w.ResetPower = false;
                 }
 
-                if (w.Charging)
+                if (w.Charging || w.ShootDelayTick > Tick)
                     continue;
 
                 w.Shoot();
