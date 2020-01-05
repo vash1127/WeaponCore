@@ -453,10 +453,10 @@ namespace WeaponCore
                     w.ResetPower = false;
                 }
 
-                if (w.Charging || w.ShootDelayTick > Tick)
+                if (w.Charging)
                     continue;
 
-                w.Shoot();
+                if (w.ShootDelayTick > Tick) w.Shoot();
 
                 if (!w.System.MustCharge && w.Comp.State.Value.Weapons[w.WeaponId].ManualShoot == ShootOnce)
                 {
