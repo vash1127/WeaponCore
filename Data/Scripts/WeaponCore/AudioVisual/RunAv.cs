@@ -107,30 +107,27 @@ namespace WeaponCore.Support
                 }
 
                 var glowCnt = av.GlowSteps.Count;
-                if (av.Trail != AvShot.TrailState.Off)
+                var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
+                var remove = false;
+                for (int j = glowCnt - 1; j >= 0; j--)
                 {
-                    var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
-                    var remove = false;
-                    for (int j = glowCnt - 1; j >= 0; j--)
+                    var glow = av.GlowSteps[j];
+
+                    if (av.OnScreen != AvShot.Screen.None)
                     {
-                        var glow = av.GlowSteps[j];
-
-                        if (av.OnScreen != AvShot.Screen.None)
-                        {
-                            var reduction = (av.GlowShrinkSize * glow.Step);
-                            var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
-                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
-                        }
-                        if (++glow.Step >= steps)
-                        {
-                            remove = true;
-                            glowCnt--;
-                            Glows.Push(glow);
-                        }
+                        var reduction = (av.GlowShrinkSize * glow.Step);
+                        var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
+                        MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
                     }
-
-                    if (remove) av.GlowSteps.Dequeue();
+                    if (++glow.Step >= steps)
+                    {
+                        remove = true;
+                        glowCnt--;
+                        Glows.Push(glow);
+                    }
                 }
+
+                if (remove) av.GlowSteps.Dequeue();
 
                 if (av.PrimeEntity != null)
                 {
