@@ -107,7 +107,6 @@ namespace WeaponCore.Support
                 }
 
                 var glowCnt = av.GlowSteps.Count;
-                var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
                 var remove = false;
                 for (int j = glowCnt - 1; j >= 0; j--)
                 {
@@ -119,7 +118,7 @@ namespace WeaponCore.Support
                         var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
                         MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
                     }
-                    if (++glow.Step >= steps)
+                    if (++glow.Step >= av.System.Values.Graphics.Line.Trail.DecayTime)
                     {
                         remove = true;
                         glowCnt--;
