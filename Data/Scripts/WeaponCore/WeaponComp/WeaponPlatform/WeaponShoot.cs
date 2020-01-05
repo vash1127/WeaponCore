@@ -304,7 +304,7 @@ namespace WeaponCore.Platform
                 if (IsShooting) StopShooting();
 
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
-                _shootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
+                _shootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay: tick + TicksPerShot + delay;
             }
             else if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
                 StartReload();
