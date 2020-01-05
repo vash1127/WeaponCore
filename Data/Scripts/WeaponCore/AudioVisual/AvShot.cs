@@ -94,7 +94,6 @@ namespace WeaponCore.Support
             Full,
             Grow,
             Shrink,
-            OverShoot,
             Off,
         }
 
@@ -112,7 +111,7 @@ namespace WeaponCore.Support
             Off,
         }
 
-        internal enum Screen
+        internal enum Screen // Tracer includes Tail;
         {
             Tracer,
             Tail,
@@ -184,20 +183,18 @@ namespace WeaponCore.Support
                     HitPosition = Hit.HitPos;
                 }
                 if (System.IsBeamWeapon) Tracer = TracerState.Full;
-                else if (Tracer != TracerState.Off && Math.Abs(TotalLength - (VisualLength + MaxTracerLength)) < 0.1f) {
-                    //Log.Line($"Hit TotalOverShot: {TotalLength - (VisualLength + MaxTracerLength)} - {Math.Abs(VisualLength - TotalLength)} - {VisualLength - TotalLength} - VisLen:{VisualLength} - TotLen:{TotalLength} - Result:{VisualLength + MaxGlowLength}");
+                else if (Tracer != TracerState.Off && VisualLength <= 0) {
                     VisualLength = MaxTracerLength;
                     TracerStart = HitPosition + (-Direction * MaxTracerLength);
-                    Tracer = TracerState.OverShoot;
-                    if (OnScreen != Screen.Tracer)
+                    if (OnScreen != Screen.None)
                     {
                         var bb1 = new BoundingBoxD(Vector3D.Min(TracerStart, Position), Vector3D.Max(TracerStart, Position));
                         if (Ai.Session.Camera.IsInFrustum(ref bb1)) OnScreen = Screen.Tracer;
                         else
                         {
-                            var fakeTracerHead = Origin + (Direction * MaxTracerLength);
-                            var bb2 = new BoundingBoxD(Vector3D.Min(Origin, fakeTracerHead), Vector3D.Max(Origin, fakeTracerHead));
-                            if (Ai.Session.Camera.IsInFrustum(ref bb2)) OnScreen = Screen.Tracer;
+                            var trailStart = HitPosition + (-Direction * MathHelperD.Clamp(info.DistanceTraveled, 1, MaxGlowLength));  
+                            var bb2 = new BoundingBoxD(Vector3D.Min(trailStart, Position), Vector3D.Max(trailStart, Position));
+                            OnScreen = Ai.Session.Camera.IsInFrustum(ref bb2) ? Screen.Tail : Screen.None;
                         }
                     }
                 }
@@ -207,7 +204,6 @@ namespace WeaponCore.Support
                     TracerLength = VisualLength;
                     TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, Position));
                 }
-                else Tracer = TracerState.Full;
             }
             else if (Tracer != TracerState.Off) {
 
@@ -216,7 +212,7 @@ namespace WeaponCore.Support
                     TracerLength = VisualLength;
                 }
                 else {
-                    
+
                     Tracer = TracerState.Full;
                     TracerLength = MaxTracerLength;
                 }
@@ -224,37 +220,18 @@ namespace WeaponCore.Support
 
             if (closeModel)
                 Model = ModelState.Close;
+            if (OnScreen == Screen.Tail)
+            {
+                Vector3D totalLen;
+                if (TotalLength > 100)
+                    totalLen = Position + (-Direction * MathHelperD.Clamp(info.DistanceTraveled, 1, MaxGlowLength));
+                else totalLen = Position + (-Direction * TotalLength);
 
-            if (OnScreen == Screen.Tail) {
-                var totalLen = Position + (-Direction * TotalLength);
                 var bb = new BoundingBoxD(Vector3D.Min(totalLen, Position), Vector3D.Max(totalLen, Position));
                 if (!Ai.Session.Camera.IsInFrustum(ref bb)) OnScreen = Screen.None;
             }
 
-            var color = System.Values.Graphics.Line.Tracer.Color;
-            if (System.LineColorVariance) {
-                var cv = System.Values.Graphics.Line.ColorVariance;
-                var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
-                color.X *= randomValue;
-                color.Y *= randomValue;
-                color.Z *= randomValue;
-            }
-            Color = color;
-            var width = System.Values.Graphics.Line.Tracer.Width;
-            if (System.LineWidthVariance) {
-                var wv = System.Values.Graphics.Line.WidthVariance;
-                var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
-                width += randomValue;
-            }
-
-            var target = System.IsBeamWeapon ? Position + -Direction * TracerLength : Position + (-Direction * TotalLength);
-            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
-            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
-            if (System.IsBeamWeapon && DistanceToLine < 1000) DistanceToLine = 1000;
-            else if (System.IsBeamWeapon && DistanceToLine < 350) DistanceToLine = 350;
-            ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-            Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
-            LineScaler = ((float)Thickness / width);
+            if (OnScreen != Screen.None && System.DrawLine) LineVariableEffects();
 
             if (Tracer != TracerState.Off && Hit.HitPos != Vector3D.Zero) {
                 
@@ -273,6 +250,36 @@ namespace WeaponCore.Support
             }
         }
 
+        internal void LineVariableEffects()
+        {
+            var color = System.Values.Graphics.Line.Tracer.Color;
+            if (System.LineColorVariance)
+            {
+                var cv = System.Values.Graphics.Line.ColorVariance;
+                var randomValue = MyUtils.GetRandomFloat(cv.Start, cv.End);
+                color.X *= randomValue;
+                color.Y *= randomValue;
+                color.Z *= randomValue;
+            }
+            Color = color;
+            var width = System.Values.Graphics.Line.Tracer.Width;
+            if (System.LineWidthVariance)
+            {
+                var wv = System.Values.Graphics.Line.WidthVariance;
+                var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
+                width += randomValue;
+            }
+
+            var target = System.IsBeamWeapon ? Position + -Direction * TracerLength : Position + (-Direction * TotalLength);
+            ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
+            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
+            if (System.IsBeamWeapon && DistanceToLine < 1000) DistanceToLine = 1000;
+            else if (System.IsBeamWeapon && DistanceToLine < 350) DistanceToLine = 350;
+            ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
+            Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
+            LineScaler = ((float)Thickness / width);
+        }
+
         internal void RunGlow()
         {
             var glowCount = GlowSteps.Count;
@@ -285,7 +292,6 @@ namespace WeaponCore.Support
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
             }
-
             var endIdx = glowCount - 1;
             for (int i = endIdx; i >= 0; i--)
             {
@@ -316,7 +322,7 @@ namespace WeaponCore.Support
                         color.Z *= randomValue;
                     }
 
-                    var width = Thickness;
+                    var width = System.Values.Graphics.Line.Tracer.Width;
                     if (System.LineWidthVariance)
                     {
                         var wv = System.Values.Graphics.Line.WidthVariance;
@@ -324,10 +330,12 @@ namespace WeaponCore.Support
                         width += randomValue;
                     }
 
+                    width = (float)Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
+
                     if (System.OffsetEffect)
                         LineOffsetEffect(Hit.HitPos, Direction, shrunk.Value.Reduced, true);
                     else
-                        TracerShrinks.Enqueue(new Shrinks {Start = Hit.HitPos, Color = color, Length = (float)(shrunk.Value.Reduced + shrunk.Value.StepLength), Thickness = (float) width});
+                        TracerShrinks.Enqueue(new Shrinks {Start = Hit.HitPos, Color = color, Length = (float)(shrunk.Value.Reduced + shrunk.Value.StepLength), Thickness = width});
                     
                     /*
                     if (s.System.Trail)

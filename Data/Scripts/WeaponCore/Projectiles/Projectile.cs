@@ -371,7 +371,7 @@ namespace WeaponCore.Projectiles
                 var travelToHit = Vector3D.Distance(LastPosition, Hit.HitPos);
                 var remainingTracer = TracerLength - travelToHit <= TracerLength ? MathHelperD.Clamp(TracerLength - travelToHit, 0, double.MaxValue) : 0;
 
-                Info.AvShot.Update(travelToHit, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
+                Info.AvShot.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
                 if (Info.AvShot.OnScreen == Screen.None) CameraCheck();
 
                 if (Info.MuzzleId != -1)
@@ -436,7 +436,7 @@ namespace WeaponCore.Projectiles
                     else
                         vs.Update(0, line.Length, ref line.To, ref line.Direction, ref VisualDir);
                 }
-                vs.Complete(Info, !miss);
+                vs.Complete(info, !miss);
             }
         }
 

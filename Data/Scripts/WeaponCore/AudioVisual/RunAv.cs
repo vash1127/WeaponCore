@@ -45,18 +45,14 @@ namespace WeaponCore.Support
                 var av = AvShots[i];
                 var refreshed = av.LastTick == Session.Tick;
                 ++av.LifeTime;
-                if (av.LifeTime > 3000) Log.Line($"weapon:{av.System.WeaponName} - tracer:{av.Tracer} - tail:{av.Trail} - onScreen:{av.OnScreen} - glowCnt:{av.GlowSteps.Count} - shrinks:{av.TracerShrinks.Count} - Grid:{av.Ai.MyGrid.DisplayName}");
+                if (av.LifeTime > 5000) Log.Line($"weapon:{av.System.WeaponName} - tracer:{av.Tracer} - tail:{av.Trail} - onScreen:{av.OnScreen} - glowCnt:{av.GlowSteps.Count} - shrinks:{av.TracerShrinks.Count} - Grid:{av.Ai.MyGrid.DisplayName}");
                 
                 if (refreshed && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
                 {
                     if (!av.System.OffsetEffect)
                     {
                         if (av.Tracer != AvShot.TracerState.Shrink)
-                        {
                             MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.TracerStart, av.PointDir, (float)av.TracerLength, (float)av.Thickness);
-                            if (av.Tracer == AvShot.TracerState.OverShoot)
-                                MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.Origin + (av.Direction * av.MaxTracerLength), -av.PointDir, (float)av.MaxTracerLength, (float)av.Thickness);
-                        }
                     }
                     else
                     {
@@ -224,9 +220,9 @@ namespace WeaponCore.Support
                 var s = av.TracerShrinks.Dequeue();
                 if (av.OnScreen != AvShot.Screen.None)
                 {
-                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
-                    //if (av.Trail != AvShot.TrailState.Off)
-                        //av.RunGlow();
+                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
+                    if (av.Trail != AvShot.TrailState.Off)
+                        av.RunGlow();
                 }
             }
             else
