@@ -205,7 +205,7 @@ namespace WeaponCore.Support
                     }
                 }
                 else {
-                    Tracer = TracerState.Shrink;
+                    //Tracer = TracerState.Shrink;
                     TracerLength = VisualLength;
                     TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, Position));
                 }
