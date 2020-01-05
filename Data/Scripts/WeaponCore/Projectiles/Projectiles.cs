@@ -260,9 +260,11 @@ namespace WeaponCore.Projectiles
                         p.State = ProjectileState.Detonate;
                         p.ForceHitParticle = true;
                     }
-                    else p.State = ProjectileState.Detonate;
+                    else
+                        p.State = ProjectileState.Detonate;
                 }
-                else if (p.MineSeeking && !p.MineTriggered)
+                
+                if (p.MineSeeking && !p.MineTriggered)
                     p.SeekEnemy();
                 else if (p.Info.System.CollisionIsLine)
                 {
@@ -304,7 +306,7 @@ namespace WeaponCore.Projectiles
                         continue;
                 }
 
-                p.Miss = true;
+                p.Miss = p.State != ProjectileState.Detonate;
                 p.Info.HitList.Clear();
             }
         }
