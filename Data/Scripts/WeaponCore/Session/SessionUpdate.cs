@@ -95,7 +95,10 @@ namespace WeaponCore
                         ///
                         /// Check target for expire states
                         /// 
-                        
+
+                        var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
+                        var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
+
                         w.TargetState = w.Target.State;
                         if (w.Target.State == Targets.Acquired) {
 
@@ -141,8 +144,6 @@ namespace WeaponCore
                                 }
                             }
                         }
-                        var targetAcquired = w.TargetState != Targets.Acquired && w.Target.State == Targets.Acquired;
-                        var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
                         var targetChanged = targetAcquired || targetLost;
                         if (gunner && UiInput.MouseButtonPressed)
                             w.TargetPos = Vector3D.Zero;

@@ -151,9 +151,12 @@ namespace WeaponCore.Platform
                 case EventTriggers.TurnOn:
                 case EventTriggers.TurnOff:
                     //Threaded event
-                    if (active && !Comp.State.Value.Online && AnimationsSet.ContainsKey(state))
+                    if (active && AnimationsSet.ContainsKey(state))
                     {
                         var oppositeEvnt = state == EventTriggers.TurnOff ? EventTriggers.TurnOn : EventTriggers.TurnOff;
+
+                        if ((state == EventTriggers.TurnOn && !Comp.State.Value.Online) || state == EventTriggers.TurnOff && Comp.State.Value.Online) return;
+
                         LastEvent = state;
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {

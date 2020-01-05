@@ -224,6 +224,8 @@ namespace WeaponCore.Platform
 
                 if (Comp.Overheated && weaponValue.Heat <= (System.MaxHeat * System.WepCoolDown))
                 {
+                    ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                    ShootDelayTick += Comp.Session.Tick;
                     EventTriggerStateChanged(Weapon.EventTriggers.Overheated, false);
                     Comp.Overheated = false;
                 }
