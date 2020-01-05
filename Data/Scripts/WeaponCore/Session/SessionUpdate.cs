@@ -217,7 +217,7 @@ namespace WeaponCore
                         /// Determine if its time to shoot
                         ///
                         
-                        var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && w.Reloading;
+                        var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
 
                         if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick || comp.Gunner) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
