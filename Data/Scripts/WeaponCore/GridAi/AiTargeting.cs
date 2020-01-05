@@ -87,7 +87,7 @@ namespace WeaponCore.Support
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
 
-                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || Vector3D.DistanceSquared(targetPos, p.Position) > p.DistanceToTravelSqr) continue;
+                if (targetRadius < s.MinTargetRadius || targetRadius > s.MaxTargetRadius || Vector3D.DistanceSquared(targetPos, p.Position) >= p.DistanceToTravelSqr) continue;
 
                 if (!focusTarget && info.OffenseRating <= 0 || Obstruction(ref info, ref targetPos, p))
                     continue;

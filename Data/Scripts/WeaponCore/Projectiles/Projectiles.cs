@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
+using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -145,7 +146,7 @@ namespace WeaponCore.Projectiles
                             p.VelocityLengthSqr = newVel.LengthSquared();
 
                             if (accel && p.VelocityLengthSqr > p.MaxSpeedSqr) newVel = p.Direction * p.MaxSpeed;
-                            else if (!accel && distToMax < 0)
+                            else if (!accel && distToMax <= 0)
                             {
                                 newVel = Vector3D.Zero;
                                 p.VelocityLengthSqr = 0;
@@ -203,8 +204,13 @@ namespace WeaponCore.Projectiles
 
                 if (p.State != ProjectileState.OneAndDone)
                 {
-                    if (p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)
+                    if (p.Info.DistanceTraveled * p.Info.DistanceTraveled > p.DistanceToTravelSqr)
                     {
+                        var relativeDist = p.MaxTrajectory - p.Info.DistanceTraveled;
+                        var distToEnd = p.Info.PrevDistanceTraveled <= 0 ? p.MaxTrajectory : (relativeDist * -1) - p.Info.PrevDistanceTraveled;
+                        var trueEnd = p.LastPosition + (p.Direction * distToEnd);
+                        p.Info.DistanceTraveled = p.MaxTrajectory;
+                        p.Position = trueEnd;
                         if (p.FieldTime > 0) 
                         {
                             p.FieldTime--;
@@ -231,35 +237,8 @@ namespace WeaponCore.Projectiles
 
                 if (!p.Active || (int)p.State > 3) continue;
                 var beam = new LineD(p.LastPosition, p.Position);
-                if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
-                {
-                    var dInfo = p.Info.System.Values.Ammo.AreaEffect.Detonation;
 
-                    p.PruneSphere.Center = p.Position;
-                    p.PruneSphere.Radius = dInfo.DetonationRadius;
-
-                    if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0))
-                    {
-                        var checkList = CheckPool.Get();
-                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList,
-                            p.PruneQuery);
-                        for (int i = 0; i < checkList.Count; i++)
-                            p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
-                                {Distance = 0, Element = checkList[i]});
-
-                        if (p.Info.System.TrackProjectile)
-                            foreach (var lp in p.Info.Ai.LiveProjectile)
-                                if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
-                                    ProjectileHit(p, lp, p.Info.System.CollisionIsLine);
-
-                        checkList.Clear();
-                        CheckPool.Return(checkList);
-                        p.State = ProjectileState.Detonate;
-                        p.ForceHitParticle = true;
-                    }
-                    else p.State = ProjectileState.Detonate;
-                }
-                else if (p.MineSeeking && !p.MineTriggered)
+                if (p.MineSeeking && !p.MineTriggered)
                     p.SeekEnemy();
                 else if (p.Info.System.CollisionIsLine)
                 {
@@ -293,6 +272,35 @@ namespace WeaponCore.Projectiles
                         checkList.Clear();
                         CheckPool.Return(checkList);
                     }
+                }
+
+                if ((p.FieldTime <= 0 && p.State != ProjectileState.OneAndDone && p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr))
+                {
+                    var dInfo = p.Info.System.Values.Ammo.AreaEffect.Detonation;
+
+                    p.PruneSphere.Center = p.Position;
+                    p.PruneSphere.Radius = dInfo.DetonationRadius;
+
+                    if (p.MoveToAndActivate || dInfo.DetonateOnEnd && (!dInfo.ArmOnlyOnHit || p.Info.ObjectsHit > 0))
+                    {
+                        var checkList = CheckPool.Get();
+                        MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList,
+                            p.PruneQuery);
+                        for (int i = 0; i < checkList.Count; i++)
+                            p.SegmentList.Add(new MyLineSegmentOverlapResult<MyEntity>
+                                { Distance = 0, Element = checkList[i] });
+
+                        if (p.Info.System.TrackProjectile)
+                            foreach (var lp in p.Info.Ai.LiveProjectile)
+                                if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
+                                    ProjectileHit(p, lp, p.Info.System.CollisionIsLine);
+
+                        checkList.Clear();
+                        CheckPool.Return(checkList);
+                        p.State = ProjectileState.Detonate;
+                        p.ForceHitParticle = true;
+                    }
+                    else p.State = ProjectileState.Detonate;
                 }
 
                 if (p.Info.Target.IsProjectile || p.SegmentList.Count > 0)
@@ -363,6 +371,9 @@ namespace WeaponCore.Projectiles
                         }
                         else
                         {
+                            var travel = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled;
+                            var remainingTracer = p.TracerLength - travel <= p.TracerLength ? MathHelperD.Clamp(p.TracerLength - travel, 0, double.MaxValue) : 0;
+
                             p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                     }

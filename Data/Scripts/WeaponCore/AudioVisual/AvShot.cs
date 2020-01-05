@@ -147,12 +147,12 @@ namespace WeaponCore.Support
 
             if (System.Trail)
             {
-                MaxGlowLength = System.Values.Graphics.Line.Trail.DecayTime * MaxStepSize;
+                MaxGlowLength = MathHelperD.Clamp(System.Values.Graphics.Line.Trail.DecayTime * MaxStepSize, 0.1f, info.System.MaxTrajectory);
                 Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
                 GlowShrinkSize = System.Values.Graphics.Line.Tracer.Width / System.Values.Graphics.Line.Trail.DecayTime;
             }
             else Trail = TrailState.Off;
-            TotalLength = MaxTracerLength + MaxGlowLength;
+            TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, info.System.MaxTrajectory);
         }
 
         internal void Update(double stepSize, double visualLength, ref Vector3D position, ref Vector3D direction, ref Vector3D pointDir, bool growing = false)
@@ -184,22 +184,23 @@ namespace WeaponCore.Support
 
                     HitPosition = Hit.HitPos;
                 }
-
+                Log.Line("hit");
                 if (System.IsBeamWeapon) Tracer = TracerState.Full;
                 else if (Tracer != TracerState.Off && TotalLength - (VisualLength + MaxTracerLength) < 0.1f) {
 
-                    Log.Line($"Hit TotalOverShot: {Math.Abs(VisualLength - TotalLength)} - {VisualLength - TotalLength} - VisLen:{VisualLength} - TotLen:{TotalLength} - Result:{VisualLength + MaxGlowLength}");
+                    //Log.Line($"Hit TotalOverShot: {Math.Abs(VisualLength - TotalLength)} - {VisualLength - TotalLength} - VisLen:{VisualLength} - TotLen:{TotalLength} - Result:{VisualLength + MaxGlowLength}");
                     Tracer = TracerState.Off;
                 }
                 else {
 
                     Tracer = TracerState.Shrink;
                     TracerLength = VisualLength;
+                    TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, Position));
                 }
             }
             else if (Tracer != TracerState.Off) {
 
-                Log.Line($"NonHit: {Math.Abs(VisualLength - TotalLength)} - {VisualLength - TotalLength} - VisLen:{VisualLength} - TotLen:{TotalLength} - Result:{VisualLength + MaxGlowLength}");
+                //Log.Line($"[NonHit] State:{Tracer} - visVsTotal:{Math.Abs(VisualLength - TotalLength)} - vis-Total:{VisualLength - TotalLength} - VisLen:{VisualLength} - TotLen:{TotalLength} - Result:{VisualLength + MaxGlowLength}");
 
                 if (Tracer == TracerState.Grow && Growing) {
                 
@@ -216,7 +217,9 @@ namespace WeaponCore.Support
                 Model = ModelState.Close;
 
             if (OnScreen == Screen.Tail) {
-                var totalLen = TracerStart + (-Direction * MaxGlowLength);
+                var totalLen = Position + (-Direction * TotalLength);
+                //var line = new LineD(totalLen, Position);
+                //DsDebugDraw.DrawLine(line, VRageMath.Color.White, 1f);
                 var bb = new BoundingBoxD(Vector3D.Min(totalLen, Position), Vector3D.Max(totalLen, Position));
                 if (!Ai.Session.Camera.IsInFrustum(ref bb)) OnScreen = Screen.None;
             }
@@ -246,7 +249,8 @@ namespace WeaponCore.Support
             Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
             LineScaler = ((float)Thickness / width);
 
-            Log.Line($"Tracer:{Tracer} - Trial:{Trail} - OnSreen:{OnScreen} - Hit:{Hit.HitPos != Vector3D.Zero} - VisualLen:{VisualLength} - TracerLen:{TracerLength}({MaxTracerLength}) - TotalLen:{TotalLength}({MaxTracerLength}-{MaxGlowLength}) - dToLine:{DistanceToLine}({target})");
+           // var test = TracerStart = StepSize <= VisualLength && VisualLength > 0 ? Position + -(Direction * VisualLength) : Position;
+            //Log.Line($"Tracer:{Tracer} - notOverSize:{StepSize <= VisualLength && VisualLength > 0} - Trial:{Trail} - OnSreen:{OnScreen} - Hit:{Hit.HitPos != Vector3D.Zero} - VisualLen:{VisualLength} - TracerLen:{TracerLength}({MaxTracerLength}) - TotalLen:{TotalLength}({MaxTracerLength}-{MaxGlowLength}) - dToLine:{DistanceToLine}({target})");
 
 
             if (Tracer != TracerState.Off && Hit.HitPos != Vector3D.Zero) {

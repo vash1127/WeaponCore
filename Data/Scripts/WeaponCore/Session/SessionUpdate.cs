@@ -432,8 +432,7 @@ namespace WeaponCore
                         else
                             w.DrawPower();
 
-                        
-                        w.ChargeDelayTicks = (uint)(((w.RequiredPower - w.UseablePower)  / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
+                        w.ChargeDelayTicks =  (uint)(((w.RequiredPower - w.UseablePower)  / w.UseablePower) * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
                         w.ChargeUntilTick = Tick + w.ChargeDelayTicks;
                         w.Charging = true;
                     }
