@@ -373,8 +373,8 @@ namespace WeaponCore.Projectiles
                         {
                             var travel = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled;
                             var remainingTracer = p.TracerLength - travel <= p.TracerLength ? MathHelperD.Clamp(p.TracerLength - travel, 0, double.MaxValue) : 0;
-
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir);
+                            if (remainingTracer > 0) Log.Line($"remaining tracer:{remainingTracer} - travel:{travel} - maxTracer:{p.TracerLength}");
+                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, remainingTracer, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                     }
                 }

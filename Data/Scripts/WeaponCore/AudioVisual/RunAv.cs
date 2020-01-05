@@ -39,7 +39,7 @@ namespace WeaponCore.Support
 
         internal void Run()
         {
-            //if (Session.Tick300) Log.Line($"{AvShots.Count}");
+            if (Session.Tick300) Log.Line($"{AvShots.Count}");
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];

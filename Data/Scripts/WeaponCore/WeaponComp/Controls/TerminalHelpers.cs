@@ -161,7 +161,6 @@ namespace WeaponCore.Control
             if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
 
             if (!On) comp.CurrentCharge = 0;
-
             for (int i = 0; i < comp.Platform.Weapons.Length; i++)
             {
                 var w = comp.Platform.Weapons[i];

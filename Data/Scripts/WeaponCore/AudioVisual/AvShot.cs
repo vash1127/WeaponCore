@@ -162,6 +162,7 @@ namespace WeaponCore.Support
             Direction = direction;
             StepSize = stepSize;
             VisualLength = visualLength;
+            //Log.Line($"cond:{stepSize <= VisualLength && VisualLength > 0} - StepSize:{StepSize} - VisLen:{VisualLength}");
             TracerStart = stepSize <= VisualLength && VisualLength > 0 ? Position + -(Direction * VisualLength) : Position;
             PointDir = pointDir;
             Growing = growing;
@@ -184,7 +185,6 @@ namespace WeaponCore.Support
 
                     HitPosition = Hit.HitPos;
                 }
-                Log.Line("hit");
                 if (System.IsBeamWeapon) Tracer = TracerState.Full;
                 else if (Tracer != TracerState.Off && TotalLength - (VisualLength + MaxTracerLength) < 0.1f) {
 
@@ -204,6 +204,7 @@ namespace WeaponCore.Support
 
                 if (Tracer == TracerState.Grow && Growing) {
                 
+                    Log.Line("growing");
                     TracerLength = VisualLength;
                 }
                 else {
