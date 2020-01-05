@@ -309,7 +309,9 @@ namespace WeaponCore.Platform
 
                 if (AvCapable && RotateEmitter != null && RotateEmitter.IsPlaying) StopRotateSound();
                 if (IsShooting) StopShooting();
-                _shootTick = tick + (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+
+                var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
+                _shootTick = burstDelay > TicksPerShot ? tick + burstDelay : tick + TicksPerShot;
             }
             else if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
                 StartReload();
