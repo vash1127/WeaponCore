@@ -266,8 +266,8 @@ namespace WeaponCore.Support
                 
                 if (System.IsBeamWeapon)
                     RunBeam();
-                else if (Tracer == TracerState.Shrink && OnScreen != Screen.None) 
-                    Shrink();
+                //else if (Tracer == TracerState.Shrink && OnScreen != Screen.None) 
+                    //Shrink();
             }
             else
             {
@@ -306,6 +306,7 @@ namespace WeaponCore.Support
 
         internal void Shrink()
         {
+            Log.Line("shrink");
             if (!ShrinkInited) ShrinkInit();
             for (int i = 0; i < TracerSteps; i++)
             {
@@ -353,7 +354,7 @@ namespace WeaponCore.Support
                 }
             }
             if (TracerSteps == 0) RunGlow();
-            //Log.Line($"TracerSteps: {TracerSteps} - Shrinks:{TracerShrinks.Count}");
+            Log.Line($"TracerSteps: {TracerSteps} - Shrinks:{TracerShrinks.Count}");
 
         }
 
@@ -362,7 +363,7 @@ namespace WeaponCore.Support
             var fractualSteps = VisualLength / StepSize;
             TracerSteps = (int)Math.Floor(fractualSteps);
             TracerStep = TracerSteps;
-            //Log.Line($"steps: {TracerSteps} -  fractualSteps:{fractualSteps}");
+            Log.Line($"steps: {TracerSteps} -  fractualSteps:{fractualSteps}");
             var frontOfTracer = (TracerStart + (Direction * TracerLength));
             //var tracerLength = Info.System.TracerLength;
             //BackOfTracer = frontOfTracer + (-Direction * (tracerLength + ResizeLen));
