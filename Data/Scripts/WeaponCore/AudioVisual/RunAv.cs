@@ -44,7 +44,8 @@ namespace WeaponCore.Support
             {
                 var av = AvShots[i];
                 var refreshed = av.LastTick == Session.Tick;
-
+                ++av.LifeTime;
+                //if (av.LifeTime > 2000) Log.Line($"weapon:{av.System.WeaponName} - tracer:{av.Tracer} - tail:{av.Trail} - onScreen:{av.OnScreen} - glowCnt:{av.GlowSteps.Count} - shrinks:{av.TracerShrinks.Count} - Grid:{av.Ai.MyGrid.DisplayName}");
                 if ((refreshed  || av.TracerShrinks.Count > 0) && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
                 {
                     if (!av.System.OffsetEffect)
@@ -107,26 +108,30 @@ namespace WeaponCore.Support
                 }
 
                 var glowCnt = av.GlowSteps.Count;
-                var remove = false;
-                for (int j = glowCnt - 1; j >= 0; j--)
+                if (av.Trail != AvShot.TrailState.Off)
                 {
-                    var glow = av.GlowSteps[j];
+                    var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
+                    var remove = false;
+                    for (int j = glowCnt - 1; j >= 0; j--)
+                    {
+                        var glow = av.GlowSteps[j];
 
-                    if (av.OnScreen != AvShot.Screen.None)
-                    {
-                        var reduction = (av.GlowShrinkSize * glow.Step);
-                        var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
-                        MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
+                        if (av.OnScreen != AvShot.Screen.None)
+                        {
+                            var reduction = (av.GlowShrinkSize * glow.Step);
+                            var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
+                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
+                        }
+                        if (++glow.Step >= steps)
+                        {
+                            remove = true;
+                            glowCnt--;
+                            Glows.Push(glow);
+                        }
                     }
-                    if (++glow.Step >= av.System.Values.Graphics.Line.Trail.DecayTime)
-                    {
-                        remove = true;
-                        glowCnt--;
-                        Glows.Push(glow);
-                    }
+
+                    if (remove) av.GlowSteps.Dequeue();
                 }
-
-                if (remove) av.GlowSteps.Dequeue();
 
                 if (av.PrimeEntity != null)
                 {

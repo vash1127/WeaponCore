@@ -166,7 +166,6 @@ namespace WeaponCore.Support
             //TracerStart = Position + -(Direction * VisualLength);
             PointDir = pointDir;
             Growing = growing;
-            LifeTime++;
         }
 
         internal void Complete(ProInfo info, bool saveHit = false, bool closeModel = false)
