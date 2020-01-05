@@ -23,7 +23,7 @@ namespace WeaponCore.Platform
             var userControlled = Comp.Gunner || state.ManualShoot != TerminalActionState.ShootOff;
             var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
 
-            Log.Line($"shootDelay:{tick - ShootDelayTick} - untilShoot:{_ticksUntilShoot} - shootTick:{_shootTick} - TicksPerShot:{TicksPerShot}");
+            if (System.WeaponName == "Gatling") Log.Line($"{System.WeaponName} - tick - ShootDelayTick:{tick - ShootDelayTick} - tickUntilShoot:{_ticksUntilShoot} - shootTick:{_shootTick} - TicksPerShot:{TicksPerShot}");
             if (ShootDelayTick > tick) return;
 
             //if (ShotCounter == 0 && _newCycle)
