@@ -39,7 +39,7 @@ namespace WeaponCore.Support
 
         internal void Run()
         {
-            if (Session.Tick300) Log.Line($"{AvShots.Count}");
+            if (Session.Tick300) Log.Line($"Total AvShots:{AvShots.Count}");
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
@@ -50,13 +50,20 @@ namespace WeaponCore.Support
                     if (!av.System.OffsetEffect)
                     {
                         if (av.Tracer != AvShot.TracerState.Shrink)
-                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.Position, -av.PointDir, (float)av.TracerLength, (float)av.Thickness);
-                        else
+                        {
+                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.TracerStart, av.PointDir, (float)av.TracerLength, (float)av.Thickness);
+                            if (av.Tracer == AvShot.TracerState.OverShoot)
+                                MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.Origin + (av.Direction * av.MaxTracerLength), -av.PointDir, (float)av.MaxTracerLength, (float)av.Thickness);
+                        }
+                        else if (av.TracerShrinks.Count > 0)
                         {
                             var s = av.TracerShrinks.Dequeue();
-                            Log.Line($"drawining non-offset shrink: Color:{s.Color} - Start:{s.Start} - Len:{s.Length} - Thickness:{s.Thickness}");
-
-                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
+                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
+                            if (av.System.Trail)
+                            {
+                                //Log.Line("test");
+                                //av.RunGlow();
+                            }
                         }
                     }
                     else

@@ -308,7 +308,7 @@ namespace WeaponCore.Projectiles
                     if (GetAllEntitiesInLine(p, beam) && p.Intersected())
                         continue;
                 }
-                p.Miss = true;
+                p.Miss = p.State != ProjectileState.Detonate;
                 p.Info.HitList.Clear();
             }
         }
@@ -371,10 +371,7 @@ namespace WeaponCore.Projectiles
                         }
                         else
                         {
-                            var travel = p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled;
-                            var remainingTracer = p.TracerLength - travel <= p.TracerLength ? MathHelperD.Clamp(p.TracerLength - travel, 0, double.MaxValue) : 0;
-                            if (remainingTracer > 0) Log.Line($"remaining tracer:{remainingTracer} - travel:{travel} - maxTracer:{p.TracerLength}");
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, remainingTracer, ref p.Position, ref p.Direction, ref p.VisualDir);
+                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                     }
                 }
@@ -414,7 +411,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.AvShot.OnScreen != Screen.None)
                 {
-                    p.Info.AvShot.Complete();
+                    p.Info.AvShot.Complete(p.Info);
                 }
             }
         }

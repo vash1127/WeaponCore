@@ -182,6 +182,16 @@ namespace WeaponCore.Projectiles
             }
             PrevTargetOffset = Vector3D.Zero;
 
+            float speedVariance = 0;
+            if (Info.System.SpeedVariance && !Info.System.IsBeamWeapon)
+            {
+                var min = Info.System.Values.Ammo.Trajectory.SpeedVariance.Start;
+                var max = Info.System.Values.Ammo.Trajectory.SpeedVariance.End;
+                speedVariance = MyUtils.GetRandomFloat(min, max);
+                DesiredSpeed = Info.System.Values.Ammo.Trajectory.DesiredSpeed + speedVariance;
+            }
+            else DesiredSpeed = Info.System.Values.Ammo.Trajectory.DesiredSpeed;
+
             if (Info.System.RangeVariance)
             {
                 var min = Info.System.Values.Ammo.Trajectory.RangeVariance.Start;
@@ -189,6 +199,7 @@ namespace WeaponCore.Projectiles
                 MaxTrajectory = Info.System.Values.Ammo.Trajectory.MaxTrajectory - MyUtils.GetRandomFloat(min, max);
             }
             else MaxTrajectory = Info.System.Values.Ammo.Trajectory.MaxTrajectory;
+
             if (PredictedTargetPos == Vector3D.Zero) PredictedTargetPos = Position + (Direction * MaxTrajectory);
             PrevTargetPos = PredictedTargetPos;
             PrevTargetVel = Vector3D.Zero;
@@ -210,14 +221,6 @@ namespace WeaponCore.Projectiles
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
 
             if (!Info.IsShrapnel) StartSpeed = Info.ShooterVel;
-
-            if (Info.System.SpeedVariance && !Info.System.IsBeamWeapon)
-            {
-                var min = Info.System.Values.Ammo.Trajectory.SpeedVariance.Start;
-                var max = Info.System.Values.Ammo.Trajectory.SpeedVariance.End;
-                DesiredSpeed = Info.System.Values.Ammo.Trajectory.DesiredSpeed - MyUtils.GetRandomFloat(min, max);
-            }
-            else DesiredSpeed = Info.System.Values.Ammo.Trajectory.DesiredSpeed;
 
             MoveToAndActivate = LockedTarget && !Info.System.IsBeamWeapon && Guidance == AmmoTrajectory.GuidanceType.TravelTo;
 
@@ -373,7 +376,7 @@ namespace WeaponCore.Projectiles
 
                 if (Info.MuzzleId != -1)
                 {
-                    Info.AvShot.Complete(true);
+                    Info.AvShot.Complete(Info,true);
                 }
             }
 
@@ -433,7 +436,7 @@ namespace WeaponCore.Projectiles
                     else
                         vs.Update(0, line.Length, ref line.To, ref line.Direction, ref VisualDir);
                 }
-                vs.Complete(!miss);
+                vs.Complete(Info, !miss);
             }
         }
 
@@ -500,7 +503,7 @@ namespace WeaponCore.Projectiles
             var deltaPos = targetPos - Position;
             var targetVel = ent.Physics?.LinearVelocity ?? Vector3.Zero;
             var deltaVel = targetVel - Vector3.Zero;
-            var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, Info.System.Values.Ammo.Trajectory.DesiredSpeed);
+            var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, DesiredSpeed);
             var predictedPos = targetPos + (float)timeToIntercept * deltaVel;
             PredictedTargetPos = predictedPos;
             PrevTargetPos = predictedPos;
@@ -997,7 +1000,7 @@ namespace WeaponCore.Projectiles
                 if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.AvShot.PrimeEntity);
                 if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.AvShot.TriggerEntity);
                 ModelState = EntityState.None;
-                Info.AvShot.Complete(false, true);
+                Info.AvShot.Complete(Info, false, true);
             }
 
         }
