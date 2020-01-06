@@ -46,7 +46,7 @@ namespace WeaponCore.Support
         internal void Run()
         {
 
-            if (Session.Tick300)
+            if (Session.Tick180)
             {
                 Log.LineShortDate($"Total AvShots:{AvShots.Count} - onScreen:{_onScreens} - shrinks:{_shrinks} - glows:{_glows} - models:{_models}");
                 _glows = 0;
