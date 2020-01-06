@@ -353,7 +353,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.State == ProjectileState.OneAndDone)
                     {
-                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.MaxTrajectory, ref p.Position, ref p.Direction, ref p.VisualDir);
+                        p.Info.AvShot.Update(0, p.MaxTrajectory, ref p.Position, ref p.Direction, ref p.VisualDir);
                     }
                     else if (p.ModelState == EntityState.None && p.Info.System.AmmoParticle && !p.Info.System.DrawLine)
                     {
@@ -391,18 +391,6 @@ namespace WeaponCore.Projectiles
                         p.FirstOffScreen = false;
                         p.LastEntityPos = p.Position;
                     }
-                }
-
-                if (p.Info.AvShot.OnScreen == Screen.None && (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle))
-                {
-                    BoundingBoxD bb;
-                    if (!p.Info.AvShot.Flip)
-                        bb = new BoundingBoxD(Vector3D.Min(p.Info.AvShot.TracerStart, p.Position), Vector3D.Max(p.Info.AvShot.TracerStart, p.Position));
-                    else bb = new BoundingBoxD(Vector3D.Min(p.Info.AvShot.TracerStart, p.Position + p.Direction * p.Info.AvShot.VisualLength), Vector3D.Max(p.Info.AvShot.TracerStart, p.Position + p.Direction * p.Info.AvShot.VisualLength));
-
-                    if (Session.Camera.IsInFrustum(ref bb)) p.Info.AvShot.OnScreen = Screen.Tracer;
-                    if (p.Info.AvShot.OnScreen == Screen.None && p.Info.System.Trail)
-                        p.Info.AvShot.OnScreen = Screen.Tail;
                 }
 
                 if (p.Info.MuzzleId == -1)

@@ -46,9 +46,9 @@ namespace WeaponCore.Support
         internal void Run()
         {
 
-            if (Session.Tick300)
+            if (Session.Tick180)
             {
-                Log.LineShortDate($"Total AvShots:{AvShots.Count} - onScreen:{_onScreens} - shrinks:{_shrinks} - glows:{_glows} - models:{_models}");
+                Log.LineShortDate($"[AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models}");
                 _glows = 0;
                 _shrinks = 0;
             }
@@ -60,8 +60,6 @@ namespace WeaponCore.Support
                 var av = AvShots[i];
                 if (av.OnScreen != AvShot.Screen.None) _onScreens++;
                 var refreshed = av.LastTick == Session.Tick;
-                ++av.LifeTime;
-                if (av.LifeTime > 5000) Log.Line($"weapon:{av.System.WeaponName} - tracer:{av.Tracer} - tail:{av.Trail} - onScreen:{av.OnScreen} - glowCnt:{av.GlowSteps.Count} - shrinks:{av.TracerShrinks.Count} - Grid:{av.Ai.MyGrid.DisplayName}");
                 
                 if (refreshed && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
                 {
@@ -204,7 +202,7 @@ namespace WeaponCore.Support
 
                     if (av.HitSoundActived)
                     {
-                        Log.Line($"hit sound activated");
+                        //Log.Line($"hit sound activated");
                         av.HitSoundActived = false;
                         av.HitEmitter.SetPosition(av.Position);
                         av.HitEmitter.CanPlayLoopSounds = false;
@@ -249,7 +247,7 @@ namespace WeaponCore.Support
                 {
                     MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
                     if (av.Trail != AvShot.TrailState.Off)
-                        av.RunGlow();
+                        av.RunGlow(ref s);
                 }
             }
             else

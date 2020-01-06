@@ -361,7 +361,7 @@ namespace WeaponCore.Projectiles
         }
 
         internal bool Intersected(bool add = true)
-        {
+        {   
             if (Hit.HitPos == Vector3D.Zero) return false;
             if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModelId != -1 || Info.System.TriggerModelId != -1))
             {
@@ -370,12 +370,11 @@ namespace WeaponCore.Projectiles
                 var travelToHit = Vector3D.Distance(LastPosition, Hit.HitPos);
 
                 double remainingTracer;
-                if (TracerLength > travelToHit) remainingTracer = travelToHit;
+                if (TracerLength > travelToHit) remainingTracer = TracerLength - travelToHit;
                 else remainingTracer = TracerLength - travelToHit <= TracerLength ? MathHelperD.Clamp(TracerLength - travelToHit, 0, TracerLength) : 0;
-                var distTraveled = MathHelperD.Clamp(Info.DistanceTraveled - Info.PrevDistanceTraveled, 0, travelToHit);
+                var distTraveled = MathHelperD.Clamp(Info.DistanceTraveled - Info.PrevDistanceTraveled, 0, double.MaxValue);
 
                 Info.AvShot.Update(distTraveled, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
-                if (Info.AvShot.OnScreen == Screen.None) CameraCheck();
 
                 if (Info.MuzzleId != -1)
                 {
@@ -463,7 +462,7 @@ namespace WeaponCore.Projectiles
                 if (Info.Ai.Session.Camera.IsInFrustum(ref bb)) Info.AvShot.OnScreen = Screen.Tracer;
 
                 if (Info.AvShot.OnScreen == Screen.None && Info.System.Trail)
-                    Info.AvShot.OnScreen = Screen.Tail;
+                    Info.AvShot.OnScreen = Screen.Trail;
             }
         }
 
