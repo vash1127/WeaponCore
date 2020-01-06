@@ -58,14 +58,13 @@ namespace WeaponCore.Platform
                                 ShootDelayTick = System.WeaponAnimationLengths[EventTriggers.StopFiring] + session.Tick;
                                 if (LastEvent == EventTriggers.Firing || LastEvent == EventTriggers.PreFire)
                                 {
-                                    delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                                    if(CurLgstAnimPlaying.Running)
+                                        delay = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                                     ShootDelayTick += delay;
                                 }
                             }
                             LastEvent = state;
                         }
-                        else if (state == EventTriggers.StopFiring)
-                            _muzzlesFiring.Clear();
 
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {
@@ -95,6 +94,8 @@ namespace WeaponCore.Platform
                                 animation.Triggered = false;
                             }
                         }
+                        if (active && state == EventTriggers.StopFiring)
+                            _muzzlesFiring.Clear();
                     }
                     break;
                 case EventTriggers.StopTracking:

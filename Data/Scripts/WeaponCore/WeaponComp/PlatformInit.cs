@@ -357,6 +357,24 @@ namespace WeaponCore.Platform
                             weapon.Dummies[i].Entity = weapon.MuzzlePart.Item1;
                     }
 
+                    //was run only on weapon first build, needs to run every reset as well
+                    try
+                    {
+                        foreach (var emissive in weapon.System.WeaponEmissiveSet)
+                        {
+                            if (emissive.Value.EmissiveParts == null) continue;
+
+                            foreach (var part in emissive.Value.EmissiveParts)
+                            {
+                                Parts.SetEmissiveParts(part, Color.Transparent, 0);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        //cant check for emissives so may be null ref
+                    }
+
                     c++;
                 }
             }
