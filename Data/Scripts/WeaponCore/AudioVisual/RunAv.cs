@@ -37,12 +37,28 @@ namespace WeaponCore.Support
             Session = session;
         }
 
+        private int _onScreens = 0;
+        private int _shrinks = 0;
+        private int _glows = 0;
+        private int _models = 0;
+
+
         internal void Run()
         {
-            if (Session.Tick300) Log.Line($"Total AvShots:{AvShots.Count}");
+
+            if (Session.Tick300)
+            {
+                Log.Line($"Total AvShots:{AvShots.Count} - onScreen:{_onScreens} - shrinks:{_shrinks} - glows:{_glows} - models:{_models}");
+                _glows = 0;
+                _shrinks = 0;
+            }
+
+            _onScreens = 0;
+            _models = 0;
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
+                if (av.OnScreen != AvShot.Screen.None) _onScreens++;
                 var refreshed = av.LastTick == Session.Tick;
                 ++av.LifeTime;
                 if (av.LifeTime > 5000) Log.Line($"weapon:{av.System.WeaponName} - tracer:{av.Tracer} - tail:{av.Trail} - onScreen:{av.OnScreen} - glowCnt:{av.GlowSteps.Count} - shrinks:{av.TracerShrinks.Count} - Grid:{av.Ai.MyGrid.DisplayName}");
@@ -86,10 +102,15 @@ namespace WeaponCore.Support
                 }
 
                 var shrinkCnt = av.TracerShrinks.Count;
+                if (shrinkCnt > _shrinks) _shrinks = shrinkCnt;
                 if (shrinkCnt > 0)
                     RunShrinks(av);
 
                 var glowCnt = av.GlowSteps.Count;
+                if (glowCnt > _glows)
+                {
+                    _glows = glowCnt;
+                }
                 if (av.Trail != AvShot.TrailState.Off)
                 {
                     var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
@@ -117,6 +138,7 @@ namespace WeaponCore.Support
 
                 if (av.PrimeEntity != null)
                 {
+                    _models++;
                     if (refreshed)
                     {
                         if (av.Model != AvShot.ModelState.Close && !av.PrimeEntity.InScene && !av.Cloaked)
@@ -125,7 +147,7 @@ namespace WeaponCore.Support
                             av.PrimeEntity.Render.UpdateRenderObject(true, false);
                         }
 
-                        av.PrimeEntity.PositionComp.SetWorldMatrix(av.PrimeMatrix, null, false, false, false);
+                        if (av.OnScreen != AvShot.Screen.None) av.PrimeEntity.PositionComp.SetWorldMatrix(av.PrimeMatrix, null, false, false, false);
                     }
 
                     if (av.Model == AvShot.ModelState.Close || refreshed && av.Cloaked && av.PrimeEntity.InScene)
@@ -169,15 +191,20 @@ namespace WeaponCore.Support
                     {
                         if (!av.AmmoSound)
                         {
-                            double dist;
-                            Vector3D.DistanceSquared(ref av.Position, ref Session.CameraPos, out dist);
-                            if (dist <= av.System.AmmoTravelSoundDistSqr) av.AmmoSoundStart();
+                            double distSqr;
+                            Vector3D.DistanceSquared(ref av.Position, ref Session.CameraPos, out distSqr);
+                            if (distSqr <= av.System.AmmoTravelSoundDistSqr)
+                            {
+                                Log.Line($"travel sound activated");
+                                av.AmmoSoundStart();
+                            }
                         }
                         else av.TravelEmitter.SetPosition(av.Position);
                     }
 
                     if (av.HitSoundActived)
                     {
+                        Log.Line($"hit sound activated");
                         av.HitSoundActived = false;
                         av.HitEmitter.SetPosition(av.Position);
                         av.HitEmitter.CanPlayLoopSounds = false;

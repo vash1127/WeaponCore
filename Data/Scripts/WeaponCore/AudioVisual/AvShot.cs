@@ -44,6 +44,7 @@ namespace WeaponCore.Support
         internal bool Active;
         internal bool ShrinkInited;
         internal bool Growing;
+        internal bool Flip;
         internal double MaxTracerLength;
         internal double TracerLength;
         internal double MaxGlowLength;
@@ -160,8 +161,8 @@ namespace WeaponCore.Support
             Direction = direction;
             StepSize = stepSize;
             VisualLength = visualLength;
-            var flip = StepSize > VisualLength && !MyUtils.IsZero(StepSize - VisualLength);
-            TracerStart = !flip ? Position + (-Direction * VisualLength) : Position;
+            Flip = StepSize > VisualLength && !MyUtils.IsZero(StepSize - VisualLength);
+            TracerStart = !Flip ? Position + (-Direction * VisualLength) : Position;
             PointDir = pointDir;
             Growing = growing;
             LifeTime++;
@@ -188,12 +189,12 @@ namespace WeaponCore.Support
                     TracerStart = HitPosition + (-Direction * MaxTracerLength);
                     if (OnScreen != Screen.None)
                     {
-                        var bb1 = new BoundingBoxD(Vector3D.Min(TracerStart, Position), Vector3D.Max(TracerStart, Position));
+                        var bb1 = new BoundingBoxD(Vector3D.Min(TracerStart, HitPosition), Vector3D.Max(TracerStart, HitPosition));
                         if (Ai.Session.Camera.IsInFrustum(ref bb1)) OnScreen = Screen.Tracer;
                         else
                         {
                             var trailStart = HitPosition + (-Direction * MathHelperD.Clamp(info.DistanceTraveled, 1, MaxGlowLength));  
-                            var bb2 = new BoundingBoxD(Vector3D.Min(trailStart, Position), Vector3D.Max(trailStart, Position));
+                            var bb2 = new BoundingBoxD(Vector3D.Min(trailStart, HitPosition), Vector3D.Max(trailStart, HitPosition));
                             OnScreen = Ai.Session.Camera.IsInFrustum(ref bb2) ? Screen.Tail : Screen.None;
                         }
                     }
@@ -217,7 +218,6 @@ namespace WeaponCore.Support
                     TracerLength = MaxTracerLength;
                 }
             }
-
             if (closeModel)
                 Model = ModelState.Close;
             if (OnScreen == Screen.Tail)
@@ -543,6 +543,7 @@ namespace WeaponCore.Support
             Active = false;
             Growing = false;
             ShrinkInited = false;
+            Flip = false;
             GlowSteps.Clear();
             Offsets.Clear();
             //
