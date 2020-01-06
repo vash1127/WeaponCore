@@ -89,6 +89,7 @@ namespace WeaponCore.Support
         internal Hit Hit;
         internal MatrixD PrimeMatrix = MatrixD.Identity;
         internal MatrixD TriggerMatrix = MatrixD.Identity;
+        internal Shrinks EmptyShrink;
 
         internal enum TracerState
         {
@@ -115,7 +116,7 @@ namespace WeaponCore.Support
         internal enum Screen // Tracer includes Tail;
         {
             Tracer,
-            Tail,
+            Trail,
             None,
         }
 
@@ -166,12 +167,28 @@ namespace WeaponCore.Support
             TracerStart = !Flip ? Position + (-Direction * VisualLength) : Position;
             PointDir = pointDir;
             Growing = growing;
-            LifeTime++;
+            ++LifeTime;
+
+            if (OnScreen == Screen.None && (System.DrawLine || Model == ModelState.None && System.AmmoParticle))
+            {
+                BoundingBoxD bb;
+                if (!Flip)
+                    bb = new BoundingBoxD(Vector3D.Min(TracerStart, Position), Vector3D.Max(TracerStart, Position));
+                else bb = new BoundingBoxD(Vector3D.Min(TracerStart, Position + Direction * VisualLength), Vector3D.Max(TracerStart, Position + Direction * VisualLength));
+
+                if (Ai.Session.Camera.IsInFrustum(ref bb)) OnScreen = Screen.Tracer;
+                if (OnScreen == Screen.None && System.Trail)
+                    OnScreen = Screen.Trail;
+
+            }
+            //Log.Line($"[Update] {VisualLength} - {stepSize} - {OnScreen} - {Tracer}");
+
             //Log.Line($"[Update] VisLen:{VisualLength} - StepSize:{StepSize} - Flip:{Flip} - Growing:{Growing} - TtoP:{Vector3D.Distance(TracerStart, Position)}");
         }
 
         internal void Complete(ProInfo info, bool saveHit = false, bool closeModel = false)
         {
+            //if (Hit.HitPos != Vector3D.Zero) Log.Line($"[Hit]{VisualLength / StepSize} - {VisualLength} -  {StepSize} ");
             if (!Active) {
                 Active = true;
                 Ai.Session.Av.AvShots.Add(this);
@@ -186,17 +203,19 @@ namespace WeaponCore.Support
                 }
                 if (System.IsBeamWeapon) Tracer = TracerState.Full;
                 else if (Tracer != TracerState.Off && VisualLength <= 0) {
-                    VisualLength = MaxTracerLength;
-                    TracerStart = HitPosition + (-Direction * MaxTracerLength);
                     if (OnScreen != Screen.None)
                     {
-                        var bb1 = new BoundingBoxD(Vector3D.Min(TracerStart, HitPosition), Vector3D.Max(TracerStart, HitPosition));
-                        if (Ai.Session.Camera.IsInFrustum(ref bb1)) OnScreen = Screen.Tracer;
+                        var stepsBack = StepSize * (LifeTime + 1);
+                        var bb1 = new BoundingBoxD(Vector3D.Min(HitPosition + -Direction * stepsBack, HitPosition), Vector3D.Max(HitPosition + -Direction * stepsBack, HitPosition));
+                        if (Ai.Session.Camera.IsInFrustum(ref bb1))
+                        {
+                            OnScreen = Screen.Trail;
+                            Tracer = TracerState.Off;
+                        }
                         else
                         {
-                            var trailStart = HitPosition + (-Direction * MathHelperD.Clamp(info.DistanceTraveled, 1, MaxGlowLength));  
-                            var bb2 = new BoundingBoxD(Vector3D.Min(trailStart, HitPosition), Vector3D.Max(trailStart, HitPosition));
-                            OnScreen = Ai.Session.Camera.IsInFrustum(ref bb2) ? Screen.Tail : Screen.None;
+                            OnScreen = Screen.None;
+                            Tracer = TracerState.Off;
                         }
                     }
                 }
@@ -208,24 +227,26 @@ namespace WeaponCore.Support
             }
             else if (Tracer != TracerState.Off) {
 
-                if (!(Tracer == TracerState.Grow && Growing)) {
+                if (Tracer != TracerState.Shrink && (Tracer != TracerState.Grow && Growing)) {
                     
                     Tracer = TracerState.Full;
                     VisualLength = MaxTracerLength;
                 }
             }
+
             if (closeModel)
                 Model = ModelState.Close;
-            if (OnScreen == Screen.Tail)
+
+            if (OnScreen == Screen.Trail)
             {
                 Vector3D totalLen;
                 if (TotalLength > 100)
                     totalLen = Position + (-Direction * MathHelperD.Clamp(info.DistanceTraveled, 1, MaxGlowLength));
                 else totalLen = Position + (-Direction * TotalLength);
-
                 var bb = new BoundingBoxD(Vector3D.Min(totalLen, Position), Vector3D.Max(totalLen, Position));
                 if (!Ai.Session.Camera.IsInFrustum(ref bb)) OnScreen = Screen.None;
             }
+            //Log.Line($"[Complete] {VisualLength} - {StepSize} - {OnScreen} - {Tracer} - {Hit.HitPos != Vector3D.Zero}");
 
             if (OnScreen != Screen.None && System.DrawLine) LineVariableEffects();
 
@@ -242,9 +263,9 @@ namespace WeaponCore.Support
                     LineOffsetEffect(TracerStart, -PointDir, VisualLength);
 
                 if (Trail != TrailState.Off && Tracer != TracerState.Shrink)
-                    RunGlow();
+                    RunGlow(ref EmptyShrink);
             }
-            //Log.Line($"[Complete] OnScreen:{OnScreen} - Tracer:{Tracer} - Trail:{Trail} - Growing:{Growing} - TtoP:{Vector3D.Distance(TracerStart, Position)} - TvsV:{MaxTracerLength}({VisualLength}) - Hit:{Hit.HitPos != Vector3D.Zero}");
+            //if (Hit.HitPos != Vector3D.Zero) Log.Line($"[Complete] {GlowSteps.Count} - OnScreen:{OnScreen} - Tracer:{Tracer} - Trail:{Trail} - Growing:{Growing} - TtoP:{Vector3D.Distance(TracerStart, Position)} - TvsV:{MaxTracerLength}({VisualLength}) - Hit:{Hit.HitPos != Vector3D.Zero}");
         }
 
         internal void LineVariableEffects()
@@ -277,15 +298,20 @@ namespace WeaponCore.Support
             LineScaler = ((float)Thickness / width);
         }
 
-        internal void RunGlow()
+        internal void RunGlow(ref Shrinks shrinks)
         {
             var glowCount = GlowSteps.Count;
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
             {
+                var shrinking = shrinks.Thickness > 0;
                 var glow = Ai.Session.Av.Glows.Count > 0 ? Ai.Session.Av.Glows.Pop() : new AfterGlow();
                 glow.Step = 0;
                 glow.VelStep = Direction * StepSize;
-                glow.TailPos = Position + -glow.VelStep;
+                var back = shrinking ? shrinks.Start + (-Direction * shrinks.Length) : TracerStart;
+                //var front = shrinking ? shrinks.Start + TracerStart : Position;
+                var startPos = Trail == TrailState.Back ? back : Position;
+                //var startPos = Trail == TrailState.Back ? TracerStart : Position;
+                glow.TailPos = startPos + -glow.VelStep;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
             }
@@ -350,8 +376,7 @@ namespace WeaponCore.Support
                     */
                 }
             }
-            if (TracerSteps == 0) Log.Line($"TracerSteps: {TracerSteps} - Shrinks:{TracerShrinks.Count}");
-
+            //Log.Line($"TracerSteps: {TracerSteps} - Shrinks:{TracerShrinks.Count}");
         }
 
         private void ShrinkInit()
