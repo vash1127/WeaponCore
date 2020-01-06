@@ -48,7 +48,7 @@ namespace WeaponCore.Support
 
             if (Session.Tick180)
             {
-                Log.LineShortDate($"Total AvShots:{AvShots.Count} - onScreen:{_onScreens} - shrinks:{_shrinks} - glows:{_glows} - models:{_models}");
+                Log.LineShortDate($"[AvShots]{AvShots.Count} [OnScreen]{_onScreens} [Shrinks]{_shrinks} [Glows]{_glows} [Models]{_models}");
                 _glows = 0;
                 _shrinks = 0;
             }
@@ -204,7 +204,7 @@ namespace WeaponCore.Support
 
                     if (av.HitSoundActived)
                     {
-                        Log.Line($"hit sound activated");
+                        //Log.Line($"hit sound activated");
                         av.HitSoundActived = false;
                         av.HitEmitter.SetPosition(av.Position);
                         av.HitEmitter.CanPlayLoopSounds = false;
