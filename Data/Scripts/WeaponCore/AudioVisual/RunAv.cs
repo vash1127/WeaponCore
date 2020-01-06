@@ -68,7 +68,7 @@ namespace WeaponCore.Support
                     if (!av.System.OffsetEffect)
                     {
                         if (av.Tracer != AvShot.TracerState.Shrink)
-                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.TracerStart, av.PointDir, (float)av.TracerLength, (float)av.Thickness);
+                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.TracerStart, av.PointDir, (float)av.VisualLength, (float)av.Thickness);
                     }
                     else
                     {

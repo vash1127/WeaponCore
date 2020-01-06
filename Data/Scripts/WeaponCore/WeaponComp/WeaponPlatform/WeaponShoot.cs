@@ -241,7 +241,7 @@ namespace WeaponCore.Platform
                                         {
                                             var deltaPos = targetSphere.Center - MyPivotPos;
                                             var deltaVel = targetAi.GridVel - Comp.Ai.GridVel;
-                                            var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, System.Values.Ammo.Trajectory.DesiredSpeed);
+                                            var timeToIntercept = MathFuncs.Intercept(deltaPos, deltaVel, System.DesiredProjectileSpeed);
                                             var predictedPos = targetSphere.Center + (float)timeToIntercept * deltaVel;
                                             targetSphere.Center = predictedPos;
                                         }

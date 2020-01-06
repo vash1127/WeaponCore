@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Definitions;
+using Sandbox.Engine.Analytics;
 using Sandbox.Game;
 using VRage;
 using VRage.Collections;
@@ -232,7 +233,6 @@ namespace WeaponCore.Support
             AmmoSkipAccel = values.Ammo.Trajectory.AccelPerSec <= 0;
             
 
-            DesiredProjectileSpeed = values.Ammo.Trajectory.DesiredSpeed;
             MaxTrajectory = values.Ammo.Trajectory.MaxTrajectory;
             MaxTrajectorySqr = MaxTrajectory * MaxTrajectory;
             HasBackKickForce = values.Ammo.BackKickForce > 0;
@@ -251,6 +251,7 @@ namespace WeaponCore.Support
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
             Predictions(out NeedsPrediction, out Prediction);
 
+            DesiredProjectileSpeed = (float) (!IsBeamWeapon ? values.Ammo.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths);

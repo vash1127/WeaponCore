@@ -46,7 +46,7 @@ namespace WeaponCore.Support
         internal bool Growing;
         internal bool Flip;
         internal double MaxTracerLength;
-        internal double TracerLength;
+        //internal double TracerLength;
         internal double MaxGlowLength;
         internal double FirstStepSize;
         internal double StepSize;
@@ -152,6 +152,7 @@ namespace WeaponCore.Support
             }
             else Trail = TrailState.Off;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, info.System.MaxTrajectory);
+
         }
 
         internal void Update(double stepSize, double visualLength, ref Vector3D position, ref Vector3D direction, ref Vector3D pointDir, bool growing = false)
@@ -166,6 +167,7 @@ namespace WeaponCore.Support
             PointDir = pointDir;
             Growing = growing;
             LifeTime++;
+            //Log.Line($"[Update] VisLen:{VisualLength} - StepSize:{StepSize} - Flip:{Flip} - Growing:{Growing} - TtoP:{Vector3D.Distance(TracerStart, Position)}");
         }
 
         internal void Complete(ProInfo info, bool saveHit = false, bool closeModel = false)
@@ -174,7 +176,6 @@ namespace WeaponCore.Support
                 Active = true;
                 Ai.Session.Av.AvShots.Add(this);
             }
-
             if (Hit.HitPos != Vector3D.Zero) {
                 if (saveHit) {
                     if (Hit.Entity != null)
@@ -202,20 +203,15 @@ namespace WeaponCore.Support
                 else if (VisualLength / StepSize > 1)
                 {
                     Tracer = TracerState.Shrink;
-                    TracerLength = VisualLength;
                     TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, Position));
                 }
             }
             else if (Tracer != TracerState.Off) {
 
-                if (Tracer == TracerState.Grow && Growing) {
-
-                    TracerLength = VisualLength;
-                }
-                else {
-
+                if (!(Tracer == TracerState.Grow && Growing)) {
+                    
                     Tracer = TracerState.Full;
-                    TracerLength = MaxTracerLength;
+                    VisualLength = MaxTracerLength;
                 }
             }
             if (closeModel)
@@ -243,11 +239,12 @@ namespace WeaponCore.Support
             else
             {
                 if (Tracer != TracerState.Off && OnScreen == Screen.Tracer && System.OffsetEffect)
-                    LineOffsetEffect(TracerStart, -PointDir, TracerLength);
+                    LineOffsetEffect(TracerStart, -PointDir, VisualLength);
 
                 if (Trail != TrailState.Off && Tracer != TracerState.Shrink)
                     RunGlow();
             }
+            //Log.Line($"[Complete] OnScreen:{OnScreen} - Tracer:{Tracer} - Trail:{Trail} - Growing:{Growing} - TtoP:{Vector3D.Distance(TracerStart, Position)} - TvsV:{MaxTracerLength}({VisualLength}) - Hit:{Hit.HitPos != Vector3D.Zero}");
         }
 
         internal void LineVariableEffects()
@@ -270,7 +267,7 @@ namespace WeaponCore.Support
                 width += randomValue;
             }
 
-            var target = System.IsBeamWeapon ? Position + -Direction * TracerLength : Position + (-Direction * TotalLength);
+            var target = System.IsBeamWeapon ? Position + -Direction * VisualLength : Position + (-Direction * TotalLength);
             ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
             if (System.IsBeamWeapon && DistanceToLine < 1000) DistanceToLine = 1000;
@@ -362,7 +359,7 @@ namespace WeaponCore.Support
             var fractualSteps = VisualLength / StepSize;
             TracerSteps = (int)Math.Floor(fractualSteps);
             TracerStep = TracerSteps;
-            var frontOfTracer = (TracerStart + (Direction * TracerLength));
+            var frontOfTracer = (TracerStart + (Direction * VisualLength));
             BackOfTracer = frontOfTracer + (-Direction * StepSize);
             if (fractualSteps < StepSize || TracerSteps <= 0)
                 Tracer = TracerState.Off;
@@ -445,7 +442,7 @@ namespace WeaponCore.Support
             TracerLengthSqr = tracerLength * tracerLength;
             var maxOffset = System.Values.Graphics.Line.OffsetEffect.MaxOffset;
             var minLength = System.Values.Graphics.Line.OffsetEffect.MinLength;
-            var maxLength = MathHelperD.Clamp(System.Values.Graphics.Line.OffsetEffect.MaxLength, 0, TracerLength);
+            var maxLength = MathHelperD.Clamp(System.Values.Graphics.Line.OffsetEffect.MaxLength, 0, tracerLength);
 
             double currentForwardDistance = 0;
 

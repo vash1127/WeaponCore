@@ -182,15 +182,14 @@ namespace WeaponCore.Projectiles
             }
             PrevTargetOffset = Vector3D.Zero;
 
-            float speedVariance = 0;
             if (Info.System.SpeedVariance && !Info.System.IsBeamWeapon)
             {
                 var min = Info.System.Values.Ammo.Trajectory.SpeedVariance.Start;
                 var max = Info.System.Values.Ammo.Trajectory.SpeedVariance.End;
-                speedVariance = MyUtils.GetRandomFloat(min, max);
-                DesiredSpeed = Info.System.Values.Ammo.Trajectory.DesiredSpeed + speedVariance;
+                var speedVariance = MyUtils.GetRandomFloat(min, max);
+                DesiredSpeed = Info.System.DesiredProjectileSpeed + speedVariance;
             }
-            else DesiredSpeed = Info.System.Values.Ammo.Trajectory.DesiredSpeed;
+            else DesiredSpeed = Info.System.DesiredProjectileSpeed;
 
             if (Info.System.RangeVariance)
             {
@@ -369,9 +368,13 @@ namespace WeaponCore.Projectiles
                 TestSphere.Center = Hit.HitPos;
 
                 var travelToHit = Vector3D.Distance(LastPosition, Hit.HitPos);
-                var remainingTracer = TracerLength - travelToHit <= TracerLength ? MathHelperD.Clamp(TracerLength - travelToHit, 0, double.MaxValue) : 0;
 
-                Info.AvShot.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
+                double remainingTracer;
+                if (TracerLength > travelToHit) remainingTracer = travelToHit;
+                else remainingTracer = TracerLength - travelToHit <= TracerLength ? MathHelperD.Clamp(TracerLength - travelToHit, 0, TracerLength) : 0;
+                var distTraveled = MathHelperD.Clamp(Info.DistanceTraveled - Info.PrevDistanceTraveled, 0, travelToHit);
+
+                Info.AvShot.Update(distTraveled, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
                 if (Info.AvShot.OnScreen == Screen.None) CameraCheck();
 
                 if (Info.MuzzleId != -1)
