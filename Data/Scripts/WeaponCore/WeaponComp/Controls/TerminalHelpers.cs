@@ -187,6 +187,7 @@ namespace WeaponCore.Control
                     {
                         w.CurrentCharge = 0;
                         w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
+                        w.Reloading = false;
                     }
                     comp.CurrentCharge += w.CurrentCharge;
 
