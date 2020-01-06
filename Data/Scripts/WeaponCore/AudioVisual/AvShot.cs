@@ -288,11 +288,13 @@ namespace WeaponCore.Support
                 width += randomValue;
             }
 
-            var target = System.IsBeamWeapon ? Position + -Direction * VisualLength : Position + (-Direction * TotalLength);
+            //var target = System.IsBeamWeapon ? Position + -Direction * VisualLength : Position + (-Direction * TotalLength);
+            var target = Position + (-Direction * TotalLength);
+
             ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref Position, ref target, ref Ai.Session.CameraPos);
             DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
-            if (System.IsBeamWeapon && DistanceToLine < 1000) DistanceToLine = 1000;
-            else if (System.IsBeamWeapon && DistanceToLine < 350) DistanceToLine = 350;
+            //if (System.IsBeamWeapon && DistanceToLine < 1000) DistanceToLine = 1000;
+            //else if (System.IsBeamWeapon && DistanceToLine < 350) DistanceToLine = 350;
             ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
             Thickness = Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
             LineScaler = ((float)Thickness / width);
