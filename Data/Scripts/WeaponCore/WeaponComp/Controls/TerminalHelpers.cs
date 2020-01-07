@@ -193,10 +193,11 @@ namespace WeaponCore.Control
 
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOff, out delay))
-                        w.AnimationDelayTick = w.ShootDelayTick = comp.Session.Tick + delay;
+                        w.AnimationDelayTick = w.ShootDelayTick = comp.Session.Tick + delay + w.OffDelay;
                 }
                 else
                 {
+                    w.OffDelay = 0;
                     uint delay;
                     if (w.System.WeaponAnimationLengths.TryGetValue(Weapon.EventTriggers.TurnOn, out delay))
                         w.AnimationDelayTick = w.ShootDelayTick = comp.Session.Tick + delay;

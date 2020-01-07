@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sandbox.ModAPI;
+using System;
 using System.Collections.Generic;
 using VRage.Game;
 using VRage.Game.Components;
@@ -42,6 +43,9 @@ namespace WeaponCore.Platform
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
             var session = Comp.Session;
+
+            var canPlay = !session.DedicatedServer && session.SyncBufferedDistSqr >= Vector3D.DistanceSquared(MyAPIGateway.Session.Player.GetPosition(), MyPivotPos);
+
             switch (state)
             {
                 case EventTriggers.StopFiring:
@@ -82,6 +86,7 @@ namespace WeaponCore.Platform
                                 animation.StartTick = session.Tick + animation.MotionDelay + delay;
                                 Comp.Session.AnimationsToProcess.Add(animation);
                                 animation.Running = true;
+                                animation.CanPlay = canPlay;
 
                                 if (animation.DoesLoop)
                                     animation.Looping = true;
@@ -117,6 +122,7 @@ namespace WeaponCore.Platform
 
                                 PartAnimation animCheck;
                                 animation.Running = true;
+                                animation.CanPlay = canPlay;
                                 if (AnimationLookup.TryGetValue(
                                     animation.EventIdLookup[oppositeEvnt], out animCheck) && animCheck.Running)
                                 {
@@ -170,6 +176,7 @@ namespace WeaponCore.Platform
 
                                 PartAnimation animCheck;
                                 animation.Running = true;
+                                animation.CanPlay = true;
                                 if (AnimationLookup.TryGetValue(animation.EventIdLookup[oppositeEvnt],
                                     out animCheck))
                                 {
@@ -185,6 +192,7 @@ namespace WeaponCore.Platform
                                     session.ThreadedAnimations.Enqueue(animation);
 
                                 animation.StartTick = session.Tick + animation.MotionDelay;
+                                if (state == EventTriggers.TurnOff) animation.StartTick += OffDelay;
                             }
                             else
                                 animation.Reverse = false;
@@ -214,6 +222,7 @@ namespace WeaponCore.Platform
                                 session.ThreadedAnimations.Enqueue(animation);
 
                                 animation.Running = true;
+                                animation.CanPlay = canPlay;
 
                                 if (animation.DoesLoop)
                                     animation.Looping = true;
