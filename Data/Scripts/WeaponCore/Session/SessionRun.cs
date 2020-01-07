@@ -9,6 +9,7 @@ using VRage.Collections;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Input;
+using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -187,7 +188,7 @@ namespace WeaponCore
                 {
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
-
+                    CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
                     if (UiInput.PlayerCamera && !InMenu && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                     {
                         if (WheelUi.WheelActive) WheelUi.DrawWheel();

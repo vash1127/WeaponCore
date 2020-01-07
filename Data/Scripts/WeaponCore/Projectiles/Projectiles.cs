@@ -400,9 +400,7 @@ namespace WeaponCore.Projectiles
                 }
 
                 if (p.Info.AvShot.OnScreen != Screen.None)
-                {
                     p.Info.AvShot.Complete(p.Info);
-                }
             }
         }
     }
