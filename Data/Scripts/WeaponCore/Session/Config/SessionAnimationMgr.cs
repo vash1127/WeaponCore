@@ -758,7 +758,7 @@ namespace WeaponCore
 
                                 for (int j = 0; j < currentEmissive.EmissiveParts.Length; j++)
                                 {
-                                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[i], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
+                                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[j], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
                                 }
                             }
                         }
@@ -792,7 +792,7 @@ namespace WeaponCore
                         {
                             for (int j = 0; j < animation.EmissiveParts.Length; j++)
                             {
-                                var emissivePart = animation.EmissiveParts[i];
+                                var emissivePart = animation.EmissiveParts[j];
                                 animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
                             }
                         }
