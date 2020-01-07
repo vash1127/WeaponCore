@@ -306,10 +306,11 @@ namespace WeaponCore
                         w.Comp.TerminalRefresh();
                 }
 
-                if (w.ChargeUntilTick <= Tick)
+                if (w.ChargeUntilTick <= Tick || !w.Reloading)
                 {
                     //Log.Line("Reloaded");
-                    Weapon.Reloaded(w);
+                    if(w.Reloading)
+                        Weapon.Reloaded(w);
 
                     if (w.DrawingPower)
                         w.StopPowerDraw();

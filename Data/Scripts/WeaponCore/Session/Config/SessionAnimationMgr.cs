@@ -541,22 +541,7 @@ namespace WeaponCore
                 }
             }
 
-            try
-            {
-                foreach (var emissive in system.WeaponEmissiveSet)
-                {
-                    if (emissive.Value.EmissiveParts == null) continue;
-
-                    foreach (var part in emissive.Value.EmissiveParts)
-                    {
-                        parts.SetEmissiveParts(part, Color.Transparent, 0);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                //cant check for emissives so may be null ref
-            }
+            
             var returnAnimations = new Dictionary<Weapon.EventTriggers, PartAnimation[]>();
 
             foreach (var animationKV in allAnimationSet)
@@ -689,7 +674,7 @@ namespace WeaponCore
             for (int i = AnimationsToProcess.Count - 1; i >= 0; i--)
             {
                 var animation = AnimationsToProcess[i];
-                if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null)
+                if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null && animation.StartTick <= Tick)
                     AnimateParts(animation, i);
             }
         }
@@ -702,8 +687,6 @@ namespace WeaponCore
             Vector3D translation;
             AnimationType animationType;
             EmissiveState currentEmissive;
-
-            if (animation.StartTick > Tick) return;
 
             animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
 
