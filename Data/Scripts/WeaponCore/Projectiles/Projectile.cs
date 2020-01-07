@@ -372,7 +372,7 @@ namespace WeaponCore.Projectiles
                 double remainingTracer;
                 if (TracerLength > travelToHit) remainingTracer = TracerLength - travelToHit;
                 else remainingTracer = TracerLength - travelToHit <= TracerLength ? MathHelperD.Clamp(TracerLength - travelToHit, 0, TracerLength) : 0;
-                var distTraveled = MathHelperD.Clamp(Info.DistanceTraveled - Info.PrevDistanceTraveled, 0, double.MaxValue);
+                var distTraveled = MathHelperD.Clamp(Info.DistanceTraveled - Info.PrevDistanceTraveled, 0, travelToHit);
 
                 Info.AvShot.Update(distTraveled, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
 
@@ -439,30 +439,6 @@ namespace WeaponCore.Projectiles
                         vs.Update(0, line.Length, ref line.To, ref line.Direction, ref VisualDir);
                 }
                 vs.Complete(info, !miss);
-            }
-        }
-
-        private void CameraCheck()
-        {
-            if (ModelState == EntityState.Exists)
-            {
-                ModelSphereLast.Center = LastEntityPos;
-                ModelSphereCurrent.Center = Position;
-                if (Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent) || FirstOffScreen)
-                {
-                    Info.AvShot.OnScreen = Screen.Tracer;
-                    FirstOffScreen = false;
-                    LastEntityPos = Position;
-                }
-            }
-
-            if (Info.AvShot.OnScreen == Screen.None && Info.System.DrawLine)
-            {
-                var bb = new BoundingBoxD(Vector3D.Min(Info.AvShot.TracerStart, Info.AvShot.Position), Vector3D.Max(Info.AvShot.TracerStart, Info.AvShot.Position));
-                if (Info.Ai.Session.Camera.IsInFrustum(ref bb)) Info.AvShot.OnScreen = Screen.Tracer;
-
-                if (Info.AvShot.OnScreen == Screen.None && Info.System.Trail)
-                    Info.AvShot.OnScreen = Screen.Trail;
             }
         }
 

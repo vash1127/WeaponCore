@@ -79,6 +79,12 @@ namespace WeaponCore.Support
             MySimpleObjectDraw.DrawLine(line.From, line.To, _square, ref c, width);
         }
 
+        public static void DrawRay(RayD ray, Vector4 color, float width, float length = float.MaxValue)
+        {
+            var c = color;
+            MyTransparentGeometry.AddLineBillboard(_square, c, ray.Position, ray.Direction, length, width);
+        }
+
         public static void DrawBox(MyOrientedBoundingBoxD obb, Color color)
         {
             var box = new BoundingBoxD(-obb.HalfExtent, obb.HalfExtent);

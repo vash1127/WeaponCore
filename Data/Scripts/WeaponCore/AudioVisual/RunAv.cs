@@ -95,20 +95,20 @@ namespace WeaponCore.Support
                             if (Vector3D.DistanceSquared(av.OffsetMatrix.Translation, toBeam) > av.TracerLengthSqr) break;
                         }
                         list.Clear();
-                        Session.ListOfVectorsPool.Return(list);
                     }
                 }
 
                 var shrinkCnt = av.TracerShrinks.Count;
                 if (shrinkCnt > _shrinks) _shrinks = shrinkCnt;
+
                 if (shrinkCnt > 0)
                     RunShrinks(av);
 
                 var glowCnt = av.GlowSteps.Count;
+
                 if (glowCnt > _glows)
-                {
                     _glows = glowCnt;
-                }
+
                 if (av.Trail != AvShot.TrailState.Off)
                 {
                     var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
@@ -133,7 +133,7 @@ namespace WeaponCore.Support
 
                     if (remove) av.GlowSteps.Dequeue();
                 }
-
+                    
                 if (av.PrimeEntity != null)
                 {
                     _models++;
@@ -240,9 +240,9 @@ namespace WeaponCore.Support
 
         private void RunShrinks(AvShot av)
         {
+            var s = av.TracerShrinks.Dequeue();
             if (!av.System.OffsetEffect)
             {
-                var s = av.TracerShrinks.Dequeue();
                 if (av.OnScreen != AvShot.Screen.None)
                 {
                     MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
@@ -252,11 +252,9 @@ namespace WeaponCore.Support
             }
             else
             {
-                var s = av.TracerShrinks.Dequeue();
-                var list = av.ShrinkOffsets.Dequeue();
                 if (av.OnScreen != AvShot.Screen.None)
                 {
-                    for (int x = 0; x < list.Count; x++)
+                    for (int x = 0; x < s.Offsets.Count; x++)
                     {
                         Vector3D fromBeam;
                         Vector3D toBeam;
@@ -264,12 +262,12 @@ namespace WeaponCore.Support
                         if (x == 0)
                         {
                             fromBeam = av.OffsetMatrix.Translation;
-                            toBeam = Vector3D.Transform(list[x], av.OffsetMatrix);
+                            toBeam = Vector3D.Transform(s.Offsets[x], av.OffsetMatrix);
                         }
                         else
                         {
-                            fromBeam = Vector3D.Transform(list[x - 1], av.OffsetMatrix);
-                            toBeam = Vector3D.Transform(list[x], av.OffsetMatrix);
+                            fromBeam = Vector3D.Transform(s.Offsets[x - 1], av.OffsetMatrix);
+                            toBeam = Vector3D.Transform(s.Offsets[x], av.OffsetMatrix);
                         }
 
                         Vector3 dir = (toBeam - fromBeam);
@@ -279,8 +277,7 @@ namespace WeaponCore.Support
                         if (Vector3D.DistanceSquared(av.OffsetMatrix.Translation, toBeam) > av.TracerLengthSqr) break;
                     }
                 }
-                list.Clear();
-                Session.ListOfVectorsPool.Return(list);
+                Session.ListOfVectorsPool.Return(s.Offsets);
             }
         }
     }
