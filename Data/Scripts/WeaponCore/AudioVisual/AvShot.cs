@@ -240,7 +240,7 @@ namespace WeaponCore.Support
             if (Tracer != TracerState.Off && Hit.HitPos != Vector3D.Zero) {
                 
                 if (System.IsBeamWeapon) RunBeam();
-                else if (OnScreen != Screen.None && Tracer == TracerState.Shrink)  
+                else if (OnScreen != Screen.None && Tracer == TracerState.Shrink && false)  
                     Shrink();
             }
             else
@@ -345,7 +345,7 @@ namespace WeaponCore.Support
                     var length = (float)(shrunk.Value.Reduced + shrunk.Value.StepLength);
                     if (System.OffsetEffect)
                     {
-                        var offsets = LineOffsetEffect(Hit.HitPos + (-PointDir * length), -PointDir, length, true);
+                        var offsets = LineOffsetEffect(Hit.HitPos, -PointDir, length, true);
                         TracerShrinks.Enqueue(new Shrinks { Start = Hit.HitPos, Color = color, Length = length, Thickness = width, Offsets = offsets });
                     }
                     else
