@@ -523,8 +523,8 @@ namespace WeaponCore
                             for (int j = 0; j < rotations.Length; j++)
                             {
                                 if (rotations[j] != Matrix.Zero)
-                                    rotations[j] = Matrix.CreateTranslation(-(Vector3)partCenter) * rotations[j] *
-                                                   Matrix.CreateTranslation((Vector3)partCenter);
+                                    rotations[j] = Matrix.CreateTranslation(-partCenter) * rotations[j] *
+                                                   Matrix.CreateTranslation(partCenter);
                             }
 
                             for (int j = 0; j < rotCenters.Length; j++)
@@ -533,7 +533,7 @@ namespace WeaponCore
                                 {
                                     var dummyCenter = GetPartLocation(rotCenterNames[j], subpart.Model);
                                     if (dummyCenter != null)
-                                        rotCenters[j] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * rotCenters[j] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
+                                        rotCenters[j] = Matrix.CreateTranslation(-(partCenter + dummyCenter)) * rotCenters[j] * Matrix.CreateTranslation((partCenter + dummyCenter));
                                 }
                             }
                         }
