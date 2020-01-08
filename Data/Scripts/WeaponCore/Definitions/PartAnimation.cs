@@ -19,7 +19,6 @@ namespace WeaponCore.Support {
         internal readonly Matrix FinalPos;
         internal readonly Matrix HomePos;
         internal readonly AnimationType[] TypeSet;
-        internal readonly MyEntity MainEnt;
         internal readonly Dictionary<EventTriggers, string> EventIdLookup = new Dictionary<EventTriggers, string>();
         internal readonly WeaponSystem System;
         internal readonly int[] CurrentEmissivePart;
@@ -57,6 +56,7 @@ namespace WeaponCore.Support {
             internal bool LeavePreviousOn;
         }
 
+        internal MyEntity MainEnt;
         internal MyEntitySubpart Part;
         internal string[] RotCenterNameSet;
         internal bool Reverse;
@@ -165,7 +165,36 @@ namespace WeaponCore.Support {
 
         }
 
-        
+        internal PartAnimation(PartAnimation copyFromAnimation)
+        {
+            EventTrigger = copyFromAnimation.EventTrigger;
+            RotationSet = copyFromAnimation.RotationSet;
+            RotCenterSet = copyFromAnimation.RotCenterSet;
+            CurrentEmissivePart = copyFromAnimation.CurrentEmissivePart;
+            AnimationId = copyFromAnimation.AnimationId;
+            ResetEmissives = copyFromAnimation.ResetEmissives;
+            EmissiveIds = copyFromAnimation.EmissiveIds;
+
+            //Unique Animation ID
+            Guid guid = Guid.NewGuid();
+            _uid = Convert.ToBase64String(guid.ToByteArray());
+
+            TypeSet = copyFromAnimation.TypeSet;
+            Muzzle = copyFromAnimation.Muzzle;
+            MoveToSetIndexer = copyFromAnimation.MoveToSetIndexer;
+            NumberOfMoves = copyFromAnimation.NumberOfMoves;
+            System = copyFromAnimation.System;
+            SubpartId = copyFromAnimation.SubpartId;
+            MotionDelay = copyFromAnimation.MotionDelay;
+            DoesLoop = copyFromAnimation.DoesLoop;
+            DoesReverse = copyFromAnimation.DoesReverse;
+            TriggerOnce = copyFromAnimation.TriggerOnce;
+            _currentMove = 0;
+            MovesPivotPos = copyFromAnimation.MovesPivotPos;
+            FinalPos = copyFromAnimation.FinalPos;
+            HomePos = copyFromAnimation.HomePos;
+        }
+
         internal void GetCurrentMove(out Vector3D translation, out Matrix rotation, out Matrix rotAroundCenter, out AnimationType type, out EmissiveState emissiveState)
         {
             type = TypeSet[MoveToSetIndexer[_currentMove][(int)indexer.TypeIndex]];

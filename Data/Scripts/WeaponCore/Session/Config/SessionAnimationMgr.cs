@@ -571,10 +571,11 @@ namespace WeaponCore
                         parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
                         var subpart = part as MyEntitySubpart;
                         if (subpart == null) continue;
-                        returnAnimations[animationKv.Key][i] = new PartAnimation(animation.EventTrigger, animation.AnimationId, animation.RotationSet, animation.RotCenterSet,
-                                animation.TypeSet, animation.EmissiveIds, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
-                                animation.Muzzle, animation.MotionDelay, system, animation.DoesLoop,
-                                animation.DoesReverse, animation.TriggerOnce, animation.ResetEmissives);
+                        returnAnimations[animationKv.Key][i] = new PartAnimation(animation)
+                        {
+                            Part = subpart,
+                            MainEnt = parts.Entity,
+                        };
                     }
                 }
                 //Log.Line("Copying Animations");
