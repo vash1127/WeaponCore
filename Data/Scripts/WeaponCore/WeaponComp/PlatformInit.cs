@@ -214,7 +214,7 @@ namespace WeaponCore.Platform
 
                     if (muzzlePartName != "None")
                     {
-                        var muzzlePartLocation = comp.Session.GetPartLocation("subpart_" + muzzlePartName, muzzlePart.Parent.Model).Value;
+                        var muzzlePartLocation = comp.Session.GetPartLocation("subpart_" + muzzlePartName, muzzlePart.Parent.Model);
 
                         var muzzlePartPosTo = Matrix.CreateTranslation(-muzzlePartLocation);
                         var muzzlePartPosFrom = Matrix.CreateTranslation(muzzlePartLocation);
@@ -238,7 +238,7 @@ namespace WeaponCore.Platform
 
                         if (azimuthPart != null && azimuthPartName != "None")
                         {
-                            var azimuthPartLocation = comp.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model).Value;
+                            var azimuthPartLocation = comp.Session.GetPartLocation("subpart_" + azimuthPartName, azimuthPart.Parent.Model);
                             var azPartPosTo = Matrix.CreateTranslation(-azimuthPartLocation);
                             var azPrtPosFrom = Matrix.CreateTranslation(azimuthPartLocation);
                             var fullStepAzRotation = azPartPosTo * MatrixD.CreateRotationY(-m.Value.AzStep) * azPrtPosFrom;
@@ -262,7 +262,7 @@ namespace WeaponCore.Platform
 
                         if (elevationPart != null && elevationPartName != "None")
                         {
-                            var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model).Value;
+                            var elevationPartLocation = comp.Session.GetPartLocation("subpart_" + elevationPartName, elevationPart.Parent.Model);
 
                             var elPartPosTo = Matrix.CreateTranslation(-elevationPartLocation);
                             var elPartPosFrom = Matrix.CreateTranslation(elevationPartLocation);

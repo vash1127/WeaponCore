@@ -669,7 +669,7 @@ namespace WeaponCore
             return setColors;
         }
 
-        internal Vector3? GetPartLocation(string partName, IMyModel model)
+        internal Vector3 GetPartLocation(string partName, IMyModel model)
         {
             Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
             model.GetDummies(dummyList);
@@ -678,7 +678,7 @@ namespace WeaponCore
             if (dummyList.TryGetValue(partName, out dummy))
                 return dummy.Matrix.Translation;
 
-            return null;
+            return Vector3.Zero;
         }
 
         internal void ProcessAnimations()
