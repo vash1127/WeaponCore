@@ -132,7 +132,6 @@ namespace WeaponCore.Platform
         internal bool Scheduled;
         internal bool Reloading;
         internal bool OutOfAmmo;
-        internal bool ReturnHome;
         internal bool CurrentlyDegrading;
         internal bool HitOther;
         internal bool FixedOffset;

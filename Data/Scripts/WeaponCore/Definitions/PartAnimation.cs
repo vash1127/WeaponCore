@@ -2,7 +2,10 @@
 using System.Collections.Generic;
 using VRage;
 using VRage.Game.Entity;
+using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using VRageMath;
+using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Session;
 
@@ -17,7 +20,8 @@ namespace WeaponCore.Support {
         internal readonly Matrix HomePos;
         internal readonly AnimationType[] TypeSet;
         internal readonly MyEntity MainEnt;
-        internal readonly Dictionary<EventTriggers, string> EventIdLookup = new Dictionary<EventTriggers, string>(); 
+        internal readonly Dictionary<EventTriggers, string> EventIdLookup = new Dictionary<EventTriggers, string>();
+        internal readonly WeaponSystem System;
         internal readonly int[] CurrentEmissivePart;
         internal readonly int[][] MoveToSetIndexer;
         internal readonly int NumberOfMoves;
@@ -53,13 +57,13 @@ namespace WeaponCore.Support {
             internal bool LeavePreviousOn;
         }
 
-        internal WeaponSystem System;
         internal MyEntitySubpart Part;
         internal string[] RotCenterNameSet;
         internal bool Reverse;
         internal bool Looping;
         internal bool Running;
         internal bool Triggered;
+        internal bool CanPlay;
         internal uint StartTick;
 
         private int _currentMove;
@@ -155,6 +159,8 @@ namespace WeaponCore.Support {
                     Enum.TryParse(evnt, out trigger);
                     EventIdLookup.Add(trigger, evnt + SubpartId);
                 }
+
+                CheckAffectPivot(part, out MovesPivotPos);
             }
 
         }
@@ -229,6 +235,37 @@ namespace WeaponCore.Support {
             if (resetMove) _currentMove = 0;
             if (resetPos) Part.PositionComp.LocalMatrix = HomePos;
             
+        }
+
+        private void CheckAffectPivot(MyEntity part, out bool movesPivotPos)
+        {
+            var head = -1;
+            var tmp = new Dictionary<string, IMyModelDummy>();
+            var subparts = new List<MyEntity>();
+            movesPivotPos = false;
+
+            while (head < subparts.Count)
+            {
+                var query = head == -1 ? part : subparts[head];
+                head++;
+                if (query.Model == null)
+                    continue;
+                tmp.Clear();
+                ((IMyEntity)query).Model.GetDummies(tmp);
+                foreach (var kv in tmp)
+                {
+                    if (kv.Key.StartsWith("subpart_", StringComparison.Ordinal))
+                    {
+                        if (kv.Key.Contains(System.AzimuthPartName.String) || kv.Key.Contains(System.ElevationPartName.String))
+                            movesPivotPos = true;
+
+                        var name = kv.Key.Substring("subpart_".Length);
+                        MyEntitySubpart res;
+                        if (query.TryGetSubpart(name, out res))
+                            subparts.Add(res);
+                    }
+                }
+            }
         }
 
         protected bool Equals(PartAnimation other)

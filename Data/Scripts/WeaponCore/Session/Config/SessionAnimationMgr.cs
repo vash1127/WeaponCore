@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using ParallelTasks;
+using Sandbox.ModAPI;
 using VRage;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Support;
+using static WeaponCore.Platform.Weapon;
 using static WeaponCore.Support.PartAnimation;
 
 namespace WeaponCore
@@ -663,106 +665,125 @@ namespace WeaponCore
             {
                 var animation = AnimationsToProcess[i];
                 if (!animation.MainEnt.MarkedForClose && animation.MainEnt != null && animation.StartTick <= Tick)
-                    AnimateParts(animation, i);
-            }
-        }
-
-        internal void AnimateParts(PartAnimation animation, int index)
-        {
-            var localMatrix = animation.Part.PositionComp.LocalMatrix;
-            Matrix rotation;
-            Matrix rotAroundCenter;
-            Vector3D translation;
-            AnimationType animationType;
-            EmissiveState currentEmissive;
-
-            animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
-
-
-            if (animation.Reverse)
-            {
-                if (animationType == AnimationType.Movement) localMatrix.Translation = localMatrix.Translation - translation;
-
-                animation.Previous();
-                if (animation.Previous(false) == animation.NumberOfMoves - 1)
                 {
-                    animation.Reverse = false;
-                }
-            }
-            else
-            {
-                if (animationType == AnimationType.Movement) localMatrix.Translation = localMatrix.Translation + translation;
-
-                animation.Next();
-                if (animation.DoesReverse && animation.Next(false) == 0)
-                {
-                    animation.Reverse = true;
-                }
-            }
-
-            if (rotation != Matrix.Zero)
-            {
-                localMatrix *= animation.Reverse ? Matrix.Invert(rotation) : rotation;
-            }
-
-            if (rotAroundCenter != Matrix.Zero)
-            {
-                localMatrix *= animation.Reverse ? Matrix.Invert(rotAroundCenter) : rotAroundCenter;
-            }
-
-            if (animationType == AnimationType.Movement)
-            {
-                animation.Part.PositionComp.SetLocalMatrix(ref localMatrix,
-                    animation.MainEnt, true);
-            }
-
-            else if (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade)
-            {
-                animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
-                animation.Part.Render.AddRenderObjects();
-            }
-            else if (animationType == AnimationType.HideInstant || animationType == AnimationType.HideFade)
-            {
-                animation.Part.Render.FadeOut = animationType == AnimationType.HideFade;
-                animation.Part.Render.RemoveRenderObjects();
-            }
-
-            if (currentEmissive.EmissiveParts != null)
-            {
-                if (currentEmissive.CycleParts)
-                {
-                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[currentEmissive.CurrentPart], currentEmissive.CurrentColor,
-                        currentEmissive.CurrentIntensity);
-                    if (!currentEmissive.LeavePreviousOn)
+                    if (animation.MovesPivotPos || animation.CanPlay)
                     {
-                        var prev = currentEmissive.CurrentPart - 1 >= 0 ? currentEmissive.CurrentPart - 1 : currentEmissive.EmissiveParts
-                            .Length - 1;
-                        animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev],
-                            Color.Transparent,
-                            currentEmissive.CurrentIntensity);
+                        var localMatrix = animation.Part.PositionComp.LocalMatrix;
+                        Matrix rotation;
+                        Matrix rotAroundCenter;
+                        Vector3D translation;
+                        AnimationType animationType;
+                        EmissiveState currentEmissive;
+
+                        animation.GetCurrentMove(out translation, out rotation, out rotAroundCenter, out animationType, out currentEmissive);
+
+
+                        if (animation.Reverse)
+                        {
+                            if (animationType == AnimationType.Movement) localMatrix.Translation = localMatrix.Translation - translation;
+
+                            animation.Previous();
+                            if (animation.Previous(false) == animation.NumberOfMoves - 1)
+                            {
+                                animation.Reverse = false;
+                            }
+                        }
+                        else
+                        {
+                            if (animationType == AnimationType.Movement) localMatrix.Translation = localMatrix.Translation + translation;
+
+                            animation.Next();
+                            if (animation.DoesReverse && animation.Next(false) == 0)
+                            {
+                                animation.Reverse = true;
+                            }
+                        }
+
+                        if (rotation != Matrix.Zero)
+                        {
+                            localMatrix *= animation.Reverse ? Matrix.Invert(rotation) : rotation;
+                        }
+
+                        if (rotAroundCenter != Matrix.Zero)
+                        {
+                            localMatrix *= animation.Reverse ? Matrix.Invert(rotAroundCenter) : rotAroundCenter;
+                        }
+
+                        if (animationType == AnimationType.Movement)
+                        {
+                            animation.Part.PositionComp.SetLocalMatrix(ref localMatrix,
+                                animation.MainEnt, true);
+                        }
+
+                        else if (!DedicatedServer && (animationType == AnimationType.ShowInstant || animationType == AnimationType.ShowFade))
+                        {
+                            animation.Part.Render.FadeIn = animationType == AnimationType.ShowFade;
+                            animation.Part.Render.AddRenderObjects();
+                        }
+                        else if (!DedicatedServer && (animationType == AnimationType.HideInstant || animationType == AnimationType.HideFade))
+                        {
+                            animation.Part.Render.FadeOut = animationType == AnimationType.HideFade;
+                            animation.Part.Render.RemoveRenderObjects();
+                        }
+
+                        if (!DedicatedServer && currentEmissive.EmissiveParts != null)
+                        {
+                            if (currentEmissive.CycleParts)
+                            {
+                                animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[currentEmissive.CurrentPart], currentEmissive.CurrentColor,
+                                    currentEmissive.CurrentIntensity);
+                                if (!currentEmissive.LeavePreviousOn)
+                                {
+                                    var prev = currentEmissive.CurrentPart - 1 >= 0 ? currentEmissive.CurrentPart - 1 : currentEmissive.EmissiveParts
+                                        .Length - 1;
+                                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[prev],
+                                        Color.Transparent,
+                                        currentEmissive.CurrentIntensity);
+                                }
+                            }
+                            else
+                            {
+
+                                for (int j = 0; j < currentEmissive.EmissiveParts.Length; j++)
+                                {
+                                    animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[j], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
+                                }
+                            }
+                        }
                     }
-                }
-                else
-                {
-                    
-                    for (int i = 0; i < currentEmissive.EmissiveParts.Length; i++)
+                    else
                     {
-                        animation.Part.SetEmissiveParts(currentEmissive.EmissiveParts[i], currentEmissive.CurrentColor, currentEmissive.CurrentIntensity);
+                        if (animation.Reverse)
+                        {                            
+                            animation.Previous();
+                            if (animation.Previous(false) == animation.NumberOfMoves - 1)
+                            {
+                                animation.Reverse = false;
+                            }
+                        }
+                        else
+                        {
+                            animation.Next();
+                            if (animation.DoesReverse && animation.Next(false) == 0)
+                            {
+                                animation.Reverse = true;
+                            }
+                        }
                     }
-                }
-            }
 
-            if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
-            {
-                AnimationsToProcess.RemoveAt(index);
-                animation.Running = false;
-
-                if (animation.ResetEmissives)
-                {
-                    for (int i = 0; i < animation.EmissiveParts.Length; i++)
+                    if (!animation.Reverse && !animation.Looping && animation.CurrentMove == 0)
                     {
-                        var emissivePart = animation.EmissiveParts[i];
-                        animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
+                        AnimationsToProcess.RemoveAt(i);
+                        animation.Running = false;
+
+                        if (!DedicatedServer && animation.ResetEmissives)
+                        {
+                            for (int j = 0; j < animation.EmissiveParts.Length; j++)
+                            {
+                                var emissivePart = animation.EmissiveParts[j];
+                                animation.Part.SetEmissiveParts(emissivePart, Color.Transparent, 0);
+                            }
+                        }
                     }
                 }
             }

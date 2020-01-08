@@ -191,8 +191,8 @@ namespace WeaponCore
 
                         var wState = comp.State.Value.Weapons[w.WeaponId];
                         if (w.TurretMode && comp.State.Value.Online) {                                
-                            if (targetChanged && w.Target.State != Targets.Acquired || gunner != lastGunner && !gunner) 
-                                FutureEvents.Schedule(w.HomeTurret, null, 240);
+                            if ((targetChanged && w.Target.State != Targets.Acquired) || (gunner != lastGunner && !gunner)) 
+                                FutureEvents.Schedule(w.TurretHomePosition, null, 240);
 
                             if (gunner != lastGunner && gunner) {
 

@@ -71,10 +71,10 @@ namespace WeaponCore.Platform
 
         }
 
-        public void TurretHomePosition()
+        public void TurretHomePosition(object o = null)
         {
-            ReturnHome = false;
-            if (Comp.SorterBase == null && Comp.MissileBase == null) return;
+            if ((Comp.SorterBase == null && Comp.MissileBase == null) || Comp.State.Value.Weapons[WeaponId].ManualShoot != TerminalActionState.ShootOff || Comp.Gunner || Target.State == Target.Targets.Acquired)
+                return;
 
             var azStep = System.AzStep;
             var elStep = System.ElStep;
@@ -96,21 +96,9 @@ namespace WeaponCore.Platform
             AimBarrel(oldAz - Azimuth, oldEl - Elevation);
 
 
-            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0) ReturnHome = true;
+            if (Azimuth > 0 || Azimuth < 0 || Elevation > 0 || Elevation < 0)
+                Comp.Session.FutureEvents.Schedule(TurretHomePosition, null, 1);
 
-        }
-
-        internal void HomeTurret(object o)
-        {
-            TurretHomePosition();
-
-            //Log.Line($"{weapon.System.WeaponName}: homing");
-            ReturnHome = ReturnHome && Comp.State.Value.Weapons[WeaponId].ManualShoot == TerminalActionState.ShootOff && !Comp.Gunner && Target.State != Target.Targets.Acquired;
-
-            if (ReturnHome)
-                Comp.Session.FutureEvents.Schedule(HomeTurret, null, 1);
-
-            //weapon.ReturnHome = weapon.Comp.ReturnHome = weapon.Comp.Ai.ReturnHome = true;
         }
 
         internal void UpdatePivotPos()
