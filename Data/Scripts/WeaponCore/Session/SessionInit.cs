@@ -45,7 +45,7 @@ namespace WeaponCore
             {
                 SyncDist = MyAPIGateway.Session.SessionSettings.ViewDistance;
                 SyncDistSqr = SyncDist * SyncDist;
-                SyncBufferedDistSqr = SyncDistSqr + 250000;
+                SyncBufferedDistSqr = (SyncDist + 500) * (SyncDist + 500);
             }
 
             foreach (var mod in MyAPIGateway.Session.Mods)
@@ -54,12 +54,10 @@ namespace WeaponCore
 
             Physics = MyAPIGateway.Physics;
             Camera = MyAPIGateway.Session.Camera;
-
             TargetGps = MyAPIGateway.Session.GPS.Create("WEAPONCORE", "", Vector3D.MaxValue, true, false);
 
             CheckDirtyGrids();
-            Api = new ApiBackend(this);
-            ApiServer = new ApiServer(this);
+
             ApiServer.Load();
         }
 
@@ -69,7 +67,6 @@ namespace WeaponCore
             Inited = true;
             Log.Init("debugdevelop.log");
             Log.Line($"Logging Started");
-            HeatEmissives = CreateHeatEmissive();
             
             foreach (var x in WeaponDefinitions)
             {
@@ -119,9 +116,9 @@ namespace WeaponCore
                         foreach (var def in AllDefinitions)
                         {
                             if (def.Id.SubtypeName == subTypeId) {
-                                if (def is MyLargeTurretBaseDefinition)
+                                var gunDef = def as MyLargeTurretBaseDefinition;
+                                if (gunDef != null)
                                 {
-                                    var gunDef = (MyLargeTurretBaseDefinition)def;
                                     var blockDefs = weaponDef.HardPoint.Block;
                                     gunDef.MinAzimuthDegrees = blockDefs.MinAzimuth;
                                     gunDef.MaxAzimuthDegrees = blockDefs.MaxAzimuth;
@@ -156,10 +153,8 @@ namespace WeaponCore
                 var weapons = _subTypeIdToWeaponDefs[tDef.Key];
 
                 var hasTurret = false;
-                for (int i = 0; i < weapons.Count; i++)
+                foreach (var wepDef in weapons)
                 {
-                    var wepDef = weapons[i];
-
                     if (wepDef.HardPoint.Block.TurretAttached)
                         hasTurret = true;
                 }
@@ -173,7 +168,7 @@ namespace WeaponCore
                         WeaponCoreFixedBlockDefs.Add(defId);
                 }
 
-                WeaponPlatforms[subTypeIdHash] =  new WeaponStructure(this, tDef, weapons);
+                WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons);
             }
             Projectiles.EntityPool = new EntityPool<MyEntity>[ModelCount];
             for (int j = 0; j < ModelCount; j++)

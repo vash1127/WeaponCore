@@ -76,19 +76,8 @@ namespace WeaponCore.Support
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
         }
 
-        public void StopRotSound(bool force)
-        {
-            if (Platform.RotationEmitter != null)
-            {
-                if (!Platform.RotationEmitter.IsPlaying)
-                    return;
-                Platform.RotationEmitter.StopSound(force);
-            }
-        }
-
         public void StopAllSounds()
         {
-            Platform.RotationEmitter?.StopSound(true, true);
             foreach (var w in Platform.Weapons)
             {
                 w.StopReloadSound();

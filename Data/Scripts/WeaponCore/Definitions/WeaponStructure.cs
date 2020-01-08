@@ -252,7 +252,7 @@ namespace WeaponCore.Support
             Predictions(out NeedsPrediction, out Prediction);
 
             DesiredProjectileSpeed = (float) (!IsBeamWeapon ? values.Ammo.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
-            Trail = values.Graphics.Line.Trail.Enable && !IsBeamWeapon;
+            Trail = values.Graphics.Line.Trail.Enable;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths);
         }

@@ -367,14 +367,18 @@ namespace WeaponCore.Projectiles
             {
                 TestSphere.Center = Hit.HitPos;
 
-                var travelToHit = Vector3D.Distance(LastPosition, Hit.HitPos);
-
+                var overShot = Vector3D.Distance(Hit.HitPos, Position);
+                var velStep = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
+                var travelToHit = velStep - overShot;
+                
                 double remainingTracer;
-                if (TracerLength > travelToHit) remainingTracer = TracerLength - travelToHit;
-                else remainingTracer = TracerLength - travelToHit <= TracerLength ? MathHelperD.Clamp(TracerLength - travelToHit, 0, TracerLength) : 0;
-                var distTraveled = MathHelperD.Clamp(Info.DistanceTraveled - Info.PrevDistanceTraveled, 0, travelToHit);
-
-                Info.AvShot.Update(distTraveled, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
+                if (TracerLength < velStep  && !MyUtils.IsZero(TracerLength - velStep, 1E-01F))
+                    remainingTracer = MathHelperD.Clamp(TracerLength - travelToHit, 0, TracerLength);
+                else if (TracerLength >= overShot)
+                    remainingTracer = MathHelperD.Clamp(TracerLength - overShot, 0, TracerLength);
+                else remainingTracer = 0;
+                
+                Info.AvShot.Update(travelToHit, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
 
                 if (Info.MuzzleId != -1)
                 {

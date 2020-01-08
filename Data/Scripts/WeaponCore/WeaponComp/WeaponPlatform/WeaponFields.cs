@@ -206,7 +206,7 @@ namespace WeaponCore.Platform
                 ReloadSound.Init(System.Values.Audio.HardPoint.ReloadSound);
             }
 
-            if (AvCapable && system.BarrelRotationSound && system.Values.HardPoint.RotateBarrelAxis != 0)
+            if (AvCapable && system.BarrelRotationSound && system.BarrelAxisRotation)
             {
                 RotateEmitter = new MyEntity3DSoundEmitter(Comp.MyCube, true, 1f);
                 RotateSound = new MySoundPair();

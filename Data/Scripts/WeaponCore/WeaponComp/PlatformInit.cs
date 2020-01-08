@@ -13,7 +13,6 @@ namespace WeaponCore.Platform
     {
         internal readonly RecursiveSubparts Parts = new RecursiveSubparts();
         internal readonly MySoundPair RotationSound = new MySoundPair();
-        internal readonly MyEntity3DSoundEmitter RotationEmitter = new MyEntity3DSoundEmitter(null, true, 1f);
         internal Weapon[] Weapons = new Weapon[1];
         internal WeaponStructure Structure;
         internal WeaponComponent Comp;
@@ -33,7 +32,6 @@ namespace WeaponCore.Platform
         {
             Structure = comp.Session.WeaponPlatforms[comp.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
             if (Weapons.Length != Structure.MuzzlePartNames.Length) Array.Resize(ref Weapons, Structure.MuzzlePartNames.Length);
-            RotationEmitter.Entity = comp.MyCube;
             Comp = comp;
         }
 
@@ -42,7 +40,6 @@ namespace WeaponCore.Platform
             for (int i = 0; i < Weapons.Length; i++) Weapons[i] = null;
             Parts.Clean(Comp.MyCube);
             Structure = null;
-            RotationEmitter.Entity = null;
             State = PlatformState.Fresh;
             Comp = null;
         }

@@ -215,10 +215,13 @@ namespace WeaponCore
             DsUtil = new DSUtils(this);
             DsUtil2 = new DSUtils(this);
             Av = new RunAv(this);
-
+            Api = new ApiBackend(this);
+            ApiServer = new ApiServer(this);
             Projectiles = new Projectiles.Projectiles(this);
+            
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
+            HeatEmissives = CreateHeatEmissive();
         }
 
 

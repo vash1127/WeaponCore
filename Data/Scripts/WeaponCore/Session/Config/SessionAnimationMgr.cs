@@ -116,7 +116,7 @@ namespace WeaponCore
                                         else
                                             progress = (float)j / (move.TicksToMove - 1);
 
-                                        createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                        CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                     }
                                     else
                                     {
@@ -235,7 +235,7 @@ namespace WeaponCore
                                                 else
                                                     progress = (float)j / (move.TicksToMove - 1);
 
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -311,7 +311,7 @@ namespace WeaponCore
                                                 else
                                                     progress = (float)j / (move.TicksToMove - 1);
 
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -368,7 +368,7 @@ namespace WeaponCore
                                                 else
                                                     progress = (float)j / (move.TicksToMove - 1);
 
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -400,7 +400,7 @@ namespace WeaponCore
                                                 else
                                                     progress = (float)j / (move.TicksToMove - 1);
 
-                                                createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
@@ -431,7 +431,7 @@ namespace WeaponCore
                                             else
                                                 progress = (float)j / (move.TicksToMove - 1);
 
-                                            createEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                            CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
                                         }
                                         else
                                         {
@@ -544,11 +544,11 @@ namespace WeaponCore
             
             var returnAnimations = new Dictionary<Weapon.EventTriggers, PartAnimation[]>();
 
-            foreach (var animationKV in allAnimationSet)
+            foreach (var animationKv in allAnimationSet)
             {
-                var set = animationKV.Value;
-                returnAnimations[animationKV.Key] = new PartAnimation[set.Count];
-                set.CopyTo(returnAnimations[animationKV.Key]);
+                var set = animationKv.Value;
+                returnAnimations[animationKv.Key] = new PartAnimation[set.Count];
+                set.CopyTo(returnAnimations[animationKv.Key]);
             }
 
             return returnAnimations;
@@ -577,7 +577,7 @@ namespace WeaponCore
             return rotation;
         }
 
-        internal void createEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, EmissiveState> allEmissivesSet, ref List<int> currentEmissivePart)
+        internal void CreateEmissiveStep(WeaponEmissive emissive, string id, float progress, ref Dictionary<string, EmissiveState> allEmissivesSet, ref List<int> currentEmissivePart)
         {
             var setColor = (Color)emissive.Colors[0];
             if (emissive.Colors.Length > 1)
@@ -649,18 +649,6 @@ namespace WeaponCore
             IMyModelDummy dummy;
             if (dummyList.TryGetValue(partName, out dummy))
                 return dummy.Matrix.Translation;
-
-            return null;
-        }
-
-        internal IMyModelDummy GetPartDummy(string partName, IMyModel model)
-        {
-            Dictionary<string, IMyModelDummy> dummyList = new Dictionary<string, IMyModelDummy>();
-            model.GetDummies(dummyList);
-
-            IMyModelDummy dummy;
-            if (dummyList.TryGetValue(partName, out dummy))
-                return dummy;
 
             return null;
         }

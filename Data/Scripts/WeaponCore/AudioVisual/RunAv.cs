@@ -245,7 +245,7 @@ namespace WeaponCore.Support
             {
                 if (av.OnScreen != AvShot.Screen.None)
                 {
-                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, -av.PointDir, s.Length, s.Thickness);
+                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, av.PointDir, s.Length, s.Thickness);
                     if (av.Trail != AvShot.TrailState.Off)
                         av.RunGlow(ref s);
                 }
@@ -261,20 +261,20 @@ namespace WeaponCore.Support
 
                         if (x == 0)
                         {
-                            fromBeam = av.OffsetMatrix.Translation;
-                            toBeam = Vector3D.Transform(s.Offsets[x], av.OffsetMatrix);
+                            fromBeam = s.OffsetMatrix.Translation;
+                            toBeam = Vector3D.Transform(s.Offsets[x], s.OffsetMatrix);
                         }
                         else
                         {
-                            fromBeam = Vector3D.Transform(s.Offsets[x - 1], av.OffsetMatrix);
-                            toBeam = Vector3D.Transform(s.Offsets[x], av.OffsetMatrix);
+                            fromBeam = Vector3D.Transform(s.Offsets[x - 1], s.OffsetMatrix);
+                            toBeam = Vector3D.Transform(s.Offsets[x], s.OffsetMatrix);
                         }
 
                         Vector3 dir = (toBeam - fromBeam);
                         var length = dir.Length();
                         var normDir = dir / length;
-                        MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, normDir, s.Length, s.Thickness);
-                        if (Vector3D.DistanceSquared(av.OffsetMatrix.Translation, toBeam) > av.TracerLengthSqr) break;
+                        MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, fromBeam, normDir, s.Length, s.Thickness);
+                        if (Vector3D.DistanceSquared(s.OffsetMatrix.Translation, toBeam) > s.LengthSqr) break;
                     }
                 }
                 Session.ListOfVectorsPool.Return(s.Offsets);
