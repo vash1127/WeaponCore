@@ -180,7 +180,6 @@ namespace WeaponCore.Platform
                     {
                         var animation = set.Value[j];
                         AnimationLookup.Add(animation.AnimationId, animation);
-                        animation.Weapon = this;
                     }
                 }
             }

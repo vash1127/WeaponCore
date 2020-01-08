@@ -57,7 +57,6 @@ namespace WeaponCore.Support {
             internal bool LeavePreviousOn;
         }
 
-        internal Weapon Weapon;
         internal MyEntitySubpart Part;
         internal string[] RotCenterNameSet;
         internal bool Reverse;
