@@ -31,7 +31,7 @@ namespace WeaponCore.Support
         public readonly MyStringId TrailMaterial;
         public readonly Session Session;
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
-        public readonly Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> WeaponAnimationSet;
+        public readonly Dictionary<Weapon.EventTriggers, PartAnimation[]> WeaponAnimationSet;
         public readonly Dictionary<Weapon.EventTriggers, uint> WeaponAnimationLengths;
         public readonly HashSet<string> AnimationIdLookup;
         public readonly Dictionary<string, EmissiveState> WeaponEmissiveSet;
@@ -157,6 +157,7 @@ namespace WeaponCore.Support
         public bool HardPointRotationSound;
         public bool BarrelRotationSound;
         public bool AmmoTravelSound;
+        public bool AnimationsInited;
 
         public enum FiringSoundState
         {

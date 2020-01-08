@@ -15,11 +15,12 @@ namespace WeaponCore
 {
     public partial class Session
     {
-        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<Weapon.EventTriggers, uint> animationLengths)
+        internal void CreateAnimationSets(AnimationDefinition animations, WeaponSystem system, out Dictionary<Weapon.EventTriggers, PartAnimation[]> weaponAnimationSets, out Dictionary<string, EmissiveState> weaponEmissivesSet, out Dictionary<string, Matrix[]> weaponLinearMoveSet, out HashSet<string> animationIdLookup, out Dictionary<Weapon.EventTriggers, uint> animationLengths)
         {
 
             var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
-            var allEmissivesSet = new Dictionary<string, EmissiveState>();
+            weaponAnimationSets = new Dictionary<EventTriggers, PartAnimation[]>();
+            weaponEmissivesSet = new Dictionary<string, EmissiveState>();
             animationIdLookup = new HashSet<string>();
             animationLengths = new Dictionary<Weapon.EventTriggers, uint>();
 
@@ -37,15 +38,13 @@ namespace WeaponCore
             }
 
             if (wepAnimationSets == null)
-            {
-                weaponAnimationSets = allAnimationSet;
-                weaponEmissivesSet = allEmissivesSet;
                 return;
-            }
+            
             foreach (var animationSet in wepAnimationSets)
-            {
+            {                
                 for (int t = 0; t < animationSet.SubpartId.Length; t++)
                 {
+                    
                     foreach (var moves in animationSet.EventMoveSets)
                     {
                         if (!allAnimationSet.ContainsKey(moves.Key))
@@ -118,11 +117,11 @@ namespace WeaponCore
                                         else
                                             progress = (float)j / (move.TicksToMove - 1);
 
-                                        CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                        CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                     }
                                     else
                                     {
-                                        allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                        weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                         currentEmissivePart.Add(-1);
                                     }
 
@@ -237,11 +236,11 @@ namespace WeaponCore
                                                 else
                                                     progress = (float)j / (move.TicksToMove - 1);
 
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
-                                                allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                                weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -313,11 +312,11 @@ namespace WeaponCore
                                                 else
                                                     progress = (float)j / (move.TicksToMove - 1);
 
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
-                                                allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                                weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -370,11 +369,11 @@ namespace WeaponCore
                                                 else
                                                     progress = (float)j / (move.TicksToMove - 1);
 
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
-                                                allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                                weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -402,11 +401,11 @@ namespace WeaponCore
                                                 else
                                                     progress = (float)j / (move.TicksToMove - 1);
 
-                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                                CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                             }
                                             else
                                             {
-                                                allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                                weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                                 currentEmissivePart.Add(-1);
                                             }
 
@@ -433,11 +432,11 @@ namespace WeaponCore
                                             else
                                                 progress = (float)j / (move.TicksToMove - 1);
 
-                                            CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref allEmissivesSet, ref currentEmissivePart);
+                                            CreateEmissiveStep(emissive, id + moveIndexer.Count, progress, ref weaponEmissivesSet, ref currentEmissivePart);
                                         }
                                         else
                                         {
-                                            allEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
+                                            weaponEmissivesSet.Add(id + moveIndexer.Count, new EmissiveState());
                                             currentEmissivePart.Add(-1);
                                         }
 
@@ -483,77 +482,104 @@ namespace WeaponCore
                 }
             }
 
-            weaponAnimationSets = allAnimationSet;
-            weaponEmissivesSet = allEmissivesSet;
+            foreach (var animationsKV in allAnimationSet)
+            {
+                weaponAnimationSets[animationsKV.Key] = new PartAnimation[animationsKV.Value.Count];
+                animationsKV.Value.CopyTo(weaponAnimationSets[animationsKV.Key], 0);
+            }
 
         }
 
-        internal Dictionary<Weapon.EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>> systemAnimations, RecursiveSubparts parts)
+        internal Dictionary<Weapon.EventTriggers, PartAnimation[]> CreateWeaponAnimationSet(WeaponSystem system, Dictionary<Weapon.EventTriggers, PartAnimation[]> systemAnimations, RecursiveSubparts parts)
         {
-            var allAnimationSet = new Dictionary<Weapon.EventTriggers, HashSet<PartAnimation>>();
-            WeaponSystem system = null;
-            foreach (var animationSet in systemAnimations)
+            if (!system.AnimationsInited)
             {
-                allAnimationSet.Add(animationSet.Key, new HashSet<PartAnimation>());
-                foreach (var animation in animationSet.Value)
+                var allAnimationSet = new Dictionary<EventTriggers, PartAnimation[]>();
+                foreach (var animationSet in systemAnimations)
                 {
+                    allAnimationSet[animationSet.Key] =  new PartAnimation[animationSet.Value.Length];
 
-                    if (system == null) system = animation.System;
-
-                    MyEntity part;
-                    parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
-                    var subpart = part as MyEntitySubpart;
-                    if (subpart == null) continue;
-
-                    var rotations = new Matrix[animation.RotationSet.Length];
-                    var rotCenters = new Matrix[animation.RotCenterSet.Length];
-                    animation.RotationSet.CopyTo(rotations, 0);
-                    animation.RotCenterSet.CopyTo(rotCenters, 0);
-
-                    var rotCenterNames = animation.RotCenterNameSet;
-
-                    var partCenter = GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
-
-
-
-                    if (partCenter != null)
+                    for (int i = 0; i < animationSet.Value.Length; i++)
                     {
-                        for (int i = 0; i < rotations.Length; i++)
-                        {
-                            if (rotations[i] != Matrix.Zero)
-                                rotations[i] = Matrix.CreateTranslation(-(Vector3)partCenter) * rotations[i] *
-                                               Matrix.CreateTranslation((Vector3)partCenter);
-                        }
+                        var animation = animationSet.Value[i];
+                        MyEntity part;
+                        parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
+                        var subpart = part as MyEntitySubpart;
+                        if (subpart == null) continue;
 
-                        for (int i = 0; i < rotCenters.Length; i++)
+                        var rotations = new Matrix[animation.RotationSet.Length];
+                        var rotCenters = new Matrix[animation.RotCenterSet.Length];
+                        animation.RotationSet.CopyTo(rotations, 0);
+                        animation.RotCenterSet.CopyTo(rotCenters, 0);
+
+                        var rotCenterNames = animation.RotCenterNameSet;
+
+                        var partCenter = GetPartLocation("subpart_" + animation.SubpartId, subpart.Parent.Model);
+
+
+
+                        if (partCenter != null)
                         {
-                            if (rotCenters[i] != Matrix.Zero && rotCenterNames != null)
+                            for (int j = 0; j < rotations.Length; j++)
                             {
-                                var dummyCenter = GetPartLocation(rotCenterNames[i], subpart.Model);
-                                if (dummyCenter != null)
-                                    rotCenters[i] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * rotCenters[i] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
+                                if (rotations[j] != Matrix.Zero)
+                                    rotations[j] = Matrix.CreateTranslation(-(Vector3)partCenter) * rotations[j] *
+                                                   Matrix.CreateTranslation((Vector3)partCenter);
+                            }
+
+                            for (int j = 0; j < rotCenters.Length; j++)
+                            {
+                                if (rotCenters[j] != Matrix.Zero && rotCenterNames != null)
+                                {
+                                    var dummyCenter = GetPartLocation(rotCenterNames[j], subpart.Model);
+                                    if (dummyCenter != null)
+                                        rotCenters[j] = Matrix.CreateTranslation(-(Vector3)(partCenter + dummyCenter)) * rotCenters[j] * Matrix.CreateTranslation((Vector3)(partCenter + dummyCenter));
+                                }
                             }
                         }
+
+                        allAnimationSet[animationSet.Key][i] = new PartAnimation(animation.EventTrigger, animation.AnimationId, rotations, rotCenters,
+                            animation.TypeSet, animation.EmissiveIds, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
+                            animation.Muzzle, animation.MotionDelay, system, animation.DoesLoop,
+                            animation.DoesReverse, animation.TriggerOnce, animation.ResetEmissives);
                     }
-
-                    allAnimationSet[animationSet.Key].Add(new PartAnimation(animation.EventTrigger, animation.AnimationId, rotations, rotCenters,
-                        animation.TypeSet,animation.EmissiveIds, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
-                        animation.Muzzle, animation.MotionDelay, system, animation.DoesLoop,
-                        animation.DoesReverse, animation.TriggerOnce, animation.ResetEmissives));
                 }
+
+                system.WeaponAnimationSet.Clear();
+
+                foreach (var animationKv in allAnimationSet)
+                {
+                    var set = animationKv.Value;
+                    system.WeaponAnimationSet[animationKv.Key] = new PartAnimation[animationKv.Value.Length];
+                    animationKv.Value.CopyTo(system.WeaponAnimationSet[animationKv.Key], 0);
+                }
+
+                system.AnimationsInited = true;
+                //Log.Line("Initing Animations");
+                return allAnimationSet;
             }
-
-            
-            var returnAnimations = new Dictionary<Weapon.EventTriggers, PartAnimation[]>();
-
-            foreach (var animationKv in allAnimationSet)
+            else
             {
-                var set = animationKv.Value;
-                returnAnimations[animationKv.Key] = new PartAnimation[set.Count];
-                set.CopyTo(returnAnimations[animationKv.Key]);
+                var returnAnimations = new Dictionary<EventTriggers, PartAnimation[]>();
+                foreach (var animationKv in system.WeaponAnimationSet)
+                {
+                    returnAnimations[animationKv.Key] = new PartAnimation[animationKv.Value.Length];
+                    for (int i = 0; i < animationKv.Value.Length; i++)
+                    {
+                        var animation = animationKv.Value[i];
+                        MyEntity part;
+                        parts.NameToEntity.TryGetValue(animation.SubpartId, out part);
+                        var subpart = part as MyEntitySubpart;
+                        if (subpart == null) continue;
+                        returnAnimations[animationKv.Key][i] = new PartAnimation(animation.EventTrigger, animation.AnimationId, animation.RotationSet, animation.RotCenterSet,
+                                animation.TypeSet, animation.EmissiveIds, animation.CurrentEmissivePart, animation.MoveToSetIndexer, animation.SubpartId, subpart, parts.Entity,
+                                animation.Muzzle, animation.MotionDelay, system, animation.DoesLoop,
+                                animation.DoesReverse, animation.TriggerOnce, animation.ResetEmissives);
+                    }
+                }
+                //Log.Line("Copying Animations");
+                return returnAnimations;
             }
-
-            return returnAnimations;
         }
 
         internal Matrix CreateRotation(double x, double y, double z)

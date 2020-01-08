@@ -101,8 +101,6 @@ namespace WeaponCore.Platform
             for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
             {
                 var barrelCount = Structure.WeaponSystems[Structure.MuzzlePartNames[i]].Barrels.Length;                
-                    
-                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
 
                 MyEntity muzzlePartEntity = null;
                 WeaponSystem system;
@@ -112,6 +110,8 @@ namespace WeaponCore.Platform
                     State = PlatformState.Invalid;
                     return State;
                 }
+
+                var wepAnimationSet = comp.Session.CreateWeaponAnimationSet(system, Structure.WeaponSystems[Structure.MuzzlePartNames[i]].WeaponAnimationSet, Parts);
 
                 var muzzlePartName = Structure.MuzzlePartNames[i].String != "Designator" ? Structure.MuzzlePartNames[i].String : system.ElevationPartName.String;
 
