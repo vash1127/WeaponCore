@@ -315,7 +315,7 @@ namespace WeaponCore.Platform
                     var pos = dummy.Info.Position;
                     var entityExists = MuzzlePart.Item1?.Parent != null && !MuzzlePart.Item1.MarkedForClose;
                     var matrix = MatrixD.Zero;
-                    if (entityExists) matrix = MatrixD.CreateWorld(pos, MuzzlePart.Item1.WorldMatrix.Forward, MuzzlePart.Item1.Parent.WorldMatrix.Up);
+                    if (entityExists) matrix = MatrixD.CreateWorld(pos, MyPivotDir, MyPivotUp);
                     if (System.BarrelEffect1)
                     {
                         if (entityExists && ticksAgo <= System.Barrel1AvTicks && !stop)
@@ -334,10 +334,8 @@ namespace WeaponCore.Platform
                                 }
                             }
                             else if (particles.Barrel1.Extras.Restart && BarrelEffects1[id].IsEmittingStopped)
-                                BarrelEffects1[id].Play();
-
-                            if (BarrelEffects1[id] != null)
                             {
+                                BarrelEffects1[id].Play();
                                 BarrelEffects1[id].WorldMatrix = matrix;
                                 BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
                             }
