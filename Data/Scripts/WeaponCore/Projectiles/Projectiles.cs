@@ -365,7 +365,7 @@ namespace WeaponCore.Projectiles
                         var displaceDiff = p.Info.ProjectileDisplacement - p.TracerLength;
                         if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction, ref p.VisualDir, true);
+                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                         else
                         {
@@ -400,7 +400,7 @@ namespace WeaponCore.Projectiles
                 }
 
                 if (p.Info.AvShot.OnScreen != Screen.None)
-                    p.Info.AvShot.Complete(p.Info);
+                    p.Info.AvShot.Complete(p);
             }
         }
     }

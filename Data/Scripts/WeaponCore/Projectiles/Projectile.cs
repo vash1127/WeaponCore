@@ -368,21 +368,21 @@ namespace WeaponCore.Projectiles
                 TestSphere.Center = Hit.HitPos;
 
                 var overShot = Vector3D.Distance(Hit.HitPos, Position);
-                var velStep = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
-                var travelToHit = velStep - overShot;
+                var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
+                var stepSizeToHit = stepSize - overShot;
                 
                 double remainingTracer;
-                if (TracerLength < velStep  && !MyUtils.IsZero(TracerLength - velStep, 1E-01F))
-                    remainingTracer = MathHelperD.Clamp(TracerLength - travelToHit, 0, TracerLength);
+                if (TracerLength < stepSize && !MyUtils.IsZero(TracerLength - stepSize, 1E-01F))
+                    remainingTracer = MathHelperD.Clamp(TracerLength - stepSizeToHit, 0, TracerLength);
                 else if (TracerLength >= overShot)
                     remainingTracer = MathHelperD.Clamp(TracerLength - overShot, 0, TracerLength);
                 else remainingTracer = 0;
                 
-                Info.AvShot.Update(travelToHit, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir);
+                Info.AvShot.Update(stepSize, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir, stepSizeToHit);
 
                 if (Info.MuzzleId != -1)
                 {
-                    Info.AvShot.Complete(Info,true);
+                    Info.AvShot.Complete(this,true);
                 }
             }
 
@@ -422,7 +422,7 @@ namespace WeaponCore.Projectiles
                 if (vs.System.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerStart, Position);
-                    vs.Update(0, beam.Length, ref beam.To, ref beam.Direction, ref VisualDir);
+                    vs.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref VisualDir, beam.Length);
                 }
                 else
                 {
@@ -436,13 +436,13 @@ namespace WeaponCore.Projectiles
                     var line = new LineD(vs.Origin, beamEnd);
                     if (!miss && hitPos.HasValue)
                     {
-                        vs.Update(0, Info.WeaponCache.HitDistance, ref beamEnd, ref line.Direction, ref VisualDir);
+                        vs.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, Info.WeaponCache.HitDistance, ref beamEnd, ref line.Direction, ref VisualDir, line.Length);
                     }
 
                     else
-                        vs.Update(0, line.Length, ref line.To, ref line.Direction, ref VisualDir);
+                        vs.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref VisualDir, line.Length);
                 }
-                vs.Complete(info, !miss);
+                vs.Complete(this, !miss);
             }
         }
 
@@ -982,7 +982,7 @@ namespace WeaponCore.Projectiles
                 if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.AvShot.PrimeEntity);
                 if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.AvShot.TriggerEntity);
                 ModelState = EntityState.None;
-                Info.AvShot.Complete(Info, false, true);
+                Info.AvShot.Complete(this, false, true);
             }
 
         }

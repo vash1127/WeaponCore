@@ -48,7 +48,7 @@ namespace WeaponCore.Support
 
             if (Session.Tick180)
             {
-                Log.LineShortDate($"[AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models}");
+                //Log.LineShortDate($"[AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models}");
                 _glows = 0;
                 _shrinks = 0;
             }
@@ -121,6 +121,8 @@ namespace WeaponCore.Support
                         {
                             var reduction = (av.GlowShrinkSize * glow.Step);
                             var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
+                            Log.Line($"reduction:{reduction}({av.GlowShrinkSize})({glow.Step}) - width:{width} - lineScaler:{av.LineScaler}");
+
                             MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
                         }
                         if (++glow.Step >= steps)
