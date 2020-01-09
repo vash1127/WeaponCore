@@ -331,13 +331,16 @@ namespace WeaponCore.Platform
                                     BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
                                     BarrelEffects1[id].DistanceMax = particles.Barrel1.Extras.MaxDistance;
                                     BarrelEffects1[id].Loop = particles.Barrel1.Extras.Loop;
+                                    BarrelEffects1[id].WorldMatrix = matrix;
+                                    BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
+                                    BarrelEffects1[id].Play();
                                 }
                             }
                             else if (particles.Barrel1.Extras.Restart && BarrelEffects1[id].IsEmittingStopped)
                             {
-                                BarrelEffects1[id].Play();
                                 BarrelEffects1[id].WorldMatrix = matrix;
                                 BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
+                                BarrelEffects1[id].Play();
                             }
                         }
                         else if (BarrelEffects1[id] != null)
@@ -353,24 +356,25 @@ namespace WeaponCore.Platform
                         {
                             if (BarrelEffects2[id] == null)
                             {
-                                var matrix2 = matrix;
-                                matrix2.Translation += particles.Barrel2.Offset;
-                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix, ref pos, uint.MaxValue, out BarrelEffects2[id]);
+                                var matrix1 = matrix;
+                                matrix1.Translation += particles.Barrel2.Offset;
+                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out BarrelEffects2[id]);
                                 if (BarrelEffects2[id] != null)
                                 {
                                     BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
                                     BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
                                     BarrelEffects2[id].DistanceMax = particles.Barrel2.Extras.MaxDistance;
                                     BarrelEffects2[id].Loop = particles.Barrel2.Extras.Loop;
+                                    BarrelEffects2[id].WorldMatrix = matrix;
+                                    BarrelEffects2[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
+                                    BarrelEffects2[id].Play();
                                 }
                             }
                             else if (particles.Barrel2.Extras.Restart && BarrelEffects2[id].IsEmittingStopped)
-                                BarrelEffects2[id].Play();
-
-                            if (BarrelEffects2[id] != null)
                             {
                                 BarrelEffects2[id].WorldMatrix = matrix;
                                 BarrelEffects2[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
+                                BarrelEffects2[id].Play();
                             }
                         }
                         else if (BarrelEffects2[id] != null)
