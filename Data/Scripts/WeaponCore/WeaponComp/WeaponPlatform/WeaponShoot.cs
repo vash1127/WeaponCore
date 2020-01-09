@@ -261,9 +261,7 @@ namespace WeaponCore.Platform
                         }
                     }
                 }
-
-                if (PlayTurretAv && BarrelAvUpdater.Reader.Count > 0)
-                    ShootGraphics();
+    
                 _muzzlesToFire.Add(MuzzleIdToName[current]);
 
                 if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
@@ -289,6 +287,9 @@ namespace WeaponCore.Platform
 
                 NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
             }
+
+            if (PlayTurretAv && BarrelAvUpdater.Reader.Count > 0)
+                ShootGraphics();
 
             EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
