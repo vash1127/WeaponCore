@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game;
@@ -122,7 +123,7 @@ namespace WeaponCore
                 if (system.Values.Ammo.Mass <= 0) return;
 
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, info.Direction, system.Values.Ammo.Mass * speed);
+                ApplyProjectileForce((MyEntity)shield.CubeGrid, hitEnt.HitPos.Value, hitEnt.Intersection.Direction, system.Values.Ammo.Mass * speed);
             }
         }
 
@@ -290,20 +291,17 @@ namespace WeaponCore
 
                     block.DoDamage(scaledDamage, damageType, true, null, attackerId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
-
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
-                        var detonate = detonateOnEnd && theEnd;
-                        var damage = detonate ? detonateDmg : areaEffectDmg;
-                        var radius = detonate ? detonateRadius : areaRadius;
-                        SUtils.CreateMissileExplosion(this, damage, radius, hitEnt.HitPos.Value, t.Direction, attacker, grid, system, true);
+                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg, areaRadius, grid.GridIntegerToWorld(rootBlock.Position), hitEnt.Intersection.Direction, attacker, grid, system, true);
+                        if (detonateOnEnd && theEnd) SUtils.CreateMissileExplosion(this, detonateDmg, detonateRadius, grid.GridIntegerToWorld(rootBlock.Position), hitEnt.Intersection.Direction, attacker, grid, system, true);
                     }
                     else if (!nova)
                     {
                         if (hitMass > 0 && blockIsRoot)
                         {
                             var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                            ApplyProjectileForce(grid, hitEnt.HitPos.Value, t.Direction, (hitMass * speed));
+                            ApplyProjectileForce(grid, grid.GridIntegerToWorld(rootBlock.Position), hitEnt.Intersection.Direction, (hitMass * speed));
                         }
 
                         if (radiantBomb && theEnd)
@@ -369,7 +367,7 @@ namespace WeaponCore
             if (system.Values.Ammo.Mass > 0)
             {
                 var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, info.Direction, (system.Values.Ammo.Mass * speed));
+                ApplyProjectileForce(entity, entity.PositionComp.WorldAABB.Center, hitEnt.Intersection.Direction, (system.Values.Ammo.Mass * speed));
             }
         }
 

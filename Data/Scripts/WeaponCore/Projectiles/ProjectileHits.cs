@@ -48,7 +48,7 @@ namespace WeaponCore.Projectiles
                             hitEntity.Clean();
                             hitEntity.Info = p.Info;
                             hitEntity.Entity = (MyEntity)shieldInfo.Value.Item1;
-                            hitEntity.Beam = beam;
+                            hitEntity.Intersection = beam;
                             hitEntity.EventType = Shield;
                             hitEntity.SphereCheck = !lineCheck;
                             hitEntity.PruneSphere = p.PruneSphere;
@@ -122,7 +122,7 @@ namespace WeaponCore.Projectiles
                     hitEntity.Clean();
                     hitEntity.Info = p.Info;
                     hitEntity.Entity = ent;
-                    hitEntity.Beam = beam;
+                    hitEntity.Intersection = beam;
                     hitEntity.SphereCheck = !lineCheck;
                     hitEntity.PruneSphere = p.PruneSphere;
 
@@ -182,7 +182,7 @@ namespace WeaponCore.Projectiles
             hitEntity.SphereCheck = !lineCheck;
             hitEntity.PruneSphere = attacker.PruneSphere;
 
-            hitEntity.Beam = new LineD(attacker.LastPosition, target.Position);
+            hitEntity.Intersection = new LineD(attacker.LastPosition, target.Position);
             attacker.Info.HitList.Add(hitEntity);
             return true;
         }
@@ -236,7 +236,7 @@ namespace WeaponCore.Projectiles
         {
             var xDist = double.MaxValue;
             var yDist = double.MaxValue;
-            var beam = x.Beam;
+            var beam = x.Intersection;
             var count = y != null ? 2 : 1;
             for (int i = 0; i < count; i++)
             {
@@ -268,14 +268,14 @@ namespace WeaponCore.Projectiles
                 }
                 else if (grid != null)
                 {
-                    if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Beam.From, hitEnt.HitPos.Value);
+                    if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
                     else
                     {
                         if (hitEnt.SphereCheck)
                         {
                             var ewarActive = hitEnt.EventType == Field || hitEnt.EventType == Effect;
 
-                            var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
+                            var hitPos = !ewarActive ? hitEnt.PruneSphere.Center + (hitEnt.Intersection.Direction * hitEnt.PruneSphere.Radius) : hitEnt.PruneSphere.Center;
                             if (grid.IsSameConstructAs(hitEnt.Info.Ai.MyGrid) && Vector3D.DistanceSquared(hitPos, hitEnt.Info.Origin) <= grid.GridSize * grid.GridSize)
                                 continue;
 
@@ -339,7 +339,7 @@ namespace WeaponCore.Projectiles
                 }
                 else if (ent is IMyDestroyableObject)
                 {
-                    if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Beam.From, hitEnt.HitPos.Value);
+                    if (hitEnt.Hit) dist = Vector3D.Distance(hitEnt.Intersection.From, hitEnt.HitPos.Value);
                     else
                     {
                         if (hitEnt.SphereCheck)
@@ -349,7 +349,7 @@ namespace WeaponCore.Projectiles
                             dist = 0;
                             hitEnt.Hit = true;
                             var hitPos = !ewarActive
-                                ? hitEnt.PruneSphere.Center + (hitEnt.Beam.Direction * hitEnt.PruneSphere.Radius)
+                                ? hitEnt.PruneSphere.Center + (hitEnt.Intersection.Direction * hitEnt.PruneSphere.Radius)
                                 : hitEnt.PruneSphere.Center;
                             hitEnt.HitPos = hitPos;
                         }

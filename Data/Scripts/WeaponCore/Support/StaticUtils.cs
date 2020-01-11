@@ -196,7 +196,7 @@ namespace WeaponCore.Support
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
             var explosionInfo = new MyExplosionInfo
             {
-                PlayerDamage = 0.0f,
+                PlayerDamage = 0.1f,
                 Damage = damage,
                 ExplosionType = explosionType,
                 ExplosionSphere = sphere,

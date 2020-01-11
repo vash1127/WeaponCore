@@ -429,9 +429,9 @@ namespace WeaponCore.Projectiles
                     Vector3D beamEnd;
                     var hit = !miss && hitPos.HasValue;
                     if (!hit)
-                        beamEnd = vs.Origin + (vp.Info.Direction * MaxTrajectory);
+                        beamEnd = vs.Origin + (vp.Info.VirDirection * MaxTrajectory);
                     else
-                        beamEnd = vs.Origin + (vp.Info.Direction * Info.WeaponCache.HitDistance);
+                        beamEnd = vs.Origin + (vp.Info.VirDirection * Info.WeaponCache.HitDistance);
 
                     var line = new LineD(vs.Origin, beamEnd);
                     if (!miss && hitPos.HasValue)

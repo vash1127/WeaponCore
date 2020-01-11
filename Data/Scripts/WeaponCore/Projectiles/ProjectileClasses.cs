@@ -28,7 +28,7 @@ namespace WeaponCore.Support
         internal Vector3D ShooterVel;
         internal Vector3D Origin;
         internal Vector3D OriginUp;
-        internal Vector3D Direction;
+        internal Vector3D VirDirection;
         internal int TriggerGrowthSteps;
         internal int WeaponId;
         internal int MuzzleId;
@@ -47,7 +47,7 @@ namespace WeaponCore.Support
         internal MatrixD TriggerMatrix = MatrixD.Identity;
 
 
-        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D direction)
+        internal void InitVirtual(WeaponSystem system, GridAi ai, MyEntity primeEntity, MyEntity triggerEntity, Target target, int weaponId, int muzzleId, Vector3D origin, Vector3D virDirection)
         {
             System = system;
             Ai = ai;
@@ -58,7 +58,7 @@ namespace WeaponCore.Support
             Target.FiringCube = target.FiringCube;
             WeaponId = weaponId;
             MuzzleId = muzzleId;
-            Direction = direction;
+            VirDirection = virDirection;
             Origin = origin;
         }
 
@@ -80,7 +80,7 @@ namespace WeaponCore.Support
             Age = 0;
             ProjectileDisplacement = 0;
             EnableGuidance = true;
-            Direction = Vector3D.Zero;
+            VirDirection = Vector3D.Zero;
             Origin = Vector3D.Zero;
             ShooterVel = Vector3D.Zero;
             TriggerMatrix = MatrixD.Identity;
@@ -111,7 +111,7 @@ namespace WeaponCore.Support
         public MyEntity Entity;
         internal Projectile Projectile;
         public ProInfo Info;
-        public LineD Beam;
+        public LineD Intersection;
         public bool Hit;
         public bool SphereCheck;
         public bool DamageOverTime;
@@ -125,10 +125,10 @@ namespace WeaponCore.Support
             Entity = null;
             Projectile = null;
 
-            Beam.Length = 0;
-            Beam.Direction = Vector3D.Zero;
-            Beam.From = Vector3D.Zero;
-            Beam.To = Vector3D.Zero;
+            Intersection.Length = 0;
+            Intersection.Direction = Vector3D.Zero;
+            Intersection.From = Vector3D.Zero;
+            Intersection.To = Vector3D.Zero;
             Blocks.Clear();
             Hit = false;
             HitPos = null;

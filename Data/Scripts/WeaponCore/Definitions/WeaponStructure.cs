@@ -485,7 +485,7 @@ namespace WeaponCore.Support
             if (size <= 0)
             {
                 if (!isLine) isLine = true;
-                size = tracerLength;
+                size = 1;
             }
             else if (!isLine) size = size * 0.5;
 

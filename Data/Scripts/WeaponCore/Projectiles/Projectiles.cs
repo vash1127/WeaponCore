@@ -287,7 +287,6 @@ namespace WeaponCore.Projectiles
                         p.PruneSphere.Center = p.Position;
                         p.PruneSphere.Radius = p.Info.System.CollisionSize;
                     }
-
                     if (!((p.Info.System.SelfDamage || p.Gunner) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
                         var checkList = CheckPool.Get();

@@ -3,6 +3,7 @@ using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
+using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
 
@@ -172,7 +173,6 @@ namespace WeaponCore
         {
             try
             {
-
                 if (_lastDrawTick == Tick || _paused)return;
                 _lastDrawTick = Tick;
 
