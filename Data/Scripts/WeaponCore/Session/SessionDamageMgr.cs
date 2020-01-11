@@ -291,20 +291,18 @@ namespace WeaponCore
 
                     block.DoDamage(scaledDamage, damageType, true, null, attackerId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
-                    Vector3D? rootPos = null;
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
-                        rootPos = grid.GridIntegerToWorld(rootBlock.Position);
-                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg, areaRadius, rootPos.Value, hitEnt.Intersection.Direction, attacker, grid, system, true);
-                        if (detonateOnEnd && theEnd) SUtils.CreateMissileExplosion(this, detonateDmg, detonateRadius, rootPos.Value, hitEnt.Intersection.Direction, attacker, grid, system, true);
+                        var rootPos = grid.GridIntegerToWorld(rootBlock.Position);
+                        if (areaEffectDmg > 0) SUtils.CreateMissileExplosion(this, areaEffectDmg, areaRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, system, true);
+                        if (detonateOnEnd && theEnd) SUtils.CreateMissileExplosion(this, detonateDmg, detonateRadius, rootPos, hitEnt.Intersection.Direction, attacker, grid, system, true);
                     }
                     else if (!nova)
                     {
                         if (hitMass > 0 && blockIsRoot)
                         {
-                            rootPos = rootPos ?? grid.GridIntegerToWorld(rootBlock.Position);
                             var speed = system.Values.Ammo.Trajectory.DesiredSpeed > 0 ? system.Values.Ammo.Trajectory.DesiredSpeed : 1;
-                            ApplyProjectileForce(grid, rootPos.Value, hitEnt.Intersection.Direction, (hitMass * speed));
+                            ApplyProjectileForce(grid, grid.GridIntegerToWorld(rootBlock.Position), hitEnt.Intersection.Direction, (hitMass * speed));
                         }
 
                         if (radiantBomb && theEnd)
