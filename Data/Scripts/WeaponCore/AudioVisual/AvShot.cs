@@ -235,7 +235,7 @@ namespace WeaponCore.Support
                     RunBeam();
 
                 if (System.OffsetEffect)
-                    LineOffsetEffect(Position, PointDir, VisualLength);
+                    PrepOffsetEffect(Position, PointDir, VisualLength);
             }
             var backAndGrowing = Trail == TrailState.Back && Tracer == TracerState.Grow;
             if (OnScreen != Screen.None && Trail != TrailState.Off && !backAndGrowing && Tracer != TracerState.Shrink)
@@ -350,14 +350,7 @@ namespace WeaponCore.Support
                     }
 
                     width = (float)Math.Max(width, 0.10f * ScaleFov * (DistanceToLine / 100));
-
-                    if (System.OffsetEffect)
-                    {
-                        var offsets = LineOffsetEffect(shrunk.Value.NewTracerBack, -PointDir, shrunk.Value.Reduced, true);
-                        TracerShrinks.Enqueue(new Shrinks { Back = shrunk.Value.NewTracerBack, Color = color, Length = shrunk.Value.Reduced, Thickness = width, Offsets = offsets, OffsetMatrix = OffsetMatrix, LengthSqr = TracerLengthSqr, Last = last });
-                    }
-                    else
-                        TracerShrinks.Enqueue(new Shrinks { Back = shrunk.Value.NewTracerBack, Color = color, Length = shrunk.Value.Reduced, Thickness = width, Last = last });
+                    TracerShrinks.Enqueue(new Shrinks { Back = shrunk.Value.NewTracerBack, Color = color, Length = shrunk.Value.Reduced, Thickness = width, Last = last });
                 }
             }
         }
@@ -377,7 +370,7 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
-                Hit.HitPos += HitVelocity;
+                //Hit.HitPos += HitVelocity;
                 var newTracerBack = Hit.HitPos + -(Direction * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerBack, (float) reduced);
@@ -440,10 +433,10 @@ namespace WeaponCore.Support
             }
         }
 
-        internal List<Vector3D> LineOffsetEffect(Vector3D tracerStart, Vector3D direction, double tracerLength, bool addToShrinks = false)
+        internal void PrepOffsetEffect(Vector3D tracerStart, Vector3D direction, double tracerLength)
         {
             var up = MatrixD.Identity.Up;
-            var startPos = tracerStart + (-direction * tracerLength);
+            var startPos = tracerStart + -(direction * tracerLength);
             MatrixD.CreateWorld(ref startPos, ref direction, ref up, out OffsetMatrix);
             TracerLengthSqr = tracerLength * tracerLength;
             var maxOffset = System.Values.Graphics.Line.OffsetEffect.MaxOffset;
@@ -451,31 +444,63 @@ namespace WeaponCore.Support
             var maxLength = MathHelperD.Clamp(System.Values.Graphics.Line.OffsetEffect.MaxLength, 0, tracerLength);
 
             double currentForwardDistance = 0;
-            var first = true;
-            List<Vector3D> shrinkList = null;
             while (currentForwardDistance <= tracerLength)
             {
                 currentForwardDistance += MyUtils.GetRandomDouble(minLength, maxLength);
                 var lateralXDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
                 var lateralYDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
-                if (!addToShrinks) Offsets.Add(new Vector3D(lateralXDistance, lateralYDistance, currentForwardDistance * -1));
-                else
-                {
-                    if (first)
-                    {
-                        first = false;
-                        shrinkList = Ai.Session.ListOfVectorsPool.Get();
-                    }
-                    shrinkList.Add(new Vector3D(lateralXDistance, lateralYDistance, currentForwardDistance * -1));
-                }
+                Offsets.Add(new Vector3D(lateralXDistance, lateralYDistance, currentForwardDistance * -1));
             }
-
-            if (addToShrinks && shrinkList != null)
-                return shrinkList;
-
-            return null;
         }
 
+
+        internal void DrawLineOffsetEffect(Vector3D pos, Vector3D direction, double tracerLength, float beamRadius, Vector4 color)
+        {
+            MatrixD matrix;
+            var up = MatrixD.Identity.Up;
+            var startPos = pos + -(direction * tracerLength);
+            MatrixD.CreateWorld(ref startPos, ref direction, ref up, out matrix);
+            var offsetMaterial = System.TracerMaterial;
+            var tracerLengthSqr = tracerLength * tracerLength;
+            var maxOffset = System.Values.Graphics.Line.OffsetEffect.MaxOffset;
+            var minLength = System.Values.Graphics.Line.OffsetEffect.MinLength;
+            var maxLength = MathHelperD.Clamp(System.Values.Graphics.Line.OffsetEffect.MaxLength, 0, tracerLength);
+
+            double currentForwardDistance = 0;
+
+            while (currentForwardDistance < tracerLength)
+            {
+                currentForwardDistance += MyUtils.GetRandomDouble(minLength, maxLength);
+                var lateralXDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
+                var lateralYDistance = MyUtils.GetRandomDouble(maxOffset * -1, maxOffset);
+                Offsets.Add(new Vector3D(lateralXDistance, lateralYDistance, currentForwardDistance * -1));
+            }
+
+            for (int i = 0; i < Offsets.Count; i++)
+            {
+                Vector3D fromBeam;
+                Vector3D toBeam;
+
+                if (i == 0)
+                {
+                    fromBeam = matrix.Translation;
+                    toBeam = Vector3D.Transform(Offsets[i], matrix);
+                }
+                else
+                {
+                    fromBeam = Vector3D.Transform(Offsets[i - 1], matrix);
+                    toBeam = Vector3D.Transform(Offsets[i], matrix);
+                }
+
+                Vector3 dir = (toBeam - fromBeam);
+                var length = dir.Length();
+                var normDir = dir / length;
+                MyTransparentGeometry.AddLineBillboard(offsetMaterial, color, fromBeam, normDir, length, beamRadius);
+
+                if (Vector3D.DistanceSquared(matrix.Translation, toBeam) > tracerLengthSqr) break;
+            }
+            Offsets.Clear();
+        }
 
         internal void SetupSounds(double distanceFromCameraSqr)
         {
@@ -560,13 +585,10 @@ namespace WeaponCore.Support
 
     internal struct Shrinks
     {
-        internal List<Vector3D> Offsets;
         internal Vector3D Back;
         internal Vector4 Color;
-        internal MatrixD OffsetMatrix;
         internal float Length;
         internal float Thickness;
-        internal double LengthSqr;
         internal bool Last;
 
     }

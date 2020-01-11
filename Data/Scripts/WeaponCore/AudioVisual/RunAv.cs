@@ -252,34 +252,7 @@ namespace WeaponCore.Support
                 }
             }
             else
-            {
-                if (av.OnScreen != AvShot.Screen.None)
-                {
-                    for (int x = 0; x < s.Offsets.Count; x++)
-                    {
-                        Vector3D fromBeam;
-                        Vector3D toBeam;
-
-                        if (x == 0)
-                        {
-                            fromBeam = s.OffsetMatrix.Translation;
-                            toBeam = Vector3D.Transform(s.Offsets[x], s.OffsetMatrix);
-                        }
-                        else
-                        {
-                            fromBeam = Vector3D.Transform(s.Offsets[x - 1], s.OffsetMatrix);
-                            toBeam = Vector3D.Transform(s.Offsets[x], s.OffsetMatrix);
-                        }
-
-                        Vector3 dir = (toBeam - fromBeam);
-                        var length = dir.Length();
-                        var normDir = dir / length;
-                        MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, fromBeam, normDir, s.Length, s.Thickness);
-                        if (Vector3D.DistanceSquared(s.OffsetMatrix.Translation, toBeam) > s.LengthSqr) break;
-                    }
-                }
-                Session.ListOfVectorsPool.Return(s.Offsets);
-            }
+                av.DrawLineOffsetEffect(s.Back, -av.PointDir, s.Length, s.Thickness, s.Color);
         }
     }
 }

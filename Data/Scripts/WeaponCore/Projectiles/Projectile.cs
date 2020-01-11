@@ -373,9 +373,9 @@ namespace WeaponCore.Projectiles
                 
                 double remainingTracer;
                 if (TracerLength < stepSize && !MyUtils.IsZero(TracerLength - stepSize, 1E-01F))
-                    remainingTracer = MathHelperD.Clamp(TracerLength - stepSizeToHit, 0, TracerLength);
+                    remainingTracer = MathHelperD.Clamp(TracerLength - stepSizeToHit, 0, Math.Min(TracerLength, Info.DistanceTraveled));
                 else if (TracerLength >= overShot)
-                    remainingTracer = MathHelperD.Clamp(TracerLength - overShot, 0, TracerLength);
+                    remainingTracer = MathHelperD.Clamp(TracerLength - overShot, 0, Math.Min(TracerLength, Info.DistanceTraveled));
                 else remainingTracer = 0;
                 
                 Info.AvShot.Update(stepSize, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir, stepSizeToHit);
