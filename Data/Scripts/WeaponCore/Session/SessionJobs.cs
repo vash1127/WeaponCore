@@ -1,19 +1,33 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Threading;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage.Collections;
 using VRage.Game;
-using VRage.Game.ModAPI;
-using VRage.Utils;
 using WeaponCore.Support;
+using static WeaponCore.Support.TargetingDefinition;
 using static WeaponCore.Support.TargetingDefinition.BlockTypes;
 
 namespace WeaponCore
 {
+    public class FatMap
+    {
+        public ConcurrentCachingList<MyCubeBlock> MyCubeBocks;
+        public MyGridTargeting Targeting;
+        public volatile bool Trash;
+        public int MostBlocks;
+    }
+
+    internal struct DeferedTypeCleaning
+    {
+        internal uint RequestTick;
+        internal ConcurrentDictionary<BlockTypes, ConcurrentCachingList<MyCubeBlock>> Collection;
+    }
+
     public partial class Session
     {
+
         public void UpdateDbsInQueue()
         {
             if (DbTask.IsComplete && DbTask.valid && DbTask.Exceptions != null)

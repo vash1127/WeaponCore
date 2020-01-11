@@ -65,7 +65,6 @@ namespace WeaponCore.Support
         internal int WeaponId;
         internal int TracerStep;
         internal int TracerSteps;
-        internal int TrailSteps;
         internal uint LastTick;
         internal TracerState Tracer;
         internal TrailState Trail;
@@ -280,31 +279,27 @@ namespace WeaponCore.Support
         internal void RunGlow(ref Shrinks shrink)
         {
             var glowCount = GlowSteps.Count;
-            var parentPos = Trail == TrailState.Back ? Position : BackOfTracer;
+            var trailTravel = EstimatedTravel - VisualLength;
+            var expanding = trailTravel < ShortStepSize;
+            var back = Trail == TrailState.Back;
+            var backExpanding = back && expanding;
+
+            var parentPos = back && !backExpanding ? Position : BackOfTracer;
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
             {
                 var glow = Ai.Session.Av.Glows.Count > 0 ? Ai.Session.Av.Glows.Pop() : new AfterGlow();
 
-                Vector3D backPos;
-                if (shrink.Thickness > 0 && !shrink.Last) backPos = shrink.Back;
-                else if (shrink.Thickness > 0) backPos = Hit.HitPos;
-                else backPos = BackOfTracer;
+                var backPos = BackOfTracer;
+                if (shrink.Thickness > 0) backPos = !shrink.Last ? shrink.Back : Hit.HitPos;
 
-                var startPos = Trail == TrailState.Back ? backPos : Position;
+                var startPos = back ? backPos : Position;
 
-                var trailTravel = EstimatedTravel - VisualLength;
-                var expanding = trailTravel < ShortStepSize;
-                var back = Trail == TrailState.Back;
-                var backExpanding = back && expanding;
                 var earlyEnd = LifeTime <= 1;
 
                 if (Hitting && !earlyEnd || !expanding && back && VisualLength > 0)
                     glow.VelStep = Vector3D.Zero;
                 else if (backExpanding)
-                {
                     glow.VelStep = Direction * (EstimatedTravel - VisualLength);
-                    parentPos = BackOfTracer;
-                }
                 else
                     glow.VelStep = Direction * ShortStepSize;
 
@@ -554,7 +549,6 @@ namespace WeaponCore.Support
             LifeTime = 0;
             TracerSteps = 0;
             TracerStep = 0;
-            TrailSteps = 0;
             AmmoSound = false;
             HitSoundActive = false;
             HitSoundActived = false;

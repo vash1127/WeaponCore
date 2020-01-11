@@ -10,6 +10,7 @@ using WeaponCore.Support;
 using static WeaponCore.Support.Target;
 namespace WeaponCore.Platform
 {
+
     public partial class Weapon
     {
         internal int NextMuzzle;
