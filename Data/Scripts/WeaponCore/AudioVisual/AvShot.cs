@@ -49,14 +49,15 @@ namespace WeaponCore.Support
         internal double StepSize;
         internal double ShortStepSize;
         internal double TotalLength;
-        internal double Thickness;
+        internal double TracerWidth;
+        internal double TrailWidth;
         internal double ScaleFov;
         internal double VisualLength;
         internal double MaxSpeed;
         internal double MaxStepSize;
         internal double TracerLengthSqr;
         internal double EstimatedTravel;
-        internal float LineScaler;
+        internal float TrailScaler;
         internal float GlowShrinkSize;
         internal float DistanceToLine;
         internal int LifeTime;
@@ -138,7 +139,7 @@ namespace WeaponCore.Support
             {
                 MaxGlowLength = MathHelperD.Clamp(System.Values.Graphics.Line.Trail.DecayTime * MaxStepSize, 0.1f, info.System.MaxTrajectory);
                 Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
-                GlowShrinkSize = System.Values.Graphics.Line.Tracer.Width / System.Values.Graphics.Line.Trail.DecayTime;
+                GlowShrinkSize = System.TrailWidth / System.Values.Graphics.Line.Trail.DecayTime;
             }
             else Trail = TrailState.Off;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, info.System.MaxTrajectory);
@@ -254,12 +255,15 @@ namespace WeaponCore.Support
                 color.Z *= randomValue;
             }
             Color = color;
-            var width = System.Values.Graphics.Line.Tracer.Width;
+            var tracerWidth = System.Values.Graphics.Line.Tracer.Width;
+            var trailWidth = System.TrailWidth;
             if (System.LineWidthVariance)
             {
                 var wv = System.Values.Graphics.Line.WidthVariance;
                 var randomValue = MyUtils.GetRandomFloat(wv.Start, wv.End);
-                width += randomValue;
+                tracerWidth += randomValue;
+                if (System.Values.Graphics.Line.Trail.UseWidthVariance)
+                    trailWidth += randomValue;
             }
 
             var target = Position + (-Direction * TotalLength);
@@ -268,8 +272,9 @@ namespace WeaponCore.Support
             
             double scale = 0.1f;
             ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);
-            Thickness = Math.Max(width, scale * ScaleFov * (DistanceToLine / 100));
-            LineScaler = ((float)Thickness / width);
+            TracerWidth = Math.Max(tracerWidth, scale * ScaleFov * (DistanceToLine / 100));
+            TrailWidth = Math.Max(trailWidth, scale * ScaleFov * (DistanceToLine / 100));
+            TrailScaler = ((float)TrailWidth / trailWidth);
         }
 
         internal void RunGlow(ref Shrinks shrink)

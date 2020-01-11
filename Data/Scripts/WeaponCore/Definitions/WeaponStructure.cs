@@ -140,6 +140,7 @@ namespace WeaponCore.Support
         public readonly float MinTargetRadius;
         public readonly float MaxTargetRadius;
         public readonly float MaxAmmoVolume;
+        public readonly float TrailWidth;
         public readonly HardPointDefinition.Prediction Prediction;
         public float FiringSoundDistSqr;
         public float ReloadSoundDistSqr;
@@ -213,6 +214,7 @@ namespace WeaponCore.Support
             LineWidthVariance = values.Graphics.Line.WidthVariance.Start > 0 || values.Graphics.Line.WidthVariance.End > 0;
             SpeedVariance = values.Ammo.Trajectory.SpeedVariance.Start > 0 || values.Ammo.Trajectory.SpeedVariance.End > 0;
             RangeVariance = values.Ammo.Trajectory.RangeVariance.Start > 0 || values.Ammo.Trajectory.RangeVariance.End > 0;
+            TrailWidth = values.Graphics.Line.Trail.CustomWidth > 0 ? values.Graphics.Line.Trail.CustomWidth : values.Graphics.Line.Tracer.Width;
 
             TargetOffSet = values.Ammo.Trajectory.Smarts.Inaccuracy > 0;
             TimeToCeaseFire = values.HardPoint.DelayCeaseFire;
@@ -250,9 +252,10 @@ namespace WeaponCore.Support
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
             HasBarrelShootAv = BarrelEffect1 || BarrelEffect2 || HardPointRotationSound || FiringSound == FiringSoundState.WhenDone;
+
+            DesiredProjectileSpeed = (float)(!IsBeamWeapon ? values.Ammo.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Predictions(out NeedsPrediction, out Prediction);
 
-            DesiredProjectileSpeed = (float) (!IsBeamWeapon ? values.Ammo.Trajectory.DesiredSpeed : MaxTrajectory * MyEngineConstants.UPDATE_STEPS_PER_SECOND);
             Trail = values.Graphics.Line.Trail.Enable;
 
             Session.CreateAnimationSets(Values.Animations, this, out WeaponAnimationSet, out WeaponEmissiveSet, out WeaponLinearMoveSet, out AnimationIdLookup, out WeaponAnimationLengths);

@@ -415,6 +415,8 @@ namespace WeaponCore.Support
         [ProtoMember(3)] internal int DecayTime;
         [ProtoMember(4)] internal Vector4 Color;
         [ProtoMember(5)] internal bool Back;
+        [ProtoMember(6)] internal float CustomWidth;
+        [ProtoMember(7)] internal bool UseWidthVariance;
     }
 
     [ProtoContract]
