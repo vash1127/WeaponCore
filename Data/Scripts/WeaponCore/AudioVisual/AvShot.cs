@@ -139,7 +139,7 @@ namespace WeaponCore.Support
             {
                 MaxGlowLength = MathHelperD.Clamp(System.Values.Graphics.Line.Trail.DecayTime * MaxStepSize, 0.1f, info.System.MaxTrajectory);
                 Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
-                GlowShrinkSize = System.TrailWidth / System.Values.Graphics.Line.Trail.DecayTime;
+                GlowShrinkSize = !System.Values.Graphics.Line.Trail.UseColorFade ? System.TrailWidth / System.Values.Graphics.Line.Trail.DecayTime : 1f / System.Values.Graphics.Line.Trail.DecayTime;
             }
             else Trail = TrailState.Off;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, info.System.MaxTrajectory);
@@ -375,7 +375,6 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
-                //Hit.HitPos += HitVelocity;
                 var newTracerBack = Hit.HitPos + -(Direction * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerBack, (float) reduced);

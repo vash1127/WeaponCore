@@ -113,6 +113,7 @@ namespace WeaponCore.Support
                 if (av.Trail != AvShot.TrailState.Off)
                 {
                     var steps = av.System.Values.Graphics.Line.Trail.DecayTime;
+                    var widthScaler = !av.System.Values.Graphics.Line.Trail.UseColorFade;
                     var remove = false;
                     for (int j = glowCnt - 1; j >= 0; j--)
                     {
@@ -121,8 +122,12 @@ namespace WeaponCore.Support
                         if (av.OnScreen != AvShot.Screen.None)
                         {
                             var reduction = (av.GlowShrinkSize * glow.Step);
-                            var width = (av.System.TrailWidth - reduction) * av.TrailScaler;
-                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, width);
+                            var width = widthScaler ? (av.System.TrailWidth - reduction) * av.TrailScaler : av.System.TrailWidth * av.TrailScaler;
+                            var color = av.System.Values.Graphics.Line.Trail.Color;
+                            if (!widthScaler)
+                                color *= MathHelper.Clamp(1f - reduction, 0.01f, 1f);
+
+                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, width);
                         }
                         if (++glow.Step >= steps)
                         {
