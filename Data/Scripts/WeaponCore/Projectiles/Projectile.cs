@@ -421,7 +421,7 @@ namespace WeaponCore.Projectiles
                 vs.Hit = Hit;
                 if (vs.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerStart, Position);
+                    var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.BackOfTracer, Position);
                     vs.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref VisualDir, beam.Length);
                 }
                 else

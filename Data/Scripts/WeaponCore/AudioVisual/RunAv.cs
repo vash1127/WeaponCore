@@ -48,7 +48,7 @@ namespace WeaponCore.Support
 
             if (Session.Tick180)
             {
-                //Log.LineShortDate($"[AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models}");
+                Log.LineShortDate($"[AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models}");
                 _glows = 0;
                 _shrinks = 0;
             }
@@ -58,6 +58,7 @@ namespace WeaponCore.Support
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
+
                 if (av.OnScreen != AvShot.Screen.None) _onScreens++;
                 var refreshed = av.LastTick == Session.Tick;
                 
@@ -66,7 +67,7 @@ namespace WeaponCore.Support
                     if (!av.System.OffsetEffect)
                     {
                         if (av.Tracer != AvShot.TracerState.Shrink)
-                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.TracerStart, av.PointDir, (float)av.VisualLength, (float)av.Thickness);
+                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.BackOfTracer, av.PointDir, (float)av.VisualLength, (float)av.Thickness);
                     }
                     else
                     {
@@ -121,9 +122,7 @@ namespace WeaponCore.Support
                         {
                             var reduction = (av.GlowShrinkSize * glow.Step);
                             var width = (av.System.Values.Graphics.Line.Tracer.Width - reduction) * av.LineScaler;
-                            Log.Line($"reduction:{reduction}({av.GlowShrinkSize})({glow.Step}) - width:{width} - lineScaler:{av.LineScaler}");
-
-                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.To, glow.Line.Direction, (float)glow.Line.Length, width);
+                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, av.System.Values.Graphics.Line.Trail.Color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, width);
                         }
                         if (++glow.Step >= steps)
                         {
@@ -247,7 +246,7 @@ namespace WeaponCore.Support
             {
                 if (av.OnScreen != AvShot.Screen.None)
                 {
-                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Start, av.PointDir, s.Length, s.Thickness);
+                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Back, av.PointDir, s.Length, s.Thickness);
                     if (av.Trail != AvShot.TrailState.Off)
                         av.RunGlow(ref s);
                 }
