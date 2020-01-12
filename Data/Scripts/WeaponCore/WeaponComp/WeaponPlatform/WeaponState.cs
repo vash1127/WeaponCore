@@ -43,7 +43,6 @@ namespace WeaponCore.Platform
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
             var session = Comp.Session;
-
             var canPlay = !session.DedicatedServer && session.SyncBufferedDistSqr >= Vector3D.DistanceSquared(MyAPIGateway.Session.Player.GetPosition(), MyPivotPos);
 
             switch (state)
@@ -168,7 +167,6 @@ namespace WeaponCore.Platform
                         for (int i = 0; i < AnimationsSet[state].Length; i++)
                         {
                             var animation = AnimationsSet[state][i];
-
                             if (!animation.Running)
                             {
                                 if (CurLgstAnimPlaying == null || animation.NumberOfMoves > CurLgstAnimPlaying.NumberOfMoves)
@@ -177,8 +175,8 @@ namespace WeaponCore.Platform
                                 PartAnimation animCheck;
                                 animation.Running = true;
                                 animation.CanPlay = true;
-                                if (AnimationLookup.TryGetValue(animation.EventIdLookup[oppositeEvnt],
-                                    out animCheck))
+                                string eventName;
+                                if (animation.EventIdLookup.TryGetValue(oppositeEvnt, out eventName) && AnimationLookup.TryGetValue(eventName, out animCheck))
                                 {
                                     if (animCheck.Running)
                                     {
