@@ -320,9 +320,13 @@ namespace WeaponCore.Support
             {
                 var glow = GlowSteps[i];
 
-                if (i != 0) glow.Parent = GlowSteps[i - 1];
-                if (i == endIdx)
-                    glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos) : new LineD(parentPos, glow.TailPos);
+                if (i != 0)
+                {
+                    glow.Parent = GlowSteps[i - 1];
+                    glow.Parent.TailPos += ShootVelStep;
+                }
+                //if (i == endIdx) glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos, glow.Length) : new LineD(parentPos, glow.TailPos);
+                glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos) : new LineD(parentPos, glow.TailPos);
             }
         }
 
@@ -370,13 +374,14 @@ namespace WeaponCore.Support
             TracerStep = TracerSteps;
             if (fractualSteps < StepSize || TracerSteps <= 0)
                 Tracer = TracerState.Off;
+
         }
 
         internal Shrunk? GetLine()
         {
             if (TracerStep > 0)
             {
-                //Hit.HitPos += ShootVelStep;
+                Hit.HitPos += ShootVelStep;
                 var newTracerBack = Hit.HitPos + -(Direction * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerBack, (float) reduced);

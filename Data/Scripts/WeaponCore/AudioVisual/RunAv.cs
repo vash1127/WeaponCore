@@ -125,8 +125,8 @@ namespace WeaponCore.Support
                             var width = widthScaler ? (av.System.TrailWidth - reduction) * av.TrailScaler : av.System.TrailWidth * av.TrailScaler;
                             var color = av.System.Values.Graphics.Line.Trail.Color;
                             if (!widthScaler)
-                                color *= MathHelper.Clamp(1f - reduction, 0.001f, 1f);
-                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, width);
+                                color *= MathHelper.Clamp(1f - reduction, 0.01f, 1f);
+                            MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, color, glow.Line.From, glow.Line.Direction, (float) glow.Line.Length, width);
                         }
                         if (++glow.Step >= steps)
                         {
