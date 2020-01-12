@@ -44,6 +44,7 @@ namespace WeaponCore.Support
         internal bool ShrinkInited;
         internal bool TrailActivated;
         internal bool Hitting;
+        internal bool Back;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -76,6 +77,7 @@ namespace WeaponCore.Support
         internal Vector3D Direction;
         internal Vector3D PointDir;
         internal Vector3D HitVelocity;
+        internal Vector3D ShootVelStep;
         internal Vector3D BackOfTracer;
         internal Vector3D ClosestPointOnLine;
         internal Vector4 Color;
@@ -128,6 +130,7 @@ namespace WeaponCore.Support
             WeaponId = info.WeaponId;
             MaxSpeed = maxSpeed;
             MaxStepSize = MaxSpeed * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
+            ShootVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
             ShrinkInited = false;
 
@@ -139,6 +142,7 @@ namespace WeaponCore.Support
                 MaxGlowLength = MathHelperD.Clamp(System.Values.Graphics.Line.Trail.DecayTime * MaxStepSize, 0.1f, info.System.MaxTrajectory);
                 Trail = System.Values.Graphics.Line.Trail.Back ? TrailState.Back : Trail = TrailState.Front;
                 GlowShrinkSize = !System.Values.Graphics.Line.Trail.UseColorFade ? System.TrailWidth / System.Values.Graphics.Line.Trail.DecayTime : 1f / System.Values.Graphics.Line.Trail.DecayTime;
+                Back = Trail == TrailState.Back;
             }
             else Trail = TrailState.Off;
             TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, info.System.MaxTrajectory);
@@ -155,7 +159,6 @@ namespace WeaponCore.Support
 
             Position = position;
             Direction = direction;
-
             VisualLength = visualLength;
             BackOfTracer = Position + (-Direction * VisualLength);
             PointDir = pointDir;
@@ -238,7 +241,7 @@ namespace WeaponCore.Support
                     PrepOffsetEffect(Position, PointDir, VisualLength);
             }
             var backAndGrowing = Trail == TrailState.Back && Tracer == TracerState.Grow;
-            if (OnScreen != Screen.None && Trail != TrailState.Off && !backAndGrowing && Tracer != TracerState.Shrink)
+            if (OnScreen != Screen.None && Trail != TrailState.Off && !backAndGrowing && TracerSteps <= 0)
                 RunGlow(ref EmptyShrink); 
         }
 
@@ -276,35 +279,38 @@ namespace WeaponCore.Support
             TrailScaler = ((float)TrailWidth / trailWidth);
         }
 
-        internal void RunGlow(ref Shrinks shrink)
+        internal void RunGlow(ref Shrinks shrink, bool shrinking = false)
         {
             var glowCount = GlowSteps.Count;
             var trailTravel = EstimatedTravel - VisualLength;
-            var expanding = trailTravel < ShortStepSize;
-            var back = Trail == TrailState.Back;
-            var backExpanding = back && expanding;
-
-            var parentPos = back && !backExpanding ? Position : BackOfTracer;
+            var expanding = trailTravel < ShortStepSize && !MyUtils.IsZero(trailTravel, 1E-01F);
+            var backExpanding = Back && expanding;
+            var pos = !shrinking ? Position : shrink.Back;
+            var backPos = BackOfTracer;
+            var parentPos = Back && !backExpanding ? pos : backPos;
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
             {
                 var glow = Ai.Session.Av.Glows.Count > 0 ? Ai.Session.Av.Glows.Pop() : new AfterGlow();
 
-                var backPos = BackOfTracer;
-                if (shrink.Thickness > 0) backPos = !shrink.Last ? shrink.Back : Hit.HitPos;
+                if (shrinking) backPos = !shrink.Last ? shrink.Back : Hit.HitPos;
 
-                var startPos = back ? backPos : Position;
-
+                var startPos = Back ? backPos : pos;
                 var earlyEnd = LifeTime <= 1;
 
-                if (Hitting && !earlyEnd || !expanding && back && VisualLength > 0)
+                if (Hitting && !earlyEnd && !backExpanding || !expanding && Back && !MyUtils.IsZero(VisualLength, 1E-01F))
+                {
                     glow.VelStep = Vector3D.Zero;
+                }
                 else if (backExpanding)
-                    glow.VelStep = Direction * (EstimatedTravel - VisualLength);
+                {
+                    glow.VelStep = Vector3D.Clamp(Direction * (EstimatedTravel - VisualLength), Vector3D.Zero, Vector3D.One * ShortStepSize);
+                }
                 else
+                {
                     glow.VelStep = Direction * ShortStepSize;
+                }
 
                 glow.TailPos = startPos + -glow.VelStep;
-
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
                 glow.Step = 0;
@@ -370,6 +376,7 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
+                //Hit.HitPos += ShootVelStep;
                 var newTracerBack = Hit.HitPos + -(Direction * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
                 return new Shrunk(ref newTracerBack, (float) reduced);
@@ -549,6 +556,7 @@ namespace WeaponCore.Support
             LifeTime = 0;
             TracerSteps = 0;
             TracerStep = 0;
+
             AmmoSound = false;
             HitSoundActive = false;
             HitSoundActived = false;
@@ -561,6 +569,7 @@ namespace WeaponCore.Support
             TrailActivated = false;
             ShrinkInited = false;
             Hitting = false;
+            Back = false;
             GlowSteps.Clear();
             Offsets.Clear();
             //

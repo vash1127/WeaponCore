@@ -48,7 +48,7 @@ namespace WeaponCore.Support
 
             if (Session.Tick180)
             {
-                Log.LineShortDate($"                            [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models}");
+                //Log.LineShortDate($"                            [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models}");
                 _glows = 0;
                 _shrinks = 0;
             }
@@ -125,8 +125,7 @@ namespace WeaponCore.Support
                             var width = widthScaler ? (av.System.TrailWidth - reduction) * av.TrailScaler : av.System.TrailWidth * av.TrailScaler;
                             var color = av.System.Values.Graphics.Line.Trail.Color;
                             if (!widthScaler)
-                                color *= MathHelper.Clamp(1f - reduction, 0.01f, 1f);
-
+                                color *= MathHelper.Clamp(1f - reduction, 0.001f, 1f);
                             MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, color, glow.Line.From, glow.Line.Direction, (float)glow.Line.Length, width);
                         }
                         if (++glow.Step >= steps)
@@ -250,14 +249,16 @@ namespace WeaponCore.Support
             if (!av.System.OffsetEffect)
             {
                 if (av.OnScreen != AvShot.Screen.None)
-                {
                     MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Back, av.PointDir, s.Length, s.Thickness);
-                    if (av.Trail != AvShot.TrailState.Off)
-                        av.RunGlow(ref s);
-                }
             }
             else
                 av.DrawLineOffsetEffect(s.Back, -av.PointDir, s.Length, s.Thickness, s.Color);
+
+            if (av.Trail != AvShot.TrailState.Off)
+            {
+                av.EstimatedTravel += s.Length;
+                av.RunGlow(ref s, true);
+            }
         }
     }
 }
