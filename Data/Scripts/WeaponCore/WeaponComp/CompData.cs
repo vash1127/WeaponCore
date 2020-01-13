@@ -21,12 +21,21 @@ namespace WeaponCore
             ControllableTurret = comp.MissileBase;
             IsSorterTurret = comp.IsSorterTurret;
             Value.Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length];
+
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
                 if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponStateValues();
         }
 
         public void StorageInit()
         {
+            if (Value.Weapons.Length != Comp.Platform.Weapons.Length)
+            {
+                Array.Resize(ref Value.Weapons, Comp.Platform.Structure.MuzzlePartNames.Length);
+
+                for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
+                    if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponStateValues();
+            }
+
             if (IsSorterTurret)
             {
                 if (SorterBase.Storage == null)
@@ -124,21 +133,25 @@ namespace WeaponCore
             MissileBase = comp.MissileBase;
             IsSorterTurret = comp.IsSorterTurret;
             Value.Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length];
+            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
+                if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();
         }
 
         public void SettingsInit()
         {
+            if (Value.Weapons.Length != Comp.Platform.Weapons.Length)
+            {
+                Array.Resize(ref Value.Weapons, Comp.Platform.Structure.MuzzlePartNames.Length);
+
+                for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
+                    if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();
+            }
+
             var maxTrajectory = 0f;
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-            {
                 if (maxTrajectory < Comp.Platform.Weapons[i].System.MaxTrajectory) maxTrajectory = (float)Comp.Platform.Weapons[i].System.MaxTrajectory;
 
-                if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();
-            }
-            if (IsSorterTurret)
-                Value.Range = maxTrajectory;
-            else
-                Value.Range = MissileBase.Range;
+            Value.Range = IsSorterTurret ? maxTrajectory : MissileBase.Range;
         }
 
         public void SaveSettings(bool createStorage = false)
