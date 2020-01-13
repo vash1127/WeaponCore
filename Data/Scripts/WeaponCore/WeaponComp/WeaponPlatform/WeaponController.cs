@@ -1,4 +1,5 @@
-﻿using VRageMath;
+﻿using System;
+using VRageMath;
 using WeaponCore.Support;
 
 namespace WeaponCore.Platform
@@ -143,97 +144,102 @@ namespace WeaponCore.Platform
 
         internal void UpdateWeaponHeat(object o)
         {
-            var currentHeat = Comp.State.Value.Weapons[WeaponId].Heat;
-            currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
-            var set = currentHeat - LastHeat > 0.001 || (currentHeat - LastHeat) * -1 > 0.001;
-
-            var val = o as bool?;
-            var reset = val.HasValue && val.Value == true;
-
-            if (!Comp.Session.DedicatedServer)
+            try
             {
-                var heatPercent = currentHeat / System.MaxHeat;
 
-                if (set && heatPercent > .33)
-                {
-                    if (heatPercent > 1) heatPercent = 1;
+                var currentHeat = Comp.State.Value.Weapons[WeaponId].Heat;
+                currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
+                var set = currentHeat - LastHeat > 0.001 || (currentHeat - LastHeat) * -1 > 0.001;
 
-                    heatPercent -= .33f;
+                var val = o as bool?;
+                var reset = val.HasValue && val.Value;
 
-                    var intensity = .7f * heatPercent;
-
-                    var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
-
-                    MuzzlePart.Item1?.SetEmissiveParts("Heating", color, intensity);
-                }
-                else if (set)
-                    MuzzlePart.Item1?.SetEmissiveParts("Heating", Color.Transparent, 0);
-
-                LastHeat = currentHeat;
-            }
-
-            if (set && System.DegRof && Comp.State.Value.Weapons[WeaponId].Heat >= (System.MaxHeat * .8))
-            {
-                var systemRate = System.RateOfFire * Comp.Set.Value.RofModifier;
-                var barrelRate = System.BarrelSpinRate * Comp.Set.Value.RofModifier;
-                var heatModifier = MathHelper.Lerp(1f, .25f, Comp.State.Value.Weapons[WeaponId].Heat / System.MaxHeat);
-
-                systemRate *= heatModifier;
-
-                if (systemRate < 1)
-                    systemRate = 1;
-
-                RateOfFire = (int)systemRate;
-                BarrelSpinRate = (int)barrelRate;
-                TicksPerShot = (uint)(3600f / RateOfFire);
-
-                UpdateBarrelRotation();
-                CurrentlyDegrading = true;
-            }
-            else if (set && CurrentlyDegrading)
-            {
-                CurrentlyDegrading = false;
-                RateOfFire = (int)(System.RateOfFire * Comp.Set.Value.RofModifier);
-                BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Set.Value.RofModifier);
-                TicksPerShot = (uint)(3600f / RateOfFire);
-
-                UpdateBarrelRotation();
-            }
-
-            var resetFakeTick = false;
-
-            if (_fakeHeatTick * 30 == 60)
-            {
                 if (!Comp.Session.DedicatedServer)
-                    Comp.TerminalRefresh();
-
-                var weaponValue = Comp.State.Value.Weapons[WeaponId];
-                Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
-                weaponValue.Heat = weaponValue.Heat >= HsRate ? weaponValue.Heat - HsRate : 0;
-                                
-
-                if (Comp.Overheated && weaponValue.Heat <= (System.MaxHeat * System.WepCoolDown))
                 {
-                    ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
-                    ShootDelayTick += Comp.Session.Tick;
-                    EventTriggerStateChanged(Weapon.EventTriggers.Overheated, false);
-                    Comp.Overheated = false;
+                    var heatPercent = currentHeat / System.MaxHeat;
+
+                    if (set && heatPercent > .33)
+                    {
+                        if (heatPercent > 1) heatPercent = 1;
+
+                        heatPercent -= .33f;
+
+                        var intensity = .7f * heatPercent;
+
+                        var color = Comp.Session.HeatEmissives[(int)(heatPercent * 100)];
+
+                        MuzzlePart.Item1?.SetEmissiveParts("Heating", color, intensity);
+                    }
+                    else if (set)
+                        MuzzlePart.Item1?.SetEmissiveParts("Heating", Color.Transparent, 0);
+
+                    LastHeat = currentHeat;
                 }
 
-                resetFakeTick = true;
-            }
+                if (set && System.DegRof && Comp.State.Value.Weapons[WeaponId].Heat >= (System.MaxHeat * .8))
+                {
+                    var systemRate = System.RateOfFire * Comp.Set.Value.RofModifier;
+                    var barrelRate = System.BarrelSpinRate * Comp.Set.Value.RofModifier;
+                    var heatModifier = MathHelper.Lerp(1f, .25f, Comp.State.Value.Weapons[WeaponId].Heat / System.MaxHeat);
 
-            if (Comp.State.Value.Weapons[WeaponId].Heat > 0 || reset)
-            {
-                if (resetFakeTick || reset)
-                    _fakeHeatTick = 0;
-                else
-                    _fakeHeatTick++;
+                    systemRate *= heatModifier;
 
-                Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, false, 20);
-            }
-            else if (!Comp.Session.DedicatedServer)
+                    if (systemRate < 1)
+                        systemRate = 1;
+
+                    RateOfFire = (int)systemRate;
+                    BarrelSpinRate = (int)barrelRate;
+                    TicksPerShot = (uint)(3600f / RateOfFire);
+
+                    UpdateBarrelRotation();
+                    CurrentlyDegrading = true;
+                }
+                else if (set && CurrentlyDegrading)
+                {
+                    CurrentlyDegrading = false;
+                    RateOfFire = (int)(System.RateOfFire * Comp.Set.Value.RofModifier);
+                    BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Set.Value.RofModifier);
+                    TicksPerShot = (uint)(3600f / RateOfFire);
+
+                    UpdateBarrelRotation();
+                }
+
+                var resetFakeTick = false;
+
+                if (_fakeHeatTick * 30 == 60)
+                {
+                    if (!Comp.Session.DedicatedServer)
+                        Comp.TerminalRefresh();
+
+                    var weaponValue = Comp.State.Value.Weapons[WeaponId];
+                    Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
+                    weaponValue.Heat = weaponValue.Heat >= HsRate ? weaponValue.Heat - HsRate : 0;
+
+
+                    if (Comp.Overheated && weaponValue.Heat <= (System.MaxHeat * System.WepCoolDown))
+                    {
+                        ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                        ShootDelayTick += Comp.Session.Tick;
+                        EventTriggerStateChanged(EventTriggers.Overheated, false);
+                        Comp.Overheated = false;
+                    }
+
+                    resetFakeTick = true;
+                }
+
+                if (Comp.State.Value.Weapons[WeaponId].Heat > 0 || reset)
+                {
+                    if (resetFakeTick || reset)
+                        _fakeHeatTick = 0;
+                    else
+                        _fakeHeatTick++;
+
+                    Comp.Session.FutureEvents.Schedule(UpdateWeaponHeat, false, 20);
+                }
+                else if (!Comp.Session.DedicatedServer)
                     Comp.TerminalRefresh();
+            }
+            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }
     }
 }

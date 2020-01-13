@@ -372,8 +372,10 @@ namespace WeaponCore.Projectiles
                 var stepSizeToHit = stepSize - overShot;
                 
                 double remainingTracer;
-                if (TracerLength < stepSize && !MyUtils.IsZero(TracerLength - stepSize, 1E-01F))
-                    remainingTracer = MathHelperD.Clamp(TracerLength - stepSizeToHit, 0, Math.Min(TracerLength, Info.DistanceTraveled));
+                if (Info.System.IsBeamWeapon) 
+                    remainingTracer = stepSizeToHit;
+                else if (TracerLength < stepSize && !MyUtils.IsZero(TracerLength - stepSize, 1E-01F))
+                    remainingTracer = MathHelperD.Clamp(TracerLength - stepSizeToHit, 0, stepSizeToHit);
                 else if (TracerLength >= overShot)
                     remainingTracer = MathHelperD.Clamp(TracerLength - overShot, 0, Math.Min(TracerLength, Info.DistanceTraveled));
                 else remainingTracer = 0;
@@ -412,9 +414,8 @@ namespace WeaponCore.Projectiles
             Vector3D? hitPos = null;
             if (Hit.HitPos != Vector3D.Zero) hitPos = Hit.HitPos;
             for (int i = 0; i < VrPros.Count; i++)
-            {
+            { 
                 var vp = VrPros[i];
-                var info = vp.Info;
                 var vs = vp.VisualShot;
                 vs.Init(vp.Info, StepPerSec * StepConst, MaxSpeed);
                 vs.OnScreen = Info.AvShot.OnScreen;
