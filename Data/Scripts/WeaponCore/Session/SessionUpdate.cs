@@ -260,7 +260,6 @@ namespace WeaponCore
                             w.ShootGraphics();
                         else if (w.BarrelAvUpdater.Reader.Count > 0) 
                             w.ShootGraphics(true);
-
                     }
                 }
 
@@ -376,6 +375,7 @@ namespace WeaponCore
             for (int i = AcquireTargets.Count - 1; i >= 0; i--)
             {
                 var w = AcquireTargets[i];
+
                 if (w.Comp.Ai == null || w.Comp.MyCube.MarkedForClose)
                 {
                     AcquireTargets.RemoveAtFast(i);
