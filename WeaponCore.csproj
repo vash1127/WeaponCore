@@ -62,7 +62,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileHits.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectilePool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\EntityPool.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Session\Config\CompData.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializeDataClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializedValues.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SessionAnimationMgr.cs" />

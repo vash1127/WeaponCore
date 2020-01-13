@@ -23,11 +23,8 @@ namespace WeaponCore.Support
 
         internal volatile bool InventoryInited;
         internal volatile bool IsSorterTurret;
-
-        internal GridAi Ai;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.LastTerminalId == MyCube.EntityId;
-
         internal int OnAddedAttempts;
 
         internal MatrixD CubeMatrix;
@@ -71,11 +68,15 @@ namespace WeaponCore.Support
         
         internal readonly MyCubeBlock MyCube;
         internal readonly IMySlimBlock Slim;
-        internal MyWeaponPlatform Platform;
+        internal readonly CompSettings Set;
+        internal readonly CompState State;
+        internal readonly Session Session;
         internal readonly MyInventory BlockInventory;
         internal readonly IMyLargeMissileTurret MissileBase;
         internal readonly IMyConveyorSorter SorterBase;
+        internal GridAi Ai;
         internal Weapon TrackingWeapon;
+        internal MyWeaponPlatform Platform;
         internal bool SettingsUpdated;
         internal bool ClientUiUpdate;
         internal bool IsFunctional;
@@ -91,9 +92,7 @@ namespace WeaponCore.Support
         internal bool HasTurret;
         internal bool HasChargeWeapon;
 
-        internal CompSettings Set;
-        internal CompState State;
-        internal Session Session;
+
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
         public WeaponComponent(Session session, GridAi ai, MyCubeBlock myCube)
@@ -124,6 +123,9 @@ namespace WeaponCore.Support
             Platform.Setup(this);
 
             MyCube.OnClose += Session.CloseComps;
+
+            State = new CompState(this);
+            Set = new CompSettings(this);
         }        
     }
 }

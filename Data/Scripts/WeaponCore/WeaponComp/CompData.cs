@@ -124,6 +124,10 @@ namespace WeaponCore
             MissileBase = comp.MissileBase;
             IsSorterTurret = comp.IsSorterTurret;
             Value.Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length];
+        }
+
+        public void SettingsInit()
+        {
             var maxTrajectory = 0f;
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
             {

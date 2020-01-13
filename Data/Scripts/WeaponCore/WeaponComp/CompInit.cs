@@ -47,37 +47,20 @@ namespace WeaponCore.Support
         {
             var isServer = MyAPIGateway.Multiplayer.IsServer;
 
-            if (State == null)
-            {
-                //Log.Line($"State null");
-                State = new CompState(this);
-            }
-
             if (IsSorterTurret)
             {
                 if (SorterBase.Storage == null)
-                {
-                    //Log.Line("Storage null");
                     State.StorageInit();
-                }
             }
             else
             {
                 if (MissileBase.Storage == null)
-                {
-                    //Log.Line("Storage null");
                     State.StorageInit();
-                }
-            }
-
-            if (Set == null)
-            {
-                //Log.Line($"Settings null");
-                Set = new CompSettings(this);
             }
 
             State.LoadState();
 
+            Set.SettingsInit();
             Set.LoadSettings();
             if (!State.LoadState() && !isServer) _clientNotReady = true;
             UpdateSettings(Set.Value);
