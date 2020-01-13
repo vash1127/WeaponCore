@@ -95,6 +95,7 @@ namespace WeaponCore.Support
         internal bool SupressMouseShoot;
         internal bool OverPowered;
 
+        internal bool IsStatic;
         internal bool DbReady;
         internal bool UpdatePowerSources;
         internal bool AvailablePowerChanged;

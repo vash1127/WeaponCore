@@ -50,7 +50,8 @@ namespace WeaponCore.Platform
                 }
                 return;
             }
-            else if (PreFired)
+            
+            if (PreFired)
             {
                 EventTriggerStateChanged(EventTriggers.PreFire, false);
                 _muzzlesToFire.Clear();
@@ -84,6 +85,7 @@ namespace WeaponCore.Platform
             if (Comp.Ai.VelocityUpdateTick != tick)
             {
                 Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
+                Comp.Ai.IsStatic = Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
@@ -91,7 +93,6 @@ namespace WeaponCore.Platform
                 ShootRayCheck();
 
             var targetAiCnt = Comp.Ai.TargetAis.Count;
-            var isStatic = Comp.Ai.MyGrid.Physics.IsStatic;
 
             Projectile vProjectile = null;
             if (System.VirtualBeams) vProjectile = CreateVirtualProjectile();
@@ -111,14 +112,14 @@ namespace WeaponCore.Platform
                     muzzle.LastUpdateTick = tick;
                 }
 
-                if (!System.EnergyAmmo || System.MustCharge)
+                if (!System.EnergyAmmo || System.IsHybrid)
                 {
 
                     if (Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0) break;
                     Comp.State.Value.Weapons[WeaponId].CurrentAmmo--;
                 }
 
-                if (System.HasBackKickForce && !isStatic)
+                if (System.HasBackKickForce && !Comp.Ai.IsStatic)
                     Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
 
                 muzzle.LastShot = tick;

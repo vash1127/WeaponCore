@@ -298,6 +298,7 @@ namespace WeaponCore.Platform
                 if (Comp.Ai != null && Comp.Ai.VelocityUpdateTick != tick)
                 {
                     Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
+                    Comp.Ai.IsStatic = Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                     Comp.Ai.VelocityUpdateTick = tick;
                 }
                 foreach (var barrelPair in BarrelAvUpdater)

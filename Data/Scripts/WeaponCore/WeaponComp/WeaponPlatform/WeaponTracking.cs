@@ -277,6 +277,7 @@ namespace WeaponCore.Platform
             if (Comp.Ai.VelocityUpdateTick != Comp.Session.Tick)
             {
                 Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
+                Comp.Ai.IsStatic = Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
                 Comp.Ai.VelocityUpdateTick = Comp.Session.Tick;
             }
             var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, System.DesiredProjectileSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction != Prediction.Advanced);
