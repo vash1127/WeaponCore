@@ -218,6 +218,8 @@ namespace WeaponCore
                         ///
                         
                         var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
+                        if (w.AvCapable && (!w.PlayTurretAv || Tick60))
+                            w.PlayTurretAv = Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < w.System.HardPointAvMaxDistSqr;
 
                         if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !comp.Gunner) || ((wState.ManualShoot == ShootClick || comp.Gunner) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
@@ -253,6 +255,12 @@ namespace WeaponCore
                         }
                         else if (w.IsShooting)
                             w.StopShooting();
+
+                        if (w.PlayTurretAv && w.BarrelAvUpdater.Reader.Count > 0)
+                            w.ShootGraphics();
+                        else if (w.BarrelAvUpdater.Reader.Count > 0) 
+                            w.ShootGraphics(true);
+
                     }
                 }
 
@@ -416,8 +424,6 @@ namespace WeaponCore
                 var comp = w.Comp;
                 if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose )
                     continue;
-
-
 
                 //TODO add logic for power priority
                 if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge) {

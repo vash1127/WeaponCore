@@ -57,11 +57,10 @@ namespace WeaponCore.Platform
                 PreFired = false;
             }
 
-            if (_shootTick > tick) return;
-            _shootTick = tick + TicksPerShot;
+            if (_shootTick > tick)
+                return;
 
-            if (AvCapable && (!PlayTurretAv || session.Tick60))
-                PlayTurretAv = Vector3D.DistanceSquared(session.CameraPos, MyPivotPos) < System.HardPointAvMaxDistSqr;
+            _shootTick = tick + TicksPerShot;
 
             if (System.BarrelAxisRotation)
             {
@@ -287,9 +286,6 @@ namespace WeaponCore.Platform
 
                 NextMuzzle = (NextMuzzle + (System.Values.HardPoint.Loading.SkipBarrels + 1)) % _numOfBarrels;
             }
-
-            if (PlayTurretAv && BarrelAvUpdater.Reader.Count > 0)
-                ShootGraphics();
 
             EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 

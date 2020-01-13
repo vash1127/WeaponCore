@@ -56,6 +56,15 @@ namespace WeaponCore.Support
                             WeaponCount cntRemoved;
                             if (wCount.Current == 0) Ai.WeaponCounter.TryRemove(MyCube.BlockDefinition.Id.SubtypeId, out cntRemoved);
                         }
+
+                        for (int i = 0; i < comp.Platform.Weapons.Length; i++)
+                        {
+                            var w = comp.Platform.Weapons[i];
+                            w.StopShooting();
+                            w.WeaponCache.HitEntity.Clean();
+                            if (w.DrawingPower)
+                                w.StopPowerDraw();
+                        }
                     }
                 }
                 else
@@ -70,7 +79,6 @@ namespace WeaponCore.Support
                     GridAi gridAi;
                     Session.GridTargetingAIs.TryRemove(Ai.MyGrid, out gridAi);
                 }
-
                 Ai = null;
             }
             catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }

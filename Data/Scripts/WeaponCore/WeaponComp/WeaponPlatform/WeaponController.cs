@@ -186,6 +186,7 @@ namespace WeaponCore.Platform
                 RateOfFire = (int)systemRate;
                 BarrelSpinRate = (int)barrelRate;
                 TicksPerShot = (uint)(3600f / RateOfFire);
+
                 UpdateBarrelRotation();
                 CurrentlyDegrading = true;
             }
@@ -195,6 +196,7 @@ namespace WeaponCore.Platform
                 RateOfFire = (int)(System.RateOfFire * Comp.Set.Value.RofModifier);
                 BarrelSpinRate = (int)(System.BarrelSpinRate * Comp.Set.Value.RofModifier);
                 TicksPerShot = (uint)(3600f / RateOfFire);
+
                 UpdateBarrelRotation();
             }
 

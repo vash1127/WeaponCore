@@ -318,27 +318,28 @@ namespace WeaponCore.Platform
                     {
                         if (entityExists && ticksAgo <= System.Barrel1AvTicks && !stop)
                         {
-                            if (BarrelEffects1[id] == null)
+                            var barrelEffect = BarrelEffects1[id];
+                            if (barrelEffect == null)
                             {
                                 var matrix1 = matrix;
                                 matrix1.Translation += particles.Barrel1.Offset;
-                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix1, ref pos, uint.MaxValue, out BarrelEffects1[id]);
-                                if (BarrelEffects1[id] != null)
+                                if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix1, ref pos, uint.MaxValue, out BarrelEffects1[id]))
                                 {
-                                    BarrelEffects1[id].UserColorMultiplier = particles.Barrel1.Color;
-                                    BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
-                                    BarrelEffects1[id].DistanceMax = particles.Barrel1.Extras.MaxDistance;
-                                    BarrelEffects1[id].Loop = particles.Barrel1.Extras.Loop;
-                                    BarrelEffects1[id].WorldMatrix = matrix;
-                                    BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
-                                    BarrelEffects1[id].Play();
+                                    barrelEffect = BarrelEffects2[id];
+                                    barrelEffect.UserColorMultiplier = particles.Barrel1.Color;
+                                    barrelEffect.UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
+                                    barrelEffect.DistanceMax = particles.Barrel1.Extras.MaxDistance;
+                                    barrelEffect.Loop = particles.Barrel1.Extras.Loop;
+                                    barrelEffect.WorldMatrix = matrix;
+                                    barrelEffect.Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
+                                    barrelEffect.Play();
                                 }
                             }
-                            else if (particles.Barrel1.Extras.Restart && BarrelEffects1[id].IsEmittingStopped)
+                            else if (particles.Barrel1.Extras.Restart && barrelEffect.IsEmittingStopped)
                             {
-                                BarrelEffects1[id].WorldMatrix = matrix;
-                                BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
-                                BarrelEffects1[id].Play();
+                                barrelEffect.WorldMatrix = matrix;
+                                barrelEffect.Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
+                                barrelEffect.Play();
                             }
                         }
                         else if (BarrelEffects1[id] != null)
@@ -352,27 +353,28 @@ namespace WeaponCore.Platform
                     {
                         if (entityExists && ticksAgo <= System.Barrel2AvTicks && !stop)
                         {
-                            if (BarrelEffects2[id] == null)
+                            var barrelEffect = BarrelEffects2[id];
+                            if (barrelEffect == null)
                             {
                                 var matrix1 = matrix;
                                 matrix1.Translation += particles.Barrel2.Offset;
-                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out BarrelEffects2[id]);
-                                if (BarrelEffects2[id] != null)
+                                if (MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out BarrelEffects2[id]))
                                 {
-                                    BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
-                                    BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
-                                    BarrelEffects2[id].DistanceMax = particles.Barrel2.Extras.MaxDistance;
-                                    BarrelEffects2[id].Loop = particles.Barrel2.Extras.Loop;
-                                    BarrelEffects2[id].WorldMatrix = matrix;
-                                    BarrelEffects2[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
-                                    BarrelEffects2[id].Play();
+                                    barrelEffect = BarrelEffects2[id];
+                                    barrelEffect.UserColorMultiplier = particles.Barrel2.Color;
+                                    barrelEffect.UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
+                                    barrelEffect.DistanceMax = particles.Barrel2.Extras.MaxDistance;
+                                    barrelEffect.Loop = particles.Barrel2.Extras.Loop;
+                                    barrelEffect.WorldMatrix = matrix;
+                                    barrelEffect.Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
+                                    barrelEffect.Play();
                                 }
                             }
-                            else if (particles.Barrel2.Extras.Restart && BarrelEffects2[id].IsEmittingStopped)
+                            else if (particles.Barrel2.Extras.Restart && barrelEffect.IsEmittingStopped)
                             {
-                                BarrelEffects2[id].WorldMatrix = matrix;
-                                BarrelEffects2[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
-                                BarrelEffects2[id].Play();
+                                barrelEffect.WorldMatrix = matrix;
+                                barrelEffect.Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
+                                barrelEffect.Play();
                             }
                         }
                         else if (BarrelEffects2[id] != null)

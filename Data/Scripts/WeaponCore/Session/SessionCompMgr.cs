@@ -141,15 +141,6 @@ namespace WeaponCore
                 var comp = cube.Components.Get<WeaponComponent>();
                 if (comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    {
-                        var w = comp.Platform.Weapons[i];
-                        w.StopShooting();
-                        w.WeaponCache.HitEntity.Clean();
-                        if (w.DrawingPower)
-                            w.StopPowerDraw();
-                    }
-
                     comp.StopAllSounds();
                     comp.Platform.RemoveParts(comp);
                 }
