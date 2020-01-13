@@ -128,6 +128,9 @@ namespace WeaponCore.Support
                             if (!widthScaler)
                                 color *= MathHelper.Clamp(1f - reduction, 0.01f, 1f);
 
+                            if (!refreshed)
+                                glow.Line = new LineD(glow.Line.From + av.ShootVelStep, glow.Line.To + av.ShootVelStep, glow.Line.Length);
+
                             MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, color, glow.Line.From, glow.Line.Direction, (float) glow.Line.Length, width);
                         }
                         if (++glow.Step >= steps)

@@ -314,6 +314,7 @@ namespace WeaponCore.Support
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
                 glow.Step = 0;
+                glow.Parent = null;
             }
             var endIdx = glowCount - 1;
             for (int i = endIdx; i >= 0; i--)
