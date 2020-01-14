@@ -231,7 +231,6 @@ namespace WeaponCore.Support
             else eFlags = MyExplosionFlags.CREATE_DECALS;
             var customParticle = eInfo.CustomParticle != string.Empty;
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
-            Log.Line($"test: draw:{drawParticles} - type:{explosionType} - radius:{radius} - noVisuals:{eInfo.NoVisuals}");
             MyExplosionInfo explosionInfo = new MyExplosionInfo()
             {
                 PlayerDamage = 0.0f,

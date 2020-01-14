@@ -124,7 +124,7 @@ namespace WeaponCore.Support
                             var reduction = (av.GlowShrinkSize * glow.Step);
                             var width = widthScaler ? (av.System.TrailWidth - reduction) * av.TrailScaler : av.System.TrailWidth * av.TrailScaler;
                             var color = av.System.Values.Graphics.Line.Trail.Color;
-                            
+
                             if (!widthScaler)
                                 color *= MathHelper.Clamp(1f - reduction, 0.01f, 1f);
 
@@ -264,7 +264,7 @@ namespace WeaponCore.Support
 
             if (av.Trail != AvShot.TrailState.Off)
             {
-                av.EstimatedTravel += s.Length;
+                av.EstimatedTravel += av.StepSize;
                 av.RunGlow(ref s, true);
             }
         }

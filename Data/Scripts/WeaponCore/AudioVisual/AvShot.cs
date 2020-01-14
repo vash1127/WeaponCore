@@ -307,7 +307,7 @@ namespace WeaponCore.Support
                 }
                 else if (backExpanding)
                 {
-                    glow.VelStep = Vector3D.Clamp(Direction * (EstimatedTravel - VisualLength), Vector3D.Zero, Vector3D.One * ShortStepSize);
+                    glow.VelStep = Direction * MathHelperD.Clamp((EstimatedTravel - VisualLength), 0, ShortStepSize);
                 }
                 else
                 {
@@ -330,7 +330,7 @@ namespace WeaponCore.Support
                     glow.Parent = GlowSteps[i - 1];
                     glow.Parent.TailPos += ShootVelStep;
                 }
-                //if (i == endIdx) glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos, glow.Length) : new LineD(parentPos, glow.TailPos);
+                //if (i == endIdx) glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos) : new LineD(parentPos, glow.TailPos);
                 glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos) : new LineD(parentPos, glow.TailPos);
             }
         }
