@@ -681,15 +681,18 @@ namespace WeaponCore.Support
                 }
             }
 
-            if (FakeShipController.GridResourceDistributor == null)
+            using (FakeShipController.CubeGrid.Pin())
             {
-                FatMap fatMap;
-                if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
+                if (FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null)
                 {
-                    FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
-                    if (FakeShipController.GridResourceDistributor == null) return;
+                    FatMap fatMap;
+                    if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
+                    {
+                        FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
+                        if (FakeShipController.GridResourceDistributor == null) return;
+                    }
+                    else return;
                 }
-                else return;
             }
 
             GridMaxPower = FakeShipController.GridResourceDistributor.MaxAvailableResourceByType(GId);

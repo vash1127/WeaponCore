@@ -48,7 +48,7 @@ namespace WeaponCore.Support
 
             if (Session.Tick600)
             {
-                //Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} =-");
+                Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} =-");
                 _glows = 0;
                 _shrinks = 0;
             }
@@ -254,6 +254,7 @@ namespace WeaponCore.Support
         private void RunShrinks(AvShot av)
         {
             var s = av.TracerShrinks.Dequeue();
+
             if (!av.System.OffsetEffect)
             {
                 if (av.OnScreen != AvShot.Screen.None)
@@ -264,9 +265,11 @@ namespace WeaponCore.Support
 
             if (av.Trail != AvShot.TrailState.Off)
             {
-                av.EstimatedTravel += av.StepSize;
+                if (av.LastTick != Session.Tick) av.EstimatedTravel += av.StepSize;
                 av.RunGlow(ref s, true);
             }
+            
+            if (av.TracerShrinks.Count == 0) av.TracerSteps = 0;
         }
     }
 }

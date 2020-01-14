@@ -246,7 +246,14 @@ namespace WeaponCore.Support
             }
             var backAndGrowing = Trail == TrailState.Back && Tracer == TracerState.Grow;
             if (OnScreen != Screen.None && Trail != TrailState.Off && !backAndGrowing && TracerSteps <= 0)
-                RunGlow(ref EmptyShrink); 
+                RunGlow(ref EmptyShrink);
+
+            if (Hitting)
+            {
+                Hitting = false;
+                TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, p.Info.System.MaxTrajectory);
+                Hit = new Hit();
+            }
         }
 
         internal void LineVariableEffects()

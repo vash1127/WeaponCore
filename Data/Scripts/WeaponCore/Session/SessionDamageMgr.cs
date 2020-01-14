@@ -445,7 +445,7 @@ namespace WeaponCore
                 var minTestRadius = info.DistanceTraveled - info.PrevDistanceTraveled;
                 var tRadius = oRadius < minTestRadius ? minTestRadius : oRadius;
                 var objHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(tRadius)), 1, double.MaxValue);
-
+                if (tRadius > 5) objHp *= 5;
                 if (scaledDamage < objHp)
                 {
                     var reduceBy = objHp / scaledDamage;
@@ -466,6 +466,8 @@ namespace WeaponCore
                     var det = system.Values.Ammo.AreaEffect.Detonation;
                     var dRadius = det.DetonationRadius;
                     var dObjHp = (int)MathHelper.Clamp(MathFuncs.VolumeCube(MathFuncs.LargestCubeInSphere(dRadius)), 1, double.MaxValue);
+                    if (dRadius > 5) dObjHp *= 5;
+                    dObjHp *= 5;
                     var dDamage = det.DetonationDamage;
                     var reduceBy = dObjHp / dDamage;
 
