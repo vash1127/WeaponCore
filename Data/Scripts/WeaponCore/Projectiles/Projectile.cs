@@ -93,6 +93,7 @@ namespace WeaponCore.Projectiles
         internal bool CachedPlanetHit;
         internal bool ForceHitParticle;
         internal bool Gunner;
+        internal bool FakeExplosion;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -240,13 +241,13 @@ namespace WeaponCore.Projectiles
 
             if (EnableAv)
             {
-                if (Info.System.HitParticle && !Info.System.IsBeamWeapon || Info.System.AreaEffect == AreaEffectType.Explosive && !Info.System.Values.Ammo.AreaEffect.Explosions.NoVisuals)
+                if (Info.System.HitParticle && !Info.System.IsBeamWeapon || Info.System.AreaEffect == AreaEffectType.Explosive && !Info.System.Values.Ammo.AreaEffect.Explosions.NoVisuals && Info.System.Values.Ammo.AreaEffect.AreaEffectRadius > 0 && Info.System.Values.Ammo.AreaEffect.AreaEffectDamage > 0)
                 {
                     var hitPlayChance = Info.System.Values.Graphics.Particles.Hit.Extras.HitPlayChance;
                     HitParticleActive = hitPlayChance >= 1 || hitPlayChance >= MyUtils.GetRandomDouble(0.0f, 1f);
                 }
+                FakeExplosion = HitParticleActive && Info.System.AreaEffect == AreaEffectType.Explosive;
             }
-
             var accelPerSec = Info.System.Values.Ammo.Trajectory.AccelPerSec;
             ConstantSpeed = accelPerSec <= 0;
             StepPerSec = accelPerSec > 0 ? accelPerSec : DesiredSpeed; 
@@ -380,6 +381,9 @@ namespace WeaponCore.Projectiles
                     remainingTracer = MathHelperD.Clamp(TracerLength - overShot, 0, Math.Min(TracerLength, Info.DistanceTraveled));
                 else remainingTracer = 0;
                 
+                if (ModelState == EntityState.Exists)
+                    ModelHitOncamera();
+
                 Info.AvShot.Update(stepSize, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir, stepSizeToHit);
 
                 if (Info.MuzzleId != -1)
@@ -830,13 +834,32 @@ namespace WeaponCore.Projectiles
                 if (ForceHitParticle) LastHitPos = Position;
 
                 if (Info.AvShot.OnScreen == Screen.Tracer && HitParticleActive && Info.System.HitParticle) PlayHitParticle();
-                else if (HitParticleActive && (Info.AvShot.OnScreen == Screen.Tracer || closeToCamera)) Info.AvShot.FakeExplosion = true;
+                else if (FakeExplosion && (Info.AvShot.OnScreen == Screen.Tracer || closeToCamera)) Info.AvShot.FakeExplosion = true;
                 Info.AvShot.HitSoundActived = Info.System.HitSound && (Info.AvShot.HitSoundActive && (ForceHitParticle || distToCameraSqr < Info.System.HitSoundDistSqr || LastHitPos.HasValue && (!Info.LastHitShield || Info.System.Values.Audio.Ammo.HitPlayShield)));
 
                 if (Info.AvShot.HitSoundActived) Info.AvShot.HitEmitter.Entity = Hit.Entity;
                 Info.LastHitShield = false;
             }
             Colliding = false;
+        }
+
+        internal void ModelHitOncamera()
+        {
+            ModelSphereLast.Center = LastEntityPos;
+            ModelSphereCurrent.Center = Position;
+            Info.AvShot.LastTick = Info.Ai.Session.Tick;
+            if (Info.AvShot.Triggered)
+            {
+                var currentRadius = Info.TriggerGrowthSteps < Info.System.AreaEffectSize ? Info.AvShot.TriggerMatrix.Scale.AbsMax() : Info.System.AreaEffectSize;
+                ModelSphereLast.Radius = currentRadius;
+                ModelSphereCurrent.Radius = currentRadius;
+            }
+            if (Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent) || FirstOffScreen)
+            {
+                Info.AvShot.OnScreen = Screen.Tracer;
+                FirstOffScreen = false;
+                LastEntityPos = Position;
+            }
         }
 
         internal void PlayAmmoParticle()
@@ -983,8 +1006,10 @@ namespace WeaponCore.Projectiles
                 if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.AvShot.PrimeEntity);
                 if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.AvShot.TriggerEntity);
                 ModelState = EntityState.None;
-                Info.AvShot.Complete(this, false, true);
+                Info.AvShot.Complete(this, false, true, Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
             }
+            else if (Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion)
+                Info.AvShot.Complete(this, false, false, true);
 
         }
 

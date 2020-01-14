@@ -291,6 +291,7 @@ namespace WeaponCore
 
                     block.DoDamage(scaledDamage, damageType, true, null, attackerId);
                     var theEnd = damagePool <= 0 || objectsHit >= maxObjects;
+
                     if (explosive && (!detonateOnEnd && blockIsRoot || detonateOnEnd && theEnd))
                     {
                         var rootPos = grid.GridIntegerToWorld(rootBlock.Position);

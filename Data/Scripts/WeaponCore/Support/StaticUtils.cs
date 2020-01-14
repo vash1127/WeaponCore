@@ -224,13 +224,14 @@ namespace WeaponCore.Support
             if (radius > 10) radius = 10;
             var sphere = new BoundingSphereD(position, radius);
             var cullSphere = sphere;
-            cullSphere.Radius = af.AreaEffectRadius * 5;
+            cullSphere.Radius = radius * 5;
             var drawParticles = !eInfo.NoVisuals && session.Camera.IsInFrustum(ref cullSphere);
             MyExplosionFlags eFlags; 
             if (drawParticles) eFlags = MyExplosionFlags.CREATE_DEBRIS | MyExplosionFlags.CREATE_DECALS | MyExplosionFlags.CREATE_PARTICLE_EFFECT;
             else eFlags = MyExplosionFlags.CREATE_DECALS;
             var customParticle = eInfo.CustomParticle != string.Empty;
             var explosionType = !customParticle ? MyExplosionTypeEnum.MISSILE_EXPLOSION : MyExplosionTypeEnum.CUSTOM;
+            Log.Line($"test: draw:{drawParticles} - type:{explosionType} - radius:{radius} - noVisuals:{eInfo.NoVisuals}");
             MyExplosionInfo explosionInfo = new MyExplosionInfo()
             {
                 PlayerDamage = 0.0f,

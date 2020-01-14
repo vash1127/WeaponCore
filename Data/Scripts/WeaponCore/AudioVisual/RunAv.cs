@@ -48,7 +48,7 @@ namespace WeaponCore.Support
 
             if (Session.Tick600)
             {
-                Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} =-");
+                //Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} =-");
                 _glows = 0;
                 _shrinks = 0;
             }
@@ -229,12 +229,15 @@ namespace WeaponCore.Support
                         }
                         */
                     }
+                }
 
-                    if (av.FakeExplosion && refreshed)
+                if (av.FakeExplosion && (refreshed || av.DetonateFakeExp))
+                {
+                    av.FakeExplosion = false;
+                    if (ExplosionReady)
                     {
-                        av.FakeExplosion = false;
-                        if (ExplosionReady)
-                            SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.AreaEffectRadius, av.Position, av.System);
+                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius, av.Position, av.System);
+                        else SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.AreaEffectRadius, av.Position, av.System);
                     }
                 }
 

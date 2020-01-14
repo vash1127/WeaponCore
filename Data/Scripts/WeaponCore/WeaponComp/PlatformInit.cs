@@ -79,7 +79,7 @@ namespace WeaponCore.Platform
             }
             else
             {
-                if (comp.MissileBase != null && comp.MissileBase.AIEnabled && false)
+                if (comp.MissileBase != null && comp.MissileBase.AIEnabled)
                 {
                     Log.Line($"ai is enabled in SBC! WEAPON DISABELED for: {comp.MissileBase.BlockDefinition.SubtypeName}");
                     State = PlatformState.Invalid;

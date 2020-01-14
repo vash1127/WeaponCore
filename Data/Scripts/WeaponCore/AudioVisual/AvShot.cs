@@ -45,6 +45,7 @@ namespace WeaponCore.Support
         internal bool TrailActivated;
         internal bool Hitting;
         internal bool Back;
+        internal bool DetonateFakeExp;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -190,7 +191,7 @@ namespace WeaponCore.Support
             else if (TrailActivated) OnScreen = Screen.Trail;
         }
 
-        internal void Complete(Projectile p, bool saveHit = false, bool closeModel = false)
+        internal void Complete(Projectile p, bool saveHit = false, bool closeModel = false, bool detonateFakeExp = false)
         {
             if (!Active) {
 
@@ -198,8 +199,11 @@ namespace WeaponCore.Support
                 Ai.Session.Av.AvShots.Add(this);
             }
 
-            if (Hit.HitPos != Vector3D.Zero) {
+            DetonateFakeExp = detonateFakeExp;
 
+            if (Hit.HitPos != Vector3D.Zero)
+            {
+                
                 if (saveHit) {
 
                     if (Hit.Entity != null)
@@ -576,6 +580,7 @@ namespace WeaponCore.Support
             ShrinkInited = false;
             Hitting = false;
             Back = false;
+            DetonateFakeExp = false;
             GlowSteps.Clear();
             Offsets.Clear();
             //
