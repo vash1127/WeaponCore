@@ -376,9 +376,13 @@ namespace WeaponCore.Projectiles
                 if (Info.System.IsBeamWeapon) 
                     remainingTracer = stepSizeToHit;
                 else if (TracerLength < stepSize && !MyUtils.IsZero(TracerLength - stepSize, 1E-01F))
+                {
                     remainingTracer = MathHelperD.Clamp(TracerLength - stepSizeToHit, 0, stepSizeToHit);
+                }
                 else if (TracerLength >= overShot)
+                {
                     remainingTracer = MathHelperD.Clamp(TracerLength - overShot, 0, Math.Min(TracerLength, Info.DistanceTraveled));
+                }
                 else remainingTracer = 0;
                 
                 if (ModelState == EntityState.Exists)

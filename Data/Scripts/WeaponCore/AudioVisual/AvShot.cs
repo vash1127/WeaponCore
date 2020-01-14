@@ -287,7 +287,7 @@ namespace WeaponCore.Support
         {
             var glowCount = GlowSteps.Count;
             var trailTravel = EstimatedTravel - VisualLength;
-            var expanding = trailTravel < ShortStepSize && !MyUtils.IsZero(trailTravel, 1E-01F);
+            var expanding = trailTravel < ShortStepSize && !MyUtils.IsZero(trailTravel, 1E-01F) && !MyUtils.IsZero(trailTravel - ShortStepSize, 1E-01F);
             var backExpanding = Back && expanding;
             var pos = !shrinking ? Position : shrink.Back;
             var backPos = BackOfTracer;
@@ -301,7 +301,7 @@ namespace WeaponCore.Support
                 var startPos = Back ? backPos : pos;
                 var earlyEnd = LifeTime <= 1;
 
-                if (Hitting && !earlyEnd && !backExpanding || !expanding && Back && !MyUtils.IsZero(VisualLength, 1E-01F))
+                if (Hitting && !earlyEnd && !backExpanding || Back && !expanding && !MyUtils.IsZero(VisualLength, 1E-01F))
                 {
                     glow.VelStep = Vector3D.Zero;
                 }
