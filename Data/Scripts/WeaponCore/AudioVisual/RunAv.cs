@@ -270,7 +270,7 @@ namespace WeaponCore.Support
                 av.RunGlow(ref s, true);
             }
             
-            if (av.TracerShrinks.Count == 0) av.TracerSteps = 0;
+            if (av.TracerShrinks.Count == 0) av.ShrinkInited = false;
         }
     }
 }
