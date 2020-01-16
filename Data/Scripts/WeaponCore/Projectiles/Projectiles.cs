@@ -206,6 +206,7 @@ namespace WeaponCore.Projectiles
                 {
                     if (p.Info.DistanceTraveled * p.Info.DistanceTraveled >= p.DistanceToTravelSqr)
                     {
+                        p.AtMaxRange = true;
                         if (p.FieldTime > 0)
                         {
                             p.FieldTime--;
@@ -217,6 +218,7 @@ namespace WeaponCore.Projectiles
                         }
                     }
                 }
+                else p.AtMaxRange = true;
 
                 if (p.Info.System.Ewar)
                     p.RunEwar();
@@ -356,7 +358,8 @@ namespace WeaponCore.Projectiles
                     }
                     else if (p.ModelState == EntityState.None && p.Info.System.AmmoParticle && !p.Info.System.DrawLine)
                     {
-                        p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Position, ref p.Direction, ref p.VisualDir);
+                        if (p.AtMaxRange) p.ShortStepAvUpdate(true, false);
+                        else p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Position, ref p.Direction, ref p.VisualDir);
                     }
                     else
                     {
@@ -364,11 +367,13 @@ namespace WeaponCore.Projectiles
                         var displaceDiff = p.Info.ProjectileDisplacement - p.TracerLength;
                         if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction, ref p.VisualDir);
+                            if (p.AtMaxRange) p.ShortStepAvUpdate(false, false);
+                            else p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                         else
                         {
-                            p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir);
+                            if (p.AtMaxRange) p.ShortStepAvUpdate(false, false);
+                            else p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                     }
                 }

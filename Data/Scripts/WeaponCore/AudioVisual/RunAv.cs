@@ -67,7 +67,7 @@ namespace WeaponCore.Support
                     if (!av.System.OffsetEffect)
                     {
                         if (av.Tracer != AvShot.TracerState.Shrink)
-                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.BackOfTracer, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
+                            MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, av.Color, av.TracerBack, av.PointDir, (float)av.VisualLength, (float)av.TracerWidth);
                     }
                     else
                     {
@@ -119,6 +119,10 @@ namespace WeaponCore.Support
                     {
                         var glow = av.GlowSteps[j];
 
+
+                        if (!refreshed)
+                            glow.Line = new LineD(glow.Line.From + av.ShootVelStep, glow.Line.To + av.ShootVelStep, glow.Line.Length);
+
                         if (av.OnScreen != AvShot.Screen.None)
                         {
                             var reduction = (av.GlowShrinkSize * glow.Step);
@@ -127,12 +131,10 @@ namespace WeaponCore.Support
 
                             if (!widthScaler)
                                 color *= MathHelper.Clamp(1f - reduction, 0.01f, 1f);
-
-                            if (!refreshed)
-                                glow.Line = new LineD(glow.Line.From + av.ShootVelStep, glow.Line.To + av.ShootVelStep, glow.Line.Length);
-
+                            
                             MyTransparentGeometry.AddLineBillboard(av.System.TrailMaterial, color, glow.Line.From, glow.Line.Direction, (float) glow.Line.Length, width);
                         }
+
                         if (++glow.Step >= steps)
                         {
                             remove = true;
@@ -200,21 +202,21 @@ namespace WeaponCore.Support
                         if (!av.AmmoSound)
                         {
                             double distSqr;
-                            Vector3D.DistanceSquared(ref av.Position, ref Session.CameraPos, out distSqr);
+                            Vector3D.DistanceSquared(ref av.TracerFront, ref Session.CameraPos, out distSqr);
                             if (distSqr <= av.System.AmmoTravelSoundDistSqr)
                             {
                                 Log.Line($"travel sound activated");
                                 av.AmmoSoundStart();
                             }
                         }
-                        else av.TravelEmitter.SetPosition(av.Position);
+                        else av.TravelEmitter.SetPosition(av.TracerFront);
                     }
 
                     if (av.HitSoundActived)
                     {
                         //Log.Line($"hit sound activated");
                         av.HitSoundActived = false;
-                        av.HitEmitter.SetPosition(av.Position);
+                        av.HitEmitter.SetPosition(av.TracerFront);
                         av.HitEmitter.CanPlayLoopSounds = false;
                         av.HitEmitter.PlaySound(av.HitSound, true);
                         /*
@@ -236,8 +238,8 @@ namespace WeaponCore.Support
                     av.FakeExplosion = false;
                     if (ExplosionReady)
                     {
-                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius, av.Position, av.System);
-                        else SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.AreaEffectRadius, av.Position, av.System);
+                        if (av.DetonateFakeExp) SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius, av.TracerFront, av.System);
+                        else SUtils.CreateFakeExplosion(Session, av.System.Values.Ammo.AreaEffect.AreaEffectRadius, av.TracerFront, av.System);
                     }
                 }
 
@@ -258,14 +260,13 @@ namespace WeaponCore.Support
             if (!av.System.OffsetEffect)
             {
                 if (av.OnScreen != AvShot.Screen.None)
-                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.Back, av.PointDir, s.Length, s.Thickness);
+                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.NewFront, av.PointDir, s.Length, s.Thickness);
             }
             else
-                av.DrawLineOffsetEffect(s.Back, -av.PointDir, s.Length, s.Thickness, s.Color);
+                av.DrawLineOffsetEffect(s.NewFront, -av.PointDir, s.Length, s.Thickness, s.Color);
 
-            if (av.Trail != AvShot.TrailState.Off)
+            if (av.Trail != AvShot.TrailState.Off && av.Back)
             {
-                if (av.LastTick != Session.Tick) av.EstimatedTravel += av.StepSize;
                 av.RunGlow(ref s, true);
             }
             

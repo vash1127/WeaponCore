@@ -94,6 +94,7 @@ namespace WeaponCore.Projectiles
         internal bool ForceHitParticle;
         internal bool Gunner;
         internal bool FakeExplosion;
+        internal bool AtMaxRange;
         internal readonly ProInfo Info = new ProInfo();
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
@@ -142,6 +143,7 @@ namespace WeaponCore.Projectiles
             MineTriggered = false;
             HitParticleActive = false;
             LinePlanetCheck = false;
+            AtMaxRange = false;
             EndStep = 0;
             Info.PrevDistanceTraveled = 0;
             Info.DistanceTraveled = 0;
@@ -366,34 +368,16 @@ namespace WeaponCore.Projectiles
             if (Hit.HitPos == Vector3D.Zero) return false;
             if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModelId != -1 || Info.System.TriggerModelId != -1))
             {
+                var useCollisionSize = ModelState == EntityState.None && Info.System.AmmoParticle && !Info.System.DrawLine;
                 TestSphere.Center = Hit.HitPos;
 
-                var overShot = Vector3D.Distance(Hit.HitPos, Position);
-                var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
-                var stepSizeToHit = stepSize - overShot;
-                
-                double remainingTracer;
-                if (Info.System.IsBeamWeapon) 
-                    remainingTracer = stepSizeToHit;
-                else if (TracerLength < stepSize && !MyUtils.IsZero(TracerLength - stepSize, 1E-01F))
-                {
-                    remainingTracer = MathHelperD.Clamp(TracerLength - stepSizeToHit, 0, stepSizeToHit);
-                }
-                else if (TracerLength >= overShot)
-                {
-                    remainingTracer = MathHelperD.Clamp(TracerLength - overShot, 0, Math.Min(TracerLength, Info.DistanceTraveled));
-                }
-                else remainingTracer = 0;
-                
+                ShortStepAvUpdate(useCollisionSize, true);
+
                 if (ModelState == EntityState.Exists)
                     ModelHitOncamera();
 
-                Info.AvShot.Update(stepSize, remainingTracer, ref Hit.HitPos, ref Direction, ref VisualDir, stepSizeToHit);
-
                 if (Info.MuzzleId != -1)
-                {
                     Info.AvShot.Complete(this,true);
-                }
             }
 
             Colliding = true;
@@ -417,6 +401,32 @@ namespace WeaponCore.Projectiles
             return true;
         }
 
+        internal void ShortStepAvUpdate(bool useCollisionSize, bool hit)
+        {
+            var endPos = hit ? Hit.HitPos : Position + -Direction * (Info.DistanceTraveled - MaxTrajectory);  
+            var overShot = Vector3D.Distance(endPos, Position);
+            var stepSize = (Info.DistanceTraveled - Info.PrevDistanceTraveled);
+            var stepSizeToHit = stepSize - overShot;
+            var avSize = useCollisionSize ? Info.System.CollisionSize : TracerLength;
+            double remainingTracer;
+            
+            if (Info.System.IsBeamWeapon)
+                remainingTracer = stepSizeToHit;
+            else if (avSize < stepSize && !MyUtils.IsZero(avSize - stepSize, 1E-01F))
+            {
+                remainingTracer = MathHelperD.Clamp(avSize - stepSizeToHit, 0, stepSizeToHit);
+            }
+            else if (avSize >= overShot)
+            {
+                remainingTracer = MathHelperD.Clamp(avSize - overShot, 0, Math.Min(avSize, Info.PrevDistanceTraveled + stepSizeToHit));
+            }
+            else remainingTracer = 0;
+
+            if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
+
+            Info.AvShot.Update(stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit);
+        }
+
         internal void CreateFakeBeams(bool miss = false)
         {
             Vector3D? hitPos = null;
@@ -430,7 +440,7 @@ namespace WeaponCore.Projectiles
                 vs.Hit = Hit;
                 if (vs.System.ConvergeBeams)
                 {
-                    var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.BackOfTracer, Position);
+                    var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerBack, Position);
                     vs.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref VisualDir, beam.Length);
                 }
                 else
@@ -601,10 +611,7 @@ namespace WeaponCore.Projectiles
                             var targetDir = Vector3D.Normalize(tVel);
                             var refDir = Vector3D.Normalize(Position - targetPos);
                             if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.System.TargetLossDegree))
-                            {
-                                Log.Line($"not in targetlossDegree");
                                 PickTarget = true;
-                            }
                         }
                     }
 
