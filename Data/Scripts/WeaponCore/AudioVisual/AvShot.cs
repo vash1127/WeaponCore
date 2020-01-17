@@ -193,16 +193,6 @@ namespace WeaponCore.Support
             }
             
             if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
-
-            if (System.IsBeamWeapon)
-                Tracer = TracerState.Full;
-            else if (Tracer != TracerState.Off && VisualLength <= 0)
-                Tracer = TracerState.Off;
-            else if (VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F) && Hitting)
-            {
-                if (!ShrinkInited) Tracer = TracerState.Shrink;
-                TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, TracerFront));
-            }
         }
 
         internal void Complete(Projectile p, bool saveHit = false, bool closeModel = false, bool detonateFakeExp = false)
@@ -230,6 +220,16 @@ namespace WeaponCore.Support
 
                         Hitting = !ShrinkInited;
                     }
+                }
+
+                if (System.IsBeamWeapon)
+                    Tracer = TracerState.Full;
+                else if (Tracer != TracerState.Off && VisualLength <= 0)
+                    Tracer = TracerState.Off;
+                else if (VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F) && Hitting)
+                {
+                    if (!ShrinkInited) Tracer = TracerState.Shrink;
+                    TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, TracerFront));
                 }
 
                 LastStep = Hitting || MyUtils.IsZero(System.MaxTrajectory - ShortEstTravel, 1E-01F);

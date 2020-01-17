@@ -257,7 +257,6 @@ namespace WeaponCore.Support
         private void RunShrinks(AvShot av)
         {
             var s = av.TracerShrinks.Dequeue();
-
             if (av.LastTick != Session.Tick)
             {
                 if (!av.System.OffsetEffect)
@@ -269,9 +268,7 @@ namespace WeaponCore.Support
                     av.DrawLineOffsetEffect(s.NewFront, -av.PointDir, s.Length, s.Thickness, s.Color);
 
                 if (av.Trail != AvShot.TrailState.Off && av.Back)
-                {
                     av.RunGlow(ref s, true);
-                }
             }
 
             if (av.TracerShrinks.Count == 0) av.ResetHit();
