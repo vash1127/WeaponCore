@@ -261,7 +261,8 @@ namespace WeaponCore.Support
             var glowCount = GlowSteps.Count;
             var firstStep = glowCount == 0;
             var onlyStep = firstStep && LastStep;
-            var needExt = !Back && Hitting;
+            var extEnd = !Back && Hitting;
+            var extStart = Back && firstStep && VisualLength < ShortStepSize;
             Vector3D frontPos;
             Vector3D backPos;
             if (shrinking)
@@ -273,7 +274,7 @@ namespace WeaponCore.Support
             {
                 var futureStep = Direction * ShortStepSize;
                 frontPos = Back && !onlyStep ? TracerBack + futureStep : TracerFront;
-                backPos = Back ? TracerBack : TracerFront + -futureStep;
+                backPos = Back && !extStart ? TracerBack : TracerFront + -futureStep;
             }
 
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
@@ -292,7 +293,7 @@ namespace WeaponCore.Support
 
                 if (i != 0)
                 {
-                    var extend = needExt && i == endIdx;
+                    var extend = extEnd && i == endIdx;
                     g.Parent = GlowSteps[i - 1];
                     g.Line = new LineD(extend ? TracerFront + ShootVelStep: g.Parent.TailPos += ShootVelStep, extend ? g.Parent.TailPos : g.TailPos);
                 }
@@ -388,7 +389,14 @@ namespace WeaponCore.Support
 
             var target = TracerFront + (-Direction * TotalLength);
             ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref Ai.Session.CameraPos);
-            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, MyAPIGateway.Session.Camera.WorldMatrix.Translation);
+            DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Ai.Session.CameraMatrix.Translation);
+
+            if (System.IsBeamWeapon && Vector3D.DistanceSquared(TracerFront, TracerBack) > 640000)
+            {
+                target = TracerFront + (-Direction * (TotalLength - MathHelperD.Clamp(DistanceToLine * 6, DistanceToLine, System.MaxTrajectory * 0.5)));
+                ClosestPointOnLine = MyUtils.GetClosestPointOnLine(ref TracerFront, ref target, ref Ai.Session.CameraPos);
+                DistanceToLine = (float)Vector3D.Distance(ClosestPointOnLine, Ai.Session.CameraMatrix.Translation);
+            }
 
             double scale = 0.1f;
             ScaleFov = Math.Tan(MyAPIGateway.Session.Camera.FovWithZoom * 0.5);

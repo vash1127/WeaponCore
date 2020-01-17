@@ -41,8 +41,8 @@ namespace WeaponCore.Support
         {
             try
             {
-                Ai.CompChange(false, this);
                 RegisterEvents(false);
+                Ai.CompChange(false, this);
                 Ai.OptimalDps -= OptimalDps;
                 WeaponComponent comp;
                 if (Ai.WeaponBase.TryRemove(MyCube, out comp))
@@ -81,7 +81,7 @@ namespace WeaponCore.Support
                 }
                 Ai = null;
             }
-            catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in RemoveComp: {ex} - AiNull:{Ai == null} - SessionNull:{Session == null}"); }
         }
 
         public void StopAllSounds()
