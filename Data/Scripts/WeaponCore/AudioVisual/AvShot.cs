@@ -194,18 +194,11 @@ namespace WeaponCore.Support
             
             if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
 
-            if (Hitting)
-            {
-                Hitting = false;
-                TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, System.MaxTrajectory);
-                Hit = new Hit();
-            }
-
             if (System.IsBeamWeapon)
                 Tracer = TracerState.Full;
             else if (Tracer != TracerState.Off && VisualLength <= 0)
                 Tracer = TracerState.Off;
-            else if (VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F))
+            else if (VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F) && Hitting)
             {
                 if (!ShrinkInited) Tracer = TracerState.Shrink;
                 TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, TracerFront));
@@ -235,7 +228,7 @@ namespace WeaponCore.Support
                         else if (Hit.Projectile != null)
                             HitVelocity = Hit.Projectile.Velocity;
 
-                        Hitting = true;
+                        Hitting = !ShrinkInited;
                     }
                 }
 
@@ -256,10 +249,11 @@ namespace WeaponCore.Support
                 }
 
                 var backAndGrowing = Back && Tracer == TracerState.Grow;
-                var backAndShrinking = Back && ShrinkInited;
-                if (OnScreen != Screen.None && Trail != TrailState.Off && !backAndShrinking && !backAndGrowing)
+                if (OnScreen != Screen.None && Trail != TrailState.Off && !backAndGrowing)
                     RunGlow(ref EmptyShrink);
             }
+
+            Hitting = false;
         }
 
         internal void RunGlow(ref Shrinks shrink, bool shrinking = false)
@@ -279,12 +273,13 @@ namespace WeaponCore.Support
             {
                 var futureStep = Direction * ShortStepSize;
                 frontPos = Back && !onlyStep ? TracerBack + futureStep : TracerFront;
-                backPos = Back && !firstStep ? TracerBack : firstStep ? Origin : TracerFront + -futureStep;
+                backPos = Back ? TracerBack : TracerFront + -futureStep;
             }
 
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
             {
                 var glow = Ai.Session.Av.Glows.Count > 0 ? Ai.Session.Av.Glows.Pop() : new AfterGlow();
+                
                 glow.TailPos = backPos;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
@@ -297,9 +292,9 @@ namespace WeaponCore.Support
 
                 if (i != 0)
                 {
+                    var extend = needExt && i == endIdx;
                     g.Parent = GlowSteps[i - 1];
-                    g.Parent.TailPos += ShootVelStep;
-                    g.Line = new LineD(needExt && i == endIdx ? TracerFront : g.Parent.TailPos, needExt && i == endIdx ? g.Parent.TailPos : g.TailPos);
+                    g.Line = new LineD(extend ? TracerFront + ShootVelStep: g.Parent.TailPos += ShootVelStep, extend ? g.Parent.TailPos : g.TailPos);
                 }
                 else if (i != endIdx)
                     g.Line = new LineD(g.Line.From + ShootVelStep, g.TailPos);
@@ -359,6 +354,7 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
+                if (Hit.HitPos == Vector3D.Zero) Log.Line("WHAT?!@#?!@ ");
                 Hit.HitPos += ShootVelStep;
                 var newTracerFront = Hit.HitPos + -(Direction * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;
@@ -560,6 +556,12 @@ namespace WeaponCore.Support
             TravelEmitter.Entity = PrimeEntity;
             TravelEmitter.PlaySound(TravelSound, true);
             AmmoSound = true;
+        }
+
+        internal void ResetHit()
+        {
+            ShrinkInited = false;
+            TotalLength = MathHelperD.Clamp(MaxTracerLength + MaxGlowLength, 0.1f, System.MaxTrajectory);
         }
 
         internal void Close()

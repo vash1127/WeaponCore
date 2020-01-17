@@ -119,7 +119,6 @@ namespace WeaponCore.Support
                     {
                         var glow = av.GlowSteps[j];
 
-
                         if (!refreshed)
                             glow.Line = new LineD(glow.Line.From + av.ShootVelStep, glow.Line.To + av.ShootVelStep, glow.Line.Length);
 
@@ -259,20 +258,23 @@ namespace WeaponCore.Support
         {
             var s = av.TracerShrinks.Dequeue();
 
-            if (!av.System.OffsetEffect)
+            if (av.LastTick != Session.Tick)
             {
-                if (av.OnScreen != AvShot.Screen.None)
-                    MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.NewFront, av.PointDir, s.Length, s.Thickness);
-            }
-            else
-                av.DrawLineOffsetEffect(s.NewFront, -av.PointDir, s.Length, s.Thickness, s.Color);
+                if (!av.System.OffsetEffect)
+                {
+                    if (av.OnScreen != AvShot.Screen.None)
+                        MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.NewFront, av.PointDir, s.Length, s.Thickness);
+                }
+                else
+                    av.DrawLineOffsetEffect(s.NewFront, -av.PointDir, s.Length, s.Thickness, s.Color);
 
-            if (av.Trail != AvShot.TrailState.Off && av.Back)
-            {
-                av.RunGlow(ref s, true);
+                if (av.Trail != AvShot.TrailState.Off && av.Back)
+                {
+                    av.RunGlow(ref s, true);
+                }
             }
-            
-            if (av.TracerShrinks.Count == 0) av.ShrinkInited = false;
+
+            if (av.TracerShrinks.Count == 0) av.ResetHit();
         }
     }
 }
