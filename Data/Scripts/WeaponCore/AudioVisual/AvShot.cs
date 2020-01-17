@@ -159,7 +159,7 @@ namespace WeaponCore.Support
             StepSize = stepSize;
             EstTravel = StepSize * LifeTime;
             ShortStepSize = shortStepSize ?? stepSize;
-            ShortEstTravel = MathHelperD.Clamp((EstTravel - StepSize) + ShortStepSize, 0, System.MaxTrajectory);
+            ShortEstTravel = MathHelperD.Clamp((EstTravel - StepSize) + ShortStepSize, 0, double.MaxValue);
             
             Direction = direction;
             VisualLength = visualLength;
@@ -172,23 +172,27 @@ namespace WeaponCore.Support
             if (OnScreen == Screen.None && (System.DrawLine || Model == ModelState.None && System.AmmoParticle))
             {
                 var rayTracer = new RayD(TracerBack, PointDir);
-                var rayTrail = new RayD(TracerFront + (-Direction * ShortEstTravel) , PointDir);
+                var rayTrail = new RayD(TracerFront + (-Direction * ShortEstTravel), Direction);
 
                 //DsDebugDraw.DrawRay(rayTracer, VRageMath.Color.White, 0.25f, (float) VisualLength);
                 //DsDebugDraw.DrawRay(rayTrail, VRageMath.Color.Orange, 0.25f, (float)ShortEstTravel);
+                
                 double? dist;
                 Ai.Session.CameraFrustrum.Intersects(ref rayTracer, out dist);
+
                 if (dist != null && dist <= VisualLength)
                     OnScreen = Screen.Tracer;
-                else if (OnScreen == Screen.None && System.Trail)
+                else if (System.Trail)
                 {
                     Ai.Session.CameraFrustrum.Intersects(ref rayTrail, out dist);
-                    if (dist != null && dist <= ShortEstTravel)
+                    if (dist != null && dist <= ShortEstTravel + ShortStepSize)
                         OnScreen = Screen.Trail;
                 }
-                if (OnScreen != Screen.None && System.Trail) TrailActivated = true;
+
+                if (OnScreen != Screen.None && !TrailActivated && System.Trail) TrailActivated = true;
             }
-            else if (TrailActivated) OnScreen = Screen.Trail;
+            
+            if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
 
             if (Hitting)
             {
@@ -251,7 +255,9 @@ namespace WeaponCore.Support
                         PrepOffsetEffect(TracerFront, PointDir, VisualLength);
                 }
 
-                if (OnScreen != Screen.None && Trail != TrailState.Off && !ShrinkInited && !(Back && Tracer == TracerState.Grow))
+                var backAndGrowing = Back && Tracer == TracerState.Grow;
+                var backAndShrinking = Back && ShrinkInited;
+                if (OnScreen != Screen.None && Trail != TrailState.Off && !backAndShrinking && !backAndGrowing)
                     RunGlow(ref EmptyShrink);
             }
         }
@@ -259,62 +265,47 @@ namespace WeaponCore.Support
         internal void RunGlow(ref Shrinks shrink, bool shrinking = false)
         {
             var glowCount = GlowSteps.Count;
-            var first = glowCount == 0;
-            var onlyStep = first && LastStep;
-            var trailTravel = Back ? MathHelperD.Clamp(ShortEstTravel - VisualLength, 0.1f, ShortEstTravel) : ShortEstTravel;
-            var backExpanding = Back && trailTravel < MaxGlowLength;
+            var firstStep = glowCount == 0;
+            var onlyStep = firstStep && LastStep;
+            var needExt = !Back && Hitting;
             Vector3D frontPos;
             Vector3D backPos;
             if (shrinking)
             {
                 frontPos = shrink.NewFront;
-                backPos = !shrink.Last || Back ? shrink.NewFront : TracerFront;
+                backPos = !shrink.Last ? shrink.NewFront : TracerFront;
             }
             else
             {
-                var futureStep = Direction * StepSize;
-                frontPos = Back ? TracerBack + futureStep : TracerFront;
-                backPos = Back ? TracerBack : TracerFront + -futureStep;
+                var futureStep = Direction * ShortStepSize;
+                frontPos = Back && !onlyStep ? TracerBack + futureStep : TracerFront;
+                backPos = Back && !firstStep ? TracerBack : firstStep ? Origin : TracerFront + -futureStep;
             }
 
             if (glowCount <= System.Values.Graphics.Line.Trail.DecayTime)
             {
                 var glow = Ai.Session.Av.Glows.Count > 0 ? Ai.Session.Av.Glows.Pop() : new AfterGlow();
-
-                Vector3D parentPos;
-                if (onlyStep)
-                {
-                    parentPos = TracerFront;
-                    glow.TailPos = Origin;
-                    //Log.Line($"[0] Life:{LifeTime} - trailTrav:{trailTravel} - vLen:{VisualLength}({MaxTracerLength}) - Step:{StepSize}({ShortStepSize}) - EstTravel:{EstTravel}({ShortEstTravel}) - mGlow:{MaxGlowLength} - backexpanding: {backExpanding} - shrink:{shrinking}");
-                }
-                else
-                {
-                    //Log.Line($"[1] Life:{LifeTime} - trailTrav:{trailTravel} - vLen:{VisualLength}({MaxTracerLength}) - Step:{StepSize}({ShortStepSize}) - EstTravel:{EstTravel}({ShortEstTravel}) - mGlow:{MaxGlowLength} - backexpanding: {backExpanding} - shrink:{shrinking}");
-                    parentPos = frontPos;
-                    glow.TailPos = backPos;
-                }
-
+                glow.TailPos = backPos;
                 GlowSteps.Enqueue(glow);
                 ++glowCount;
-                glow.Step = 0;
-                glow.Parent = null;
-
-                var endIdx = glowCount - 1;
-                for (int i = endIdx; i >= 0; i--)
-                {
-                    var g = GlowSteps[i];
-
-                    if (i != 0)
-                    {
-                        g.Parent = GlowSteps[i - 1];
-                        g.Parent.TailPos += ShootVelStep;
-                    }
-                    //if (i == endIdx) glow.Line = i != 0 ? new LineD(glow.Parent.TailPos, glow.TailPos) : new LineD(parentPos, glow.TailPos);
-                    g.Line = i != 0 ? new LineD(g.Parent.TailPos, g.TailPos) : new LineD(parentPos, glow.TailPos);
-                }
             }
 
+            var endIdx = glowCount - 1;
+            for (int i = endIdx; i >= 0; i--)
+            {
+                var g = GlowSteps[i];
+
+                if (i != 0)
+                {
+                    g.Parent = GlowSteps[i - 1];
+                    g.Parent.TailPos += ShootVelStep;
+                    g.Line = new LineD(needExt && i == endIdx ? TracerFront : g.Parent.TailPos, needExt && i == endIdx ? g.Parent.TailPos : g.TailPos);
+                }
+                else if (i != endIdx)
+                    g.Line = new LineD(g.Line.From + ShootVelStep, g.TailPos);
+                else
+                    g.Line = new LineD(frontPos, backPos);
+            }
         }
 
         internal void Shrink()
@@ -356,7 +347,7 @@ namespace WeaponCore.Support
         {
             ShrinkInited = true;
 
-            var fractualSteps = VisualLength / StepSize;
+            var fractualSteps = VisualLength  / StepSize;
             TracerSteps = (int)Math.Floor(fractualSteps);
             TracerStep = TracerSteps;
             if (TracerSteps <= 0 || fractualSteps < StepSize && !MyUtils.IsZero(fractualSteps - StepSize, 1E-01F))

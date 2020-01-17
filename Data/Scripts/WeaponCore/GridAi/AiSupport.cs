@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
+using Sandbox.Game.EntityComponents;
 using Sandbox.ModAPI;
 using VRage;
 using VRage.Collections;
@@ -598,7 +599,10 @@ namespace WeaponCore.Support
         {
             FatMap fatMap;
             if (FakeShipController != null && Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
+            {
                 FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
+                PowerDistributor = FakeShipController.GridResourceDistributor;
+            }
         }
 
         internal void DelayedGridCleanUp(object o)
@@ -651,6 +655,7 @@ namespace WeaponCore.Support
             MyPlanetTmp = null;
             MyPlanet = null;
             TerminalSystem = null;
+            PowerDistributor = null;
         }
         internal void UpdateGridPower()
         {
@@ -681,22 +686,38 @@ namespace WeaponCore.Support
                 }
             }
 
-            using (FakeShipController.CubeGrid.Pin())
+            using (FakeShipController.CubeGrid?.Pin())
             {
-                if (FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null)
+                if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null)
                 {
                     FatMap fatMap;
                     if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
                     {
                         FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
-                        if (FakeShipController.GridResourceDistributor == null) return;
+                        PowerDistributor = FakeShipController.GridResourceDistributor;
+                        if (PowerDistributor == null)
+                        {
+                            Log.Line($"failed to get power dist, still null");
+                            return;
+                        }
                     }
-                    else return;
+                    else
+                    {
+                        Log.Line($"failed to get fatmap for power dist");
+                        return;
+                    }
                 }
+
+                if (PowerDistributor == null)
+                {
+                    Log.Line($"powerDist is null");
+                    return;
+                }
+                
+                GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
+                GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
             }
 
-            GridMaxPower = FakeShipController.GridResourceDistributor.MaxAvailableResourceByType(GId);
-            GridCurrentPower = FakeShipController.GridResourceDistributor.TotalRequiredInputByType(GId);
             GridAvailablePower = GridMaxPower - GridCurrentPower;
 
             GridCurrentPower += BatteryCurrentInput;

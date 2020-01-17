@@ -137,6 +137,8 @@ namespace WeaponCore.Support
 
                         if (++glow.Step >= steps)
                         {
+                            glow.Parent = null;
+                            glow.Step = 0;
                             remove = true;
                             glowCnt--;
                             Glows.Push(glow);
