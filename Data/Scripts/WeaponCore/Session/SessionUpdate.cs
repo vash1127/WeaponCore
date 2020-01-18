@@ -90,7 +90,7 @@ namespace WeaponCore
 
                         var w = comp.Platform.Weapons[j];
 
-                        if (!comp.Set.Value.Weapons[w.WeaponId].Enable) 
+                        if (!w.Set.Enable) 
                             continue;
 
                         ///
@@ -190,7 +190,6 @@ namespace WeaponCore
                         /// Check weapon's turret to see if its time to go home
                         /// 
 
-                        var wState = comp.State.Value.Weapons[w.WeaponId];
                         if (w.TurretMode && comp.State.Value.Online) {                                
                             if ((targetChanged && w.Target.State != Targets.Acquired) || (comp.Gunner != comp.LastGunner && !gunControl)) 
                                 FutureEvents.Schedule(w.TurretHomePosition, null, 240);
@@ -220,7 +219,7 @@ namespace WeaponCore
                         if (w.AvCapable && (!w.PlayTurretAv || Tick60))
                             w.PlayTurretAv = Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < w.System.HardPointAvMaxDistSqr;
 
-                        if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (wState.ManualShoot == ShootOn || wState.ManualShoot == ShootOnce || (wState.ManualShoot == ShootOff && w.AiReady && !directControl) || ((wState.ManualShoot == ShootClick || directControl) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
+                        if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || (w.State.ManualShoot == ShootOff && w.AiReady && !directControl) || ((w.State.ManualShoot == ShootClick || directControl) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                         {
                             if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.System.MustCharge)
                             {
@@ -236,7 +235,7 @@ namespace WeaponCore
                             }
 
                             var targetRequested = w.SeekTarget && targetChanged;
-                            if (!targetRequested && (w.Target.IsAligned) && (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick))
+                            if (!targetRequested && (w.Target.IsAligned || w.State.ManualShoot != ShootOff) && (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick))
                             {
                                 if (!w.RequestedPower && !w.System.MustCharge)
                                 {
@@ -388,7 +387,7 @@ namespace WeaponCore
                 {
 
                     var comp = w.Comp;
-                    var weaponEnabled = !comp.State.Value.Online || comp.Set.Value.Weapons[w.WeaponId].Enable;
+                    var weaponEnabled = !comp.State.Value.Online || w.Set.Enable;
 
 
                     if (!weaponEnabled || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose || !comp.MyCube.InScene)
@@ -416,7 +415,7 @@ namespace WeaponCore
             for (int i = ShootingWeapons.Count - 1; i >= 0; i--)
             {
                 var w = ShootingWeapons[i];
-                if (w.Comp.Ai == null || w.Comp.MyCube.MarkedForClose || !w.Target.IsAligned)
+                if (w.Comp.Ai == null || w.Comp.MyCube.MarkedForClose || !w.Target.IsAligned && w.State.ManualShoot == ShootOff)
                 {
                     ShootingWeapons.RemoveAtFast(i);
                     continue;
@@ -466,9 +465,9 @@ namespace WeaponCore
 
                 if (w.ShootDelayTick <= Tick) w.Shoot();
 
-                if (!w.System.MustCharge && w.Comp.State.Value.Weapons[w.WeaponId].ManualShoot == ShootOnce)
+                if (!w.System.MustCharge && w.State.ManualShoot == ShootOnce)
                 {
-                    w.Comp.State.Value.Weapons[w.WeaponId].ManualShoot = ShootOff;
+                    w.State.ManualShoot = ShootOff;
                     w.StopShooting();
                     w.Comp.Ai.ManualComps = w.Comp.Ai.ManualComps - 1 > 0 ? w.Comp.Ai.ManualComps - 1 : 0;
                 }                

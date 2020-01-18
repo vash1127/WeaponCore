@@ -117,14 +117,12 @@ namespace WeaponCore.Support
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {
                     var w = comp.Platform.Weapons[i];
-
-                    var wState = comp.State.Value.Weapons[w.WeaponId];
                     
-                    if (wState.ManualShoot != ShootOff)
-                        wState.ManualShoot = ShootOnce;
+                    if (w.State.ManualShoot != ShootOff)
+                        w.State.ManualShoot = ShootOnce;
                     else
                     {
-                        wState.ManualShoot = ShootOnce;
+                        w.State.ManualShoot = ShootOnce;
                         comp.Ai.ManualComps++;
                     }
                 }
@@ -141,18 +139,17 @@ namespace WeaponCore.Support
                 {
                     var w = comp.Platform.Weapons[i];
 
-                    var wState = comp.State.Value.Weapons[w.WeaponId];
-                    if (!on && wState.ManualShoot == ShootOn)
+                    if (!on && w.State.ManualShoot == ShootOn)
                     {
-                        wState.ManualShoot = ShootOff;
+                        w.State.ManualShoot = ShootOff;
                         w.StopShooting();
                         comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                     }
-                    else if (on && wState.ManualShoot != ShootOff)
-                        wState.ManualShoot = ShootOn;
+                    else if (on && w.State.ManualShoot != ShootOff)
+                        w.State.ManualShoot = ShootOn;
                     else if (on)
                     {
-                        wState.ManualShoot = ShootOn;
+                        w.State.ManualShoot = ShootOn;
                         comp.Ai.ManualComps++;
                     }
                 }

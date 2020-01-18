@@ -104,11 +104,10 @@ namespace WeaponCore.Control
                             for (int j = 0; j < comp.Platform.Weapons.Length; j++)
                             {
                                 var w = comp.Platform.Weapons[j];
-                                var wState = comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId];
 
-                                if (!on && wState.ManualShoot == ShootOn)
+                                if (!on && w.State.ManualShoot == ShootOn)
                                 {
-                                    wState.ManualShoot = ShootOff;
+                                    w.State.ManualShoot = ShootOff;
                                     if (w.IsShooting)
                                         w.StopShooting();
                                     else if(w.DrawingPower && !w.System.MustCharge)
@@ -116,17 +115,17 @@ namespace WeaponCore.Control
 
                                     if (w.System.MustCharge)
                                     {
-                                        if (w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)
-                                            w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
+                                        if (w.State.CurrentAmmo != w.System.EnergyMagSize)
+                                            w.State.CurrentAmmo = 0;
                                     }
 
                                     comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                                 }
-                                else if (on && wState.ManualShoot != ShootOff)
-                                    wState.ManualShoot = ShootOn;
+                                else if (on && w.State.ManualShoot != ShootOff)
+                                    w.State.ManualShoot = ShootOn;
                                 else if (on)
                                 {
-                                    wState.ManualShoot = ShootOn;
+                                    w.State.ManualShoot = ShootOn;
                                     comp.Ai.ManualComps++;
                                 }
                             }
@@ -179,10 +178,10 @@ namespace WeaponCore.Control
                     }
                     w.StopShooting();
 
-                    if (w.System.MustCharge && ((w.System.IsHybrid && w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.MagazineDef.Capacity) || (!w.System.IsHybrid && w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)))
+                    if (w.System.MustCharge && ((w.System.IsHybrid && w.State.CurrentAmmo != w.System.MagazineDef.Capacity) || (!w.System.IsHybrid && w.State.CurrentAmmo != w.System.EnergyMagSize)))
                     {
                         w.CurrentCharge = 0;
-                        w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
+                        w.State.CurrentAmmo = 0;
                         w.Reloading = false;
                     }
                     comp.CurrentCharge += w.CurrentCharge;
@@ -220,7 +219,7 @@ namespace WeaponCore.Control
                     );
                 }
 
-                comp.Set.Value.Weapons[w.WeaponId].Enable = On;
+                w.Set.Enable = On;
             }
         }
 

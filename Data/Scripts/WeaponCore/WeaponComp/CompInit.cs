@@ -132,7 +132,6 @@ namespace WeaponCore.Support
 
             HeatSinkRate += weapon.HsRate;
 
-            var state = State.Value.Weapons[weapon.WeaponId];
             //range slider fix
             maxTrajectory = 0;
             if (ob != null && ob.MaxRangeMeters > maxTrajectory)
@@ -146,9 +145,9 @@ namespace WeaponCore.Support
             if (!weapon.System.EnergyAmmo || weapon.System.MustCharge)
                 Session.ComputeStorage(weapon);
 
-            if (state.CurrentAmmo == 0 && !weapon.Reloading)
+            if (weapon.State.CurrentAmmo == 0 && !weapon.Reloading)
                 weapon.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
-            else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && state.CurrentAmmo == weapon.System.MagazineDef.Capacity) || state.CurrentAmmo == weapon.System.EnergyMagSize))
+            else if (weapon.System.MustCharge && ((weapon.System.IsHybrid && weapon.State.CurrentAmmo == weapon.System.MagazineDef.Capacity) || weapon.State.CurrentAmmo == weapon.System.EnergyMagSize))
             {
                 weapon.CurrentCharge = weapon.System.EnergyMagSize;
                 CurrentCharge += weapon.System.EnergyMagSize;
@@ -159,12 +158,12 @@ namespace WeaponCore.Support
                     CurrentCharge -= weapon.CurrentCharge;
 
                 weapon.CurrentCharge = 0;
-                state.CurrentAmmo = 0;
+                weapon.State.CurrentAmmo = 0;
                 weapon.Reloading = false;
                 Session.ComputeStorage(weapon);
             }
 
-            if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
+            if (weapon.State.ManualShoot != Weapon.TerminalActionState.ShootOff)
             {
                 Ai.ManualComps++;
             }

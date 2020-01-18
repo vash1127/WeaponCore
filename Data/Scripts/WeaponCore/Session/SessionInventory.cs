@@ -21,13 +21,13 @@ namespace WeaponCore
 
             var invWithMagsAvailable = comp.Ai.AmmoInventories[def];
 
-            comp.State.Value.Weapons[weapon.WeaponId].CurrentMags = comp.BlockInventory.GetItemAmount(def);
-            weapon.CurrentAmmoVolume = (float)comp.State.Value.Weapons[weapon.WeaponId].CurrentMags * itemVolume;
+            weapon.State.CurrentMags = comp.BlockInventory.GetItemAmount(def);
+            weapon.CurrentAmmoVolume = (float)weapon.State.CurrentMags * itemVolume;
 
             if (weapon.CurrentAmmoVolume < 0.25f * weapon.System.MaxAmmoVolume && invWithMagsAvailable.Count > 0)
                 weapon.Comp.Session.WeaponAmmoPullQueue.Enqueue(weapon);
 
-            if (comp.State.Value.Weapons[weapon.WeaponId].CurrentAmmo == 0 && (weapon.System.MustCharge || comp.State.Value.Weapons[weapon.WeaponId].CurrentMags > 0 || comp.Session.IsCreative))
+            if (weapon.State.CurrentAmmo == 0 && (weapon.System.MustCharge || weapon.State.CurrentMags > 0 || comp.Session.IsCreative))
                 weapon.StartReload();
         }
 

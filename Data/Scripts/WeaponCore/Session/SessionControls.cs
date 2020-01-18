@@ -87,21 +87,20 @@ namespace WeaponCore
                     for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                     {
                         var w = comp.Platform.Weapons[i];
-                        var wState = comp.State.Value.Weapons[w.WeaponId];
-                        if (wState.ManualShoot == ShootClick)
+                        if (w.State.ManualShoot == ShootClick)
                         {
-                            wState.ManualShoot = ShootOff;
+                            w.State.ManualShoot = ShootOff;
                             comp.MouseShoot = false;
                             comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                         }
-                        else if (wState.ManualShoot != ShootOff)
+                        else if (w.State.ManualShoot != ShootOff)
                         {
-                            wState.ManualShoot = ShootClick;
+                            w.State.ManualShoot = ShootClick;
                             comp.MouseShoot = true;
                         }
                         else
                         {
-                            wState.ManualShoot = ShootClick;
+                            w.State.ManualShoot = ShootClick;
                             comp.MouseShoot = true;
                             comp.Ai.ManualComps++;
                         }
@@ -197,10 +196,9 @@ namespace WeaponCore
                 
                 var w = comp.Platform.Weapons[weaponId];
 
-                var wState = comp.State.Value.Weapons[w.WeaponId];
-                if (wState.ManualShoot == ShootOn)
+                if (w.State.ManualShoot == ShootOn)
                 {
-                    wState.ManualShoot = ShootOff;
+                    w.State.ManualShoot = ShootOff;
                     if (w.IsShooting)
                         w.StopShooting();
                     else if (w.DrawingPower && !w.System.MustCharge)
@@ -208,16 +206,16 @@ namespace WeaponCore
 
                     if (w.System.MustCharge)
                     {
-                        if(w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)
-                            w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
+                        if(w.State.CurrentAmmo != w.System.EnergyMagSize)
+                            w.State.CurrentAmmo = 0;
                     }
 
                     comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                 }
-                else if (wState.ManualShoot != ShootOff) wState.ManualShoot = ShootOn;
+                else if (w.State.ManualShoot != ShootOff) w.State.ManualShoot = ShootOn;
                 else
                 {
-                    wState.ManualShoot = ShootOn;
+                    w.State.ManualShoot = ShootOn;
                     comp.Ai.ManualComps++;
                 }
             };
@@ -276,19 +274,18 @@ namespace WeaponCore
                 if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !comp.Platform.Structure.HashToId.TryGetValue(id, out weaponId) || comp.Platform.Weapons[weaponId].System.WeaponId != id) return;
 
                 var w = comp.Platform.Weapons[weaponId];
-                var wState = comp.State.Value.Weapons[w.WeaponId];
 
-                if (wState.ManualShoot == ShootOff) return;
+                if (w.State.ManualShoot == ShootOff) return;
 
-                wState.ManualShoot = ShootOff;
+                w.State.ManualShoot = ShootOff;
                 if (w.IsShooting)
                     w.StopShooting();
                 else if (w.DrawingPower && !w.System.MustCharge)
                     w.StopPowerDraw();
                 else if (w.System.MustCharge)
                 {
-                    if (w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo != w.System.EnergyMagSize)
-                        w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = 0;
+                    if (w.State.CurrentAmmo != w.System.EnergyMagSize)
+                        w.State.CurrentAmmo = 0;
                 }
 
                 comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
@@ -357,7 +354,7 @@ namespace WeaponCore
                 if (comp.Platform.Structure.HashToId.TryGetValue(weaponHash, out weaponId))
                 {
                     var w = comp.Platform.Weapons[weaponId];
-                    if (weaponHash == w.System.WeaponId && comp.State.Value.Weapons[w.WeaponId].ManualShoot != ShootOff)
+                    if (weaponHash == w.System.WeaponId && w.State.ManualShoot != ShootOff)
                         return true;
                 }
             }

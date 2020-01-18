@@ -70,6 +70,8 @@ namespace WeaponCore.Platform
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
+        internal readonly WeaponSettingsValues Set;
+        internal readonly WeaponStateValues State;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
@@ -234,6 +236,8 @@ namespace WeaponCore.Platform
             NewTarget = new Target(comp.MyCube);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             TrackProjectiles = System.TrackProjectile;
+            Set = Comp.Set.Value.Weapons[WeaponId];
+            State = Comp.State.Value.Weapons[WeaponId];
         }
     }
 }

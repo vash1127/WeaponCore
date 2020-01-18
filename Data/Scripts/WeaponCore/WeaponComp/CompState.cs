@@ -81,7 +81,7 @@ namespace WeaponCore.Support
                     else if(MissileBase != null && !MissileBase.Enabled)
                         w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
 
-                    if (State.Value.Weapons[w.WeaponId].CurrentAmmo == 0)
+                    if (w.State.CurrentAmmo == 0)
                         w.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
                 }
             }

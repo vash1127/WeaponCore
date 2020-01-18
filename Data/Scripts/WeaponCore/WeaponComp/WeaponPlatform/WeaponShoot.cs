@@ -18,9 +18,8 @@ namespace WeaponCore.Platform
         {
             var session = Comp.Session;
             var tick = session.Tick;
-            var state = Comp.State.Value.Weapons[WeaponId];
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            var userControlled = Comp.Gunner != WeaponComponent.Control.None || state.ManualShoot != TerminalActionState.ShootOff;
+            var userControlled = Comp.Gunner != WeaponComponent.Control.None || State.ManualShoot != TerminalActionState.ShootOff;
             var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
 
             //Log.Line($"{System.WeaponName} - tick - ShootDelayTick:{tick - ShootDelayTick} - tickUntilShoot:{_ticksUntilShoot} - shootTick:{_shootTick} - TicksPerShot:{TicksPerShot}");
@@ -76,9 +75,9 @@ namespace WeaponCore.Platform
 
             if (!IsShooting) StartShooting();         
 
-            if (System.BurstMode && ++state.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
+            if (System.BurstMode && ++State.ShotsFired > System.Values.HardPoint.Loading.ShotsInBurst)
             {
-                    state.ShotsFired = 1;                    
+                    State.ShotsFired = 1;                    
                     EventTriggerStateChanged(EventTriggers.BurstReload, false);
             }
 
@@ -115,8 +114,8 @@ namespace WeaponCore.Platform
                 if (!System.EnergyAmmo || System.IsHybrid)
                 {
 
-                    if (Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0) break;
-                    Comp.State.Value.Weapons[WeaponId].CurrentAmmo--;
+                    if (State.CurrentAmmo == 0) break;
+                    State.CurrentAmmo--;
                 }
 
                 if (System.HasBackKickForce && !Comp.Ai.IsStatic)
@@ -264,13 +263,13 @@ namespace WeaponCore.Platform
     
                 _muzzlesToFire.Add(MuzzleIdToName[current]);
 
-                if (Comp.State.Value.Weapons[WeaponId].Heat <= 0 && Comp.State.Value.Weapons[WeaponId].Heat + HeatPShot > 0)
+                if (State.Heat <= 0 && State.Heat + HeatPShot > 0)
                     UpdateWeaponHeat(true);
                 
 
-                Comp.State.Value.Weapons[WeaponId].Heat += HeatPShot;
+                State.Heat += HeatPShot;
                 Comp.CurrentHeat += HeatPShot;
-                if (Comp.State.Value.Weapons[WeaponId].Heat > System.MaxHeat)
+                if (State.Heat > System.MaxHeat)
                 {
                     if (Comp.Set.Value.Overload > 1)
                     {
@@ -290,7 +289,7 @@ namespace WeaponCore.Platform
 
             EventTriggerStateChanged(state: EventTriggers.Firing, active: true, muzzles: _muzzlesToFire);
 
-            if (System.BurstMode && (Comp.State.Value.Weapons[WeaponId].CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && state.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
+            if (System.BurstMode && (State.CurrentAmmo > 0 || (System.EnergyAmmo && !System.MustCharge)) && State.ShotsFired == System.Values.HardPoint.Loading.ShotsInBurst)
             {
                 uint delay = 0;
                 if (System.WeaponAnimationLengths.TryGetValue(EventTriggers.Firing, out delay))
@@ -304,12 +303,12 @@ namespace WeaponCore.Platform
                 var burstDelay = (uint)System.Values.HardPoint.Loading.DelayAfterBurst;
                 _shootTick = burstDelay > TicksPerShot ? tick + burstDelay + delay: tick + TicksPerShot + delay;
             }
-            else if ((!System.EnergyAmmo || System.MustCharge) && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
+            else if ((!System.EnergyAmmo || System.MustCharge) && State.CurrentAmmo == 0)
                 StartReload();
 
-            if (System.MustCharge && state.ManualShoot == TerminalActionState.ShootOnce && Comp.State.Value.Weapons[WeaponId].CurrentAmmo == 0)
+            if (System.MustCharge && State.ManualShoot == TerminalActionState.ShootOnce && State.CurrentAmmo == 0)
             {
-                state.ManualShoot = TerminalActionState.ShootOff;
+                State.ManualShoot = TerminalActionState.ShootOff;
                 StopShooting();
                 Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
             }

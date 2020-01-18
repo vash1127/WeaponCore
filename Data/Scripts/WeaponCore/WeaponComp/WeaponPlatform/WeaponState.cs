@@ -426,9 +426,9 @@ namespace WeaponCore.Platform
 
                     if ((System.EnergyAmmo || System.IsHybrid) && !System.MustCharge && !Comp.UnlimitedPower && power && DrawingPower)
                         StopPowerDraw();
-                    else if (System.MustCharge && Comp.State.Value.Weapons[WeaponId].CurrentAmmo != 0)
+                    else if (System.MustCharge && State.CurrentAmmo != 0)
                     {
-                        Comp.State.Value.Weapons[WeaponId].CurrentAmmo = 0;
+                        State.CurrentAmmo = 0;
                         Comp.CurrentCharge -= CurrentCharge;
                         CurrentCharge = 0;
                     }
@@ -492,7 +492,7 @@ namespace WeaponCore.Platform
             if (IsShooting)
                 StopShooting();
 
-            if ((Comp.State.Value.Weapons[WeaponId].CurrentMags == 0 && !System.MustCharge && !Comp.Session.IsCreative))
+            if ((State.CurrentMags == 0 && !System.MustCharge && !Comp.Session.IsCreative))
             {
                 //Log.Line($"Out of Ammo");
                 if (!OutOfAmmo)
@@ -547,7 +547,7 @@ namespace WeaponCore.Platform
             {
                 if (!w.System.IsHybrid)
                 {
-                    w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.EnergyMagSize;
+                    w.State.CurrentAmmo = w.System.EnergyMagSize;
                     w.Comp.CurrentCharge = w.System.EnergyMagSize;
                     w.CurrentCharge = w.System.EnergyMagSize;
                 }
@@ -564,7 +564,7 @@ namespace WeaponCore.Platform
             {
                 if (w.Comp.BlockInventory.RemoveItemsOfType(1, w.System.AmmoDefId) > 0 || w.Comp.Session.IsCreative)
                 {
-                    w.Comp.State.Value.Weapons[w.WeaponId].CurrentAmmo = w.System.MagazineDef.Capacity;
+                    w.State.CurrentAmmo = w.System.MagazineDef.Capacity;
                     if (w.System.IsHybrid)
                     {
                         w.Comp.CurrentCharge = w.System.EnergyMagSize;
@@ -575,7 +575,7 @@ namespace WeaponCore.Platform
 
             w.EventTriggerStateChanged(EventTriggers.Reloading, false);
             w.Reloading = false;
-            w.Comp.State.Value.Weapons[w.WeaponId].ShotsFired = 0;
+            w.State.ShotsFired = 0;
         }
 
         public void StartFiringSound()

@@ -74,7 +74,7 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
-            if ((Comp.SorterBase == null && Comp.MissileBase == null) || Comp.State.Value.Weapons[WeaponId].ManualShoot != TerminalActionState.ShootOff || Comp.Gunner == WeaponComponent.Control.Direct || Target.State == Target.Targets.Acquired)
+            if ((Comp.SorterBase == null && Comp.MissileBase == null) || State.ManualShoot != TerminalActionState.ShootOff || Comp.Gunner == WeaponComponent.Control.Direct || Target.State == Target.Targets.Acquired)
                 return;
 
             var azStep = System.AzStep;
@@ -147,7 +147,7 @@ namespace WeaponCore.Platform
             try
             {
 
-                var currentHeat = Comp.State.Value.Weapons[WeaponId].Heat;
+                var currentHeat = State.Heat;
                 currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
                 var set = currentHeat - LastHeat > 0.001 || (currentHeat - LastHeat) * -1 > 0.001;
 
@@ -176,11 +176,11 @@ namespace WeaponCore.Platform
                     LastHeat = currentHeat;
                 }
 
-                if (set && System.DegRof && Comp.State.Value.Weapons[WeaponId].Heat >= (System.MaxHeat * .8))
+                if (set && System.DegRof && State.Heat >= (System.MaxHeat * .8))
                 {
                     var systemRate = System.RateOfFire * Comp.Set.Value.RofModifier;
                     var barrelRate = System.BarrelSpinRate * Comp.Set.Value.RofModifier;
-                    var heatModifier = MathHelper.Lerp(1f, .25f, Comp.State.Value.Weapons[WeaponId].Heat / System.MaxHeat);
+                    var heatModifier = MathHelper.Lerp(1f, .25f, State.Heat / System.MaxHeat);
 
                     systemRate *= heatModifier;
 
@@ -211,12 +211,11 @@ namespace WeaponCore.Platform
                     if (!Comp.Session.DedicatedServer)
                         Comp.TerminalRefresh();
 
-                    var weaponValue = Comp.State.Value.Weapons[WeaponId];
                     Comp.CurrentHeat = Comp.CurrentHeat >= HsRate ? Comp.CurrentHeat - HsRate : 0;
-                    weaponValue.Heat = weaponValue.Heat >= HsRate ? weaponValue.Heat - HsRate : 0;
+                    State.Heat = State.Heat >= HsRate ? State.Heat - HsRate : 0;
 
 
-                    if (Comp.Overheated && weaponValue.Heat <= (System.MaxHeat * System.WepCoolDown))
+                    if (Comp.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
                     {
                         ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                         ShootDelayTick += Comp.Session.Tick;
@@ -227,7 +226,7 @@ namespace WeaponCore.Platform
                     resetFakeTick = true;
                 }
 
-                if (Comp.State.Value.Weapons[WeaponId].Heat > 0 || reset)
+                if (State.Heat > 0 || reset)
                 {
                     if (resetFakeTick || reset)
                         _fakeHeatTick = 0;
