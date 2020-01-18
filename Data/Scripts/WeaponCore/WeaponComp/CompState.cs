@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Sandbox.Game;
+using Sandbox.ModAPI;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Platform;
@@ -12,6 +13,26 @@ namespace WeaponCore.Support
 {
     public partial class WeaponComponent
     {
+        internal void UpdateGunnerState()
+        {
+            LastGunner = Gunner;
+            if (MyCube == Session.ControlledEntity) Gunner = Control.Direct;
+            else if (Set.Value.Overrides.ManualAim) Gunner = Control.Manual;
+            else Gunner = Control.None;
+
+            if (Gunner != LastGunner)
+            {
+                for (int i = 0; i < Platform.Weapons.Length; i++)
+                {
+                    var w = Platform.Weapons[i];
+                    if (Gunner == Control.Manual)
+                        Ai.Gunners[w.Comp] = MyAPIGateway.Session.Player.IdentityId;
+                    else
+                        Ai.Gunners.Remove(w.Comp);
+                }
+            }
+        }
+
         internal void HealthCheck()
         {
             switch (Status)

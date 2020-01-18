@@ -1,8 +1,5 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Sandbox.Game.Entities;
-using Sandbox.Game.EntityComponents;
-using VRage.Collections;
 using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Projectiles;
@@ -12,8 +9,11 @@ namespace WeaponCore.Support
 {
     internal class Target
     {
-        internal volatile Targets State = Targets.Expired;
-        internal volatile bool IsProjectile;
+        internal Targets State = Targets.Expired;
+        internal bool IsTracking;
+        internal bool IsAligned;
+        internal bool IsProjectile;
+        internal bool IsFakeTarget;
         internal bool TargetLock;
         internal MyCubeBlock FiringCube;
         internal MyEntity Entity;
@@ -24,7 +24,7 @@ namespace WeaponCore.Support
         internal int BlockPrevDeckLen;
         internal uint CheckTick;
         internal BlockTypes LastBlockType;
-        internal Vector3D HitPos;
+        internal Vector3D TargetPos;
         internal double HitShortDist;
         internal double OrigDistance;
         internal long TopEntityId;
@@ -47,7 +47,8 @@ namespace WeaponCore.Support
             target.Entity = Entity;
             target.Projectile = Projectile;
             target.IsProjectile = target.Projectile != null;
-            target.HitPos = HitPos;
+            target.IsFakeTarget = IsFakeTarget;
+            target.TargetPos = TargetPos;
             target.HitShortDist = HitShortDist;
             target.OrigDistance = OrigDistance;
             target.TopEntityId = TopEntityId;
@@ -55,30 +56,42 @@ namespace WeaponCore.Support
             if (reset) Reset();
         }
 
-        internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null)
+        internal void Set(MyEntity ent, Vector3D pos, double shortDist, double origDist, long topEntId, Projectile projectile = null, bool isFakeTarget = false)
         {
             Entity = ent;
             Projectile = projectile;
             IsProjectile = projectile != null;
-            HitPos = pos;
+            IsFakeTarget = isFakeTarget;
+            TargetPos = pos;
             HitShortDist = shortDist;
             OrigDistance = origDist;
             TopEntityId = topEntId;
             State = Targets.Acquired;
         }
 
-        internal void Reset(bool expire = true)
+        internal void SetFake(Vector3D pos)
+        {
+            Reset(false);
+            IsFakeTarget = true;
+            TargetPos = pos;
+            State = Targets.Acquired;
+        }
+
+        internal void Reset(bool expire = true, bool resetTimer = true)
         {
             Entity = null;
             IsProjectile = false;
+            IsFakeTarget = false;
+            IsTracking = false;
+            IsAligned = false;
             Projectile = null;
-            HitPos = Vector3D.Zero;
+            TargetPos = Vector3D.Zero;
             HitShortDist = 0;
             OrigDistance = 0;
             TopEntityId = 0;
             if (expire)
             {
-                CheckTick = 0;
+                if (resetTimer) CheckTick = 0;
                 State = Targets.Expired;
             }
             TargetLock = false;

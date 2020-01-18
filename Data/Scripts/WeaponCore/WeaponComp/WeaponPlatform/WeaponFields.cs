@@ -62,7 +62,6 @@ namespace WeaponCore.Platform
 
         internal Target Target;
         internal Target NewTarget;
-        internal Vector3D TargetPos;
         internal MathFuncs.Cone AimCone = new MathFuncs.Cone();
         internal Matrix[] BarrelRotationPerShot = new Matrix[10];
         internal MyParticleEffect[] BarrelEffects1;
@@ -124,8 +123,6 @@ namespace WeaponCore.Platform
         internal bool AiReady;
         internal bool SeekTarget;
         internal bool TrackingAi;
-        internal bool IsTracking;
-        internal bool IsAligned;
         internal bool IsShooting;
         internal bool PlayTurretAv;
         internal bool AvCapable;

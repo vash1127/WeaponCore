@@ -20,7 +20,7 @@ namespace WeaponCore.Platform
             var tick = session.Tick;
             var state = Comp.State.Value.Weapons[WeaponId];
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            var userControlled = Comp.Gunner || state.ManualShoot != TerminalActionState.ShootOff;
+            var userControlled = Comp.Gunner != WeaponComponent.Control.None || state.ManualShoot != TerminalActionState.ShootOff;
             var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
 
             //Log.Line($"{System.WeaponName} - tick - ShootDelayTick:{tick - ShootDelayTick} - tickUntilShoot:{_ticksUntilShoot} - shootTick:{_shootTick} - TicksPerShot:{TicksPerShot}");
@@ -196,11 +196,11 @@ namespace WeaponCore.Platform
                         p.Info.WeaponCache = WeaponCache;
                         p.Info.WeaponCache.VirutalId = -1;
 
-                        p.Gunner = Comp.Gunner;
+                        p.Gunner = Comp.Gunner != WeaponComponent.Control.None;
                         p.Info.ShooterVel = Comp.Ai.GridVel;
                         p.Info.Origin = muzzle.Position;
                         p.Info.OriginUp = MyPivotUp;
-                        p.PredictedTargetPos = TargetPos;
+                        p.PredictedTargetPos = Target.TargetPos;
                         p.Direction = muzzle.DeviatedDir;
                         p.State = Projectile.ProjectileState.Start;
 
@@ -312,7 +312,6 @@ namespace WeaponCore.Platform
                 state.ManualShoot = TerminalActionState.ShootOff;
                 StopShooting();
                 Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
-                Comp.Shooting = Comp.Shooting - 1 > 0 ? Comp.Shooting - 1 : 0;
             }
             _muzzlesToFire.Clear();
 
@@ -343,11 +342,11 @@ namespace WeaponCore.Platform
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
 
-            p.Gunner = Comp.Gunner;
+            p.Gunner = Comp.Gunner != WeaponComponent.Control.None;
             p.Info.ShooterVel = Comp.Ai.GridVel;
             p.Info.Origin = MyPivotPos;
             p.Info.OriginUp = MyPivotUp;
-            p.PredictedTargetPos = TargetPos;
+            p.PredictedTargetPos = Target.TargetPos;
             p.Direction = MyPivotDir;
             p.State = Projectile.ProjectileState.Start;
             return p;

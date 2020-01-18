@@ -46,7 +46,6 @@ namespace WeaponCore.Control
                             if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
                             comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                             comp.Ai.ManualComps++;
-                            comp.Shooting++;
                         }
                     };
                 }
@@ -92,7 +91,6 @@ namespace WeaponCore.Control
                                 if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
                                 comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
                                 comp.Ai.ManualComps++;
-                                comp.Shooting++;
                             }
 
                         };
@@ -123,7 +121,6 @@ namespace WeaponCore.Control
                                     }
 
                                     comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                                    comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                                 }
                                 else if (on && wState.ManualShoot != ShootOff)
                                     wState.ManualShoot = ShootOn;
@@ -131,7 +128,6 @@ namespace WeaponCore.Control
                                 {
                                     wState.ManualShoot = ShootOn;
                                     comp.Ai.ManualComps++;
-                                    comp.Shooting++;
                                 }
                             }
                         };

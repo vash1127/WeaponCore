@@ -25,6 +25,30 @@ namespace WeaponCore.Support
             internal int Current;
             internal int Max;
         }
+        internal class FakeTarget
+        {
+            internal Vector3D Position;
+            internal Vector3 LinearVelocity;
+            internal Vector3 Acceleration;
+            internal bool ClearTarget;
+
+            internal void Update(Vector3D hitPos, MyEntity ent = null)
+            {
+                Position = hitPos;
+                if (ent != null)
+                {
+                    LinearVelocity = ent.Physics?.LinearVelocity ?? Vector3.Zero;
+                    Acceleration = ent.Physics?.LinearAcceleration ?? Vector3.Zero;
+                }
+
+                ClearTarget = false;
+            }
+
+            internal void Clear()
+            {
+                ClearTarget = true;
+            }
+        }
 
         internal class AiTargetingInfo
         {
@@ -772,7 +796,6 @@ namespace WeaponCore.Support
                         comp.MouseShoot = false;
                         wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
                         ManualComps = ManualComps - 1 > 0 ? ManualComps - 1 : 0;
-                        comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                     }
 
                 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using Sandbox.ModAPI;
 using VRage.Game;
+using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
@@ -59,8 +60,8 @@ namespace WeaponCore
                 InitPointerOffset(0.05);
             }
 
-            if (s.Tick10)
-                RayCheckTargets(offetPosition, Vector3D.Normalize(offetPosition - s.CameraPos), true, true);
+            if (_session.Tick10 || RecentTarget)
+                RecentTarget = SelectTarget(manualSelect: false);
 
             if (s.Tick - _lastDrawTick > 1 && _delay++ < 10) return;
             _delay = 0;

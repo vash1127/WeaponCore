@@ -50,7 +50,10 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube)) return true;
+                    if (grid.TryGetCube(start, out cube))
+                    {
+                        return true;
+                    }
                 }
             }
             else if (max == delta.Y)
@@ -78,7 +81,10 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube)) return true;
+                    if (grid.TryGetCube(start, out cube))
+                    {
+                        return true;
+                    }
                 }
             }
             else
@@ -106,7 +112,10 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube)) return true;
+                    if (grid.TryGetCube(start, out cube))
+                    {
+                        return true;
+                    }
                 }
             }
             return false;

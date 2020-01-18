@@ -93,7 +93,6 @@ namespace WeaponCore
                             wState.ManualShoot = ShootOff;
                             comp.MouseShoot = false;
                             comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                            comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                         }
                         else if (wState.ManualShoot != ShootOff)
                         {
@@ -105,7 +104,6 @@ namespace WeaponCore
                             wState.ManualShoot = ShootClick;
                             comp.MouseShoot = true;
                             comp.Ai.ManualComps++;
-                            comp.Shooting++;
                         }
                     }
                 };
@@ -215,14 +213,12 @@ namespace WeaponCore
                     }
 
                     comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                    comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
                 }
                 else if (wState.ManualShoot != ShootOff) wState.ManualShoot = ShootOn;
                 else
                 {
                     wState.ManualShoot = ShootOn;
                     comp.Ai.ManualComps++;
-                    comp.Shooting++;
                 }
             };
             action0.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
@@ -255,7 +251,6 @@ namespace WeaponCore
                 {
                     wState.ManualShoot = ShootOn;
                     comp.Ai.ManualComps++;
-                    comp.Shooting++;
                 }
             };
             action1.Writer = (b, t) => t.Append("On");
@@ -297,7 +292,6 @@ namespace WeaponCore
                 }
 
                 comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                comp.Shooting = comp.Shooting - 1 > 0 ? comp.Shooting - 1 : 0;
             };
             action2.Writer = (b, t) => t.Append("Off");
             action2.Enabled = (b) =>
@@ -332,7 +326,6 @@ namespace WeaponCore
                         if (comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot != ShootOff) return;
                         comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
                         comp.Ai.ManualComps++;
-                        comp.Shooting++;
                     }
                 }
             };

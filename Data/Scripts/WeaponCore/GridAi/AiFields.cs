@@ -23,6 +23,7 @@ namespace WeaponCore.Support
         internal volatile bool SubGridsChanged;
 
         internal readonly Focus Focus = new Focus(2);
+        internal readonly FakeTarget DummyTarget = new FakeTarget();
         internal readonly AiTargetingInfo TargetingInfo = new AiTargetingInfo();
         internal readonly MyShipController FakeShipController = new MyShipController();
 

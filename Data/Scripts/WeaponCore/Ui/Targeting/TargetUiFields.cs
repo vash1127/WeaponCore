@@ -14,6 +14,7 @@ namespace WeaponCore
         internal double PointerAdjScale = 0.05f;
         internal double AdjScale;
         internal bool DrawReticle;
+        internal bool RecentTarget;
 
         private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
@@ -23,7 +24,6 @@ namespace WeaponCore
         private readonly List<IHitInfo> _hitInfo = new List<IHitInfo>();
         private readonly Session _session;
         private readonly List<MyEntity> _targetCache = new List<MyEntity>();
-
         private Vector2 _pointerPosition = new Vector2(0, 0.25f);
         private Vector2 _3RdPersonPos = new Vector2(0, 0.25f);
         private Color _reticleColor = Color.White;

@@ -193,13 +193,13 @@ namespace WeaponCore
             GridAi gridAi;
             TargetArmed = false;
             var grid = entity as MyCubeGrid;
-            if (grid != null && GridTargetingAIs.TryGetValue(grid, out gridAi)) {
-
+            if (grid != null && GridTargetingAIs.TryGetValue(grid, out gridAi))
+            {
                 TargetArmed = true;
             }
             else {
 
-                GridAi.TargetInfo info;
+                TargetInfo info;
                 if (!ai.Targets.TryGetValue(entity, out info)) return;
                 ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> typeDict;
                 

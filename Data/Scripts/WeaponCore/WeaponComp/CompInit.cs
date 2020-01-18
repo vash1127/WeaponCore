@@ -167,7 +167,6 @@ namespace WeaponCore.Support
             if (state.ManualShoot != Weapon.TerminalActionState.ShootOff)
             {
                 Ai.ManualComps++;
-                Shooting++;
             }
         }
 

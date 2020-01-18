@@ -20,22 +20,39 @@ namespace WeaponCore.Support
         {
             w.HitOther = false;
             var tick = w.Comp.Session.Tick;
-
             w.Target.CheckTick = tick;
-            var pCount = w.Comp.Ai.LiveProjectile.Count;
             var targetType = TargetType.None;
             w.UpdatePivotPos();
-            w.AimCone.ConeDir = w.MyPivotDir;
-            w.AimCone.ConeTip = w.MyPivotPos;
 
-            var shootProjectile = pCount > 0 && w.System.TrackProjectile;
-            var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
+            if (w.Comp.Gunner != WeaponComponent.Control.Manual)
+            {
+                w.AimCone.ConeDir = w.MyPivotDir;
+                w.AimCone.ConeTip = w.MyPivotPos;
+                var pCount = w.Comp.Ai.LiveProjectile.Count;
+                var shootProjectile = pCount > 0 && w.System.TrackProjectile;
+                var projectilesFirst = !attemptReset && shootProjectile && w.System.Values.Targeting.Threats.Length > 0 && w.System.Values.Targeting.Threats[0] == TargetingDefinition.Threat.Projectiles;
 
-            if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType, attemptReset, targetGrid);
-            else if (!attemptReset && targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
-            if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType, false, targetGrid);
+                if (!projectilesFirst && w.System.TrackOther) AcquireOther(w, out targetType, attemptReset, targetGrid);
+                else if (!attemptReset && targetType == TargetType.None && shootProjectile) AcquireProjectile(w, out targetType);
+                if (projectilesFirst && targetType == TargetType.None) AcquireOther(w, out targetType, false, targetGrid);
+            }
+            else
+            {
+                Vector3D predictedPos;
+                if (Weapon.CanShootTarget(w, w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
+                {
+                    if (!GridIntersection.BresenhamGridIntersection(w.Comp.Ai.MyGrid, ref predictedPos, ref w.MyPivotPos))
+                    {
+                        w.Comp.Session.DsUtil2.Complete("", false, true);
 
-            //Log.Line($"targetType: {targetType}");
+                        targetType = TargetType.Other;
+                        w.Target.SetFake(predictedPos);
+                    }
+                }
+                if (targetType == TargetType.None && w.Target.IsFakeTarget) w.Target.Reset(true, false);
+            }
+
+
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset();
@@ -214,7 +231,8 @@ namespace WeaponCore.Support
 
                     var character = info.Target as IMyCharacter;
                     if (character != null && !s.TrackCharacters) continue;
-                    if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel)) continue;
+                    Vector3D predictedPos;
+                    if (!Weapon.CanShootTarget(w, targetCenter, targetLinVel, targetAccel, out predictedPos)) continue;
                     var targetPos = info.Target.PositionComp.WorldAABB.Center;
                     session.TopRayCasts++;
                     IHitInfo hitInfo;
@@ -334,10 +352,11 @@ namespace WeaponCore.Support
 
                     blocksChecked++;
                     ai.Session.CanShoot++;
-                    if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel)) continue;
+                    Vector3D predictedPos;
+                    if (!Weapon.CanShootTarget(w, blockPos, targetLinVel, targetAccel, out predictedPos)) continue;
 
                     blocksSighted++;
-                    if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref weaponPos, ref blockPos))
+                    if (!w.HitOther && GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref blockPos, ref weaponPos))
                         continue;
 
                     ai.Session.RandomRayCasts++;
@@ -431,8 +450,9 @@ namespace WeaponCore.Support
                             ai.Session.CanShoot++;
                             var castRay = false;
 
-                            if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel))
-                              castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref testPos, ref cubePos);
+                            Vector3D predictedPos;
+                            if (Weapon.CanShootTarget(w, cubePos, targetLinVel, targetAccel, out predictedPos))
+                              castRay = !w.HitOther || !GridIntersection.BresenhamGridIntersection(ai.MyGrid, ref cubePos, ref testPos);
 
                             if (castRay)
                             {
@@ -553,7 +573,8 @@ namespace WeaponCore.Support
                 var lp = collection[card];
                 if (lp.MaxSpeed > s.MaxTargetSpeed || lp.MaxSpeed <= 0 || lp.State != Projectile.ProjectileState.Alive || Vector3D.DistanceSquared(lp.Position, w.MyPivotPos) > weaponRangeSqr) continue;
 
-                if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity))
+                Vector3D predictedPos;
+                if (Weapon.CanShootTarget(w, lp.Position, lp.Velocity, lp.AccelVelocity, out predictedPos))
                 {
                     var needsCast = false;
                     for (int i = 0; i < ai.Obstructions.Count; i++)

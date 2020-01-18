@@ -49,9 +49,10 @@ namespace WeaponCore.Support
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
         internal bool Overheated;
-        internal bool Gunner;
+        internal Control LastGunner;
+        internal Control Gunner;
         internal bool Starting;
-        internal int Shooting;
+        //internal int Shooting;
         internal bool Debug;
         internal bool MouseShoot;
         internal bool UnlimitedPower;
@@ -65,7 +66,14 @@ namespace WeaponCore.Support
             ReInit,
             WarmingUp,
         }
-        
+
+        internal enum Control
+        {
+            None,
+            Direct,
+            Manual,
+        }
+
         internal readonly MyCubeBlock MyCube;
         internal readonly IMySlimBlock Slim;
         internal readonly CompSettings Set;

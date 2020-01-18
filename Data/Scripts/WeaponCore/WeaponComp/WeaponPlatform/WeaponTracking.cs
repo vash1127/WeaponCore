@@ -11,11 +11,11 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        internal static bool CanShootTarget(Weapon weapon, Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel)
+        internal static bool CanShootTarget(Weapon weapon, Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
         {
+            var manulControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
-            Vector3D targetPos;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
             if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
 
@@ -61,8 +61,7 @@ namespace WeaponCore.Platform
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            var tracking = inRange && canTrack;
-            return tracking;
+            return (inRange || manulControl) && canTrack;
         }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel)
@@ -125,21 +124,31 @@ namespace WeaponCore.Platform
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
 
-            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            var targetCenter = target.IsFakeTarget ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            var manulControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
 
             if (weapon.System.NeedsPrediction)
             {
-                var topMostEnt = target.Entity?.GetTopMostParent();
-                if (target.Projectile != null)
+                if (manulControl)
                 {
-                    targetLinVel = target.Projectile.Velocity;
-                    targetAccel = target.Projectile.AccelVelocity;
+                    targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
+                    targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
                 }
-                else if (topMostEnt?.Physics != null)
+                else
                 {
-                    targetLinVel = topMostEnt.Physics.LinearVelocity;
-                    targetAccel = topMostEnt.Physics.LinearAcceleration;
+                    var topMostEnt = target.Entity?.GetTopMostParent();
+                    if (target.Projectile != null)
+                    {
+                        targetLinVel = target.Projectile.Velocity;
+                        targetAccel = target.Projectile.AccelVelocity;
+                    }
+                    else if (topMostEnt?.Physics != null)
+                    {
+                        targetLinVel = topMostEnt.Physics.LinearVelocity;
+                        targetAccel = topMostEnt.Physics.LinearAcceleration;
+                    }
                 }
+
                 if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
                 if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
                 targetPos = weapon.GetPredictedTargetPosition(targetCenter, targetLinVel, targetAccel);
@@ -153,33 +162,44 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range;
 
-            var isAligned = inRange && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            var isAligned = (inRange || manulControl) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            weapon.TargetPos = targetPos;
-            weapon.IsAligned = isAligned;
+            weapon.Target.TargetPos = targetPos;
+            weapon.Target.IsAligned = isAligned;
             return isAligned;
         }
 
-        internal static bool TrackingTarget(Weapon weapon, Target target, bool step = false)
+        internal static bool TrackingTarget(Weapon weapon, Target target)
         {
             Vector3D targetPos;
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
             var system = weapon.System;
-            var targetCenter = target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+
+            var targetCenter = target.IsFakeTarget ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            var directControl = weapon.Comp.Gunner == WeaponComponent.Control.Direct;
+            var manulControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
 
             if (weapon.System.NeedsPrediction)
             {
-                var topMostEnt = target.Entity?.GetTopMostParent();
-                if (target.Projectile != null)
+                if (manulControl)
                 {
-                    targetLinVel = target.Projectile.Velocity;
-                    targetAccel = target.Projectile.AccelVelocity;
+                    targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
+                    targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
                 }
-                else if (topMostEnt?.Physics != null)
+                else
                 {
-                    targetLinVel = topMostEnt.Physics.LinearVelocity;
-                    targetAccel = topMostEnt.Physics.LinearAcceleration;
+                    var topMostEnt = target.Entity?.GetTopMostParent();
+                    if (target.Projectile != null)
+                    {
+                        targetLinVel = target.Projectile.Velocity;
+                        targetAccel = target.Projectile.AccelVelocity;
+                    }
+                    else if (topMostEnt?.Physics != null)
+                    {
+                        targetLinVel = topMostEnt.Physics.LinearVelocity;
+                        targetAccel = topMostEnt.Physics.LinearAcceleration;
+                    }
                 }
                 if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
                 if (Vector3D.IsZero(targetAccel, 5E-03)) targetAccel = Vector3.Zero;
@@ -188,13 +208,13 @@ namespace WeaponCore.Platform
             else
                 targetPos = targetCenter;
 
-            weapon.TargetPos = targetPos;
+            weapon.Target.TargetPos = targetPos;
 
             double rangeToTarget;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var targetDir = targetPos - weapon.MyPivotPos;
 
-            if (rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
+            if (manulControl || rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
             {
                 var maxAzimuthStep = system.AzStep;
                 var maxElevationStep = system.ElStep;
@@ -219,9 +239,9 @@ namespace WeaponCore.Platform
                 var elConstraint = Math.Min(weapon.MaxElevationRadians + tolerance, Math.Max(weapon.MinElevationRadians - tolerance, desiredElevation));
                 var elConstrained = Math.Abs(elConstraint - desiredElevation) > 0.0000001;
                 var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
-                weapon.IsTracking = !azConstrained && !elConstrained;
+                weapon.Target.IsTracking = !azConstrained && !elConstrained;
 
-                if (weapon.IsTracking && step)
+                if (weapon.Target.IsTracking && !directControl)
                 {
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;
@@ -236,17 +256,17 @@ namespace WeaponCore.Platform
                         weapon.AimBarrel(azDiff, elDiff);
                 }
             }
-            else weapon.IsTracking = false;
+            else weapon.Target.IsTracking = false;
 
-            if (!step) return weapon.IsTracking;
+            if (directControl) return weapon.Target.IsTracking;
 
             var isAligned = false;
 
-            if (weapon.IsTracking)
+            if (weapon.Target.IsTracking)
                 isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            var wasAligned = weapon.IsAligned;
-            weapon.IsAligned = isAligned;
+            var wasAligned = weapon.Target.IsAligned;
+            weapon.Target.IsAligned = isAligned;
 
             var alignedChange = wasAligned != isAligned;
             if (alignedChange && isAligned)
@@ -268,8 +288,9 @@ namespace WeaponCore.Platform
             else if (alignedChange && !weapon.DelayCeaseFire)
                 weapon.StopShooting();
 
-            weapon.Target.TargetLock = weapon.IsTracking && weapon.IsAligned;
-            return weapon.IsTracking;
+            if (manulControl) Log.Line($"[TrackingTarget] tracking:{weapon.Target.IsTracking} - isAligned:{weapon.Target.IsAligned} - tState:{weapon.Target.State}");
+            weapon.Target.TargetLock = weapon.Target.IsTracking && weapon.Target.IsAligned;
+            return weapon.Target.IsTracking;
         }
 
         public Vector3D GetPredictedTargetPosition(Vector3D targetPos, Vector3 targetLinVel, Vector3D targetAccel)

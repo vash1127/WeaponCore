@@ -355,7 +355,6 @@ namespace WeaponCore.Support
         {
             if (TracerStep > 0)
             {
-                if (Hit.HitPos == Vector3D.Zero) Log.Line("WHAT?!@#?!@ ");
                 Hit.HitPos += ShootVelStep;
                 var newTracerFront = Hit.HitPos + -(Direction * (TracerStep * StepSize));
                 var reduced = TracerStep-- * StepSize;

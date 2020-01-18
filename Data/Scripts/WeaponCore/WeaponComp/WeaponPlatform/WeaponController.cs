@@ -74,7 +74,7 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
-            if ((Comp.SorterBase == null && Comp.MissileBase == null) || Comp.State.Value.Weapons[WeaponId].ManualShoot != TerminalActionState.ShootOff || Comp.Gunner || Target.State == Target.Targets.Acquired)
+            if ((Comp.SorterBase == null && Comp.MissileBase == null) || Comp.State.Value.Weapons[WeaponId].ManualShoot != TerminalActionState.ShootOff || Comp.Gunner == WeaponComponent.Control.Direct || Target.State == Target.Targets.Acquired)
                 return;
 
             var azStep = System.AzStep;
@@ -139,7 +139,7 @@ namespace WeaponCore.Platform
             MyPivotTestLine = new LineD(MyPivotPos + (left * 10), MyPivotPos - (left * 10));
             MyAimTestLine = new LineD(MyPivotPos, MyPivotPos + (MyPivotDir * 20));
             if (Target.State == Target.Targets.Acquired)
-                MyShootAlignmentLine = new LineD(MyPivotPos, TargetPos);
+                MyShootAlignmentLine = new LineD(MyPivotPos, Target.TargetPos);
         }
 
         internal void UpdateWeaponHeat(object o)

@@ -34,11 +34,10 @@ namespace WeaponCore
             _cachedPointerPos = true;
         }
 
-        internal void SelectTarget()
+        internal bool SelectTarget(bool manualSelect = true)
         {
             var s = _session;
             var ai = s.TrackingAi;
-
             if (!_cachedPointerPos) InitPointerOffset(0.05);
             if (!_cachedTargetPos) InitTargetOffset();
             var cockPit = s.ActiveCockPit;
@@ -68,24 +67,61 @@ namespace WeaponCore
                     end = offetPosition + (dir * ai.MaxTargetingRange);
                 }
             }
+            
+
+            var foundTarget = false;
+            MyEntity closestEnt = null;
+
             _session.Physics.CastRay(start, end, _hitInfo);
             for (int i = 0; i < _hitInfo.Count; i++)
             {
-                var hit = _hitInfo[i].HitEntity as MyCubeGrid;
-                if (hit == null || hit.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hit)) continue;
-                s.SetTarget(hit, ai);
+                var hit = _hitInfo[i];
+                closestEnt = hit.HitEntity as MyEntity;
+                var hitGrid = closestEnt as MyCubeGrid;
+                if (manualSelect)
+                {
+                    if (hitGrid == null || hitGrid.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hitGrid)) continue;
+                    foundTarget = true;
+                    s.SetTarget(hitGrid, ai);
+                    return true;
+                }
+
+                if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid))
+                {
+                    ai.DummyTarget.Clear();
+                    return false;
+                }
+
+                foundTarget = true;
+                ai.DummyTarget.Update(hit.Position, closestEnt);
                 break;
             }
 
             // If Raycast misses, we will accept the closest entitySphere in its place.
             //var line = new LineD(start, end);
 
-
-            var closestEnt = RayCheckTargets(start, dir);
-            if (closestEnt != null)
+            Vector3D hitPos;
+            bool foundOther = false;
+            if (!foundTarget && RayCheckTargets(start, dir, out closestEnt, out hitPos, out foundOther, !manualSelect))
             {
-                s.SetTarget(closestEnt, ai);
+                foundTarget = true;
+                if (manualSelect)
+                {
+                    s.SetTarget(closestEnt, ai);
+                    return true;
+                }
+
+                ai.DummyTarget.Update(hitPos, closestEnt);
             }
+
+            if (!manualSelect)
+            {
+                var activeColor = closestEnt != null && !ai.Targets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
+                _reticleColor = closestEnt != null ? activeColor : Color.White;
+                if (!foundTarget) ai.DummyTarget.Update(end);
+            }
+
+            return foundTarget || foundOther;
         }
 
         internal void SelectNext()
@@ -138,11 +174,11 @@ namespace WeaponCore
             return _endIdx >= 0;
         }
 
-        private MyEntity RayCheckTargets(Vector3D origin, Vector3D dir, bool reColorRectile = false, bool checkOthers = false)
+        private bool RayCheckTargets(Vector3D origin, Vector3D dir, out MyEntity closestEnt, out Vector3D hitPos, out bool foundOther, bool checkOthers = false)
         {
             var ai = _session.TrackingAi;
             var closestDist = double.MaxValue;
-            MyEntity closestEnt = null;
+            closestEnt = null;
             foreach (var info in ai.Targets.Keys)
             {
                 var hit = info as MyCubeGrid;
@@ -159,7 +195,7 @@ namespace WeaponCore
                 }
             }
 
-            var foundOther = false;
+            foundOther = false;
             if (checkOthers)
             {
                 for (int i = 0; i < ai.Obstructions.Count; i++)
@@ -182,12 +218,11 @@ namespace WeaponCore
                 }
             }
 
-            if (reColorRectile)
-            {
-                var activeColor = foundOther ? Color.DeepSkyBlue : Color.Red;
-                _reticleColor = closestEnt != null ? activeColor : Color.White;
-            }
-            return closestEnt;
+            if (closestDist < double.MaxValue)
+                hitPos = origin + (dir * closestDist);
+            else hitPos = Vector3D.Zero;
+
+            return closestEnt != null;
         }
     }
 }
