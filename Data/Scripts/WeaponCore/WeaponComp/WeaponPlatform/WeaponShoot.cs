@@ -183,6 +183,7 @@ namespace WeaponCore.Platform
                         p.Info.Target.Entity = Target.Entity;
                         p.Info.Target.Projectile = Target.Projectile;
                         p.Info.Target.IsProjectile = Target.Projectile != null;
+                        p.Info.Target.IsFakeTarget = Comp.Gunner == WeaponComponent.Control.Manual;
                         p.Info.Target.FiringCube = Comp.MyCube;
                         p.Info.WeaponId = WeaponId;
                         p.Info.MuzzleId = muzzle.MuzzleId;
@@ -193,7 +194,7 @@ namespace WeaponCore.Platform
                         p.Info.WeaponCache = WeaponCache;
                         p.Info.WeaponCache.VirutalId = -1;
 
-                        p.Gunner = Comp.Gunner != WeaponComponent.Control.None;
+                        p.Gunner = Comp.Gunner;
                         p.Info.ShooterVel = Comp.Ai.GridVel;
                         p.Info.Origin = muzzle.Position;
                         p.Info.OriginUp = MyPivotUp;
@@ -325,6 +326,7 @@ namespace WeaponCore.Platform
             p.Info.Target.Entity = Target.Entity;
             p.Info.Target.Projectile = Target.Projectile;
             p.Info.Target.IsProjectile = Target.Projectile != null;
+            p.Info.Target.IsFakeTarget = Comp.Gunner == WeaponComponent.Control.Manual;
             p.Info.Target.FiringCube = Comp.MyCube;
             p.Info.BaseDamagePool = BaseDamage;
             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
@@ -339,7 +341,7 @@ namespace WeaponCore.Platform
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
 
-            p.Gunner = Comp.Gunner != WeaponComponent.Control.None;
+            p.Gunner = Comp.Gunner;
             p.Info.ShooterVel = Comp.Ai.GridVel;
             p.Info.Origin = MyPivotPos;
             p.Info.OriginUp = MyPivotUp;

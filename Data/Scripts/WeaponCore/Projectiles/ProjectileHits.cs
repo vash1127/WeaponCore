@@ -32,7 +32,7 @@ namespace WeaponCore.Projectiles
                 var destroyable = ent as IMyDestroyableObject;
                 var voxel = ent as MyVoxelBase;
                 if (grid == null && p.EwarActive && p.Info.System.AreaEffect != DotField && ent is IMyCharacter) continue;
-                if (grid != null && (!(p.Info.System.SelfDamage || p.Gunner) || p.SmartsOn) && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
+                if (grid != null && (!(p.Info.System.SelfDamage || p.Gunner == WeaponComponent.Control.Direct) || p.SmartsOn) && p.Info.Ai.MyGrid.IsSameConstructAs(grid) || ent.MarkedForClose || !ent.InScene || ent == p.Info.Ai.MyShield) continue;
                 if (!shieldByPass && !p.EwarActive)
                 {
                     var shieldInfo = p.Info.Ai.Session.SApi?.MatchEntToShieldFastExt(ent, true);

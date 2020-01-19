@@ -92,10 +92,10 @@ namespace WeaponCore.Projectiles
         internal bool HitParticleActive;
         internal bool CachedPlanetHit;
         internal bool ForceHitParticle;
-        internal bool Gunner;
         internal bool FakeExplosion;
         internal bool AtMaxRange;
         internal readonly ProInfo Info = new ProInfo();
+        internal WeaponComponent.Control Gunner;
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();
@@ -233,7 +233,7 @@ namespace WeaponCore.Projectiles
             }
             else DistanceToTravelSqr = MaxTrajectorySqr;
 
-            PickTarget = LockedTarget && Info.System.Values.Ammo.Trajectory.Smarts.OverideTarget;
+            PickTarget = LockedTarget && Info.System.Values.Ammo.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget;
             if (PickTarget || LockedTarget) NewTargets++;
 
             PruneQuery = DynamicGuidance || Info.Ai.ShieldNear ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
@@ -474,6 +474,7 @@ namespace WeaponCore.Projectiles
 
         internal bool NewTarget()
         {
+            Log.Line("new target");
             var giveUp = !PickTarget && ++NewTargets > Info.System.MaxTargets && Info.System.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;
@@ -571,14 +572,17 @@ namespace WeaponCore.Projectiles
             Vector3D newVel;
             if ((AccelLength <= 0 || Vector3D.DistanceSquared(Info.Origin, Position) >= Info.System.SmartsDelayDistSqr))
             {
-                var gaveUpChase = Info.Age - ChaseAge > MaxChaseAge;
-                var validTarget = Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
-                var isZombie = !Info.System.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
+                var fake = Info.Target.IsFakeTarget;
+                var gaveUpChase = !fake && Info.Age - ChaseAge > MaxChaseAge;
+                var validTarget = fake || Info.Target.IsProjectile || Info.Target.Entity != null && !Info.Target.Entity.MarkedForClose;
+                var isZombie = !fake && !Info.System.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)
                 {
                     if (ZombieLifeTime > 0) UpdateZombie(true);
                     var targetPos = Vector3D.Zero;
-                    if (Info.Target.IsProjectile) targetPos = Info.Target.Projectile.Position;
+                    if (fake)
+                        targetPos = Info.Ai.DummyTarget.Position;
+                    else if (Info.Target.IsProjectile) targetPos = Info.Target.Projectile.Position;
                     else if (Info.Target.Entity != null) targetPos = Info.Target.Entity.PositionComp.WorldAABB.Center;
 
 
@@ -595,13 +599,13 @@ namespace WeaponCore.Projectiles
                     }
 
                     var physics = Info.Target.Entity?.Physics ?? Info.Target.Entity?.Parent?.Physics;
-
-                    if (!Info.Target.IsProjectile && (physics == null || targetPos == Vector3D.Zero))
+                    if (!(Info.Target.IsProjectile || fake) && (physics == null || targetPos == Vector3D.Zero))
                         PrevTargetPos = PredictedTargetPos;
                     else PrevTargetPos = targetPos;
 
                     var tVel = Vector3.Zero;
-                    if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
+                    if (fake) tVel = Info.Ai.DummyTarget.LinearVelocity;
+                    else if (Info.Target.IsProjectile) tVel = Info.Target.Projectile.Velocity;
                     else if (physics != null) tVel = physics.LinearVelocity;
 
                     if (Info.System.TargetLossDegree > 0 && Info.Ai.Session.Tick60)
@@ -610,7 +614,7 @@ namespace WeaponCore.Projectiles
                         {
                             var targetDir = Vector3D.Normalize(tVel);
                             var refDir = Vector3D.Normalize(Position - targetPos);
-                            if (!MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.System.TargetLossDegree))
+                            if (!fake && !MathFuncs.IsDotProductWithinTolerance(ref targetDir, ref refDir, Info.System.TargetLossDegree))
                                 PickTarget = true;
                         }
                     }
@@ -618,6 +622,7 @@ namespace WeaponCore.Projectiles
                     PrevTargetVel = tVel;
                 }
                 else UpdateZombie();
+
                 var commandedAccel = MathFuncs.CalculateMissileIntercept(PrevTargetPos, PrevTargetVel, Position, Velocity, StepPerSec, Info.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, Info.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
                 newVel = Velocity + (commandedAccel * StepConst);
                 AccelDir = commandedAccel / StepPerSec;
@@ -987,6 +992,7 @@ namespace WeaponCore.Projectiles
             else
             {
                 Info.Target.IsProjectile = false;
+                Info.Target.IsFakeTarget = false;
                 Info.Target.Projectile = null;
             }
         }

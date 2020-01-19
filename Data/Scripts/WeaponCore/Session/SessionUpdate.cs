@@ -373,10 +373,8 @@ namespace WeaponCore
 
                 if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired) 
                 {
-
                     var comp = w.Comp;
                     var weaponEnabled = !comp.State.Value.Online || w.Set.Enable;
-
 
                     if (!weaponEnabled || !gridAi.MyGrid.InScene || gridAi.MyGrid.MarkedForClose || !comp.MyCube.InScene)
                         continue;

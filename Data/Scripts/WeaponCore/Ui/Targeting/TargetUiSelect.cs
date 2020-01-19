@@ -81,7 +81,6 @@ namespace WeaponCore
                 if (manualSelect)
                 {
                     if (hitGrid == null || hitGrid.IsSameConstructAs(ai.MyGrid) || !ai.Targets.ContainsKey(hitGrid)) continue;
-                    foundTarget = true;
                     s.SetTarget(hitGrid, ai);
                     return true;
                 }
@@ -98,8 +97,6 @@ namespace WeaponCore
             }
 
             // If Raycast misses, we will accept the closest entitySphere in its place.
-            //var line = new LineD(start, end);
-
             Vector3D hitPos;
             bool foundOther = false;
             if (!foundTarget && RayCheckTargets(start, dir, out closestEnt, out hitPos, out foundOther, !manualSelect))
