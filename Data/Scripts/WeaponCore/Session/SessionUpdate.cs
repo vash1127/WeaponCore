@@ -47,10 +47,10 @@ namespace WeaponCore
                 var weaponsInStandby = gridAi.ManualComps == 0 && !gridAi.CheckReload && gridAi.Gunners.Count == 0;
                 if (!gridAi.DbReady && weaponsInStandby)
                 {
-                    if (Tick600) Log.Line($"gridAi Disabled: {gridAi.MyGrid.DebugName} - weaponStandby:{weaponsInStandby} - dbReady:{gridAi.DbReady}");
+                    if (Tick1800) Log.Line($"gridAi Disabled: {gridAi.MyGrid.DebugName} - weaponStandby:{weaponsInStandby} - dbReady:{gridAi.DbReady}");
                     continue;
                 }
-
+                
                 if (gridAi.HasPower || gridAi.HadPower || gridAi.UpdatePowerSources || Tick180) 
                     gridAi.UpdateGridPower();
                 

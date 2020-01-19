@@ -76,12 +76,13 @@ namespace WeaponCore.Support
 
         internal readonly MyCubeBlock MyCube;
         internal readonly IMySlimBlock Slim;
-        internal readonly CompSettings Set;
-        internal readonly CompState State;
+
         internal readonly Session Session;
         internal readonly MyInventory BlockInventory;
         internal readonly IMyLargeMissileTurret MissileBase;
         internal readonly IMyConveyorSorter SorterBase;
+        internal CompSettings Set;
+        internal CompState State;
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
@@ -131,9 +132,6 @@ namespace WeaponCore.Support
             Platform.Setup(this);
 
             MyCube.OnClose += Session.CloseComps;
-
-            State = new CompState(this);
-            Set = new CompSettings(this);
         }        
     }
 }

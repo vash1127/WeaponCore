@@ -474,7 +474,6 @@ namespace WeaponCore.Projectiles
 
         internal bool NewTarget()
         {
-            Log.Line("new target");
             var giveUp = !PickTarget && ++NewTargets > Info.System.MaxTargets && Info.System.MaxTargets != 0;
             ChaseAge = Info.Age;
             PickTarget = false;

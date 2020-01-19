@@ -31,8 +31,26 @@ namespace WeaponCore.Platform
         internal void Setup(WeaponComponent comp)
         {
             Structure = comp.Session.WeaponPlatforms[comp.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
-            if (Weapons.Length != Structure.MuzzlePartNames.Length) Array.Resize(ref Weapons, Structure.MuzzlePartNames.Length);
             Comp = comp;
+
+            if (Weapons.Length != Structure.MuzzlePartNames.Length)
+            {
+                Array.Resize(ref Weapons, Structure.MuzzlePartNames.Length);
+            }
+            Comp.State = new CompState(Comp)
+            {
+                Value = {Weapons = new WeaponStateValues[Structure.MuzzlePartNames.Length]}
+            };
+            Comp.Set = new CompSettings(Comp)
+            {
+                Value = {Weapons = new WeaponSettingsValues[Structure.MuzzlePartNames.Length]}
+            };
+            for (int i = 0; i < Structure.MuzzlePartNames.Length; i++)
+            {
+                if (Comp.State.Value.Weapons[i] == null) Comp.State.Value.Weapons[i] = new WeaponStateValues();
+                if (Comp.Set.Value.Weapons[i] == null) Comp.Set.Value.Weapons[i] = new WeaponSettingsValues();
+            }
+
         }
 
         internal void Clean()

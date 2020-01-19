@@ -20,21 +20,11 @@ namespace WeaponCore
             SorterBase = comp.SorterBase;
             ControllableTurret = comp.MissileBase;
             IsSorterTurret = comp.IsSorterTurret;
-            Value.Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length];
 
-            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-                if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponStateValues();
         }
 
         public void StorageInit()
         {
-            if (Value.Weapons.Length != Comp.Platform.Weapons.Length)
-            {
-                Array.Resize(ref Value.Weapons, Comp.Platform.Structure.MuzzlePartNames.Length);
-
-                for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-                    if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponStateValues();
-            }
 
             if (IsSorterTurret)
             {
@@ -99,6 +89,8 @@ namespace WeaponCore
             {
                 Value = loadedState;
                 loadedSomething = true;
+                for (int i = 0; i < Comp.State.Value.Weapons.Length; i++)
+                    Comp.Platform.Weapons[i].State = Comp.State.Value.Weapons[i];
             }
             return loadedSomething;
         }
@@ -132,21 +124,10 @@ namespace WeaponCore
             SorterBase = comp.SorterBase;
             MissileBase = comp.MissileBase;
             IsSorterTurret = comp.IsSorterTurret;
-            Value.Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length];
-            for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-                if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();
         }
 
         public void SettingsInit()
         {
-            if (Value.Weapons.Length != Comp.Platform.Weapons.Length)
-            {
-                Array.Resize(ref Value.Weapons, Comp.Platform.Structure.MuzzlePartNames.Length);
-
-                for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
-                    if (Value.Weapons[i] == null) Value.Weapons[i] = new WeaponSettingsValues();
-            }
-
             var maxTrajectory = 0f;
             for (int i = 0; i < Comp.Platform.Weapons.Length; i++)
                 if (maxTrajectory < Comp.Platform.Weapons[i].System.MaxTrajectory) maxTrajectory = (float)Comp.Platform.Weapons[i].System.MaxTrajectory;
@@ -191,6 +172,8 @@ namespace WeaponCore
             {
                 Value = loadedSettings;
                 loadedSomething = true;
+                for (int i = 0; i < Comp.Set.Value.Weapons.Length; i++)
+                    Comp.Platform.Weapons[i].Set = Comp.Set.Value.Weapons[i];
             }
             return loadedSomething;
         }

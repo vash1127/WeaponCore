@@ -70,8 +70,8 @@ namespace WeaponCore.Platform
         internal MySoundPair ReloadSound;
         internal MySoundPair FiringSound;
         internal MySoundPair RotateSound;
-        internal readonly WeaponSettingsValues Set;
-        internal readonly WeaponStateValues State;
+        internal WeaponSettingsValues Set;
+        internal WeaponStateValues State;
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;

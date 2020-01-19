@@ -181,7 +181,7 @@ namespace WeaponCore
                     CameraMatrix = Session.Camera.WorldMatrix;
                     CameraPos = CameraMatrix.Translation;
                     CameraFrustrum.Matrix = (Camera.ViewMatrix * Camera.ProjectionMatrix);
-                    if (UiInput.PlayerCamera && !InMenu && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
+                    if ((UiInput.PlayerCamera || UiInput.FirstPersonView) && !InMenu && !MyAPIGateway.Session.Config.MinimalHud && !MyAPIGateway.Gui.IsCursorVisible)
                     {
                         if (WheelUi.WheelActive) WheelUi.DrawWheel();
                         TargetUi.DrawTargetUi();
