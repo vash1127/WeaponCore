@@ -19,10 +19,8 @@ namespace WeaponCore.Platform
             var session = Comp.Session;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            var userControlled = Comp.Gunner != WeaponComponent.Control.None || State.ManualShoot != TerminalActionState.ShootOff;
+            var directControl = Comp.Gunner == WeaponComponent.Control.Direct;
             var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
-
-            //Log.Line($"{System.WeaponName} - tick - ShootDelayTick:{tick - ShootDelayTick} - tickUntilShoot:{_ticksUntilShoot} - shootTick:{_shootTick} - TicksPerShot:{TicksPerShot}");
             if (_ticksUntilShoot++ < System.DelayToFire)
             {
                 if (!PreFired)
@@ -88,7 +86,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            if (!userControlled && !Casting && tick - Comp.LastRayCastTick > 29 && Target != null && !DelayCeaseFire) 
+            if (!directControl && !Casting && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
                 ShootRayCheck();
 
             var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -355,6 +353,12 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
+            if (Target.IsFakeTarget)
+            {
+                Casting = true;
+                Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
+                return;
+            }
 
             if (Target.Projectile != null)
             {
@@ -402,10 +406,10 @@ namespace WeaponCore.Platform
                 return;
             }
             Casting = true;
-            Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, ShootRayCheckCallBack);
+            Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref targetPos, CollisionLayers.DefaultCollisionLayer, NormalShootRayCallBack);
         }
 
-        public void ShootRayCheckCallBack(IHitInfo hitInfo)
+        public void NormalShootRayCallBack(IHitInfo hitInfo)
         {
             Casting = false;
             var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
@@ -484,6 +488,22 @@ namespace WeaponCore.Platform
                         //if (shortDistExceed) Log.Line($"{System.WeaponName} - ShootRayCheck fail - Distance to sorted block exceeded");
                         //else Log.Line($"{System.WeaponName} - ShootRayCheck fail - Target distance to escape has been met - {distanceToTarget} - {Target.OrigDistance} -{distanceToTarget - Target.OrigDistance} > {Target.OrigDistance}");
                     }
+                }
+            }
+        }
+
+        public void ManualShootRayCallBack(IHitInfo hitInfo)
+        {
+            Casting = false;
+            var masterWeapon = TrackTarget ? this : Comp.TrackingWeapon;
+
+            var grid = hitInfo.HitEntity as MyCubeGrid;
+            if (grid != null)
+            {
+                if (grid.IsSameConstructAs(Comp.MyCube.CubeGrid))
+                {
+                    masterWeapon.Target.Reset(true, false);
+                    if (masterWeapon != this) Target.Reset(true, false);
                 }
             }
         }

@@ -288,7 +288,6 @@ namespace WeaponCore.Platform
             else if (alignedChange && !weapon.DelayCeaseFire)
                 weapon.StopShooting();
 
-            if (manulControl) Log.Line($"[TrackingTarget] tracking:{weapon.Target.IsTracking} - isAligned:{weapon.Target.IsAligned} - tState:{weapon.Target.State}");
             weapon.Target.TargetLock = weapon.Target.IsTracking && weapon.Target.IsAligned;
             return weapon.Target.IsTracking;
         }

@@ -10,7 +10,7 @@ namespace WeaponCore.Support
 
     public static class GridIntersection
     {
-        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd)
+        internal static bool BresenhamGridIntersection(MyCubeGrid grid, ref Vector3D worldStart, ref Vector3D worldEnd, out Vector3D? hitPos, MyCubeBlock weapon = null)
         {
             var start = grid.WorldToGridInteger(worldStart);
             var end = grid.WorldToGridInteger(worldEnd);
@@ -18,6 +18,7 @@ namespace WeaponCore.Support
             Vector3I step = Vector3I.Sign(delta);
             delta *= step;
             int max = delta.AbsMax();
+            hitPos = null;
 
             var gMinX = grid.Min.X;
             var gMinY = grid.Min.Y;
@@ -50,8 +51,9 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube))
+                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
+                        hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }
@@ -81,8 +83,9 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube))
+                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
+                        hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }
@@ -112,8 +115,9 @@ namespace WeaponCore.Support
                     if (!contained) return false;
 
                     MyCube cube;
-                    if (grid.TryGetCube(start, out cube))
+                    if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
+                        hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }

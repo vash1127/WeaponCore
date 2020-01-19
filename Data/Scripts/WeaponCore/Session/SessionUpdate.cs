@@ -55,7 +55,6 @@ namespace WeaponCore
                     gridAi.UpdateGridPower();
                 
                 if (!gridAi.HasPower) continue;
-                DsDebugDraw.DrawSingleVec(gridAi.DummyTarget.Position, 2.5f, Color.Red);
                 ///
                 ///
                 /// Comp update section
@@ -101,7 +100,6 @@ namespace WeaponCore
                         var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
 
                         w.TargetState = w.Target.State;
-                        if (comp.Gunner == Manual && Tick60) Log.Line($"[Update] tracking:{w.Target.IsTracking} - isAligned:{w.Target.IsAligned} - tState:{w.Target.State}");
 
                         if (w.Target.State == Targets.Acquired) {
 
@@ -285,12 +283,6 @@ namespace WeaponCore
                 if (comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || comp.MyCube.MarkedForClose)
                     continue;
 
-                if (comp.MyCube.CubeGrid != comp.Ai.MyGrid)
-                {
-                    Log.Line($"[UpdateChargeWeapons] - InitState:{comp.Platform.State}  - gridMarked:{comp.MyCube.CubeGrid.MarkedForClose} - inWeaponBase:{comp.Ai.WeaponBase.ContainsKey(comp.MyCube)} - inGridTargeting: {GridTargetingAIs.ContainsKey(comp.MyCube.CubeGrid)} - gridMismatch:{comp.MyCube.CubeGrid != comp.Ai.MyGrid}");
-                    continue;
-                }
-
                 var gridAi = w.Comp.Ai;
 
                 if (Tick60 && w.DrawingPower)
@@ -381,7 +373,7 @@ namespace WeaponCore
                 }
                 var gridAi = w.Comp.Ai;
                 var sinceCheck = Tick - w.Target.CheckTick;
-                var checkTime = sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || w.TrackProjectiles && gridAi.CheckProjectiles;
+                var checkTime = sinceCheck > 0 || sinceCheck > 0 || w.TrackProjectiles && gridAi.CheckProjectiles;
 
                 if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired) 
                 {
@@ -430,7 +422,6 @@ namespace WeaponCore
 
                     if (w.ChargeDelayTicks == 0)
                     {
-                        //Log.Line($"Adapting Current Requested: {w.Comp.Ai.RequestedWeaponsDraw}");
                         var percUseable = w.RequiredPower / w.Comp.Ai.RequestedWeaponsDraw;
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = (w.Comp.Ai.GridMaxPower * .98f) * percUseable;

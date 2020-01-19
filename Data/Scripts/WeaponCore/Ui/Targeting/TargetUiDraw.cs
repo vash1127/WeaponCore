@@ -60,8 +60,7 @@ namespace WeaponCore
                 InitPointerOffset(0.05);
             }
 
-            if (_session.Tick10 || RecentTarget)
-                RecentTarget = SelectTarget(manualSelect: false);
+            SelectTarget(manualSelect: false);
 
             if (s.Tick - _lastDrawTick > 1 && _delay++ < 10) return;
             _delay = 0;
