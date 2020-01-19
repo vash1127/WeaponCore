@@ -202,7 +202,6 @@ namespace WeaponCore
                             }
                         }
 
-                        // reload if needed
                         if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType && !w.System.EnergyAmmo) 
                             ComputeStorage(w);
 
@@ -305,7 +304,6 @@ namespace WeaponCore
 
                 if (w.ChargeUntilTick <= Tick || !w.Reloading)
                 {
-                    //Log.Line("Reloaded");
                     if(w.Reloading)
                         Weapon.Reloaded(w);
 
@@ -319,10 +317,8 @@ namespace WeaponCore
 
                 if (!w.Comp.Ai.OverPowered)
                 {
-                    //Log.Line($"DrawingPower: {w.DrawingPower}");
                     if (!w.DrawingPower)
                     {
-                        //Log.Line("Reset Power");
                         w.OldUseablePower = w.UseablePower;
                         w.UseablePower = w.RequiredPower;
                         w.DrawPower();
@@ -373,7 +369,7 @@ namespace WeaponCore
                 }
                 var gridAi = w.Comp.Ai;
                 var sinceCheck = Tick - w.Target.CheckTick;
-                var checkTime = sinceCheck > 0 || sinceCheck > 0 || w.TrackProjectiles && gridAi.CheckProjectiles;
+                var checkTime = sinceCheck > 239 || sinceCheck > 60 && Count == w.LoadId || w.TrackProjectiles && gridAi.CheckProjectiles;
 
                 if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired) 
                 {
