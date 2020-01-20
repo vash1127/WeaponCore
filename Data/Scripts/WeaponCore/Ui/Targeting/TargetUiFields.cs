@@ -15,7 +15,7 @@ namespace WeaponCore
         internal double AdjScale;
         internal bool DrawReticle;
 
-        private readonly MyStringId _cross = MyStringId.GetOrCompute("Crosshair");
+        private readonly MyStringId _cross = MyStringId.GetOrCompute("TargetReticle");
         private readonly MyStringId _focus = MyStringId.GetOrCompute("DS_TargetFocus");
         private readonly MyStringId _focusSecondary = MyStringId.GetOrCompute("DS_TargetFocusSecondary");
         private readonly MyStringId _active = MyStringId.GetOrCompute("DS_ActiveTarget");
