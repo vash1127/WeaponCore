@@ -21,7 +21,6 @@ namespace WeaponCore.Platform
         private readonly HashSet<string> _muzzlesFiring = new HashSet<string>();
         internal readonly Dictionary<int, string> MuzzleIdToName = new Dictionary<int, string>();
 
-        //private int _shotsInCycle;
         private int _nextVirtual;
         private int _barrelRate;
         private int _fakeHeatTick;
@@ -34,8 +33,6 @@ namespace WeaponCore.Platform
         internal double TimePerShot;
         internal int LoadId;
 
-        //private bool _newCycle;
-        //private bool _firstRun = true;
         internal MyTuple<MyEntity, Matrix, Matrix, Vector3> MuzzlePart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> AzimuthPart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> ElevationPart;
@@ -93,7 +90,6 @@ namespace WeaponCore.Platform
         internal float DetonateDmg;
         internal float LastHeat;
         internal float CurrentCharge;
-        internal uint ShotCounter;
         internal uint LastTargetTick;
         internal uint LastTrackedTick;
         internal uint ChargeDelayTicks;
@@ -129,7 +125,6 @@ namespace WeaponCore.Platform
         internal bool PlayTurretAv;
         internal bool AvCapable;
         internal bool DelayCeaseFire;
-        internal bool Scheduled;
         internal bool Reloading;
         internal bool OutOfAmmo;
         internal bool CurrentlyDegrading;
@@ -184,7 +179,6 @@ namespace WeaponCore.Platform
                 }
             }
             
-
             System = system;
             Comp = comp;
             comp.HasEnergyWeapon = comp.HasEnergyWeapon || System.EnergyAmmo || System.IsHybrid;
@@ -236,8 +230,6 @@ namespace WeaponCore.Platform
             NewTarget = new Target(comp.MyCube);
             WeaponCache = new WeaponFrameCache(System.Values.Assignments.Barrels.Length);
             TrackProjectiles = System.TrackProjectile;
-            Set = Comp.Set.Value.Weapons[WeaponId];
-            State = Comp.State.Value.Weapons[WeaponId];
         }
     }
 }

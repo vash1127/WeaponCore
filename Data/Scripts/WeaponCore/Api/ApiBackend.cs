@@ -34,10 +34,10 @@ namespace WeaponCore.Support
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
-                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, List<List<Threat>>>(GetTurretTargetTypes),
-                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, List<List<Threat>>>(SetTurretTargetTypes),
+                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<Threat>>>(GetTurretTargetTypes),
+                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<Threat>>>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
-                ["GetTargetedEntity"] = new Func<IMyTerminalBlock, List<IMyEntity>>(GetTargetedEntity),
+                ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
                 ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool?>(IsTargetAligned),
                 ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
                 ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
@@ -52,10 +52,10 @@ namespace WeaponCore.Support
                 ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
-                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, List<List<Threat>>>(GetTurretTargetTypes),
-                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, List<List<Threat>>>(SetTurretTargetTypes),
+                ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<Threat>>>(GetTurretTargetTypes),
+                ["SetTurretTargetTypes"] = new Action<IMyTerminalBlock, IList<IList<Threat>>>(SetTurretTargetTypes),
                 ["SetTurretRange"] = new Action<IMyTerminalBlock, float>(SetTurretRange),
-                ["GetTargetedEntity"] = new Func<IMyTerminalBlock, List<IMyEntity>>(GetTargetedEntity),
+                ["GetTargetedEntity"] = new Func<IMyTerminalBlock, IList<IMyEntity>>(GetTargetedEntity),
                 ["IsTargetAligned"] = new OutFunc<IMyTerminalBlock, IMyEntity, int, Vector3D, bool?>(IsTargetAligned),
                 ["GetHeatLevel"] = new Func<IMyTerminalBlock, float?>(GetHeatLevel),
                 ["CurrentPower"] = new Func<IMyTerminalBlock, float?>(CurrentPower),
@@ -187,12 +187,12 @@ namespace WeaponCore.Support
             return 0f;
         }
 
-        private static List<List<Threat>> GetTurretTargetTypes(IMyTerminalBlock weaponBlock)
+        private static IList<IList<Threat>> GetTurretTargetTypes(IMyTerminalBlock weaponBlock)
         {
-            return new List<List<Threat>>();
+            return new List<IList<Threat>>();
         }
 
-        private static void SetTurretTargetTypes(IMyTerminalBlock weaponBlock, List<List<Threat>> threats)
+        private static void SetTurretTargetTypes(IMyTerminalBlock weaponBlock, IList<IList<Threat>> threats)
         {
 
         }
@@ -213,10 +213,10 @@ namespace WeaponCore.Support
             }
         }
 
-        private static List<IMyEntity> GetTargetedEntity(IMyTerminalBlock weaponBlock)
+        private static IList<IMyEntity> GetTargetedEntity(IMyTerminalBlock weaponBlock)
         {
-            List<IMyEntity> targets = new List<IMyEntity>();
-            HashSet<IMyEntity> targetsCheck = new HashSet<IMyEntity>();
+            IList<IMyEntity> targets = new List<IMyEntity>();
+            ICollection<IMyEntity> targetsCheck = new HashSet<IMyEntity>();
 
             WeaponComponent comp;
             if (weaponBlock.Components.TryGet(out comp))
@@ -302,9 +302,9 @@ namespace WeaponCore.Support
                     else
                     {
                         var ewar = (int)system.Values.Ammo.AreaEffect.AreaEffect > 3;
-                        var ShotEnergyCost = ewar ? system.Values.HardPoint.EnergyCost * system.Values.Ammo.AreaEffect.AreaEffectDamage : system.Values.HardPoint.EnergyCost * system.Values.Ammo.BaseDamage;
+                        var shotEnergyCost = ewar ? system.Values.HardPoint.EnergyCost * system.Values.Ammo.AreaEffect.AreaEffectDamage : system.Values.HardPoint.EnergyCost * system.Values.Ammo.BaseDamage;
 
-                        power += ((ShotEnergyCost * (system.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * system.Values.HardPoint.Loading.BarrelsPerShot) * system.Values.HardPoint.Loading.TrajectilesPerBarrel;
+                        power += ((shotEnergyCost * (system.RateOfFire * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS)) * system.Values.HardPoint.Loading.BarrelsPerShot) * system.Values.HardPoint.Loading.TrajectilesPerBarrel;
                     }
 
                 }

@@ -296,16 +296,20 @@ namespace WeaponCore.Support
 
         internal bool UpdateOwner()
         {
-            if (MyGrid == null || !MyGrid.InScene || MyGrid.MarkedForClose)
-                return false;
-            var bigOwners = MyGrid.BigOwners;
-            if (bigOwners == null || bigOwners.Count <= 0)
+            using (MyGrid.Pin())
             {
-                MyOwner = 0;
-                return false;
+                if (MyGrid == null || MyGrid.MarkedForClose || !MyGrid.InScene)
+                    return false;
+
+                var bigOwners = MyGrid.BigOwners;
+                if (bigOwners == null || bigOwners.Count <= 0)
+                {
+                    MyOwner = 0;
+                    return false;
+                }
+                MyOwner = bigOwners[0];
+                return true;
             }
-            MyOwner = bigOwners[0];
-            return true;
         }
 
         internal void MyPlanetInfo(bool clear = false)
@@ -714,10 +718,12 @@ namespace WeaponCore.Support
             {
                 if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null)
                 {
-                    FatMap fatMap;
-                    if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
+                    //FatMap fatMap;
+                    //if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
+                    if (Weapons.Count > 0)
                     {
-                        FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
+                        //FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
+                        FakeShipController.SlimBlock = Weapons[Weapons.Count - 1].MyCube.SlimBlock;
                         PowerDistributor = FakeShipController.GridResourceDistributor;
                         if (PowerDistributor == null)
                         {
@@ -727,7 +733,7 @@ namespace WeaponCore.Support
                     }
                     else
                     {
-                        Log.Line($"failed to get fatmap for power dist");
+                        Log.Line($"no-fatmap for power dist: {MyGrid.MarkedForClose} - PowerDistNull:{PowerDistributor == null} - FakeSlimNull:{FakeShipController.SlimBlock == null} - FakeCubeGridNull:{FakeShipController.CubeGrid == null} - FakeTopNull:{FakeShipController.TopGrid == null}");
                         return;
                     }
                 }

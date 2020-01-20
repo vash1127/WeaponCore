@@ -52,7 +52,6 @@ namespace WeaponCore.Support
         internal Control LastGunner;
         internal Control Gunner;
         internal bool Starting;
-        //internal int Shooting;
         internal bool Debug;
         internal bool MouseShoot;
         internal bool UnlimitedPower;
@@ -81,8 +80,8 @@ namespace WeaponCore.Support
         internal readonly MyInventory BlockInventory;
         internal readonly IMyLargeMissileTurret MissileBase;
         internal readonly IMyConveyorSorter SorterBase;
-        internal CompSettings Set;
-        internal CompState State;
+        internal readonly CompSettings Set;
+        internal readonly CompState State;
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
@@ -130,6 +129,9 @@ namespace WeaponCore.Support
             SinkPower = IdlePower;
             Platform = session.PlatFormPool.Get();
             Platform.Setup(this);
+
+            State = new CompState(this);
+            Set = new CompSettings(this);
 
             MyCube.OnClose += Session.CloseComps;
         }        

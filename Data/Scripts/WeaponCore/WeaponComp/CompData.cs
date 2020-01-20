@@ -9,7 +9,7 @@ namespace WeaponCore
 
     public class CompState
     {
-        public CompStateValues Value = new CompStateValues();
+        public CompStateValues Value;
         public readonly WeaponComponent Comp;
         public readonly IMyConveyorSorter SorterBase;
         public readonly IMyLargeMissileTurret ControllableTurret;
@@ -89,8 +89,11 @@ namespace WeaponCore
             {
                 Value = loadedState;
                 loadedSomething = true;
-                for (int i = 0; i < Comp.State.Value.Weapons.Length; i++)
-                    Comp.Platform.Weapons[i].State = Comp.State.Value.Weapons[i];
+            }
+            else
+            {
+                Value = new CompStateValues { Weapons = new WeaponStateValues[Comp.Platform.Weapons.Length] };
+                for (int i = 0; i < Value.Weapons.Length; i++) Value.Weapons[i] = new WeaponStateValues();
             }
             return loadedSomething;
         }
@@ -113,7 +116,7 @@ namespace WeaponCore
 
     public class CompSettings
     {
-        public CompSettingsValues Value = new CompSettingsValues();
+        public CompSettingsValues Value;
         public readonly WeaponComponent Comp;
         public readonly IMyConveyorSorter SorterBase;
         public readonly IMyLargeMissileTurret MissileBase;
@@ -172,8 +175,12 @@ namespace WeaponCore
             {
                 Value = loadedSettings;
                 loadedSomething = true;
-                for (int i = 0; i < Comp.Set.Value.Weapons.Length; i++)
-                    Comp.Platform.Weapons[i].Set = Comp.Set.Value.Weapons[i];
+            }
+            else
+            {
+                Value = new CompSettingsValues {Weapons = new WeaponSettingsValues[Comp.Platform.Weapons.Length]};
+                for (int i = 0; i < Value.Weapons.Length; i++) Value.Weapons[i] = new WeaponSettingsValues();
+
             }
             return loadedSomething;
         }

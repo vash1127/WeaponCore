@@ -998,6 +998,35 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose()
         {
+            if (Info.Ai == null)
+            {
+                Log.Line($"Ai null in ProjectileClose");
+                return;
+            }
+
+            if (Info.System == null)
+            {
+                Log.Line($"System null in ProjectileClose");
+                return;
+            }
+
+            if (Info.Ai?.Session == null)
+            {
+                Log.Line($"Session null in ProjectileClose");
+                return;
+            }
+
+            if (EnableAv && Info.AvShot == null)
+            {
+                Log.Line($"AvShot null in ProjectileClose");
+                return;
+            }
+
+            if (EnableAv && ModelState == EntityState.Exists && Info.AvShot?.PrimeEntity == null)
+            {
+                Log.Line($"PrimeEntity null in ProjectileClose");
+                return;
+            }
             if (!Info.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
             else Info.IsShrapnel = false;
 
@@ -1015,18 +1044,20 @@ namespace WeaponCore.Projectiles
             State = ProjectileState.Dead;
             Info.Ai.Session.Projectiles.CleanUp.Add(this);
 
-            if (ModelState == EntityState.Exists)
+            if (EnableAv)
             {
-                Info.AvShot.PrimeMatrix = MatrixD.Identity;
-                Info.AvShot.TriggerMatrix = MatrixD.Identity;
-                if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.AvShot.PrimeEntity);
-                if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.AvShot.TriggerEntity);
-                ModelState = EntityState.None;
-                Info.AvShot.Complete(this, false, true, Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
+                if (ModelState == EntityState.Exists)
+                {
+                    Info.AvShot.PrimeMatrix = MatrixD.Identity;
+                    Info.AvShot.TriggerMatrix = MatrixD.Identity;
+                    if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.AvShot.PrimeEntity);
+                    if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.AvShot.TriggerEntity);
+                    ModelState = EntityState.None;
+                    Info.AvShot.Complete(this, false, true, Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
+                }
+                else if (Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion)
+                    Info.AvShot.Complete(this, false, false, true);
             }
-            else if (Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion)
-                Info.AvShot.Complete(this, false, false, true);
-
         }
 
         internal enum ProjectileState

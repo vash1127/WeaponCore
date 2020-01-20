@@ -249,8 +249,8 @@ namespace WeaponCore.Platform
                     weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                     var azDiff = oldAz - weapon.Azimuth;
                     var elDiff = oldEl - weapon.Elevation;
-                    var azLocked = azDiff > -1E-07d && azDiff < 1E-07d;
-                    var elLocked = elDiff > -1E-07d && elDiff < 1E-07d;
+                    var azLocked = azDiff > -1E-05d && azDiff < 1E-05d;
+                    var elLocked = elDiff > -1E-05d && elDiff < 1E-05d;
                     var aim = !azLocked || !elLocked;
                     if (aim)
                         weapon.AimBarrel(azDiff, elDiff);

@@ -138,19 +138,21 @@ namespace WeaponCore
                 if (cube.CubeGrid.IsPreview)
                     return;
 
-                var comp = cube.Components.Get<WeaponComponent>();
+                WeaponComponent comp;
+                if (!cube.Components.TryGet(out comp)) return;
+
                 if (comp.Platform.State == MyWeaponPlatform.PlatformState.Ready)
                 {
                     comp.StopAllSounds();
                     comp.Platform.RemoveParts(comp);
                 }
 
-
                 if (comp.Ai != null)
                 {
                     Log.Line("Comp still had AI on close");
                     comp.Ai = null;
                 }
+                
 
                 if (comp.Registered)
                 {

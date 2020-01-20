@@ -99,7 +99,7 @@ namespace WeaponCore.Support
                 else if (i <= lastOffset && betaInfo != null) info = betaInfo;
                 else info = ai.SortedTargets[deck[i - offset]];
 
-                if (info.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && i > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue;
+                if (info.Target == null || info.Target.MarkedForClose || hasOffset && i > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target)) continue;
                 var targetRadius = info.Target.PositionComp.LocalVolume.Radius;
                 var targetPos = info.Target.PositionComp.WorldAABB.Center;
 
@@ -195,7 +195,7 @@ namespace WeaponCore.Support
                         }
                         else info = ai.SortedTargets[deck[x - offset]];
                     }
-                    if (info?.Target == null || info.Target.MarkedForClose || !info.Target.InScene || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
+                    if (info?.Target == null || info.Target.MarkedForClose || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
 
                     if (info.TargetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
 
@@ -373,7 +373,7 @@ namespace WeaponCore.Support
                     var hitGrid = hitInfo.HitEntity as MyCubeGrid;
                     if (hitGrid != null)
                     {
-                        if (hitGrid.MarkedForClose || !hitGrid.InScene) continue;
+                        if (hitGrid.MarkedForClose) continue;
                         bool enemy;
 
                         var bigOwners = hitGrid.BigOwners;

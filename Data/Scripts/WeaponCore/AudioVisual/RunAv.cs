@@ -48,7 +48,7 @@ namespace WeaponCore.Support
 
             if (Session.Tick600)
             {
-                Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} =-");
+                //Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} =-");
                 _glows = 0;
                 _shrinks = 0;
             }

@@ -46,7 +46,6 @@ namespace WeaponCore
                     {
                         if (hitMax || outOfPew || pInvalid)
                         {
-                            if (pInvalid) Log.Line($"noPew:{outOfPew} - max:{hitMax} - tInvalid:{tInvalid} - state:{p.State} - {info.System.WeaponName} - {info.BaseDamagePool} - {info.BaseHealthPool} - {p.Info.Age}");
                             p.State = Projectile.ProjectileState.Depleted;
                         }
                         Projectiles.HitEntityPool.Return(hitEnt);

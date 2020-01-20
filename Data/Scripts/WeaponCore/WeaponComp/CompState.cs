@@ -1,12 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sandbox.Game;
 using Sandbox.ModAPI;
 using VRage.Game.Entity;
-using VRageMath;
 using WeaponCore.Platform;
 
 namespace WeaponCore.Support
@@ -68,27 +62,32 @@ namespace WeaponCore.Support
 
         internal void SubpartClosed(MyEntity ent)
         {
-            if (ent != null && MyCube != null && !MyCube.MarkedForClose && Platform != null && Platform.State == MyWeaponPlatform.PlatformState.Ready)
+            try
             {
-                try
+                if (ent == null || MyCube == null) return;
+
+                using (MyCube.Pin())
                 {
-                    ent.OnClose -= SubpartClosed;
-                    Platform.ResetParts(this);
-                    Status = Start.Started;
-
-                    foreach (var w in Platform.Weapons)
+                    if (!MyCube.MarkedForClose && Platform.State == MyWeaponPlatform.PlatformState.Ready)
                     {
-                        if (IsSorterTurret && !SorterBase.Enabled)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                        else if (MissileBase != null && !MissileBase.Enabled)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                        ent.OnClose -= SubpartClosed;
+                        Platform.ResetParts(this);
+                        Status = Start.Started;
 
-                        if (w.State.CurrentAmmo == 0)
-                            w.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+                        foreach (var w in Platform.Weapons)
+                        {
+                            if (IsSorterTurret && !SorterBase.Enabled)
+                                w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+                            else if (MissileBase != null && !MissileBase.Enabled)
+                                w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+
+                            if (w.State.CurrentAmmo == 0)
+                                w.EventTriggerStateChanged(Weapon.EventTriggers.EmptyOnGameLoad, true);
+                        }
                     }
                 }
-                catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}"); }
             }
+            catch (Exception ex) { Log.Line($"Exception in SubpartClosed: {ex}"); }
         }
 
         internal void UpdateSettings(CompSettingsValues newSettings)
