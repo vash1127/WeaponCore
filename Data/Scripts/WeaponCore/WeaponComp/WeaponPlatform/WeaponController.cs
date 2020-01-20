@@ -6,7 +6,7 @@ namespace WeaponCore.Platform
 {
     public partial class Weapon
     {
-        public void AimBarrel(double azimuthChange, double elevationChange)
+        public void AimBarrel(double azimuthChange, double elevationChange, bool moveAz = true, bool moveEl = true)
         {
             LastTrackedTick = Comp.Session.Tick;
 
@@ -66,8 +66,8 @@ namespace WeaponCore.Platform
             }
             else
             {
-                Comp.MissileBase.Elevation = (float)Elevation;
-                Comp.MissileBase.Azimuth = (float)Azimuth;
+                if (moveEl) Comp.MissileBase.Elevation = (float)Elevation;
+                if (moveAz) Comp.MissileBase.Azimuth = (float)Azimuth;
             }
 
         }

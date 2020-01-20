@@ -249,11 +249,14 @@ namespace WeaponCore.Platform
                     weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                     var azDiff = oldAz - weapon.Azimuth;
                     var elDiff = oldEl - weapon.Elevation;
-                    var azLocked = azDiff > -1E-05d && azDiff < 1E-05d;
-                    var elLocked = elDiff > -1E-05d && elDiff < 1E-05d;
+                    var azLocked = azDiff > -1E-04d && azDiff < 1E-04d;
+                    var elLocked = elDiff > -1E-04d && elDiff < 1E-04d;
+
                     var aim = !azLocked || !elLocked;
                     if (aim)
-                        weapon.AimBarrel(azDiff, elDiff);
+                    {
+                        weapon.AimBarrel(azDiff, elDiff, !azLocked, !elLocked);
+                    }
                 }
             }
             else weapon.Target.IsTracking = false;

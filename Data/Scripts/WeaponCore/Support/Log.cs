@@ -2,68 +2,53 @@
 using System.Collections.Concurrent;
 using System.IO;
 using Sandbox.ModAPI;
+using VRage.Collections;
 
 namespace WeaponCore.Support
 {
-    public class Log
+    public static class Log
     {
-        private static Log _instance = null;
-        private TextWriter _file = null;
-        private string _fileName = "";
+        private static MyConcurrentPool<LogInstance> _logPool = new MyConcurrentPool<LogInstance>(128);
+        private static ConcurrentDictionary<string, LogInstance> _instances = new ConcurrentDictionary<string, LogInstance>();
+        private static ConcurrentQueue<string[]> _threadedLineQueue = new ConcurrentQueue<string[]>();
+        private static string _defaultInstance;
 
-        private static readonly ConcurrentQueue<string[]> ThreadedLineQueue = new ConcurrentQueue<string[]>();
-
-        private Log()
+        public class LogInstance
         {
+            internal TextWriter TextWriter = null;
+
+            internal void Clean()
+            {
+                TextWriter = null;
+            }
         }
 
-        private static Log GetInstance()
-        {
-            if (Log._instance == null)
-            {
-                Log._instance = new Log();
-            }
-
-            return _instance;
-        }
-
-        public static bool Init(string name)
-        {
-
-            bool output = false;
-
-            if (GetInstance()._file == null)
-            {
-
-                try
-                {
-                    MyAPIGateway.Utilities.ShowNotification(name, 5000);
-                    GetInstance()._fileName = name;
-                    GetInstance()._file = MyAPIGateway.Utilities.WriteFileInLocalStorage(name, typeof(Log));
-                    output = true;
-                }
-                catch (Exception e)
-                {
-                    MyAPIGateway.Utilities.ShowNotification(e.Message, 5000);
-                }
-            }
-            else
-            {
-                output = true;
-            }
-
-            return output;
-        }
-
-        public static void Line(string text)
+        public static void Init(string name, bool defaultInstance = true)
         {
             try
             {
-                if (GetInstance()._file != null)
+                if (defaultInstance) _defaultInstance = name;
+                var instance = _logPool.Get();
+                _instances[name] = instance;
+                MyAPIGateway.Utilities.ShowNotification(name, 5000);
+                instance.TextWriter = MyAPIGateway.Utilities.WriteFileInLocalStorage(name, typeof(LogInstance));
+            }
+            catch (Exception e)
+            {
+                MyAPIGateway.Utilities.ShowNotification(e.Message, 5000);
+            }
+        }
+
+        public static void Line(string text, string instanceName = null)
+        {
+            try
+            {
+                var name  = instanceName ?? _defaultInstance;
+                var instance = _instances[name];
+                if (instance.TextWriter != null)
                 {
-                    var time = $"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - ";
-                    GetInstance()._file.WriteLine(time + text);
-                    GetInstance()._file.Flush();
+                    instance.TextWriter.WriteLine($"{DateTime.Now:MM-dd-yy_HH-mm-ss-fff} - " + text);
+                    instance.TextWriter.Flush();
                 }
             }
             catch (Exception e)
@@ -71,29 +56,32 @@ namespace WeaponCore.Support
             }
         }
 
-        public static void LineShortDate(string text)
+        public static void LineShortDate(string text, string instanceName = null)
         {
             try
             {
-                if (GetInstance()._file != null)
+                var name = instanceName ?? _defaultInstance;
+                var instance = _instances[name];
+                if (instance.TextWriter != null)
                 {
-                    var time = $"{DateTime.Now:HH-mm-ss-fff} - ";
-                    GetInstance()._file.WriteLine(time + text);
-                    GetInstance()._file.Flush();
+                    instance.TextWriter.WriteLine($"{DateTime.Now:HH-mm-ss-fff} - "  + text);
+                    instance.TextWriter.Flush();
                 }
             }
             catch (Exception e)
             {
             }
         }
-        public static void Chars(string text)
+        public static void Chars(string text, string instanceName = null)
         {
             try
             {
-                if (GetInstance()._file != null)
+                var name = instanceName ?? _defaultInstance;
+                var instance = _instances[name];
+                if (instance.TextWriter != null)
                 {
-                    GetInstance()._file.Write(text);
-                    GetInstance()._file.Flush();
+                    instance.TextWriter.Write(text);
+                    instance.TextWriter.Flush();
                 }
             }
             catch (Exception e)
@@ -101,14 +89,16 @@ namespace WeaponCore.Support
             }
         }
 
-        public static void CleanLine(string text)
+        public static void CleanLine(string text, string instanceName = null)
         {
             try
             {
-                if (GetInstance()._file != null)
+                var name = instanceName ?? _defaultInstance;
+                var instance = _instances[name];
+                if (instance.TextWriter != null)
                 {
-                    GetInstance()._file.WriteLine(text);
-                    GetInstance()._file.Flush();
+                    instance.TextWriter.WriteLine(text);
+                    instance.TextWriter.Flush();
                 }
             }
             catch (Exception e)
@@ -118,13 +108,13 @@ namespace WeaponCore.Support
 
         public static void ThreadedWrite(string logLine)
         {
-            ThreadedLineQueue.Enqueue(new string[] { $"Actual Time: {DateTime.Now:MM-dd-yy_HH-mm-ss-fff -} ", logLine });
+            _threadedLineQueue.Enqueue(new string[] { $"Actual Time: {DateTime.Now:MM-dd-yy_HH-mm-ss-fff -} ", logLine });
             MyAPIGateway.Utilities.InvokeOnGameThread(WriteLog);
         }
 
         private static void WriteLog() {
             string[] line;
-            while (ThreadedLineQueue.TryDequeue(out line))
+            while (_threadedLineQueue.TryDequeue(out line))
             {
                 Line(line[0] + line[1]);
             }
@@ -135,12 +125,23 @@ namespace WeaponCore.Support
         {
             try
             {
-                if (GetInstance()._file != null)
+                _threadedLineQueue.Clear();
+                foreach (var pair in _instances)
                 {
-                    ThreadedLineQueue.Clear();
-                    GetInstance()._file.Flush();
-                    GetInstance()._file.Close();
+                    pair.Value.TextWriter.Flush();
+                    pair.Value.TextWriter.Close();
+                    pair.Value.TextWriter.Dispose();
+                    pair.Value.Clean();
+
+                    _logPool.Return(pair.Value);
+
                 }
+                _instances.Clear();
+                _logPool.Clean();
+                _logPool = null;
+                _instances = null;
+                _threadedLineQueue = null;
+                _defaultInstance = null;
             }
             catch (Exception e)
             {

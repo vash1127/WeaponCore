@@ -153,7 +153,6 @@ namespace WeaponCore
                     comp.Ai = null;
                 }
                 
-
                 if (comp.Registered)
                 {
                     Log.Line($"comp still registered");
