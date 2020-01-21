@@ -998,35 +998,6 @@ namespace WeaponCore.Projectiles
 
         internal void ProjectileClose()
         {
-            if (Info.Ai == null)
-            {
-                Log.Line($"Ai null in ProjectileClose");
-                return;
-            }
-
-            if (Info.System == null)
-            {
-                Log.Line($"System null in ProjectileClose");
-                return;
-            }
-
-            if (Info.Ai?.Session == null)
-            {
-                Log.Line($"Session null in ProjectileClose");
-                return;
-            }
-
-            if (EnableAv && Info.AvShot == null)
-            {
-                Log.Line($"AvShot null in ProjectileClose");
-                return;
-            }
-
-            if (EnableAv && ModelState == EntityState.Exists && Info.AvShot?.PrimeEntity == null)
-            {
-                Log.Line($"PrimeEntity null in ProjectileClose");
-                return;
-            }
             if (!Info.IsShrapnel && GenerateShrapnel) SpawnShrapnel();
             else Info.IsShrapnel = false;
 

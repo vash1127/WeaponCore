@@ -48,7 +48,21 @@ namespace WeaponCore.Support
 
             if (Session.Tick600)
             {
-                //Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} =-");
+                int activeEnt = 0;
+                int markedEnt = 0;
+                for (int i = 0; i < Session.Projectiles.EntityPool.Length; i++)
+                {
+                    var entPool = Session.Projectiles.EntityPool[i];
+                    foreach (var ent in entPool.Active)
+                    {
+                        if (ent.InScene) markedEnt++;
+                    }
+                    foreach (var ent in entPool.Marked)
+                    {
+                        if (ent.InScene) activeEnt++;
+                    }
+                }
+                Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} [activeInScene] {activeEnt} [markedInScene] {markedEnt} =-");
                 _glows = 0;
                 _shrinks = 0;
             }
