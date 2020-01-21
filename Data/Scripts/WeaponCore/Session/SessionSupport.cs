@@ -27,6 +27,7 @@ namespace WeaponCore
             Tick600 = Tick % 600 == 0;
             Tick1800 = Tick % 1800 == 0;
             if (Tick60) Av.ExplosionCounter = 0;
+            if (++SCount == 60) SCount = 0;
             if (Count++ == 119)
             {
                 Count = 0;
@@ -37,8 +38,7 @@ namespace WeaponCore
             if (LCount == 129)
             {
                 LCount = 0;
-                ECount++;
-                if (ECount == 10) ECount = 0;
+
             }
             if (!GameLoaded)
             {
@@ -70,6 +70,14 @@ namespace WeaponCore
 
             if (ShieldMod && !ShieldApiLoaded && SApi.Load())
                 ShieldApiLoaded = true;
+        }
+
+        internal int ShortLoadAssigner()
+        {
+            if (_shortLoadCounter + 1 > 59) _shortLoadCounter = 0;
+            else ++_shortLoadCounter;
+
+            return _shortLoadCounter;
         }
 
         internal int LoadAssigner()

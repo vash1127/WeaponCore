@@ -165,7 +165,7 @@ namespace WeaponCore
         internal int AmmoPulls;
         internal int Count = -1;
         internal int LCount;
-        internal int ECount;
+        internal int SCount;
 
         internal enum AnimationType
         {
@@ -226,6 +226,8 @@ namespace WeaponCore
 
 
         private int _loadCounter = 1;
+        private int _shortLoadCounter = 1;
+
         private uint _lastDrawTick;
         private bool _paused;
     }

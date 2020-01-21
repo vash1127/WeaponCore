@@ -607,6 +607,7 @@ namespace WeaponCore.Platform
         {
             LastTargetTick = Comp.Session.Tick;
             LoadId = Comp.Session.LoadAssigner();
+            ShortLoadId = Comp.Session.ShortLoadAssigner();
         }
     }
 }

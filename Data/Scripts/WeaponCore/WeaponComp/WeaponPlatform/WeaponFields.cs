@@ -32,6 +32,7 @@ namespace WeaponCore.Platform
         internal uint TicksPerShot;
         internal double TimePerShot;
         internal int LoadId;
+        internal int ShortLoadId;
 
         internal MyTuple<MyEntity, Matrix, Matrix, Vector3> MuzzlePart;
         internal MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> AzimuthPart;
@@ -136,6 +137,9 @@ namespace WeaponCore.Platform
         internal bool RequestedPower;
         internal bool ResetPower;
         internal bool RecalcPower;
+        internal bool ProjectilesNear;
+        internal bool TargetChanged;
+
 
         public enum TerminalActionState
         {
@@ -164,6 +168,7 @@ namespace WeaponCore.Platform
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)
         {
             LoadId = comp.Session.LoadAssigner();
+            ShortLoadId = comp.Session.ShortLoadAssigner();
             MuzzlePart = new MyTuple<MyEntity, Matrix, Matrix, Vector3> {Item1 = entity };
             AnimationsSet = animationSets;
 
