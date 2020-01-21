@@ -53,7 +53,7 @@ namespace WeaponCore.Support
                     MyCube cube;
                     if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
-                        hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
+                        //hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }
@@ -85,7 +85,7 @@ namespace WeaponCore.Support
                     MyCube cube;
                     if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
-                        hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
+                        //hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }
@@ -117,7 +117,7 @@ namespace WeaponCore.Support
                     MyCube cube;
                     if (grid.TryGetCube(start, out cube) && cube.CubeBlock != weapon?.SlimBlock)
                     {
-                        hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
+                        //hitPos = grid.GridIntegerToWorld(((IMySlimBlock)cube.CubeBlock).Position);
                         return true;
                     }
                 }

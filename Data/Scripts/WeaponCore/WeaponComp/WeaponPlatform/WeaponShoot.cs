@@ -359,6 +359,14 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
+
+            if (System.Values.HardPoint.MuzzleCheck && MuzzleHitSelf())
+            {
+                masterWeapon.Target.Reset();
+                if (masterWeapon != this) Target.Reset();
+                return;
+            }
+
             if (Target.IsFakeTarget)
             {
                 Casting = true;
@@ -512,6 +520,23 @@ namespace WeaponCore.Platform
                     if (masterWeapon != this) Target.Reset(true, false);
                 }
             }
+        }
+
+        public bool MuzzleHitSelf()
+        {
+            for (int i = 0; i < Muzzles.Length; i++)
+            {
+                var m = Muzzles[i];
+                var grid = Comp.Ai.MyGrid;
+                var start = m.Position;
+                var end = m.Position + m.Direction * grid.PositionComp.LocalVolume.Radius;
+                Vector3D? hit;
+                if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.MyCube))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

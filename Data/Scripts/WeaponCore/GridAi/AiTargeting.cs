@@ -237,7 +237,7 @@ namespace WeaponCore.Support
                     session.TopRayCasts++;
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, targetPos, out hitInfo, 15, true);
-                    if (hitInfo != null && hitInfo.HitEntity == info.Target)
+                    if (hitInfo != null && hitInfo.HitEntity == info.Target && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
                     {
                         double rayDist;
                         Vector3D.Distance(ref weaponPos, ref targetPos, out rayDist);
@@ -364,7 +364,7 @@ namespace WeaponCore.Support
                     IHitInfo hitInfo;
                     physics.CastRay(weaponPos, blockPos, out hitInfo, 15, true);
 
-                    if (hitInfo == null || hitInfo.HitEntity != ai.MyGrid)
+                    if (hitInfo == null || hitInfo.HitEntity != ai.MyGrid && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
                         notSelfHit = true;
 
                     if (hitInfo?.HitEntity == null || hitInfo.HitEntity is MyVoxelBase ||
@@ -461,7 +461,7 @@ namespace WeaponCore.Support
                                 ai.Session.ClosestRayCasts++;
                                 bestTest = physics.CastRay(testPos, cubePos, out hit, 15, true) && hit?.HitEntity == cube.CubeGrid;
 
-                                if (hit.HitEntity != ai.MyGrid || hit == null)
+                                if (hit.HitEntity != ai.MyGrid || hit == null && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
                                     notSelfHit = true;
                             }
                         }
@@ -603,7 +603,7 @@ namespace WeaponCore.Support
                     {
                         IHitInfo hitInfo;
                         physics.CastRay(weaponPos, lp.Position, out hitInfo, 15, true);
-                        if (hitInfo?.HitEntity == null)
+                        if (hitInfo?.HitEntity == null && (!w.System.Values.HardPoint.MuzzleCheck || !w.MuzzleHitSelf()))
                         {
                             double hitDist;
                             Vector3D.Distance(ref weaponPos, ref lp.Position, out hitDist);

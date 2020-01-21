@@ -210,11 +210,11 @@ namespace WeaponCore.Platform
 
             weapon.Target.TargetPos = targetPos;
 
-            double rangeToTarget;
-            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
+            double rangeToTargetSqr;
+            Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
             var targetDir = targetPos - weapon.MyPivotPos;
 
-            if (manulControl || rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
+            if (manulControl || rangeToTargetSqr <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
             {
                 var maxAzimuthStep = system.AzStep;
                 var maxElevationStep = system.ElStep;
@@ -245,12 +245,13 @@ namespace WeaponCore.Platform
                 {
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;
+                    var epsilon = rangeToTargetSqr <= 1000000 ? 1E-03d : 1E-04d;
                     weapon.Azimuth += MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
                     weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                     var azDiff = oldAz - weapon.Azimuth;
                     var elDiff = oldEl - weapon.Elevation;
-                    var azLocked = azDiff > -1E-04d && azDiff < 1E-04d;
-                    var elLocked = elDiff > -1E-04d && elDiff < 1E-04d;
+                    var azLocked = azDiff > -epsilon && azDiff < epsilon;
+                    var elLocked = elDiff > -epsilon && elDiff < epsilon;
 
                     var aim = !azLocked || !elLocked;
                     if (aim)

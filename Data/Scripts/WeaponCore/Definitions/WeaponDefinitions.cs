@@ -72,6 +72,8 @@ namespace WeaponCore.Support
         [ProtoMember(12)] internal AmmoLoading Loading;
         [ProtoMember(13)] internal AimControlDefinition Block;
         [ProtoMember(14)] internal UiDefinition Ui;
+        [ProtoMember(15)] internal bool MuzzleCheck;
+
     }
 
     [ProtoContract]
