@@ -105,6 +105,7 @@ namespace WeaponCore.Support
         internal bool RequestedPowerChanged;
         internal bool RequestIncrease;
         internal bool StaticEntitiesInRange;
+        internal bool StaticGridInRange;
         internal bool ShieldNearTmp;
         internal bool ShieldNear;
         internal bool CheckReload;
@@ -115,6 +116,8 @@ namespace WeaponCore.Support
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
         internal double GridRadius;
+        internal double ClosestStaticSqr = double.MaxValue;
+        internal double ClosestPlanetSqr = double.MaxValue;
         internal float GridMaxPower;
         internal float GridCurrentPower;
         internal float GridAvailablePower;

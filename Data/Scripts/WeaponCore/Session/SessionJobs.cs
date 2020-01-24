@@ -58,6 +58,8 @@ namespace WeaponCore
                     else if (db.MyPlanet != null) db.MyPlanetInfo(clear: true);
                 }
 
+                db.MyStaticInfo();
+
                 foreach (var sub in db.PrevSubGrids) db.SubGrids.Add(sub);
                 if (db.SubGridsChanged) db.SubGridChanges();
 

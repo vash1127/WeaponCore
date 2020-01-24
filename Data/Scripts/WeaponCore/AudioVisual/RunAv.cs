@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Sandbox.Game.Entities;
 using VRage.Collections;
 using VRage.Game;
 using VRageMath;
@@ -58,10 +59,8 @@ namespace WeaponCore.Support
             for (int i = AvShots.Count - 1; i >= 0; i--)
             {
                 var av = AvShots[i];
-
                 if (av.OnScreen != AvShot.Screen.None) _onScreens++;
                 var refreshed = av.LastTick == Session.Tick;
-                
                 if (refreshed && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
                 {
                     if (!av.System.OffsetEffect)

@@ -19,7 +19,6 @@ namespace WeaponCore.Projectiles
         internal bool GetAllEntitiesInLine(Projectile p, LineD beam)
         {
             var shieldByPass = p.Info.System.Values.DamageScales.Shields.Type == ShieldDefinition.ShieldType.Bypass;
-
             var ai = p.Info.Ai;
             var found = false;
             var lineCheck = p.Info.System.CollisionIsLine;
@@ -39,8 +38,10 @@ namespace WeaponCore.Projectiles
                     if (shieldInfo != null)
                     {
                         double? dist = null;
-                        if (ent.Physics == null)
+                        if (ent.Physics != null && ent.Physics.IsPhantom)
+                        {
                             dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
+                        }
 
                         if (dist != null && dist.Value < beam.Length && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
                         {

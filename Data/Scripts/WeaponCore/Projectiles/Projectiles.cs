@@ -273,7 +273,10 @@ namespace WeaponCore.Projectiles
                     p.PruneSphere.Center = p.Position;
                     p.PruneSphere.Radius = p.Info.System.CollisionSize;
                     if (p.Info.System.IsBeamWeapon || p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) == ContainmentType.Disjoint)
+                    {
+                        if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
                         MyGamePruningStructure.GetTopmostEntitiesOverlappingRay(ref beam, p.SegmentList, p.PruneQuery);
+                    }
                 }
                 else
                 {
@@ -291,6 +294,8 @@ namespace WeaponCore.Projectiles
                     }
                     if (!((p.Info.System.SelfDamage || p.Gunner == WeaponComponent.Control.Direct) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
+                        if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
+
                         var checkList = CheckPool.Get();
                         MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref p.PruneSphere, checkList, p.PruneQuery);
                         for (int i = 0; i < checkList.Count; i++)
@@ -389,7 +394,7 @@ namespace WeaponCore.Projectiles
                         p.ModelSphereLast.Radius = currentRadius;
                         p.ModelSphereCurrent.Radius = currentRadius;
                     }
-                    if (Session.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Camera.IsInFrustum(ref p.ModelSphereCurrent) || p.FirstOffScreen)
+                    if (Session.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Camera.IsInFrustum(ref p.ModelSphereCurrent))
                     {
                         p.Info.AvShot.OnScreen = Screen.Tracer;
                         p.FirstOffScreen = false;

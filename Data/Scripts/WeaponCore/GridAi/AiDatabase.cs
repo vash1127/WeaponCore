@@ -137,6 +137,7 @@ namespace WeaponCore.Support
                 {
                     if (voxel != null && MyPlanetTmp != null && MyPlanetTmp.PositionComp.WorldAABB.Contains(voxel.PositionComp.WorldVolume) == ContainmentType.Contains)
                         continue;
+
                     StaticsInRangeTmp.Add(ent);
                 }
 

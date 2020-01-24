@@ -319,13 +319,17 @@ namespace WeaponCore.Support
                 MyPlanet = MyPlanetTmp;
                 var gridRadius = MyGrid.PositionComp.LocalVolume.Radius;
                 var planetCenter = MyPlanet.PositionComp.WorldAABB.Center;
+                ClosestPlanetSqr = double.MaxValue;
                 if (new BoundingSphereD(planetCenter, MyPlanet.MaximumRadius + gridRadius).Intersects(MyGrid.PositionComp.WorldVolume))
                 {
                     var gridCenter = MyGrid.PositionComp.WorldAABB.Center;
                     PlanetClosestPoint = MyPlanet.GetClosestSurfacePointGlobal(gridCenter);
                     double pointDistSqr;
                     Vector3D.DistanceSquared(ref PlanetClosestPoint, ref gridCenter, out pointDistSqr);
+
                     pointDistSqr -= (gridRadius * gridRadius);
+                    if (pointDistSqr < 0) pointDistSqr = 0;
+                    ClosestPlanetSqr = pointDistSqr;
                     PlanetSurfaceInRange = pointDistSqr <= MaxTargetingRangeSqr;
                 }
                 else
@@ -339,7 +343,45 @@ namespace WeaponCore.Support
                 MyPlanet = null;
                 PlanetClosestPoint = Vector3D.Zero;
                 PlanetSurfaceInRange = false;
+                ClosestPlanetSqr = double.MaxValue;
             }
+        }
+
+        internal void MyStaticInfo()
+        {
+            ClosestStaticSqr = double.MaxValue;
+            StaticGridInRange = false;
+            MyEntity closestEnt = null;
+            double closestDistSqr = double.MaxValue;
+            for (int i = 0; i < StaticsInRange.Count; i++)
+            {
+                var ent = StaticsInRange[i];
+                var staticCenter = ent.PositionComp.WorldAABB.Center;
+                if (ent is MyCubeGrid) StaticGridInRange = true;
+
+                double distSqr;
+                Vector3D.DistanceSquared(ref staticCenter, ref GridCenter, out distSqr);
+                if (distSqr < closestDistSqr)
+                {
+                    closestDistSqr = distSqr;
+                    closestEnt = ent;
+                }
+            }
+
+            if (closestEnt != null)
+            {
+                var dist = Vector3D.Distance(GridCenter, closestEnt.PositionComp.WorldAABB.Center);
+                dist -= closestEnt.PositionComp.LocalVolume.Radius;
+                dist -= GridRadius;
+                if (dist < 0) dist = 0;
+
+                var distSqr = dist * dist;
+
+                if (ClosestPlanetSqr < distSqr) distSqr = ClosestPlanetSqr;
+
+                ClosestStaticSqr = distSqr;
+            }
+            else if (ClosestPlanetSqr < ClosestStaticSqr) ClosestStaticSqr = ClosestPlanetSqr;
         }
 
         public static bool GridEnemy(long gridOwner, MyCubeGrid grid, List<long> owners = null)
@@ -687,88 +729,92 @@ namespace WeaponCore.Support
         }
         internal void UpdateGridPower()
         {
-            LastPowerUpdateTick = Session.Tick;
-            GridAvailablePower = 0;
-            GridMaxPower = 0;
-            GridCurrentPower = 0;
-            BatteryMaxPower = 0;
-            BatteryCurrentOutput = 0;
-            BatteryCurrentInput = 0;
-
-            if (Session.Tick60)
+            try
             {
-                foreach (var battery in Batteries)
-                {
-                    if (!battery.IsWorking) continue;
-                    var currentInput = battery.CurrentInput;
-                    var currentOutput = battery.CurrentOutput;
-                    var maxOutput = battery.MaxOutput;
-                    if (currentInput > 0)
-                    {
-                        BatteryCurrentInput += currentInput;
-                        if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
-                        else BatteryCurrentOutput -= currentInput;
-                    }
-                    BatteryMaxPower += maxOutput;
-                    BatteryCurrentOutput += currentOutput;
-                }
-            }
+                LastPowerUpdateTick = Session.Tick;
+                GridAvailablePower = 0;
+                GridMaxPower = 0;
+                GridCurrentPower = 0;
+                BatteryMaxPower = 0;
+                BatteryCurrentOutput = 0;
+                BatteryCurrentInput = 0;
 
-            using (FakeShipController.CubeGrid?.Pin())
-            {
-                if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null)
+                if (Session.Tick60)
                 {
-                    //FatMap fatMap;
-                    //if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
-                    if (Weapons.Count > 0)
+                    foreach (var battery in Batteries)
                     {
-                        //FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
-                        FakeShipController.SlimBlock = Weapons[Weapons.Count - 1].MyCube.SlimBlock;
-                        PowerDistributor = FakeShipController.GridResourceDistributor;
-                        if (PowerDistributor == null)
+                        if (!battery.IsWorking) continue;
+                        var currentInput = battery.CurrentInput;
+                        var currentOutput = battery.CurrentOutput;
+                        var maxOutput = battery.MaxOutput;
+                        if (currentInput > 0)
                         {
-                            Log.Line($"failed to get power dist, still null");
+                            BatteryCurrentInput += currentInput;
+                            if (battery.IsCharging) BatteryCurrentOutput -= currentInput;
+                            else BatteryCurrentOutput -= currentInput;
+                        }
+                        BatteryMaxPower += maxOutput;
+                        BatteryCurrentOutput += currentOutput;
+                    }
+                }
+
+                using (FakeShipController.CubeGrid?.Pin())
+                {
+                    if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null)
+                    {
+                        //FatMap fatMap;
+                        //if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
+                        if (Weapons.Count > 0)
+                        {
+                            //FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
+                            FakeShipController.SlimBlock = Weapons[Weapons.Count - 1].MyCube.SlimBlock;
+                            PowerDistributor = FakeShipController.GridResourceDistributor;
+                            if (PowerDistributor == null)
+                            {
+                                Log.Line($"failed to get power dist, still null");
+                                return;
+                            }
+                        }
+                        else
+                        {
+                            Log.Line($"no-fatmap for power dist: {MyGrid.MarkedForClose} - PowerDistNull:{PowerDistributor == null} - FakeSlimNull:{FakeShipController.SlimBlock == null} - FakeCubeGridNull:{FakeShipController.CubeGrid == null} - FakeTopNull:{FakeShipController.TopGrid == null}");
                             return;
                         }
                     }
-                    else
+
+                    if (PowerDistributor == null)
                     {
-                        Log.Line($"no-fatmap for power dist: {MyGrid.MarkedForClose} - PowerDistNull:{PowerDistributor == null} - FakeSlimNull:{FakeShipController.SlimBlock == null} - FakeCubeGridNull:{FakeShipController.CubeGrid == null} - FakeTopNull:{FakeShipController.TopGrid == null}");
+                        Log.Line($"powerDist is null");
                         return;
                     }
+
+                    GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
+                    GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
                 }
 
-                if (PowerDistributor == null)
-                {
-                    Log.Line($"powerDist is null");
-                    return;
-                }
-                
-                GridMaxPower = PowerDistributor.MaxAvailableResourceByType(GId);
-                GridCurrentPower = PowerDistributor.TotalRequiredInputByType(GId);
+                GridAvailablePower = GridMaxPower - GridCurrentPower;
+
+                GridCurrentPower += BatteryCurrentInput;
+                GridAvailablePower -= BatteryCurrentInput;
+                UpdatePowerSources = false;
+
+                RequestedPowerChanged = Math.Abs(LastRequestedPower - RequestedWeaponsDraw) > 0.001 && LastRequestedPower > 0;
+                AvailablePowerChanged = Math.Abs(GridMaxPower - LastAvailablePower) > 0.001 && LastAvailablePower > 0;
+
+                RequestIncrease = LastRequestedPower < RequestedWeaponsDraw;
+                PowerIncrease = LastAvailablePower < GridMaxPower;
+
+                LastAvailablePower = GridMaxPower;
+                LastRequestedPower = RequestedWeaponsDraw;
+
+                HadPower = HasPower;
+                HasPower = GridMaxPower > 0;
+
+                if (HasPower) return;
+                if (HadPower)
+                    WeaponShootOff();
             }
-
-            GridAvailablePower = GridMaxPower - GridCurrentPower;
-
-            GridCurrentPower += BatteryCurrentInput;
-            GridAvailablePower -= BatteryCurrentInput;
-            UpdatePowerSources = false;
-
-            RequestedPowerChanged = Math.Abs(LastRequestedPower - RequestedWeaponsDraw) > 0.001 && LastRequestedPower > 0;
-            AvailablePowerChanged = Math.Abs(GridMaxPower - LastAvailablePower) > 0.001 && LastAvailablePower > 0;
-
-            RequestIncrease = LastRequestedPower < RequestedWeaponsDraw;
-            PowerIncrease = LastAvailablePower < GridMaxPower;
-
-            LastAvailablePower = GridMaxPower;
-            LastRequestedPower = RequestedWeaponsDraw;
-
-            HadPower = HasPower;
-            HasPower = GridMaxPower > 0;
-
-            if (HasPower) return;
-            if (HadPower)
-                WeaponShootOff();
+            catch (Exception ex) { Log.Line($"Exception in UpdateGridPower: {ex} - SessionNull{Session == null} - FakeShipControllerNull{FakeShipController == null} - PowerDistributorNull{PowerDistributor == null} - MyGridNull{MyGrid == null}"); }
         }
 
         private void WeaponShootOff()

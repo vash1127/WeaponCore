@@ -4,6 +4,7 @@ using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Game.Components;
 using VRage.ModAPI;
+using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Session;
 namespace WeaponCore.Support

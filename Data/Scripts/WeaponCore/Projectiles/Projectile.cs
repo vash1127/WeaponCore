@@ -236,8 +236,13 @@ namespace WeaponCore.Projectiles
             PickTarget = LockedTarget && Info.System.Values.Ammo.Trajectory.Smarts.OverideTarget && !Info.Target.IsFakeTarget;
             if (PickTarget || LockedTarget) NewTargets++;
 
-            PruneQuery = DynamicGuidance || Info.Ai.ShieldNear ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
-            if (!DynamicGuidance && Info.Ai.StaticEntitiesInRange)
+            var staticIsInRange = (Info.Ai.ClosestStaticSqr * 0.5) < MaxTrajectorySqr;
+
+            PruneQuery = DynamicGuidance && ((Info.Ai.ClosestPlanetSqr * 0.5) < MaxTrajectorySqr) || Info.Ai.StaticGridInRange ? MyEntityQueryType.Both : MyEntityQueryType.Dynamic;
+            
+            if (DynamicGuidance && PruneQuery == MyEntityQueryType.Dynamic && staticIsInRange) CheckForNearVoxel(60);
+
+            if (!DynamicGuidance && staticIsInRange)
                 StaticEntCheck();
             else if (Info.Ai.PlanetSurfaceInRange) LinePlanetCheck = true;
 
@@ -307,12 +312,13 @@ namespace WeaponCore.Projectiles
         {
             var ai = Info.Ai;
             LinePlanetCheck = ai.PlanetSurfaceInRange && DynamicGuidance;
+            var lineTest = new LineD(Position, Position + (Direction * MaxTrajectory));
+
             for (int i = 0; i < Info.Ai.StaticsInRange.Count; i++)
             {
                 var staticEnt = ai.StaticsInRange[i];
                 var rotMatrix = Quaternion.CreateFromRotationMatrix(staticEnt.WorldMatrix);
                 var obb = new MyOrientedBoundingBoxD(staticEnt.PositionComp.WorldAABB.Center, staticEnt.PositionComp.LocalAABB.HalfExtents, rotMatrix);
-                var lineTest = new LineD(Position, Position + (Direction * MaxTrajectory));
                 var voxel = staticEnt as MyVoxelBase;
                 var grid = staticEnt as MyCubeGrid;
 
@@ -361,6 +367,15 @@ namespace WeaponCore.Projectiles
                 }
             }
             hitInfos.Clear();
+        }
+
+        internal void CheckForNearVoxel(uint steps)
+        {
+            var possiblePos = BoundingBoxD.CreateFromSphere(new BoundingSphereD(Position, ((MaxSpeed) * (steps + 1) * StepConst) + Info.System.CollisionSize));
+            if (MyGamePruningStructure.AnyVoxelMapInBox(ref possiblePos))
+            {
+                PruneQuery = MyEntityQueryType.Both;
+            }
         }
 
         internal bool Intersected(bool add = true)
