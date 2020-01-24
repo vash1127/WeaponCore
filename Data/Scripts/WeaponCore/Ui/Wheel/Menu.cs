@@ -221,7 +221,7 @@ namespace WeaponCore
                 var nextValueToStr = settingMap[currentValue].NextValue;
                 var nextValue = Wheel.SettingStrToValues[settingName][nextValueToStr];
 
-                groupInfo.SetValue(groupMember.Comp, nextValue);
+                groupInfo.SetValue(groupMember.Comp, settingName, nextValue);
                 ReportMemberSettings(groupInfo, groupMember, item);
             }
 

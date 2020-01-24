@@ -81,50 +81,47 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void SetValue(WeaponComponent comp, int value)
+        internal void SetValue(WeaponComponent comp, string setting, int value)
         {
             var o = comp.Set.Value.Overrides;
-            foreach (var setting in Settings.Keys)
+            switch (setting)
             {
-                switch (setting)
-                {
-                    case "Active":
-                        o.Activate = value > 0;
-                        break;
-                    case "SubSystems":
-                        o.SubSystem = (TargetingDefinition.BlockTypes)value;
-                        break;
-                    case "FocusSubSystem":
-                        o.FocusSubSystem = value > 0;
-                        break;
-                    case "FocusTargets":
-                        o.FocusTargets = value > 0;
-                        break;
-                    case "ManualFire":
-                        o.ManualFire = value > 0;
-                        break;
-                    case "ManualAim":
-                        o.ManualAim = value > 0;
-                        break;
-                    case "Unowned":
-                        o.Unowned = value > 0;
-                        break;
-                    case "Friendly":
-                        o.Friendly = value > 0;
-                        break;
-                    case "Meteors":
-                        o.Meteors = value > 0;
-                        break;
-                    case "Biologicals":
-                        o.Biologicals = value > 0;
-                        break;
-                    case "Projectiles":
-                        o.Projectiles = value > 0;
-                        break;
-                    case "Neutrals":
-                        o.Neutrals = value > 0;
-                        break;
-                }
+                case "Active":
+                    o.Activate = value > 0;
+                    break;
+                case "SubSystems":
+                    o.SubSystem = (TargetingDefinition.BlockTypes)value;
+                    break;
+                case "FocusSubSystem":
+                    o.FocusSubSystem = value > 0;
+                    break;
+                case "FocusTargets":
+                    o.FocusTargets = value > 0;
+                    break;
+                case "ManualFire":
+                    o.ManualFire = value > 0;
+                    break;
+                case "ManualAim":
+                    o.ManualAim = value > 0;
+                    break;
+                case "Unowned":
+                    o.Unowned = value > 0;
+                    break;
+                case "Friendly":
+                    o.Friendly = value > 0;
+                    break;
+                case "Meteors":
+                    o.Meteors = value > 0;
+                    break;
+                case "Biologicals":
+                    o.Biologicals = value > 0;
+                    break;
+                case "Projectiles":
+                    o.Projectiles = value > 0;
+                    break;
+                case "Neutrals":
+                    o.Neutrals = value > 0;
+                    break;
             }
         }
 
