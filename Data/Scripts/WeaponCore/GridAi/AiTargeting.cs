@@ -264,9 +264,12 @@ namespace WeaponCore.Support
                 var subSystems = system.Values.Targeting.SubSystems;
                 var targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                 var targetAccel = (int)system.Values.HardPoint.AimLeadingPrediction > 1 ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
-
-                foreach (var bt in subSystems)
+                var focusSubSystem = w != null && w.Comp.Set.Value.Overrides.FocusSubSystem;
+                
+                foreach (var blockType in subSystems)
                 {
+                    var bt = focusSubSystem ? w.Comp.Set.Value.Overrides.SubSystem : blockType;
+
                     ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>> blockTypeMap;
                     ai.Session.GridToBlockTypeMap.TryGetValue((MyCubeGrid) info.Target, out blockTypeMap);
                     if (bt != Any && blockTypeMap != null && blockTypeMap[bt].Count > 0)
@@ -282,9 +285,11 @@ namespace WeaponCore.Support
                         }
                         else if (FindRandomBlock(system, ai, target, weaponPos, info, subSystemList, w, checkPower)) return true;
                     }
+
+                    if (focusSubSystem) break;
                 }
 
-                if (system.OnlySubSystems) return false;
+                if (system.OnlySubSystems || focusSubSystem && w.Comp.Set.Value.Overrides.SubSystem != Any) return false;
             }
             FatMap fatMap;
             return ai.Session.GridToFatMap.TryGetValue((MyCubeGrid)info.Target, out fatMap) && fatMap.MyCubeBocks != null && FindRandomBlock(system, ai, target, weaponPos, info, fatMap.MyCubeBocks, w, checkPower);
