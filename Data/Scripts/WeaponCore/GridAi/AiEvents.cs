@@ -21,7 +21,6 @@ namespace WeaponCore.Support
                 Registered = true;
                 grid.OnFatBlockAdded += FatBlockAdded;
                 grid.OnFatBlockRemoved += FatBlockRemoved;
-                //grid.OnMarkForClose += GridClose;
                 grid.OnClose += GridClose;
             }
             else
@@ -31,7 +30,6 @@ namespace WeaponCore.Support
                     Registered = false;
                     grid.OnFatBlockAdded -= FatBlockAdded;
                     grid.OnFatBlockRemoved -= FatBlockRemoved;
-                    //grid.OnMarkForClose -= GridClose;
                     grid.OnClose -= GridClose;
                 }
             }
@@ -138,7 +136,7 @@ namespace WeaponCore.Support
         internal void GridClose(MyEntity myEntity)
         {
             RegisterMyGridEvents(false);
-            Session.FutureEvents.Schedule(DelayedGridCleanUp, null, 120);
+            Session.GridAiPool.Return(this);
         }
     }
 }

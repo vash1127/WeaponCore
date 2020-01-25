@@ -206,7 +206,6 @@ namespace WeaponCore.Support
         {
             if (TerminalSystem == null)
                 TerminalSystem = MyAPIGateway.TerminalActionsHelper.GetTerminalSystemForGrid(MyGrid);
-
             if (TerminalSystem != null)
             {
                 TerminalSystem.GetBlockGroups(null, group =>
@@ -673,11 +672,6 @@ namespace WeaponCore.Support
                 FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
                 PowerDistributor = FakeShipController.GridResourceDistributor;
             }
-        }
-
-        internal void DelayedGridCleanUp(object o)
-        {
-            Session.GridAiPool.Return(this);
         }
 
         internal void CleanUp()

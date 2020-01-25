@@ -106,7 +106,6 @@ namespace WeaponCore
                 DirtyGrids.Add(grid);
             }
             else Log.Line($"grid not removed and list not cleaned");
-            //FutureEvents.Schedule(DeferedFatMapRemoval, (MyCubeGrid)myEntity, 120);
         }
 
         private void ToFatMap(MyCubeBlock myCubeBlock)
