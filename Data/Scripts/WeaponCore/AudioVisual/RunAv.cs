@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Sandbox.Game.Entities;
+﻿using System.Collections.Generic;
 using VRage.Collections;
 using VRage.Game;
 using VRageMath;
@@ -49,7 +44,7 @@ namespace WeaponCore.Support
 
             if (Session.Tick600)
             {
-                Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} =-");
+                Log.LineShortDate($"-= [AvShots] {AvShots.Count} [OnScreen] {_onScreens} [Shrinks] {_shrinks} [Glows] {_glows} [Models] {_models} [P] {Session.Projectiles.ActiveProjetiles.Count} [P-Pool] {Session.Projectiles.ProjectilePool.Count} =-");
                 _glows = 0;
                 _shrinks = 0;
             }
@@ -151,28 +146,28 @@ namespace WeaponCore.Support
                     _models++;
                     if (refreshed)
                     {
-                        if (av.Model != AvShot.ModelState.Close && !av.PrimeEntity.InScene && !av.Cloaked)
+                        if (!av.PrimeEntity.InScene && !av.Cloaked)
                         {
                             av.PrimeEntity.InScene = true;
                             av.PrimeEntity.Render.UpdateRenderObject(true, false);
                         }
 
                         if (av.OnScreen != AvShot.Screen.None) av.PrimeEntity.PositionComp.SetWorldMatrix(av.PrimeMatrix, null, false, false, false);
-                    }
 
-                    if (av.Model == AvShot.ModelState.Close || refreshed && av.Cloaked && av.PrimeEntity.InScene)
-                    {
-                        av.PrimeEntity.InScene = false;
-                        av.PrimeEntity.Render.RemoveRenderObjects();
-                        if (av.Model == AvShot.ModelState.Close) av.Model = AvShot.ModelState.None;
+                        if (refreshed && av.Cloaked && av.PrimeEntity.InScene)
+                        {
+                            av.PrimeEntity.InScene = false;
+                            av.PrimeEntity.Render.RemoveRenderObjects();
+                        }
                     }
+                    else av.Model = AvShot.ModelState.None;
                 }
 
                 if (av.Triggered && av.TriggerEntity != null)
                 {
                     if (refreshed)
                     {
-                        if ((av.Model != AvShot.ModelState.Close && !av.TriggerEntity.InScene))
+                        if ((!av.TriggerEntity.InScene))
                         {
                             av.TriggerEntity.InScene = true;
                             av.TriggerEntity.Render.UpdateRenderObject(true, false);
@@ -180,13 +175,7 @@ namespace WeaponCore.Support
 
                         av.TriggerEntity.PositionComp.SetWorldMatrix(av.TriggerMatrix, null, false, false, false);
                     }
-
-                    if (av.Model == AvShot.ModelState.Close)
-                    {
-                        av.TriggerEntity.InScene = false;
-                        av.TriggerEntity.Render.RemoveRenderObjects();
-                        av.Model = AvShot.ModelState.None;
-                    }
+                    else av.Model = AvShot.ModelState.None;
                 }
 
                 if (refreshed)

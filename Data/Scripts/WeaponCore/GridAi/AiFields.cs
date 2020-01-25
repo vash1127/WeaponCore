@@ -88,7 +88,7 @@ namespace WeaponCore.Support
         internal uint NewProjectileTick;
         internal uint LiveProjectileTick;
         internal uint LastPowerUpdateTick;
-
+        internal uint TrackWatchTick;
         internal int SourceCount;
         internal int ManualComps;
         internal int BlockCount;
@@ -96,7 +96,7 @@ namespace WeaponCore.Support
         internal bool PointDefense;
         internal bool SupressMouseShoot;
         internal bool OverPowered;
-
+        internal bool GridOnScreen;
         internal bool IsStatic;
         internal bool DbReady;
         internal bool UpdatePowerSources;

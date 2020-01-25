@@ -289,7 +289,7 @@ namespace WeaponCore.Projectiles
                 Info.AvShot.SetupSounds(DistanceFromCameraSqr);
             }
 
-            if (Info.System.PrimeModelId == -1 && Info.System.TriggerModelId == -1 || Info.IsShrapnel) ModelState = EntityState.None;
+            if (!Info.System.PrimeModel && !Info.System.TriggerModel || Info.IsShrapnel) ModelState = EntityState.None;
             else
             {
                 if (EnableAv)
@@ -298,8 +298,8 @@ namespace WeaponCore.Projectiles
 
                     double triggerModelSize = 0;
                     double primeModelSize = 0;
-                    if (Info.System.TriggerModelId != -1) triggerModelSize = Info.AvShot.TriggerEntity.PositionComp.WorldVolume.Radius;
-                    if (Info.System.PrimeModelId != -1) primeModelSize = Info.AvShot.PrimeEntity.PositionComp.WorldVolume.Radius;
+                    if (Info.System.TriggerModel) triggerModelSize = Info.AvShot.TriggerEntity.PositionComp.WorldVolume.Radius;
+                    if (Info.System.PrimeModel) primeModelSize = Info.AvShot.PrimeEntity.PositionComp.WorldVolume.Radius;
                     var largestSize = triggerModelSize > primeModelSize ? triggerModelSize : primeModelSize;
 
                     ModelSphereCurrent.Radius = largestSize * 2;
@@ -381,7 +381,7 @@ namespace WeaponCore.Projectiles
         internal bool Intersected(bool add = true)
         {   
             if (Hit.HitPos == Vector3D.Zero) return false;
-            if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModelId != -1 || Info.System.TriggerModelId != -1))
+            if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModel || Info.System.TriggerModel))
             {
                 var useCollisionSize = ModelState == EntityState.None && Info.System.AmmoParticle && !Info.System.DrawLine;
                 TestSphere.Center = Hit.HitPos;
@@ -1033,16 +1033,10 @@ namespace WeaponCore.Projectiles
             if (EnableAv)
             {
                 if (ModelState == EntityState.Exists)
-                {
-                    Info.AvShot.PrimeMatrix = MatrixD.Identity;
-                    Info.AvShot.TriggerMatrix = MatrixD.Identity;
-                    if (Info.System.PrimeModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.PrimeModelId].MarkForDeallocate(Info.AvShot.PrimeEntity);
-                    if (Info.System.TriggerModelId != -1) Info.Ai.Session.Projectiles.EntityPool[Info.System.TriggerModelId].MarkForDeallocate(Info.AvShot.TriggerEntity);
                     ModelState = EntityState.None;
-                    Info.AvShot.Complete(this, false, true, Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
-                }
-                else if (Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion)
-                    Info.AvShot.Complete(this, false, false, true);
+
+                if (Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion) 
+                    Info.AvShot.Complete(this, false, true);
             }
         }
 

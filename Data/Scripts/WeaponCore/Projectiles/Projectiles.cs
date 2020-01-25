@@ -22,13 +22,14 @@ namespace WeaponCore.Projectiles
         internal readonly List<Fragments> ShrapnelToSpawn = new List<Fragments>(32);
 
         internal readonly MyConcurrentPool<List<MyEntity>> CheckPool = new MyConcurrentPool<List<MyEntity>>(30);
-        internal readonly ObjectsPool<Projectile> ProjectilePool = new ObjectsPool<Projectile>(256);
+        internal readonly Stack<Projectile> ProjectilePool = new Stack<Projectile>(2048);
+
+        internal readonly CachingHashSet<Projectile> ActiveProjetiles = new CachingHashSet<Projectile>();
         internal readonly MyConcurrentPool<HitEntity> HitEntityPool = new MyConcurrentPool<HitEntity>(32);
-        internal readonly ObjectsPool<ProInfo> InfoPool = new ObjectsPool<ProInfo>(256);
+        internal readonly MyConcurrentPool<ProInfo> VirtInfoPool = new MyConcurrentPool<ProInfo>(256);
         internal readonly List<Projectile> CleanUp = new List<Projectile>(32);
 
         internal readonly MyConcurrentPool<List<Vector3I>> V3Pool = new MyConcurrentPool<List<Vector3I>>(32);
-        internal EntityPool<MyEntity>[] EntityPool;
         internal ulong CurrentProjectileId;
 
         internal Projectiles(Session session)
@@ -36,24 +37,14 @@ namespace WeaponCore.Projectiles
             Session = session;
         }
 
-        internal static MyEntity EntityActivator(string model)
-        {
-            var ent = new MyEntity();
-            ent.Init(null, model, null, null, null);
-            ent.Render.CastShadows = false;
-            ent.IsPreview = true;
-            ent.Save = false;
-            ent.SyncFlag = false;
-            ent.NeedsWorldMatrix = false;
-            ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
-            MyEntities.Add(ent);
-            return ent;
-        }
 
         internal void Update() // Methods highly inlined due to keen's mod profiler
         {
             Clean();
             SpawnFragments();
+
+            ActiveProjetiles.ApplyChanges();
+
             UpdateState();
             CheckHits();
             UpdateAv();
@@ -68,7 +59,7 @@ namespace WeaponCore.Projectiles
                 {
                     var virtInfo = p.VrPros[i];
                     virtInfo.Info.Clean();
-                    InfoPool.MarkForDeallocate(virtInfo.Info);
+                    VirtInfoPool.Return(virtInfo.Info);
                 }
                 p.VrPros.Clear();
 
@@ -77,18 +68,11 @@ namespace WeaponCore.Projectiles
                 p.PruningProxyId = -1;
 
                 p.Info.Clean();
-                ProjectilePool.MarkForDeallocate(p);
+                ProjectilePool.Push(p);
+                ActiveProjetiles.Remove(p);
             }
 
             CleanUp.Clear();
-            if (EntityPool != null)
-            {
-                foreach (var e in EntityPool)
-                    e.DeallocateAllMarked();
-            }
-
-            InfoPool.DeallocateAllMarked();
-            ProjectilePool.DeallocateAllMarked();
         }
 
         private void SpawnFragments()
@@ -100,7 +84,7 @@ namespace WeaponCore.Projectiles
 
         private void UpdateState()
         {
-            foreach (var p in ProjectilePool.Active)
+            foreach (var p in ActiveProjetiles)
             {
                 p.Info.Age++;
                 p.Active = false;
@@ -184,12 +168,12 @@ namespace WeaponCore.Projectiles
                 {
                     var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
 
-                    if (p.Info.System.PrimeModelId != -1)
+                    if (p.Info.System.PrimeModel)
                         p.Info.AvShot.PrimeMatrix = matrix;
-                    if (p.Info.System.TriggerModelId != -1 && p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize)
+                    if (p.Info.System.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize)
                         p.Info.AvShot.TriggerMatrix = matrix;
 
-                    if (p.EnableAv && p.AmmoEffect != null && p.Info.System.AmmoParticle && p.Info.System.PrimeModelId != -1)
+                    if (p.EnableAv && p.AmmoEffect != null && p.Info.System.AmmoParticle && p.Info.System.PrimeModel)
                     {
                         var offVec = p.Position + Vector3D.Rotate(p.Info.System.Values.Graphics.Particles.Ammo.Offset, p.Info.AvShot.PrimeMatrix);
                         p.AmmoEffect.WorldMatrix = p.Info.AvShot.PrimeMatrix;
@@ -228,7 +212,7 @@ namespace WeaponCore.Projectiles
 
         private void CheckHits()
         {
-            foreach (var p in ProjectilePool.Active)
+            foreach (var p in ActiveProjetiles)
             {
                 p.Miss = false;
 
@@ -319,7 +303,7 @@ namespace WeaponCore.Projectiles
 
         private void UpdateAv()
         {
-            foreach (var p in ProjectilePool.Active)
+            foreach (var p in ActiveProjetiles)
             {
                 if (!p.EnableAv || !p.Miss || (int)p.State > 3) continue;
                 if (p.SmartsOn)

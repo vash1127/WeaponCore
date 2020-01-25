@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using ParallelTasks;
 using Sandbox.ModAPI;
-using VRage;
-using VRage.Game;
 using VRageMath;
 using WeaponCore.Support;
 using WeaponCore.Platform;
-using Sandbox.Game;
+using Sandbox.Game.Entities;
+using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 
 namespace WeaponCore
 {
@@ -140,7 +139,7 @@ namespace WeaponCore
                     comp.StopAllAv();
             }
 
-            foreach (var p in Projectiles.ProjectilePool.Active)
+            foreach (var p in Projectiles.ActiveProjetiles)
                 p.PauseAv();
         }
 
@@ -157,6 +156,31 @@ namespace WeaponCore
             }
 
             return false;
+        }
+
+        internal MyEntity TriggerEntityActivator()
+        {
+            var ent = new MyEntity();
+            ent.Init(null, TriggerEntityModel, null, null, null);
+            ent.Render.CastShadows = false;
+            ent.IsPreview = true;
+            ent.Save = false;
+            ent.SyncFlag = false;
+            ent.NeedsWorldMatrix = false;
+            ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
+            MyEntities.Add(ent);
+
+            ent.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
+            ent.InScene = false;
+            ent.Render.RemoveRenderObjects();
+            return ent;
+        }
+
+        internal void TriggerEntityClear(MyEntity myEntity)
+        {
+            myEntity.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
+            myEntity.InScene = false;
+            myEntity.Render.RemoveRenderObjects();
         }
     }
 }

@@ -102,7 +102,6 @@ namespace WeaponCore.Support
         {
             None,
             Exists,
-            Close,
         }
 
         internal enum TrailState
@@ -123,7 +122,7 @@ namespace WeaponCore.Support
         {
             System = info.System;
             Ai = info.Ai;
-            Model = (info.System.PrimeModelId != -1 || info.System.TriggerModelId != -1) ? Model = ModelState.Exists : Model = ModelState.None;
+            Model = (info.System.PrimeModel || info.System.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
             PrimeEntity = info.PrimeEntity;
             TriggerEntity = info.TriggerEntity;
             Origin = info.Origin;
@@ -195,7 +194,7 @@ namespace WeaponCore.Support
             if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
         }
 
-        internal void Complete(Projectile p, bool saveHit = false, bool closeModel = false, bool detonateFakeExp = false)
+        internal void Complete(Projectile p, bool saveHit = false, bool detonateFakeExp = false)
         {
             if (!Active) {
 
@@ -203,11 +202,8 @@ namespace WeaponCore.Support
                 Ai.Session.Av.AvShots.Add(this);
             }
 
-            if (closeModel)
-                Model = ModelState.Close;
-
             DetonateFakeExp = detonateFakeExp;
-            if (Model != ModelState.Close && !DetonateFakeExp)
+            if (!DetonateFakeExp)
             {
                 if (Hit.HitPos != Vector3D.Zero)
                 {

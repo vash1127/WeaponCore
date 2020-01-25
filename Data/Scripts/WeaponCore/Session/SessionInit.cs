@@ -7,6 +7,7 @@ using Sandbox.Definitions;
 using Sandbox.Game;
 using Sandbox.ModAPI;
 using VRage;
+using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.ObjectBuilders;
@@ -170,9 +171,11 @@ namespace WeaponCore
 
                 WeaponPlatforms[subTypeIdHash] = new WeaponStructure(this, tDef, weapons);
             }
-            Projectiles.EntityPool = new EntityPool<MyEntity>[ModelCount];
+            /*
+            Projectiles.EntityPool = new MyConcurrentPool<MyEntity>[ModelCount];
             for (int j = 0; j < ModelCount; j++)
-                Projectiles.EntityPool[j] = new EntityPool<MyEntity>(0, ModelIdToName[j], WeaponCore.Projectiles.Projectiles.EntityActivator);
+                Projectiles.EntityPool[j] = new MyConcurrentPool<MyEntity>(0, ModelIdToName[j], 20000, WeaponCore.Projectiles.Projectiles.EntityActivator);
+            */
         }
 
         internal void FixPrefabs()

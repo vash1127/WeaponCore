@@ -49,6 +49,7 @@
     <Compile Include="Data\Scripts\WeaponCore\Api\PbApiWrapper.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Api\ApiBackend.cs" />
     <Compile Include="Data\Scripts\WeaponCore\AudioVisual\RunAv.cs" />
+    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ObjectPool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Ui\Targeting\SupportClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiBlockGroups.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiDatabase.cs" />
@@ -60,8 +61,6 @@
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiSupport.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectileHits.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ProjectilePool.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\EntityPool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\WeaponComp\CompData.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializeDataClasses.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Session\Config\SerializedValues.cs" />
@@ -114,7 +113,6 @@
     <Compile Include="Data\Scripts\WeaponCore\Support\GridIntersect.cs" />
     <Compile Include="Data\Scripts\WeaponCore\GridAi\AiTargeting.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Log.cs" />
-    <Compile Include="Data\Scripts\WeaponCore\Projectiles\ObjectPool.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectile.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Projectiles\Projectiles.cs" />
     <Compile Include="Data\Scripts\WeaponCore\Support\Extensions\ParallelExt.cs" />

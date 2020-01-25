@@ -57,22 +57,7 @@ namespace WeaponCore
             {
                 _effectedCubes.Remove(_effectPurge.Dequeue());
             }
-            /*
-            foreach (var s in _shrinking)
-            {
-                s.Clean();
-                ShrinkPool.Return(s);
-                _shrinking.Remove(s);
-            }
-            _shrinking.ClearImmediate();
-            ShrinkPool.Clean();
-            */
-            for (int i = _afterGlow.Count - 1; i >= 0; i--)
-            {
-                var g = _afterGlow[i];
-                _afterGlow.RemoveAtFast(i);
-            }
-            _afterGlow.Clear();
+
             Av.Glows.Clear();
             Av.AvShotPool.Clean();
 
@@ -88,6 +73,9 @@ namespace WeaponCore
 
             foreach (var structure in WeaponPlatforms.Values)
             {
+                foreach (var system in structure.WeaponSystems)
+                    system.Value.PrimeEntityPool?.Clean();
+
                 structure.WeaponSystems.Clear();
                 structure.AmmoToWeaponIds.Clear();
             }
@@ -163,17 +151,18 @@ namespace WeaponCore
             Projectiles.ShrapnelPool.Clean();
             Projectiles.FragmentPool.Clean();
             Projectiles.CheckPool.Clean();
-            Projectiles.ProjectilePool.DeallocateAll();
+            Projectiles.ActiveProjetiles.ApplyChanges();
+            Projectiles.ActiveProjetiles.Clear();
+            Projectiles.ProjectilePool.Clear();
             Projectiles.HitEntityPool.Clean();
             Projectiles.CleanUp.Clear();
-            Projectiles.InfoPool.DeallocateAll();
+            Projectiles.VirtInfoPool.Clean();
             Projectiles.V3Pool.Clean();
 
             if (DbsToUpdate.Count > 0) Log.Line("DbsToUpdate not empty at purge");
             DbsToUpdate.Clear();
             GridTargetingAIs.Clear();
 
-            Projectiles.EntityPool = null;
             Projectiles = null;
             TrackingAi = null;
             UiInput = null;

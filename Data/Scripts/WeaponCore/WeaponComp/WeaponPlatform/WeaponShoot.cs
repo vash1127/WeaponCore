@@ -1,5 +1,4 @@
 ﻿using Sandbox.Game.Entities;
-using VRage;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
@@ -142,27 +141,20 @@ namespace WeaponCore.Platform
                         MyEntity primeE = null;
                         MyEntity triggerE = null;
 
-                        if (System.PrimeModelId != -1)
+                        if (System.PrimeModel)
                         {
-                            MyEntity ent;
-                            session.Projectiles.EntityPool[System.PrimeModelId].AllocateOrCreate(out ent);
-                            if (!ent.InScene)
+                            primeE = System.PrimeEntityPool.Get();
+                            if (!primeE.InScene)
                             {
-                                ent.InScene = true;
-                                ent.Render.AddRenderObjects();
+                                primeE.InScene = true;
+                                primeE.Render.AddRenderObjects();
                             }
-                            primeE = ent;
                         }
 
-                        if (System.TriggerModelId != -1)
-                        {
-                            MyEntity ent;
-                            session.Projectiles.EntityPool[System.TriggerModelId].AllocateOrCreate(out ent);
-                            triggerE = ent;
-                        }
+                        if (System.TriggerModel)
+                            triggerE = session.TriggerEntityPool.Get();
 
-                        ProInfo info;
-                        session.Projectiles.InfoPool.AllocateOrCreate(out info);
+                        var info = session.Projectiles.VirtInfoPool.Get();
                         info.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                         vProjectile.VrPros.Add(new VirtualProjectile { Info = info, VisualShot = session.Av.AvShotPool.Get() });
 
@@ -175,8 +167,7 @@ namespace WeaponCore.Platform
                     }
                     else
                     {
-                        Projectile p;
-                        session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
+                        var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                         p.Info.System = System;
                         p.Info.Ai = Comp.Ai;
                         p.Info.Overrides = Comp.Set.Value.Overrides;
@@ -201,29 +192,9 @@ namespace WeaponCore.Platform
                         p.PredictedTargetPos = Target.TargetPos;
                         p.Direction = muzzle.DeviatedDir;
                         p.State = Projectile.ProjectileState.Start;
-
-                        if (System.PrimeModelId != -1)
-                        {
-                            MyEntity ent;
-                            session.Projectiles.EntityPool[System.PrimeModelId].AllocateOrCreate(out ent);
-                            if (!ent.InScene)
-                            {
-                                ent.InScene = true;
-                                ent.Render.AddRenderObjects();
-                            }
-                            p.Info.PrimeEntity = ent;
-                        }
-                        else p.Info.PrimeEntity = null;
-
-                        if (System.TriggerModelId != -1)
-                        {
-                            MyEntity ent;
-                            session.Projectiles.EntityPool[System.TriggerModelId].AllocateOrCreate(out ent);
-                            ent.InScene = false;
-                            ent.Render.RemoveRenderObjects();
-                            p.Info.TriggerEntity = ent;
-                        }
-                        else p.Info.TriggerEntity = null;
+                        Comp.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
+                        p.Info.PrimeEntity = System.PrimeModel ? System.PrimeEntityPool.Get() : null;
+                        p.Info.TriggerEntity = System.TriggerModel ? session.TriggerEntityPool.Get() : null;
 
                         if (targetable)
                         {
@@ -322,8 +293,7 @@ namespace WeaponCore.Platform
 
         private Projectile CreateVirtualProjectile()
         {
-            Projectile p;
-            Comp.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
+            var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
             p.Info.System = System;
             p.Info.Ai = Comp.Ai;
             p.Info.Overrides = Comp.Set.Value.Overrides;

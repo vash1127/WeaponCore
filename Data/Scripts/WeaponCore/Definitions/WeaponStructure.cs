@@ -4,11 +4,13 @@ using System.Collections.Generic;
 using Sandbox.Definitions;
 using Sandbox.Engine.Analytics;
 using Sandbox.Game;
+using Sandbox.Game.Entities;
 using VRage;
 using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI.Ingame;
+using VRage.ModAPI;
 using VRage.ObjectBuilders;
 using VRage.Utils;
 using VRageMath;
@@ -30,6 +32,7 @@ namespace WeaponCore.Support
         public readonly MyStringId TracerMaterial;
         public readonly MyStringId TrailMaterial;
         public readonly Session Session;
+        public readonly MyConcurrentPool<MyEntity> PrimeEntityPool;
         public readonly Dictionary<MyDefinitionBase, float> CustomBlockDefinitionBasesToScales;
         public readonly Dictionary<Weapon.EventTriggers, PartAnimation[]> WeaponAnimationSet;
         public readonly Dictionary<Weapon.EventTriggers, uint> WeaponAnimationLengths;
@@ -39,14 +42,13 @@ namespace WeaponCore.Support
         public readonly MyPhysicalInventoryItem AmmoItem;
         public readonly AreaDamage.AreaEffectType AreaEffect;
         public readonly string WeaponName;
+        public readonly string ModelPath;
         public readonly string[] Barrels;
         public readonly int ReloadTime;
         public readonly int DelayToFire;
         public readonly int TimeToCeaseFire;
         public readonly int MaxObjectsHit;
         public readonly int TargetLossTime;
-        public readonly int PrimeModelId;
-        public readonly int TriggerModelId;
         public readonly int MinAzimuth;
         public readonly int MaxAzimuth;
         public readonly int MinElevation;
@@ -62,6 +64,8 @@ namespace WeaponCore.Support
         public readonly int PulseChance;
         public readonly int EnergyMagSize;
         public readonly TurretType TurretMovement;
+        public readonly bool PrimeModel;
+        public readonly bool TriggerModel;
         public readonly bool HasBarrelRate;
         public readonly bool ElevationOnly;
         public readonly bool LimitedAxisTurret;
@@ -247,7 +251,7 @@ namespace WeaponCore.Support
             Beams(out IsBeamWeapon, out VirtualBeams, out RotateRealBeam, out ConvergeBeams, out OneHitParticle, out OffsetEffect);
             CollisionShape(out CollisionIsLine, out CollisionSize, out TracerLength);
             SmartsDelayDistSqr = (CollisionSize * Values.Ammo.Trajectory.Smarts.TrackingDelay) * (CollisionSize * Values.Ammo.Trajectory.Smarts.TrackingDelay);
-            Models(out PrimeModelId, out TriggerModelId);
+            PrimeEntityPool = Models(out PrimeModel, out TriggerModel, out ModelPath);
             Track(out TrackProjectile, out TrackGrids, out TrackCharacters, out TrackMeteors, out TrackNeutrals, out TrackOther);
             SubSystems(out TargetSubSystems, out OnlySubSystems);
             ValidTargetSize(out MinTargetRadius, out MaxTargetRadius);
@@ -453,16 +457,38 @@ namespace WeaponCore.Support
             maxTargetRadius = (float)(maxDiameter > 0 ? maxDiameter * 0.5d : float.MaxValue);
         }
 
-        private void Models(out int primeModelId, out int triggerModelId)
+        private MyConcurrentPool<MyEntity> Models(out bool primeModel, out bool triggerModel, out string primeModelPath)
         {
-            if (Values.Ammo.AreaEffect.AreaEffect > (AreaDamage.AreaEffectType)3 && IsField) triggerModelId = 0;
-            else triggerModelId  = -1;
-            if (Values.Graphics.ModelName != string.Empty)
-            {
-                primeModelId = Session.ModelCount++;
-                Session.ModelIdToName.Add(PrimeModelId, Values.ModPath + Values.Graphics.ModelName);
-            }
-            else primeModelId = -1;
+            if (Values.Ammo.AreaEffect.AreaEffect > (AreaDamage.AreaEffectType)3 && IsField) triggerModel = true;
+            else triggerModel = false;
+            primeModel = Values.Graphics.ModelName != string.Empty;
+            primeModelPath = primeModel ? Values.ModPath + Values.Graphics.ModelName : string.Empty;
+            return primeModel ? new MyConcurrentPool<MyEntity>(256, PrimeEntityClear, 10000, PrimeEntityActivator) : null;
+        }
+
+        private MyEntity PrimeEntityActivator()
+        {
+            var ent = new MyEntity();
+            ent.Init(null, ModelPath, null, null, null);
+            ent.Render.CastShadows = false;
+            ent.IsPreview = true;
+            ent.Save = false;
+            ent.SyncFlag = false;
+            ent.NeedsWorldMatrix = false;
+            ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
+            MyEntities.Add(ent);
+
+            ent.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
+            ent.InScene = false;
+            ent.Render.RemoveRenderObjects();
+            return ent;
+        }
+
+        private static void PrimeEntityClear(MyEntity myEntity)
+        {
+            myEntity.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
+            myEntity.InScene = false;
+            myEntity.Render.RemoveRenderObjects();
         }
 
 

@@ -34,7 +34,6 @@ namespace WeaponCore
         internal volatile bool SorterControls;
         internal volatile bool DbCallBackComplete = true;
         internal volatile bool Pause;
-        internal volatile uint TypeCleanTick;
 
         internal readonly TargetCompare TargetCompare = new TargetCompare();
         internal readonly MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>> BlockTypePool = new MyConcurrentPool<ConcurrentDictionary<TargetingDefinition.BlockTypes, ConcurrentCachingList<MyCubeBlock>>>(64);
@@ -64,7 +63,6 @@ namespace WeaponCore
         internal readonly Dictionary<MyStringHash, WeaponStructure> WeaponPlatforms = new Dictionary<MyStringHash, WeaponStructure>(MyStringHash.Comparer);
         internal readonly Dictionary<string, MyDefinitionId> WeaponCoreBlockDefs = new Dictionary<string, MyDefinitionId>();
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
-        internal readonly Dictionary<int, string> ModelIdToName = new Dictionary<int, string>();
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
 
@@ -102,11 +100,11 @@ namespace WeaponCore
         private readonly Dictionary<string, Dictionary<string, MyTuple<string, string, string>>> _turretDefinitions = new Dictionary<string, Dictionary<string, MyTuple<string, string, string>>>();
         private readonly Dictionary<string, List<WeaponDefinition>> _subTypeIdToWeaponDefs = new Dictionary<string, List<WeaponDefinition>>();
 
-        private readonly List<AfterGlow> _afterGlow = new List<AfterGlow>(128);
         private readonly List<MyTuple<MyInventory, int>> _inventoriesToPull = new List<MyTuple<MyInventory, int>>();
         private readonly List<UpgradeDefinition> _upgradeDefinitions = new List<UpgradeDefinition>();
         private readonly List<RadiatedBlock> _slimsSortedList = new List<RadiatedBlock>(1024);
-        //private readonly CachingList<Shrinking> _shrinking = new CachingList<Shrinking>(100);
+
+        internal MyConcurrentPool<MyEntity> TriggerEntityPool;
 
         internal MyDynamicAABBTreeD ProjectileTree = new MyDynamicAABBTreeD(Vector3D.One * 10.0, 10.0);
         internal List<PartAnimation> AnimationsToProcess = new List<PartAnimation>(128);
@@ -142,6 +140,7 @@ namespace WeaponCore
         internal Task DbTask = new Task();
         internal Task ITask = new Task();
 
+        internal string TriggerEntityModel;
         internal object InitObj = new object();
         internal bool HighLoad;
         internal bool InMenu;
@@ -149,7 +148,7 @@ namespace WeaponCore
         internal bool GunnerBlackList;
         internal uint Tick;
         internal int PlayerEventId;
-        internal int ModelCount;
+        //internal int ModelCount;
 
         internal int TargetRequests;
         internal int TargetChecks;

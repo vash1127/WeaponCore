@@ -2,7 +2,9 @@ using System;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Collections;
 using VRage.Game.Components;
+using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
 using static Sandbox.Definitions.MyDefinitionManager;
@@ -84,7 +86,6 @@ namespace WeaponCore
                 }
                 FutureEvents.Tick(Tick);
                 if (UiInput.PlayerCamera && !InMenu) WheelUi.UpdatePosition();
-                
             }
             catch (Exception ex) { Log.Line($"Exception in SessionBeforeSim: {ex}"); }
         }
@@ -186,15 +187,7 @@ namespace WeaponCore
                         if (WheelUi.WheelActive) WheelUi.DrawWheel();
                         TargetUi.DrawTargetUi();
                     }
-
                     Av.Run();
-                    /*
-                    if (_shrinking.Count > 0)
-                        Shrink();
-
-                    if (_afterGlow.Count > 0)
-                        AfterGlow();
-                        */
                 }
                 DsUtil.Complete("draw", true);
             }
@@ -232,9 +225,8 @@ namespace WeaponCore
                 
                 FixPrefabs();
                 */
-
-                ModelIdToName.Add(ModelCount, ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm");
-                ModelCount++;
+                TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
+                TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
             }
             catch (Exception ex) { Log.Line($"Exception in LoadData: {ex}"); }
         }

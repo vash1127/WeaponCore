@@ -66,10 +66,20 @@ namespace WeaponCore.Support
         {
             Target.Reset();
             HitList.Clear();
+
+            if (PrimeEntity != null)
+            {
+                System.PrimeEntityPool.Return(PrimeEntity);
+                PrimeEntity = null;
+            }
+
+            if (TriggerEntity != null)
+            {
+                Ai.Session.TriggerEntityPool.Return(PrimeEntity);
+                TriggerEntity = null;
+            }
             AvShot = null;
             System = null;
-            PrimeEntity = null;
-            TriggerEntity = null;
             Ai = null;
             WeaponCache = null;
             LastHitShield = false;
@@ -323,8 +333,7 @@ namespace WeaponCore.Support
             {
                 var frag = Sharpnel[i];
                 session = frag.Ai.Session;
-                Projectile p;
-                frag.Ai.Session.Projectiles.ProjectilePool.AllocateOrCreate(out p);
+                var p = frag.Ai.Session.Projectiles.ProjectilePool.Count > 0 ? frag.Ai.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
                 p.Info.System = frag.System;
                 p.Info.Ai = frag.Ai;
                 p.Info.Target.Entity = frag.Target;
@@ -338,8 +347,8 @@ namespace WeaponCore.Support
                 p.PredictedTargetPos = frag.PredictedTargetPos;
                 p.Direction = frag.Direction;
                 p.State = Projectiles.Projectile.ProjectileState.Start;
-
                 p.StartSpeed = frag.Velocity;
+                frag.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
                 frag.Ai.Session.Projectiles.FragmentPool.Return(frag);
             }
 
