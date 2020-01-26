@@ -168,6 +168,7 @@ namespace WeaponCore.Platform
                     else
                     {
                         var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
+                        p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
                         p.Info.System = System;
                         p.Info.Ai = Comp.Ai;
                         p.Info.Overrides = Comp.Set.Value.Overrides;
@@ -294,6 +295,7 @@ namespace WeaponCore.Platform
         private Projectile CreateVirtualProjectile()
         {
             var p = Comp.Session.Projectiles.ProjectilePool.Count > 0 ? Comp.Session.Projectiles.ProjectilePool.Pop() : new Projectile();
+            p.Info.Id = Comp.Session.Projectiles.CurrentProjectileId++;
             p.Info.System = System;
             p.Info.Ai = Comp.Ai;
             p.Info.Overrides = Comp.Set.Value.Overrides;

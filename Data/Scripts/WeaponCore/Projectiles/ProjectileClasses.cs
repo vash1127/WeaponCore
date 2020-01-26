@@ -34,6 +34,7 @@ namespace WeaponCore.Support
         internal int MuzzleId;
         internal int ObjectsHit;
         internal int Age;
+        internal ulong Id;
         internal double DistanceTraveled;
         internal double PrevDistanceTraveled;
         internal double ProjectileDisplacement;

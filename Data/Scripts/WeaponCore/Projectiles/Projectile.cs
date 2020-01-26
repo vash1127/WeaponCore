@@ -17,7 +17,6 @@ namespace WeaponCore.Projectiles
     internal class Projectile
     {
         internal const float StepConst = MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
-        internal ulong Id;
         internal ProjectileState State;
         internal EntityState ModelState;
         internal MyEntityQueryType PruneQuery;
@@ -106,7 +105,6 @@ namespace WeaponCore.Projectiles
 
         internal void Start()
         {
-            Id = Info.Ai.Session.Projectiles.CurrentProjectileId++;
             Position = Info.Origin;
             AccelDir = Direction;
             VisualDir = Direction;
@@ -1038,7 +1036,6 @@ namespace WeaponCore.Projectiles
             {
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
-
                 Info.AvShot.End(Position, Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
             }
         }

@@ -65,6 +65,7 @@ namespace WeaponCore.Support
         internal float TrailScaler;
         internal float GlowShrinkSize;
         internal float DistanceToLine;
+        internal ulong ParentId = ulong.MaxValue;
         internal int LifeTime;
         internal int MuzzleId;
         internal int WeaponId;
@@ -125,8 +126,9 @@ namespace WeaponCore.Support
         {
             System = info.System;
             Ai = info.Ai;
+            if (ParentId != ulong.MaxValue) Log.Line($"invalid avshot, parentId:{ParentId}");
+            ParentId = info.Id;
             Model = (info.System.PrimeModel || info.System.TriggerModel) ? Model = ModelState.Exists : Model = ModelState.None;
-
             PrimeEntity = info.PrimeEntity;
             TriggerEntity = info.TriggerEntity;
             Origin = info.Origin;
@@ -157,6 +159,7 @@ namespace WeaponCore.Support
 
         internal void Update(ProInfo info, double stepSize, double visualLength, ref Vector3D tracerFront, ref Vector3D direction, ref Vector3D pointDir, double? shortStepSize = null, bool saveHit = false, bool modelOnly = false)
         {
+            if (ParentId != info.Id) Log.Line($"invalid avshot in Update, parentId:{ParentId}");
             ++LifeTime;
             LastTick = Ai.Session.Tick;
             StepSize = stepSize;
@@ -169,7 +172,6 @@ namespace WeaponCore.Support
             TracerFront = tracerFront;
             TracerBack = TracerFront + (-Direction * VisualLength);
             PointDir = pointDir;
-
             if (modelOnly)
             {
                 ModelSphereCurrent.Center = TracerFront;
@@ -597,13 +599,19 @@ namespace WeaponCore.Support
             HitVelocity = Vector3D.Zero;
             TracerBack = Vector3D.Zero;
             TracerFront = Vector3D.Zero;
+            ClosestPointOnLine = Vector3D.Zero;
+            Color = Vector4.Zero;
             OnScreen = Screen.None;
             Tracer = TracerState.Off;
             Trail = TrailState.Off;
             LifeTime = 0;
             TracerSteps = 0;
             TracerStep = 0;
-
+            DistanceToLine = 0;
+            TracerWidth = 0;
+            TrailWidth = 0;
+            TrailScaler = 0;
+            ParentId = ulong.MaxValue;
             Dirty = false;
             AmmoSound = false;
             HitSoundActive = false;
