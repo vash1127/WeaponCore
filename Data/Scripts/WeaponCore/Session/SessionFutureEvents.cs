@@ -60,7 +60,7 @@ namespace WeaponCore.Support
                         var idx = replayLen;
                         for (int i = 0; i < tick - _lastTick; i++)
                         {
-                            var pastIdx = tick - --idx;
+                            var pastIdx = (tick - --idx) % _maxDelay;
                             for (int j = 0; j < _callbacks[pastIdx].Count; j++) _callbacks[pastIdx][j].Callback(_callbacks[pastIdx][j].Arg1);
                             _callbacks[pastIdx].Clear();
                             _offset = tick + 1;
