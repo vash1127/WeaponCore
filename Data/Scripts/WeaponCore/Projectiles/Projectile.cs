@@ -592,7 +592,11 @@ namespace WeaponCore.Projectiles
                 var isZombie = !fake && !Info.System.IsMine && ZombieLifeTime > 0 && ZombieLifeTime % 30 == 0;
                 if ((gaveUpChase || PickTarget || isZombie) && NewTarget() || validTarget)
                 {
-                    if (ZombieLifeTime > 0) UpdateZombie(true);
+                    if (ZombieLifeTime > 0)
+                    {
+                        ZombieLifeTime = 0;
+                        OffSetTarget();
+                    }
                     var targetPos = Vector3D.Zero;
                     if (fake)
                         targetPos = Info.Ai.DummyTarget.Position;
@@ -635,9 +639,45 @@ namespace WeaponCore.Projectiles
 
                     PrevTargetVel = tVel;
                 }
-                else UpdateZombie();
+                else
+                {
+                    PrevTargetPos = PredictedTargetPos;
+                    if (ZombieLifeTime++ > Info.System.TargetLossTime)
+                    {
+                        DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
+                    }
+                    if (Info.Age - LastOffsetTime > 300)
+                    {
+                        double dist;
+                        Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);
+                        if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Direction, Position - PrevTargetPos) > 0)
+                        {
+                            OffSetTarget(true);
+                            PrevTargetPos += TargetOffSet;
+                            PredictedTargetPos = PrevTargetPos;
+                        }
+                    }
+                }
 
-                var commandedAccel = MathFuncs.CalculateMissileIntercept(PrevTargetPos, PrevTargetVel, Position, Velocity, StepPerSec, Info.System.Values.Ammo.Trajectory.Smarts.Aggressiveness, Info.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust);
+                Vector3D commandedAccel;
+
+                var missileToTarget = Vector3D.Normalize(PrevTargetPos - Position);
+                var relativeVelocity = PrevTargetVel - Velocity;
+
+                var normalMissileAcceleration = (relativeVelocity - (relativeVelocity.Dot(missileToTarget) * missileToTarget)) * Info.System.Values.Ammo.Trajectory.Smarts.Aggressiveness;
+
+                if (Vector3D.IsZero(normalMissileAcceleration)) commandedAccel =  (missileToTarget * StepPerSec);
+                else
+                {
+                    var maxLateralThrust = StepPerSec * Math.Min(1, Math.Max(0, Info.System.Values.Ammo.Trajectory.Smarts.MaxLateralThrust));
+                    if (normalMissileAcceleration.LengthSquared() > maxLateralThrust * maxLateralThrust)
+                    {
+                        Vector3D.Normalize(ref normalMissileAcceleration, out normalMissileAcceleration);
+                        normalMissileAcceleration *= maxLateralThrust;
+                    }
+                    commandedAccel =  Math.Sqrt(Math.Max(0, StepPerSec * StepPerSec - normalMissileAcceleration.LengthSquared())) * missileToTarget + normalMissileAcceleration;
+                }
+
                 newVel = Velocity + (commandedAccel * StepConst);
                 AccelDir = commandedAccel / StepPerSec;
                 Vector3D.Normalize(ref Velocity, out Direction);
@@ -647,34 +687,6 @@ namespace WeaponCore.Projectiles
 
             if (VelocityLengthSqr > MaxSpeedSqr) newVel = Direction * MaxSpeed;
             Velocity = newVel;
-        }
-
-        internal void UpdateZombie(bool reset = false)
-        {
-            if (reset)
-            {
-                ZombieLifeTime = 0;
-                OffSetTarget();
-            }
-            else
-            {
-                PrevTargetPos = PredictedTargetPos;
-                if (ZombieLifeTime++ > Info.System.TargetLossTime)
-                {
-                    DistanceToTravelSqr = Info.DistanceTraveled * Info.DistanceTraveled;
-                }
-                if (Info.Age - LastOffsetTime > 300)
-                {
-                    double dist;
-                    Vector3D.DistanceSquared(ref Position, ref PrevTargetPos, out dist);
-                    if (dist < OffsetSqr + VelocityLengthSqr && Vector3.Dot(Direction, Position - PrevTargetPos) > 0)
-                    {
-                        OffSetTarget(true);
-                        PrevTargetPos += TargetOffSet;
-                        PredictedTargetPos = PrevTargetPos;
-                    }
-                }
-            }
         }
 
         internal void RunEwar()

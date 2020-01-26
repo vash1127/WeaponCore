@@ -166,8 +166,9 @@ namespace WeaponCore.Projectiles
                 p.Info.DistanceTraveled += Math.Abs(Vector3D.Dot(p.Direction, p.Velocity * StepConst));
                 if (p.ModelState == EntityState.Exists)
                 {
-                    var matrix = MatrixD.CreateWorld(p.Position, p.VisualDir, MatrixD.Identity.Up);
-
+                    var up = MatrixD.Identity.Up;
+                    MatrixD matrix;
+                    MatrixD.CreateWorld(ref p.Position, ref p.VisualDir, ref up, out matrix);
                     if (p.Info.System.PrimeModel)
                         p.Info.AvShot.PrimeMatrix = matrix;
                     if (p.Info.System.TriggerModel && p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize)
@@ -184,7 +185,15 @@ namespace WeaponCore.Projectiles
                     p.AmmoEffect.Velocity = p.Velocity;
 
                 if (p.DynamicGuidance)
-                    DynTrees.OnProjectileMoved(p, ref p.Velocity);
+                {
+                    if (p.PruningProxyId != -1)
+                    {
+                        var sphere = new BoundingSphereD(p.Position, p.Info.System.AreaEffectSize);
+                        BoundingBoxD result;
+                        BoundingBoxD.CreateFromSphere(ref sphere, out result);
+                        Session.ProjectileTree.MoveProxy(p.PruningProxyId, ref result, p.Velocity);
+                    }
+                }
 
                 if (p.State != ProjectileState.OneAndDone)
                 {
