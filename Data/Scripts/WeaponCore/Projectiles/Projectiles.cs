@@ -350,14 +350,15 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle)
                 {
+
                     if (p.State == ProjectileState.OneAndDone)
                     {
-                        p.Info.AvShot.Update(0, p.MaxTrajectory, ref p.Position, ref p.Direction, ref p.VisualDir);
+                        p.Info.AvShot.Update(p.Info, 0, p.MaxTrajectory, ref p.Position, ref p.Direction, ref p.VisualDir);
                     }
                     else if (p.ModelState == EntityState.None && p.Info.System.AmmoParticle && !p.Info.System.DrawLine)
                     {
                         if (p.AtMaxRange) p.ShortStepAvUpdate(true, false);
-                        else p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Position, ref p.Direction, ref p.VisualDir);
+                        else p.Info.AvShot.Update(p.Info, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.System.CollisionSize, ref p.Position, ref p.Direction, ref p.VisualDir);
                     }
                     else
                     {
@@ -366,43 +367,22 @@ namespace WeaponCore.Projectiles
                         if (p.Info.ProjectileDisplacement < p.TracerLength && Math.Abs(displaceDiff) > 0.0001)
                         {
                             if (p.AtMaxRange) p.ShortStepAvUpdate(false, false);
-                            else p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction, ref p.VisualDir);
+                            else p.Info.AvShot.Update(p.Info, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.Info.ProjectileDisplacement, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                         else
                         {
                             if (p.AtMaxRange) p.ShortStepAvUpdate(false, false);
-                            else p.Info.AvShot.Update(p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir);
+                            else p.Info.AvShot.Update(p.Info, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir);
                         }
                     }
                 }
 
-                if (p.ModelState == EntityState.Exists)
-                {
-                    p.ModelSphereLast.Center = p.LastEntityPos;
-                    p.ModelSphereCurrent.Center = p.Position;
-                    p.Info.AvShot.LastTick = p.Info.Ai.Session.Tick;
-                    if (p.Info.AvShot.Triggered)
-                    {
-                        var currentRadius = p.Info.TriggerGrowthSteps < p.Info.System.AreaEffectSize ? p.Info.AvShot.TriggerMatrix.Scale.AbsMax() : p.Info.System.AreaEffectSize;
-                        p.ModelSphereLast.Radius = currentRadius;
-                        p.ModelSphereCurrent.Radius = currentRadius;
-                    }
-                    if (Session.Camera.IsInFrustum(ref p.ModelSphereLast) || Session.Camera.IsInFrustum(ref p.ModelSphereCurrent))
-                    {
-                        p.Info.AvShot.OnScreen = Screen.Tracer;
-                        p.FirstOffScreen = false;
-                        p.LastEntityPos = p.Position;
-                    }
-                }
+                if (p.Info.AvShot.OnScreen == Screen.None && p.ModelState == EntityState.Exists)
+                    p.Info.AvShot.Update(p.Info, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir, null, false, true);
 
                 if (p.Info.MuzzleId == -1)
-                {
                     p.CreateFakeBeams(true);
-                    continue;
-                }
 
-                if (p.Info.AvShot.OnScreen != Screen.None)
-                    p.Info.AvShot.Complete(p);
             }
         }
     }

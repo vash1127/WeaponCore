@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -42,8 +43,7 @@ namespace WeaponCore.Projectiles
         internal Vector3? LastHitEntVel;
         internal Hit Hit = new Hit();
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
-        internal BoundingSphereD ModelSphereCurrent;
-        internal BoundingSphereD ModelSphereLast;
+        //internal BoundingSphereD ModelSphereLast;
         internal BoundingSphereD PruneSphere;
         internal double AccelLength;
         internal double DistanceToTravelSqr;
@@ -71,7 +71,6 @@ namespace WeaponCore.Projectiles
         internal int NewTargets;
         internal bool PickTarget;
         internal bool EnableAv;
-        internal bool FirstOffScreen;
         internal bool ConstantSpeed;
         internal bool PositionChecked;
         internal bool MoveToAndActivate;
@@ -135,7 +134,6 @@ namespace WeaponCore.Projectiles
             CachedPlanetHit = false;
             ParticleStopped = false;
             ParticleLateStart = false;
-            FirstOffScreen = true;
             PositionChecked = false;
             EwarActive = false;
             MineSeeking = false;
@@ -302,8 +300,8 @@ namespace WeaponCore.Projectiles
                     if (Info.System.PrimeModel) primeModelSize = Info.AvShot.PrimeEntity.PositionComp.WorldVolume.Radius;
                     var largestSize = triggerModelSize > primeModelSize ? triggerModelSize : primeModelSize;
 
-                    ModelSphereCurrent.Radius = largestSize * 2;
-                    ModelSphereLast.Radius = largestSize * 2;
+                    Info.AvShot.ModelSphereCurrent.Radius = largestSize * 2;
+                    //ModelSphereLast.Radius = largestSize * 2;
                 }
             }
         }
@@ -387,12 +385,6 @@ namespace WeaponCore.Projectiles
                 TestSphere.Center = Hit.HitPos;
 
                 ShortStepAvUpdate(useCollisionSize, true);
-
-                if (ModelState == EntityState.Exists)
-                    ModelHitOncamera();
-
-                if (Info.MuzzleId != -1)
-                    Info.AvShot.Complete(this,true);
             }
 
             Colliding = true;
@@ -439,7 +431,7 @@ namespace WeaponCore.Projectiles
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
 
-            Info.AvShot.Update(stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit);
+            Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, true);
         }
 
         internal void CreateFakeBeams(bool miss = false)
@@ -456,7 +448,7 @@ namespace WeaponCore.Projectiles
                 if (vs.System.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerBack, Position);
-                    vs.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref VisualDir, beam.Length);
+                    vs.Update(Info, Info.DistanceTraveled - Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref VisualDir, beam.Length, !miss);
                 }
                 else
                 {
@@ -470,13 +462,11 @@ namespace WeaponCore.Projectiles
                     var line = new LineD(vs.Origin, beamEnd);
                     if (!miss && hitPos.HasValue)
                     {
-                        vs.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, Info.WeaponCache.HitDistance, ref beamEnd, ref line.Direction, ref VisualDir, line.Length);
+                        vs.Update(Info, Info.DistanceTraveled - Info.PrevDistanceTraveled, Info.WeaponCache.HitDistance, ref beamEnd, ref line.Direction, ref VisualDir, line.Length, true);
                     }
-
                     else
-                        vs.Update(Info.DistanceTraveled - Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref VisualDir, line.Length);
+                        vs.Update(Info, Info.DistanceTraveled - Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref VisualDir, line.Length, !miss);
                 }
-                vs.Complete(this, !miss);
             }
         }
 
@@ -885,9 +875,12 @@ namespace WeaponCore.Projectiles
             Colliding = false;
         }
 
+        /*
         internal void ModelHitOncamera()
         {
             ModelSphereLast.Center = LastEntityPos;
+            LastEntityPos = Position;
+
             ModelSphereCurrent.Center = Position;
             Info.AvShot.LastTick = Info.Ai.Session.Tick;
             if (Info.AvShot.Triggered)
@@ -896,13 +889,12 @@ namespace WeaponCore.Projectiles
                 ModelSphereLast.Radius = currentRadius;
                 ModelSphereCurrent.Radius = currentRadius;
             }
-            if (Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent) || FirstOffScreen)
+            if (Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent))
             {
                 Info.AvShot.OnScreen = Screen.Tracer;
-                FirstOffScreen = false;
-                LastEntityPos = Position;
             }
         }
+        */
 
         internal void PlayAmmoParticle()
         {
@@ -1048,7 +1040,8 @@ namespace WeaponCore.Projectiles
                     ModelState = EntityState.None;
 
                 if (Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion) 
-                    Info.AvShot.Complete(this, false, true);
+                    Info.AvShot.End(Position, true);
+                else if (!Info.AvShot.Active) Info.AvShot.End(Position, false);
             }
         }
 
