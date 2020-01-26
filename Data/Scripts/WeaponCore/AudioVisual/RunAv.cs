@@ -143,9 +143,7 @@ namespace WeaponCore.Support
                 if (shrinkCnt > _shrinks) _shrinks = shrinkCnt;
 
                 if (shrinkCnt > 0)
-                {
                     RunShrinks(av);
-                }
 
                 var glowCnt = av.GlowSteps.Count;
 
@@ -239,7 +237,6 @@ namespace WeaponCore.Support
 
                     if (av.HitSoundActived)
                     {
-                        //Log.Line($"hit sound activated");
                         av.HitSoundActived = false;
                         av.HitEmitter.SetPosition(av.TracerFront);
                         av.HitEmitter.CanPlayLoopSounds = false;

@@ -7,7 +7,6 @@ using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Projectiles;
 
 namespace WeaponCore.Support
 {
@@ -159,7 +158,8 @@ namespace WeaponCore.Support
 
         internal void Update(ProInfo info, double stepSize, double visualLength, ref Vector3D tracerFront, ref Vector3D direction, ref Vector3D pointDir, double? shortStepSize = null, bool saveHit = false, bool modelOnly = false)
         {
-            if (ParentId != info.Id) Log.Line($"invalid avshot in Update, parentId:{ParentId}");
+            var lineEffect = System.Trail || System.DrawLine;
+
             ++LifeTime;
             LastTick = Ai.Session.Tick;
             StepSize = stepSize;
@@ -172,23 +172,17 @@ namespace WeaponCore.Support
             TracerFront = tracerFront;
             TracerBack = TracerFront + (-Direction * VisualLength);
             PointDir = pointDir;
-            if (modelOnly)
-            {
+
+            if (modelOnly) {
                 ModelSphereCurrent.Center = TracerFront;
-                LastTick = Ai.Session.Tick;
                 if (Triggered)
-                {
-                    var currentRadius = info.TriggerGrowthSteps < System.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : System.AreaEffectSize;
-                    ModelSphereCurrent.Radius = currentRadius;
-                }
+                    ModelSphereCurrent.Radius = info.TriggerGrowthSteps < System.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : System.AreaEffectSize;
 
                 if (Ai.Session.CameraFrustrum.Intersects(ModelSphereCurrent))
-                {
                     OnScreen = Screen.ModelOnly;
-                }
             }
-            else if (System.DrawLine || Model == ModelState.None && System.AmmoParticle)
-            {
+            else if (lineEffect || Model == ModelState.None && System.AmmoParticle) {
+
                 var rayTracer = new RayD(TracerBack, PointDir);
                 var rayTrail = new RayD(TracerFront + (-Direction * ShortEstTravel), Direction);
 
@@ -200,60 +194,49 @@ namespace WeaponCore.Support
 
                 if (dist != null && dist <= VisualLength)
                     OnScreen = Screen.Tracer;
-                else if (System.Trail)
-                {
+                else if (System.Trail) {
                     Ai.Session.CameraFrustrum.Intersects(ref rayTrail, out dist);
                     if (dist != null && dist <= ShortEstTravel + ShortStepSize)
                         OnScreen = Screen.Trail;
                 }
 
                 if (OnScreen != Screen.None && !TrailActivated && System.Trail) TrailActivated = true;
+                
+                if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
             }
-            
-            if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
 
             if (info.MuzzleId == -1)
                 return;
 
-            if (!Active && OnScreen != Screen.None)
-            {
-                Active = true;
-                Ai.Session.Av.AvShots.Add(this);
+            if (saveHit) {
+                if (Hit.Entity != null)
+                    HitVelocity = Hit.Entity.GetTopMostParent()?.Physics?.LinearVelocity ?? Vector3D.Zero;
+                else if (Hit.Projectile != null)
+                    HitVelocity = Hit.Projectile.Velocity;
+                Hitting = !ShrinkInited;
             }
+            LastStep = Hitting || MyUtils.IsZero(System.MaxTrajectory - ShortEstTravel, 1E-01F);
 
-            if (Hit.HitPos != Vector3D.Zero)
-            {
-                if (saveHit)
-                {
-                    if (Hit.Entity != null)
-                        HitVelocity = Hit.Entity.GetTopMostParent()?.Physics?.LinearVelocity ?? Vector3D.Zero;
-                    else if (Hit.Projectile != null)
-                        HitVelocity = Hit.Projectile.Velocity;
-
-                    Hitting = !ShrinkInited;
-                }
-            }
-
-            if (System.IsBeamWeapon)
+            if (System.IsBeamWeapon || !saveHit && MyUtils.IsZero(MaxTracerLength - VisualLength, 1E-01F)) {
                 Tracer = TracerState.Full;
-            else if (Tracer != TracerState.Off && VisualLength <= 0)
+            }
+            else if (Tracer != TracerState.Off && VisualLength <= 0) {
                 Tracer = TracerState.Off;
-            else if (Hitting && !modelOnly && (System.Trail || System.DrawLine) && VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F) )
-            {
-                if (!ShrinkInited) Tracer = TracerState.Shrink;
+            }
+            else if (Hitting && !modelOnly && lineEffect && VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F)) {
+                Tracer = TracerState.Shrink;
                 TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, TracerFront));
             }
-
-            LastStep = Hitting || MyUtils.IsZero(System.MaxTrajectory - ShortEstTravel, 1E-01F);
-            
-            if (System.DrawLine && (Tracer == TracerState.Grow && LastStep || MyUtils.IsZero(MaxTracerLength - VisualLength, 1E-01F)))
+            else if (Tracer == TracerState.Grow && LastStep) {
                 Tracer = TracerState.Full;
+            }
 
-            if (System.DrawLine || System.Trail)
+            if (lineEffect)
                 LineVariableEffects();
 
-            if (Tracer != TracerState.Off && OnScreen > (Screen)1)
-            {
+            var lineOnScreen = OnScreen > (Screen)1;
+            
+            if (Tracer != TracerState.Off && lineOnScreen) {
                 if (Tracer == TracerState.Shrink && !ShrinkInited)
                     Shrink();
                 else if (System.IsBeamWeapon)
@@ -264,9 +247,13 @@ namespace WeaponCore.Support
             }
 
             var backAndGrowing = Back && Tracer == TracerState.Grow;
-            if (Trail != TrailState.Off && !backAndGrowing && OnScreen > (Screen)1)
+            if (Trail != TrailState.Off && !backAndGrowing && lineOnScreen)
                 RunGlow(ref EmptyShrink);
 
+            if (!Active && OnScreen != Screen.None) {
+                Active = true;
+                Ai.Session.Av.AvShots.Add(this);
+            }
             Hitting = false;
         }
 

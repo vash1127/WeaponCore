@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using Sandbox.Game.Entities;
 using VRage.Game;
 using VRage.Game.Entity;
@@ -429,7 +428,7 @@ namespace WeaponCore.Projectiles
 
             if (MyUtils.IsZero(remainingTracer, 1E-01F)) remainingTracer = 0;
 
-            Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, true);
+            Info.AvShot.Update(Info, stepSize, remainingTracer, ref endPos, ref Direction, ref VisualDir, stepSizeToHit, hit);
         }
 
         internal void CreateFakeBeams(bool miss = false)
