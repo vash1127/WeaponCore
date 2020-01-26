@@ -157,13 +157,18 @@ namespace WeaponCore.Projectiles
 
             if (p.Info.Target.IsProjectile && !p.Info.System.EwarEffect)
             {
-                var sphere = new BoundingSphereD(p.Info.Target.Projectile.Position, p.Info.Target.Projectile.Info.System.CollisionSize);
-                var rayCheck = p.Info.System.CollisionIsLine && sphere.Intersects(new RayD(p.LastPosition, p.Direction)) != null;
-                var sphereCheck = !rayCheck && sphere.Intersects(p.PruneSphere);
+                var detonate = p.State == Projectile.ProjectileState.Detonate;
+                var hitTolerance = detonate ? p.Info.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius : p.Info.System.AreaEffectSize > p.Info.System.CollisionSize ? p.Info.System.AreaEffectSize : p.Info.System.CollisionSize;
+                var useLine = p.Info.System.CollisionIsLine && !detonate && p.Info.System.AreaEffectSize <= 0;
 
-                if (rayCheck || sphereCheck)
+                var sphere = new BoundingSphereD(p.Info.Target.Projectile.Position, p.Info.Target.Projectile.Info.System.CollisionSize);
+                sphere.Include(new BoundingSphereD(p.Info.Target.Projectile.LastPosition, 1));
+                var rayCheck = useLine && sphere.Intersects(new RayD(p.LastPosition, p.Direction)) != null;
+                var testSphere = p.PruneSphere;
+                testSphere.Radius = hitTolerance;
+
+                if (rayCheck || sphere.Intersects(testSphere))
                     found = ProjectileHit(p, p.Info.Target.Projectile, lineCheck);
-                
             }
             p.SegmentList.Clear();
 
@@ -261,7 +266,12 @@ namespace WeaponCore.Projectiles
                 var voxel = ent as MyVoxelBase;
 
                 var dist = double.MaxValue;
-                if (hitEnt.Projectile != null) dist = Vector3D.Distance(hitEnt.HitPos.Value, beam.From);
+                if (hitEnt.Projectile != null)
+                {
+                    dist = Vector3D.Distance(hitEnt.HitPos.Value, beam.From);
+                    hitEnt.Hit = true;
+                    hitEnt.HitPos = hitEnt.Projectile.Position;
+                }
                 else if (shield != null)
                 {
                     hitEnt.Hit = true;

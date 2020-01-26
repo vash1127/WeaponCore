@@ -350,25 +350,33 @@ namespace WeaponCore.Support
             ClosestStaticSqr = double.MaxValue;
             StaticGridInRange = false;
             MyEntity closestEnt = null;
+            var closestCenter = Vector3D.Zero;
             double closestDistSqr = double.MaxValue;
             for (int i = 0; i < StaticsInRange.Count; i++)
             {
                 var ent = StaticsInRange[i];
-                var staticCenter = ent.PositionComp.WorldAABB.Center;
-                if (ent is MyCubeGrid) StaticGridInRange = true;
-
-                double distSqr;
-                Vector3D.DistanceSquared(ref staticCenter, ref GridVolume.Center, out distSqr);
-                if (distSqr < closestDistSqr)
+                if (ent == null) continue;
+                using (ent.Pin())
                 {
-                    closestDistSqr = distSqr;
-                    closestEnt = ent;
+                    if (ent.MarkedForClose) continue;
+                    
+                    var staticCenter = ent.PositionComp.WorldAABB.Center;
+                    if (ent is MyCubeGrid) StaticGridInRange = true;
+
+                    double distSqr;
+                    Vector3D.DistanceSquared(ref staticCenter, ref GridVolume.Center, out distSqr);
+                    if (distSqr < closestDistSqr)
+                    {
+                        closestDistSqr = distSqr;
+                        closestEnt = ent;
+                        closestCenter = staticCenter;
+                    }
                 }
             }
 
             if (closestEnt != null)
             {
-                var dist = Vector3D.Distance(GridVolume.Center, closestEnt.PositionComp.WorldAABB.Center);
+                var dist = Vector3D.Distance(GridVolume.Center, closestCenter);
                 dist -= closestEnt.PositionComp.LocalVolume.Radius;
                 dist -= GridVolume.Radius;
                 if (dist < 0) dist = 0;
@@ -648,7 +656,6 @@ namespace WeaponCore.Support
                     for (int i = 0; i < blocks.Count; i++)
                         FatBlockAdded(blocks[i]);
                 }
-                else Log.Line($"AddSubGrids fatmap didnt exist for: {grid.DebugName}");
             }
             AddSubGrids.Clear();
 

@@ -245,7 +245,7 @@ namespace WeaponCore.Platform
                 {
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;
-                    var epsilon = rangeToTargetSqr <= 1000000 ? 1E-03d : 1E-04d;
+                    var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 1000000 ? 1E-03d : 1E-04d;
                     weapon.Azimuth += MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
                     weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
                     var azDiff = oldAz - weapon.Azimuth;
