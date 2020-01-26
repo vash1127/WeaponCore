@@ -1039,9 +1039,7 @@ namespace WeaponCore.Projectiles
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
 
-                if (Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion) 
-                    Info.AvShot.End(Position, true);
-                else if (!Info.AvShot.Active) Info.AvShot.End(Position, false);
+                Info.AvShot.End(Position, Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
             }
         }
 

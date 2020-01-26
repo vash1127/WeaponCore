@@ -196,14 +196,14 @@ namespace WeaponCore.Support
                         }
                         else info = ai.SortedTargets[deck[x - offset]];
                     }
+
                     if (info?.Target == null || info.Target.MarkedForClose || hasOffset && x > lastOffset && (info.Target == alphaInfo?.Target || info.Target == betaInfo?.Target) || !attackNeutrals && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.Neutral || !attackNoOwner && info.EntInfo.Relationship == MyRelationsBetweenPlayerAndBlock.NoOwnership) continue;
+                    //if (w.System.WeaponName.Contains("Coil")) Log.Line($"{weaponRange}({weaponRange + info.TargetRadius}) - {info.Target.DebugName} - {numOfTargets}");
 
                     if (info.TargetRadius < s.MinTargetRadius || info.TargetRadius > s.MaxTargetRadius || !focusTarget && info.OffenseRating <= 0) continue;
-
                     var targetCenter = info.Target.PositionComp.WorldAABB.Center;
                     if (Vector3D.DistanceSquared(targetCenter, w.MyPivotPos) > ((weaponRange + info.TargetRadius) * (weaponRange + info.TargetRadius))) continue;
                     session.TargetChecks++;
-
                     Vector3D targetLinVel = info.Target.Physics?.LinearVelocity ?? Vector3D.Zero;
                     Vector3D targetAccel = accelPrediction ? info.Target.Physics?.LinearAcceleration ?? Vector3D.Zero : Vector3.Zero;
                     if (info.IsGrid)

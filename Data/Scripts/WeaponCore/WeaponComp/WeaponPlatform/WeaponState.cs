@@ -480,7 +480,6 @@ namespace WeaponCore.Platform
             }
 
             Reloading = true;
-
             if (AnimationDelayTick > Comp.Session.Tick && LastEvent != EventTriggers.Reloading)
             {
                 Comp.Session.FutureEvents.Schedule((object o)=> { StartReload(true); }, null, AnimationDelayTick - Comp.Session.Tick);
@@ -494,7 +493,6 @@ namespace WeaponCore.Platform
 
             if ((State.CurrentMags == 0 && !System.MustCharge && !Comp.Session.IsCreative))
             {
-                //Log.Line($"Out of Ammo");
                 if (!OutOfAmmo)
                 {
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, true);
@@ -504,7 +502,6 @@ namespace WeaponCore.Platform
             }
             else
             {
-                //Log.Line($"Reloading");
                 if (OutOfAmmo)
                 {
                     EventTriggerStateChanged(EventTriggers.OutOfAmmo, false);
@@ -529,7 +526,9 @@ namespace WeaponCore.Platform
                     CurrentCharge = 0;
                 }
                 else
+                {
                     Comp.Session.FutureEvents.Schedule(Reloaded, this, (uint)System.ReloadTime);
+                }
 
 
                 if (ReloadEmitter == null || ReloadEmitter.IsPlaying) return;
@@ -542,7 +541,6 @@ namespace WeaponCore.Platform
         {
             var w = o as Weapon;
             if (w == null) return;
-
             if (w.System.MustCharge)
             {
                 if (!w.System.IsHybrid)

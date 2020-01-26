@@ -181,9 +181,9 @@ namespace WeaponCore.Support
                     weapon.UpdateBarrelRotation();
                 }
 
-                if (maxTrajectory + Ai.GridRadius > Ai.MaxTargetingRange)
+                if (maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius > Ai.MaxTargetingRange)
                 {
-                    Ai.MaxTargetingRange = maxTrajectory + Ai.GridRadius;
+                    Ai.MaxTargetingRange = maxTrajectory + Ai.MyGrid.PositionComp.LocalVolume.Radius;
                     Ai.MaxTargetingRangeSqr = Ai.MaxTargetingRange * Ai.MaxTargetingRange;
                 }
                 Ai.OptimalDps += OptimalDps;

@@ -65,7 +65,6 @@ namespace WeaponCore.Support
         internal readonly MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
         internal uint CreatedTick;
         
-        internal Vector3D GridCenter;
         internal Vector3 GridVel;
 
         internal IMyGridTerminalSystem TerminalSystem;
@@ -77,6 +76,7 @@ namespace WeaponCore.Support
         internal MyPlanet MyPlanet;
         internal Vector3D PlanetClosestPoint;
         internal Vector3D NaturalGravity;
+        internal BoundingSphereD GridVolume;
         internal MyDefinitionId NewAmmoType;
         internal bool PlanetSurfaceInRange;
         internal bool FirstRun = true;
@@ -115,7 +115,6 @@ namespace WeaponCore.Support
         internal bool WeaponTerminalAccess;
         internal double MaxTargetingRange;
         internal double MaxTargetingRangeSqr;
-        internal double GridRadius;
         internal double ClosestStaticSqr = double.MaxValue;
         internal double ClosestPlanetSqr = double.MaxValue;
         internal float GridMaxPower;

@@ -20,9 +20,8 @@ namespace WeaponCore.Support
                 {
                     Scanning = true;
                     _lastScan = Session.Tick;
-                    var boundingSphereD = MyGrid.PositionComp.WorldVolume;
-                    boundingSphereD.Radius = MaxTargetingRange;
-                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref boundingSphereD, _possibleTargets);
+                    GridVolume.Radius = MaxTargetingRange;
+                    MyGamePruningStructure.GetAllTopMostEntitiesInSphere(ref GridVolume, _possibleTargets);
 
                     foreach (var grid in PrevSubGrids)
                         RemSubGrids.Add(grid);
@@ -53,6 +52,7 @@ namespace WeaponCore.Support
                                 case MyRelationsBetweenPlayerAndBlock.Friends:
                                     continue;
                             }
+
                             if (grid != null)
                             {
                                 FatMap fatMap;
@@ -83,7 +83,6 @@ namespace WeaponCore.Support
                                     }
                                     if (!valid) continue;
                                 }
-
                                 NewEntities.Add(new DetectInfo(Session, ent, entInfo, fatMap.MostBlocks, fatCount));
                                 ValidGrids.Add(ent);
                                 GridAi targetAi;
@@ -105,7 +104,7 @@ namespace WeaponCore.Support
 
         private void FinalizeTargetDb()
         {
-            MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(GridCenter);
+            MyPlanetTmp = MyGamePruningStructure.GetClosestPlanet(GridVolume.Center);
             ShieldNearTmp = false;
             ObstructionsTmp.Clear();
             StaticsInRangeTmp.Clear();

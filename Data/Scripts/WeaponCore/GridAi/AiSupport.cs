@@ -171,7 +171,7 @@ namespace WeaponCore.Support
                 if (!MyUtils.IsZero(Velocity, 1E-02F))
                 {
                     TargetDir = Vector3D.Normalize(Velocity);
-                    var refDir = Vector3D.Normalize(myAi.GridCenter - TargetPos);
+                    var refDir = Vector3D.Normalize(myAi.GridVolume.Center - TargetPos);
                     Approaching = MathFuncs.IsDotProductWithinTolerance(ref TargetDir, ref refDir, myAi.Session.ApproachDegrees);
                 }
                 else
@@ -187,8 +187,8 @@ namespace WeaponCore.Support
                 else if (detectInfo.Armed) OffenseRating = 0.01f;
                 else OffenseRating = 0;
 
-                var targetDist = Vector3D.Distance(myAi.GridCenter, TargetPos) - TargetRadius;
-                targetDist -= myAi.GridRadius;
+                var targetDist = Vector3D.Distance(myAi.GridVolume.Center, TargetPos) - TargetRadius;
+                targetDist -= myAi.GridVolume.Radius;
                 if (targetDist < 0) targetDist = 0;
                 DistSqr = targetDist * targetDist;
             }
@@ -196,8 +196,7 @@ namespace WeaponCore.Support
 
         internal void RequestDbUpdate()
         {
-            GridCenter = MyGrid.PositionComp.WorldAABB.Center;
-            GridRadius = MyGrid.PositionComp.LocalVolume.Radius;
+            GridVolume = MyGrid.PositionComp.WorldVolume;
             Session.DbsToUpdate.Add(this);
             TargetsUpdatedTick = Session.Tick;
         }
@@ -359,7 +358,7 @@ namespace WeaponCore.Support
                 if (ent is MyCubeGrid) StaticGridInRange = true;
 
                 double distSqr;
-                Vector3D.DistanceSquared(ref staticCenter, ref GridCenter, out distSqr);
+                Vector3D.DistanceSquared(ref staticCenter, ref GridVolume.Center, out distSqr);
                 if (distSqr < closestDistSqr)
                 {
                     closestDistSqr = distSqr;
@@ -369,9 +368,9 @@ namespace WeaponCore.Support
 
             if (closestEnt != null)
             {
-                var dist = Vector3D.Distance(GridCenter, closestEnt.PositionComp.WorldAABB.Center);
+                var dist = Vector3D.Distance(GridVolume.Center, closestEnt.PositionComp.WorldAABB.Center);
                 dist -= closestEnt.PositionComp.LocalVolume.Radius;
-                dist -= GridRadius;
+                dist -= GridVolume.Radius;
                 if (dist < 0) dist = 0;
 
                 var distSqr = dist * dist;
@@ -520,8 +519,8 @@ namespace WeaponCore.Support
                 else if (retreat) Focus.TargetState[i].Engagement = 1;
                 else Focus.TargetState[i].Engagement = 2;
 
-                var distanceFromCenters = Vector3D.Distance(GridCenter, target.PositionComp.WorldAABB.Center);
-                distanceFromCenters -= GridRadius;
+                var distanceFromCenters = Vector3D.Distance(MyGrid.PositionComp.WorldAABB.Center, target.PositionComp.WorldAABB.Center);
+                distanceFromCenters -= MyGrid.PositionComp.LocalVolume.Radius;
                 distanceFromCenters -= target.PositionComp.LocalVolume.Radius;
                 distanceFromCenters = distanceFromCenters <= 0 ? 0 : distanceFromCenters;
 

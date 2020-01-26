@@ -449,7 +449,6 @@ namespace WeaponCore
                         ShootingWeapons.RemoveAtFast(i);
                         continue;
                     }
-
                     //TODO add logic for power priority
                     if (w.Comp.Ai.OverPowered && (w.System.EnergyAmmo || w.System.IsHybrid) && !w.System.MustCharge)
                     {

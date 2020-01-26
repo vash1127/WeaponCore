@@ -47,6 +47,7 @@ namespace WeaponCore.Support
         internal bool Back;
         internal bool DetonateFakeExp;
         internal bool LastStep;
+        internal bool Dirty;
         internal double MaxTracerLength;
         internal double MaxGlowLength;
         internal double StepSize;
@@ -168,8 +169,6 @@ namespace WeaponCore.Support
             TracerFront = tracerFront;
             TracerBack = TracerFront + (-Direction * VisualLength);
             PointDir = pointDir;
-            if (System.DrawLine && (Tracer == TracerState.Grow && LastStep || MyUtils.IsZero(MaxTracerLength - VisualLength, 1E-01F)))
-                Tracer = TracerState.Full;
 
             if (modelOnly)
             {
@@ -210,7 +209,6 @@ namespace WeaponCore.Support
             }
             
             if (OnScreen == Screen.None && TrailActivated) OnScreen = Screen.Trail;
-            OnScreen = Screen.Tracer;
 
             if (info.MuzzleId == -1)
                 return;
@@ -238,15 +236,18 @@ namespace WeaponCore.Support
                 Tracer = TracerState.Full;
             else if (Tracer != TracerState.Off && VisualLength <= 0)
                 Tracer = TracerState.Off;
-            else if (VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F) && Hitting && (System.Trail || System.DrawLine))
+            else if (Hitting && !modelOnly && (System.Trail || System.DrawLine) && VisualLength / StepSize > 1 && !MyUtils.IsZero(EstTravel - ShortEstTravel, 1E-01F) )
             {
                 if (!ShrinkInited) Tracer = TracerState.Shrink;
                 TotalLength = MathHelperD.Clamp(VisualLength + MaxGlowLength, 0.1f, Vector3D.Distance(Origin, TracerFront));
             }
 
             LastStep = Hitting || MyUtils.IsZero(System.MaxTrajectory - ShortEstTravel, 1E-01F);
+            
+            if (System.DrawLine && (Tracer == TracerState.Grow && LastStep || MyUtils.IsZero(MaxTracerLength - VisualLength, 1E-01F)))
+                Tracer = TracerState.Full;
 
-            if (System.DrawLine)
+            if (System.DrawLine || System.Trail)
                 LineVariableEffects();
 
             if (Tracer != TracerState.Off && OnScreen > (Screen)1)
@@ -269,9 +270,10 @@ namespace WeaponCore.Support
 
         internal void End(Vector3D endPos, bool detonateFakeExp = false)
         {
-            TracerFront = endPos;
+            if (TracerFront == Vector3D.Zero) TracerFront = endPos;
             Ai.Session.Av.AvEnd.Add(this);
             DetonateFakeExp = detonateFakeExp;
+            Dirty = true;
         }
 
         internal void RunGlow(ref Shrinks shrink, bool shrinking = false)
@@ -594,6 +596,7 @@ namespace WeaponCore.Support
             Hit = new Hit();
             HitVelocity = Vector3D.Zero;
             TracerBack = Vector3D.Zero;
+            TracerFront = Vector3D.Zero;
             OnScreen = Screen.None;
             Tracer = TracerState.Off;
             Trail = TrailState.Off;
@@ -601,6 +604,7 @@ namespace WeaponCore.Support
             TracerSteps = 0;
             TracerStep = 0;
 
+            Dirty = false;
             AmmoSound = false;
             HitSoundActive = false;
             HitSoundActived = false;
@@ -616,6 +620,7 @@ namespace WeaponCore.Support
             Back = false;
             LastStep = false;
             DetonateFakeExp = false;
+            TracerShrinks.Clear();
             GlowSteps.Clear();
             Offsets.Clear();
             //

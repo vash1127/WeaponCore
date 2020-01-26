@@ -143,7 +143,9 @@ namespace WeaponCore.Support
                 if (shrinkCnt > _shrinks) _shrinks = shrinkCnt;
 
                 if (shrinkCnt > 0)
+                {
                     RunShrinks(av);
+                }
 
                 var glowCnt = av.GlowSteps.Count;
 
@@ -266,8 +268,8 @@ namespace WeaponCore.Support
                     }
                 }   
 
-                var noNextStep = glowCnt == 0 && shrinkCnt == 0;
-                if (noNextStep && (!refreshed || av.System.IsBeamWeapon))
+                var noNextStep = glowCnt == 0 && shrinkCnt == 0 && av.Dirty;
+                if (noNextStep)
                 {
                     AvShotPool.Return(av);
                     AvShots.RemoveAtFast(i);
@@ -286,7 +288,7 @@ namespace WeaponCore.Support
                     if (av.OnScreen != AvShot.Screen.None)
                         MyTransparentGeometry.AddLineBillboard(av.System.TracerMaterial, s.Color, s.NewFront, av.PointDir, s.Length, s.Thickness);
                 }
-                else
+                else if (av.OnScreen != AvShot.Screen.None)
                     av.DrawLineOffsetEffect(s.NewFront, -av.PointDir, s.Length, s.Thickness, s.Color);
 
                 if (av.Trail != AvShot.TrailState.Off && av.Back)

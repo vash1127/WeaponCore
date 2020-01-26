@@ -32,6 +32,7 @@ namespace WeaponCore.Support
         private const int _maxDelay = 7200;
         private List<FutureAction>[] _callbacks = new List<FutureAction>[_maxDelay + 1]; // and fill with list instances
         private uint _offset = 0;
+        private uint _lastTick;
         internal void Schedule(Action<object> callback, object arg1, uint delay)
         {
             lock (_callbacks)
@@ -40,17 +41,33 @@ namespace WeaponCore.Support
             }
         }
 
-        internal void Tick(uint tick)
+        internal void Tick(uint tick, bool purge = false)
         {
             if (_callbacks.Length > 0 && Active)
             {
                 lock (_callbacks)
                 {
-                    var index = tick % _maxDelay;
-                    //if (_callbacks[index].Count > 0) Log.Line($"Tick oldOffSet:{_offset} - Tick:{tick}");
-                    for (int i = 0; i < _callbacks[index].Count; i++) _callbacks[index][i].Callback(_callbacks[index][i].Arg1);
-                    _callbacks[index].Clear();
-                    _offset = tick + 1;
+                    if (_lastTick == tick - 1 || purge)
+                    {
+                        var index = tick % _maxDelay;
+                        for (int i = 0; i < _callbacks[index].Count; i++) _callbacks[index][i].Callback(_callbacks[index][i].Arg1);
+                        _callbacks[index].Clear();
+                        _offset = tick + 1;
+                    }
+                    else 
+                    {
+                        var replayLen = tick - _lastTick;
+                        var idx = replayLen;
+                        for (int i = 0; i < tick - _lastTick; i++)
+                        {
+                            var pastIdx = tick - --idx;
+                            for (int j = 0; j < _callbacks[pastIdx].Count; j++) _callbacks[pastIdx][j].Callback(_callbacks[pastIdx][j].Arg1);
+                            _callbacks[pastIdx].Clear();
+                            _offset = tick + 1;
+                        }
+                    }
+
+                    _lastTick = tick;
                 }
             }
         }
@@ -58,7 +75,7 @@ namespace WeaponCore.Support
         internal void Purge(int tick)
         {
             for (int i = tick; i < tick + 7200; i++)
-                Tick((uint)i);
+                Tick((uint)i, true);
 
             lock (_callbacks)
             {
