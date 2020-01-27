@@ -332,20 +332,6 @@ namespace WeaponCore.Projectiles
                     }
                 }
 
-                if (p.Info.System.AmmoParticle)
-                {
-                    p.TestSphere.Center = p.Position;
-                    if (Session.Camera.IsInFrustum(ref p.TestSphere))
-                    {
-                        if (!p.Info.System.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.System.AmmoParticleShrinks)
-                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
-
-                        if ((p.ParticleStopped || p.ParticleLateStart))
-                            p.PlayAmmoParticle();
-                    }
-                    else if (!p.ParticleStopped && p.AmmoEffect != null)
-                        p.DisposeAmmoEffect(false, true);
-                }
 
                 if (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle)
                 {
@@ -378,6 +364,21 @@ namespace WeaponCore.Projectiles
 
                 if (p.Info.AvShot.OnScreen == Screen.None && p.ModelState == EntityState.Exists)
                     p.Info.AvShot.Update(p.Info, p.Info.DistanceTraveled - p.Info.PrevDistanceTraveled, p.TracerLength, ref p.Position, ref p.Direction, ref p.VisualDir, null, false, true);
+
+                if (p.Info.System.AmmoParticle)
+                {
+                    p.TestSphere.Center = p.Position;
+                    if (p.Info.AvShot.OnScreen != Screen.None || Session.Camera.IsInFrustum(ref p.TestSphere))
+                    {
+                        if (!p.Info.System.IsBeamWeapon && !p.ParticleStopped && p.AmmoEffect != null && p.Info.System.AmmoParticleShrinks)
+                            p.AmmoEffect.UserEmitterScale = MathHelper.Clamp(MathHelper.Lerp(p.BaseAmmoParticleScale, 0, p.Info.AvShot.DistanceToLine / p.Info.System.Values.Graphics.Particles.Hit.Extras.MaxDistance), 0, p.BaseAmmoParticleScale);
+
+                        if ((p.ParticleStopped || p.ParticleLateStart))
+                            p.PlayAmmoParticle();
+                    }
+                    else if (!p.ParticleStopped && p.AmmoEffect != null)
+                        p.DisposeAmmoEffect(false, true);
+                }
 
                 if (p.Info.MuzzleId == -1)
                     p.CreateFakeBeams(true);

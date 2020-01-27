@@ -359,7 +359,7 @@ namespace WeaponCore.Support
                 using (ent.Pin())
                 {
                     if (ent.MarkedForClose) continue;
-                    
+
                     var staticCenter = ent.PositionComp.WorldAABB.Center;
                     if (ent is MyCubeGrid) StaticGridInRange = true;
 

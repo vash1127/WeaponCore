@@ -476,11 +476,11 @@ namespace WeaponCore.Support
             ent.SyncFlag = false;
             ent.NeedsWorldMatrix = false;
             ent.Flags |= EntityFlags.IsNotGamePrunningStructureObject;
-            MyEntities.Add(ent);
+            MyEntities.Add(ent, false);
 
-            ent.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
-            ent.InScene = false;
-            ent.Render.RemoveRenderObjects();
+            //ent.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
+            //ent.InScene = false;
+            //ent.Render.RemoveRenderObjects();
             return ent;
         }
 

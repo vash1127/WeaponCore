@@ -178,7 +178,7 @@ namespace WeaponCore.Support
                 if (Triggered)
                     ModelSphereCurrent.Radius = info.TriggerGrowthSteps < System.AreaEffectSize ? TriggerMatrix.Scale.AbsMax() : System.AreaEffectSize;
 
-                if (Ai.Session.CameraFrustrum.Intersects(ModelSphereCurrent))
+                if (Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent))
                     OnScreen = Screen.ModelOnly;
             }
             else if (lineEffect || Model == ModelState.None && System.AmmoParticle) {

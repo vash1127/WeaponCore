@@ -5,7 +5,7 @@ using VRageMath;
 
 namespace WeaponCore.Support
 {
-    // Courtesy of Equinox
+    // based on code of Equinox's
     public class Dummy
     {
         internal MyEntity Entity;
@@ -64,23 +64,12 @@ namespace WeaponCore.Support
             {
                 if (!(_cachedModel == Entity?.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
                 if (Entity == null || _cachedSubpart == null)
-                {
-                    Log.Line($"nullEntity:{Entity == null} - nullSubPart:{_cachedSubpart == null}");
                     return new DummyInfo();
-                }
+
                 var dummyMatrix = _cachedDummyMatrix ?? MatrixD.Identity;
                 var subPartPos = Vector3D.Transform(dummyMatrix.Translation, _cachedSubpart.WorldMatrix);
                 var subPartDir = Vector3D.TransformNormal(dummyMatrix.Forward, _cachedSubpart.WorldMatrix);
                 return new DummyInfo { Position = subPartPos, Direction = subPartDir };
-            }
-        }
-
-        public bool Valid
-        {
-            get
-            {
-                if (!(_cachedModel == Entity.Model && _cachedSubpartModel == _cachedSubpart?.Model)) Update();
-                return _cachedSubpart != null && _cachedDummyMatrix.HasValue && !_failed;
             }
         }
 

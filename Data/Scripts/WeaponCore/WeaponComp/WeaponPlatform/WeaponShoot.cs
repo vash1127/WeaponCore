@@ -142,14 +142,7 @@ namespace WeaponCore.Platform
                         MyEntity triggerE = null;
 
                         if (System.PrimeModel)
-                        {
                             primeE = System.PrimeEntityPool.Get();
-                            if (!primeE.InScene)
-                            {
-                                primeE.InScene = true;
-                                primeE.Render.AddRenderObjects();
-                            }
-                        }
 
                         if (System.TriggerModel)
                             triggerE = session.TriggerEntityPool.Get();
