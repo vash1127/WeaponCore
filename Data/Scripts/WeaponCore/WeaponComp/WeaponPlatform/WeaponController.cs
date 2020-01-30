@@ -146,13 +146,18 @@ namespace WeaponCore.Platform
         {
             try
             {
+                if (State == null)
+                {
+                    Log.Line("Weapon State is Null during UpdatgeWeaponHeat");
+                    return;
+                }
+
+                var reset = o == null;
 
                 var currentHeat = State.Heat;
                 currentHeat = currentHeat - ((float)HsRate / 3) > 0 ? currentHeat - ((float)HsRate / 3) : 0;
                 var set = currentHeat - LastHeat > 0.001 || (currentHeat - LastHeat) * -1 > 0.001;
 
-                var val = o as bool?;
-                var reset = val.HasValue && val.Value;
 
                 if (!Comp.Session.DedicatedServer)
                 {
@@ -238,7 +243,7 @@ namespace WeaponCore.Platform
                 else if (!Comp.Session.DedicatedServer)
                     Comp.TerminalRefresh();
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdatingStopped: {ex} - Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }
     }
 }

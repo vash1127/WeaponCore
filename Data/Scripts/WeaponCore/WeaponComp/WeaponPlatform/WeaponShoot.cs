@@ -232,7 +232,7 @@ namespace WeaponCore.Platform
                 _muzzlesToFire.Add(MuzzleIdToName[current]);
 
                 if (State.Heat <= 0 && State.Heat + HeatPShot > 0)
-                    UpdateWeaponHeat(true);
+                    UpdateWeaponHeat(null);
                 
 
                 State.Heat += HeatPShot;

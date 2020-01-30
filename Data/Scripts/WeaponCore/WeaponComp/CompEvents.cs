@@ -136,38 +136,5 @@ namespace WeaponCore.Support
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }
-
-        /*
-        internal void CurrentInputChanged(MyDefinitionId changedResourceTypeId, float oldInput, MyResourceSinkComponent sink)
-        {
-            try
-            {
-
-                var currentInput = sink.CurrentInputByType(changedResourceTypeId);
-                var tick = Session.Tick;
-                if (Ai.ResetPower && tick != LastUpdateTick)
-                {
-                    if (currentInput < CurrentSinkPowerRequested && currentInput > IdlePower)
-                    {
-                        if (Ai.ResetPowerTick != tick)
-                        {
-                            Ai.CurrentWeaponsDraw = 0;
-                            Ai.ResetPowerTick = tick;
-                            //Ai.RecalcLowPowerTick = tick + 20;
-                            Ai.UpdatePowerSources = true;
-                        }
-
-                        LastUpdateTick = tick;
-                        Ai.CurrentWeaponsDraw += currentInput;
-                    }
-                    else
-                    {
-                        DelayTicks = 0;
-                        ShootTick = 0;
-                    }
-                }
-            }
-            catch (Exception ex) { Log.Line($"Exception in Weapon CurrentInputChanged: {ex}"); }
-        }*/
     }
 }
