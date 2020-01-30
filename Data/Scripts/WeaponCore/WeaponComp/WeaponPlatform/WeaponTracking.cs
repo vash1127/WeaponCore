@@ -213,6 +213,7 @@ namespace WeaponCore.Platform
             double rangeToTargetSqr;
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
             var targetDir = targetPos - weapon.MyPivotPos;
+            var aim = true;
 
             if (manulControl || rangeToTargetSqr <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
             {
@@ -245,17 +246,19 @@ namespace WeaponCore.Platform
                 {
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;
-                    var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 3240000 ? 1E-04d : 1E-05d;
-                    weapon.Azimuth += MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
-                    weapon.Elevation += MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
-                    var azDiff = oldAz - weapon.Azimuth;
-                    var elDiff = oldEl - weapon.Elevation;
+                    var epsilon = target.IsProjectile ? 1E-06d : rangeToTargetSqr <= 640000 ? 1E-03d : rangeToTargetSqr <= 3240000 ? 1E-04d : 1E05d;
+                    var az = weapon.Azimuth + MathHelperD.Clamp(desiredAzimuth, -maxAzimuthStep, maxAzimuthStep);
+                    var el = weapon.Elevation + MathHelperD.Clamp(desiredElevation - weapon.Elevation, -maxElevationStep, maxElevationStep);
+                    var azDiff = oldAz - az;
+                    var elDiff = oldEl - el;
                     var azLocked = azDiff > -epsilon && azDiff < epsilon;
                     var elLocked = elDiff > -epsilon && elDiff < epsilon;
 
-                    var aim = !azLocked || !elLocked;
+                    aim = !azLocked || !elLocked;
                     if (aim)
                     {
+                        weapon.Azimuth = az;
+                        weapon.Elevation = el;
                         weapon.AimBarrel(azDiff, elDiff, !azLocked, !elLocked);
                     }
                 }
@@ -267,7 +270,7 @@ namespace WeaponCore.Platform
             var isAligned = false;
 
             if (weapon.Target.IsTracking)
-                isAligned = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+                isAligned = !aim || MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             var wasAligned = weapon.Target.IsAligned;
             weapon.Target.IsAligned = isAligned;
