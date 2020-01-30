@@ -445,7 +445,6 @@ namespace WeaponCore
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
-                    if (w.System.WeaponName.Contains("Heavy") && w.Comp.Ai.MyGrid.DebugName.Contains("TEST")) Log.Line($"1: {w.System.WeaponName}");
                     if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !w.Target.IsAligned && w.State.ManualShoot == ShootOff)
                     {
                         ShootingWeapons.RemoveAtFast(i);
