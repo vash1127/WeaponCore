@@ -271,7 +271,6 @@ namespace WeaponCore.Platform
 
             var wasAligned = weapon.Target.IsAligned;
             weapon.Target.IsAligned = isAligned;
-            MyUtils.IsEqual()
             var alignedChange = wasAligned != isAligned;
             if (alignedChange && isAligned)
             {
