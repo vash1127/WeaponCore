@@ -146,9 +146,9 @@ namespace WeaponCore.Platform
         {
             try
             {
-                if (State == null)
+                if (State == null || CurLgstAnimPlaying == null)
                 {
-                    Log.Line("Weapon State is Null during UpdatgeWeaponHeat");
+                    Log.Line("Weapon State is Null during UpdateWeaponHeat");
                     return;
                 }
 
