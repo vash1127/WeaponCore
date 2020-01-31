@@ -146,12 +146,6 @@ namespace WeaponCore.Platform
         {
             try
             {
-                if (State == null || CurLgstAnimPlaying == null)
-                {
-                    Log.Line("Weapon State is Null during UpdateWeaponHeat");
-                    return;
-                }
-
                 var reset = o == null;
 
                 var currentHeat = State.Heat;
@@ -222,7 +216,9 @@ namespace WeaponCore.Platform
 
                     if (Comp.Overheated && State.Heat <= (System.MaxHeat * System.WepCoolDown))
                     {
-                        ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                        //ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
+                        if (CurLgstAnimPlaying != null)
+                            ShootDelayTick = CurLgstAnimPlaying.Reverse ? (uint)CurLgstAnimPlaying.CurrentMove : (uint)((CurLgstAnimPlaying.NumberOfMoves - 1) - CurLgstAnimPlaying.CurrentMove);
                         ShootDelayTick += Comp.Session.Tick;
                         EventTriggerStateChanged(EventTriggers.Overheated, false);
                         Comp.Overheated = false;
