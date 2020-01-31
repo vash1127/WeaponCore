@@ -243,7 +243,7 @@ namespace WeaponCore.Platform
                 else if (!Comp.Session.DedicatedServer)
                     Comp.TerminalRefresh();
             }
-            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in UpdateWeaponHeat: {ex} - {System == null}- Comp:{Comp == null} - State:{Comp?.State == null} - Set:{Comp?.Set == null} - Session:{Comp?.Session == null} - Value:{Comp?.State?.Value == null} - Weapons:{Comp?.State?.Value?.Weapons[WeaponId] == null}"); }
         }
     }
 }

@@ -99,8 +99,6 @@ namespace WeaponCore.Support
                 if (av.OnScreen != AvShot.Screen.None) _onScreens++;
                 var refreshed = av.LastTick == Session.Tick;
 
-                if (av.OnScreen == AvShot.Screen.ModelOnly && (av.System.DrawLine || av.System.Trail)) Log.Line($"how? : {av.System.DrawLine} - {av.System.Trail} - {av.System.WeaponName} - {av.System.PrimeModel}");
-                
                 if (refreshed && av.Tracer != AvShot.TracerState.Off && av.OnScreen != AvShot.Screen.None)
                 {
                     if (!av.System.OffsetEffect)

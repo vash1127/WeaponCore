@@ -10,6 +10,7 @@ using VRage.Collections;
 using VRage.Game;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
+using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
@@ -837,7 +838,7 @@ namespace WeaponCore.Support
         {
             foreach (var cubeComp in WeaponBase)
             {
-                var comp = cubeComp.Value;   
+                var comp = cubeComp.Value;
                 if (comp?.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
                 for (int i = 0; i < comp.Platform.Weapons.Length; i++)
                 {

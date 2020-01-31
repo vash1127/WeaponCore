@@ -59,6 +59,7 @@ namespace WeaponCore.Support
             Target.FiringCube = target.FiringCube;
             WeaponId = weaponId;
             MuzzleId = muzzleId;
+            //Log.Line($"{MuzzleId}");
             VirDirection = virDirection;
             Origin = origin;
         }

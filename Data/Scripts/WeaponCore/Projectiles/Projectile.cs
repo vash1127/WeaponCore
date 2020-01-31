@@ -112,8 +112,7 @@ namespace WeaponCore.Projectiles
             GenerateShrapnel = Info.System.Values.Ammo.Shrapnel.Fragments > 0;
             var noSAv = Info.IsShrapnel && Info.System.Values.Ammo.Shrapnel.NoAudioVisual;
             var probability = Info.System.Values.Graphics.VisualProbability;
-            EnableAv = !Info.Ai.Session.DedicatedServer && !noSAv && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
-
+            EnableAv = !Info.System.VirtualBeams && !Info.Ai.Session.DedicatedServer && !noSAv && DistanceFromCameraSqr <= Info.Ai.Session.SyncDistSqr && (probability >= 1 || probability >= MyUtils.GetRandomDouble(0.0f, 1f));
             ModelState = EntityState.None;
             LastEntityPos = Position;
 
@@ -270,7 +269,6 @@ namespace WeaponCore.Projectiles
             FieldTime = Info.System.Values.Ammo.Trajectory.FieldTime;
 
             State = !Info.System.IsBeamWeapon ? ProjectileState.Alive : ProjectileState.OneAndDone;
-
             if (Info.System.AmmoParticle && EnableAv && !Info.System.IsBeamWeapon)
             {
                 BaseAmmoParticleScale = !Info.IsShrapnel ? 1 : 0.5f;
@@ -374,13 +372,12 @@ namespace WeaponCore.Projectiles
         }
 
         internal bool Intersected(bool add = true)
-        {   
+        {
             if (Hit.HitPos == Vector3D.Zero) return false;
             if (EnableAv && (Info.System.DrawLine || Info.System.PrimeModel || Info.System.TriggerModel))
             {
                 var useCollisionSize = ModelState == EntityState.None && Info.System.AmmoParticle && !Info.System.DrawLine;
                 TestSphere.Center = Hit.HitPos;
-
                 ShortStepAvUpdate(useCollisionSize, true);
             }
 
@@ -396,7 +393,7 @@ namespace WeaponCore.Projectiles
 
                 if (Hit.Entity is MyCubeGrid) Info.WeaponCache.HitBlock = Hit.Block;
                 if (add) Info.Ai.Session.Hits.Add(this);
-                if (EnableAv && Info.AvShot.OnScreen == Screen.Tracer) CreateFakeBeams();
+                CreateFakeBeams();
             }
 
             if (EnableAv)
@@ -440,12 +437,12 @@ namespace WeaponCore.Projectiles
                 var vp = VrPros[i];
                 var vs = vp.VisualShot;
                 vs.Init(vp.Info, StepPerSec * StepConst, MaxSpeed);
-                vs.OnScreen = Info.AvShot.OnScreen;
                 vs.Hit = Hit;
+
                 if (vs.System.ConvergeBeams)
                 {
                     var beam = !miss ? new LineD(vs.Origin, hitPos ?? Position) : new LineD(vs.TracerBack, Position);
-                    vs.Update(Info, Info.DistanceTraveled - Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref VisualDir, beam.Length, !miss);
+                    vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, beam.Length, ref beam.To, ref beam.Direction, ref beam.Direction, beam.Length, !miss);
                 }
                 else
                 {
@@ -459,10 +456,12 @@ namespace WeaponCore.Projectiles
                     var line = new LineD(vs.Origin, beamEnd);
                     if (!miss && hitPos.HasValue)
                     {
-                        vs.Update(Info, Info.DistanceTraveled - Info.PrevDistanceTraveled, Info.WeaponCache.HitDistance, ref beamEnd, ref line.Direction, ref VisualDir, line.Length, true);
+                        vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref line.Direction, line.Length, true);
                     }
                     else
-                        vs.Update(Info, Info.DistanceTraveled - Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref VisualDir, line.Length, !miss);
+                    {
+                        vs.Update(vp.Info, vp.Info.DistanceTraveled - vp.Info.PrevDistanceTraveled, line.Length, ref line.To, ref line.Direction, ref line.Direction, line.Length, false);
+                    }
                 }
             }
         }
@@ -872,27 +871,6 @@ namespace WeaponCore.Projectiles
             Colliding = false;
         }
 
-        /*
-        internal void ModelHitOncamera()
-        {
-            ModelSphereLast.Center = LastEntityPos;
-            LastEntityPos = Position;
-
-            ModelSphereCurrent.Center = Position;
-            Info.AvShot.LastTick = Info.Ai.Session.Tick;
-            if (Info.AvShot.Triggered)
-            {
-                var currentRadius = Info.TriggerGrowthSteps < Info.System.AreaEffectSize ? Info.AvShot.TriggerMatrix.Scale.AbsMax() : Info.System.AreaEffectSize;
-                ModelSphereLast.Radius = currentRadius;
-                ModelSphereCurrent.Radius = currentRadius;
-            }
-            if (Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereLast) || Info.Ai.Session.Camera.IsInFrustum(ref ModelSphereCurrent))
-            {
-                Info.AvShot.OnScreen = Screen.Tracer;
-            }
-        }
-        */
-
         internal void PlayAmmoParticle()
         {
             if (Info.Age == 0 && !ParticleLateStart)
@@ -993,7 +971,7 @@ namespace WeaponCore.Projectiles
             {
                 ForceHitParticle = true;
                 Hit = new Hit {Block = null, Entity = null, Projectile = null, HitPos = Position, HitVelocity = Velocity};
-                if (EnableAv) Info.AvShot.Hit = Hit;
+                if (EnableAv || Info.System.VirtualBeams) Info.AvShot.Hit = Hit;
                 Intersected(false);
             }
 
@@ -1036,6 +1014,14 @@ namespace WeaponCore.Projectiles
                 if (ModelState == EntityState.Exists)
                     ModelState = EntityState.None;
                 Info.AvShot.End(Position, Info.System.Values.Ammo.AreaEffect.Detonation.DetonateOnEnd && FakeExplosion);
+            }
+            else
+            {
+                if (Info.System.VirtualBeams)
+                {
+                    for (int i = 0; i < VrPros.Count; i++)
+                        VrPros[i].VisualShot.End(Position);
+                }
             }
         }
 

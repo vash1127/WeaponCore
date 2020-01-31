@@ -65,6 +65,7 @@ namespace WeaponCore.Projectiles
 
                 if (p.DynamicGuidance)
                     DynTrees.UnregisterProjectile(p);
+
                 p.PruningProxyId = -1;
 
                 p.Info.Clean();
@@ -110,7 +111,6 @@ namespace WeaponCore.Projectiles
 
                 if (p.EnableAv) 
                     p.Info.AvShot.OnScreen = Screen.None;
-
                 if (p.AccelLength > 0)
                 {
                     if (p.SmartsOn) p.RunSmart();
@@ -314,6 +314,12 @@ namespace WeaponCore.Projectiles
             foreach (var p in ActiveProjetiles)
             {
                 if (!p.EnableAv || !p.Miss || (int)p.State > 3) continue;
+                if (p.Info.MuzzleId == -1)
+                {
+                    p.CreateFakeBeams(true);
+                    continue;
+                }
+
                 if (p.SmartsOn)
                 {
                     if (p.EnableAv && Vector3D.Dot(p.VisualDir, p.AccelDir) < Session.VisDirToleranceCosine)
@@ -331,7 +337,6 @@ namespace WeaponCore.Projectiles
                         p.VisualStep = 0;
                     }
                 }
-
 
                 if (p.Info.System.DrawLine || p.ModelState == EntityState.None && p.Info.System.AmmoParticle)
                 {
@@ -379,10 +384,6 @@ namespace WeaponCore.Projectiles
                     else if (!p.ParticleStopped && p.AmmoEffect != null)
                         p.DisposeAmmoEffect(false, true);
                 }
-
-                if (p.Info.MuzzleId == -1)
-                    p.CreateFakeBeams(true);
-
             }
         }
     }

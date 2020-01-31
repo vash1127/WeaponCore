@@ -120,7 +120,6 @@ namespace WeaponCore.Platform
 
                 muzzle.LastShot = tick;
                 if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
-
                 for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++)
                 {
                     if (System.Values.HardPoint.DeviateShotAngle > 0)
@@ -151,12 +150,16 @@ namespace WeaponCore.Platform
                         info.InitVirtual(System, Comp.Ai, primeE, triggerE, Target, WeaponId, muzzle.MuzzleId, muzzle.Position, muzzle.DeviatedDir);
                         vProjectile.VrPros.Add(new VirtualProjectile { Info = info, VisualShot = session.Av.AvShotPool.Get() });
 
-                        if (System.RotateRealBeam && i == _nextVirtual)
+                        if (!System.RotateRealBeam) vProjectile.Info.WeaponCache.VirutalId = 0;
+                        else if (i == _nextVirtual)
                         {
+
                             vProjectile.Info.Origin = muzzle.Position;
                             vProjectile.Direction = muzzle.DeviatedDir;
                             vProjectile.Info.WeaponCache.VirutalId = _nextVirtual;
                         }
+
+                        Comp.Ai.Session.Projectiles.ActiveProjetiles.Add(vProjectile);
                     }
                     else
                     {
@@ -186,9 +189,9 @@ namespace WeaponCore.Platform
                         p.PredictedTargetPos = Target.TargetPos;
                         p.Direction = muzzle.DeviatedDir;
                         p.State = Projectile.ProjectileState.Start;
-                        Comp.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
                         p.Info.PrimeEntity = System.PrimeModel ? System.PrimeEntityPool.Get() : null;
                         p.Info.TriggerEntity = System.TriggerModel ? session.TriggerEntityPool.Get() : null;
+                        Comp.Ai.Session.Projectiles.ActiveProjetiles.Add(p);
 
                         if (targetable)
                         {
