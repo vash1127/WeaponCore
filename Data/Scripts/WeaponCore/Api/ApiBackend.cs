@@ -31,7 +31,6 @@ namespace WeaponCore.Support
                 ["GetCoreTurrets"] = new Func<IList<MyDefinitionId>>(GetCoreTurrets),
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
                 ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
-                ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<Threat>>>(GetTurretTargetTypes),
@@ -49,7 +48,6 @@ namespace WeaponCore.Support
             {
                 ["SetTargetEntity"] = new Action<IMyEntity, IMyEntity, int>(SetTargetEntity),
                 ["FireOnce"] = new Action<IMyTerminalBlock>(FireOnce),
-                ["ToggleFire"] = new Action<IMyTerminalBlock, bool>(ToggleFire),
                 ["WeaponReady"] = new Func<IMyTerminalBlock, bool?>(WeaponReady),
                 ["GetMaxRange"] = new Func<IMyTerminalBlock, float?>(GetMaxRange),
                 ["GetTurretTargetTypes"] = new Func<IMyTerminalBlock, IList<IList<Threat>>>(GetTurretTargetTypes),
@@ -129,32 +127,6 @@ namespace WeaponCore.Support
             }
         }
 
-        private static void ToggleFire(IMyTerminalBlock weaponBlock, bool on)
-        {
-            WeaponComponent comp;
-            if (weaponBlock.Components.TryGet(out comp))
-            {
-                if (comp.Platform.State != Ready) return;
-                for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                {
-                    var w = comp.Platform.Weapons[i];
-
-                    if (!on && w.State.ManualShoot == ShootOn)
-                    {
-                        w.State.ManualShoot = ShootOff;
-                        w.StopShooting();
-                        comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                    }
-                    else if (on && w.State.ManualShoot != ShootOff)
-                        w.State.ManualShoot = ShootOn;
-                    else if (on)
-                    {
-                        w.State.ManualShoot = ShootOn;
-                        comp.Ai.ManualComps++;
-                    }
-                }
-            }
-        }
 
         private static bool? WeaponReady(IMyTerminalBlock weaponBlock)
         {

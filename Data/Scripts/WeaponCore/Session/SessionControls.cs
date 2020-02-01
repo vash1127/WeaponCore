@@ -186,6 +186,7 @@ namespace WeaponCore
 
         internal static void CreateShootActionSet<T>(string name, int id, Session session) where T : IMyTerminalBlock
         {
+            /*
             var action0 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_On_Off");
             action0.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
             action0.Name = new StringBuilder($"{name} Shoot On/Off");
@@ -307,7 +308,7 @@ namespace WeaponCore
             action2.ValidForGroups = false;
 
             MyAPIGateway.TerminalControls.AddAction<T>(action2);
-
+            */
             var action3 = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_{id}_Shoot_Once");
             action3.Icon = @"Textures\GUI\Icons\Actions\SwitchOff.dds";
             action3.Name = new StringBuilder($"{name} Shoot Once");
@@ -344,7 +345,7 @@ namespace WeaponCore
 
             MyAPIGateway.TerminalControls.AddAction<T>(action3);
         }
-
+        /*
         internal bool CheckWeaponManualState(IMyTerminalBlock block, int weaponHash)
         {
             var comp = block?.Components?.Get<WeaponComponent>();
@@ -361,6 +362,7 @@ namespace WeaponCore
 
             return false;
         }
+        */
 
         private void CustomControlHandler(IMyTerminalBlock block, List<IMyTerminalControl> controls)
         {
