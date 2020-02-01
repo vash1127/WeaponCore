@@ -107,7 +107,6 @@ namespace WeaponCore
                     s.SetTarget(closestEnt, ai);
                     return true;
                 }
-
                 ai.DummyTarget.Update(hitPos, closestEnt);
             }
 

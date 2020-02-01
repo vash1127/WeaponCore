@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            if (!directControl && !Casting && !System.Values.Ammo.Trajectory.Smarts.OverideTarget && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
+            if (!directControl && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
                 ShootRayCheck();
 
             var targetAiCnt = Comp.Ai.TargetAis.Count;

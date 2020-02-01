@@ -107,7 +107,6 @@ namespace WeaponCore
                                 var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
 
                                 w.TargetState = w.Target.State;
-                                Log.Line($"{w.System.WeaponName} - {w.Target.State} - {comp.Gunner} - {w.System.Values.Ammo.Trajectory.Smarts.OverideTarget}");
                                 if (w.Target.State == Targets.Acquired)
                                 {
 
@@ -198,8 +197,7 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
-
-                                w.SeekTarget = w.TrackTarget && (w.Target.State == Targets.Expired && gridAi.TargetingInfo.TargetInRange || comp.Gunner == Manual);
+                                w.SeekTarget = (w.TrackTarget && w.Target.State == Targets.Expired && gridAi.TargetingInfo.TargetInRange) || comp.Gunner == Manual;
                                 if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && w.Target.State != Targets.StillSeeking && comp.Gunner != Direct)
                                 {
                                     if (comp.Gunner != Manual) w.Target.State = Targets.StillSeeking;
@@ -263,14 +261,13 @@ namespace WeaponCore
                                         }
                                     }
 
-                                    if ((w.Target.State == Targets.Acquired && w.Target.IsAligned || w.State.ManualShoot != ShootOff) && (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick))
+                                    if ((w.Target.State == Targets.Acquired && (w.Target.IsAligned || w.State.ManualShoot != ShootOff) && (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick)))
                                     {
                                         if (!w.RequestedPower && !w.System.MustCharge)
                                         {
                                             gridAi.RequestedWeaponsDraw += w.RequiredPower;
                                             w.RequestedPower = true;
                                         }
-
                                         ShootingWeapons.Add(w);
                                     }
                                     else if (w.ChargeUntilTick > Tick && !w.System.MustCharge)
@@ -412,6 +409,7 @@ namespace WeaponCore
 
                     if (checkTime || gridAi.TargetResetTick == Tick && w.Target.State == Targets.Acquired)
                     {
+
                         var comp = w.Comp;
                         var weaponEnabled = !comp.State.Value.Online || w.Set.Enable;
 
@@ -445,7 +443,11 @@ namespace WeaponCore
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
-                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !w.Target.IsAligned && w.State.ManualShoot == ShootOff || w.Comp.Gunner == Manual && !w.Target.IsFakeTarget)
+                    var aimNoFake = w.Comp.Gunner == Manual && !w.Target.IsFakeTarget;
+                    var noValidTarget = w.State.ManualShoot == ShootOff && !w.Target.IsAligned;
+                    var invalidAimState = (w.State.ManualShoot == ShootClick && !w.Comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootOn && w.Comp.Set.Value.Overrides.ManualFire);
+                    var notReady = aimNoFake || noValidTarget || w.Comp.Gunner == Manual && invalidAimState;
+                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || notReady)
                     {
                         ShootingWeapons.RemoveAtFast(i);
                         continue;

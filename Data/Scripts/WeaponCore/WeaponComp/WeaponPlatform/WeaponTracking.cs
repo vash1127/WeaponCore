@@ -13,7 +13,7 @@ namespace WeaponCore.Platform
     {
         internal static bool CanShootTarget(Weapon weapon, Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
         {
-            var manulControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
+            var manualControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
@@ -61,7 +61,7 @@ namespace WeaponCore.Platform
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            return (inRange || manulControl) && canTrack;
+            return (inRange && canTrack) || manualControl && !weapon.TrackTarget;
         }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel)

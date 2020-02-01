@@ -23,6 +23,7 @@ namespace WeaponCore.Support
             w.Target.CheckTick = tick;
             var targetType = TargetType.None;
             w.UpdatePivotPos();
+
             if (w.Comp.Gunner != WeaponComponent.Control.Manual)
             {
                 w.AimCone.ConeDir = w.MyPivotDir;
@@ -42,7 +43,7 @@ namespace WeaponCore.Support
                 if (Weapon.CanShootTarget(w, w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
                 {
                     w.Target.SetFake(predictedPos);
-                    if (w.System.Values.Ammo.Trajectory.Smarts.OverideTarget || !w.MuzzleHitSelf())
+                    if (w.System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None || !w.MuzzleHitSelf())
                         targetType = TargetType.Other;
                 }
             }
