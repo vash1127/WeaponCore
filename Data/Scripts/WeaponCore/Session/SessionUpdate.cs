@@ -197,6 +197,7 @@ namespace WeaponCore
                                 ///
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
+
                                 w.SeekTarget = (w.TrackTarget && w.Target.State == Targets.Expired && gridAi.TargetingInfo.TargetInRange) || comp.Gunner == Manual;
                                 if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && w.Target.State != Targets.StillSeeking && comp.Gunner != Direct)
                                 {
@@ -246,7 +247,15 @@ namespace WeaponCore
                                     if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAv = !w.PlayTurretAv;
                                 }
 
-                                if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || (w.State.ManualShoot == ShootOff && w.AiReady && !directControl) || ((w.State.ManualShoot == ShootClick || directControl) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
+                                var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
+                                var validShootStates = !w.Comp.Set.Value.Overrides.ManualFire && (comp.Gunner == Manual && w.Target.IsFakeTarget || w.State.ManualShoot == ShootOn) || w.State.ManualShoot == ShootClick || w.State.ManualShoot == ShootOnce || w.AiReady && w.State.ManualShoot == ShootOff;
+                                var cameraShot = gunControl && w.Comp.Set.Value.Overrides.ManualFire && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
+                                Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - validShootStates:{validShootStates} - cameraShot:{cameraShot}");
+                                Log.Line($"            : canShoot [1:{!comp.Overheated}] [2:{!reloading}] [3:{!w.System.DesignatorWeapon}]");
+                                Log.Line($"            : validShootStates [1:{comp.Gunner == Manual && w.Target.IsFakeTarget}] [2:{w.State.ManualShoot == ShootClick}] [3:{w.State.ManualShoot == ShootOnce}] [4:{w.State.ManualShoot == ShootOn && !w.Comp.Set.Value.Overrides.ManualFire}] [5:{w.AiReady && w.State.ManualShoot == ShootOff}]");
+                                Log.Line($"            : cameraShot [1:{gunControl}:{w.Comp.Set.Value.Overrides.ManualFire}] [2:{!gridAi.SupressMouseShoot}] [3:{(j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight)}]");
+
+                                if (canShoot && (validShootStates || cameraShot))
                                 {
                                     if ((gridAi.AvailablePowerChanged || gridAi.RequestedPowerChanged || (w.RecalcPower && Tick60)) && !w.System.MustCharge)
                                     {
@@ -261,7 +270,7 @@ namespace WeaponCore
                                         }
                                     }
 
-                                    if ((w.Target.State == Targets.Acquired && (w.Target.IsAligned || w.State.ManualShoot != ShootOff) && (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick)))
+                                    if (w.ChargeDelayTicks == 0 || w.ChargeUntilTick <= Tick)
                                     {
                                         if (!w.RequestedPower && !w.System.MustCharge)
                                         {
@@ -443,11 +452,7 @@ namespace WeaponCore
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
-                    var aimNoFake = w.Comp.Gunner == Manual && !w.Target.IsFakeTarget;
-                    var noValidTarget = w.State.ManualShoot == ShootOff && !w.Target.IsAligned;
-                    var invalidAimState = (w.State.ManualShoot == ShootClick && !w.Comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootOn && w.Comp.Set.Value.Overrides.ManualFire);
-                    var notReady = aimNoFake || noValidTarget || w.Comp.Gunner == Manual && invalidAimState;
-                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || notReady)
+                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                     {
                         ShootingWeapons.RemoveAtFast(i);
                         continue;
