@@ -1,12 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using Sandbox.ModAPI;
-using VRage.Collections;
-using VRage.Game.Components;
-using VRage.Game.Entity;
-using VRage.Game.VisualScripting;
-using VRage.Utils;
-using VRageMath;
 using WeaponCore.Platform;
 using static WeaponCore.Support.GridAi;
 namespace WeaponCore.Support
@@ -100,33 +92,11 @@ namespace WeaponCore.Support
         public void StopAllGraphics()
         {
             foreach (var w in Platform.Weapons)
-            {
-                foreach (var barrels in w.BarrelAvUpdater)
-                {
-                    var id = barrels.Key.MuzzleId;
-                    if (w.System.BarrelEffect1)
-                    {
-                        if (w.BarrelEffects1?[id] != null)
-                        {
-                            w.BarrelEffects1[id].Stop(true);
-                            w.BarrelEffects1[id] = null;
-                        }
-                    }
-                    if (w.System.BarrelEffect2)
-                    {
-                        if (w.BarrelEffects2?[id] != null)
-                        {
-                            w.BarrelEffects2[id].Stop(true);
-                            w.BarrelEffects2[id] = null;
-                        }
-                    }
-                    if (w.HitEffects?[id] != null)
-                    {
-                        w.HitEffects[id].Stop(true);
-                        w.HitEffects[id] = null;
-                    }
-                }
-            }
+                w.StopBarrelAv = true;
+
+            Session.Av.RunAvBarrels1();
+            Session.Av.RunAvBarrels2();
+
         }
 
         public void StopAllAv()

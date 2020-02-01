@@ -110,7 +110,6 @@ namespace WeaponCore.Platform
 
                 if (!System.EnergyAmmo || System.IsHybrid)
                 {
-
                     if (State.CurrentAmmo == 0) break;
                     State.CurrentAmmo--;
                 }
@@ -118,8 +117,23 @@ namespace WeaponCore.Platform
                 if (System.HasBackKickForce && !Comp.Ai.IsStatic)
                     Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
 
-                muzzle.LastShot = tick;
-                if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
+                if (PlayTurretAv)
+                {
+                    if (System.BarrelEffect1 && tick - muzzle.LastAv1Tick > System.Barrel1AvTicks && !muzzle.Av1Looping)
+                    {
+                        muzzle.LastAv1Tick = tick;
+                        muzzle.Av1Looping = System.Values.Graphics.Particles.Barrel1.Extras.Loop;
+                        session.Av.AvBarrels1.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
+                    }
+
+                    if (System.BarrelEffect2 && tick - muzzle.LastAv2Tick > System.Barrel2AvTicks && !muzzle.Av2Looping)
+                    {
+                        muzzle.LastAv2Tick = tick;
+                        muzzle.Av2Looping = System.Values.Graphics.Particles.Barrel2.Extras.Loop;
+                        session.Av.AvBarrels2.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
+                    }
+                }
+
                 for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++)
                 {
                     if (System.Values.HardPoint.DeviateShotAngle > 0)

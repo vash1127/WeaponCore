@@ -41,7 +41,6 @@ namespace WeaponCore.Projectiles
         internal Vector3? LastHitEntVel;
         internal Hit Hit = new Hit();
         internal BoundingSphereD TestSphere = new BoundingSphereD(Vector3D.Zero, 200f);
-        //internal BoundingSphereD ModelSphereLast;
         internal BoundingSphereD PruneSphere;
         internal double AccelLength;
         internal double DistanceToTravelSqr;

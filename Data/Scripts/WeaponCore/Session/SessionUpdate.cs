@@ -241,7 +241,7 @@ namespace WeaponCore
                                 ///
 
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
-                                if (w.AvCapable && (!w.PlayTurretAv || Tick60))
+                                if (w.AvCapable && (!w.PlayTurretAv || Tick60)) 
                                     w.PlayTurretAv = Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < w.System.HardPointAvMaxDistSqr;
 
                                 if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || (w.State.ManualShoot == ShootOff && w.AiReady && !directControl) || ((w.State.ManualShoot == ShootClick || directControl) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
@@ -278,10 +278,7 @@ namespace WeaponCore
                                 else if (w.IsShooting)
                                     w.StopShooting();
 
-                                if (w.PlayTurretAv && w.BarrelAvUpdater.Reader.Count > 0)
-                                    w.ShootGraphics();
-                                else if (w.BarrelAvUpdater.Reader.Count > 0)
-                                    w.ShootGraphics(true);
+                                w.StopBarrelAv = !w.PlayTurretAv;
                             }
                         }
                     }

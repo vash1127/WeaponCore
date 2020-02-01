@@ -546,11 +546,11 @@ namespace WeaponCore.Support
             var hardPointSound = string.Concat(Arc, Values.Audio.HardPoint.HardPointRotationSound);
             var noAmmoSound = string.Concat(Arc, Values.Audio.HardPoint.NoAmmoSound);
 
-            if (Values.Graphics.Particles.Barrel1.Extras.MaxDistance > HardPointAvMaxDistSqr)
-                HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel1.Extras.MaxDistance;
+            if (Values.Graphics.Particles.Barrel1.Extras.MaxDistance * Values.Graphics.Particles.Barrel1.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel1.Extras.MaxDistance * Values.Graphics.Particles.Barrel1.Extras.MaxDistance;
 
-            if (Values.Graphics.Particles.Barrel2.Extras.MaxDistance > HardPointAvMaxDistSqr)
-                HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel2.Extras.MaxDistance;
+            if (Values.Graphics.Particles.Barrel2.Extras.MaxDistance  * Values.Graphics.Particles.Barrel2.Extras.MaxDistance > HardPointAvMaxDistSqr)
+                HardPointAvMaxDistSqr = Values.Graphics.Particles.Barrel2.Extras.MaxDistance * Values.Graphics.Particles.Barrel2.Extras.MaxDistance;
 
             foreach (var def in Session.SoundDefinitions)
             {
