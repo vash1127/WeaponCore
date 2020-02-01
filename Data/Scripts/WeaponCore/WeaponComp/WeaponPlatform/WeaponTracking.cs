@@ -124,8 +124,8 @@ namespace WeaponCore.Platform
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
 
-            var targetCenter = target.IsFakeTarget ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
             var manulControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
+            var targetCenter = manulControl ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
 
             if (weapon.System.NeedsPrediction)
             {
@@ -176,9 +176,9 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
             var system = weapon.System;
 
-            var targetCenter = target.IsFakeTarget ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
-            var directControl = weapon.Comp.Gunner == WeaponComponent.Control.Direct;
             var manulControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
+            var targetCenter = manulControl ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            var directControl = weapon.Comp.Gunner == WeaponComponent.Control.Direct;
 
             if (weapon.System.NeedsPrediction)
             {
@@ -308,7 +308,6 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = Comp.Session.Tick;
             }
             var predictedPos = TrajectoryEstimation(targetPos, targetLinVel, targetAccel, Comp.Session.MaxEntitySpeed, MyPivotPos, Comp.Ai.GridVel, System.DesiredProjectileSpeed, 0, System.Values.Ammo.Trajectory.AccelPerSec, 0, Vector3D.Zero, System.Prediction != Prediction.Advanced);
-            //DsDebugDraw.DrawSingleVec(predictedPos, 2.5f, Color.Red);
             return predictedPos;
         }
 

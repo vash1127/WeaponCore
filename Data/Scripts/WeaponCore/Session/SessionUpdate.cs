@@ -107,13 +107,13 @@ namespace WeaponCore
                                 var targetLost = w.TargetState == Targets.Acquired && w.Target.State != Targets.Acquired;
 
                                 w.TargetState = w.Target.State;
-                                
+                                Log.Line($"{w.System.WeaponName} - {w.Target.State} - {comp.Gunner} - {w.System.Values.Ammo.Trajectory.Smarts.OverideTarget}");
                                 if (w.Target.State == Targets.Acquired)
                                 {
 
-                                    if (w.Target.Entity == null && w.Target.Projectile == null && (!w.Target.IsFakeTarget || w.Target.IsFakeTarget && gridAi.DummyTarget.ClearTarget))
+                                    if (w.Target.Entity == null && w.Target.Projectile == null && (comp.Gunner != Manual || gridAi.DummyTarget.ClearTarget))
                                     {
-                                        w.Target.Reset(true);
+                                        w.Target.Reset(comp.Gunner != Manual);
                                     }
                                     else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose)
                                     {
@@ -130,8 +130,7 @@ namespace WeaponCore
 
                                         if (!Weapon.TrackingTarget(w, w.Target))
                                         {
-
-                                            w.Target.Reset();
+                                            w.Target.Reset(comp.Gunner != Manual);
                                         }
                                     }
                                     else
@@ -168,6 +167,7 @@ namespace WeaponCore
 
                                 if (directControl && UiInput.MouseButtonPressed)
                                     w.Target.TargetPos = Vector3D.Zero;
+
                                 ///
                                 /// Set weapon Ai state
                                 /// 
@@ -199,10 +199,10 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
 
-                                w.SeekTarget = w.TrackTarget && w.Target.State == Targets.Expired && (gridAi.TargetingInfo.TargetInRange || comp.Gunner == Manual);
+                                w.SeekTarget = w.TrackTarget && (w.Target.State == Targets.Expired && gridAi.TargetingInfo.TargetInRange || comp.Gunner == Manual);
                                 if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && w.Target.State != Targets.StillSeeking && comp.Gunner != Direct)
                                 {
-                                    w.Target.State = Targets.StillSeeking;
+                                    if (comp.Gunner != Manual) w.Target.State = Targets.StillSeeking;
                                     AcquireTargets.Add(w);
                                 }
                                 else if (w.IsTurret && !w.TrackTarget && w.Target.State != Targets.Acquired && gridAi.TargetingInfo.TargetInRange)

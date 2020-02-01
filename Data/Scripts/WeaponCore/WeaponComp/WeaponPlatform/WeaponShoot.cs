@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            if (!directControl && !Casting && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
+            if (!directControl && !Casting && !System.Values.Ammo.Trajectory.Smarts.OverideTarget && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
                 ShootRayCheck();
 
             var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -344,8 +344,8 @@ namespace WeaponCore.Platform
 
             if (System.Values.HardPoint.MuzzleCheck && MuzzleHitSelf())
             {
-                masterWeapon.Target.Reset();
-                if (masterWeapon != this) Target.Reset();
+                masterWeapon.Target.Reset(Comp.Gunner != WeaponComponent.Control.Manual);
+                if (masterWeapon != this) Target.Reset(Comp.Gunner != WeaponComponent.Control.Manual);
                 return;
             }
 
@@ -355,6 +355,8 @@ namespace WeaponCore.Platform
                 Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return;
             }
+            if (Comp.Gunner == WeaponComponent.Control.Manual) return;
+
 
             if (Target.Projectile != null)
             {
@@ -498,8 +500,8 @@ namespace WeaponCore.Platform
             {
                 if (grid.IsSameConstructAs(Comp.MyCube.CubeGrid))
                 {
-                    masterWeapon.Target.Reset(true);
-                    if (masterWeapon != this) Target.Reset(true);
+                    masterWeapon.Target.Reset(false);
+                    if (masterWeapon != this) Target.Reset(false);
                 }
             }
         }
@@ -510,8 +512,15 @@ namespace WeaponCore.Platform
             {
                 var m = Muzzles[i];
                 var grid = Comp.Ai.MyGrid;
+                var dummy = Dummies[i];
+                var newInfo = dummy.Info;
+                m.Direction = newInfo.Direction;
+                m.Position = newInfo.Position;
+                m.LastUpdateTick = Comp.Session.Tick;
+
                 var start = m.Position;
-                var end = m.Position + m.Direction * grid.PositionComp.LocalVolume.Radius;
+                var end = m.Position + (m.Direction * grid.PositionComp.LocalVolume.Radius);
+
                 Vector3D? hit;
                 if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.MyCube))
                 {

@@ -23,7 +23,6 @@ namespace WeaponCore.Support
             w.Target.CheckTick = tick;
             var targetType = TargetType.None;
             w.UpdatePivotPos();
-
             if (w.Comp.Gunner != WeaponComponent.Control.Manual)
             {
                 w.AimCone.ConeDir = w.MyPivotDir;
@@ -42,20 +41,17 @@ namespace WeaponCore.Support
                 Vector3D predictedPos;
                 if (Weapon.CanShootTarget(w, w.Comp.Ai.DummyTarget.Position, w.Comp.Ai.DummyTarget.LinearVelocity, w.Comp.Ai.DummyTarget.Acceleration, out predictedPos))
                 {
-                    Vector3D? hitPos;
-                    if (!GridIntersection.BresenhamGridIntersection(w.Comp.Ai.MyGrid, ref w.MyPivotPos, ref predictedPos, out hitPos, w.Comp.MyCube))
-                    {
+                    w.Target.SetFake(predictedPos);
+                    if (w.System.Values.Ammo.Trajectory.Smarts.OverideTarget || !w.MuzzleHitSelf())
                         targetType = TargetType.Other;
-                        w.Target.SetFake(predictedPos);
-                    }
                 }
             }
 
             if (targetType == TargetType.None)
             {
-                w.NewTarget.Reset();
+                w.NewTarget.Reset(true, true);
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Reset(w.Comp.Gunner == WeaponComponent.Control.Manual);
+                w.Target.Reset(w.Comp.Gunner != WeaponComponent.Control.Manual, true);
             }
             else w.WakeTargets();
         }

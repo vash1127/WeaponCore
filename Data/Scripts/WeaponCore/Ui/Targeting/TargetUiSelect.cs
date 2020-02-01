@@ -87,7 +87,7 @@ namespace WeaponCore
 
                 if (hitGrid != null && hitGrid.IsSameConstructAs(ai.MyGrid))
                 {
-                    ai.DummyTarget.Clear();
+                    ai.DummyTarget.Update(end);
                     return false;
                 }
 
