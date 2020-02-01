@@ -498,8 +498,8 @@ namespace WeaponCore.Platform
             {
                 if (grid.IsSameConstructAs(Comp.MyCube.CubeGrid))
                 {
-                    masterWeapon.Target.Reset(true, false);
-                    if (masterWeapon != this) Target.Reset(true, false);
+                    masterWeapon.Target.Reset(true);
+                    if (masterWeapon != this) Target.Reset(true);
                 }
             }
         }

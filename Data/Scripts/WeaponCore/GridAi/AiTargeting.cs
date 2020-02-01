@@ -49,15 +49,13 @@ namespace WeaponCore.Support
                         w.Target.SetFake(predictedPos);
                     }
                 }
-                if (targetType == TargetType.None && w.Target.IsFakeTarget) w.Target.Reset(true, false);
             }
-
 
             if (targetType == TargetType.None)
             {
                 w.NewTarget.Reset();
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Reset(false);
+                w.Target.Reset(w.Comp.Gunner == WeaponComponent.Control.Manual);
             }
             else w.WakeTargets();
         }

@@ -297,7 +297,10 @@ namespace WeaponCore.Platform
             {
                 var muzzle = Muzzles[i];
                 muzzle.Av1Looping = false;
+                muzzle.LastAv1Tick = Comp.Session.Tick;
                 muzzle.Av2Looping = false;
+                muzzle.LastAv2Tick = Comp.Session.Tick;
+
             }
             _barrelRate = 0;
             if (!avOnly)

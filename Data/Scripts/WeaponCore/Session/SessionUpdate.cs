@@ -113,8 +113,7 @@ namespace WeaponCore
 
                                     if (w.Target.Entity == null && w.Target.Projectile == null && (!w.Target.IsFakeTarget || w.Target.IsFakeTarget && gridAi.DummyTarget.ClearTarget))
                                     {
-
-                                        w.Target.Reset(true, !w.Target.IsFakeTarget);
+                                        w.Target.Reset(true);
                                     }
                                     else if (w.Target.Entity != null && w.Target.Entity.MarkedForClose)
                                     {
@@ -241,8 +240,13 @@ namespace WeaponCore
                                 ///
 
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
-                                if (w.AvCapable && (!w.PlayTurretAv || Tick60)) 
+                                
+                                if (w.AvCapable && (!w.PlayTurretAv || Tick60))
+                                {
+                                    var avWasEnabled = w.PlayTurretAv;
                                     w.PlayTurretAv = Vector3D.DistanceSquared(CameraPos, w.MyPivotPos) < w.System.HardPointAvMaxDistSqr;
+                                    if (avWasEnabled != w.PlayTurretAv) w.StopBarrelAv = !w.PlayTurretAv;
+                                }
 
                                 if (!comp.Overheated && !reloading && !w.System.DesignatorWeapon && (w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || (w.State.ManualShoot == ShootOff && w.AiReady && !directControl) || ((w.State.ManualShoot == ShootClick || directControl) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight))))
                                 {
@@ -278,7 +282,6 @@ namespace WeaponCore
                                 else if (w.IsShooting)
                                     w.StopShooting();
 
-                                w.StopBarrelAv = !w.PlayTurretAv;
                             }
                         }
                     }
@@ -442,7 +445,7 @@ namespace WeaponCore
                 using (w.Comp.MyCube.Pin())
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
-                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !w.Target.IsAligned && w.State.ManualShoot == ShootOff)
+                    if (w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.Platform.State != MyWeaponPlatform.PlatformState.Ready || !w.Target.IsAligned && w.State.ManualShoot == ShootOff || w.Comp.Gunner == Manual && !w.Target.IsFakeTarget)
                     {
                         ShootingWeapons.RemoveAtFast(i);
                         continue;
