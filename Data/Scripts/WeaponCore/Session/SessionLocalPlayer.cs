@@ -26,7 +26,6 @@ namespace WeaponCore
 
             TrackingAi = null;
             ActiveCockPit = null;
-            //RemoveGps();
             return false;
         }
 

@@ -195,9 +195,9 @@ namespace WeaponCore
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var validShootStates = !w.Comp.Set.Value.Overrides.ManualFire && comp.Gunner == Manual && w.Target.IsFakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
                                 var manualShot = (gunControl && w.Comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
-                                Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - validShootStates:{validShootStates} - manualShot:{manualShot} ({w.State.ManualShoot})");
-                                Log.Line($"            : validShootStates [1:{!w.Comp.Set.Value.Overrides.ManualFire && (comp.Gunner == Manual && w.Target.IsFakeTarget || w.State.ManualShoot == ShootOn)}] [2:{w.State.ManualShoot == ShootOnce}] [3:{w.AiShooting && w.State.ManualShoot == ShootOff}]");
-                                Log.Line($"            : manualShot [1:{(gunControl && w.Comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootClick)} [2:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight)}]");
+                                //Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - validShootStates:{validShootStates} - manualShot:{manualShot} ({w.State.ManualShoot})");
+                                //Log.Line($"            : validShootStates [1:{!w.Comp.Set.Value.Overrides.ManualFire && (comp.Gunner == Manual && w.Target.IsFakeTarget && w.State.ManualShoot != ShootClick || w.State.ManualShoot == ShootOn)}] [2:{w.State.ManualShoot == ShootOnce}] [3:{w.AiShooting && w.State.ManualShoot == ShootOff}]");
+                                //Log.Line($"            : manualShot [1:{(gunControl && w.Comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootClick)} [2:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight)}]");
 
                                 if (canShoot && (validShootStates || manualShot)) {
 
