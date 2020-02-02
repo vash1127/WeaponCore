@@ -24,6 +24,7 @@ namespace WeaponCore.Projectiles
             var lineCheck = p.Info.System.CollisionIsLine;
             var planetBeam = beam;
             planetBeam.To = p.Info.System.IsBeamWeapon && p.MaxTrajectory > 1500 ? beam.From + (beam.Direction * 1500) : beam.To;
+            bool projetileInShield = false;
             for (int i = 0; i < p.SegmentList.Count; i++)
             {
                 var ent = p.SegmentList[i].Element;
@@ -41,6 +42,8 @@ namespace WeaponCore.Projectiles
                         if (ent.Physics != null && ent.Physics.IsPhantom)
                         {
                             dist = MathFuncs.IntersectEllipsoid(shieldInfo.Value.Item3.Item1, shieldInfo.Value.Item3.Item2, new RayD(beam.From, beam.Direction));
+                            if (p.Info.Target.IsProjectile && Vector3D.Transform(p.Info.Target.Projectile.Position, shieldInfo.Value.Item3.Item1).LengthSquared() <= 1)
+                                projetileInShield = true;
                         }
 
                         if (dist != null && dist.Value < beam.Length && !p.Info.Ai.MyGrid.IsSameConstructAs(shieldInfo.Value.Item1.CubeGrid))
@@ -155,7 +158,7 @@ namespace WeaponCore.Projectiles
                 }
             }
 
-            if (p.Info.Target.IsProjectile && !p.Info.System.EwarEffect)
+            if (p.Info.Target.IsProjectile && !p.Info.System.EwarEffect && !projetileInShield)
             {
                 var detonate = p.State == Projectile.ProjectileState.Detonate;
                 var hitTolerance = detonate ? p.Info.System.Values.Ammo.AreaEffect.Detonation.DetonationRadius : p.Info.System.AreaEffectSize > p.Info.System.CollisionSize ? p.Info.System.AreaEffectSize : p.Info.System.CollisionSize;
@@ -168,7 +171,7 @@ namespace WeaponCore.Projectiles
                 testSphere.Radius = hitTolerance;
 
                 if (rayCheck || sphere.Intersects(testSphere))
-                    found = ProjectileHit(p, p.Info.Target.Projectile, lineCheck);
+                    found = ProjectileHit(p, p.Info.Target.Projectile, lineCheck, ref beam);
             }
             p.SegmentList.Clear();
 
@@ -176,7 +179,7 @@ namespace WeaponCore.Projectiles
             return found && GenerateHitInfo(p);
         }
 
-        internal bool ProjectileHit(Projectile attacker, Projectile target, bool lineCheck)
+        internal bool ProjectileHit(Projectile attacker, Projectile target, bool lineCheck, ref LineD beam)
         {
             var hitEntity = HitEntityPool.Get();
             hitEntity.Clean();
@@ -187,6 +190,9 @@ namespace WeaponCore.Projectiles
             hitEntity.HitPos = attacker.Position;
             hitEntity.SphereCheck = !lineCheck;
             hitEntity.PruneSphere = attacker.PruneSphere;
+            double dist;
+            Vector3D.Distance(ref beam.From, ref target.Position, out dist);
+            hitEntity.HitDist = dist;
 
             hitEntity.Intersection = new LineD(attacker.LastPosition, target.Position);
             attacker.Info.HitList.Add(hitEntity);
@@ -268,7 +274,7 @@ namespace WeaponCore.Projectiles
                 var dist = double.MaxValue;
                 if (hitEnt.Projectile != null)
                 {
-                    dist = Vector3D.Distance(hitEnt.HitPos.Value, beam.From);
+                    dist = hitEnt.HitDist.Value;
                     hitEnt.Hit = true;
                     hitEnt.HitPos = hitEnt.Projectile.Position;
                 }

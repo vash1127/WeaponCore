@@ -247,7 +247,7 @@ namespace WeaponCore.Projectiles
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
-                                    ProjectileHit(p, lp, p.Info.System.CollisionIsLine);
+                                    ProjectileHit(p, lp, p.Info.System.CollisionIsLine, ref beam);
 
                         checkList.Clear();
                         CheckPool.Return(checkList);

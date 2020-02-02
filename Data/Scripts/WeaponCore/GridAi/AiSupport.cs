@@ -419,6 +419,7 @@ namespace WeaponCore.Support
             return deck;
         }
 
+
         internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
         {
             if (entity == null)
@@ -761,26 +762,16 @@ namespace WeaponCore.Support
 
                 using (FakeShipController.CubeGrid?.Pin())
                 {
-                    if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null)
+                    if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null || FakeShipController.GridResourceDistributor != PowerDistributor)
                     {
-                        //FatMap fatMap;
-                        //if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
                         if (Weapons.Count > 0)
                         {
-                            //FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
                             FakeShipController.SlimBlock = Weapons[Weapons.Count - 1].MyCube.SlimBlock;
                             PowerDistributor = FakeShipController.GridResourceDistributor;
                             if (PowerDistributor == null)
-                            {
-                                Log.Line($"failed to get power dist, still null");
                                 return;
-                            }
                         }
-                        else
-                        {
-                            Log.Line($"no-fatmap for power dist: {MyGrid.MarkedForClose} - PowerDistNull:{PowerDistributor == null} - FakeSlimNull:{FakeShipController.SlimBlock == null} - FakeCubeGridNull:{FakeShipController.CubeGrid == null} - FakeTopNull:{FakeShipController.TopGrid == null}");
-                            return;
-                        }
+                        else return;
                     }
 
                     if (PowerDistributor == null)
