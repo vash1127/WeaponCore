@@ -51,11 +51,11 @@ namespace WeaponCore.Control
                         }
                     };
                 }
-                /*else if (a.Id.Equals("OnOff"))
+                else if (a.Id.Equals("OnOff"))
                 {
                     a.Enabled = (IMyTerminalBlock b) => true;
                     a.Writer = (block, strBuild) => strBuild.Append("Code For on/of values");
-                }*/
+                }
             }
             return false;
         }
@@ -84,7 +84,6 @@ namespace WeaponCore.Control
             for (int i = isTurretType ? 14 : 0; i < controls.Count; i++)
             {
                 var c = controls[i];
-                //Log.Line($"Count: {i} ID:{c.Id}");
 
                 if(!visibleControls.Contains(c.Id))
                     c.Visible = b => !b.Components.Has<WeaponComponent>();

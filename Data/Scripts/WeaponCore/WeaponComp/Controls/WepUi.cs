@@ -8,6 +8,7 @@ namespace WeaponCore
 {
     internal static class WepUi
     {
+
         internal static bool GetGuidance(IMyTerminalBlock block, int wepId)
         {
             var comp = block?.Components?.Get<WeaponComponent>();

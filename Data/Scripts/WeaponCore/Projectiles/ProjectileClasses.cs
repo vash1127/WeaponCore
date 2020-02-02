@@ -66,7 +66,7 @@ namespace WeaponCore.Support
 
         internal void Clean()
         {
-            Target.Reset();
+            Target.Reset(true, true);
             HitList.Clear();
 
             if (PrimeEntity != null)

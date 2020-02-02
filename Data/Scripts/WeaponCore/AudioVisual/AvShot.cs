@@ -140,7 +140,6 @@ namespace WeaponCore.Support
             ShootVelStep = info.ShooterVel * MyEngineConstants.PHYSICS_STEP_SIZE_IN_SECONDS;
             info.Ai.WeaponBase.TryGetValue(info.Target.FiringCube, out FiringWeapon);
             ShrinkInited = false;
-
             if (System.DrawLine) Tracer = !System.IsBeamWeapon && firstStepSize < MaxTracerLength && !MyUtils.IsZero(firstStepSize - MaxTracerLength, 1E-01F) ? TracerState.Grow : TracerState.Full;
             else Tracer = TracerState.Off;
 

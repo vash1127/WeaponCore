@@ -313,12 +313,13 @@ namespace WeaponCore.Projectiles
         {
             foreach (var p in ActiveProjetiles)
             {
-                if (!p.EnableAv || !p.Miss || (int)p.State > 3) continue;
+                if (!p.Miss || (int)p.State > 3) continue;
                 if (p.Info.MuzzleId == -1)
                 {
                     p.CreateFakeBeams(true);
                     continue;
                 }
+                if (!p.EnableAv) continue;
 
                 if (p.SmartsOn)
                 {

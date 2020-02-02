@@ -25,21 +25,6 @@ namespace WeaponCore.Platform
             obj.OnMarkForClose -= EntPartClose;
         }
 
-        public class Muzzle
-        {
-            public Muzzle(int id)
-            {
-                MuzzleId = id;
-            }
-
-            public Vector3D Position;
-            public Vector3D Direction;
-            public Vector3D DeviatedDir;
-            public uint LastShot;
-            public uint LastUpdateTick;
-            public int MuzzleId;
-        }
-
         internal void EventTriggerStateChanged(EventTriggers state, bool active, HashSet<string> muzzles = null)
         {
             var session = Comp.Session;
@@ -289,110 +274,6 @@ namespace WeaponCore.Platform
             }
         }
 
-        public void ShootGraphics(bool stop = false)
-        {
-            if (System.BarrelEffect1 || System.BarrelEffect2)
-            {
-                var removal = false;
-                var tick = Comp.Session.Tick;
-                if (Comp.Ai != null && Comp.Ai.VelocityUpdateTick != tick)
-                {
-                    Comp.Ai.GridVel = Comp.Ai.MyGrid.Physics?.LinearVelocity ?? Vector3D.Zero;
-                    Comp.Ai.IsStatic = Comp.Ai.MyGrid.Physics?.IsStatic ?? false;
-                    Comp.Ai.VelocityUpdateTick = tick;
-                }
-                foreach (var barrelPair in BarrelAvUpdater)
-                {
-                    var lastUpdateTick = barrelPair.Value;
-                    var muzzle = barrelPair.Key;
-                    var id = muzzle.MuzzleId;
-                    var dummy = Dummies[id];
-                    var ticksAgo = tick - lastUpdateTick;
-
-                    var particles = System.Values.Graphics.Particles;
-
-                    var pos = dummy.Info.Position;
-                    var entityExists = MuzzlePart.Item1?.Parent != null && !MuzzlePart.Item1.MarkedForClose;
-                    var matrix = MatrixD.Zero;
-                    if (entityExists) matrix = MatrixD.CreateWorld(pos, MyPivotDir, MyPivotUp);
-                    if (System.BarrelEffect1)
-                    {
-                        if (entityExists && ticksAgo <= System.Barrel1AvTicks && !stop)
-                        {
-                            if (BarrelEffects1[id] == null)
-                            {
-                                var matrix1 = matrix;
-                                matrix1.Translation += particles.Barrel1.Offset;
-                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel1.Name, ref matrix1, ref pos, uint.MaxValue, out BarrelEffects1[id]);
-                                if (BarrelEffects1[id] != null)
-                                {
-                                    BarrelEffects1[id].UserColorMultiplier = particles.Barrel1.Color;
-                                    BarrelEffects1[id].UserRadiusMultiplier = particles.Barrel1.Extras.Scale;
-                                    BarrelEffects1[id].DistanceMax = particles.Barrel1.Extras.MaxDistance;
-                                    BarrelEffects1[id].Loop = particles.Barrel1.Extras.Loop;
-                                    BarrelEffects1[id].WorldMatrix = matrix;
-                                    BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
-                                    BarrelEffects1[id].Play();
-                                }
-                            }
-                            else if (particles.Barrel1.Extras.Restart && BarrelEffects1[id].IsEmittingStopped)
-                            {
-                                BarrelEffects1[id].WorldMatrix = matrix;
-                                BarrelEffects1[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
-                                BarrelEffects1[id].Play();
-                            }
-                        }
-                        else if (BarrelEffects1[id] != null)
-                        {
-                            BarrelEffects1[id].Stop();
-                            BarrelEffects1[id] = null;
-                        }
-                    }
-
-                    if (System.BarrelEffect2)
-                    {
-                        if (entityExists && ticksAgo <= System.Barrel2AvTicks && !stop)
-                        {
-                            if (BarrelEffects2[id] == null)
-                            {
-                                var matrix1 = matrix;
-                                matrix1.Translation += particles.Barrel2.Offset;
-                                MyParticlesManager.TryCreateParticleEffect(particles.Barrel2.Name, ref matrix1, ref pos, uint.MaxValue, out BarrelEffects2[id]);
-                                if (BarrelEffects2[id] != null)
-                                {
-                                    BarrelEffects2[id].UserColorMultiplier = particles.Barrel2.Color;
-                                    BarrelEffects2[id].UserRadiusMultiplier = particles.Barrel2.Extras.Scale;
-                                    BarrelEffects2[id].DistanceMax = particles.Barrel2.Extras.MaxDistance;
-                                    BarrelEffects2[id].Loop = particles.Barrel2.Extras.Loop;
-                                    BarrelEffects2[id].WorldMatrix = matrix;
-                                    BarrelEffects2[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
-                                    BarrelEffects2[id].Play();
-                                }
-                            }
-                            else if (particles.Barrel2.Extras.Restart && BarrelEffects2[id].IsEmittingStopped)
-                            {
-                                BarrelEffects2[id].WorldMatrix = matrix;
-                                BarrelEffects2[id].Velocity = Comp.Ai?.GridVel ?? Vector3D.Zero;
-                                BarrelEffects2[id].Play();
-                            }
-                        }
-                        else if (BarrelEffects2[id] != null)
-                        {
-                            BarrelEffects2[id].Stop();
-                            BarrelEffects2[id] = null;
-                        }
-                    }
-
-                    if (ticksAgo > System.Barrel1AvTicks && ticksAgo > System.Barrel2AvTicks)
-                    {
-                        removal = true;
-                        BarrelAvUpdater.Remove(muzzle);
-                    }
-                }
-                if (removal) BarrelAvUpdater.ApplyRemovals();
-            }
-        }
-
         public void StartShooting()
         {
 
@@ -412,7 +293,15 @@ namespace WeaponCore.Platform
         {
             StopFiringSound(false);
             StopRotateSound();
-            ShootGraphics(true);
+            for (int i = 0; i < Muzzles.Length; i++)
+            {
+                var muzzle = Muzzles[i];
+                muzzle.Av1Looping = false;
+                muzzle.LastAv1Tick = Comp.Session.Tick;
+                muzzle.Av2Looping = false;
+                muzzle.LastAv2Tick = Comp.Session.Tick;
+
+            }
             _barrelRate = 0;
             if (!avOnly)
             {

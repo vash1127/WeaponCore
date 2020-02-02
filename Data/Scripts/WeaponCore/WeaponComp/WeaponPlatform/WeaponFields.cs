@@ -73,7 +73,6 @@ namespace WeaponCore.Platform
         internal readonly MyEntity3DSoundEmitter ReloadEmitter;
         internal readonly MyEntity3DSoundEmitter FiringEmitter;
         internal readonly MyEntity3DSoundEmitter RotateEmitter;
-        internal readonly CachingDictionary<Muzzle, uint> BarrelAvUpdater = new CachingDictionary<Muzzle, uint>();
         internal readonly Dictionary<EventTriggers, PartAnimation[]> AnimationsSet;
         internal readonly Dictionary<string, PartAnimation> AnimationLookup = new Dictionary<string, PartAnimation>();
         internal readonly bool TrackProjectiles;
@@ -119,7 +118,7 @@ namespace WeaponCore.Platform
         internal bool IsTurret;
         internal bool TurretMode;
         internal bool TrackTarget;
-        internal bool AiReady;
+        internal bool AiShooting;
         internal bool SeekTarget;
         internal bool TrackingAi;
         internal bool IsShooting;
@@ -139,7 +138,7 @@ namespace WeaponCore.Platform
         internal bool RecalcPower;
         internal bool ProjectilesNear;
         internal bool TargetChanged;
-
+        internal bool StopBarrelAv;
 
         public enum TerminalActionState
         {
@@ -163,6 +162,25 @@ namespace WeaponCore.Platform
             EmptyOnGameLoad,
             StopFiring,
             StopTracking
+        }
+
+        public class Muzzle
+        {
+            public Muzzle(int id)
+            {
+                MuzzleId = id;
+            }
+
+            public Vector3D Position;
+            public Vector3D Direction;
+            public Vector3D DeviatedDir;
+            public uint LastUpdateTick;
+            public uint LastAv1Tick;
+            public uint LastAv2Tick;
+            public int MuzzleId;
+            public bool Av1Looping;
+            public bool Av2Looping;
+
         }
 
         public Weapon(MyEntity entity, WeaponSystem system, int weaponId, WeaponComponent comp, Dictionary<EventTriggers, PartAnimation[]> animationSets)

@@ -87,6 +87,7 @@ namespace WeaponCore
                     CurrentWheel = MyAPIGateway.Input.MouseScrollWheelValue();
                 }
             }
+
             if (CurrentWheel != PreviousWheel && CurrentWheel > PreviousWheel)
                 WheelForward = true;
             else if (s.UiInput.CurrentWheel != s.UiInput.PreviousWheel)

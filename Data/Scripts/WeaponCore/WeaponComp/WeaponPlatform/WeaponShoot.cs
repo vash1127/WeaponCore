@@ -85,7 +85,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            if (!directControl && !Casting && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
+            if (!directControl && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
                 ShootRayCheck();
 
             var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -110,7 +110,6 @@ namespace WeaponCore.Platform
 
                 if (!System.EnergyAmmo || System.IsHybrid)
                 {
-
                     if (State.CurrentAmmo == 0) break;
                     State.CurrentAmmo--;
                 }
@@ -118,8 +117,23 @@ namespace WeaponCore.Platform
                 if (System.HasBackKickForce && !Comp.Ai.IsStatic)
                     Comp.Ai.MyGrid.Physics.AddForce(MyPhysicsForceType.APPLY_WORLD_IMPULSE_AND_WORLD_ANGULAR_IMPULSE, -muzzle.Direction * System.Values.Ammo.BackKickForce, muzzle.Position, Vector3D.Zero);
 
-                muzzle.LastShot = tick;
-                if (PlayTurretAv) BarrelAvUpdater.Add(muzzle, tick, true);
+                if (PlayTurretAv)
+                {
+                    if (System.BarrelEffect1 && tick - muzzle.LastAv1Tick > System.Barrel1AvTicks && !muzzle.Av1Looping)
+                    {
+                        muzzle.LastAv1Tick = tick;
+                        muzzle.Av1Looping = System.Values.Graphics.Particles.Barrel1.Extras.Loop;
+                        session.Av.AvBarrels1.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
+                    }
+
+                    if (System.BarrelEffect2 && tick - muzzle.LastAv2Tick > System.Barrel2AvTicks && !muzzle.Av2Looping)
+                    {
+                        muzzle.LastAv2Tick = tick;
+                        muzzle.Av2Looping = System.Values.Graphics.Particles.Barrel2.Extras.Loop;
+                        session.Av.AvBarrels2.Add(new AvBarrel { Weapon = this, Muzzle = muzzle, StartTick = tick });
+                    }
+                }
+
                 for (int j = 0; j < System.Values.HardPoint.Loading.TrajectilesPerBarrel; j++)
                 {
                     if (System.Values.HardPoint.DeviateShotAngle > 0)
@@ -327,11 +341,10 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
-
             if (System.Values.HardPoint.MuzzleCheck && MuzzleHitSelf())
             {
-                masterWeapon.Target.Reset();
-                if (masterWeapon != this) Target.Reset();
+                masterWeapon.Target.Reset(Comp.Gunner != WeaponComponent.Control.Manual);
+                if (masterWeapon != this) Target.Reset(Comp.Gunner != WeaponComponent.Control.Manual);
                 return;
             }
 
@@ -341,6 +354,8 @@ namespace WeaponCore.Platform
                 Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return;
             }
+            if (Comp.Gunner == WeaponComponent.Control.Manual) return;
+
 
             if (Target.Projectile != null)
             {
@@ -484,8 +499,8 @@ namespace WeaponCore.Platform
             {
                 if (grid.IsSameConstructAs(Comp.MyCube.CubeGrid))
                 {
-                    masterWeapon.Target.Reset(true, false);
-                    if (masterWeapon != this) Target.Reset(true, false);
+                    masterWeapon.Target.Reset(false);
+                    if (masterWeapon != this) Target.Reset(false);
                 }
             }
         }
@@ -496,8 +511,15 @@ namespace WeaponCore.Platform
             {
                 var m = Muzzles[i];
                 var grid = Comp.Ai.MyGrid;
+                var dummy = Dummies[i];
+                var newInfo = dummy.Info;
+                m.Direction = newInfo.Direction;
+                m.Position = newInfo.Position;
+                m.LastUpdateTick = Comp.Session.Tick;
+
                 var start = m.Position;
-                var end = m.Position + m.Direction * grid.PositionComp.LocalVolume.Radius;
+                var end = m.Position + (m.Direction * grid.PositionComp.LocalVolume.Radius);
+
                 Vector3D? hit;
                 if (GridIntersection.BresenhamGridIntersection(grid, ref start, ref end, out hit, Comp.MyCube))
                 {

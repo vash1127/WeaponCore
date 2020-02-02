@@ -77,7 +77,7 @@ namespace WeaponCore.Support
             State = Targets.Acquired;
         }
 
-        internal void Reset(bool expire = true, bool resetTimer = true)
+        internal void Reset(bool expire = true, bool dontLog = false)
         {
             Entity = null;
             IsProjectile = false;
@@ -91,9 +91,10 @@ namespace WeaponCore.Support
             TopEntityId = 0;
             if (expire)
             {
-                if (resetTimer) CheckTick = 0;
+                //if (!dontLog) Log.Line($"expired target: {State}");
                 State = Targets.Expired;
             }
+            //else if (!dontLog) Log.Line($"no expire: {State}");
             TargetLock = false;
         }
     }

@@ -111,7 +111,9 @@ namespace WeaponCore
                                 wepIDs.Add(wepID);
                             else
                                 continue;
+                            CreateShootActionSet<T>(wepName, wepID, session);
 
+                            /*
                             TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, (block, i) =>
                                 {
                                     var comp = block?.Components?.Get<WeaponComponent>();
@@ -120,7 +122,7 @@ namespace WeaponCore
                                     if (!comp.Platform.Structure.HashToId.TryGetValue(i, out weaponId)) return false;
                                     return comp.Platform.Weapons[weaponId].System.WeaponId == i;
                                 } );
-                            CreateShootActionSet<T>(wepName, wepID, session);
+                                */
                         }
                     }
                 }
