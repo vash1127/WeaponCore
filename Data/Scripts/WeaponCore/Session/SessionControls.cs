@@ -103,8 +103,8 @@ namespace WeaponCore
                         }
                         catch (Exception e)
                         {
-                            Log.Line($"Type: {wp.Key}");
-                            Log.Line($"WTF : {e.StackTrace}");
+                            //Log.Line($"Type: {wp.Key}");
+                            Log.Line($"Error In create controls : {e.StackTrace}");
                         }
                         if (IsWeaponBaseType(builderType, ob))
                         {
