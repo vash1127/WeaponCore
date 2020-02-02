@@ -53,10 +53,11 @@ namespace WeaponCore
                 else if (typeof(T) == typeof(IMyConveyorSorter))
                 {
                     builderType = new MyObjectBuilder_ConveyorSorterDefinition();
-                    TerminalHelpers.AddSlider<T>(-5, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, (b, i) => { var comp = b?.Components?.Get<WeaponComponent>(); return comp == null || comp.HasTurret; }, WepUi.GetMinRange, WepUi.GetMaxRange);
-
                     TerminalHelpers.AlterActions<T>();
                     TerminalHelpers.AlterControls<T>();
+                    TerminalHelpers.AddSlider<T>(-5, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, (b, i) => { var comp = b?.Components?.Get<WeaponComponent>(); return comp == null || comp.HasTurret; }, WepUi.GetMinRange, WepUi.GetMaxRange);
+
+                    
                 }
 
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
