@@ -78,7 +78,7 @@ namespace WeaponCore.Control
                 "CustomData",
                 "Control",
                 "Range",
-                "Shoot"
+                //"Shoot"
             };
 
             for (int i = isTurretType ? 14 : 0; i < controls.Count; i++)
