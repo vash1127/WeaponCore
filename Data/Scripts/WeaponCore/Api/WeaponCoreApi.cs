@@ -17,6 +17,7 @@ namespace WeaponCore.Support
         private Func<List<MyDefinitionId>> _getAllCoreTurrets;
         private Action<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int> _setTargetEntity;
         private Action<IMyTerminalBlock> _fireWeaponOnce;
+        private Action<IMyTerminalBlock, bool> _toggleWeaponFire;
         private Func<IMyTerminalBlock, bool> _isWeaponReadyToFire;
         private Func<IMyTerminalBlock, float> _getMaxWeaponRange;
         private Func<IMyTerminalBlock, IList<IList<Threat>>> _getTurretTargetTypes;
@@ -86,6 +87,7 @@ namespace WeaponCore.Support
             _getAllCoreTurrets = (Func<List<MyDefinitionId>>)delegates["GetCoreTurrets"];
             _setTargetEntity = (Action<VRage.Game.ModAPI.Ingame.IMyEntity, VRage.Game.ModAPI.Ingame.IMyEntity, int>)delegates["SetTargetEntity"];
             _fireWeaponOnce = (Action<IMyTerminalBlock>)delegates["FireOnce"];
+            _toggleWeaponFire = (Action<IMyTerminalBlock, bool>)delegates["ToggleFire"];
             _isWeaponReadyToFire = (Func<IMyTerminalBlock, bool>)delegates["WeaponReady"];
             _getMaxWeaponRange = (Func<IMyTerminalBlock, float>)delegates["GetMaxRange"];
             _getTurretTargetTypes = (Func<IMyTerminalBlock, IList<IList<Threat>>>)delegates["GetTurretTargetTypes"];
@@ -114,6 +116,7 @@ namespace WeaponCore.Support
         public void SetTurretTargetingRange(IMyTerminalBlock weapon, float range) => _setTurretTargetingRange?.Invoke(weapon, range);
         public void SetTargetEntity(VRage.Game.ModAPI.Ingame.IMyEntity shooter, VRage.Game.ModAPI.Ingame.IMyEntity target, int priority) => _setTargetEntity?.Invoke(shooter, target, priority);
         public void FireWeaponOnce(IMyTerminalBlock weapon) => _fireWeaponOnce?.Invoke(weapon);
+        public void ToggleWeaponFire(IMyTerminalBlock weapon, bool on) => _toggleWeaponFire?.Invoke(weapon, on);
         public void SetTurretTargetTypes(IMyTerminalBlock weapon, IList<IList<Threat>> threats) => _setTurretTargetTypes?.Invoke(weapon, threats);
         public bool? IsTargetAligned(IMyTerminalBlock weaponBlock, VRage.Game.ModAPI.Ingame.IMyEntity targetEnt, int weaponId, out Vector3D? targetPos)
         {

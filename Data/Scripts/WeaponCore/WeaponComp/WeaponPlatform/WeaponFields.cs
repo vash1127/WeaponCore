@@ -142,6 +142,7 @@ namespace WeaponCore.Platform
 
         public enum TerminalActionState
         {
+            ShootOn,
             ShootOff,
             ShootOnce,
             ShootClick,
