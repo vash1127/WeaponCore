@@ -400,26 +400,6 @@ namespace WeaponCore.Support
             return enemy;
         }
 
-        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle)
-        {
-            var count = cardsToSort - firstCard;
-            if (prevDeckLen != count)
-            {
-                Array.Resize(ref deck, count);
-                prevDeckLen = count;
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                var j = i < cardsToShuffle ? MyUtils.GetRandomInt(0, i + 1) : i;
-
-                deck[i] = deck[j];
-                deck[j] = firstCard + i;
-            }
-            return deck;
-        }
-
-
         internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
         {
             if (entity == null)
@@ -483,6 +463,48 @@ namespace WeaponCore.Support
             }
             entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
             return false;
+        }
+
+        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle)
+        {
+            var count = cardsToSort - firstCard;
+            if (prevDeckLen < count)
+            {
+                deck = new int[count];
+                prevDeckLen = count;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var j = i < cardsToShuffle ? MyUtils.GetRandomInt(0, i + 1) : i;
+
+                deck[i] = deck[j];
+                deck[j] = firstCard + i;
+            }
+            return deck;
+        }
+
+        static void ShellSort(List<Projectile> list, Vector3D weaponPos)
+        {
+            int length = list.Count;
+
+            for (int h = length / 2; h > 0; h /= 2)
+            {
+                for (int i = h; i < length; i += 1)
+                {
+                    var tempValue = list[i];
+                    double temp;
+                    Vector3D.DistanceSquared(ref list[i].Position, ref weaponPos, out temp);
+
+                    int j;
+                    for (j = i; j >= h && Vector3D.DistanceSquared(list[j - h].Position, weaponPos) > temp; j -= h)
+                    {
+                        list[j] = list[j - h];
+                    }
+
+                    list[j] = tempValue;
+                }
+            }
         }
 
         internal List<Projectile> GetProCache()

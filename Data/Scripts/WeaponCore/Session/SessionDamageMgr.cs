@@ -21,7 +21,6 @@ namespace WeaponCore
         public Vector3I Position;
     }
 
-
     public partial class Session
     {
         internal void ProcessHits()
