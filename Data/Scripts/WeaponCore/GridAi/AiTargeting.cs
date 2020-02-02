@@ -563,12 +563,12 @@ namespace WeaponCore.Support
         {
             var ai = w.Comp.Ai;
             var s = w.System;
-            var collection = ai.GetProCache();
             var physics = ai.Session.Physics;
             var target = w.NewTarget;
             var weaponPos = w.MyPivotPos;
+
+            var collection = ai.GetProCache();
             var numOfTargets = collection.Count;
-            var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
             
             if (s.ClosestFirst) {
                 int length = collection.Count;
@@ -589,6 +589,7 @@ namespace WeaponCore.Support
 
             var weaponRangeSqr = w.Comp.Set.Value.Range * w.Comp.Set.Value.Range;
 
+            var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize);
 
             for (int x = 0; x < numOfTargets; x++)
