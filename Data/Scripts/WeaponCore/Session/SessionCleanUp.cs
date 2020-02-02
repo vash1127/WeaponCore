@@ -144,6 +144,8 @@ namespace WeaponCore
 
             Projectiles.Clean();
             WeaponCoreBlockDefs.Clear();
+            VanillaIds.Clear();
+            vanillaCoreIds.Clear();
             WeaponCoreFixedBlockDefs.Clear();
             WeaponCoreTurretBlockDefs.Clear();
             Projectiles.CheckPool.Clean();

@@ -16,12 +16,14 @@ namespace WeaponCore.Control
     {
         internal static bool AlterActions<T>()
         {
+            var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
+
             List<IMyTerminalAction> actions;
             MyAPIGateway.TerminalControls.GetActions<T>(out actions);
-            for (int i = 0; i < actions.Count; i++)
+            for (int i = isTurretType ? 13 : 0; i < actions.Count; i++)
             {
                 var a = actions[i];
-                //Log.Line($"Count: {i} ID:{c.Id}");
+                //Log.Line($"Count: {i} ID:{a.Id}");
 
                 if (!a.Id.Contains("OnOff") && !a.Id.Equals("Shoot") && !a.Id.Equals("ShootOnce"))
                     a.Enabled = b => !b.Components.Has<WeaponComponent>();
@@ -60,13 +62,30 @@ namespace WeaponCore.Control
 
         internal static bool AlterControls<T>()
         {
+            var isTurretType = typeof(T) == typeof(IMyLargeTurretBase);
+
             List<IMyTerminalControl> controls;
             MyAPIGateway.TerminalControls.GetControls<T>(out controls);
-            for (int i = 0; i < controls.Count; i++)
+
+            HashSet<string> visibleControls = new HashSet<string>
+            {
+                "OnOff",
+                "ShowInTerminal",
+                "ShowInInventory",
+                "ShowInToolbarConfig",
+                "Name",
+                "ShowOnHUD",
+                "CustomData",
+                "Control",
+                "Range",
+                //"Shoot"
+            };
+
+            for (int i = isTurretType ? 14 : 0; i < controls.Count; i++)
             {
                 var c = controls[i];
 
-                if(!c.Id.Contains("OnOff") && !string.IsNullOrEmpty(c.Id) && !c.Id.Contains("ShowInTerminal") && !c.Id.Contains("ShowInInventory") && !c.Id.Contains("ShowInToolbarConfig") && !c.Id.Contains("Name") && !c.Id.Contains("ShowOnHUD") && !c.Id.Contains("CustomData") && !c.Id.Contains("Control") && !c.Id.Contains("Range"))
+                if(!visibleControls.Contains(c.Id))
                     c.Visible = b => !b.Components.Has<WeaponComponent>();
 
                 switch (c.Id)

@@ -215,6 +215,14 @@ namespace WeaponCore
                 MyAPIGateway.Utilities.SendModMessage(7772, null);
                 MyAPIGateway.Utilities.RegisterMessageHandler(7773, UpgradeHandler);
                 IsCreative = MyAPIGateway.Session.CreativeMode;
+
+                foreach (var mod in MyAPIGateway.Session.Mods)
+                {
+                    if (mod.PublishedFileId == 1365616918) ShieldMod = true;
+                    else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
+                }
+
+                ReplaceVanilla = true;
                 /*
                 var weapons = new Weapons();
                 var weaponDefinitions = weapons.ReturnDefs();

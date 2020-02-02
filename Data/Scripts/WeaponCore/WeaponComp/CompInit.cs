@@ -50,16 +50,9 @@ namespace WeaponCore.Support
             {
                 var isServer = MyAPIGateway.Multiplayer.IsServer;
 
-                if (IsSorterTurret)
-                {
-                    if (SorterBase.Storage == null)
-                        State.StorageInit();
-                }
-                else
-                {
-                    if (MissileBase.Storage == null)
-                        State.StorageInit();
-                }
+                if (MyCube.Storage == null)
+                    State.StorageInit();
+
                 if (!State.LoadState() && !isServer) _clientNotReady = true;
 
                 Set.LoadSettings();
@@ -83,7 +76,7 @@ namespace WeaponCore.Support
                     }
                 }
             }
-            catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{State == null}({State?.Value == null})[{State?.Value?.Weapons == null}] - SetNull:{Set == null}({Set?.Value == null})[{Set?.Value?.Weapons == null}] - cubeMarked:{MyCube.MarkedForClose} - BaseNull:{MissileBase == null} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
+            catch (Exception ex) { Log.Line($"Exception in StorageSetup: {ex} - StateNull:{State == null}({State?.Value == null})[{State?.Value?.Weapons == null}] - SetNull:{Set == null}({Set?.Value == null})[{Set?.Value?.Weapons == null}] - cubeMarked:{MyCube.MarkedForClose} - WeaponsNull:{Platform.Weapons == null} - FirstWeaponNull:{Platform.Weapons?[0] == null}"); }
         }
 
         private void DpsAndHeatInit(Weapon weapon, MyLargeTurretBaseDefinition ob, out double maxTrajectory)

@@ -8,6 +8,9 @@ using Sandbox.Game.Entities;
 using VRage.Game.Entity;
 using VRage.Game.ModAPI;
 using VRage.ModAPI;
+using VRage.Game;
+using Sandbox.Common.ObjectBuilders;
+using VRage.Utils;
 
 namespace WeaponCore
 {
@@ -183,6 +186,30 @@ namespace WeaponCore
             myEntity.PositionComp.SetWorldMatrix(MatrixD.Identity, null, false, false, false);
             myEntity.InScene = false;
             myEntity.Render.RemoveRenderObjects();
+        }
+
+        internal void LoadVanillaData()
+        {
+            var smallMissileId = new MyDefinitionId(typeof(MyObjectBuilder_SmallMissileLauncher), null);
+            var smallGatId = new MyDefinitionId(typeof(MyObjectBuilder_SmallGatlingGun), null);
+            var largeGatId = new MyDefinitionId(typeof(MyObjectBuilder_LargeGatlingTurret), null);
+            var largeMissileId = new MyDefinitionId(typeof(MyObjectBuilder_LargeMissileTurret), null);
+
+            var smallMissileHash = MyStringHash.GetOrCompute("SmallMissileLauncher");
+            var smallGatHash = MyStringHash.GetOrCompute("SmallGatlingGun");
+            var largeGatHash = MyStringHash.GetOrCompute("LargeGatlingTurret");
+            var smallGatTurretHash = MyStringHash.GetOrCompute("SmallGatlingTurret");
+            var largeMissileHash = MyStringHash.GetOrCompute("LargeMissileTurret");
+
+            VanillaIds[smallMissileId] = smallMissileHash;
+            VanillaIds[smallGatId] = smallGatHash;
+            VanillaIds[largeGatId] = largeGatHash;
+            VanillaIds[largeMissileId] = largeMissileHash;
+
+            vanillaCoreIds[smallMissileHash] = smallMissileId;
+            vanillaCoreIds[smallGatHash] = smallGatId;
+            vanillaCoreIds[largeGatHash] = largeGatId;
+            vanillaCoreIds[largeMissileHash] = largeMissileId;
         }
     }
 }

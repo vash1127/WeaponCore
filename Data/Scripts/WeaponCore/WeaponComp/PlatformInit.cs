@@ -5,7 +5,9 @@ using VRage.Game.Entity;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.WeaponComponent.Start;
+using static WeaponCore.Support.WeaponComponent.BlockType;
 using static WeaponCore.Platform.Weapon;
+using Sandbox.ModAPI;
 
 namespace WeaponCore.Platform
 {
@@ -30,7 +32,7 @@ namespace WeaponCore.Platform
 
         internal void Setup(WeaponComponent comp)
         {
-            Structure = comp.Session.WeaponPlatforms[comp.Session.SubTypeIdHashMap[comp.MyCube.BlockDefinition.Id.SubtypeId.String]];
+            Structure = comp.Session.WeaponPlatforms[comp.SubtypeHash];
             Comp = comp;
 
             if (Weapons.Length != Structure.MuzzlePartNames.Length)
@@ -63,7 +65,7 @@ namespace WeaponCore.Platform
             }
 
 
-            var wCounter = comp.Ai.WeaponCounter[comp.MyCube.BlockDefinition.Id.SubtypeId];
+            var wCounter = comp.Ai.WeaponCounter[comp.SubtypeHash];
             wCounter.Max = Structure.GridWeaponCap;
             if (wCounter.Max > 0)
             {
@@ -81,9 +83,9 @@ namespace WeaponCore.Platform
             }
             else
             {
-                if (comp.MissileBase != null && comp.MissileBase.AIEnabled)
+                if (comp.BaseType == Turret && comp.TurretBase.AIEnabled)
                 {
-                    Log.Line($"ai is enabled in SBC! WEAPON DISABELED for: {comp.MissileBase.BlockDefinition.SubtypeName}");
+                    Log.Line($"ai is enabled in SBC! WEAPON DISABELED for: {comp.MyCube.BlockDefinition.Id.SubtypeName}");
                     State = PlatformState.Invalid;
                     WeaponComponent removed;
                     if (comp.Ai.WeaponBase.TryRemove(comp.MyCube, out removed))
@@ -131,8 +133,8 @@ namespace WeaponCore.Platform
                 }
 
                 //compatability with old configs of converted turrets
-                var azimuthPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
-                var elevationPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
+                var azimuthPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.AzimuthPartName.String) ? "MissileTurretBase1" : system.AzimuthPartName.String : system.AzimuthPartName.String;
+                var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(system.ElevationPartName.String) ? "MissileTurretBarrels" : system.ElevationPartName.String : system.ElevationPartName.String;
 
                 MyEntity azimuthPart = null;
                 MyEntity elevationPart = null;
@@ -145,7 +147,7 @@ namespace WeaponCore.Platform
                     Dummies = new Dummy[barrelCount],
                     AzimuthPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = azimuthPart },
                     ElevationPart = new MyTuple<MyEntity, Matrix, Matrix, Matrix, Matrix, Vector3> { Item1 = elevationPart },
-                    AiOnlyWeapon = comp.IsSorterTurret || (!comp.IsSorterTurret && (azimuthPartName != "MissileTurretBase1" || elevationPartName != "MissileTurretBarrels"))
+                    AiOnlyWeapon = comp.BaseType != Turret || (azimuthPartName != "MissileTurretBase1" && elevationPartName != "MissileTurretBarrels" && azimuthPartName != "InteriorTurretBase1" && elevationPartName != "InteriorTurretBase2" && azimuthPartName != "GatlingTurretBase1" && elevationPartName != "GatlingTurretBase2")
                 };
 
                 //UI elements
@@ -191,8 +193,8 @@ namespace WeaponCore.Platform
                 MyEntity muzzlePart = null;
                 if (Parts.NameToEntity.TryGetValue(m.Key.String, out muzzlePart) || m.Value.DesignatorWeapon)
                 {
-                    var azimuthPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
-                    var elevationPartName = !comp.IsSorterTurret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
+                    var azimuthPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(m.Value.AzimuthPartName.String) ? "MissileTurretBase1" : m.Value.AzimuthPartName.String : m.Value.AzimuthPartName.String;
+                    var elevationPartName = comp.BaseType == Turret ? string.IsNullOrEmpty(m.Value.ElevationPartName.String) ? "MissileTurretBarrels" : m.Value.ElevationPartName.String : m.Value.ElevationPartName.String;
                     var weapon = Weapons[c];
                     if (reset)
                     {
