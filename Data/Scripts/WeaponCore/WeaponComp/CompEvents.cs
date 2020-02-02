@@ -133,6 +133,8 @@ namespace WeaponCore.Support
                     if(HasChargeWeapon) stringBuilder.Append("\n[Current Charge]: " + CurrentCharge.ToString("0.0") + " Mw");
                     stringBuilder.Append("\n[Required Power]: " + MaxRequiredPower.ToString("0.0") + " Mw");
                 }
+
+                stringBuilder.Append("\n\n** Use Weapon Wheel Menu\n** to control weapons using\n** MMB outside of this terminal");
             }
             catch (Exception ex) { Log.Line($"Exception in Weapon AppendingCustomInfo: {ex}"); }
         }

@@ -63,7 +63,7 @@ namespace WeaponCore
                             if (comp.MyCube.MarkedForClose || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready)
                                 continue;
 
-                            if (!comp.State.Value.Online || comp.Status != Started) {
+                            if (!comp.State.Value.Online || !comp.Set.Value.Overrides.Activate || comp.Status != Started) {
 
                                 if (comp.Status != Started)
                                     comp.HealthCheck();
