@@ -114,7 +114,10 @@ namespace WeaponCore
             {
                 var activeColor = closestEnt != null && !ai.Targets.ContainsKey(closestEnt) || foundOther ? Color.DeepSkyBlue : Color.Red;
                 _reticleColor = closestEnt != null ? activeColor : Color.White;
-                if (!foundTarget) ai.DummyTarget.Update(end);
+                if (!foundTarget)
+                {
+                    ai.DummyTarget.Update(end);
+                }
             }
 
             return foundTarget || foundOther;

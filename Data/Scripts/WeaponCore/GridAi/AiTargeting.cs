@@ -44,7 +44,10 @@ namespace WeaponCore.Support
                 {
                     w.Target.SetFake(predictedPos);
                     if (w.System.Values.Ammo.Trajectory.Guidance != AmmoTrajectory.GuidanceType.None || !w.MuzzleHitSelf())
+                    {
                         targetType = TargetType.Other;
+
+                    }
                 }
             }
 

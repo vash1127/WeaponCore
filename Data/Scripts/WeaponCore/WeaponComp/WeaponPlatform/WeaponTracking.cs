@@ -61,7 +61,7 @@ namespace WeaponCore.Platform
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            return (inRange && canTrack) || manualControl && !weapon.TrackTarget;
+            return (inRange && canTrack) || manualControl;
         }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel)

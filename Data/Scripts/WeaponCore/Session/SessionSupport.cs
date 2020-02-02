@@ -142,7 +142,7 @@ namespace WeaponCore
             foreach (var p in Projectiles.ActiveProjetiles)
                 p.PauseAv();
 
-            WheelUi.CloseWheel();
+            if (WheelUi.WheelActive && WheelUi.Ai != null) WheelUi.CloseWheel();
         }
 
         public bool TaskHasErrors(ref Task task, string taskName)

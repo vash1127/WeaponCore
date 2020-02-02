@@ -341,7 +341,6 @@ namespace WeaponCore.Platform
         {
             Comp.LastRayCastTick = Comp.Session.Tick;
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
-
             if (System.Values.HardPoint.MuzzleCheck && MuzzleHitSelf())
             {
                 masterWeapon.Target.Reset(Comp.Gunner != WeaponComponent.Control.Manual);
