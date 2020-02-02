@@ -16,12 +16,7 @@ namespace WeaponCore.Support
         internal void TerminalRefresh(bool update = true)
         {
             if (Ai?.LastTerminal == MyCube)
-            {
-                if (IsSorterTurret)
-                    SorterBase.RefreshCustomInfo();
-                else
-                    MissileBase.RefreshCustomInfo();
-            }
+                TerminalBlock.RefreshCustomInfo();
 
             if (update && InControlPanel)
                  MyCube.UpdateTerminal();

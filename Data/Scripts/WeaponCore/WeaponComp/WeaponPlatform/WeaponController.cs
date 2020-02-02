@@ -66,15 +66,15 @@ namespace WeaponCore.Platform
             }
             else
             {
-                if (moveEl) Comp.MissileBase.Elevation = (float)Elevation;
-                if (moveAz) Comp.MissileBase.Azimuth = (float)Azimuth;
+                if (moveEl) Comp.TurretBase.Elevation = (float)Elevation;
+                if (moveAz) Comp.TurretBase.Azimuth = (float)Azimuth;
             }
 
         }
 
         public void TurretHomePosition(object o = null)
         {
-            if ((Comp.SorterBase == null && Comp.MissileBase == null) || State.ManualShoot != TerminalActionState.ShootOff || Comp.Gunner == WeaponComponent.Control.Direct || Target.State == Target.Targets.Acquired)
+            if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.Gunner == WeaponComponent.Control.Direct || Target.State == Target.Targets.Acquired)
                 return;
 
             var azStep = System.AzStep;

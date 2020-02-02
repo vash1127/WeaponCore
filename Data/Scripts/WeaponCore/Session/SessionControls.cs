@@ -10,6 +10,10 @@ using WeaponCore.Control;
 using WeaponCore.Platform;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
 using static WeaponCore.Platform.Weapon;
+using Sandbox.Definitions;
+using VRage.Game;
+using Sandbox.Common.ObjectBuilders;
+using Sandbox.Common.ObjectBuilders.Definitions;
 
 namespace WeaponCore
 {
@@ -21,20 +25,35 @@ namespace WeaponCore
         {
             try
             {
-                string currentType = "";
-                
+                object builderType = null;
 
                 if (typeof(T) == typeof(IMyLargeTurretBase))
-                    currentType = "Missile";
-
-                TerminalHelpers.AlterActions<T>();
-                TerminalHelpers.AlterControls<T>();
-
-
-                if (typeof(T) == typeof(IMyConveyorSorter))
                 {
+                    if (!session.BaseControlsActions)
+                    {
+                        TerminalHelpers.AlterActions<IMyUserControllableGun>();
+                        TerminalHelpers.AlterControls<IMyUserControllableGun>();
+                        session.BaseControlsActions = true;
+                    }
+
+                    TerminalHelpers.AlterActions<T>();
+                    TerminalHelpers.AlterControls<T>();
+                    builderType = new MyObjectBuilder_LargeTurretBaseDefinition();
+                }
+                else if (typeof(T) == typeof(IMyUserControllableGun))
+                {
+                    if (!session.BaseControlsActions)
+                    {
+                        TerminalHelpers.AlterActions<T>();
+                        TerminalHelpers.AlterControls<T>();
+                        session.BaseControlsActions = true;
+                    }
+                    builderType = new MyObjectBuilder_WeaponBlockDefinition();
+                }
+                else if (typeof(T) == typeof(IMyConveyorSorter))
+                {
+                    builderType = new MyObjectBuilder_ConveyorSorterDefinition();
                     TerminalHelpers.AddSlider<T>(-5, "Range", "Aiming Radius", "Range", 0, 100, 1, WepUi.GetRange, WepUi.SetRange, (b, i) => { var comp = b?.Components?.Get<WeaponComponent>(); return comp == null || comp.HasTurret; }, WepUi.GetMinRange, WepUi.GetMaxRange);
-                    currentType = "Sorter";
                 }
 
                 MyAPIGateway.TerminalControls.CustomControlGetter += CustomControlHandler;
@@ -47,16 +66,44 @@ namespace WeaponCore
                     foreach (KeyValuePair<MyStringHash, WeaponSystem> ws in WeaponPlatforms[wp.Key].WeaponSystems)
                     {
 
+                        MyDefinitionId defId;
+                        MyDefinitionBase def = null;
                         Type type = null;
-                        foreach (var def in AllDefinitions) {
-                            if (def.Id.SubtypeId == wp.Key)
-                                type = def.Id.TypeId;
+
+                        if (ReplaceVanilla && vanillaCoreIds.TryGetValue(wp.Key, out defId))
+                        {
+                            type = defId.TypeId;
+                            def = MyDefinitionManager.Static.GetDefinition(defId);
+                        }
+                        else
+                        {
+                            foreach (var tmpdef in AllDefinitions)
+                            {
+                                if (tmpdef.Id.SubtypeId == wp.Key)
+                                {
+                                    type = tmpdef.Id.TypeId;
+                                    def = tmpdef;
+                                    break;
+                                }
+                            }
                         }
 
+                        if (def == null || type == null) return;
 
-                        if (type != null && type.ToString().Contains(currentType))
+                        MyObjectBuilder_DefinitionBase ob = null;
+
+                        try
                         {
-
+                            
+                            ob = def.GetObjectBuilder();
+                        }
+                        catch (Exception e)
+                        {
+                            Log.Line($"Type: {wp.Key}");
+                            Log.Line($"WTF : {e.StackTrace}");
+                        }
+                        if (IsWeaponBaseType(builderType, ob))
+                        {
                             var wepName = ws.Value.WeaponName;
                             var wepID = ws.Value.WeaponId;
 
@@ -153,7 +200,27 @@ namespace WeaponCore
                         return comp != null && comp.CanOverload;
                     });
             }
-            catch (Exception ex) { Log.Line($"Exception in CreateControlerUi: {ex}"); }
+            catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
+        }
+
+        public bool IsWeaponBaseType<T, T2>(T builderType, T2 objectToCast) where T : class
+        {
+            /*if (typeof(T) == typeof(MyObjectBuilder_WeaponBlockDefinition))
+            {
+                var casted1 = objectToCast as MyObjectBuilder_LargeTurretBaseDefinition;
+                if (casted1 == null)
+                {
+                    var casted2 = objectToCast as T;
+                    return casted2 != null;
+                }
+                return false;                    
+            }
+
+            var casted = objectToCast as T;
+            
+            return casted != null;*/
+
+            return builderType.GetType() == objectToCast.GetType();
         }
 
         internal bool WeaponEnabled(IMyTerminalBlock block, int weaponHash)

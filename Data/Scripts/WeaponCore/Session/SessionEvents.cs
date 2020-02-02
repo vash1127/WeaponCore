@@ -31,10 +31,11 @@ namespace WeaponCore
                         Init();
 
                 var sorter = myEntity as MyConveyorSorter;
-                var missileTurret = myEntity as IMyLargeMissileTurret;
-                if (sorter != null || missileTurret != null)
+                var turret = myEntity as IMyLargeTurretBase;
+                var controllableGun = myEntity as IMyUserControllableGun;
+                if (sorter != null || turret != null || controllableGun != null)
                 {
-                    if (!SorterControls && sorter != null)
+                    if (!SorterControls && myEntity is MyConveyorSorter)
                     {
                         lock (InitObj)
                         {
@@ -43,13 +44,22 @@ namespace WeaponCore
                             SorterControls = true;
                         }
                     }
-                    if (!TurretControls && missileTurret != null)
+                    else if (!TurretControls && turret != null)
                     {
                         lock (InitObj)
                         {
                             if (!TurretControls)
                                 MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUI<IMyLargeTurretBase>(this));
                             TurretControls = true;
+                        }
+                    }
+                   else if (!GunControls && controllableGun != null && turret == null)
+                    {
+                        lock (InitObj)
+                        {
+                            if (!GunControls)
+                                MyAPIGateway.Utilities.InvokeOnGameThread(() => CreateTerminalUI<IMyUserControllableGun>(this));
+                            GunControls = true;
                         }
                     }
                     InitComp(cube);

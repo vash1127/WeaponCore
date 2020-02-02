@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
+using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.Entity;
 using VRage.Utils;
@@ -73,7 +74,26 @@ namespace WeaponCore
 
         private void InitComp(MyCubeBlock cube, bool thread = true)
         {
-            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId)) return;
+            MyDefinitionId def = new MyDefinitionId();
+            if (cube is IMyLargeTurretBase)
+            {
+                var block = cube as IMyLargeTurretBase;
+                def = block.BlockDefinition;
+            }
+            else if (cube is IMyUserControllableGun)
+            {
+                var block = cube as IMyUserControllableGun;
+                def = block.BlockDefinition;
+            }
+            else
+            {
+                var block = cube as IMyConveyorSorter;
+                def = block.BlockDefinition;
+            }
+
+            var replacement = ReplaceVanilla && VanillaIds.ContainsKey(def);
+
+            if (!WeaponPlatforms.ContainsKey(cube.BlockDefinition.Id.SubtypeId) && !replacement) return;
 
             using (cube.Pin())
             {
@@ -87,10 +107,11 @@ namespace WeaponCore
                     gridAi.Init(cube.CubeGrid, this);
                     GridTargetingAIs.TryAdd(cube.CubeGrid, gridAi);
                 }
-                var weaponComp = new WeaponComponent(this, gridAi, cube);
+                var blockDef = replacement ? VanillaIds[def] : cube.BlockDefinition.Id.SubtypeId;
+                
+                var weaponComp = new WeaponComponent(this, gridAi, cube, blockDef);
                 if (gridAi != null && gridAi.WeaponBase.TryAdd(cube, weaponComp))
-                {
-                    var blockDef = cube.BlockDefinition.Id.SubtypeId;
+                {                    
                     if (!gridAi.WeaponCounter.ContainsKey(blockDef))
                         gridAi.WeaponCounter.TryAdd(blockDef, WeaponCountPool.Get());
 

@@ -188,18 +188,11 @@ namespace WeaponCore.Support
                 }
                 Ai.OptimalDps += OptimalDps;
 
-                if (IsSorterTurret)
-                {
-                    if (!SorterBase.Enabled)
-                        for (int i = 0; i < Platform.Weapons.Length; i++)
-                            Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                }
-                else
-                {
-                    if (!MissileBase.Enabled)
-                        for (int i = 0; i < Platform.Weapons.Length; i++)
-                            Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                }
+                
+                if (!FunctionalBlock.Enabled)
+                    for (int i = 0; i < Platform.Weapons.Length; i++)
+                        Platform.Weapons[i].EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
+
                 Status = !IsWorking ? Start.Starting : Start.ReInit;
             }
             catch (Exception ex) { Log.Line($"Exception in OnAddedToSceneTasks: {ex} AiNull:{Ai == null} - SessionNull:{Session == null} EntNull{Entity == null} MyCubeNull:{MyCube?.CubeGrid == null}"); }
@@ -224,21 +217,11 @@ namespace WeaponCore.Support
             if (_isServer && Platform.State == MyWeaponPlatform.PlatformState.Ready)
             {
                 Set.Value.Inventory = BlockInventory.GetObjectBuilder();
-                if (IsSorterTurret)
+                
+                if (MyCube?.Storage != null)
                 {
-                    if (SorterBase?.Storage != null)
-                    {
-                        State.SaveState();
-                        Set.SaveSettings();
-                    }
-                }
-                else
-                {
-                    if (MissileBase?.Storage != null)
-                    {
-                        State.SaveState();
-                        Set.SaveSettings();
-                    }
+                    State.SaveState();
+                    Set.SaveSettings();
                 }
             }
             return false;

@@ -15,11 +15,9 @@ namespace WeaponCore.Support
         {
             if (register)
             {
+                //TODO change this
                 Registered = true;
-                if (IsSorterTurret)
-                    SorterBase.AppendingCustomInfo += AppendingCustomInfo;
-                else
-                    MissileBase.AppendingCustomInfo += AppendingCustomInfo;
+                TerminalBlock.AppendingCustomInfo += AppendingCustomInfo;
 
                 MyCube.IsWorkingChanged += IsWorkingChanged;
                 IsWorkingChanged(MyCube);
@@ -31,18 +29,9 @@ namespace WeaponCore.Support
             {
                 if (Registered)
                 {
+                    //TODO change this
                     Registered = false;
-                    if (IsSorterTurret)
-                    {
-                        if (SorterBase == null) Log.Line($"SortBase is null");
-                        else SorterBase.AppendingCustomInfo -= AppendingCustomInfo;
-                    }
-                    else
-                    {
-                        if (MissileBase == null) Log.Line($"MissileBase is null");
-                        else MissileBase.AppendingCustomInfo -= AppendingCustomInfo;
-
-                    }
+                    TerminalBlock.AppendingCustomInfo -= AppendingCustomInfo;
 
                     MyCube.IsWorkingChanged -= IsWorkingChanged;
 

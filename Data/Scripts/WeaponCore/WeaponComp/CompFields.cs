@@ -6,6 +6,7 @@ using SpaceEngineers.Game.ModAPI;
 using VRage.Game;
 using VRage.Game.Components;
 using VRage.Game.ModAPI;
+using VRage.Utils;
 using VRageMath;
 using WeaponCore.Platform;
 
@@ -22,7 +23,8 @@ namespace WeaponCore.Support
         private bool _firstSync;
 
         internal volatile bool InventoryInited;
-        internal volatile bool IsSorterTurret;
+        //internal volatile bool IsSorterTurret;
+        internal volatile BlockType BaseType;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.LastTerminalId == MyCube.EntityId;
         internal int OnAddedAttempts;
@@ -73,13 +75,22 @@ namespace WeaponCore.Support
             Manual,
         }
 
+        internal enum BlockType
+        {
+            Turret,
+            Fixed,
+            Sorter
+        }
+
         internal readonly MyCubeBlock MyCube;
         internal readonly IMySlimBlock Slim;
+        internal readonly MyStringHash SubtypeHash;
 
         internal readonly Session Session;
         internal readonly MyInventory BlockInventory;
-        internal readonly IMyLargeMissileTurret MissileBase;
-        internal readonly IMyConveyorSorter SorterBase;
+        internal readonly IMyTerminalBlock TerminalBlock;
+        internal readonly IMyFunctionalBlock FunctionalBlock;
+        internal readonly IMyLargeTurretBase TurretBase;
         internal readonly CompSettings Set;
         internal readonly CompState State;
         internal GridAi Ai;
@@ -103,27 +114,29 @@ namespace WeaponCore.Support
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
-        public WeaponComponent(Session session, GridAi ai, MyCubeBlock myCube)
+        public WeaponComponent(Session session, GridAi ai, MyCubeBlock myCube, MyStringHash subtype)
         {
             Ai = ai;
             Session = session;
             MyCube = myCube;
             Slim = myCube.SlimBlock;
+            SubtypeHash = subtype;
 
             MaxIntegrity = Slim.MaxIntegrity;
 
-            var cube = MyCube as IMyLargeMissileTurret;
-            if (cube != null)
+            if (MyCube is IMyLargeTurretBase)
             {
-                MissileBase = cube;
-                IsSorterTurret = false;
-                MissileBase.EnableIdleRotation = false;
+                TurretBase = myCube as IMyLargeTurretBase;
+                TurretBase.EnableIdleRotation = false;
+                BaseType = BlockType.Turret;
             }
             else if (MyCube is IMyConveyorSorter)
-            {
-                SorterBase = (IMyConveyorSorter)MyCube;
-                IsSorterTurret = true;
-            }
+                BaseType = BlockType.Sorter;
+            else
+                BaseType = BlockType.Fixed;
+
+            TerminalBlock = myCube as IMyTerminalBlock;
+            FunctionalBlock = myCube as IMyFunctionalBlock;
             
             BlockInventory = (MyInventory)MyCube.GetInventoryBase();
             SinkPower = IdlePower;

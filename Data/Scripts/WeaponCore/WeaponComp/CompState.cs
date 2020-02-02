@@ -50,10 +50,8 @@ namespace WeaponCore.Support
             State.Value.Online = IsWorking && IsFunctional;
             
 
-            if(IsSorterTurret && SorterBase != null)
-                if (SorterBase.Enabled) { SorterBase.Enabled = false; SorterBase.Enabled = true; }
-            else if(MissileBase != null)
-                if (MissileBase.Enabled) { MissileBase.Enabled = false; MissileBase.Enabled = true; }
+            if(MyCube != null)
+                if (FunctionalBlock.Enabled) { FunctionalBlock.Enabled = false; FunctionalBlock.Enabled = true; }
 
             
             Status = Start.Started;
@@ -76,9 +74,7 @@ namespace WeaponCore.Support
 
                         foreach (var w in Platform.Weapons)
                         {
-                            if (IsSorterTurret && !SorterBase.Enabled)
-                                w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
-                            else if (MissileBase != null && !MissileBase.Enabled)
+                            if (!FunctionalBlock.Enabled)
                                 w.EventTriggerStateChanged(Weapon.EventTriggers.TurnOff, true);
 
                             if (w.State.CurrentAmmo == 0)

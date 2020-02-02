@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Sandbox.Game;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI.Weapons;
@@ -13,7 +12,6 @@ using VRage.Game.ModAPI;
 using VRage.ModAPI;
 using VRage.Utils;
 using VRageMath;
-using WeaponCore.Data.Scripts.WeaponCore.Support;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
@@ -31,7 +29,9 @@ namespace WeaponCore
 
         internal volatile bool Inited;
         internal volatile bool TurretControls;
+        internal volatile bool GunControls;
         internal volatile bool SorterControls;
+        internal volatile bool BaseControlsActions;
         internal volatile bool DbCallBackComplete = true;
         internal volatile bool Pause;
 
@@ -65,9 +65,12 @@ namespace WeaponCore
         internal readonly Dictionary<string, MyStringHash> SubTypeIdHashMap = new Dictionary<string, MyStringHash>();
         internal readonly Dictionary<double, List<Vector3I>> LargeBlockSphereDb = new Dictionary<double, List<Vector3I>>();
         internal readonly Dictionary<double, List<Vector3I>> SmallBlockSphereDb = new Dictionary<double, List<Vector3I>>();
+        internal readonly Dictionary<MyDefinitionId, MyStringHash> VanillaIds = new Dictionary<MyDefinitionId, MyStringHash>(MyDefinitionId.Comparer);
+        internal readonly Dictionary<MyStringHash, MyDefinitionId> vanillaCoreIds = new Dictionary<MyStringHash, MyDefinitionId>(MyStringHash.Comparer);
 
         internal readonly HashSet<MyDefinitionBase> AllArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
         internal readonly HashSet<MyDefinitionBase> HeavyArmorBaseDefinitions = new HashSet<MyDefinitionBase>();
+        
 
         internal readonly List<WeaponComponent> CompsDelayed = new List<WeaponComponent>();
         internal readonly List<CompReAdd> CompReAdds = new List<CompReAdd>();
@@ -200,6 +203,7 @@ namespace WeaponCore
         internal bool Tick600;
         internal bool Tick1800;
         internal bool ShieldMod;
+        internal bool ReplaceVanilla;
         internal bool ShieldApiLoaded;
         internal bool TargetArmed;
         internal bool InGridAiCockPit;
@@ -220,6 +224,8 @@ namespace WeaponCore
             VisDirToleranceCosine = Math.Cos(MathHelper.ToRadians(VisDirToleranceAngle));
             AimDirToleranceCosine = Math.Cos(MathHelper.ToRadians(AimDirToleranceAngle));
             HeatEmissives = CreateHeatEmissive();
+
+            LoadVanillaData();
         }
 
 
