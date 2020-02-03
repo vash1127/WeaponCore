@@ -120,7 +120,7 @@ namespace WeaponCore
                     db.StaticEntitiesInRange = db.StaticsInRange.Count > 0;
                     db.MyStaticInfo();
 
-                    db.DbReady = db.SortedTargets.Count > 0 || db.TargetAis.Count > 0 || Tick - db.LiveProjectileTick < 3600 || db.LiveProjectile.Count > 0 || db.FirstRun;
+                    db.DbReady = db.SortedTargets.Count > 0 || db.TargetAis.Count > 0 || Tick - db.LiveProjectileTick < 3600 || db.LiveProjectile.Count > 0 || db.Gunners.Count > 0 || db.ControllingPlayers.Count > 0 || db.FirstRun;
                     db.MyShield = db.MyShieldTmp;
                     db.NaturalGravity = db.FakeShipController.GetNaturalGravity();
                     db.ShieldNear = db.ShieldNearTmp;

@@ -221,19 +221,8 @@ namespace WeaponCore
                     if (mod.PublishedFileId == 1365616918) ShieldMod = true;
                     else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
                 }
+                //ReplaceVanilla = true;
 
-                ReplaceVanilla = true;
-                /*
-                var weapons = new Weapons();
-                var weaponDefinitions = weapons.ReturnDefs();
-                for (int i = 0; i < weaponDefinitions.Length; i++)
-                {
-                    weaponDefinitions[i].ModPath = ModContext.ModPath;
-                    _weaponDefinitions.Add(weaponDefinitions[i]);
-                }
-                
-                FixPrefabs();
-                */
                 TriggerEntityModel = ModContext.ModPath + "\\Models\\Environment\\JumpNullField.mwm";
                 TriggerEntityPool = new MyConcurrentPool<MyEntity>(0, TriggerEntityClear, 10000, TriggerEntityActivator);
             }

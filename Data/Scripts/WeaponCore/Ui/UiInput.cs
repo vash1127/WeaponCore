@@ -38,26 +38,26 @@ namespace WeaponCore
         internal void UpdateInputState()
         {
             var s = _session;
-            MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
             WheelForward = false;
             WheelBackward = false;
-            if (MouseButtonPressed)
-            {
-                MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
-                MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
-                MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
-            }
-            else
-            {
-                MouseButtonLeft = false;
-                MouseButtonMiddle = false;
-                MouseButtonRight = false;
-            }
 
             if (!s.InGridAiCockPit && !PlayerCamera) s.UpdateLocalAiAndCockpit();
-
-            if (s.InGridAiCockPit)
+            if (s.InGridAiCockPit && !s.InMenu)
             {
+                MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
+                if (MouseButtonPressed)
+                {
+                    MouseButtonLeft = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Left);
+                    MouseButtonMiddle = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Middle);
+                    MouseButtonRight = MyAPIGateway.Input.IsMousePressed(MyMouseButtonsEnum.Right);
+                }
+                else
+                {
+                    MouseButtonLeft = false;
+                    MouseButtonMiddle = false;
+                    MouseButtonRight = false;
+                }
+
                 ShiftReleased = MyAPIGateway.Input.IsNewKeyReleased(MyKeys.LeftShift);
                 ShiftPressed = MyAPIGateway.Input.IsKeyPress(MyKeys.LeftShift);
                 if (ShiftPressed)
