@@ -13,7 +13,6 @@ namespace WeaponCore.Platform
     {
         internal static bool CanShootTarget(Weapon weapon, Vector3D targetCenter, Vector3D targetLinVel, Vector3D targetAccel, out Vector3D targetPos)
         {
-            var manualControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
             var prediction = weapon.System.Values.HardPoint.AimLeadingPrediction;
             var trackingWeapon = weapon.TurretMode ? weapon : weapon.Comp.TrackingWeapon;
             if (Vector3D.IsZero(targetLinVel, 5E-03)) targetLinVel = Vector3.Zero;
@@ -61,7 +60,7 @@ namespace WeaponCore.Platform
             else
                 canTrack = MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
-            return (inRange && canTrack) || manualControl;
+            return (inRange && canTrack) || weapon.Comp.ManualAim;
         }
 
         internal static bool CanShootTargetObb(Weapon weapon, MyEntity entity, Vector3D targetLinVel, Vector3D targetAccel)
@@ -124,12 +123,11 @@ namespace WeaponCore.Platform
             Vector3 targetLinVel = Vector3.Zero;
             Vector3 targetAccel = Vector3.Zero;
 
-            var manulControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
-            var targetCenter = manulControl ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
+            var targetCenter = weapon.Comp.ManualAim ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
 
             if (weapon.System.NeedsPrediction)
             {
-                if (manulControl)
+                if (weapon.Comp.ManualAim)
                 {
                     targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
                     targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
@@ -162,7 +160,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTarget);
             var inRange = rangeToTarget <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range;
 
-            var isAligned = (inRange || manulControl) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
+            var isAligned = (inRange || weapon.Comp.ManualAim) && MathFuncs.IsDotProductWithinTolerance(ref weapon.MyPivotDir, ref targetDir, weapon.AimingTolerance);
 
             weapon.Target.TargetPos = targetPos;
             weapon.Target.IsAligned = isAligned;
@@ -176,13 +174,11 @@ namespace WeaponCore.Platform
             Vector3 targetAccel = Vector3.Zero;
             var system = weapon.System;
 
-            var manulControl = weapon.Comp.Gunner == WeaponComponent.Control.Manual;
-            var targetCenter = manulControl ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
-            var directControl = weapon.Comp.Gunner == WeaponComponent.Control.Direct;
+            var targetCenter = weapon.Comp.ManualAim ? weapon.Comp.Ai.DummyTarget.Position : target.Projectile?.Position ?? target.Entity.PositionComp.WorldAABB.Center;
 
             if (weapon.System.NeedsPrediction)
             {
-                if (manulControl)
+                if (weapon.Comp.ManualAim)
                 {
                     targetLinVel = weapon.Comp.Ai.DummyTarget.LinearVelocity;
                     targetAccel = weapon.Comp.Ai.DummyTarget.Acceleration;
@@ -214,7 +210,7 @@ namespace WeaponCore.Platform
             Vector3D.DistanceSquared(ref targetPos, ref weapon.MyPivotPos, out rangeToTargetSqr);
             var targetDir = targetPos - weapon.MyPivotPos;
             var locked = true;
-            if (manulControl || rangeToTargetSqr <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
+            if (weapon.Comp.ManualAim || rangeToTargetSqr <= weapon.Comp.Set.Value.Range * weapon.Comp.Set.Value.Range)
             {
                 var maxAzimuthStep = system.AzStep;
                 var maxElevationStep = system.ElStep;
@@ -241,7 +237,7 @@ namespace WeaponCore.Platform
                 var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 weapon.Target.IsTracking = !azConstrained && !elConstrained;
 
-                if (weapon.Target.IsTracking && !directControl)
+                if (weapon.Target.IsTracking && !weapon.Comp.TerminalControlled)
                 {
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;
@@ -266,7 +262,7 @@ namespace WeaponCore.Platform
             }
             else weapon.Target.IsTracking = false;
 
-            if (directControl) return weapon.Target.IsTracking;
+            if (weapon.Comp.TerminalControlled) return weapon.Target.IsTracking;
 
             var isAligned = false;
 

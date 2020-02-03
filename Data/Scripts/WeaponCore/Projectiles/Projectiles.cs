@@ -247,7 +247,7 @@ namespace WeaponCore.Projectiles
                         if (p.Info.System.TrackProjectile)
                             foreach (var lp in p.Info.Ai.LiveProjectile)
                                 if (p.PruneSphere.Contains(lp.Position) != ContainmentType.Disjoint && lp != p.Info.Target.Projectile)
-                                    ProjectileHit(p, lp, p.Info.System.CollisionIsLine);
+                                    ProjectileHit(p, lp, p.Info.System.CollisionIsLine, ref beam);
 
                         checkList.Clear();
                         CheckPool.Return(checkList);
@@ -284,7 +284,7 @@ namespace WeaponCore.Projectiles
                         p.PruneSphere.Center = p.Position;
                         p.PruneSphere.Radius = p.Info.System.CollisionSize;
                     }
-                    if (!((p.Info.System.SelfDamage || p.Gunner == WeaponComponent.Control.Direct) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
+                    if (!((p.Info.System.SelfDamage || p.TerminalControlled) && !p.EwarActive && p.PruneSphere.Contains(new BoundingSphereD(p.Info.Origin, p.DeadZone)) != ContainmentType.Disjoint))
                     {
                         if (p.DynamicGuidance && p.PruneQuery == MyEntityQueryType.Dynamic && p.Info.Ai.Session.Tick60) p.CheckForNearVoxel(60);
 

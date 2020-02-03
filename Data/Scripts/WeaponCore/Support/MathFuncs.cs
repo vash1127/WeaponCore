@@ -48,6 +48,11 @@ namespace WeaponCore.Support
             return Vector3.Distance(worldHitPos, ray.Position);
         }
 
+        public static bool PointInEllipsoid(Vector3D point, MatrixD ellipsoidMatrix)
+        {
+            return Vector3D.Transform(point, ellipsoidMatrix).LengthSquared() <= 1;
+        }
+
         internal static bool IsDotProductWithinTolerance(ref Vector3D targetDir, ref Vector3D refDir, double tolerance)
         {
             double dot = Vector3D.Dot(targetDir, refDir);

@@ -18,7 +18,6 @@ namespace WeaponCore.Platform
             var session = Comp.Session;
             var tick = session.Tick;
             var bps = System.Values.HardPoint.Loading.BarrelsPerShot;
-            var directControl = Comp.Gunner == WeaponComponent.Control.Direct;
             var targetable = System.Values.Ammo.Health > 0 && !System.IsBeamWeapon;
             if (_ticksUntilShoot++ < System.DelayToFire)
             {
@@ -85,7 +84,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            if (!directControl && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
+            if (!Comp.TerminalControlled && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
                 ShootRayCheck();
 
             var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -185,7 +184,7 @@ namespace WeaponCore.Platform
                         p.Info.Target.Entity = Target.Entity;
                         p.Info.Target.Projectile = Target.Projectile;
                         p.Info.Target.IsProjectile = Target.Projectile != null;
-                        p.Info.Target.IsFakeTarget = Comp.Gunner == WeaponComponent.Control.Manual;
+                        p.Info.Target.IsFakeTarget = Comp.ManualAim;
                         p.Info.Target.FiringCube = Comp.MyCube;
                         p.Info.WeaponId = WeaponId;
                         p.Info.MuzzleId = muzzle.MuzzleId;
@@ -196,7 +195,7 @@ namespace WeaponCore.Platform
                         p.Info.WeaponCache = WeaponCache;
                         p.Info.WeaponCache.VirutalId = -1;
 
-                        p.Gunner = Comp.Gunner;
+                        p.TerminalControlled = Comp.TerminalControlled;
                         p.Info.ShooterVel = Comp.Ai.GridVel;
                         p.Info.Origin = muzzle.Position;
                         p.Info.OriginUp = MyPivotUp;
@@ -312,7 +311,7 @@ namespace WeaponCore.Platform
             p.Info.Target.Entity = Target.Entity;
             p.Info.Target.Projectile = Target.Projectile;
             p.Info.Target.IsProjectile = Target.Projectile != null;
-            p.Info.Target.IsFakeTarget = Comp.Gunner == WeaponComponent.Control.Manual;
+            p.Info.Target.IsFakeTarget = Comp.ManualAim;
             p.Info.Target.FiringCube = Comp.MyCube;
             p.Info.BaseDamagePool = BaseDamage;
             p.Info.EnableGuidance = Comp.Set.Value.Guidance;
@@ -327,7 +326,7 @@ namespace WeaponCore.Platform
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
 
-            p.Gunner = Comp.Gunner;
+            p.TerminalControlled = Comp.TerminalControlled;
             p.Info.ShooterVel = Comp.Ai.GridVel;
             p.Info.Origin = MyPivotPos;
             p.Info.OriginUp = MyPivotUp;
@@ -343,8 +342,8 @@ namespace WeaponCore.Platform
             var masterWeapon = TrackTarget || Comp.TrackingWeapon == null ? this : Comp.TrackingWeapon;
             if (System.Values.HardPoint.MuzzleCheck && MuzzleHitSelf())
             {
-                masterWeapon.Target.Reset(Comp.Gunner != WeaponComponent.Control.Manual);
-                if (masterWeapon != this) Target.Reset(Comp.Gunner != WeaponComponent.Control.Manual);
+                masterWeapon.Target.Reset(!Comp.ManualAim);
+                if (masterWeapon != this) Target.Reset(!Comp.ManualAim);
                 return;
             }
 
@@ -354,7 +353,7 @@ namespace WeaponCore.Platform
                 Comp.Session.Physics.CastRayParallel(ref MyPivotPos, ref Target.TargetPos, CollisionLayers.DefaultCollisionLayer, ManualShootRayCallBack);
                 return;
             }
-            if (Comp.Gunner == WeaponComponent.Control.Manual) return;
+            if (Comp.ManualAim) return;
 
 
             if (Target.Projectile != null)

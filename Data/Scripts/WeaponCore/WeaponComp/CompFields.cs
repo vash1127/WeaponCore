@@ -23,7 +23,6 @@ namespace WeaponCore.Support
         private bool _firstSync;
 
         internal volatile bool InventoryInited;
-        //internal volatile bool IsSorterTurret;
         internal volatile BlockType BaseType;
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.LastTerminalId == MyCube.EntityId;
@@ -51,8 +50,6 @@ namespace WeaponCore.Support
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
         internal bool Overheated;
-        internal Control LastGunner;
-        internal Control Gunner;
         internal bool Starting;
         internal bool Debug;
         internal bool MouseShoot;
@@ -66,13 +63,6 @@ namespace WeaponCore.Support
             Stopped,
             ReInit,
             WarmingUp,
-        }
-
-        internal enum Control
-        {
-            None,
-            Direct,
-            Manual,
         }
 
         internal enum BlockType
@@ -110,7 +100,11 @@ namespace WeaponCore.Support
         internal bool CanOverload;
         internal bool HasTurret;
         internal bool HasChargeWeapon;
-
+        internal bool ManualAim;
+        internal bool ManualFire;
+        internal bool TerminalControlled;
+        internal bool WasControlled;
+        internal bool UserControlled;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 

@@ -230,11 +230,11 @@ namespace WeaponCore.Support
                 Tracer = TracerState.Full;
             }
 
-            if (lineEffect)
+            var lineOnScreen = OnScreen > (Screen)1;
+
+            if (lineEffect && (Active || lineOnScreen))
                 LineVariableEffects();
 
-            var lineOnScreen = OnScreen > (Screen)1;
-            
             if (Tracer != TracerState.Off && lineOnScreen) {
                 if (Tracer == TracerState.Shrink && !ShrinkInited)
                     Shrink();

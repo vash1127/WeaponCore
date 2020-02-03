@@ -91,7 +91,7 @@ namespace WeaponCore.Projectiles
         internal bool FakeExplosion;
         internal bool AtMaxRange;
         internal readonly ProInfo Info = new ProInfo();
-        internal WeaponComponent.Control Gunner;
+        internal bool TerminalControlled;
         internal MyParticleEffect AmmoEffect;
         internal MyParticleEffect HitEffect;
         internal readonly List<MyLineSegmentOverlapResult<MyEntity>> SegmentList = new List<MyLineSegmentOverlapResult<MyEntity>>();

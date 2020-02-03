@@ -74,7 +74,7 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
-            if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.Gunner == WeaponComponent.Control.Direct || Target.State == Target.Targets.Acquired)
+            if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.TerminalControlled || Target.State == Target.Targets.Acquired)
                 return;
 
             var azStep = System.AzStep;
@@ -129,7 +129,19 @@ namespace WeaponCore.Platform
             else // azimuth only and full turret already have the right matrix
                 WeaponConstMatrix = new MatrixD { Forward = forward, Up = MyPivotUp, Left = left };
 
-            MyPivotPos = MathFuncs.GetClosestPointOnLine1(centerTestPos, MyPivotUp, weaponCenter, MyPivotDir);
+            //MyPivotPos = MathFuncs.GetClosestPointOnLine1(centerTestPos, MyPivotUp, weaponCenter, MyPivotDir);
+
+            Vector3D axis = Vector3D.Cross(MyPivotUp, MyPivotDir);
+            if (Vector3D.IsZero(axis))
+                MyPivotPos = centerTestPos;
+            else
+            {
+                Vector3D perpDir2 = Vector3D.Cross(MyPivotDir, axis);
+                Vector3D point1To2 = weaponCenter - centerTestPos;
+                MyPivotPos = centerTestPos + Vector3D.Dot(point1To2, perpDir2) / Vector3D.Dot(MyPivotUp, perpDir2) * MyPivotUp;
+            }
+
+
             if (!Vector3D.IsZero(AimOffset))
                 MyPivotPos += Vector3D.Rotate(AimOffset, new MatrixD { Forward = MyPivotDir, Left = elevationMatrix.Left, Up = elevationMatrix.Up });
 

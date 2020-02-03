@@ -400,25 +400,6 @@ namespace WeaponCore.Support
             return enemy;
         }
 
-        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle)
-        {
-            var count = cardsToSort - firstCard;
-            if (prevDeckLen != count)
-            {
-                Array.Resize(ref deck, count);
-                prevDeckLen = count;
-            }
-
-            for (int i = 0; i < count; i++)
-            {
-                var j = i < cardsToShuffle ? MyUtils.GetRandomInt(0, i + 1) : i;
-
-                deck[i] = deck[j];
-                deck[j] = firstCard + i;
-            }
-            return deck;
-        }
-
         internal bool CreateEntInfo(MyEntity entity, long gridOwner, out Sandbox.ModAPI.Ingame.MyDetectedEntityInfo entInfo)
         {
             if (entity == null)
@@ -482,6 +463,48 @@ namespace WeaponCore.Support
             }
             entInfo = new Sandbox.ModAPI.Ingame.MyDetectedEntityInfo();
             return false;
+        }
+
+        private static int[] GetDeck(ref int[] deck, ref int prevDeckLen, int firstCard, int cardsToSort, int cardsToShuffle)
+        {
+            var count = cardsToSort - firstCard;
+            if (prevDeckLen < count)
+            {
+                deck = new int[count];
+                prevDeckLen = count;
+            }
+
+            for (int i = 0; i < count; i++)
+            {
+                var j = i < cardsToShuffle ? MyUtils.GetRandomInt(0, i + 1) : i;
+
+                deck[i] = deck[j];
+                deck[j] = firstCard + i;
+            }
+            return deck;
+        }
+
+        static void ShellSort(List<Projectile> list, Vector3D weaponPos)
+        {
+            int length = list.Count;
+
+            for (int h = length / 2; h > 0; h /= 2)
+            {
+                for (int i = h; i < length; i += 1)
+                {
+                    var tempValue = list[i];
+                    double temp;
+                    Vector3D.DistanceSquared(ref list[i].Position, ref weaponPos, out temp);
+
+                    int j;
+                    for (j = i; j >= h && Vector3D.DistanceSquared(list[j - h].Position, weaponPos) > temp; j -= h)
+                    {
+                        list[j] = list[j - h];
+                    }
+
+                    list[j] = tempValue;
+                }
+            }
         }
 
         internal List<Projectile> GetProCache()
@@ -761,26 +784,16 @@ namespace WeaponCore.Support
 
                 using (FakeShipController.CubeGrid?.Pin())
                 {
-                    if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null)
+                    if (FakeShipController.CubeGrid == null || FakeShipController.CubeGrid.MarkedForClose || FakeShipController.GridResourceDistributor == null || FakeShipController.GridResourceDistributor != PowerDistributor)
                     {
-                        //FatMap fatMap;
-                        //if (Session.GridToFatMap.TryGetValue(MyGrid, out fatMap) && fatMap.MyCubeBocks.Count > 0)
                         if (Weapons.Count > 0)
                         {
-                            //FakeShipController.SlimBlock = fatMap.MyCubeBocks[0].SlimBlock;
                             FakeShipController.SlimBlock = Weapons[Weapons.Count - 1].MyCube.SlimBlock;
                             PowerDistributor = FakeShipController.GridResourceDistributor;
                             if (PowerDistributor == null)
-                            {
-                                Log.Line($"failed to get power dist, still null");
                                 return;
-                            }
                         }
-                        else
-                        {
-                            Log.Line($"no-fatmap for power dist: {MyGrid.MarkedForClose} - PowerDistNull:{PowerDistributor == null} - FakeSlimNull:{FakeShipController.SlimBlock == null} - FakeCubeGridNull:{FakeShipController.CubeGrid == null} - FakeTopNull:{FakeShipController.TopGrid == null}");
-                            return;
-                        }
+                        else return;
                     }
 
                     if (PowerDistributor == null)

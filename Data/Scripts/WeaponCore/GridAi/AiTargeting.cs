@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using Havok;
 using Sandbox.Game.Entities;
 using Sandbox.ModAPI;
 using VRage.Collections;
@@ -24,7 +26,7 @@ namespace WeaponCore.Support
             var targetType = TargetType.None;
             w.UpdatePivotPos();
 
-            if (w.Comp.Gunner != WeaponComponent.Control.Manual)
+            if (!w.Comp.ManualAim)
             {
                 w.AimCone.ConeDir = w.MyPivotDir;
                 w.AimCone.ConeTip = w.MyPivotPos;
@@ -55,7 +57,7 @@ namespace WeaponCore.Support
             {
                 w.NewTarget.Reset(true, true);
                 w.LastBlockCount = w.Comp.Ai.BlockCount;
-                w.Target.Reset(w.Comp.Gunner != WeaponComponent.Control.Manual, true);
+                w.Target.Reset(!w.Comp.ManualAim, true);
             }
             else w.WakeTargets();
         }
@@ -556,19 +558,38 @@ namespace WeaponCore.Support
             return hitInfo != null;
         }
 
+
         private static void AcquireProjectile(Weapon w, out TargetType targetType)
         {
             var ai = w.Comp.Ai;
             var s = w.System;
-            var collection = ai.GetProCache();
             var physics = ai.Session.Physics;
             var target = w.NewTarget;
             var weaponPos = w.MyPivotPos;
+
+            var collection = ai.GetProCache();
             var numOfTargets = collection.Count;
-            var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
-            if (s.ClosestFirst) collection.Sort((a, b) => Vector3D.DistanceSquared(a.Position, w.MyPivotPos).CompareTo(Vector3D.DistanceSquared(b.Position, w.MyPivotPos)));
+            
+            if (s.ClosestFirst) {
+                int length = collection.Count;
+                for (int h = length / 2; h > 0; h /= 2) {
+                    for (int i = h; i < length; i += 1) {
+                        var tempValue = collection[i];
+                        double temp;
+                        Vector3D.DistanceSquared(ref collection[i].Position, ref weaponPos, out temp);
+
+                        int j;
+                        for (j = i; j >= h && Vector3D.DistanceSquared(collection[j - h].Position, weaponPos) > temp; j -= h)
+                            collection[j] = collection[j - h];
+
+                        collection[j] = tempValue;
+                    }
+                }
+            }
+
             var weaponRangeSqr = w.Comp.Set.Value.Range * w.Comp.Set.Value.Range;
 
+            var numToRandomize = s.ClosestFirst ? w.System.Values.Targeting.TopTargets : numOfTargets;
             var deck = GetDeck(ref target.TargetDeck, ref target.TargetPrevDeckLen, 0, numOfTargets, numToRandomize);
 
             for (int x = 0; x < numOfTargets; x++)
