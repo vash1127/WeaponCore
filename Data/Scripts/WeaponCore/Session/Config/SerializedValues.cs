@@ -19,7 +19,7 @@ namespace WeaponCore
         [ProtoMember(5)] public bool Message;
         [ProtoMember(6)] public int Heat;
         [ProtoMember(7)] public WeaponStateValues[] Weapons;
-        [ProtoMember(8), DefaultValue(-1)] public long PlayerIdInTerminal = 1;
+        [ProtoMember(8), DefaultValue(-1)] public long PlayerIdInTerminal = -1;
     }
 
     [ProtoContract]

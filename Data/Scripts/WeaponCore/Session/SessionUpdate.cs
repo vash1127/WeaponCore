@@ -203,8 +203,8 @@ namespace WeaponCore
                                 var validShootStates = !w.Comp.Set.Value.Overrides.ManualFire && comp.ManualAim && w.Target.IsFakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
                                 var manualShot = (comp.TerminalControlled || comp.UserControlled && w.Target.IsFakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || comp.UserControlled && !comp.Set.Value.Overrides.ManualFire);
                                 //Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - validShootStates:{validShootStates} - manualShot:{manualShot} ({w.State.ManualShoot}) - targetState:{w.Target.State}[isFake:{w.Target.IsFakeTarget}]");
-                                //Log.Line($"            : validShootStates [1:{!w.Comp.Set.Value.Overrides.ManualFire && comp.Gunner == Manual && w.Target.IsFakeTarget}] [2:{w.State.ManualShoot == ShootOn}] [3:{w.State.ManualShoot == ShootOnce}] [4:{w.AiShooting && w.State.ManualShoot == ShootOff}]");
-                                //Log.Line($"            : manualShot [1:{(gunControl || w.State.ManualShoot == ShootClick)} [2:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || gunControl && !comp.Set.Value.Overrides.ManualFire)}]");
+                                //Log.Line($"            : validShootStates [1:{!w.Comp.Set.Value.Overrides.ManualFire && comp.ManualAim && w.Target.IsFakeTarget}] [2:{w.State.ManualShoot == ShootOn}] [3:{w.State.ManualShoot == ShootOnce}] [4:{w.AiShooting && w.State.ManualShoot == ShootOff}]");
+                                //Log.Line($"            : manualShot [1:{(comp.UserControlled || w.State.ManualShoot == ShootClick)} [2:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || comp.UserControlled && !comp.Set.Value.Overrides.ManualFire)}]");
 
                                 if (canShoot && (validShootStates || manualShot)) {
 
