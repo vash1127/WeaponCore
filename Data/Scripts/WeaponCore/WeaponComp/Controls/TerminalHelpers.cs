@@ -68,18 +68,11 @@ namespace WeaponCore.Control
                         {
                             w.State.ManualShoot = ShootOff;
                             comp.MouseShoot = false;
-                            //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                        }
-                        else if (w.State.ManualShoot != ShootOff)
-                        {
-                            w.State.ManualShoot = ShootClick;
-                            comp.MouseShoot = true;
                         }
                         else
                         {
                             w.State.ManualShoot = ShootClick;
                             comp.MouseShoot = true;
-                            //comp.Ai.ManualComps++;
                         }
                     }
                 };
