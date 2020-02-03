@@ -21,7 +21,7 @@ namespace WeaponCore
     {
         #region UI Config
 
-        public void CreateTerminalUI<T>(Session session) where T : IMyTerminalBlock
+        public void CreateTerminalUi<T>(Session session) where T : IMyTerminalBlock
         {
             try
             {
@@ -116,17 +116,6 @@ namespace WeaponCore
                             else
                                 continue;
                             CreateShootActionSet<T>(wepName, wepID, session);
-
-                            /*
-                            TerminalHelpers.AddWeaponOnOff<T>(wepID, wepName, $"Enable {wepName}", $"Enable {wepName}", "On ", "Off ", WeaponEnabled, EnableWeapon, (block, i) =>
-                                {
-                                    var comp = block?.Components?.Get<WeaponComponent>();
-                                    if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return false;
-                                    int weaponId;
-                                    if (!comp.Platform.Structure.HashToId.TryGetValue(i, out weaponId)) return false;
-                                    return comp.Platform.Weapons[weaponId].System.WeaponId == i;
-                                } );
-                                */
                         }
                     }
                 }

@@ -1,15 +1,13 @@
-﻿using SpaceEngineers.Game.ModAPI;
-using VRageMath;
+﻿using VRageMath;
 using WeaponCore.Platform;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
+using System.Collections.Generic;
+using VRage.Game;
+using static WeaponCore.Support.Target;
 using static WeaponCore.Support.WeaponComponent.Start;
 using static WeaponCore.Platform.Weapon.TerminalActionState;
-using System.Collections.Generic;
-using Sandbox.ModAPI;
-using VRage.Game;
-using VRage.Game.ModAPI;
-using static WeaponCore.Support.Target;
+using static WeaponCore.Support.WeaponComponent.TerminalControl;
 
 namespace WeaponCore
 {
@@ -79,9 +77,12 @@ namespace WeaponCore
                             comp.WasControlled = comp.UserControlled;
                             comp.ManualAim = overRides.ManualAim && TargetUi.DrawReticle;
                             comp.ManualFire = overRides.ManualFire;
-                            comp.TerminalControlled = comp.State.Value.PlayerIdInTerminal > -1;
-                            comp.UserControlled = comp.ManualAim || comp.TerminalControlled;
-                            //Log.Line($"userControlled:{comp.UserControlled} - terminalControlled:{comp.TerminalControlled} - manualAim:{comp.ManualAim}({overRides.ManualAim}) - manualFire:{comp.ManualFire} - targetReticle:{TargetUi.DrawReticle}");
+                            var id = comp.State.Value.PlayerIdInTerminal;
+                            comp.TerminalControlled = id == -1 ? None : 
+                                id == -2 ? ApiControl : 
+                                    id == -3 ? CameraControl : ToolBarControl;
+
+                            comp.UserControlled = comp.ManualAim || comp.TerminalControlled != None;
                             ///
                             /// Weapon update section
                             ///
@@ -155,10 +156,10 @@ namespace WeaponCore
                                 w.TargetChanged = targetAcquired || targetLost;
                                 w.ProjectilesNear = w.TrackProjectiles && w.Target.State != Targets.Acquired && (w.TargetChanged || SCount == w.ShortLoadId && gridAi.LiveProjectile.Count > 0);
 
-                                if (comp.TerminalControlled && UiInput.MouseButtonPressed)
+                                if (comp.TerminalControlled == CameraControl && UiInput.MouseButtonPressed)
                                     w.Target.TargetPos = Vector3D.Zero;
 
-                                if (w.DelayCeaseFire && (comp.TerminalControlled || !w.AiShooting || w.DelayFireCount++ > w.System.TimeToCeaseFire))
+                                if (w.DelayCeaseFire && (comp.TerminalControlled != CameraControl || !w.AiShooting || w.DelayFireCount++ > w.System.TimeToCeaseFire))
                                     w.DelayFireCount = 0;
 
                                 if (w.TargetChanged) {
@@ -170,7 +171,7 @@ namespace WeaponCore
                                 /// Queue for target acquire or set to tracking weapon.
                                 /// 
                                 w.SeekTarget = (w.Target.State == Targets.Expired && w.TrackTarget && gridAi.TargetingInfo.TargetInRange) || comp.ManualAim && !w.Target.IsFakeTarget;
-                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && !w.AcquiringTarget && !comp.TerminalControlled)
+                                if ((w.SeekTarget || w.TrackTarget && gridAi.TargetResetTick == Tick) && !w.AcquiringTarget && comp.TerminalControlled == None)
                                 {
                                     w.AcquiringTarget = true;
                                     AcquireTargets.Add(w);
@@ -201,7 +202,7 @@ namespace WeaponCore
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var validShootStates = !w.Comp.Set.Value.Overrides.ManualFire && comp.ManualAim && w.Target.IsFakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-                                var manualShot = (comp.TerminalControlled || comp.UserControlled && w.Target.IsFakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || comp.UserControlled && !comp.Set.Value.Overrides.ManualFire);
+                                var manualShot = (comp.TerminalControlled != None || comp.UserControlled && w.Target.IsFakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || comp.UserControlled && !comp.Set.Value.Overrides.ManualFire);
                                 //Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - validShootStates:{validShootStates} - manualShot:{manualShot} ({w.State.ManualShoot}) - targetState:{w.Target.State}[isFake:{w.Target.IsFakeTarget}]");
                                 //Log.Line($"            : validShootStates [1:{!w.Comp.Set.Value.Overrides.ManualFire && comp.ManualAim && w.Target.IsFakeTarget}] [2:{w.State.ManualShoot == ShootOn}] [3:{w.State.ManualShoot == ShootOnce}] [4:{w.AiShooting && w.State.ManualShoot == ShootOff}]");
                                 //Log.Line($"            : manualShot [1:{(comp.UserControlled || w.State.ManualShoot == ShootClick)} [2:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || comp.UserControlled && !comp.Set.Value.Overrides.ManualFire)}]");
@@ -355,7 +356,7 @@ namespace WeaponCore
                 {
 
                     var comp = w.Comp;
-                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate || comp.TerminalControlled)
+                    if (comp.Ai == null || comp.Ai.MyGrid.MarkedForClose || comp.MyCube.MarkedForClose || !comp.Ai.DbReady || !w.Set.Enable || !comp.State.Value.Online || !comp.Set.Value.Overrides.Activate || comp.TerminalControlled != None)
                     {
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
