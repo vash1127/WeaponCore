@@ -219,7 +219,7 @@ namespace WeaponCore
                 foreach (var mod in MyAPIGateway.Session.Mods)
                 {
                     if (mod.PublishedFileId == 1365616918) ShieldMod = true;
-                    else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
+                    //else if (mod.PublishedFileId == 1931509062) ReplaceVanilla = true;
                 }
                 //ReplaceVanilla = true;
 
