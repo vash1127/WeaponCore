@@ -91,7 +91,7 @@ namespace WeaponCore.Support
         internal uint LastPowerUpdateTick;
         internal uint TrackWatchTick;
         internal int SourceCount;
-        internal int ManualComps;
+        //internal int ManualComps;
         internal int BlockCount;
         internal long MyOwner;
         internal bool PointDefense;

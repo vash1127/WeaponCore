@@ -106,7 +106,7 @@ namespace WeaponCore
                             //Log.Line($"Type: {wp.Key}");
                             Log.Line($"Error In create controls : {e.StackTrace}");
                         }
-                        if (IsWeaponBaseType(builderType, ob))
+                        if (builderType.GetType() == ob.GetType())
                         {
                             var wepName = ws.Value.WeaponName;
                             var wepID = ws.Value.WeaponId;
@@ -119,103 +119,8 @@ namespace WeaponCore
                         }
                     }
                 }
-
-                var action = MyAPIGateway.TerminalControls.CreateAction<T>($"WC_Shoot_Click");
-                action.Icon = @"Textures\GUI\Icons\Actions\Toggle.dds";
-                action.Name = new StringBuilder($"Toggle Mouse Shoot");
-                action.Action = delegate (IMyTerminalBlock blk) {
-                    var comp = blk?.Components?.Get<WeaponComponent>();
-                    if (comp == null || comp.Platform.State != MyWeaponPlatform.PlatformState.Ready) return;
-                    for (int i = 0; i < comp.Platform.Weapons.Length; i++)
-                    {
-                        var w = comp.Platform.Weapons[i];
-                        if (w.State.ManualShoot == ShootClick)
-                        {
-                            w.State.ManualShoot = ShootOff;
-                            comp.MouseShoot = false;
-                            comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
-                        }
-                        else if (w.State.ManualShoot != ShootOff)
-                        {
-                            w.State.ManualShoot = ShootClick;
-                            comp.MouseShoot = true;
-                        }
-                        else
-                        {
-                            w.State.ManualShoot = ShootClick;
-                            comp.MouseShoot = true;
-                            comp.Ai.ManualComps++;
-                        }
-                    }
-                };
-                action.Writer = (blk, t) => 
-                {
-                    var comp = blk?.Components?.Get<WeaponComponent>();
-                    if (comp != null && comp.MouseShoot)
-                        t.Append("On");
-                    else
-                        t.Append("Off");
-                };
-                action.Enabled = (b) =>
-                {
-                    var comp = b?.Components?.Get<WeaponComponent>();
-                    return comp != null && comp.Platform.State == MyWeaponPlatform.PlatformState.Ready;
-                };
-                action.ValidForGroups = true;
-
-                MyAPIGateway.TerminalControls.AddAction<T>(action);
-
-                TerminalHelpers.Separator<T>(0, "WC_sep1");
-
-                TerminalHelpers.AddWeaponOnOff<T>(-1, "Guidance", "Enable Guidance", "Enable Guidance", "On", "Off", WepUi.GetGuidance, WepUi.SetGuidance,
-                    (block, i) =>
-                    {
-                        var comp = block?.Components?.Get<WeaponComponent>();
-                        return comp != null && comp.HasGuidanceToggle;
-                    });
-                
-                TerminalHelpers.AddSlider<T>(-2, "WC_Damage", "Change Damage Per Shot", "Change Damage Per Shot", 1, 100, 0.1f, WepUi.GetDps, WepUi.SetDps,
-                    (block, i) =>
-                    {
-                        var comp = block?.Components?.Get<WeaponComponent>();
-                        return comp != null && comp.HasDamageSlider;
-                    });
-
-                TerminalHelpers.AddSlider<T>(-3, "WC_ROF", "Change Rate of Fire", "Change Rate of Fire", 1, 100, 0.1f, WepUi.GetRof, WepUi.SetRof,
-                    (block, i) =>
-                    {
-                        var comp = block?.Components?.Get<WeaponComponent>();
-                        return comp != null && comp.HasRofSlider;
-                    } );
-
-                TerminalHelpers.AddCheckbox<T>(-4, "Overload", "Overload Damage", "Overload Damage", WepUi.GetOverload, WepUi.SetOverload, true,
-                    (block, i) =>
-                    {
-                        var comp = block?.Components?.Get<WeaponComponent>();
-                        return comp != null && comp.CanOverload;
-                    });
             }
             catch (Exception ex) { Log.Line($"Exception in CreateControlUi: {ex}"); }
-        }
-
-        public bool IsWeaponBaseType<T, T2>(T builderType, T2 objectToCast) where T : class
-        {
-            /*if (typeof(T) == typeof(MyObjectBuilder_WeaponBlockDefinition))
-            {
-                var casted1 = objectToCast as MyObjectBuilder_LargeTurretBaseDefinition;
-                if (casted1 == null)
-                {
-                    var casted2 = objectToCast as T;
-                    return casted2 != null;
-                }
-                return false;                    
-            }
-
-            var casted = objectToCast as T;
-            
-            return casted != null;*/
-
-            return builderType.GetType() == objectToCast.GetType();
         }
 
         internal bool WeaponEnabled(IMyTerminalBlock block, int weaponHash)
@@ -272,13 +177,13 @@ namespace WeaponCore
                             w.State.CurrentAmmo = 0;
                     }
 
-                    comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                    //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                 }
                 else if (w.State.ManualShoot != ShootOff) w.State.ManualShoot = ShootOn;
                 else
                 {
                     w.State.ManualShoot = ShootOn;
-                    comp.Ai.ManualComps++;
+                    //comp.Ai.ManualComps++;
                 }
             };
             action0.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
@@ -310,7 +215,7 @@ namespace WeaponCore
                 else
                 {
                     wState.ManualShoot = ShootOn;
-                    comp.Ai.ManualComps++;
+                    //comp.Ai.ManualComps++;
                 }
             };
             action1.Writer = (b, t) => t.Append("On");
@@ -350,7 +255,7 @@ namespace WeaponCore
                         w.State.CurrentAmmo = 0;
                 }
 
-                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
             };
             action2.Writer = (b, t) => t.Append("Off");
             action2.Enabled = (b) =>
@@ -384,7 +289,7 @@ namespace WeaponCore
                     {
                         if (comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot != ShootOff) return;
                         comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
-                        comp.Ai.ManualComps++;
+                        //comp.Ai.ManualComps++;
                     }
                 }
             };

@@ -123,7 +123,7 @@ namespace WeaponCore.Support
                     else
                     {
                         w.State.ManualShoot = ShootOnce;
-                        comp.Ai.ManualComps++;
+                        //comp.Ai.ManualComps++;
                     }
                 }
             }
@@ -143,14 +143,14 @@ namespace WeaponCore.Support
                     {
                         w.State.ManualShoot = ShootOff;
                         w.StopShooting();
-                        comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                        //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                     }
                     else if (on && w.State.ManualShoot != ShootOff)
                         w.State.ManualShoot = ShootOn;
                     else if (on)
                     {
                         w.State.ManualShoot = ShootOn;
-                        comp.Ai.ManualComps++;
+                        //comp.Ai.ManualComps++;
                     }
                 }
             }

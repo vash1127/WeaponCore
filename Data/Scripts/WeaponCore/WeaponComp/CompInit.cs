@@ -169,10 +169,10 @@ namespace WeaponCore.Support
                 Session.ComputeStorage(weapon);
             }
 
-            if (weapon.State.ManualShoot != Weapon.TerminalActionState.ShootOff)
+            /*if (weapon.State.ManualShoot != Weapon.TerminalActionState.ShootOff)
             {
                 Ai.ManualComps++;
-            }
+            }*/
         }
 
         private void InventoryInit()

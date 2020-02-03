@@ -730,7 +730,7 @@ namespace WeaponCore.Support
             LiveProjectile.Clear();
             DeadProjectiles.Clear();
             SourceCount = 0;
-            ManualComps = 0;
+            //ManualComps = 0;
             BlockCount = 0;
             MyOwner = 0;
             PointDefense = false;
@@ -861,7 +861,7 @@ namespace WeaponCore.Support
                     {
                         comp.MouseShoot = false;
                         wState.ManualShoot = Weapon.TerminalActionState.ShootOff;
-                        ManualComps = ManualComps - 1 > 0 ? ManualComps - 1 : 0;
+                        //ManualComps = ManualComps - 1 > 0 ? ManualComps - 1 : 0;
                     }
 
                 }
