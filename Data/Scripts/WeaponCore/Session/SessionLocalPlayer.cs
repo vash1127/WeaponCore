@@ -16,17 +16,20 @@ namespace WeaponCore
         internal bool UpdateLocalAiAndCockpit()
         {
             ActiveCockPit = ControlledEntity as MyCockpit;
-            InGridAiCockPit = false;
-            if (ActiveCockPit != null && GridTargetingAIs.TryGetValue(ActiveCockPit.CubeGrid, out TrackingAi))
+            ActiveControlBlock = ControlledEntity as MyCubeBlock;
+            var activeBlock = ActiveCockPit ?? ActiveControlBlock;
+            InGridAiBlock = false;
+            if (activeBlock != null && GridTargetingAIs.TryGetValue(activeBlock.CubeGrid, out TrackingAi))
             {
-                InGridAiCockPit = true;
-                TrackingAi.ControllingPlayers[MyAPIGateway.Session.Player.IdentityId] = ActiveCockPit;
-                return true;
+                InGridAiBlock = true;
+                TrackingAi.ControllingPlayers[MyAPIGateway.Session.Player.IdentityId] = ActiveControlBlock;
+                return ActiveCockPit != null;
             }
             TrackingAi?.Focus.IsFocused(TrackingAi);
             TrackingAi?.ControllingPlayers.Remove(MyAPIGateway.Session.Player.IdentityId);
             TrackingAi = null;
             ActiveCockPit = null;
+            ActiveControlBlock = null;
             return false;
         }
 
@@ -53,7 +56,8 @@ namespace WeaponCore
                         {
                             GunnerBlackList = true;
                             GridTargetingAIs[cube.CubeGrid].Gunners.Add(comp, MyAPIGateway.Session.Player.IdentityId);
-                            comp.State.Value.PlayerIdInTerminal = MyAPIGateway.Session.Player.IdentityId;
+                            comp.State.Value.PlayerIdInTerminal = -3;
+                            ActiveControlBlock = (MyCubeBlock)ControlledEntity;
                             var controlStringLeft = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Left).GetGameControlEnum().String;
                             MyVisualScriptLogicProvider.SetPlayerInputBlacklistState(controlStringLeft, MyAPIGateway.Session.Player.IdentityId, false);
                             var controlStringRight = MyAPIGateway.Input.GetControl(MyMouseButtonsEnum.Right).GetGameControlEnum().String;
@@ -83,6 +87,7 @@ namespace WeaponCore
                             {
                                 GridTargetingAIs[oldCube.CubeGrid].Gunners.Remove(comp);
                                 comp.State.Value.PlayerIdInTerminal = -1;
+                                ActiveControlBlock = null;
                             }
                         }
                     }

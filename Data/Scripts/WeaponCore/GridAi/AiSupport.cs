@@ -729,8 +729,8 @@ namespace WeaponCore.Support
             AmmoInventories.Clear();
             LiveProjectile.Clear();
             DeadProjectiles.Clear();
+            ControllingPlayers.Clear();
             SourceCount = 0;
-            //ManualComps = 0;
             BlockCount = 0;
             MyOwner = 0;
             PointDefense = false;
