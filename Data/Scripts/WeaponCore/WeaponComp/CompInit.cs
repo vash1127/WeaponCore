@@ -62,7 +62,7 @@ namespace WeaponCore.Support
                     var w = Platform.Weapons[i];
                     w.Set = Set.Value.Weapons[i];
                     w.State = State.Value.Weapons[i];
-                    w.State.ManualShoot = Weapon.TerminalActionState.ShootOn;
+                    w.State.ManualShoot = Weapon.TerminalActionState.ShootOff;
                 }
                 Set.Value.Overrides.ManualAim = false;
 
