@@ -203,11 +203,13 @@ namespace WeaponCore
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
                                 var fakeTarget = comp.ManualAim && w.Target.IsFakeTarget;
                                 var validShootStates = fakeTarget && !w.Comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-                                var manualShot = (comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || fakeTarget && !comp.Set.Value.Overrides.ManualFire);
-                                Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - fakeTarget:{fakeTarget} - validShootStates:{validShootStates} - manualShot:{manualShot}({w.State.ManualShoot})");
-                                
-                                Log.Line($"            : validShootStates [1:shootOnce:{w.State.ManualShoot == ShootOnce} [2:aiShoot:{w.AiShooting && w.State.ManualShoot == ShootOff} [3:targetState:{w.Target.State}");
-                                Log.Line($"            : manualShot [1:{(comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick)} [2:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || fakeTarget && !comp.Set.Value.Overrides.ManualFire)}]");
+                                var manualShot = (comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight);
+                                if (w.System.WeaponName.Contains("Oct") && Tick60)
+                                {
+                                    Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - fakeTarget:{fakeTarget} - validShootStates:{validShootStates} - manualShot:{manualShot}({w.State.ManualShoot})");
+                                    Log.Line($"            : validShootStates [shootOnce:{w.State.ManualShoot == ShootOnce}] [aiShoot:{w.AiShooting && w.State.ManualShoot == ShootOff}] [targetState:{w.Target.State}]");
+                                    Log.Line($"            : manualShot [User:{(comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick)}] [cameraControl:{comp.TerminalControlled == CameraControl}] [ButtonPress:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight)}]");
+                                }
 
                                 if (canShoot && (validShootStates || manualShot)) {
 

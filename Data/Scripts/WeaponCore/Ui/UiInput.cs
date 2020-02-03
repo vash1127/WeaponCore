@@ -41,8 +41,9 @@ namespace WeaponCore
             WheelForward = false;
             WheelBackward = false;
 
-            if (!s.InGridAiCockPit && !PlayerCamera) s.UpdateLocalAiAndCockpit();
-            if (s.InGridAiCockPit && !s.InMenu)
+            if (!s.InGridAiBlock && !s.InMenu) s.UpdateLocalAiAndCockpit();
+
+            if (s.InGridAiBlock)
             {
                 MouseButtonPressed = MyAPIGateway.Input.IsAnyMousePressed();
                 if (MouseButtonPressed)

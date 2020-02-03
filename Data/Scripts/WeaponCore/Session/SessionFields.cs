@@ -120,6 +120,8 @@ namespace WeaponCore
         internal GridAi TrackingAi;
         internal ApiServer ApiServer;
         internal MyCockpit ActiveCockPit;
+        internal MyCubeBlock ActiveControlBlock;
+
         internal MyEntity ControlledEntity;
         internal Projectiles.Projectiles Projectiles;
         internal ApiBackend Api;
@@ -206,7 +208,7 @@ namespace WeaponCore
         internal bool ReplaceVanilla;
         internal bool ShieldApiLoaded;
         internal bool TargetArmed;
-        internal bool InGridAiCockPit;
+        internal bool InGridAiBlock;
         internal bool IsCreative;
 
         public Session()
