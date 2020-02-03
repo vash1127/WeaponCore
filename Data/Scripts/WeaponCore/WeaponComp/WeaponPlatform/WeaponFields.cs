@@ -139,7 +139,7 @@ namespace WeaponCore.Platform
         internal bool ProjectilesNear;
         internal bool TargetChanged;
         internal bool StopBarrelAv;
-
+        internal bool AcquiringTarget;
         public enum TerminalActionState
         {
             ShootOn,

@@ -33,7 +33,6 @@ namespace WeaponCore.Support
         public enum Targets
         {
             Expired,
-            StillSeeking,
             Acquired,
         }
 
