@@ -86,14 +86,14 @@ namespace WeaponCore.Support
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
 
         internal Start Status;
-        internal TerminalControl TerminalControlled;
+        internal TerminalControl TerminalControlled = TerminalControl.None;
 
         internal enum TerminalControl
         {
-            None,
-            CameraControl,
             ToolBarControl,
             ApiControl,
+            CameraControl,
+            None,
         }
 
         internal enum Start

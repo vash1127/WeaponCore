@@ -82,7 +82,7 @@ namespace WeaponCore
                                 id == -2 ? ApiControl : 
                                     id == -3 ? CameraControl : ToolBarControl;
 
-                            comp.UserControlled = comp.ManualAim || comp.TerminalControlled != None;
+                            comp.UserControlled = comp.ManualAim || comp.TerminalControlled == CameraControl;
                             ///
                             /// Weapon update section
                             ///
@@ -201,11 +201,13 @@ namespace WeaponCore
                                 ///
                                 var reloading = (!w.System.EnergyAmmo || w.System.MustCharge) && (w.Reloading || w.OutOfAmmo);
                                 var canShoot = !comp.Overheated && !reloading && !w.System.DesignatorWeapon;
-                                var validShootStates = !w.Comp.Set.Value.Overrides.ManualFire && comp.ManualAim && w.Target.IsFakeTarget || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
-                                var manualShot = (comp.TerminalControlled != None || comp.UserControlled && w.Target.IsFakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || comp.UserControlled && !comp.Set.Value.Overrides.ManualFire);
-                                //Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - validShootStates:{validShootStates} - manualShot:{manualShot} ({w.State.ManualShoot}) - targetState:{w.Target.State}[isFake:{w.Target.IsFakeTarget}]");
-                                //Log.Line($"            : validShootStates [1:{!w.Comp.Set.Value.Overrides.ManualFire && comp.ManualAim && w.Target.IsFakeTarget}] [2:{w.State.ManualShoot == ShootOn}] [3:{w.State.ManualShoot == ShootOnce}] [4:{w.AiShooting && w.State.ManualShoot == ShootOff}]");
-                                //Log.Line($"            : manualShot [1:{(comp.UserControlled || w.State.ManualShoot == ShootClick)} [2:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || comp.UserControlled && !comp.Set.Value.Overrides.ManualFire)}]");
+                                var fakeTarget = comp.ManualAim && w.Target.IsFakeTarget;
+                                var validShootStates = fakeTarget && !w.Comp.Set.Value.Overrides.ManualFire || w.State.ManualShoot == ShootOn || w.State.ManualShoot == ShootOnce || w.AiShooting && w.State.ManualShoot == ShootOff;
+                                var manualShot = (comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick) && !gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || fakeTarget && !comp.Set.Value.Overrides.ManualFire);
+                                Log.Line($"ShootWeapons: {w.System.WeaponName} - canShoot:{canShoot} - fakeTarget:{fakeTarget} - validShootStates:{validShootStates} - manualShot:{manualShot}({w.State.ManualShoot})");
+                                
+                                Log.Line($"            : validShootStates [1:shootOnce:{w.State.ManualShoot == ShootOnce} [2:aiShoot:{w.AiShooting && w.State.ManualShoot == ShootOff} [3:targetState:{w.Target.State}");
+                                Log.Line($"            : manualShot [1:{(comp.TerminalControlled == CameraControl || fakeTarget || w.State.ManualShoot == ShootClick)} [2:{!gridAi.SupressMouseShoot && (j == 0 && UiInput.MouseButtonLeft || j == 1 && UiInput.MouseButtonRight || fakeTarget && !comp.Set.Value.Overrides.ManualFire)}]");
 
                                 if (canShoot && (validShootStates || manualShot)) {
 
