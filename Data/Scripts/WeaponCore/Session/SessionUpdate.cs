@@ -354,7 +354,7 @@ namespace WeaponCore
                 using (w.Comp.Ai.MyGrid.Pin())
                 {
 
-                    if (!w.Set.Enable || !w.Comp.IsWorking || !w.Comp.Set.Value.Overrides.Activate || w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.TerminalControlled)
+                    if (!w.Set.Enable || !w.Comp.State.Value.Online || !w.Comp.Set.Value.Overrides.Activate || w.Comp.MyCube.MarkedForClose || w.Comp.Ai == null || w.Comp.Ai.MyGrid.MarkedForClose || w.Comp.TerminalControlled)
                     {
                         w.AcquiringTarget = false;
                         AcquireTargets.RemoveAtFast(i);
