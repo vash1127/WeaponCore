@@ -77,7 +77,7 @@ namespace WeaponCore
 
                             var overRides = comp.Set.Value.Overrides;
                             comp.WasControlled = comp.UserControlled;
-                            comp.ManualAim = overRides.ManualAim;
+                            comp.ManualAim = overRides.ManualAim && TargetUi.DrawReticle;
                             comp.ManualFire = overRides.ManualFire;
                             comp.TerminalControlled = comp.State.Value.PlayerIdInTerminal > -1;
                             comp.UserControlled = comp.ManualAim || comp.TerminalControlled;
