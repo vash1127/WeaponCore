@@ -81,7 +81,7 @@ namespace WeaponCore
                             comp.ManualFire = overRides.ManualFire;
                             comp.TerminalControlled = comp.State.Value.PlayerIdInTerminal > -1;
                             comp.UserControlled = comp.ManualAim || comp.TerminalControlled;
-
+                            //Log.Line($"userControlled:{comp.UserControlled} - terminalControlled:{comp.TerminalControlled} - manualAim:{comp.ManualAim}({overRides.ManualAim}) - manualFire:{comp.ManualFire} - targetReticle:{TargetUi.DrawReticle}");
                             ///
                             /// Weapon update section
                             ///
