@@ -188,13 +188,13 @@ namespace WeaponCore
                             w.State.CurrentAmmo = 0;
                     }
 
-                    comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                    //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                 }
                 else if (w.State.ManualShoot != ShootOff) w.State.ManualShoot = ShootOn;
                 else
                 {
                     w.State.ManualShoot = ShootOn;
-                    comp.Ai.ManualComps++;
+                    //comp.Ai.ManualComps++;
                 }
             };
             action0.Writer = (b, t) => t.Append(session.CheckWeaponManualState(b, id) ? "On" : "Off");
@@ -226,7 +226,7 @@ namespace WeaponCore
                 else
                 {
                     wState.ManualShoot = ShootOn;
-                    comp.Ai.ManualComps++;
+                    //comp.Ai.ManualComps++;
                 }
             };
             action1.Writer = (b, t) => t.Append("On");
@@ -266,7 +266,7 @@ namespace WeaponCore
                         w.State.CurrentAmmo = 0;
                 }
 
-                comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
             };
             action2.Writer = (b, t) => t.Append("Off");
             action2.Enabled = (b) =>
@@ -300,7 +300,7 @@ namespace WeaponCore
                     {
                         if (comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot != ShootOff) return;
                         comp.State.Value.Weapons[comp.Platform.Weapons[weaponId].WeaponId].ManualShoot = ShootOnce;
-                        comp.Ai.ManualComps++;
+                        //comp.Ai.ManualComps++;
                     }
                 }
             };

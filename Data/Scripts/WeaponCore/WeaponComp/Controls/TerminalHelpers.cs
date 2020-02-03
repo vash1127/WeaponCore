@@ -47,7 +47,7 @@ namespace WeaponCore.Control
                         {
                             if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
                             comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
-                            comp.Ai.ManualComps++;
+                            //comp.Ai.ManualComps++;
                         }
                     };
                 }
@@ -68,7 +68,7 @@ namespace WeaponCore.Control
                         {
                             w.State.ManualShoot = ShootOff;
                             comp.MouseShoot = false;
-                            comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                            //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                         }
                         else if (w.State.ManualShoot != ShootOff)
                         {
@@ -79,7 +79,7 @@ namespace WeaponCore.Control
                         {
                             w.State.ManualShoot = ShootClick;
                             comp.MouseShoot = true;
-                            comp.Ai.ManualComps++;
+                            //comp.Ai.ManualComps++;
                         }
                     }
                 };
@@ -150,7 +150,7 @@ namespace WeaponCore.Control
                             {
                                 if (comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot != ShootOff) continue;
                                 comp.State.Value.Weapons[comp.Platform.Weapons[j].WeaponId].ManualShoot = ShootOnce;
-                                comp.Ai.ManualComps++;
+                                //comp.Ai.ManualComps++;
                             }
 
                         };
@@ -179,14 +179,14 @@ namespace WeaponCore.Control
                                             w.State.CurrentAmmo = 0;
                                     }
 
-                                    comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
+                                    //comp.Ai.ManualComps = comp.Ai.ManualComps - 1 > 0 ? comp.Ai.ManualComps - 1 : 0;
                                 }
                                 else if (on && w.State.ManualShoot != ShootOff)
                                     w.State.ManualShoot = ShootOn;
                                 else if (on)
                                 {
                                     w.State.ManualShoot = ShootOn;
-                                    comp.Ai.ManualComps++;
+                                    //comp.Ai.ManualComps++;
                                 }
                             }
                         };

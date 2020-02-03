@@ -186,10 +186,10 @@ namespace WeaponCore
                                     if (w.TargetChanged && w.Target.State != Targets.Acquired || comp.UserControlled != comp.WasControlled && !comp.UserControlled)
                                         FutureEvents.Schedule(w.TurretHomePosition, null, 240);
 
-                                    if (comp.UserControlled != comp.WasControlled && comp.UserControlled)
+                                    /*if (comp.UserControlled != comp.WasControlled && comp.UserControlled)
                                         gridAi.ManualComps++;
                                     else if (comp.UserControlled != comp.WasControlled && !comp.UserControlled)
-                                        gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;
+                                        gridAi.ManualComps = gridAi.ManualComps - 1 > 0 ? gridAi.ManualComps - 1 : 0;*/
                                 }
 
                                 if (gridAi.CheckReload && w.System.AmmoDefId == gridAi.NewAmmoType && !w.System.EnergyAmmo)
@@ -451,7 +451,7 @@ namespace WeaponCore
                     {
                         w.State.ManualShoot = ShootOff;
                         w.StopShooting();
-                        w.Comp.Ai.ManualComps = w.Comp.Ai.ManualComps - 1 > 0 ? w.Comp.Ai.ManualComps - 1 : 0;
+                        //w.Comp.Ai.ManualComps = w.Comp.Ai.ManualComps - 1 > 0 ? w.Comp.Ai.ManualComps - 1 : 0;
                     }
                 }
             }

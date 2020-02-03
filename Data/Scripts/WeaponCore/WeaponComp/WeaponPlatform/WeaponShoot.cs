@@ -294,7 +294,7 @@ namespace WeaponCore.Platform
             {
                 State.ManualShoot = TerminalActionState.ShootOff;
                 StopShooting();
-                Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
+                //Comp.Ai.ManualComps = Comp.Ai.ManualComps - 1 > 0 ? Comp.Ai.ManualComps - 1 : 0;
             }
             _muzzlesToFire.Clear();
 
