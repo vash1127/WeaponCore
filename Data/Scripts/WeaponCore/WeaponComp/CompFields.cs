@@ -24,18 +24,26 @@ namespace WeaponCore.Support
 
         internal volatile bool InventoryInited;
         internal volatile BlockType BaseType;
+
+        internal readonly MyCubeBlock MyCube;
+        internal readonly IMySlimBlock Slim;
+        internal readonly MyStringHash SubtypeHash;
+
+        internal readonly Session Session;
+        internal readonly MyInventory BlockInventory;
+        internal readonly IMyTerminalBlock TerminalBlock;
+        internal readonly IMyFunctionalBlock FunctionalBlock;
+        internal readonly IMyLargeTurretBase TurretBase;
+        internal readonly CompSettings Set;
+        internal readonly CompState State;
+
         internal bool InControlPanel => MyAPIGateway.Gui.GetCurrentScreen == MyTerminalPageEnum.ControlPanel;
         internal bool InThisTerminal => Session.LastTerminalId == MyCube.EntityId;
-        internal int OnAddedAttempts;
 
         internal MatrixD CubeMatrix;
         internal uint LastRayCastTick;
-        internal uint LastUpdateTick;
         internal uint LastInventoryChangedTick;
-        internal uint ChargeUntilTick;
-        internal uint DelayTicks;
         internal uint IsWorkingChangedTick;
-        internal uint PositionUpdateTick;
         internal uint MatrixUpdateTick;
         internal float MaxInventoryVolume;
         internal float OptimalDps;
@@ -49,40 +57,7 @@ namespace WeaponCore.Support
         internal float CurrentCharge;
         internal float IdlePower = 0.001f;
         internal float MaxIntegrity;
-        internal bool Overheated;
-        internal bool Starting;
-        internal bool Debug;
-        internal bool MouseShoot;
-        internal bool UnlimitedPower;
-        internal bool Registered;
-        internal Start Status;
-        internal enum Start
-        {
-            Started,
-            Starting,
-            Stopped,
-            ReInit,
-            WarmingUp,
-        }
 
-        internal enum BlockType
-        {
-            Turret,
-            Fixed,
-            Sorter
-        }
-
-        internal readonly MyCubeBlock MyCube;
-        internal readonly IMySlimBlock Slim;
-        internal readonly MyStringHash SubtypeHash;
-
-        internal readonly Session Session;
-        internal readonly MyInventory BlockInventory;
-        internal readonly IMyTerminalBlock TerminalBlock;
-        internal readonly IMyFunctionalBlock FunctionalBlock;
-        internal readonly IMyLargeTurretBase TurretBase;
-        internal readonly CompSettings Set;
-        internal readonly CompState State;
         internal GridAi Ai;
         internal Weapon TrackingWeapon;
         internal MyWeaponPlatform Platform;
@@ -92,8 +67,6 @@ namespace WeaponCore.Support
         internal bool IsWorking;
         internal bool HasEnergyWeapon;
         internal bool IgnoreInvChange;
-
-        //ui fields
         internal bool HasGuidanceToggle;
         internal bool HasDamageSlider;
         internal bool HasRofSlider;
@@ -102,11 +75,41 @@ namespace WeaponCore.Support
         internal bool HasChargeWeapon;
         internal bool ManualAim;
         internal bool ManualFire;
-        internal bool TerminalControlled;
         internal bool WasControlled;
         internal bool UserControlled;
+        internal bool Overheated;
+        internal bool Debug;
+        internal bool MouseShoot;
+        internal bool UnlimitedPower;
+        internal bool Registered;
 
         internal MyDefinitionId GId = MyResourceDistributorComponent.ElectricityId;
+
+        internal Start Status;
+        internal TerminalControl TerminalControlled;
+
+        internal enum TerminalControl
+        {
+            None,
+            CameraControl,
+            ToolBarControl,
+            ApiControl,
+        }
+
+        internal enum Start
+        {
+            Started,
+            Starting,
+            Stopped,
+            ReInit,
+        }
+
+        internal enum BlockType
+        {
+            Turret,
+            Fixed,
+            Sorter
+        }
 
         public WeaponComponent(Session session, GridAi ai, MyCubeBlock myCube, MyStringHash subtype)
         {

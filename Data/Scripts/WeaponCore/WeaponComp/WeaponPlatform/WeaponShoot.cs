@@ -8,6 +8,7 @@ using VRageMath;
 using WeaponCore.Projectiles;
 using WeaponCore.Support;
 using CollisionLayers = Sandbox.Engine.Physics.MyPhysics.CollisionLayers;
+using static WeaponCore.Support.WeaponComponent.TerminalControl;
 
 namespace WeaponCore.Platform
 {
@@ -84,7 +85,7 @@ namespace WeaponCore.Platform
                 Comp.Ai.VelocityUpdateTick = tick;
             }
 
-            if (!Comp.TerminalControlled && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
+            if (Comp.TerminalControlled == None && !Casting && System.Values.Ammo.Trajectory.Guidance == AmmoTrajectory.GuidanceType.None && tick - Comp.LastRayCastTick > 29 && !DelayCeaseFire) 
                 ShootRayCheck();
 
             var targetAiCnt = Comp.Ai.TargetAis.Count;
@@ -195,7 +196,7 @@ namespace WeaponCore.Platform
                         p.Info.WeaponCache = WeaponCache;
                         p.Info.WeaponCache.VirutalId = -1;
 
-                        p.TerminalControlled = Comp.TerminalControlled;
+                        p.TerminalControlled = Comp.TerminalControlled == CameraControl;
                         p.Info.ShooterVel = Comp.Ai.GridVel;
                         p.Info.Origin = muzzle.Position;
                         p.Info.OriginUp = MyPivotUp;
@@ -326,7 +327,7 @@ namespace WeaponCore.Platform
             p.Info.WeaponId = WeaponId;
             p.Info.MuzzleId = -1;
 
-            p.TerminalControlled = Comp.TerminalControlled;
+            p.TerminalControlled = Comp.TerminalControlled == CameraControl;
             p.Info.ShooterVel = Comp.Ai.GridVel;
             p.Info.Origin = MyPivotPos;
             p.Info.OriginUp = MyPivotUp;

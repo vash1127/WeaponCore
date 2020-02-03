@@ -6,6 +6,7 @@ using VRage.Utils;
 using VRageMath;
 using WeaponCore.Support;
 using static WeaponCore.Support.HardPointDefinition;
+using static WeaponCore.Support.WeaponComponent.TerminalControl;
 
 namespace WeaponCore.Platform
 {
@@ -237,7 +238,7 @@ namespace WeaponCore.Platform
                 var azConstrained = Math.Abs(azConstraint - desiredAzimuth) > 0.0000001;
                 weapon.Target.IsTracking = !azConstrained && !elConstrained;
 
-                if (weapon.Target.IsTracking && !weapon.Comp.TerminalControlled)
+                if (weapon.Target.IsTracking && weapon.Comp.TerminalControlled != CameraControl)
                 {
                     var oldAz = weapon.Azimuth;
                     var oldEl = weapon.Elevation;
@@ -262,7 +263,7 @@ namespace WeaponCore.Platform
             }
             else weapon.Target.IsTracking = false;
 
-            if (weapon.Comp.TerminalControlled) return weapon.Target.IsTracking;
+            if (weapon.Comp.TerminalControlled == CameraControl) return weapon.Target.IsTracking;
 
             var isAligned = false;
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using VRageMath;
 using WeaponCore.Support;
+using static WeaponCore.Support.WeaponComponent.TerminalControl;
 
 namespace WeaponCore.Platform
 {
@@ -74,7 +75,7 @@ namespace WeaponCore.Platform
 
         public void TurretHomePosition(object o = null)
         {
-            if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.TerminalControlled || Target.State == Target.Targets.Acquired)
+            if (Comp.MyCube == null || State.ManualShoot != TerminalActionState.ShootOff || Comp.TerminalControlled != None || Target.State == Target.Targets.Acquired)
                 return;
 
             var azStep = System.AzStep;
